@@ -95,28 +95,50 @@ const ACTION_KINDS = new Set([
   'update_status',
   'talk_to_agent',
   'manual',
+  'create_record',
+  'update_record',
 ]);
 
 function looksLikeOpenOnlyLabel(label) {
   return /^open\b/i.test(String(label || '').trim());
 }
 
-function normalizeStructuredAnswer(raw, citations = []) {
+function normalizeStructuredAnswer(raw, citations = [], options = {}) {
+  const maxBullets = Number.isFinite(options.maxBullets) ? options.maxBullets : 4;
+  const maxHeadline = Number.isFinite(options.maxHeadline) ? options.maxHeadline : 160;
+  const maxActions = Number.isFinite(options.maxActions) ? options.maxActions : 3;
+  const maxRationale = Number.isFinite(options.maxRationale) ? options.maxRationale : 160;
+  const maxBulletLen = Number.isFinite(options.maxBulletLen) ? options.maxBulletLen : 400;
+  const maxDetail = Number.isFinite(options.maxDetail) ? options.maxDetail : 0;
+  const maxActionScan = Math.max(maxActions, 8);
+
   const allowed = new Map(
     (citations || [])
       .filter((c) => c?.sourceId && c?.sourceType)
       .map((c) => [`${String(c.sourceType).toLowerCase()}:${String(c.sourceId)}`, c]),
   );
 
-  const headline = String(raw?.headline || '').trim().slice(0, 160);
+  const headline = String(raw?.headline || '').trim().slice(0, maxHeadline);
   const bullets = Array.isArray(raw?.bullets)
-    ? raw.bullets.map((b) => String(b || '').trim()).filter(Boolean).slice(0, 4)
+    ? raw.bullets
+      .map((b) => String(b || '').trim().slice(0, maxBulletLen))
+      .filter(Boolean)
+      .slice(0, maxBullets)
+    : [];
+  const detail = maxDetail > 0
+    ? String(raw?.detail || raw?.analysis || '').trim().slice(0, maxDetail)
+    : '';
+  const clarifyingQuestions = Array.isArray(raw?.clarifyingQuestions)
+    ? raw.clarifyingQuestions
+      .map((q) => String(q || '').trim().slice(0, 240))
+      .filter(Boolean)
+      .slice(0, 6)
     : [];
 
   const actions = [];
   if (Array.isArray(raw?.actions)) {
-    for (const row of raw.actions.slice(0, 8)) {
-      if (actions.length >= 3) break;
+    for (const row of raw.actions.slice(0, maxActionScan)) {
+      if (actions.length >= maxActions) break;
       let kind = String(row?.kind || 'manual').trim();
       if (kind === 'open_record' || kind === 'none') kind = 'manual';
       if (!ACTION_KINDS.has(kind)) kind = 'manual';
@@ -128,8 +150,27 @@ function normalizeStructuredAnswer(raw, citations = []) {
         label,
         kind,
         priority: ['high', 'medium', 'low'].includes(row?.priority) ? row.priority : 'medium',
-        rationale: String(row?.rationale || '').trim().slice(0, 160),
+        rationale: String(row?.rationale || '').trim().slice(0, maxRationale),
+        executeNow: Boolean(row?.executeNow),
       };
+
+      if (kind === 'create_record' || kind === 'update_record') {
+        const fieldsRaw = row?.fields && typeof row.fields === 'object' ? row.fields : {};
+        const fields = {};
+        for (const [fk, fv] of Object.entries(fieldsRaw)) {
+          if (fv === undefined || typeof fv === 'object') continue;
+          fields[String(fk).slice(0, 80)] = typeof fv === 'string' ? fv.slice(0, 2000) : fv;
+        }
+        if (Object.keys(fields).length) action.fields = fields;
+        const mk = String(row?.moduleKey || '').trim().toLowerCase();
+        if (mk) action.moduleKey = mk;
+        if (kind === 'update_record') {
+          const rid = String(row?.recordId || '').trim();
+          if (rid) action.recordId = rid;
+        }
+        // Default: execute mutation actions unless explicitly false
+        if (row?.executeNow === undefined) action.executeNow = true;
+      }
 
       const emailRaw = row?.email && typeof row.email === 'object' ? row.email : null;
       if (emailRaw && (kind === 'send_email' || emailRaw.subject || emailRaw.body)) {
@@ -164,13 +205,38 @@ function normalizeStructuredAnswer(raw, citations = []) {
   const bodyFromStructured = [
     headline,
     ...bullets.map((b) => `• ${b}`),
+    clarifyingQuestions.length
+      ? `Questions:\n${clarifyingQuestions.map((q) => `? ${q}`).join('\n')}`
+      : '',
+    detail,
     ...actions.map((a) => `→ ${a.label}`),
-  ].filter(Boolean).join('\n');
+  ].filter(Boolean).join('\n\n');
 
   return {
     headline,
     bullets,
+    clarifyingQuestions,
+    detail: detail || undefined,
     actions,
+    visuals: Array.isArray(raw?.visuals)
+      ? raw.visuals
+        .filter((v) => v && typeof v === 'object' && Array.isArray(v.points) && v.points.length)
+        .slice(0, 4)
+        .map((v) => ({
+          id: String(v.id || `viz_${Math.random().toString(36).slice(2, 8)}`).slice(0, 80),
+          component: 'chart',
+          chartType: ['pie', 'bar', 'line'].includes(String(v.chartType || ''))
+            ? String(v.chartType)
+            : 'pie',
+          title: String(v.title || '').trim().slice(0, 120),
+          metricLabel: String(v.metricLabel || 'value').slice(0, 40),
+          points: v.points.slice(0, 40).map((p) => ({
+            label: String(p?.label || '').trim().slice(0, 80),
+            value: Number(p?.value) || 0,
+          })).filter((p) => p.label),
+        }))
+        .filter((v) => v.points.length)
+      : undefined,
     talkToAgent: Boolean(raw?.talkToAgent) || actions.some((a) => a.kind === 'talk_to_agent'),
     body: bodyFromStructured,
   };

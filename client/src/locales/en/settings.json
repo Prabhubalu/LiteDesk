@@ -4276,8 +4276,8 @@
     "description": "AI settings save error"
   },
   "aiAssistantAgentTitle": {
-    "message": "Arivu Assistant Agent",
-    "description": "AI settings transparency card title"
+    "message": "Astra",
+    "description": "AI settings transparency card title for Astra router"
   },
   "aiAssistantAgentHint": {
     "message": "See what the in-product assistant is allowed to know and propose before users rely on it.",
@@ -4496,7 +4496,7 @@
     "description": "Tenant agent management title"
   },
   "aiCustomAgentsHint": {
-    "message": "Create specialist agents with their own prompts. Arivu Assistant routes a user question to the best matching agent using trigger phrases and module affinity.",
+    "message": "Create specialist agents with their own prompts. Astra routes a user question to the best matching agent using trigger phrases and module affinity.",
     "description": "Tenant agent management hint"
   },
   "aiCustomAgentsEmpty": {
@@ -4542,6 +4542,14 @@
   "aiCustomAgentModulesHint": {
     "message": "Comma-separated module keys (e.g. deals, cases). Leave blank for any page.",
     "description": "Custom agent modules help"
+  },
+  "aiCustomAgentWebResearch": {
+    "message": "Allow public web research",
+    "description": "Enable bounded website fetch for this tenant agent"
+  },
+  "aiCustomAgentWebResearchHint": {
+    "message": "Fetches the CRM record website (same host only) for research questions. Not arbitrary internet scraping.",
+    "description": "Hint for web research capability"
   },
   "aiCustomAgentEnabled": {
     "message": "Enabled",

@@ -329,7 +329,7 @@
 
         <!-- AI composer / thread -->
         <div v-else-if="activeSection === 'ai'" class="flex min-h-0 flex-1 flex-col bg-white dark:bg-gray-950">
-          <!-- Empty state (Brain-style) -->
+          <!-- Empty state (post-intro) -->
           <div
             v-if="!aiMessages.length && !aiAsking"
             class="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-1 pt-1"
@@ -344,6 +344,9 @@
               <h3 class="arivu-hero-title mt-0.5 text-[26px] font-semibold tracking-tight">
                 {{ t('liveChat.inAppAiBrandShort') }}
               </h3>
+              <p class="mt-1.5 max-w-[16rem] text-[13px] font-medium leading-snug text-gray-700 dark:text-gray-200">
+                {{ t('liveChat.inAppAiMeetTagline') }}
+              </p>
               <p class="mt-1.5 max-w-[16rem] text-[12px] leading-snug text-gray-500 dark:text-gray-400">
                 {{ t('liveChat.inAppAiBrandTagline') }}
               </p>
@@ -354,7 +357,7 @@
           <div
             v-else
             ref="aiMessagesEl"
-            class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3"
+            class="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4"
           >
             <div
               v-for="msg in aiMessages"
@@ -362,26 +365,44 @@
               class="flex"
               :class="msg.role === 'user' ? 'justify-end' : 'justify-start'"
             >
+              <!-- User: bordered bubble (Brain-style) -->
               <div
-                class="max-w-[92%] rounded-2xl px-3 py-2.5 text-sm"
-                :class="msg.role === 'user'
-                  ? 'bg-primary-800 text-white dark:bg-primary-700'
-                  : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'"
+                v-if="msg.role === 'user'"
+                class="max-w-[85%] rounded-2xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
               >
-                <p
-                  v-if="msg.role === 'assistant' && msg.source"
-                  class="mb-1.5 text-[10px] font-semibold uppercase tracking-wide opacity-70"
-                >
-                  {{ sourceBadge(msg) }}
-                </p>
+                <p class="whitespace-pre-wrap break-words">{{ msg.body }}</p>
+              </div>
 
-                <template v-if="msg.role === 'assistant' && hasStructured(msg)">
+              <!-- Astra: open text + logo header (no gray bubble) -->
+              <div
+                v-else
+                class="max-w-[92%] text-sm text-gray-900 dark:text-gray-100"
+              >
+                <div class="mb-2 flex items-center gap-1.5">
+                  <img
+                    src="/assets/logo/Ai%20Logo.svg"
+                    alt=""
+                    class="h-4 w-4 object-contain"
+                    aria-hidden="true"
+                  />
+                  <span class="text-[13px] font-semibold text-gray-900 dark:text-white">
+                    {{ t('liveChat.inAppTitle') }}
+                  </span>
+                  <span
+                    v-if="assistantAgentLabel(msg)"
+                    class="truncate text-[11px] font-medium text-gray-400 dark:text-gray-500"
+                  >
+                    · {{ assistantAgentLabel(msg) }}
+                  </span>
+                </div>
+
+                <template v-if="hasStructured(msg)">
                   <p
                     v-if="msg.structured.headline || showTypingCaret(msg)"
                     class="text-sm font-semibold leading-snug text-gray-900 dark:text-white"
                   >
                     {{ displayHeadline(msg) }}<span
-                      v-if="showTypingCaret(msg) && !displayBullets(msg).length && !displayActions(msg).length"
+                      v-if="showTypingCaret(msg) && !displayBullets(msg).length && !displayDetail(msg) && !displayActions(msg).length"
                       class="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary-600 align-middle dark:bg-primary-300"
                       aria-hidden="true"
                     />
@@ -396,23 +417,67 @@
                       class="flex gap-2 text-[13px] leading-snug text-gray-700 dark:text-gray-200"
                     >
                       <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-600 dark:bg-primary-300" aria-hidden="true" />
-                      <span>{{ bullet }}</span>
+                      <span>{{ bullet }}<span
+                        v-if="showTypingCaret(msg) && idx === displayBullets(msg).length - 1 && !displayDetail(msg) && !displayClarifyingQuestions(msg).length"
+                        class="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary-600 align-middle dark:bg-primary-300"
+                        aria-hidden="true"
+                      /></span>
                     </li>
                   </ul>
                   <div
-                    v-if="displayActions(msg).length"
+                    v-if="displayVisuals(msg).length"
+                    class="mt-1 space-y-1"
+                  >
+                    <AstraUiBlock
+                      v-for="viz in displayVisuals(msg)"
+                      :key="`${msg.id}-${viz.id || viz.component}-${viz.title}`"
+                      :visual="viz"
+                    />
+                  </div>
+                  <div
+                    v-if="displayClarifyingQuestions(msg).length"
+                    class="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/80 p-3 dark:border-amber-700/50 dark:bg-amber-950/30"
+                  >
+                    <p class="text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                      {{ t('liveChat.inAppAiNeedDetails') }}
+                    </p>
+                    <ul class="mt-2 space-y-1.5">
+                      <li
+                        v-for="(q, qIdx) in displayClarifyingQuestions(msg)"
+                        :key="`${msg.id}-q-${qIdx}`"
+                        class="text-[13px] leading-snug text-amber-950 dark:text-amber-50"
+                      >
+                        {{ qIdx + 1 }}. {{ q }}
+                      </li>
+                    </ul>
+                    <p class="mt-2 text-[11px] text-amber-800/80 dark:text-amber-200/80">
+                      {{ t('liveChat.inAppAiNeedDetailsHint') }}
+                    </p>
+                  </div>
+                  <p
+                    v-if="displayDetail(msg)"
+                    class="mt-3 whitespace-pre-wrap text-[13px] leading-relaxed text-gray-700 dark:text-gray-200"
+                  >
+                    {{ displayDetail(msg) }}<span
+                      v-if="showTypingCaret(msg) && !displayClarifyingQuestions(msg).length && !displayActions(msg).length"
+                      class="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary-600 align-middle dark:bg-primary-300"
+                      aria-hidden="true"
+                    />
+                  </p>
+                  <div
+                    v-if="displayActions(msg).filter((a) => !a.applied).length"
                     class="mt-3 space-y-2"
                   >
                     <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                       {{ t('liveChat.inAppAiNextActions') }}
                     </p>
                     <button
-                      v-for="(action, aIdx) in displayActions(msg)"
+                      v-for="(action, aIdx) in displayActions(msg).filter((a) => !a.applied)"
                       :key="`${msg.id}-a-${aIdx}`"
                       type="button"
                       class="inline-flex w-full flex-col gap-1 rounded-xl border px-3 py-2.5 text-left transition"
                       :class="actionPriorityClass(action.priority)"
-                      @click="onAssistantAction(action)"
+                      @click.stop="onAssistantAction(action)"
                     >
                       <span class="flex items-start justify-between gap-2">
                         <span class="min-w-0 text-xs font-semibold leading-snug">{{ action.label }}</span>
@@ -449,7 +514,7 @@
                     </button>
                   </div>
                 </template>
-                <template v-else-if="msg.role === 'assistant' && hasStructuredHeadline(msg)">
+                <template v-else-if="hasStructuredHeadline(msg)">
                   <p class="text-sm font-semibold leading-snug text-gray-900 dark:text-white">
                     {{ displayHeadline(msg) }}<span
                       v-if="showTypingCaret(msg) && !displayBody(msg)"
@@ -470,10 +535,10 @@
                 </template>
                 <p
                   v-else
-                  class="whitespace-pre-wrap break-words"
+                  class="whitespace-pre-wrap break-words leading-relaxed"
                 >
-                  {{ msg.role === 'assistant' ? displayBody(msg) : msg.body }}<span
-                    v-if="msg.role === 'assistant' && showTypingCaret(msg)"
+                  {{ displayBody(msg) }}<span
+                    v-if="showTypingCaret(msg)"
                     class="ml-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-primary-600 align-middle dark:bg-primary-300"
                     aria-hidden="true"
                   />
@@ -481,12 +546,18 @@
               </div>
             </div>
 
-            <p
+            <div
               v-if="aiAsking"
-              class="text-xs text-gray-500 dark:text-gray-400"
+              class="flex items-center gap-2 py-1 text-[13px] text-gray-500 dark:text-gray-400"
             >
-              {{ t('liveChat.inAppAiThinking') }}
-            </p>
+              <img
+                src="/assets/logo/Ai%20Logo.svg"
+                alt=""
+                class="h-4 w-4 animate-pulse object-contain"
+                aria-hidden="true"
+              />
+              <span>{{ astraWorkingLabel }}</span>
+            </div>
 
             <p
               v-if="aiError"
@@ -540,6 +611,7 @@
                 <span class="min-w-0 truncate">{{ contextPillLabel }}</span>
               </div>
               <textarea
+                ref="aiComposerEl"
                 v-model="draft"
                 rows="2"
                 class="min-h-[48px] w-full resize-none border-0 bg-transparent px-0.5 py-0.5 text-[13px] leading-relaxed text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 dark:text-white dark:placeholder:text-gray-500"
@@ -675,6 +747,74 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Full-page Astra cinematic intro (first open only) -->
+  <Teleport to="body">
+    <Transition leave-active-class="astra-intro-leave">
+      <div
+        v-if="showAstraIntro"
+        class="astra-intro fixed inset-0 z-[9200] flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="t('liveChat.inAppAiMeetTitle')"
+      >
+        <div
+          class="astra-intro__bg"
+          aria-hidden="true"
+          @animationend="onAstraBgRevealEnd"
+        >
+          <div class="astra-intro__mesh" />
+          <div class="astra-intro__glow" />
+          <div class="astra-intro__vignette" />
+        </div>
+        <button
+          type="button"
+          class="astra-intro__close absolute right-5 top-5 z-10 rounded-lg p-2 text-white/50 hover:bg-white/10 hover:text-white sm:right-8 sm:top-8"
+          :aria-label="t('actions.close')"
+          @click="dismissAstraIntro(false)"
+        >
+          <XMarkIcon class="h-5 w-5" aria-hidden="true" />
+        </button>
+        <div class="astra-intro__content relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center px-6 text-center sm:px-10">
+          <img
+            src="/assets/logo/Ai%20Logo.svg"
+            alt=""
+            class="astra-intro__logo h-28 w-28 object-contain sm:h-36 sm:w-36"
+            aria-hidden="true"
+          />
+          <h2 class="arivu-hero-title astra-intro__title mt-0 text-[42px] font-semibold tracking-tight sm:text-[56px]">
+            {{ t('liveChat.inAppAiMeetTitle') }}
+          </h2>
+          <p class="astra-intro__tagline mt-1 max-w-lg text-[18px] font-normal leading-snug text-white/85 sm:text-[22px]">
+            {{ t('liveChat.inAppAiBrandTagline') }}
+          </p>
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-2">
+            <span
+              v-for="cap in astraIntroCapabilities"
+              :key="cap"
+              class="astra-intro__chip"
+            >
+              {{ cap }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="astra-intro__cta mt-10"
+            @click="dismissAstraIntro(true)"
+          >
+            {{ t('liveChat.inAppAiIntroCta') }}
+          </button>
+          <button
+            type="button"
+            class="astra-intro__skip mt-4 text-[13px] font-medium text-white/45 hover:text-white/75"
+            @click="dismissAstraIntro(false)"
+          >
+            {{ t('liveChat.inAppAiIntroSkip') }}
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -701,14 +841,17 @@ import {
 import { useAuthStore } from '@/stores/authRegistry';
 import { useInProductSupportChat } from '@/composables/useInProductSupportChat';
 import { useInProductAiAsk } from '@/composables/useInProductAiAsk';
+import AstraUiBlock from '@/components/support/AstraUiBlock.vue';
 import { resolvePageAiContext } from '@/utils/resolvePageAiContext';
 import { resolveModuleRecordRoute } from '@/utils/resolveModuleRecordRoute';
+import apiClient from '@/utils/apiClient';
 import { getTabTitleMetaForPath, resolveTabTitle, getPersistedRecordTabName, isGenericRecordTabTitleKey } from '@/utils/navigationLabels';
 import {
   SIDEBAR_SHELL_PADDING_REM,
   WORK_PANEL_SURFACE_CLASS,
 } from '@/utils/sidebarLayout';
 import { useTabs } from '@/composables/useTabs';
+import { playAstraIntroResolveSound, playAstraIntroSound } from '@/utils/astraIntroSound';
 
 const { t, te } = useI18n();
 const route = useRoute();
@@ -717,7 +860,10 @@ const authStore = useAuthStore();
 const { activeTab, tabs } = useTabs();
 const messagesEl = ref(null);
 const aiMessagesEl = ref(null);
+const aiComposerEl = ref(null);
 const newChatMenuOpen = ref(false);
+const showAstraIntro = ref(false);
+const astraWorkingLabel = ref('');
 
 const assistantSurfaceClass = WORK_PANEL_SURFACE_CLASS;
 /** Matches App Shell `p-2` inset on all sides of the AI rail (incl. App↔AI gutter). */
@@ -926,15 +1072,122 @@ const {
   displayHeadline,
   displayBody,
   displayBullets,
+  displayDetail,
+  displayVisuals,
+  displayClarifyingQuestions,
   displayActions,
   showTypingCaret,
   typingMessageId,
   typingProgress,
 } = useInProductAiAsk();
 
+const ASTRA_WORKING_KEYS = [
+  'liveChat.inAppAiWorking',
+  'liveChat.inAppAiWorkingOnIt',
+  'liveChat.inAppAiWorkingGathering',
+  'liveChat.inAppAiWorkingAnalyzing',
+  'liveChat.inAppAiWorkingDigging',
+  'liveChat.inAppAiWorkingAlmost',
+];
+
+watch(aiAsking, (asking) => {
+  if (!asking) return;
+  const key = ASTRA_WORKING_KEYS[Math.floor(Math.random() * ASTRA_WORKING_KEYS.length)];
+  astraWorkingLabel.value = t(key);
+});
+
 const hideOnAgentWorkspace = computed(() => String(route.path || '').startsWith('/live-chat'));
 
 const canUseAi = computed(() => Boolean(authStore.isAuthenticated));
+
+const astraIntroCapabilities = computed(() => [
+  t('liveChat.inAppAiCapabilityAsk'),
+  t('liveChat.inAppAiCapabilitySummarize'),
+  t('liveChat.inAppAiCapabilityResearch'),
+  t('liveChat.inAppAiCapabilityNextAction'),
+]);
+
+function astraIntroStorageKey() {
+  const userId = authStore.user?._id ? String(authStore.user._id) : '';
+  const orgId = authStore.organization?._id
+    ? String(authStore.organization._id)
+    : (authStore.user?.organizationId ? String(authStore.user.organizationId) : '');
+  if (!userId || !orgId) return null;
+  return `litedesk_astra_intro_seen_v1:${orgId}:${userId}`;
+}
+
+function hasSeenAstraIntro() {
+  const key = astraIntroStorageKey();
+  if (!key) return true;
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return true;
+  }
+}
+
+function markAstraIntroSeen() {
+  const key = astraIntroStorageKey();
+  if (key) {
+    try {
+      localStorage.setItem(key, '1');
+    } catch {
+      /* ignore */
+    }
+  }
+  window.dispatchEvent(new CustomEvent('arivu:astra-intro', { detail: { seen: true } }));
+}
+
+function maybeRevealAstraIntro() {
+  if (!canUseAi.value) return false;
+  if (hasSeenAstraIntro()) return false;
+  showAstraIntro.value = true;
+  document.body.classList.add('astra-intro-lock');
+  playAstraIntroSound();
+  return true;
+}
+
+async function openAstraPanelAfterIntro() {
+  newChatMenuOpen.value = false;
+  await startNewConversation();
+  openAiAsk();
+  await nextTick();
+  await new Promise((resolve) => {
+    window.setTimeout(resolve, 320);
+  });
+  const el = aiComposerEl.value;
+  if (el && typeof el.focus === 'function') {
+    el.focus();
+  }
+}
+
+async function dismissAstraIntro(openAssistant) {
+  markAstraIntroSeen();
+  showAstraIntro.value = false;
+
+  if (!openAssistant) {
+    document.body.classList.remove('astra-intro-lock');
+    return;
+  }
+
+  playAstraIntroResolveSound();
+  // Let cinematic fade start, then slide the panel in while it finishes.
+  await new Promise((resolve) => {
+    window.setTimeout(resolve, 180);
+  });
+  document.body.classList.remove('astra-intro-lock');
+  await openAstraPanelAfterIntro();
+}
+
+function onAstraBgRevealEnd(event) {
+  if (event.target !== event.currentTarget) return;
+  if (event?.animationName !== 'astra-intro-bg-reveal') return;
+  const el = event.currentTarget;
+  if (!(el instanceof HTMLElement)) return;
+  el.style.webkitMaskImage = 'none';
+  el.style.maskImage = 'none';
+  el.style.animation = 'none';
+}
 
 const isAiSurface = computed(() =>
   activeSection.value === 'ai' || activeSection.value === 'ai-history',
@@ -1063,13 +1316,9 @@ const pageContextHint = computed(() => {
   return '';
 });
 
-function sourceBadge(msg) {
-  if (msg?.source === 'agent') {
-    const name = String(msg?.meta?.agentName || '').trim();
-    return name
-      ? t('liveChat.inAppAiFromAgentNamed', { name })
-      : t('liveChat.inAppAiFromAgent');
-  }
+function assistantAgentLabel(msg) {
+  const name = String(msg?.meta?.agentName || '').trim();
+  if (name) return name;
   if (msg?.source === 'graph') return t('liveChat.inAppAiFromRecord');
   if (msg?.source === 'page') return t('liveChat.inAppAiFromPage');
   if (msg?.source === 'knowledge') return t('liveChat.inAppAiFromKnowledge');
@@ -1082,7 +1331,10 @@ function hasStructured(msg) {
   return Boolean(
     s.headline
     || (s.bullets && s.bullets.length)
-    || (s.actions && s.actions.length),
+    || (s.clarifyingQuestions && s.clarifyingQuestions.length)
+    || s.detail
+    || (s.actions && s.actions.length)
+    || (s.visuals && s.visuals.length),
   );
 }
 
@@ -1108,6 +1360,8 @@ function actionKindLabel(kind) {
   if (key === 'review_record') return t('liveChat.inAppAiActionReview');
   if (key === 'update_status') return t('liveChat.inAppAiActionUpdate');
   if (key === 'talk_to_agent') return t('liveChat.inAppAiTalkToAgentCta');
+  if (key === 'create_record') return t('liveChat.inAppAiActionCreate');
+  if (key === 'update_record') return t('liveChat.inAppAiActionApplyUpdate');
   return t('liveChat.inAppAiActionDo');
 }
 
@@ -1118,7 +1372,48 @@ async function onAssistantAction(action) {
     return;
   }
 
-  if (action.kind === 'send_email' || action.email) {
+  // Astra CRM mutations — user confirms by clicking; never delete.
+  if (action.kind === 'create_record' || action.kind === 'update_record') {
+    const moduleKey = String(action.moduleKey || '').trim().toLowerCase();
+    const fields = action.fields && typeof action.fields === 'object' ? action.fields : {};
+    if (!moduleKey || !Object.keys(fields).length) {
+      aiError.value = t('liveChat.inAppAiMutationIncomplete');
+      return;
+    }
+    try {
+      const data = await apiClient.post('/ai/astra/mutations/apply', {
+        op: action.kind === 'create_record' ? 'create' : 'update',
+        moduleKey,
+        recordId: action.recordId || '',
+        fields,
+        appKey: resolvePageAiContext(route)?.appKey || 'SALES',
+      });
+      const rid = data?.recordId ? String(data.recordId) : '';
+      aiMessages.value.push({
+        id: `a-${Date.now()}`,
+        role: 'assistant',
+        body: action.kind === 'create_record'
+          ? t('liveChat.inAppAiMutationCreated', { module: moduleKey, id: rid })
+          : t('liveChat.inAppAiMutationUpdated', { module: moduleKey, id: rid || action.recordId || '' }),
+        source: 'agent',
+        createdAt: Date.now(),
+      });
+      await nextTick();
+      scrollAiMessages();
+      if (action.kind === 'create_record' && rid) {
+        const dest = resolveModuleRecordRoute(moduleKey, rid);
+        if (dest?.name) await router.push({ name: dest.name, params: dest.params });
+        else if (dest?.path) await router.push(dest.path);
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || t('liveChat.inAppAiMutationFailed');
+      aiError.value = String(msg);
+    }
+    return;
+  }
+
+  // Draft email — open compose; keep Assistant open.
+  if (action.kind === 'send_email' || action.email?.subject || action.email?.body || action.email?.to) {
     const draft = {
       to: String(action.email?.to || '').trim(),
       subject: String(action.email?.subject || action.label || '').trim(),
@@ -1127,21 +1422,50 @@ async function onAssistantAction(action) {
       relatedRecordId: action.recordId || '',
     };
     window.dispatchEvent(new CustomEvent('arivu:open-email-compose', { detail: draft }));
-    closePanel();
     return;
   }
 
-  // Navigate to the record where the human should perform the proposed work.
-  if (action.moduleKey && action.recordId) {
-    const dest = resolveModuleRecordRoute(action.moduleKey, action.recordId);
+  const moduleKey = String(action.moduleKey || '').trim().toLowerCase();
+  const recordId = String(action.recordId || '').trim();
+  const page = resolvePageAiContext(route);
+  const isSameRecord = Boolean(
+    page?.kind === 'record'
+    && page.moduleKey === moduleKey
+    && page.recordId === recordId,
+  );
+  const navigableKinds = new Set([
+    'complete_task',
+    'review_record',
+    'follow_up',
+    'update_status',
+    'open_record',
+  ]);
+
+  // Open a different CRM record where the work should happen; keep Assistant open.
+  if (
+    moduleKey
+    && recordId
+    && !isSameRecord
+    && navigableKinds.has(String(action.kind || ''))
+  ) {
+    const dest = resolveModuleRecordRoute(moduleKey, recordId);
     if (!dest) return;
-    closePanel();
     if (dest.name) {
       await router.push({ name: dest.name, params: dest.params });
     } else if (dest.path) {
       await router.push(dest.path);
     }
+    return;
   }
+
+  // DO NEXT / manual / same-record proposals: continue via Agent router (panel stays open).
+  const followUp = [String(action.label || '').trim(), String(action.rationale || '').trim()]
+    .filter(Boolean)
+    .join(' — ');
+  if (!followUp || aiAsking.value || typingMessageId.value) return;
+  await askAssistant(followUp);
+  await nextTick();
+  scrollAiMessages();
 }
 
 const showTalkToAgentCta = computed(() => {
@@ -1274,11 +1598,13 @@ async function openFreshAiChat() {
 
 function onOpenAssistantEvent() {
   if (hideOnAgentWorkspace.value) return;
+  if (showAstraIntro.value) return;
   if (panelOpen.value) {
     closePanel();
     return;
   }
   if (canUseAi.value) {
+    if (maybeRevealAstraIntro()) return;
     void openFreshAiChat();
     return;
   }
@@ -1465,6 +1791,7 @@ onBeforeUnmount(() => {
   document.body.style.paddingRight = '';
   document.body.classList.remove('arivu-assistant-rail-open');
   document.body.classList.remove('arivu-assistant-resizing');
+  document.body.classList.remove('astra-intro-lock');
   document.body.style.cursor = '';
   document.body.style.userSelect = '';
 });
@@ -1477,6 +1804,10 @@ html {
 
 body {
   transition: padding-right 0.3s ease-out;
+}
+
+body.astra-intro-lock {
+  overflow: hidden;
 }
 
 /* Match PlatformShell canvas in the rail gap (not page white). */
@@ -1515,6 +1846,20 @@ body.arivu-assistant-resizing {
   animation: arivu-hero-title-shimmer 3.6s ease-in-out infinite;
 }
 
+.astra-intro .arivu-hero-title {
+  background-image: linear-gradient(
+    100deg,
+    rgb(255 255 255) 0%,
+    rgb(255 255 255) 38%,
+    #a78bfa 46%,
+    #6049E7 50%,
+    #5037d9 54%,
+    #4527a0 58%,
+    rgb(255 255 255) 66%,
+    rgb(255 255 255) 100%
+  );
+}
+
 :global(html.dark) .arivu-hero-title {
   background-image: linear-gradient(
     100deg,
@@ -1548,8 +1893,260 @@ body.arivu-assistant-resizing {
     -webkit-text-fill-color: currentColor;
   }
 
-  :global(html.dark) .arivu-hero-title {
+  :global(html.dark) .arivu-hero-title,
+  .astra-intro .arivu-hero-title {
     color: rgb(255 255 255);
   }
+
+  .astra-intro__orb-ring,
+  .astra-intro__glow,
+  .astra-intro__mesh,
+  .astra-intro__bg,
+  .astra-intro__content,
+  .astra-intro__close,
+  .astra-intro__logo,
+  .astra-intro__title,
+  .astra-intro__tagline,
+  .astra-intro__chip,
+  .astra-intro__cta,
+  .astra-intro__skip,
+  .astra-intro-leave {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+}
+
+.astra-intro-leave {
+  animation: astra-intro-fade-out 0.55s ease-in-out both;
+}
+
+@property --astra-reveal {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@property --astra-feather {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 28%;
+}
+
+.astra-intro {
+  --ai-c1: #6049E7;
+  --ai-c2: #5037d9;
+  --ai-c3: #a78bfa;
+  --ai-c4: #4527a0;
+  --ai-c5: #3a1f8a;
+  background: transparent;
+  -webkit-backdrop-filter: blur(8px) saturate(1.08);
+  backdrop-filter: blur(8px) saturate(1.08);
+}
+
+.astra-intro__bg {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, #0b0f1a 72%, color-mix(in srgb, var(--ai-c1) 24%, transparent));
+  --astra-reveal: 0%;
+  --astra-feather: 28%;
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 48%,
+    #000 0%,
+    #000 var(--astra-reveal),
+    transparent calc(var(--astra-reveal) + var(--astra-feather))
+  );
+  mask-image: radial-gradient(
+    circle at 50% 48%,
+    #000 0%,
+    #000 var(--astra-reveal),
+    transparent calc(var(--astra-reveal) + var(--astra-feather))
+  );
+  animation: astra-intro-bg-reveal 1.9s ease-in-out forwards;
+}
+
+:global(html.dark) .astra-intro__bg {
+  background: color-mix(in srgb, #000 48%, color-mix(in srgb, var(--ai-c1) 16%, transparent));
+}
+
+.astra-intro__mesh {
+  pointer-events: none;
+  position: absolute;
+  inset: -18%;
+  width: 136%;
+  height: 136%;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 20%, color-mix(in srgb, var(--ai-c1) 36%, transparent), transparent 65%),
+    radial-gradient(ellipse 55% 45% at 75% 35%, color-mix(in srgb, var(--ai-c3) 22%, transparent), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 20% 75%, color-mix(in srgb, var(--ai-c2) 26%, transparent), transparent 58%),
+    radial-gradient(ellipse 60% 45% at 80% 80%, color-mix(in srgb, var(--ai-c4) 20%, transparent), transparent 60%);
+  transform: translate3d(0, 0, 0) scale(1);
+  animation: astra-intro-mesh 24s ease-in-out 2.1s infinite alternate;
+}
+
+.astra-intro__glow {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  height: min(80vw, 560px);
+  width: min(80vw, 560px);
+  margin-left: calc(min(80vw, 560px) / -2);
+  margin-top: calc(min(80vw, 560px) / -2);
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--ai-c1) 30%, transparent) 0%,
+    color-mix(in srgb, var(--ai-c2) 16%, transparent) 42%,
+    transparent 72%
+  );
+  filter: blur(36px);
+  opacity: 0.9;
+  transform: translate3d(0, 0, 0) scale(1);
+  animation: astra-intro-glow 18s ease-in-out 2.1s infinite alternate;
+}
+
+.astra-intro__vignette {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 36%, rgb(0 0 0 / 0.52) 100%);
+}
+
+:global(html.dark) .astra-intro__vignette {
+  background: radial-gradient(ellipse at center, transparent 42%, rgb(0 0 0 / 0.45) 100%);
+}
+
+.astra-intro__content,
+.astra-intro__close {
+  opacity: 0;
+  animation: astra-intro-content-in 0.7s ease-out 2.05s forwards;
+}
+
+.astra-intro__logo {
+  display: block;
+  opacity: 0;
+  filter: drop-shadow(0 0 28px color-mix(in srgb, var(--ai-c2) 40%, transparent));
+  animation: astra-intro-rise 0.75s ease-out 2.1s forwards;
+}
+
+.astra-intro__title {
+  opacity: 0;
+  animation:
+    astra-intro-rise 0.75s ease-out 2.22s forwards,
+    arivu-hero-title-shimmer 3.6s ease-in-out 3s infinite;
+}
+
+.astra-intro__tagline {
+  opacity: 0;
+  animation: astra-intro-rise 0.75s ease-out 2.34s forwards;
+}
+
+.astra-intro__chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: rgb(255 255 255 / 0.1);
+  padding: 0.45rem 0.95rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.88);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  animation: astra-intro-rise 0.65s ease-out forwards;
+}
+
+.astra-intro__chip:nth-child(1) { animation-delay: 2.44s; }
+.astra-intro__chip:nth-child(2) { animation-delay: 2.5s; }
+.astra-intro__chip:nth-child(3) { animation-delay: 2.56s; }
+.astra-intro__chip:nth-child(4) { animation-delay: 2.62s; }
+
+.astra-intro__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 12.5rem;
+  border-radius: 9999px;
+  border: 0;
+  background: linear-gradient(105deg, var(--ai-c1), var(--ai-c2) 45%, var(--ai-c3));
+  padding: 0.9rem 1.75rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--ai-c2) 45%, transparent);
+  opacity: 0;
+  animation: astra-intro-rise 0.7s ease-out 2.68s forwards;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.astra-intro__cta:hover {
+  transform: translateY(-1px) scale(1.03);
+  filter: brightness(1.06);
+}
+
+.astra-intro__skip {
+  opacity: 0;
+  animation: astra-intro-rise 0.6s ease-out 2.78s forwards;
+}
+
+@keyframes astra-intro-bg-reveal {
+  0% {
+    --astra-reveal: 0%;
+    --astra-feather: 28%;
+  }
+  70% {
+    --astra-reveal: 85%;
+    --astra-feather: 20%;
+  }
+  100% {
+    --astra-reveal: 150%;
+    --astra-feather: 0%;
+  }
+}
+
+@keyframes astra-intro-content-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes astra-intro-glow {
+  from {
+    opacity: 0.85;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0.95;
+    transform: translate3d(5%, -3%, 0) scale(1.06);
+  }
+}
+
+@keyframes astra-intro-mesh {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2.5%, 1.5%, 0) scale(1.03);
+  }
+}
+
+@keyframes astra-intro-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes astra-intro-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 </style>

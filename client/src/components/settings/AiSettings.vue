@@ -253,7 +253,7 @@
 
           <!-- Agent detail -->
           <section class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-            <!-- Built-in Arivu Assistant transparency -->
+            <!-- Built-in Astra transparency -->
             <div v-if="selectedAgentId === BUILTIN_AGENT_ID" class="space-y-4">
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -382,6 +382,13 @@
                   class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 />
                 <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiCustomAgentModulesHint') }}</span>
+              </label>
+              <label class="flex items-start gap-2 text-sm">
+                <input v-model="agentForm.webResearch" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600" />
+                <span>
+                  <span class="block text-gray-900 dark:text-gray-100">{{ t('settings.aiCustomAgentWebResearch') }}</span>
+                  <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiCustomAgentWebResearchHint') }}</span>
+                </span>
               </label>
               <label class="flex items-center gap-2 text-sm">
                 <input v-model="agentForm.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600" />
@@ -789,6 +796,7 @@ const agentForm = reactive({
   systemPrompt: '',
   triggerPhrasesText: '',
   moduleKeysText: '',
+  webResearch: false,
   enabled: true,
 });
 
@@ -1052,6 +1060,7 @@ function resetAgentForm() {
   agentForm.systemPrompt = '';
   agentForm.triggerPhrasesText = '';
   agentForm.moduleKeysText = '';
+  agentForm.webResearch = false;
   agentForm.enabled = true;
 }
 
@@ -1070,6 +1079,8 @@ function selectAgent(agent) {
   agentForm.systemPrompt = agent.systemPrompt || '';
   agentForm.triggerPhrasesText = Array.isArray(agent.triggerPhrases) ? agent.triggerPhrases.join(', ') : '';
   agentForm.moduleKeysText = Array.isArray(agent.moduleKeys) ? agent.moduleKeys.join(', ') : '';
+  agentForm.webResearch = Array.isArray(agent.capabilities)
+    && agent.capabilities.map((c) => String(c).toLowerCase()).includes('web_research');
   agentForm.enabled = agent.enabled !== false;
   agentsError.value = '';
 }
@@ -1166,6 +1177,7 @@ async function saveAgent() {
       systemPrompt: agentForm.systemPrompt.trim(),
       triggerPhrases: splitCsv(agentForm.triggerPhrasesText),
       moduleKeys: splitCsv(agentForm.moduleKeysText),
+      capabilities: agentForm.webResearch ? ['web_research'] : [],
       enabled: Boolean(agentForm.enabled),
     };
     let savedId = editingAgentId.value;

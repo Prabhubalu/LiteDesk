@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
 /**
- * Tenant-defined Agentic AI specialists for Arivu Assistant routing.
- * Propose-only execution — agents do not write CRM records by themselves.
+ * Tenant-defined Agentic AI specialists routed by Astra.
+ * Propose CRM mutations (create/update); never delete.
  */
 const AiTenantAgentSchema = new mongoose.Schema(
   {
@@ -43,6 +43,24 @@ const AiTenantAgentSchema = new mongoose.Schema(
     moduleKeys: {
       type: [String],
       default: [],
+    },
+    /** Optional tool capabilities (allowlisted). e.g. web_research, crm_write */
+    capabilities: {
+      type: [String],
+      default: [],
+    },
+    /** True when Astra auto-created this specialist from an unmatched question. */
+    autoCreated: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    /** Original user question that spawned an auto-created agent (truncated). */
+    sourceQuestion: {
+      type: String,
+      trim: true,
+      maxlength: 400,
+      default: '',
     },
     enabled: {
       type: Boolean,

@@ -42,11 +42,13 @@ const {
   previewDigestBriefAi,
   proposeCommercialAgentAi,
   proposeCollectionAgentAi,
+  generateProcessDesignerAi,
   listTenantAgentsAi,
   createTenantAgentAi,
   updateTenantAgentAi,
   deleteTenantAgentAi,
   askTenantAgentAi,
+  applyAstraMutationAi,
   suggestTenantAgentTriggersAi,
   listAiConversations,
   getAiConversation,
@@ -98,6 +100,13 @@ router.post(
   requireAiAccess('use'),
   requireAiSuiteEntitlement(),
   askTenantAgentAi
+);
+router.post(
+  '/astra/mutations/apply',
+  aiLimiter,
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  applyAstraMutationAi
 );
 router.post(
   '/tenant-agents/suggest-triggers',
@@ -202,6 +211,13 @@ router.post(
   requireAiAccess('use'),
   requireAiSuiteEntitlement(),
   suggestImportMappingAi
+);
+router.post(
+  '/processes/generate',
+  aiLimiter,
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  generateProcessDesignerAi
 );
 router.post('/feedback', aiLimiter, requireAiAccess('use'), requireAiSuiteEntitlement(), submitAiFeedback);
 

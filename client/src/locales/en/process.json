@@ -1063,6 +1063,98 @@
     "message": "Define scope and when this process runs. You’ll build the flow on the canvas next.",
     "description": "Process setup page subtitle"
   },
+  "setupAstraDescription": {
+    "message": "Describe your business process. Process Designer (Astra) builds a complete draft flow for you to verify before publish.",
+    "description": "Process setup subtitle for Astra generation mode"
+  },
+  "setupModeManual": {
+    "message": "Build on canvas",
+    "description": "Manual process creation mode"
+  },
+  "setupModeAstra": {
+    "message": "Generate with Astra",
+    "description": "Astra Process Designer generation mode"
+  },
+  "setupAstraAgentTitle": {
+    "message": "Process Designer",
+    "description": "Astra Process Designer agent title"
+  },
+  "setupAstraAgentHint": {
+    "message": "Creates a draft end-to-end flow from your description. You and your team must review and publish — nothing goes live automatically.",
+    "description": "Astra Process Designer safety hint"
+  },
+  "setupAstraBrief": {
+    "message": "Business process details",
+    "description": "Astra brief field label"
+  },
+  "setupAstraBriefPh": {
+    "message": "Example: When a deal moves to Proposal, assign the owner a follow-up task due in 2 days and email the account manager if amount is over 50,000.",
+    "description": "Astra brief placeholder"
+  },
+  "setupAstraBriefHint": {
+    "message": "Include trigger, conditions, who is notified/assigned, and desired outcomes. More detail produces a more accurate draft.",
+    "description": "Astra brief helper text"
+  },
+  "setupAstraGenerate": {
+    "message": "Generate draft with Astra",
+    "description": "Astra generate submit button"
+  },
+  "setupAstraGenerating": {
+    "message": "Designing process…",
+    "description": "Astra generate in-progress label"
+  },
+  "setupAstraGenerateFailed": {
+    "message": "Could not generate the process draft. Refine the description and try again.",
+    "description": "Astra generate failure message"
+  },
+  "setupAstraPromptLabel": {
+    "message": "Prompt",
+    "description": "Label above Astra brief composer"
+  },
+  "setupAstraScopeLabel": {
+    "message": "Where it runs",
+    "description": "Section label for app/module/trigger under Astra"
+  },
+  "setupAstraWorkingTitle": {
+    "message": "Astra is designing your process",
+    "description": "Overlay title while Process Designer generates"
+  },
+  "setupAstraChipTrigger": {
+    "message": "Triggers",
+    "description": "Astra capability chip"
+  },
+  "setupAstraChipConditions": {
+    "message": "Conditions",
+    "description": "Astra capability chip"
+  },
+  "setupAstraChipActions": {
+    "message": "Actions",
+    "description": "Astra capability chip"
+  },
+  "setupAstraChipDraft": {
+    "message": "Draft for review",
+    "description": "Astra capability chip emphasizing human publish"
+  },
+  "setupAstraStatusReading": {
+    "message": "Reading your business process…",
+    "description": "Astra working status line"
+  },
+  "setupAstraStatusMapping": {
+    "message": "Mapping triggers and conditions…",
+    "description": "Astra working status line"
+  },
+  "setupAstraStatusWiring": {
+    "message": "Wiring actions and branches…",
+    "description": "Astra working status line"
+  },
+  "setupAstraStatusValidating": {
+    "message": "Validating the flow graph…",
+    "description": "Astra working status line"
+  },
+  "setupAstraStatusDrafting": {
+    "message": "Filling every step for your review…",
+    "description": "Astra working status line"
+  },
   "setupProcessName": {
     "message": "Process name",
     "description": "Setup form field label"
