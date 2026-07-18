@@ -91,16 +91,19 @@ const maxZoom = 1.5;
 const zoomPercent = computed(() => Math.round(zoom.value * 100));
 
 const paperStyle = computed(() => ({
-  width: props.canvasWidth,
-  minHeight: props.canvasHeight,
-  height: props.canvasHeight,
-  maxWidth: '100%'
+  // Must match Grapes frame + margin guides exactly. maxWidth:100% shrinks the
+  // paper while guides/frame stay at pageWidthPx — content appears outside print area.
+  width: `${props.pageWidthPx}px`,
+  minWidth: `${props.pageWidthPx}px`,
+  minHeight: `${props.pageHeightPx}px`,
+  height: `${props.pageHeightPx}px`,
+  maxWidth: 'none'
 }));
 
 const hostStyle = computed(() => ({
-  width: props.canvasWidth,
-  height: props.canvasHeight,
-  minHeight: props.canvasHeight,
+  width: `${props.pageWidthPx}px`,
+  height: `${props.pageHeightPx}px`,
+  minHeight: `${props.pageHeightPx}px`,
   flexShrink: 0
 }));
 
@@ -174,6 +177,8 @@ onBeforeUnmount(() => {
 :deep(.gjs-canvas-host) {
   width: 100%;
   height: 100%;
+  min-width: inherit;
+  min-height: inherit;
 }
 
 :deep(.gjs-canvas-host .gjs-editor) {

@@ -28,12 +28,12 @@ function createBlankGrapesTemplateDefinition() {
 
 /**
  * @param {unknown} project
- * @returns {boolean}
+ * @returns {number}
  */
-function hasGrapesProjectContent(project) {
-  if (!project || typeof project !== 'object') return false;
+function countGrapesProjectComponents(project) {
+  if (!project || typeof project !== 'object') return 0;
   const pages = /** @type {{ pages?: unknown[] }} */ (project).pages;
-  if (!Array.isArray(pages) || pages.length === 0) return false;
+  if (!Array.isArray(pages) || pages.length === 0) return 0;
 
   /**
    * @param {unknown} node
@@ -51,16 +51,23 @@ function hasGrapesProjectContent(project) {
     return count;
   }
 
+  let total = 0;
   for (const page of pages) {
     const frames = /** @type {{ frames?: unknown[] }} */ (page)?.frames;
     if (!Array.isArray(frames)) continue;
     for (const frame of frames) {
-      if (countComponents(/** @type {{ component?: unknown }} */ (frame)?.component) > 0) {
-        return true;
-      }
+      total += countComponents(/** @type {{ component?: unknown }} */ (frame)?.component);
     }
   }
-  return false;
+  return total;
+}
+
+/**
+ * @param {unknown} project
+ * @returns {boolean}
+ */
+function hasGrapesProjectContent(project) {
+  return countGrapesProjectComponents(project) > 0;
 }
 
 /**
@@ -184,6 +191,52 @@ function isEmailDefinitionDegraded(incoming, existing) {
   return false;
 }
 
+/**
+ * True when incoming would wipe a richer existing draft (empty, flattened tables, severe shrink).
+ * PDF source of truth is Grapes `project`; HTML-only quirks are not treated as degradation.
+ * @param {unknown} incoming
+ * @param {unknown} existing
+ * @returns {boolean}
+ */
+function isGrapesDefinitionDegraded(incoming, existing) {
+  if (!isGrapesTemplateDefinition(existing)) return false;
+  if (!isGrapesTemplateDefinition(incoming)) return true;
+
+  const prev = /** @type {{ html?: unknown, project?: unknown, importSnapshot?: { html?: unknown } }} */ (existing);
+  const next = /** @type {{ html?: unknown, project?: unknown, importSnapshot?: { html?: unknown } }} */ (incoming);
+
+  const prevHtml = String(prev.html || prev.importSnapshot?.html || '').trim();
+  const nextHtml = String(next.html || next.importSnapshot?.html || '').trim();
+  const prevProjectCount = countGrapesProjectComponents(prev.project);
+  const nextProjectCount = countGrapesProjectComponents(next.project);
+  const prevHadContent = Boolean(prevHtml) || prevProjectCount > 0;
+  const nextHasContent = Boolean(nextHtml) || nextProjectCount > 0;
+
+  if (prevHadContent && !nextHasContent) return true;
+
+  if (prevProjectCount > 15 && nextProjectCount < Math.floor(prevProjectCount * 0.4)) {
+    return true;
+  }
+
+  if (
+    nextProjectCount < 5
+    && emailHtmlLooksStructured(prevHtml)
+    && !emailHtmlLooksStructured(nextHtml)
+  ) {
+    return true;
+  }
+
+  if (
+    nextProjectCount < Math.floor(Math.max(prevProjectCount, 1) * 0.4)
+    && prevHtml.length > 800
+    && nextHtml.length < Math.floor(prevHtml.length * 0.4)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 module.exports = {
   GRAPES_ENGINE,
   GRAPES_DEFINITION_VERSION,
@@ -193,5 +246,6 @@ module.exports = {
   hasRenderableGrapesTemplateContent,
   hasEmailHtmlForRender,
   resolveGrapesEmailSource,
-  isEmailDefinitionDegraded
+  isEmailDefinitionDegraded,
+  isGrapesDefinitionDegraded
 };

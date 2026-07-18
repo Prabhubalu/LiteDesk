@@ -52,6 +52,7 @@
           :preview-record-id="previewRecordId"
           :preview-record-label="previewRecordLabel"
           :currency-display="currencyDisplay"
+          :is-default="isDefaultTemplate"
           :layer-tree="layerTree"
           :editor="editor"
           :page-margins="pageMarginsMm"
@@ -67,6 +68,7 @@
           @update-module-scope="handleModuleScopeChange"
           @update-page-settings="handlePageSettingsChange"
           @update-currency-display="handleCurrencyDisplayChange"
+          @update-is-default="handleIsDefaultChange"
           @update:preview-record-id="handlePreviewRecordIdChange"
           @update:preview-record-label="handlePreviewRecordLabelChange"
           @toggle-open="leftPanelOpen = !leftPanelOpen"
@@ -112,6 +114,7 @@
           :preview-record-id="previewRecordId"
           :preview-record-label="previewRecordLabel"
           :currency-display="currencyDisplay"
+          :is-default="isDefaultTemplate"
           :editor="editor"
           :page-margins="pageMarginsMm"
           :output-format="outputFormat"
@@ -123,6 +126,7 @@
           @update-module-scope="handleModuleScopeChange"
           @update-page-settings="handlePageSettingsChange"
           @update-currency-display="handleCurrencyDisplayChange"
+          @update-is-default="handleIsDefaultChange"
           @update:preview-record-id="handlePreviewRecordIdChange"
           @update:preview-record-label="handlePreviewRecordLabelChange"
           @insert-image="insertImage"
@@ -229,6 +233,7 @@ import {
   copyTextToClipboard,
   downloadTextFile,
   getEmailHtmlParts,
+  isFullHtmlDocument,
   parseTemplateHtmlDocumentForCanvas,
   slugifyFilename
 } from '../utils/emailHtmlExport';
@@ -259,6 +264,17 @@ const htmlSyncing = ref(false);
 const canvasContentRevision = ref(0);
 let lastAppliedHtmlSource = '';
 const templateId = computed(() => String(route.params.id || ''));
+
+/** Prefer route id; fall back to loaded meta only when route is empty (tab/route races). */
+function resolveRenderTemplateId() {
+  const routeId = String(templateId.value || '').trim();
+  const metaId = String(templateMeta.value?._id || '').trim();
+  const id = (routeId && routeId !== 'undefined' && routeId !== 'null')
+    ? routeId
+    : metaId;
+  if (!id || id === 'undefined' || id === 'null') return '';
+  return id;
+}
 
 const {
   templateMeta,
@@ -327,6 +343,7 @@ const pageMarginsMm = computed(() =>
 );
 
 const moduleScope = computed(() => String(templateMeta.value?.moduleScope || ''));
+const isDefaultTemplate = computed(() => templateMeta.value?.isDefault === true);
 
 const assetLibrary = computed(() => {
   const meta = templateMeta.value || {};
@@ -463,9 +480,53 @@ const currentTemplateDocument = computed(() => {
 
 const currentEmailDocument = computed(() => currentTemplateDocument.value);
 
+function htmlBodyLooksEmpty(html) {
+  const text = String(html || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length < 2;
+}
+
+function wrapPreviewHtmlDocument(rawHtml, css = '') {
+  const source = String(rawHtml || '').trim();
+  if (!source) return '';
+  if (isFullHtmlDocument(source)) return source;
+  const styleBlock = String(css || '').trim()
+    ? `<style>\n${css}\n</style>\n`
+    : '';
+  return `<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8" />\n${styleBlock}</head>\n<body>\n${source}\n</body>\n</html>`;
+}
+
+/** Prefer pasted/imported HTML, then canvas export — used when server preview is empty. */
+function resolveLocalPreviewHtml() {
+  const snapshotHtml = String(importSnapshot.value?.html || '').trim();
+  const snapshotCss = String(importSnapshot.value?.css || '').trim();
+  if (snapshotHtml && !htmlBodyLooksEmpty(snapshotHtml)) {
+    return wrapPreviewHtmlDocument(snapshotHtml, snapshotCss);
+  }
+
+  const editorHtml = String(htmlEditorContent.value || '').trim();
+  if (editorHtml && !htmlBodyLooksEmpty(editorHtml)) {
+    return wrapPreviewHtmlDocument(editorHtml);
+  }
+
+  const canvasHtml = String(currentTemplateDocument.value || '').trim();
+  if (canvasHtml && !htmlBodyLooksEmpty(canvasHtml)) {
+    return canvasHtml;
+  }
+  return '';
+}
+
 const workspacePreviewHtml = computed(() => {
   void canvasContentRevision.value;
-  const raw = serverPreviewHtml.value || currentTemplateDocument.value;
+  const serverHtml = String(serverPreviewHtml.value || '');
+  const raw = (!serverHtml || htmlBodyLooksEmpty(serverHtml))
+    ? resolveLocalPreviewHtml()
+    : serverHtml;
   const fallbackLogoUrl = resolveLogoPreviewUrl(
     companyLogoAssetUrl(),
     organizationLogoUrl.value
@@ -478,17 +539,40 @@ let previewRefreshTimer = null;
 
 function buildPreviewRenderOptions() {
   const meta = templateMeta.value;
-  let jsonDefinition = serializeProject();
-  if (isEmailFormat.value && importSnapshot.value?.html?.trim()) {
-    jsonDefinition = attachImportSnapshot(
-      {
-        ...jsonDefinition,
-        html: preserveEmailHtml(jsonDefinition.html, importSnapshot.value.html),
-        css: preserveEmailCss(jsonDefinition.css, importSnapshot.value.css),
-        project: null
-      },
-      importSnapshot.value
-    );
+  // Use snapshot-aware serialize so PDF HTML paste is not lost to a flat canvas export.
+  let jsonDefinition = serializeProjectWithSnapshot();
+  const snapshot = importSnapshot.value;
+  if (snapshot?.html?.trim()) {
+    const nextHtml = String(jsonDefinition.html || '');
+    if (
+      !emailHtmlLooksStructured(nextHtml)
+      || htmlBodyLooksEmpty(nextHtml)
+      || (
+        emailHtmlLooksStructured(snapshot.html)
+        && String(snapshot.html).trim().length > 400
+        && nextHtml.trim().length < Math.floor(String(snapshot.html).trim().length * 0.5)
+      )
+    ) {
+      jsonDefinition = attachImportSnapshot(
+        {
+          ...createBlankGrapesDefinition(),
+          html: snapshot.html,
+          css: String(snapshot.css || jsonDefinition.css || ''),
+          project: null
+        },
+        snapshot
+      );
+    } else if (isEmailFormat.value) {
+      jsonDefinition = attachImportSnapshot(
+        {
+          ...jsonDefinition,
+          html: preserveEmailHtml(jsonDefinition.html, snapshot.html),
+          css: preserveEmailCss(jsonDefinition.css, snapshot.css),
+          project: null
+        },
+        snapshot
+      );
+    }
   }
   return {
     recordModuleKey: moduleScope.value || meta?.moduleScope,
@@ -554,10 +638,9 @@ function resyncHtmlEditorFromCanvas({ force = false } = {}) {
   const current = String(htmlEditorContent.value || '').trim();
   const nextTrimmed = String(next || '').trim();
   // Grapes canvas export can briefly be empty/flat after paste — never clobber the editor
-  // unless the caller explicitly wants Design → HTML sync after canvas edits.
+  // with a flattened document when the HTML tab still has structured source.
   if (
     !force
-    && isEmailFormat.value
     && current
     && (
       !nextTrimmed
@@ -574,7 +657,8 @@ function resyncHtmlEditorFromCanvas({ force = false } = {}) {
 }
 
 function refreshHtmlEditorFromCanvas() {
-  resyncHtmlEditorFromCanvas({ force: true });
+  // Soft sync: preserve pasted/imported HTML when canvas export looks flattened.
+  resyncHtmlEditorFromCanvas({ force: false });
 }
 
 function onHtmlEditorEdit() {
@@ -583,7 +667,9 @@ function onHtmlEditorEdit() {
 }
 
 function buildEmailDefinitionFromRawHtml(rawHtml, reason = 'html-edit') {
-  const parsed = parseTemplateHtmlDocumentForCanvas(String(rawHtml || ''), { isEmail: true });
+  const parsed = parseTemplateHtmlDocumentForCanvas(String(rawHtml || ''), {
+    isEmail: isEmailFormat.value
+  });
   const definition = {
     ...createBlankGrapesDefinition(),
     html: String(parsed.html || ''),
@@ -620,18 +706,31 @@ function applyHtmlEditorToCanvas(rawHtml = htmlEditorContent.value, resyncEditor
 
   htmlSyncing.value = true;
   try {
-    if (isEmailFormat.value) {
-      const toSave = buildEmailDefinitionFromRawHtml(source, 'html-edit');
-      if (toSave) {
-        importSnapshot.value = readImportSnapshot(toSave);
-        seedLastGoodDefinition(toSave);
-      }
+    const toSave = buildEmailDefinitionFromRawHtml(source, 'html-edit');
+    if (toSave) {
+      importSnapshot.value = readImportSnapshot(toSave);
+      seedLastGoodDefinition(toSave);
     }
     applyTemplateHtmlDocument(source);
-    lastAppliedHtmlSource = source;
+    // Persist normalized CSS/HTML (e.g. 210mm → 100%) so refresh cannot reintroduce overflow.
+    if (!isEmailFormat.value && toSave) {
+      const normalizedDoc = wrapPreviewHtmlDocument(
+        String(toSave.html || ''),
+        String(toSave.css || '')
+      );
+      if (normalizedDoc.trim()) {
+        htmlEditorContent.value = normalizedDoc;
+        lastAppliedHtmlSource = normalizedDoc.trim();
+      } else {
+        lastAppliedHtmlSource = source;
+      }
+    } else {
+      lastAppliedHtmlSource = source;
+    }
     htmlEditorDirty.value = false;
     markDirty();
-    if (resyncEditor && !isEmailFormat.value) {
+    // Never resync HTML from canvas immediately after paste — export can lag/flatten.
+    if (resyncEditor && !isEmailFormat.value && !importSnapshot.value?.html?.trim()) {
       resyncHtmlEditorFromCanvas();
     }
     return true;
@@ -660,7 +759,8 @@ async function flushHtmlEditorToCanvas() {
     }
     return;
   }
-  applyHtmlEditorToCanvas(htmlEditorContent.value, true);
+  // Keep HTML tab source of truth after paste; do not re-export from canvas.
+  applyHtmlEditorToCanvas(htmlEditorContent.value, false);
 }
 
 async function ensureHtmlEditorAppliedToCanvas() {
@@ -683,7 +783,50 @@ function serializeProjectWithSnapshot() {
   }
   const definition = serializeProject();
   if (!isEmailFormat.value) {
-    return attachImportSnapshot(definition, importSnapshot.value);
+    const prev = importSnapshot.value;
+    // Prefer live canvas when it still has structure. Never reload a snapshot that
+    // still carries browser-preview A4 mm widths (those overflow the print area).
+    const snapCss = String(prev?.css || '');
+    const snapHasFixedPageBox = /width\s*:\s*210mm/i.test(snapCss)
+      || /height\s*:\s*297mm/i.test(snapCss)
+      || /width\s*:\s*8\.5in/i.test(snapCss);
+    if (
+      prev?.html?.trim()
+      && !snapHasFixedPageBox
+      && emailHtmlLooksStructured(prev.html)
+      && (
+        !emailHtmlLooksStructured(String(definition.html || ''))
+        || (
+          String(prev.html).trim().length > 400
+          && String(definition.html || '').trim().length < Math.floor(String(prev.html).trim().length * 0.5)
+        )
+      )
+    ) {
+      return attachImportSnapshot(
+        {
+          ...createBlankGrapesDefinition(),
+          html: prev.html,
+          css: String(prev.css || definition.css || ''),
+          project: null
+        },
+        prev
+      );
+    }
+    // Keep snapshot in sync with normalized CSS so refresh cannot reintroduce 210mm.
+    if (prev?.html?.trim() && snapHasFixedPageBox) {
+      const normalized = parseTemplateHtmlDocumentForCanvas(
+        wrapPreviewHtmlDocument(prev.html, prev.css),
+        { isEmail: false }
+      );
+      const nextSnap = buildSnapshotFromParts(
+        normalized.html || prev.html,
+        normalized.css || prev.css,
+        prev.reason || 'html-edit'
+      );
+      importSnapshot.value = nextSnap;
+      return attachImportSnapshot(definition, nextSnap);
+    }
+    return attachImportSnapshot(definition, prev);
   }
 
   const prev = importSnapshot.value;
@@ -784,9 +927,15 @@ watch(
   }
 );
 
-watch(templateId, () => {
+watch(templateId, async (id, prevId) => {
   projectLoadedFor.value = '';
   importSnapshot.value = null;
+  if (!id || id === prevId) return;
+  try {
+    await loadTemplate();
+  } catch (error) {
+    notifications.error(error?.message || t('templates.loadFailed'));
+  }
 });
 
 watch(
@@ -1011,7 +1160,25 @@ async function handleDescriptionChange(description) {
 async function handleModuleScopeChange(nextScope) {
   if (!templateMeta.value) return;
   try {
-    await patchTemplateMetadata({ moduleScope: String(nextScope || '') });
+    const scope = String(nextScope || '');
+    const patch: { moduleScope: string; isDefault?: boolean } = { moduleScope: scope };
+    if (!scope && templateMeta.value.isDefault) {
+      patch.isDefault = false;
+    }
+    await patchTemplateMetadata(patch);
+  } catch (error) {
+    notifications.error(error?.message || t('templates.builderSaveStatusError'));
+  }
+}
+
+async function handleIsDefaultChange(next) {
+  if (!templateMeta.value) return;
+  if (next && !moduleScope.value) {
+    notifications.error(t('templates.setAsDefaultNeedsModule'));
+    return;
+  }
+  try {
+    await patchTemplateMetadata({ isDefault: Boolean(next) });
   } catch (error) {
     notifications.error(error?.message || t('templates.builderSaveStatusError'));
   }
@@ -1040,23 +1207,31 @@ function setWorkspaceView(view) {
 }
 
 async function refreshWorkspaceHtmlPreview() {
-  if (!editor.value || !supportsWorkspaceHtmlPreview()) return;
+  if (!supportsWorkspaceHtmlPreview()) return;
+
+  const localHtml = resolveLocalPreviewHtml();
 
   if (previewRecordId.value && !moduleScope.value) {
     notifications.error(t('templates.builderDataSelectModule'));
     return;
   }
 
+  const id = resolveRenderTemplateId();
+  if (!id || !editor.value) {
+    // Unsaved / no canvas yet — still show pasted HTML in the preview pane.
+    serverPreviewHtml.value = localHtml;
+    return;
+  }
+
   setPreviewBusy(true);
   try {
-    // Render uses the in-memory jsonDefinition from buildPreviewRenderOptions.
-    // Do not force-save here — canvas serialize races were wiping imported email HTML.
-    if (!isEmailFormat.value) {
-      await saveDraft({ force: true });
-    }
-    serverPreviewHtml.value = await renderTemplateHtml(templateId.value, buildPreviewRenderOptions());
+    const html = await renderTemplateHtml(id, buildPreviewRenderOptions());
+    serverPreviewHtml.value = htmlBodyLooksEmpty(html) ? localHtml : html;
   } catch (error) {
-    notifications.error(error?.message || t('templates.renderFailed'));
+    serverPreviewHtml.value = localHtml;
+    if (!localHtml) {
+      notifications.error(error?.message || t('templates.renderFailed'));
+    }
   } finally {
     setPreviewBusy(false);
   }
@@ -1068,6 +1243,9 @@ async function openWorkspacePdfPreview() {
   const format = String(outputFormat.value || 'pdf').toLowerCase();
   if (format !== 'pdf') return;
 
+  const id = resolveRenderTemplateId();
+  if (!id) return;
+
   if (previewRecordId.value && !moduleScope.value) {
     notifications.error(t('templates.builderDataSelectModule'));
     return;
@@ -1075,8 +1253,10 @@ async function openWorkspacePdfPreview() {
 
   pdfPreviewBusy.value = true;
   try {
-    await saveDraft({ force: true });
-    await previewTemplatePdf(templateId.value, buildPreviewRenderOptions());
+    // Prefer in-memory definition for preview — avoid serialize/save races collapsing tables.
+    const renderId = resolveRenderTemplateId();
+    if (!renderId) return;
+    await previewTemplatePdf(renderId, buildPreviewRenderOptions());
   } catch (error) {
     notifications.error(error?.message || t('templates.renderFailed'));
   } finally {

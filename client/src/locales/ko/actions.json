@@ -106,5 +106,9 @@
   "reset": {
     "message": "Reset",
     "description": "Revert form fields to the last saved values"
+  },
+  "print": {
+    "message": "Print",
+    "description": "Open print preview for the current record"
   }
 }

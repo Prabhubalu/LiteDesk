@@ -55,8 +55,9 @@ export function applyHtmlToEditorCanvas(
     if (wrapper) {
       hydrateEditableTextComponents(wrapper);
     }
-    // Email layout tables are not spreadsheet cells — PDF sheet hydrate/repaint
-    // flattens nested HTML (buttons, promo blocks) into plain text.
+    // Sheet hydrate/repaint flattens nested layout HTML inside <td> into plain text.
+    // Only run for simple sheet cells; layout tables from HTML paste must be skipped
+    // (cellHasNestedLayout guards inside hydrate/repaint).
     if (!isEmail) {
       hydrateTableCellsFromDom(editor);
       refreshCanvasTablesAfterHtmlApply(editor);

@@ -107,6 +107,34 @@
     "message": "Any module",
     "description": "No module scope selected"
   },
+  "setAsDefault": {
+    "message": "Set as default for this module",
+    "description": "Action to mark template as the module default"
+  },
+  "setAsDefaultHint": {
+    "message": "Only one default is allowed per module and type (print or email).",
+    "description": "Hint under the default checkbox"
+  },
+  "setAsDefaultNeedsModule": {
+    "message": "Select a module scope before setting a default template.",
+    "description": "Error when setting default without module scope"
+  },
+  "setAsDefaultSuccess": {
+    "message": "Template set as module default.",
+    "description": "Success toast after setting default"
+  },
+  "clearDefault": {
+    "message": "Remove as default",
+    "description": "Action to clear module default flag"
+  },
+  "clearDefaultSuccess": {
+    "message": "Default flag removed.",
+    "description": "Success toast after clearing default"
+  },
+  "defaultBadge": {
+    "message": "Default",
+    "description": "Badge label for the module default template"
+  },
   "formatEmail": {
     "message": "Email",
     "description": "Email output format option"

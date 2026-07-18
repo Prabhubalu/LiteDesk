@@ -37,6 +37,26 @@
         :disabled="moduleOptionsLoading"
         @update:model-value="emit('update:module-scope', $event)"
       />
+      <label
+        v-if="moduleScope"
+        class="mt-3 flex cursor-pointer items-start gap-2"
+      >
+        <input
+          type="checkbox"
+          class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          :checked="isDefault"
+          @change="emit('update:is-default', $event.target.checked)"
+        />
+        <span class="text-sm text-neutral-800 dark:text-neutral-200">
+          {{ t('templates.setAsDefault') }}
+          <span class="mt-0.5 block text-xs" :class="ui.textMuted">
+            {{ t('templates.setAsDefaultHint') }}
+          </span>
+        </span>
+      </label>
+      <p v-else class="mt-2 text-xs" :class="ui.textMuted">
+        {{ t('templates.setAsDefaultNeedsModule') }}
+      </p>
     </BuilderDisclosureSection>
 
     <BuilderDisclosureSection :title="t('templates.builderCurrencyDisplay')">
@@ -114,7 +134,8 @@ const props = defineProps({
   previewRecordId: { type: String, default: '' },
   previewRecordLabel: { type: String, default: '' },
   currencyDisplay: { type: String, default: 'code' },
-  outputFormat: { type: String, default: 'pdf' }
+  outputFormat: { type: String, default: 'pdf' },
+  isDefault: { type: Boolean, default: false }
 });
 
 const emit = defineEmits([
@@ -125,7 +146,8 @@ const emit = defineEmits([
   'update:margins',
   'update:preview-record-id',
   'update:preview-record-label',
-  'update:currency-display'
+  'update:currency-display',
+  'update:is-default'
 ]);
 
 const { t } = useI18n();

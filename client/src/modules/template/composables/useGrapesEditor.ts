@@ -274,7 +274,8 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
     if (!editor.value) return;
     suppressDirty = true;
     loadDefinition(editor.value, definition, {
-      isEmail: options.outputFormat?.value === 'email'
+      isEmail: options.outputFormat?.value === 'email',
+      pageLayout: resolvePageLayout()
     });
     // Keep dirty suppressed until after Grapes finishes applying HTML/project
     // (may be deferred via canvas `load`). Early clear caused empty autosaves.
@@ -282,8 +283,11 @@ export function useGrapesEditor(options: UseGrapesEditorOptions) {
       syncPageDimensions();
       refreshLayerTree();
       requestAnimationFrame(() => {
+        // Project load finishes in a microtask after loadDefinition — re-fit print area.
+        syncPageDimensions();
         refreshLayerTree();
         requestAnimationFrame(() => {
+          syncPageDimensions();
           suppressDirty = false;
         });
       });

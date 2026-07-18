@@ -51,6 +51,53 @@ function cellHasVisibleContent(text: string): boolean {
   );
 }
 
+const NESTED_LAYOUT_SELECTOR =
+  'table,div,p,img,ul,ol,h1,h2,h3,h4,h5,h6,section,article,header,footer,figure,blockquote,pre';
+
+const NESTED_LAYOUT_TAGS = new Set([
+  'table',
+  'div',
+  'p',
+  'img',
+  'ul',
+  'ol',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'section',
+  'article',
+  'header',
+  'footer',
+  'figure',
+  'blockquote',
+  'pre'
+]);
+
+/** True when a cell holds layout HTML (not a flat sheet text cell). */
+export function cellHasNestedLayout(cell: Component): boolean {
+  const el = cell.view?.el;
+  if (el instanceof HTMLElement && el.querySelector(NESTED_LAYOUT_SELECTOR)) {
+    return true;
+  }
+
+  const children = cell.components();
+  for (let i = 0; i < children.length; i += 1) {
+    const child = children.at(i);
+    if (!child) continue;
+    const tag = String(child.get('tagName') || '').toLowerCase();
+    if (!tag || tag === 'br') continue;
+    if (NESTED_LAYOUT_TAGS.has(tag)) return true;
+    if (tag === 'a' || tag === 'button') return true;
+    if (child.components().length > 0 && !['span', 'font', 'b', 'i', 'u', 'strong', 'em'].includes(tag)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function isTableComponent(component: Component | null | undefined): boolean {
   if (!component) return false;
   if (String(component.get('tagName') || '').toLowerCase() !== 'table') return false;
@@ -503,6 +550,8 @@ export function syncTableCellsForSerialize(
   const visit = (component: Component) => {
     if (isTableCellComponent(component)) {
       if (skipComponent && component === skipComponent) return;
+      // Never flatten pasted/layout HTML inside cells into sheet text tokens.
+      if (cellHasNestedLayout(component)) return;
       writeCellText(component, readCellText(component));
     }
     component.components().forEach(visit);
@@ -517,8 +566,10 @@ export function hydrateTableCellsFromDom(editor: Editor): void {
 
   const visit = (component: Component) => {
     if (isTableCellComponent(component)) {
+      if (cellHasNestedLayout(component)) return;
       const el = component.view?.el;
       if (el instanceof HTMLElement) {
+        if (el.querySelector(NESTED_LAYOUT_SELECTOR)) return;
         const tokens = elementToMergeTokens(el);
         if (cellHasVisibleContent(tokens)) {
           writeCellText(component, tokens);
@@ -531,6 +582,7 @@ export function hydrateTableCellsFromDom(editor: Editor): void {
 }
 
 export function writeCellText(cell: Component, html: string): void {
+  if (cellHasNestedLayout(cell)) return;
   const tokens = chipHtmlToMergeTokens(html);
   clearTableCellChildren(cell);
   cell.set('content', cellHasVisibleContent(tokens) ? tokens : '&nbsp;');
@@ -538,6 +590,7 @@ export function writeCellText(cell: Component, html: string): void {
 }
 
 export function paintTableCellContent(cell: Component): void {
+  if (cellHasNestedLayout(cell)) return;
   const el = cell.view?.el as HTMLElement | undefined;
   if (!el || el.classList.contains('arivu-sheet-cell-editing')) return;
 

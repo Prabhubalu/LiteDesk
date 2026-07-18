@@ -129,6 +129,13 @@
             <PencilSquareIcon class="h-4 w-4" />
           </button>
 
+          <RecordPrintButton
+            v-if="caseRecord?._id"
+            variant="compact"
+            module-key="cases"
+            :record-id="String(caseRecord._id)"
+          />
+
           <Menu as="div" class="relative">
             <MenuButton
               class="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
@@ -380,6 +387,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import AiCaseProposePanel from '@/components/ai/AiCaseProposePanel.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import CaseSlaBadge from '@/components/cases/CaseSlaBadge.vue';

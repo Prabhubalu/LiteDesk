@@ -328,7 +328,13 @@
             </div>
 
             <p
-              v-if="hasPublishWebhookSecret"
+              v-if="publishWebhookSecretUnreadable"
+              class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100"
+            >
+              {{ t('settings.addonsArticlesWebhookSecretUnreadable') }}
+            </p>
+            <p
+              v-else-if="hasPublishWebhookSecret"
               class="text-xs text-emerald-700 dark:text-emerald-300"
             >
               {{ t('settings.addonsArticlesWebhookSecretConfigured') }}
@@ -715,6 +721,7 @@ const customerSiteSetupHint = computed(() => {
 const publishWebhookUrlManuallyEdited = ref(false);
 const suppressPublishWebhookAutoFill = ref(false);
 const hasPublishWebhookSecret = ref(false);
+const publishWebhookSecretUnreadable = ref(false);
 const generatedWebhookSecret = ref('');
 const webhookSecretGenerating = ref(false);
 let autoSaveTimer = null;
@@ -835,16 +842,18 @@ const staticSyncEndpoints = computed(() => {
 
 const staticSyncEnvTemplate = computed(() => {
   const siteOrigin = normalizeWebsiteOrigin(form.embedWebsiteDomain) || 'https://www.example.com';
+  const webhookSecret = String(generatedWebhookSecret.value || '').trim();
   const lines = [
     `ARIVU_ORG=${embedOrgKey.value || 'art_pub_xxx'}`,
     `ARIVU_API_ORIGIN=${embedOrigin.value}`,
     `HELP_URL_PREFIX=${normalizedEmbedPathPrefix.value}`,
     'ARIVU_SYNC_DEST=./public',
-    'ARIVU_WEBHOOK_SECRET=',
+    `ARIVU_WEBHOOK_SECRET=${webhookSecret}`,
     `SITE_ORIGIN=${siteOrigin}`,
   ];
   if (staticSyncHostType.value === 'next') {
-    lines.push('ARIVU_SYNC_MODE=static', 'VERCEL_DEPLOY_HOOK_URL=');
+    // Default curl install uses layout mode (ISR). Only set static when using standalone-html.
+    lines.push('ARIVU_SYNC_MODE=layout', 'VERCEL_DEPLOY_HOOK_URL=');
   }
   return lines.join('\n');
 });
@@ -959,13 +968,18 @@ const vercelInstallCommand = computed(() => {
   const origin = embedOrigin.value;
   const site = normalizeWebsiteOrigin(form.embedWebsiteDomain) || 'https://www.example.com';
   const prefix = normalizedEmbedPathPrefix.value;
-  return [
+  const webhookSecret = String(generatedWebhookSecret.value || '').trim();
+  const parts = [
     `curl -fsSL ${origin}/static-sync/arivu-help-install.mjs | node - install`,
     `--org=${org}`,
     `--api-origin=${origin}`,
     `--site-origin=${site}`,
     `--path-prefix=${prefix}`,
-  ].join(' \\\n  ');
+  ];
+  if (webhookSecret) {
+    parts.push(`--webhook-secret=${webhookSecret}`);
+  }
+  return parts.join(' \\\n  ');
 });
 
 const vercelCreateCommand = computed(() => {
@@ -973,13 +987,18 @@ const vercelCreateCommand = computed(() => {
   const origin = embedOrigin.value;
   const site = normalizeWebsiteOrigin(form.embedWebsiteDomain) || 'https://www.example.com';
   const prefix = normalizedEmbedPathPrefix.value;
-  return [
+  const webhookSecret = String(generatedWebhookSecret.value || '').trim();
+  const parts = [
     `curl -fsSL ${origin}/static-sync/arivu-help-install.mjs | node - create ./help-center`,
     `--org=${org}`,
     `--api-origin=${origin}`,
     `--site-origin=${site}`,
     `--path-prefix=${prefix}`,
-  ].join(' \\\n  ');
+  ];
+  if (webhookSecret) {
+    parts.push(`--webhook-secret=${webhookSecret}`);
+  }
+  return parts.join(' \\\n  ');
 });
 
 const resolvedIntegration = computed(() => integration);
@@ -1359,6 +1378,7 @@ function applySettings(res) {
   form.portalPublishing = settings.portalPublishing !== false;
   form.publishWebhookUrl = settings.publishing?.publishWebhookUrl || '';
   hasPublishWebhookSecret.value = Boolean(settings.publishing?.hasPublishWebhookSecret);
+  publishWebhookSecretUnreadable.value = Boolean(settings.publishing?.publishWebhookSecretUnreadable);
   form.headlessApiEnabled = settings.publishing?.headlessApiEnabled !== false;
   form.embedWebsiteDomain = settings.publishing?.embedWebsiteDomain || '';
   staticSyncHostType.value = normalizeStoredHostType(

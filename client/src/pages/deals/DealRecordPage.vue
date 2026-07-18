@@ -90,6 +90,11 @@
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
             </button>
+            <RecordPrintButton
+              v-if="deal?._id"
+              module-key="deals"
+              :record-id="String(deal._id)"
+            />
             <button
               type="button"
               :class="[
@@ -1335,6 +1340,7 @@ import {
   RecordRightPane,
   RecordTagPopover
 } from '@/components/record-page';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import ActivitySection from '@/components/activity/ActivitySection.vue';
 import DatePicker from '@/components/common/DatePicker.vue';
 import 'emoji-picker-element';

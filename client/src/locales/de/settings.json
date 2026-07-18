@@ -16666,5 +16666,13 @@
   "aiCustomAgentWebResearchHint": {
     "message": "Fetches the CRM record website (same host only) for research questions. Not arbitrary internet scraping.",
     "description": "Hint for web research capability"
+  },
+  "addonsArticlesWebhookSecretUnreadable": {
+    "message": "Stored webhook secret cannot be decrypted. Generate a new secret and set ARIVU_WEBHOOK_SECRET on your site to the same value.",
+    "description": "Warning when Articles encrypted webhook secret is unreadable"
+  },
+  "aiUsageColAgent": {
+    "message": "Agent",
+    "description": "AI audit table specialist agent column"
   }
 }

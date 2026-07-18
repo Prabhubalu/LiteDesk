@@ -21,3 +21,5 @@ export { default as EditableLabeledValue } from './EditableLabeledValue.vue';
 export { default as CommentInput } from './CommentInput.vue';
 export { default as CommentContent } from './CommentContent.vue';
 export { default as RecordTagPopover } from './RecordTagPopover.vue';
+export { default as RecordPrintButton } from './RecordPrintButton.vue';
+export { default as RecordPrintDrawer } from './RecordPrintDrawer.vue';

@@ -25,6 +25,12 @@
             >
               {{ template.moduleScope }}
             </span>
+            <span
+              v-if="template.isDefault"
+              class="inline-flex rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 text-emerald-700 dark:text-emerald-300"
+            >
+              {{ t('templates.defaultBadge') }}
+            </span>
             <span class="inline-flex rounded-full bg-gray-100 dark:bg-gray-800 px-2.5 py-1 uppercase text-gray-700 dark:text-gray-300">
               {{ template.outputFormat || 'pdf' }}
             </span>
@@ -39,6 +45,24 @@
             @click="openBuilder"
           >
             {{ t('templates.openBuilder') }}
+          </button>
+          <button
+            v-if="canEdit && template.moduleScope && !template.isDefault"
+            type="button"
+            class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm"
+            :disabled="defaultBusy"
+            @click="handleSetDefault(true)"
+          >
+            {{ defaultBusy ? t('states.loading') : t('templates.setAsDefault') }}
+          </button>
+          <button
+            v-if="canEdit && template.isDefault"
+            type="button"
+            class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm"
+            :disabled="defaultBusy"
+            @click="handleSetDefault(false)"
+          >
+            {{ defaultBusy ? t('states.loading') : t('templates.clearDefault') }}
           </button>
           <button
             v-if="canEdit"
@@ -224,6 +248,7 @@ const { activeTabId, updateTabTitle, findTabById } = useTabs();
 
 const {
   fetchTemplate,
+  updateTemplate,
   publishTemplate,
   archiveTemplate,
   deleteTemplate,
@@ -236,6 +261,7 @@ const {
 const loading = ref(true);
 const validateBusy = ref(false);
 const deleteBusy = ref(false);
+const defaultBusy = ref(false);
 const restoreBusy = ref(null);
 const renderBusy = ref(false);
 const template = ref(null);
@@ -326,6 +352,25 @@ async function handlePublish() {
       return;
     }
     notifications.error(error?.message || t('templates.loadFailed'));
+  }
+}
+
+async function handleSetDefault(isDefault) {
+  if (!templateId.value) return;
+  if (isDefault && !template.value?.moduleScope) {
+    notifications.error(t('templates.setAsDefaultNeedsModule'));
+    return;
+  }
+  defaultBusy.value = true;
+  try {
+    template.value = await updateTemplate(templateId.value, { isDefault: Boolean(isDefault) });
+    notifications.success(
+      isDefault ? t('templates.setAsDefaultSuccess') : t('templates.clearDefaultSuccess')
+    );
+  } catch (error) {
+    notifications.error(error?.message || t('templates.loadFailed'));
+  } finally {
+    defaultBusy.value = false;
   }
 }
 

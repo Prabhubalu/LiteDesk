@@ -21,6 +21,7 @@ export interface TemplateRecord {
     left?: number;
   };
   currencyDisplay?: 'code' | 'symbol';
+  isDefault?: boolean;
   draftDefinition?: GrapesTemplateDefinition | Record<string, unknown> | null;
 }
 
@@ -39,6 +40,7 @@ export interface TemplateMetadataPatch {
     left?: number;
   };
   currencyDisplay?: 'code' | 'symbol';
+  isDefault?: boolean;
 }
 
 export async function fetchTemplate(id: string): Promise<TemplateRecord> {
@@ -130,6 +132,14 @@ async function resolvePreviewBlob(
   return new Blob([blob], { type: contentType || mimeType });
 }
 
+function assertTemplateId(id: string): string {
+  const normalized = String(id || '').trim();
+  if (!normalized || normalized === 'undefined' || normalized === 'null') {
+    throw new Error('Template id is required');
+  }
+  return normalized;
+}
+
 export async function renderTemplateHtml(
   id: string,
   options: {
@@ -139,11 +149,12 @@ export async function renderTemplateHtml(
     pageSettings?: TemplateMetadataPatch;
   } = {}
 ): Promise<string> {
+  const templateId = assertTemplateId(id);
   const runtimeContext: Record<string, string> = {};
   if (options.recordId) runtimeContext.recordId = options.recordId;
   if (options.recordModuleKey) runtimeContext.recordModuleKey = options.recordModuleKey;
 
-  const response = await apiClient.post(`/templates/${id}/render`, {
+  const response = await apiClient.post(`/templates/${templateId}/render`, {
     outputFormat: 'html',
     preview: true,
     persistOutput: false,
@@ -185,11 +196,12 @@ export async function renderTemplatePdf(
     pageSettings?: TemplateMetadataPatch;
   } = {}
 ): Promise<Record<string, unknown>> {
+  const templateId = assertTemplateId(id);
   const runtimeContext: Record<string, string> = {};
   if (options.recordId) runtimeContext.recordId = options.recordId;
   if (options.recordModuleKey) runtimeContext.recordModuleKey = options.recordModuleKey;
 
-  const response = await apiClient.post(`/templates/${id}/render`, {
+  const response = await apiClient.post(`/templates/${templateId}/render`, {
     outputFormat: 'pdf',
     preview: true,
     persistOutput: false,

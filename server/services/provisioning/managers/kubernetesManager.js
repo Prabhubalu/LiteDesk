@@ -365,7 +365,8 @@ class KubernetesManager {
         namespace: namespace,
         annotations: {
           'cert-manager.io/cluster-issuer': 'letsencrypt-prod',
-          'nginx.ingress.kubernetes.io/ssl-redirect': 'true'
+          'nginx.ingress.kubernetes.io/ssl-redirect': 'true',
+          'nginx.ingress.kubernetes.io/proxy-body-size': '26m'
         }
       },
       spec: {

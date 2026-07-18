@@ -42,7 +42,7 @@ export function injectSupplementalCanvasCss(editor: Editor, css: string): void {
   }
 
   let styleEl = doc.getElementById(SUPPLEMENTAL_STYLE_ID);
-  const nextCss = String(css || '').trim();
+  const nextCss = clampOversizedCssWidthsForCanvas(String(css || '').trim());
 
   if (!nextCss) {
     styleEl?.remove();
@@ -58,6 +58,28 @@ export function injectSupplementalCanvasCss(editor: Editor, css: string): void {
   styleEl.textContent = nextCss;
   // Ensure WeakMap stays aligned with what is actually in the frame.
   supplementalCssByEditor.set(editor, nextCss);
+}
+
+/** Keep pasted CSS from forcing Design canvas wider than the print area. */
+function clampOversizedCssWidthsForCanvas(css: string): string {
+  if (!css) return '';
+  let next = css.replace(
+    /(^|;|{)\s*(min-width|max-width|width)\s*:\s*(\d+(?:\.\d+)?)px\s*(?=;|})/gi,
+    (full, prefix, prop, value) => {
+      const px = Number(value);
+      if (Number.isFinite(px) && px > 640) {
+        const nextProp = String(prop).toLowerCase() === 'min-width' ? 'max-width' : prop;
+        return `${prefix}${nextProp}: 100%`;
+      }
+      return full;
+    }
+  );
+  // A4 mm page boxes from browser-preview HTML.
+  next = next.replace(/(^|;|{)\s*width\s*:\s*210mm\s*(?=;|})/gi, '$1width: 100%');
+  next = next.replace(/(^|;|{)\s*height\s*:\s*297mm\s*(?=;|})/gi, '$1height: auto');
+  next = next.replace(/(^|;|{)\s*min-height\s*:\s*297mm\s*(?=;|})/gi, '$1min-height: 100%');
+  next = next.replace(/(^|;|{)\s*box-shadow\s*:\s*[^;{}]+(?=;|})/gi, '$1box-shadow: none');
+  return next;
 }
 
 function findMatchingBrace(source: string, openIndex: number): number {

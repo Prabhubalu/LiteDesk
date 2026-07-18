@@ -1787,6 +1787,10 @@
     "message": "Webhook signing is enabled. Arivu sends X-Arivu-Signature on each publish webhook.",
     "description": "Hint when Articles publish webhook secret exists"
   },
+  "addonsArticlesWebhookSecretUnreadable": {
+    "message": "Stored webhook secret cannot be decrypted. Generate a new secret and set ARIVU_WEBHOOK_SECRET on your site to the same value.",
+    "description": "Warning when Articles encrypted webhook secret is unreadable"
+  },
   "addonsArticlesWebhookSecretOnce": {
     "message": "Copy this secret now — it will not be shown again: {secret}",
     "description": "One-time display of generated Articles webhook secret"
@@ -4434,6 +4438,10 @@
   "aiUsageColAbility": {
     "message": "Ability",
     "description": "AI audit table ability column"
+  },
+  "aiUsageColAgent": {
+    "message": "Agent",
+    "description": "AI audit table specialist agent column"
   },
   "aiUsageColUser": {
     "message": "User",
