@@ -319,6 +319,78 @@
   background: color-mix(in srgb, var(--ld-border) 25%, transparent);
 }
 
+.ld-article__body .content-image-figure img,
+.ld-article__body .content-gallery img,
+.ld-article__body img.content-image {
+  cursor: zoom-in;
+}
+
+.cs-image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.cs-image-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: zoom-out;
+  background: rgba(15, 23, 42, 0.88);
+}
+
+.cs-image-lightbox__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cs-image-lightbox__close:hover,
+.cs-image-lightbox__close:focus-visible {
+  background: rgba(255, 255, 255, 0.22);
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.cs-image-lightbox__image {
+  position: relative;
+  z-index: 1;
+  max-width: min(96vw, 100%);
+  max-height: 92vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  cursor: default;
+}
+
+html.cs-image-lightbox--open {
+  overflow: hidden;
+}
+
 .ld-article__body img {
   max-width: 100%;
   height: auto;

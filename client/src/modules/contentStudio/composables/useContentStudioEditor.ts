@@ -8,6 +8,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import type { Editor } from '@tiptap/core';
+import { TextSelection } from '@tiptap/pm/state';
 import { applyBlockLayoutAttributes } from '../editor/blockLayout';
 import { isEditorInGallery } from '../editor/blockCommands';
 import { isEditorInTable } from '../editor/tableAttributes';
@@ -16,6 +17,10 @@ import { ContentStudioBlockAttributes } from '../editor/blockAttributesExtension
 import { ContentStudioAudio } from '../editor/audioExtension';
 import { ContentStudioEmbed } from '../editor/embedExtension';
 import { ContentStudioImage } from '../editor/imageExtension';
+import {
+  extractImageFileFromClipboard,
+  extractImageFileFromDataTransfer,
+} from '../editor/imageFileTransfer';
 import {
   ContentStudioFaq,
   ContentStudioFaqItem,
@@ -68,12 +73,15 @@ import type { ArticleComponentDefinition } from '../editor/articleComponents';
 import type { ArticleTemplateDefinition } from '../editor/articleTemplates';
 import type { ProseMirrorJson } from '../types/contentStudio';
 
+export type ContentStudioImageFileHandler = (file: File) => void | Promise<void>;
+
 interface UseContentStudioEditorOptions {
   placeholder: Ref<string> | string;
   imageCaptionPlaceholder?: Ref<string> | string;
   onUpdate?: (json: ProseMirrorJson) => void;
   onSelectionChange?: (editor: Editor) => void;
   imageUploadTrigger?: Ref<(() => void) | null>;
+  imageFileHandler?: Ref<ContentStudioImageFileHandler | null>;
   mediaInsertHandler?: Ref<MediaInsertRequestHandler | null>;
 }
 
@@ -151,6 +159,30 @@ export function useContentStudioEditor(options: UseContentStudioEditorOptions) {
     editorProps: {
       attributes: {
         class: 'content-studio-tiptap outline-none min-h-[320px]',
+      },
+      handlePaste: (_view, event) => {
+        const handler = options.imageFileHandler?.value;
+        if (!handler) return false;
+        const file = extractImageFileFromClipboard(event.clipboardData);
+        if (!file) return false;
+        event.preventDefault();
+        void handler(file);
+        return true;
+      },
+      handleDrop: (view, event, _slice, moved) => {
+        if (moved) return false;
+        const handler = options.imageFileHandler?.value;
+        if (!handler) return false;
+        const file = extractImageFileFromDataTransfer(event.dataTransfer);
+        if (!file) return false;
+        event.preventDefault();
+        const coords = view.posAtCoords({ left: event.clientX, top: event.clientY });
+        if (coords) {
+          const $pos = view.state.doc.resolve(coords.pos);
+          view.dispatch(view.state.tr.setSelection(TextSelection.near($pos)));
+        }
+        void handler(file);
+        return true;
       },
     },
     onUpdate: ({ editor: ed }) => {
