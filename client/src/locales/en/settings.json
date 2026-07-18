@@ -6615,6 +6615,38 @@
     "message": "Failed to reset password",
     "description": "Reset password failed"
   },
+  "editUserResendInvite": {
+    "message": "Resend invitation",
+    "description": "Resend invite section title"
+  },
+  "editUserResendInviteHint": {
+    "message": "Generate a new invite link and email it to this user",
+    "description": "Resend invite hint"
+  },
+  "editUserResendInviteAction": {
+    "message": "Resend",
+    "description": "Resend invite button"
+  },
+  "editUserResendingInvite": {
+    "message": "Sending...",
+    "description": "Resend invite in progress"
+  },
+  "editUserResendInviteConfirm": {
+    "message": "Resend the invitation email to this user?",
+    "description": "Resend invite confirm"
+  },
+  "editUserResendInviteSuccess": {
+    "message": "Invitation email resent successfully",
+    "description": "Resend invite success toast"
+  },
+  "editUserResendInviteEmailFailed": {
+    "message": "Invite was updated, but the email could not be sent",
+    "description": "Resend invite email delivery failed"
+  },
+  "editUserResendInviteFailed": {
+    "message": "Failed to resend invitation",
+    "description": "Resend invite failed toast"
+  },
   "editUserLoadAppsFailed": {
     "message": "Failed to load app access capabilities.",
     "description": "Load apps failed edit"

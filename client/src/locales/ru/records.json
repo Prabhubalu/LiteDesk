@@ -4038,5 +4038,9 @@
   "aiCollectionAgentFailed": {
     "message": "Could not generate collection proposals.",
     "description": "Collection agent error"
+  },
+  "linesAddSelected": {
+    "message": "Add selected ({count})",
+    "description": "Confirm button for multi-select product lookup on quote lines"
   }
 }

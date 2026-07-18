@@ -436,7 +436,34 @@
                           </div>
                         </div>
 
-                        <section class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-900/20">
+                        <section
+                          v-if="canResendInvite"
+                          class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20"
+                        >
+                          <div class="flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                              <p class="text-sm font-medium text-amber-900 dark:text-amber-300">
+                                {{ t('settings.editUserResendInvite') }}
+                              </p>
+                              <p class="mt-0.5 text-xs text-amber-700 dark:text-amber-400">
+                                {{ t('settings.editUserResendInviteHint') }}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              class="shrink-0 rounded-lg bg-amber-100 px-4 py-2 text-sm font-medium text-amber-800 transition-colors hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-amber-900/50 dark:text-amber-300 dark:hover:bg-amber-900/70"
+                              :disabled="resendingInvite"
+                              @click="resendInvite"
+                            >
+                              {{ resendingInvite ? t('settings.editUserResendingInvite') : t('settings.editUserResendInviteAction') }}
+                            </button>
+                          </div>
+                        </section>
+
+                        <section
+                          v-if="!canResendInvite"
+                          class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-900/20"
+                        >
                           <div class="flex items-center justify-between gap-4">
                             <div class="min-w-0">
                               <p class="text-sm font-medium text-blue-900 dark:text-blue-300">
@@ -601,6 +628,7 @@ const form = ref({
 
 const saving = ref(false);
 const error = ref('');
+const resendingInvite = ref(false);
 const availableRoles = ref([]);
 const capabilities = ref([]);
 const loadingCapabilities = ref(false);
@@ -628,6 +656,11 @@ const canManagePortalRoles = computed(() =>
     authStore.isAdminLike || authStore.can('settings', 'manageUsers')
   )
 );
+
+const canResendInvite = computed(() => {
+  if (!props.user || props.user.isOwner) return false;
+  return ['invited', 'inactive'].includes(props.user.status);
+});
 
 const peopleRecordLink = computed(() =>
   peopleId.value ? { name: 'person-detail', params: { id: peopleId.value } } : null
@@ -1127,6 +1160,31 @@ const resetPassword = async () => {
   } catch (err) {
     console.error('Error resetting password:', err);
     notifyError(t('settings.editUserResetFailed'));
+  }
+};
+
+const resendInvite = async () => {
+  if (!confirm(t('settings.editUserResendInviteConfirm'))) return;
+
+  resendingInvite.value = true;
+  try {
+    const response = await apiClient.post(`/users/${props.user._id}/resend-invite`);
+
+    if (response.success) {
+      if (response.data?.emailSent) {
+        notifySuccess(t('settings.editUserResendInviteSuccess'));
+      } else {
+        notifyError(response.data?.emailError || t('settings.editUserResendInviteEmailFailed'));
+      }
+      emit('user-updated');
+    } else {
+      notifyError(response.message || t('settings.editUserResendInviteFailed'));
+    }
+  } catch (err) {
+    console.error('Error resending invite:', err);
+    notifyError(err.message || t('settings.editUserResendInviteFailed'));
+  } finally {
+    resendingInvite.value = false;
   }
 };
 
