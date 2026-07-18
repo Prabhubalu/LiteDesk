@@ -142,7 +142,7 @@ const props = defineProps<{
   visual: InAppAiVisual;
 }>();
 
-function progressPct(item: { value?: number; max?: number }) {
+function progressPct(item: { value?: string | number; max?: number }) {
   const max = Number(item.max) > 0
     ? Number(item.max)
     : (props.visual.items || []).reduce((s, it) => s + (Number(it.value) || 0), 0) || 1;
