@@ -329,7 +329,9 @@ async function loadTemplate() {
     }
   } catch (error) {
     template.value = null;
-    notifications.error(error?.message || t('templates.loadFailed'));
+    if (!error?.is404 && error?.status !== 404) {
+      notifications.error(t('templates.loadFailed'));
+    }
   } finally {
     loading.value = false;
   }

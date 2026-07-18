@@ -56,10 +56,10 @@ onMounted(async () => {
   try {
     const url = getApiUrlForFetch(`/api/auth/verify-email/confirm?token=${encodeURIComponent(token)}`);
     const response = await fetch(url, { headers: { Accept: 'application/json' } });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     success.value = response.ok && data.success;
     if (!success.value) {
-      errorMessage.value = data.message || t('auth.verifyEmailFailedBody');
+      errorMessage.value = data.message || data.error || t('auth.verifyEmailFailedBody');
     }
   } catch (_error) {
     errorMessage.value = t('auth.verifyEmailFailedBody');

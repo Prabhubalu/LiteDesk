@@ -346,6 +346,7 @@
                     />
                     <input
                       :data-quote-draft-search="block.key"
+                      :ref="(el) => registerDraftSearchInput(block.key, el)"
                       v-model="draftRow(block).searchQuery"
                       type="search"
                       :class="lineInlineSearchInputClass"
@@ -357,39 +358,43 @@
                       @blur="onDraftSearchBlur(block)"
                       @keydown="onDraftSearchKeydown(block, $event)"
                     />
-                    <ul
-                      v-if="draftRow(block).searchOpen"
-                      class="absolute left-0 z-30 mt-1 w-full min-w-[16rem] max-h-52 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10"
-                    >
-                      <li
-                        v-if="draftSearchDropdownLabel(block)"
-                        class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                    <Teleport to="body">
+                      <ul
+                        v-if="draftRow(block).searchOpen"
+                        :style="draftSearchMenuStyle(block)"
+                        class="fixed z-[10050] min-w-[16rem] overflow-y-auto rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+                        @mousedown.prevent
                       >
-                        {{ draftSearchDropdownLabel(block) }}
-                      </li>
-                      <li
-                        v-if="draftRow(block).searchLoading"
-                        class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
-                      >
-                        {{ t('states.loading') }}
-                      </li>
-                      <li
-                        v-else-if="!draftRow(block).searchResults.length"
-                        class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
-                      >
-                        {{ t('records.linesNoVariantsFound') }}
-                      </li>
-                      <li
-                        v-for="(hit, hitIdx) in draftRow(block).searchResults"
-                        :key="hit._id"
-                        class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-                        :class="hitIdx === draftRow(block).searchHighlight ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''"
-                        @mousedown.prevent="commitDraftFromHit(block, hit)"
-                      >
-                        <span class="text-gray-900 dark:text-white">{{ hit.item_name || hit.variant_code }}</span>
-                        <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
-                      </li>
-                    </ul>
+                        <li
+                          v-if="draftSearchDropdownLabel(block)"
+                          class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                        >
+                          {{ draftSearchDropdownLabel(block) }}
+                        </li>
+                        <li
+                          v-if="draftRow(block).searchLoading"
+                          class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          {{ t('states.loading') }}
+                        </li>
+                        <li
+                          v-else-if="!draftRow(block).searchResults.length"
+                          class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          {{ t('records.linesNoVariantsFound') }}
+                        </li>
+                        <li
+                          v-for="(hit, hitIdx) in draftRow(block).searchResults"
+                          :key="hit._id"
+                          class="cursor-pointer px-3 py-2 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                          :class="hitIdx === draftRow(block).searchHighlight ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''"
+                          @mousedown.prevent="commitDraftFromHit(block, hit)"
+                        >
+                          <span class="text-gray-900 dark:text-white">{{ hit.item_name || hit.variant_code }}</span>
+                          <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
+                        </li>
+                      </ul>
+                    </Teleport>
                   </div>
                   <button
                     type="button"
@@ -731,6 +736,7 @@
           type="search"
           :class="lineFormControlClass"
           :placeholder="t('records.linesVariantSearchPlaceholder')"
+          :disabled="busy"
           @input="debouncedVariantSearch"
         />
         <ul class="flex-1 overflow-y-auto space-y-1 min-h-[120px]">
@@ -739,20 +745,40 @@
           <li
             v-for="hit in variantSearchResults"
             :key="hit._id"
-            class="px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-            @click="pickVariant(hit)"
+            class="flex items-start gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+            :class="isVariantPickerSelected(hit) ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''"
+            @click="toggleVariantPickerSelection(hit)"
           >
-            <span class="text-sm text-gray-900 dark:text-white">{{ hit.item_name || hit.variant_code }}</span>
-            <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
+            <input
+              type="checkbox"
+              class="mt-1 rounded pointer-events-none"
+              :checked="isVariantPickerSelected(hit)"
+              tabindex="-1"
+              :disabled="busy"
+              @click.stop
+            />
+            <span class="min-w-0 flex-1">
+              <span class="text-sm text-gray-900 dark:text-white">{{ hit.item_name || hit.variant_code }}</span>
+              <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
+            </span>
           </li>
         </ul>
-        <div class="flex justify-end">
+        <div class="flex justify-end gap-2">
           <button
             type="button"
             class="px-3 py-2 text-sm"
-            @click="showVariantPicker = false; variantPickerBlockKey = null"
+            :disabled="busy"
+            @click="closeVariantPicker"
           >
             {{ t('actions.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="px-3 py-2 text-sm rounded-md bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
+            :disabled="busy || !variantPickerSelectedCount"
+            @click="confirmVariantPickerSelection"
+          >
+            {{ t('records.linesAddSelected', { count: variantPickerSelectedCount }) }}
           </button>
         </div>
       </div>
@@ -779,7 +805,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   Bars3Icon,
@@ -973,6 +999,13 @@ function clearDraftRow(blockKey) {
   const next = { ...draftRowsMap.value };
   delete next[blockKey];
   draftRowsMap.value = next;
+}
+
+/** Keep the inline add row after a successful line add so the next product is one search away. */
+function resetDraftRowForNextAdd(block) {
+  if (!linesEditable.value || isReorderDragging.value || !block?.key) return;
+  draftRowsMap.value = { ...draftRowsMap.value, [block.key]: createDraftRowState() };
+  activeAddBlockKey.value = block.key;
 }
 
 function focusDraftSearch(block) {
@@ -1642,6 +1675,10 @@ const showVariantPicker = ref(false);
 const variantSearchQuery = ref('');
 const variantSearchResults = ref([]);
 const variantSearchLoading = ref(false);
+const variantPickerSelectedById = ref({});
+const variantPickerSelectedCount = computed(
+  () => Object.keys(variantPickerSelectedById.value).length
+);
 let variantSearchTimer;
 
 const showBundlePicker = ref(false);
@@ -1789,18 +1826,107 @@ watch(
   { immediate: true }
 );
 
+const DRAFT_SEARCH_MENU_MAX_H = 208; // max-h-52
+const draftSearchMenuRects = ref({});
+const draftSearchInputEls = {};
+
+function registerDraftSearchInput(key, el) {
+  const k = String(key || '');
+  if (!k) return;
+  if (el) draftSearchInputEls[k] = el;
+  else delete draftSearchInputEls[k];
+}
+
+function getDraftSearchInputEl(key) {
+  const k = String(key || '');
+  if (draftSearchInputEls[k]) return draftSearchInputEls[k];
+  const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(k) : k.replace(/"/g, '\\"');
+  return (
+    workspacePanelRef.value?.querySelector(`[data-quote-draft-search="${escaped}"]`) ||
+    document.querySelector(`[data-quote-draft-search="${escaped}"]`)
+  );
+}
+
+function syncDraftSearchMenuPosition(block) {
+  const key = String(block?.key || '');
+  if (!key) return;
+  const el = getDraftSearchInputEl(key);
+  if (!el?.getBoundingClientRect) return;
+  const r = el.getBoundingClientRect();
+  const gap = 4;
+  const viewportPadding = 8;
+  const spaceBelow = window.innerHeight - r.bottom - gap;
+  const spaceAbove = r.top - gap;
+  const openUp = spaceBelow < 120 && spaceAbove > spaceBelow;
+  const maxH = Math.min(
+    DRAFT_SEARCH_MENU_MAX_H,
+    Math.max(96, openUp ? spaceAbove : spaceBelow)
+  );
+  const width = Math.max(r.width, 256);
+  let left = r.left;
+  left = Math.max(viewportPadding, Math.min(left, window.innerWidth - width - viewportPadding));
+  draftSearchMenuRects.value = {
+    ...draftSearchMenuRects.value,
+    [key]: openUp
+      ? {
+          top: `${Math.max(gap, r.top - maxH - gap)}px`,
+          left: `${left}px`,
+          width: `${width}px`,
+          maxHeight: `${maxH}px`
+        }
+      : {
+          top: `${r.bottom + gap}px`,
+          left: `${left}px`,
+          width: `${width}px`,
+          maxHeight: `${maxH}px`
+        }
+  };
+}
+
+function draftSearchMenuStyle(block) {
+  const key = String(block?.key || '');
+  const rect = draftSearchMenuRects.value[key];
+  if (!rect) {
+    return { visibility: 'hidden', top: '0px', left: '0px' };
+  }
+  return {
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    maxHeight: rect.maxHeight,
+    visibility: 'visible'
+  };
+}
+
+function scheduleDraftSearchMenuPosition(block) {
+  syncDraftSearchMenuPosition(block);
+  nextTick(() => {
+    syncDraftSearchMenuPosition(block);
+    requestAnimationFrame(() => syncDraftSearchMenuPosition(block));
+  });
+}
+
+function syncOpenDraftSearchMenus() {
+  for (const block of displaySectionBlocks.value) {
+    const state = draftRow(block);
+    if (state?.searchOpen) syncDraftSearchMenuPosition(block);
+  }
+}
+
 function openDraftSearchWithRecent(block) {
   const state = draftRow(block);
   if (!state) return;
   if (state.searchQuery.trim()) {
     state.searchOpen = true;
+    scheduleDraftSearchMenuPosition(block);
     if (!state.searchResults.length) debouncedDraftSearch(block);
     return;
   }
   const recent = recentHitsForAdd();
   state.searchResults = recent;
-  state.searchOpen = recent.length > 0;
+  state.searchOpen = true;
   state.searchHighlight = -1;
+  scheduleDraftSearchMenuPosition(block);
 }
 
 function quoteSectionIdForBlockKey(blockKey) {
@@ -1809,11 +1935,33 @@ function quoteSectionIdForBlockKey(blockKey) {
   return blockSectionRef(block);
 }
 
+function closeVariantPicker() {
+  showVariantPicker.value = false;
+  variantPickerBlockKey.value = null;
+  variantPickerSelectedById.value = {};
+}
+
+function isVariantPickerSelected(hit) {
+  const id = String(hit?._id || '');
+  return Boolean(id && variantPickerSelectedById.value[id]);
+}
+
+function toggleVariantPickerSelection(hit) {
+  if (busy.value) return;
+  const id = String(hit?._id || '');
+  if (!id) return;
+  const next = { ...variantPickerSelectedById.value };
+  if (next[id]) delete next[id];
+  else next[id] = hit;
+  variantPickerSelectedById.value = next;
+}
+
 function openVariantPickerForDraft(block) {
   if (!linesEditable.value) return;
   if (!hasDraftRow(block.key)) startDraftRow(block);
   activeAddBlockKey.value = block?.key ?? '';
   variantPickerBlockKey.value = block?.key ?? null;
+  variantPickerSelectedById.value = {};
   const state = draftRow(block);
   showVariantPicker.value = true;
   variantSearchQuery.value = state?.searchQuery || '';
@@ -1835,6 +1983,7 @@ function onDraftSearchInput(block) {
   if (!state) return;
   state.searchOpen = true;
   state.searchHighlight = -1;
+  scheduleDraftSearchMenuPosition(block);
   debouncedDraftSearch(block);
 }
 
@@ -1852,6 +2001,7 @@ async function runDraftSearch(block) {
     state.searchOpen = state.searchResults.length > 0;
     state.searchLoading = false;
     state.searchHighlight = -1;
+    if (state.searchOpen) scheduleDraftSearchMenuPosition(block);
     return;
   }
   state.searchLoading = true;
@@ -1865,57 +2015,104 @@ async function runDraftSearch(block) {
     if (state.searchHighlight >= state.searchResults.length) {
       state.searchHighlight = state.searchResults.length ? 0 : -1;
     }
+    scheduleDraftSearchMenuPosition(block);
   } finally {
     state.searchLoading = false;
   }
 }
 
-async function commitDraftFromHit(block, hit) {
+async function addLineFromHit(block, hit) {
   const key = block?.key;
-  const state = draftRow(block);
   const variantId = String(hit?._id || '');
-  if (!state || !variantId || !linesEditable.value || !props.record?._id) return;
+  if (!key || !variantId || !linesEditable.value || !props.record?._id) return null;
   const commitKey = `${key}:${variantId}`;
-  if (state.committing || pendingDraftCommits.has(commitKey)) return;
+  if (pendingDraftCommits.has(commitKey)) return null;
   pendingDraftCommits.add(commitKey);
   recordRecentVariant(hit);
-  state.committing = true;
-  state.searchOpen = false;
   try {
     const res = await apiClient.post(`/quotes/${props.record._id}/lines`, {
-      variantId: variantId,
+      variantId,
       quantity: 1,
       priceBookId: selectedPriceBookId.value || null,
       quoteSectionId: blockSectionRef(block) || null,
       overridePricing: overrideLock.value === true
     });
     if (res?.success) {
-      clearDraftRow(key);
-      const line = res?.data?.line;
-      if (line) {
+      return { line: res?.data?.line || null, data: res.data };
+    }
+    notifications.error(res?.message || t('records.linesAddFailed'));
+    return null;
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesAddFailed'));
+    return null;
+  } finally {
+    pendingDraftCommits.delete(commitKey);
+  }
+}
+
+async function commitDraftFromHit(block, hit) {
+  const key = block?.key;
+  const state = draftRow(block);
+  if (!state || state.committing) return;
+  state.committing = true;
+  state.searchOpen = false;
+  try {
+    const result = await addLineFromHit(block, hit);
+    if (result) {
+      if (result.line) {
         emit('updated', {
           type: 'lines-added',
-          lines: [line],
-          ...mutationPayload(res.data)
+          lines: [result.line],
+          ...mutationPayload(result.data)
         });
       } else {
         await refresh();
       }
+      resetDraftRowForNextAdd(block);
     } else {
-      notifications.error(res?.message || t('records.linesAddFailed'));
       state.committing = false;
     }
   } catch (e) {
     notifications.error(e?.message || t('records.linesAddFailed'));
     state.committing = false;
+  }
+}
+
+async function confirmVariantPickerSelection() {
+  const blockKey = variantPickerBlockKey.value;
+  const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
+  const selected = Object.values(variantPickerSelectedById.value);
+  if (!block || !selected.length || busy.value) return;
+
+  busy.value = true;
+  try {
+    const added = [];
+    let lastData = null;
+    for (const hit of selected) {
+      const result = await addLineFromHit(block, hit);
+      if (result?.line) added.push(result.line);
+      if (result?.data) lastData = result.data;
+    }
+    closeVariantPicker();
+    if (added.length) {
+      emit('updated', {
+        type: 'lines-added',
+        lines: added,
+        ...mutationPayload(lastData)
+      });
+    } else if (selected.length) {
+      await refresh();
+    }
+    resetDraftRowForNextAdd(block);
   } finally {
-    pendingDraftCommits.delete(commitKey);
+    busy.value = false;
   }
 }
 
 function onDraftSearchFocus(block) {
   activeAddBlockKey.value = block?.key ?? '';
   openDraftSearchWithRecent(block);
+  scheduleDraftSearchMenuPosition(block);
 }
 
 function onDraftSearchBlur(block) {
@@ -1988,18 +2185,6 @@ async function runBundleSearch() {
   } finally {
     bundleSearchLoading.value = false;
   }
-}
-
-function pickVariant(hit) {
-  const blockKey = variantPickerBlockKey.value;
-  if (blockKey) {
-    const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
-    if (block) {
-      commitDraftFromHit(block, hit);
-    }
-  }
-  showVariantPicker.value = false;
-  variantPickerBlockKey.value = null;
 }
 
 const bundleOptionalModalTitle = computed(() => {
@@ -2176,7 +2361,9 @@ async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
     const components = Array.isArray(res?.data?.components) ? res.data.components : [];
     const addedLines = [parent, ...components].filter(Boolean);
     if (blockKey) {
-      clearDraftRow(blockKey);
+      const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
+      if (block) resetDraftRowForNextAdd(block);
+      else clearDraftRow(blockKey);
     }
     if (addedLines.length) {
       emit('updated', {
@@ -2338,11 +2525,15 @@ watch(workspacePanelRef, (el, prev) => {
 onMounted(() => {
   loadPriceBooks();
   bindWorkspaceKeydown(workspacePanelRef.value);
+  window.addEventListener('scroll', syncOpenDraftSearchMenus, true);
+  window.addEventListener('resize', syncOpenDraftSearchMenus);
 });
 
 onUnmounted(() => {
   document.body.classList.remove('quote-lines-reorder-active');
   unbindWorkspaceKeydown(workspacePanelRef.value);
+  window.removeEventListener('scroll', syncOpenDraftSearchMenus, true);
+  window.removeEventListener('resize', syncOpenDraftSearchMenus);
   clearQuoteLinesSession(quoteId.value);
 });
 

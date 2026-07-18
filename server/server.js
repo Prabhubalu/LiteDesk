@@ -715,6 +715,15 @@ app.get('/', (req, res) => {
   res.send('Arivu API is operational.');
 });
 
+// Unmatched API routes must return JSON (never Express HTML), so clients never toast
+// "Server returned non-JSON response (404): <!DOCTYPE html>...".
+app.use('/api', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Not found: ${req.method} ${req.originalUrl}`
+  });
+});
+
 // Sentry Express error handler: must be after all routes
 installExpressSentryErrorHandler(app);
 

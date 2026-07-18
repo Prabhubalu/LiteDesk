@@ -310,15 +310,14 @@ const apiClient = async (url, options = {}) => {
                     errorData = await clonedResponse.json();
                     errorMessage = errorData.message || errorMessage;
                 } catch (parseError) {
-                    // If response is not JSON (e.g., HTML error page), get text content
+                    // HTML/nginx error pages must never become user-facing toast text.
                     try {
                         const clonedResponse = response.clone();
                         const textContent = await clonedResponse.text();
                         console.error('Non-JSON response received:', textContent.substring(0, 200));
-                        errorMessage = `Server returned non-JSON response (${response.status}): ${textContent.substring(0, 100)}...`;
+                        errorMessage = `Request failed (${response.status})`;
                     } catch (textError) {
-                        // If even text reading fails, use status text
-                        errorMessage = `HTTP error! Status: ${response.status} ${response.statusText}`;
+                        errorMessage = `Request failed (${response.status})`;
                     }
                 }
                 

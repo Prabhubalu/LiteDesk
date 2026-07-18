@@ -270,6 +270,7 @@ import {
   applyQuoteLinesAddToRecord,
   applyQuoteLinesMutationToRecord,
   applyQuoteLinesRecalculateToRecord,
+  applyQuoteSectionsToRecord,
 } from '@/utils/quoteRecordPatch';
 import { clearQuoteLinesSession } from '@/composables/useQuoteLinesSession';
 
@@ -1169,6 +1170,19 @@ function handleQuoteLinesUpdated(payload) {
       totals: payload.totals,
       sections: payload.sections,
     });
+    return;
+  }
+  if (
+    payload?.type === 'sections-updated' &&
+    applyQuoteSectionsToRecord(record, payload.sections)
+  ) {
+    if (payload.totals) {
+      applyQuoteLinesRecalculateToRecord(record, {
+        lines: payload.lines,
+        totals: payload.totals,
+        sections: payload.sections,
+      });
+    }
   }
 }
 

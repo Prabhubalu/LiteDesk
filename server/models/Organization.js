@@ -291,6 +291,11 @@ const OrganizationSchema = new mongoose.Schema({
             type: Boolean,
             default: false
         },
+        /** External User / Portal Framework v1 — staged per-tenant rollout */
+        portalFrameworkV1Enabled: {
+            type: Boolean,
+            default: false
+        },
         /** Platform quotes module policies (tenant-wide) */
         quotes: {
             requireApprovalBeforeSend: {

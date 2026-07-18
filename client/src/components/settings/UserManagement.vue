@@ -1,5 +1,5 @@
 <template>
-  <div :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'p-6'">
+  <div :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain' : 'p-6'">
     <div
       v-if="!embedded"
       class="mb-6 shrink-0"
@@ -31,7 +31,8 @@
       row-key="_id"
       :show-import="false"
       :show-export="false"
-      :has-actions="false"
+      :has-actions="true"
+      :row-can-delete="() => false"
       :empty-title="hasActiveFilters ? t('settings.usersEmptyFilteredTitle') : t('settings.usersEmptyTitle')"
       :empty-message="hasActiveFilters ? t('settings.usersEmptyFilteredBody') : t('settings.usersEmptyBody')"
       selection-column-variant="numbered-hover"
@@ -44,6 +45,8 @@
       @stat-click="handleStatClick"
       @fetch="fetchUsers"
       @row-click="handleRowClick"
+      @view="openEditModal"
+      @edit="openEditModal"
       @bulk-action="handleBulkAction"
     >
       <template v-if="embedded" #toolbar-trailing>

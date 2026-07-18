@@ -4078,5 +4078,9 @@
   "printDefaultBadge": {
     "message": "Default",
     "description": "Badge for default print template in selector"
+  },
+  "linesAddSelected": {
+    "message": "Add selected ({count})",
+    "description": "Confirm button for multi-select product lookup on quote lines"
   }
 }
