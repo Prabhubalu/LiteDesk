@@ -1163,7 +1163,7 @@ async function handleModuleScopeChange(nextScope) {
   if (!templateMeta.value) return;
   try {
     const scope = String(nextScope || '');
-    const patch: { moduleScope: string; isDefault?: boolean } = { moduleScope: scope };
+    const patch = { moduleScope: scope };
     if (!scope && templateMeta.value.isDefault) {
       patch.isDefault = false;
     }
