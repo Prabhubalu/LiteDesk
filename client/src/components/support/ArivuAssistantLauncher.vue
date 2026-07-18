@@ -3,7 +3,10 @@
     v-if="visible"
     type="button"
     class="arivu-ai-orb"
-    :class="active ? 'arivu-ai-orb--active' : ''"
+    :class="{
+      'arivu-ai-orb--active': active,
+      'arivu-ai-orb--invite': invitePulse,
+    }"
     :aria-label="t('liveChat.inAppOpen')"
     :title="t('liveChat.inAppOpen')"
     :aria-pressed="active"
@@ -17,6 +20,11 @@
         class="arivu-ai-orb__icon h-4 w-4 object-contain"
       />
     </span>
+    <span
+      v-if="invitePulse"
+      class="arivu-ai-orb__dot"
+      aria-hidden="true"
+    />
   </button>
 </template>
 
@@ -32,12 +40,35 @@ const { t } = useI18n();
 const route = useRoute();
 const authStore = useAuthStore();
 const active = ref(false);
+const invitePulse = ref(false);
 
 const visible = computed(() => {
   if (!authStore.isAuthenticated) return false;
   if (String(route.path || '').startsWith('/live-chat')) return false;
   return true;
 });
+
+function introStorageKey() {
+  const userId = authStore.user?._id ? String(authStore.user._id) : '';
+  const orgId = authStore.organization?._id
+    ? String(authStore.organization._id)
+    : (authStore.user?.organizationId ? String(authStore.user.organizationId) : '');
+  if (!userId || !orgId) return null;
+  return `litedesk_astra_intro_seen_v1:${orgId}:${userId}`;
+}
+
+function syncInvitePulse() {
+  const key = introStorageKey();
+  if (!key) {
+    invitePulse.value = false;
+    return;
+  }
+  try {
+    invitePulse.value = localStorage.getItem(key) !== '1';
+  } catch {
+    invitePulse.value = false;
+  }
+}
 
 function syncActive(event) {
   if (event?.detail && typeof event.detail.open === 'boolean') {
@@ -47,6 +78,14 @@ function syncActive(event) {
   active.value = document.body.classList.contains('arivu-assistant-rail-open');
 }
 
+function onIntroEvent(event) {
+  if (event?.detail?.seen) {
+    invitePulse.value = false;
+    return;
+  }
+  syncInvitePulse();
+}
+
 function onClick() {
   emit('toggle');
   window.dispatchEvent(new CustomEvent('arivu:open-assistant'));
@@ -54,11 +93,14 @@ function onClick() {
 
 onMounted(() => {
   syncActive();
+  syncInvitePulse();
   window.addEventListener('arivu:assistant-rail', syncActive);
+  window.addEventListener('arivu:astra-intro', onIntroEvent);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('arivu:assistant-rail', syncActive);
+  window.removeEventListener('arivu:astra-intro', onIntroEvent);
 });
 </script>
 
@@ -121,6 +163,19 @@ onBeforeUnmount(() => {
   display: block;
 }
 
+.arivu-ai-orb__dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  z-index: 2;
+  height: 0.45rem;
+  width: 0.45rem;
+  border-radius: 9999px;
+  background: var(--ai-c5);
+  box-shadow: 0 0 0 2px #fff;
+  animation: arivu-ai-orb-dot 1.6s ease-in-out infinite;
+}
+
 .arivu-ai-orb:hover {
   transform: scale(1.06);
 }
@@ -143,14 +198,47 @@ onBeforeUnmount(() => {
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ai-c2) 25%, transparent);
 }
 
+.arivu-ai-orb--invite .arivu-ai-orb__ring {
+  animation-duration: 1.8s;
+  filter: saturate(1.15) brightness(1.05);
+}
+
+.arivu-ai-orb--invite {
+  animation: arivu-ai-orb-invite 2.4s ease-in-out infinite;
+}
+
 @keyframes arivu-ai-orb-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
+@keyframes arivu-ai-orb-invite {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes arivu-ai-orb-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.75;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .arivu-ai-orb__ring {
+  .arivu-ai-orb__ring,
+  .arivu-ai-orb--invite,
+  .arivu-ai-orb__dot {
     animation: none;
   }
 }
@@ -158,6 +246,10 @@ onBeforeUnmount(() => {
 :global(html.dark) .arivu-ai-orb__face {
   background: rgb(23 23 23);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+:global(html.dark) .arivu-ai-orb__dot {
+  box-shadow: 0 0 0 2px rgb(23 23 23);
 }
 
 :global(html.dark) .arivu-ai-orb:focus-visible {

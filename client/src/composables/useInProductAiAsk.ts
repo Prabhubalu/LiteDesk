@@ -19,12 +19,15 @@ export type InAppAiCitation = {
 
 export type InAppAiAction = {
   label: string;
-  kind: 'send_email' | 'complete_task' | 'follow_up' | 'review_record' | 'update_status' | 'talk_to_agent' | 'manual' | 'open_record' | 'none';
+  kind: 'send_email' | 'complete_task' | 'follow_up' | 'review_record' | 'update_status' | 'talk_to_agent' | 'manual' | 'open_record' | 'none' | 'create_record' | 'update_record';
   moduleKey?: string;
   recordId?: string;
   targetLabel?: string;
   rationale?: string;
   priority?: 'high' | 'medium' | 'low';
+  fields?: Record<string, string | number | boolean>;
+  applied?: boolean;
+  executeNow?: boolean;
   email?: {
     to?: string;
     subject?: string;
@@ -32,10 +35,27 @@ export type InAppAiAction = {
   };
 };
 
+export type InAppAiVisual = {
+  id?: string;
+  component: 'chart' | 'kpi_strip' | 'data_table' | 'callout' | 'progress_list';
+  chartType?: 'pie' | 'bar' | 'line';
+  title?: string;
+  metricLabel?: string;
+  points?: Array<{ label: string; value: number }>;
+  items?: Array<{ label: string; value: string | number; hint?: string; max?: number }>;
+  columns?: string[];
+  rows?: Array<Array<string | number>>;
+  tone?: 'insight' | 'success' | 'warning' | 'danger';
+  body?: string;
+};
+
 export type InAppAiStructured = {
   headline?: string;
   bullets?: string[];
+  clarifyingQuestions?: string[];
+  detail?: string;
   actions?: InAppAiAction[];
+  visuals?: InAppAiVisual[];
   talkToAgent?: boolean;
 };
 
@@ -54,6 +74,7 @@ export type InAppAiMessage = {
     abilityKey?: string;
     agentId?: string;
     agentName?: string;
+    agentAutoCreated?: boolean;
   };
   createdAt?: number;
 };
@@ -180,12 +201,20 @@ function looksInsufficient(answer: string): boolean {
 
 function isThinAgentResponse(
   answer: string,
-  structured: { headline?: string; bullets?: string[]; actions?: unknown[] } | null,
+  structured: {
+    headline?: string;
+    bullets?: string[];
+    detail?: string;
+    actions?: unknown[];
+    visuals?: unknown[];
+  } | null,
   agentName: string,
 ): boolean {
   if ((structured?.bullets || []).length > 0 || (structured?.actions || []).length > 0) {
     return false;
   }
+  if ((structured?.visuals || []).length > 0) return false;
+  if (String(structured?.detail || '').trim().length >= 80) return false;
   const headline = String(structured?.headline || '').trim().toLowerCase();
   const name = String(agentName || '').trim().toLowerCase();
   const normalizedAnswer = String(answer || '').trim().toLowerCase();
@@ -309,7 +338,7 @@ function answerFromListFacts(question: string, facts: ListPageFacts, t: (key: st
 }
 
 /**
- * Page-aware Ask for Arivu Assistant:
+ * Page-aware Ask for Astra (router → specialist Agents):
  * 1) record page → work-graph
  * 2) list page → page stats (counts) / page-context echo
  * 3) knowledge Ask when beyond page context
@@ -323,14 +352,25 @@ export function useInProductAiAsk() {
   const aiAsking = ref(false);
   const aiError = ref('');
   const lastAbilityKey = ref('');
-  const cachedAgents = ref<Array<{ _id: string; name: string; enabled?: boolean }>>([]);
+  const cachedAgents = ref<Array<{
+    _id: string;
+    name: string;
+    enabled?: boolean;
+    description?: string;
+    triggerPhrases?: string[];
+    moduleKeys?: string[];
+  }>>([]);
   const agentsLoaded = ref(false);
   const activeConversationId = ref<string | null>(null);
   const aiConversations = ref<InAppAiConversation[]>([]);
   const typingMessageId = ref<string | null>(null);
   const typedHeadlineLen = ref(0);
   const typedBodyLen = ref(0);
+  const typedDetailLen = ref(0);
+  const typedBulletLens = ref<number[]>([]);
   const revealedBulletCount = ref(0);
+  const revealedQuestionCount = ref(0);
+  const visualsRevealed = ref(true);
   const actionsRevealed = ref(true);
   const typingProgress = ref(0);
   let hydrated = false;
@@ -349,7 +389,11 @@ export function useInProductAiAsk() {
     typingMessageId.value = null;
     typedHeadlineLen.value = 0;
     typedBodyLen.value = 0;
+    typedDetailLen.value = 0;
+    typedBulletLens.value = [];
     revealedBulletCount.value = 0;
+    revealedQuestionCount.value = 0;
+    visualsRevealed.value = true;
     actionsRevealed.value = true;
   }
 
@@ -373,13 +417,22 @@ export function useInProductAiAsk() {
     const headline = String(message.structured?.headline || '');
     const body = String(message.body || '');
     const bullets = Array.isArray(message.structured?.bullets) ? message.structured.bullets : [];
+    const detail = String(message.structured?.detail || '').trim();
+    const questions = Array.isArray(message.structured?.clarifyingQuestions)
+      ? message.structured.clarifyingQuestions
+      : [];
     const hasActions = Array.isArray(message.structured?.actions) && message.structured.actions.length > 0;
+    const hasVisuals = Array.isArray(message.structured?.visuals) && message.structured.visuals.length > 0;
     const showBody = Boolean(body) && (!headline || body !== headline);
 
     typingMessageId.value = message.id;
     typedHeadlineLen.value = 0;
     typedBodyLen.value = 0;
+    typedDetailLen.value = 0;
+    typedBulletLens.value = bullets.map(() => 0);
     revealedBulletCount.value = 0;
+    revealedQuestionCount.value = 0;
+    visualsRevealed.value = !hasVisuals;
     actionsRevealed.value = !hasActions;
 
     const typeText = async (full: string, setter: (n: number) => void) => {
@@ -387,8 +440,8 @@ export function useInProductAiAsk() {
         setter(0);
         return;
       }
-      const durationMs = Math.min(3200, Math.max(600, full.length * 14));
-      const stepMs = 18;
+      const durationMs = Math.min(4200, Math.max(700, full.length * 16));
+      const stepMs = 20;
       const steps = Math.max(1, Math.ceil(durationMs / stepMs));
       const charsPerStep = Math.max(1, Math.ceil(full.length / steps));
       for (let i = charsPerStep; i < full.length; i += charsPerStep) {
@@ -404,9 +457,13 @@ export function useInProductAiAsk() {
 
     await typeText(headline, (n) => { typedHeadlineLen.value = n; });
     if (gen !== typingGen) return;
+    await waitTyping(180, gen);
+    if (gen !== typingGen) return;
 
     if (showBody) {
       await typeText(body, (n) => { typedBodyLen.value = n; });
+      if (gen !== typingGen) return;
+      await waitTyping(140, gen);
       if (gen !== typingGen) return;
     } else {
       typedBodyLen.value = body.length;
@@ -415,10 +472,35 @@ export function useInProductAiAsk() {
     for (let i = 0; i < bullets.length; i += 1) {
       if (gen !== typingGen) return;
       revealedBulletCount.value = i + 1;
-      typingProgress.value += 1;
-      await waitTyping(90, gen);
+      const bullet = String(bullets[i] || '');
+      await typeText(bullet, (n) => {
+        const next = typedBulletLens.value.slice();
+        next[i] = n;
+        typedBulletLens.value = next;
+      });
+      if (gen !== typingGen) return;
+      await waitTyping(120, gen);
+      if (gen !== typingGen) return;
     }
 
+    if (detail) {
+      await typeText(detail, (n) => { typedDetailLen.value = n; });
+      if (gen !== typingGen) return;
+      await waitTyping(140, gen);
+      if (gen !== typingGen) return;
+    }
+
+    for (let i = 0; i < questions.length; i += 1) {
+      if (gen !== typingGen) return;
+      revealedQuestionCount.value = i + 1;
+      typingProgress.value += 1;
+      await waitTyping(160, gen);
+    }
+
+    if (gen !== typingGen) return;
+    visualsRevealed.value = true;
+    typingProgress.value += 1;
+    await waitTyping(120, gen);
     if (gen !== typingGen) return;
     actionsRevealed.value = true;
     typingMessageId.value = null;
@@ -443,7 +525,38 @@ export function useInProductAiAsk() {
   function displayBullets(msg: InAppAiMessage): string[] {
     const full = Array.isArray(msg.structured?.bullets) ? msg.structured.bullets : [];
     if (!isAssistantTyping(msg.id)) return full;
-    return full.slice(0, revealedBulletCount.value);
+    return full.slice(0, revealedBulletCount.value).map((bullet, idx) => {
+      const len = typedBulletLens.value[idx];
+      if (typeof len !== 'number') return String(bullet || '');
+      return String(bullet || '').slice(0, len);
+    });
+  }
+
+  function displayDetail(msg: InAppAiMessage): string {
+    const full = String(msg.structured?.detail || '').trim();
+    if (!full) return '';
+    if (!isAssistantTyping(msg.id)) return full;
+    const bullets = Array.isArray(msg.structured?.bullets) ? msg.structured.bullets : [];
+    if (revealedBulletCount.value < bullets.length) return '';
+    return full.slice(0, typedDetailLen.value);
+  }
+
+  function displayVisuals(msg: InAppAiMessage): InAppAiVisual[] {
+    const full = Array.isArray(msg.structured?.visuals) ? msg.structured.visuals : [];
+    if (!isAssistantTyping(msg.id)) return full;
+    return visualsRevealed.value ? full : [];
+  }
+
+  function displayClarifyingQuestions(msg: InAppAiMessage): string[] {
+    const full = Array.isArray(msg.structured?.clarifyingQuestions)
+      ? msg.structured.clarifyingQuestions
+      : [];
+    if (!isAssistantTyping(msg.id)) return full;
+    const bullets = Array.isArray(msg.structured?.bullets) ? msg.structured.bullets : [];
+    if (revealedBulletCount.value < bullets.length) return [];
+    const detail = String(msg.structured?.detail || '').trim();
+    if (detail && typedDetailLen.value < detail.length) return [];
+    return full.slice(0, revealedQuestionCount.value);
   }
 
   function displayActions(msg: InAppAiMessage): InAppAiAction[] {
@@ -980,6 +1093,10 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         moduleKey: page?.moduleKey || '',
         recordId: page?.kind === 'record' ? (page.recordId || '') : '',
         appKey: page?.appKey || 'SALES',
+        history: aiMessages.value
+          .slice(-12)
+          .map((m) => ({ role: m.role, body: String(m.body || '').trim() }))
+          .filter((m) => m.body),
       });
       if (!data?.matched) return { matched: false, message: null };
       const answer = String(data?.answer || '').trim();
@@ -989,13 +1106,79 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
           bullets: Array.isArray(data.structured.bullets)
             ? data.structured.bullets.map((b: unknown) => String(b || '').trim()).filter(Boolean)
             : [],
+          clarifyingQuestions: Array.isArray(data.structured.clarifyingQuestions)
+            ? data.structured.clarifyingQuestions.map((q: unknown) => String(q || '').trim()).filter(Boolean)
+            : [],
+          detail: String(data.structured.detail || '').trim(),
           actions: Array.isArray(data.structured.actions) ? data.structured.actions : [],
+          visuals: Array.isArray(data.structured.visuals)
+            ? data.structured.visuals
+              .filter((v: unknown) => v && typeof v === 'object')
+              .map((raw: InAppAiVisual) => {
+                const component = (
+                  ['chart', 'kpi_strip', 'data_table', 'callout', 'progress_list'].includes(String(raw.component))
+                    ? raw.component
+                    : 'chart'
+                ) as InAppAiVisual['component'];
+                return {
+                  id: String(raw.id || ''),
+                  component,
+                  chartType: (['pie', 'bar', 'line'].includes(String(raw.chartType))
+                    ? raw.chartType
+                    : 'pie') as InAppAiVisual['chartType'],
+                  title: String(raw.title || '').trim(),
+                  metricLabel: String(raw.metricLabel || '').trim(),
+                  points: Array.isArray(raw.points)
+                    ? raw.points
+                      .map((p) => ({
+                        label: String(p?.label || '').trim(),
+                        value: Number(p?.value) || 0,
+                      }))
+                      .filter((p) => p.label)
+                    : [],
+                  items: Array.isArray(raw.items)
+                    ? raw.items.map((it) => ({
+                      label: String(it?.label || '').trim(),
+                      value: it?.value ?? '',
+                      hint: String(it?.hint || '').trim() || undefined,
+                      max: typeof it?.max === 'number' ? it.max : undefined,
+                    })).filter((it) => it.label)
+                    : [],
+                  columns: Array.isArray(raw.columns)
+                    ? raw.columns.map((c) => String(c || '').trim()).filter(Boolean)
+                    : [],
+                  rows: Array.isArray(raw.rows)
+                    ? raw.rows.filter((r) => Array.isArray(r)).map((r) => r.map((c) => (
+                      typeof c === 'number' ? c : String(c ?? '')
+                    )))
+                    : [],
+                  tone: (['insight', 'success', 'warning', 'danger'].includes(String(raw.tone))
+                    ? raw.tone
+                    : 'insight') as InAppAiVisual['tone'],
+                  body: String(raw.body || '').trim(),
+                };
+              })
+              .filter((v: InAppAiVisual) => {
+                if (v.component === 'chart') return Boolean(v.points?.length);
+                if (v.component === 'kpi_strip' || v.component === 'progress_list') {
+                  return Boolean(v.items?.length);
+                }
+                if (v.component === 'data_table') {
+                  return Boolean(v.columns?.length && v.rows?.length);
+                }
+                if (v.component === 'callout') return Boolean(v.body);
+                return false;
+              })
+            : [],
           talkToAgent: Boolean(data.structured.talkToAgent),
         }
         : null;
       const hasStructured = Boolean(
         structured?.bullets?.length
         || structured?.actions?.length
+        || structured?.clarifyingQuestions?.length
+        || structured?.visuals?.length
+        || structured?.detail
         || (structured?.headline
           && structured.headline.toLowerCase() !== String(data?.agent?.name || '').trim().toLowerCase()),
       );
@@ -1032,6 +1215,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
             abilityKey: 'tenant_agent',
             agentId: data?.agent?._id ? String(data.agent._id) : '',
             agentName: data?.agent?.name ? String(data.agent.name) : '',
+            agentAutoCreated: Boolean(data?.agentAutoCreated || data?.agent?.autoCreated),
           },
         },
       };
@@ -1085,17 +1269,111 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     aiError.value = t('liveChat.inAppAiAskFailed');
   }
 
-  function resolveAgentIdByQuestion(question: string, explicitId = ''): string {
+  function scoreCachedAgent(
+    agent: {
+      name?: string;
+      description?: string;
+      triggerPhrases?: string[];
+      moduleKeys?: string[];
+    },
+    question: string,
+    moduleKey = '',
+  ): number {
+    const pageMod = String(moduleKey || '').toLowerCase();
+    const moduleKeys = Array.isArray(agent.moduleKeys)
+      ? agent.moduleKeys.map((k) => String(k).toLowerCase())
+      : [];
+    if (pageMod && moduleKeys.length && !moduleKeys.includes(pageMod)) {
+      return -999;
+    }
+
+    const nameTokens = String(agent.name || '')
+      .toLowerCase()
+      .split(/[^a-z0-9]+/i)
+      .filter((w) => w.length >= 2);
+    const exclusive: Record<string, string[]> = {
+      deals: ['deal', 'deals', 'pipeline', 'opportunity', 'opportunities'],
+      organizations: ['organization', 'organisations', 'company', 'account', 'accounts', 'research'],
+      people: ['person', 'people', 'contact', 'contacts', 'lead', 'leads'],
+      cases: ['case', 'cases', 'ticket', 'tickets'],
+    };
+    if (pageMod) {
+      for (const [mod, tokens] of Object.entries(exclusive)) {
+        if (mod === pageMod) continue;
+        const exclusiveHits = tokens.filter((t) => nameTokens.includes(t));
+        const pageHits = (exclusive[pageMod] || []).filter((t) => nameTokens.includes(t));
+        if (exclusiveHits.length && !pageHits.length) return -999;
+      }
+    }
+
+    const q = String(question || '').toLowerCase().trim();
+    const qTokens = new Set(
+      q.split(/[^a-z0-9]+/i).filter((w) => w.length >= 2),
+    );
+    let score = 0;
+    const name = String(agent.name || '').trim().toLowerCase();
+    if (name) {
+      if (q === name) score += 40;
+      else if (q.includes(name) || name.includes(q)) score += 24;
+      for (const token of nameTokens) {
+        if (qTokens.has(token)) score += token.length >= 4 ? 6 : 3;
+      }
+    }
+    if (pageMod && moduleKeys.includes(pageMod)) score += 12;
+    for (const phrase of agent.triggerPhrases || []) {
+      const p = String(phrase || '').trim().toLowerCase();
+      if (!p) continue;
+      if (q.includes(p) || p.includes(q)) {
+        score += Math.min(22, 8 + Math.min(p.length, 24));
+        continue;
+      }
+      const phraseTokens = p.split(/[^a-z0-9]+/i).filter((w) => w.length >= 2);
+      const hit = phraseTokens.filter((token) => qTokens.has(token)).length;
+      if (phraseTokens.length && hit === phraseTokens.length) score += 16;
+      else if (hit > 0 && hit / phraseTokens.length >= 0.5) score += 10;
+      else if (hit > 0) score += Math.min(12, hit * 5);
+    }
+    for (const token of String(agent.description || '').toLowerCase().split(/[^a-z0-9]+/i)) {
+      if (token.length >= 4 && qTokens.has(token)) score += 2;
+    }
+    if ((agent.triggerPhrases || []).length) score += 1;
+    return score;
+  }
+
+  function resolveAgentIdByQuestion(
+    question: string,
+    explicitId = '',
+    moduleKey = '',
+  ): string {
     if (explicitId) return explicitId;
     const q = String(question || '').trim().toLowerCase();
     if (!q || !cachedAgents.value.length) return '';
-    const exact = cachedAgents.value.find((a) => String(a.name || '').trim().toLowerCase() === q);
-    if (exact?._id) return String(exact._id);
-    const partial = cachedAgents.value.find((a) => {
-      const name = String(a.name || '').trim().toLowerCase();
-      return name && (q.includes(name) || name.includes(q));
-    });
-    return partial?._id ? String(partial._id) : '';
+
+    let bestId = '';
+    let bestScore = -Infinity;
+    let eligibleCount = 0;
+    for (const agent of cachedAgents.value) {
+      const score = scoreCachedAgent(agent, q, moduleKey);
+      if (score < 0) continue;
+      eligibleCount += 1;
+      if (score > bestScore) {
+        bestScore = score;
+        bestId = agent._id ? String(agent._id) : '';
+      }
+    }
+
+    const best = cachedAgents.value.find((a) => String(a._id) === bestId);
+    const moduleKeys = Array.isArray(best?.moduleKeys) ? best.moduleKeys : [];
+    const pageMod = String(moduleKey || '').toLowerCase();
+    const moduleMatched = Boolean(
+      pageMod && moduleKeys.map((k) => String(k).toLowerCase()).includes(pageMod),
+    );
+    let threshold = 8;
+    if (eligibleCount === 1 && bestScore >= 3) threshold = 3;
+    else if (moduleMatched) threshold = 5;
+    else if (!moduleKeys.length) threshold = 6;
+
+    return bestScore >= threshold && bestId ? bestId : '';
   }
 
   function expandAgentQuestion(question: string, agentId: string): string {
@@ -1109,8 +1387,8 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     return q;
   }
 
-  async function ensureAgentsLoaded(): Promise<void> {
-    if (agentsLoaded.value) return;
+  async function ensureAgentsLoaded(force = false): Promise<void> {
+    if (agentsLoaded.value && !force) return;
     try {
       const data = await apiClient.get('/ai/tenant-agents?includeDisabled=false');
       cachedAgents.value = Array.isArray(data?.agents) ? data.agents : [];
@@ -1142,48 +1420,45 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     upsertActiveConversation(aiMessages.value);
 
     try {
-      await ensureAgentsLoaded();
+      await ensureAgentsLoaded(true);
       const page = resolvePageAiContext(route);
-      const agentId = resolveAgentIdByQuestion(q, options.agentId || '');
+      // Sticky specialist: short follow-up answers stay with the last agent in-thread.
+      let stickyAgentId = options.agentId || '';
+      if (!stickyAgentId) {
+        const lastAgentMsg = [...aiMessages.value].reverse().find((m) => (
+          m.role === 'assistant' && m.source === 'agent' && m.meta?.agentId
+        ));
+        const qWords = q.split(/\s+/).filter(Boolean).length;
+        if (lastAgentMsg?.meta?.agentId && qWords <= 24) {
+          stickyAgentId = String(lastAgentMsg.meta.agentId);
+        }
+      }
+      const agentId = resolveAgentIdByQuestion(q, stickyAgentId, page?.moduleKey || '');
       const askText = expandAgentQuestion(q, agentId);
       const agentResult = await tryTenantAgent(askText, page, agentId);
-      let chosen: InAppAiMessage | null = agentResult.message;
+      const chosen: InAppAiMessage | null = agentResult.message;
 
-      // Targeted / matched specialist: never cascade to work_graph or knowledge (avoids multi-LLM).
-      const specialistHandled = Boolean(agentId) || agentResult.matched || Boolean(agentResult.message);
-      if (!chosen && !aiError.value && !specialistHandled) {
-        if (page?.kind === 'record') {
-          chosen = await tryRecordGraph(q, page);
-        } else if (page?.kind === 'list') {
-          chosen = await tryListPage(q, page);
-        }
-      }
-
-      const needKnowledge = !chosen
-        && !specialistHandled
-        && !aiError.value;
-      if (needKnowledge) {
-        const kb = await tryKnowledge(q);
-        if (kb && kb.meta?.found) {
-          chosen = kb;
-        }
-      }
-
-      // Specialist agents always surface their response (even if wording mentions gaps).
       let pushed: InAppAiMessage | null = null;
       if (chosen?.source === 'agent') {
         lastAbilityKey.value = chosen.meta?.abilityKey || '';
         pushed = { ...chosen, createdAt: chosen.createdAt || Date.now() };
         aiMessages.value.push(pushed);
-      } else if (chosen && !looksInsufficient(chosen.body)) {
-        lastAbilityKey.value = chosen.meta?.abilityKey || '';
-        pushed = { ...chosen, createdAt: chosen.createdAt || Date.now() };
-        aiMessages.value.push(pushed);
       } else if (!aiError.value) {
+        const names = cachedAgents.value
+          .map((a) => String(a.name || '').trim())
+          .filter(Boolean)
+          .slice(0, 6);
+        const body = !cachedAgents.value.length
+          ? t('liveChat.inAppAiNoAgentsConfigured')
+          : agentResult.matched
+            ? t('liveChat.inAppAiAgentNoAnswer')
+            : names.length
+              ? t('liveChat.inAppAiNoMatchingAgent', { agents: names.join(', ') })
+              : t('liveChat.inAppAiNoMatchingAgent', { agents: '' });
         pushed = {
           id: nextId('a'),
           role: 'assistant',
-          body: t('liveChat.inAppAiNoAnswer'),
+          body,
           source: '',
           createdAt: Date.now(),
         };
@@ -1230,6 +1505,9 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     displayHeadline,
     displayBody,
     displayBullets,
+    displayDetail,
+    displayVisuals,
+    displayClarifyingQuestions,
     displayActions,
     showTypingCaret,
     pageContext: () => resolvePageAiContext(route),

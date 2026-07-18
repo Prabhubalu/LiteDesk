@@ -33,4 +33,62 @@ describe('aiTenantAgentService routing', () => {
     };
     expect(scoreAgentForQuestion(agent, 'deal analyze please', 'deals')).toBeGreaterThanOrEqual(8);
   });
+
+  it('matches research intent on organizations via name token', () => {
+    const agent = {
+      name: 'Research Agent',
+      description: 'Company and organization research',
+      triggerPhrases: ['research company', 'company overview'],
+      moduleKeys: ['organizations'],
+    };
+    const score = scoreAgentForQuestion(
+      agent,
+      'research about this organization',
+      'organizations',
+    );
+    expect(score).toBeGreaterThanOrEqual(5);
+  });
+
+  it('matches research synonym via intent aliases', () => {
+    const agent = {
+      name: 'Company Intel',
+      description: '',
+      triggerPhrases: ['research organization'],
+      moduleKeys: ['organizations'],
+    };
+    const score = scoreAgentForQuestion(
+      agent,
+      'investigate this organization',
+      'organizations',
+    );
+    expect(score).toBeGreaterThanOrEqual(5);
+  });
+
+  it('hard-excludes deal specialists on organization pages', () => {
+    const dealAgent = {
+      name: 'Deal Analyze',
+      description: 'Analyze deals',
+      triggerPhrases: ['research', 'review', 'customer'],
+      moduleKeys: ['deals'],
+    };
+    expect(scoreAgentForQuestion(
+      dealAgent,
+      'Review Vtiger Customer Case Studies & Success Stories',
+      'organizations',
+    )).toBeLessThan(0);
+  });
+
+  it('hard-excludes deal-named agents with empty moduleKeys on org pages', () => {
+    const dealAgent = {
+      name: 'Deal Analyze',
+      description: 'Coaching',
+      triggerPhrases: ['review customer'],
+      moduleKeys: [],
+    };
+    expect(scoreAgentForQuestion(
+      dealAgent,
+      'Review Vtiger Customer Case Studies',
+      'organizations',
+    )).toBeLessThan(0);
+  });
 });

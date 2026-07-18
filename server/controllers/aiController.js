@@ -24,7 +24,10 @@ const {
   routeTenantAgent,
   runTenantAgentAsk,
   suggestTenantAgentTriggers,
+  synthesizeAndCreateTenantAgent,
+  isAgentEligibleForPage,
 } = require('../services/ai/aiTenantAgentService');
+const { applyAstraMutation } = require('../services/ai/aiAstraMutationService');
 const {
   listConversations,
   getConversation,
@@ -879,7 +882,13 @@ async function deleteAiConversation(req, res) {
 
 async function listTenantAgentsAi(req, res) {
   try {
-    const agents = await listTenantAgents(getOrganizationId(req), {
+    const organizationId = getOrganizationId(req);
+    const { ensureProcessDesignerAgent } = require('../services/ai/aiProcessDesignerService');
+    await ensureProcessDesignerAgent({
+      organizationId,
+      userId: req.user?._id,
+    });
+    const agents = await listTenantAgents(organizationId, {
       includeDisabled: String(req.query?.includeDisabled || 'true') !== 'false',
     });
     return res.json({ success: true, agents });
@@ -969,37 +978,80 @@ async function askTenantAgentAi(req, res) {
     let agentId = String(req.body?.agentId || '').trim();
     let routeScore = null;
 
+    if (agentId && moduleKey) {
+      const agents = await listTenantAgents(organizationId, { includeDisabled: false });
+      const forced = agents.find((a) => String(a._id) === agentId);
+      if (!forced || !isAgentEligibleForPage(forced, moduleKey)) {
+        agentId = '';
+      }
+    }
+
+    let agentAutoCreated = false;
     if (!agentId) {
       const routed = await routeTenantAgent({
         organizationId,
         question,
         moduleKey,
       });
-      if (!routed?.agent?._id) {
-        return res.json({ success: true, matched: false });
+      if (routed?.agent?._id) {
+        agentId = routed.agent._id;
+        routeScore = routed.score;
+      } else {
+        const synthesized = await synthesizeAndCreateTenantAgent({
+          organizationId,
+          userId: req.user?._id,
+          question,
+          moduleKey,
+        });
+        agentId = synthesized._id;
+        agentAutoCreated = true;
+        routeScore = null;
       }
-      agentId = routed.agent._id;
-      routeScore = routed.score;
     }
 
     const result = await runTenantAgentAsk({
       organizationId,
       userId: req.user?._id,
+      user: req.user,
       agentId,
       question,
       appKey,
       moduleKey,
       recordId,
+      history: Array.isArray(req.body?.history) ? req.body.history : [],
     });
     return res.json({
       success: true,
       matched: true,
       routeScore,
+      agentAutoCreated,
       ...result,
+      agent: {
+        ...(result.agent || {}),
+        autoCreated: agentAutoCreated || Boolean(result.agent?.autoCreated),
+      },
     });
   } catch (error) {
     console.error('[aiController.askTenantAgentAi] error:', error);
     return assistErrorResponse(res, error, 'AI_TENANT_AGENT_ASK_FAILED');
+  }
+}
+
+async function applyAstraMutationAi(req, res) {
+  try {
+    const result = await applyAstraMutation({
+      organizationId: getOrganizationId(req),
+      user: req.user,
+      op: req.body?.op,
+      moduleKey: req.body?.moduleKey,
+      recordId: req.body?.recordId,
+      fields: req.body?.fields,
+      appKey: req.body?.appKey || req.appKey || 'SALES',
+    });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('[aiController.applyAstraMutationAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_MUTATION_FAILED');
   }
 }
 
@@ -1373,6 +1425,29 @@ async function suggestImportMappingAi(req, res) {
   }
 }
 
+async function generateProcessDesignerAi(req, res) {
+  try {
+    const { generateProcessDraft } = require('../services/ai/aiProcessDesignerService');
+    const result = await generateProcessDraft({
+      organizationId: getOrganizationId(req),
+      userId: req.user?._id,
+      brief: req.body?.brief || req.body?.description,
+      appKey: req.body?.appKey,
+      entityType: req.body?.entityType,
+      coreTrigger: req.body?.coreTrigger,
+      name: req.body?.name,
+      updateWatchField: req.body?.updateWatchField,
+      schedule: req.body?.schedule,
+      triggerBehaviour: req.body?.triggerBehaviour,
+      includeClosedRecords: req.body?.includeClosedRecords === true,
+    });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('[aiController.generateProcessDesignerAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_PROCESS_DESIGNER_FAILED');
+  }
+}
+
 module.exports = {
   listAiAuditLogsHandler,
   getAiStatus,
@@ -1410,11 +1485,13 @@ module.exports = {
   previewDigestBriefAi,
   proposeCommercialAgentAi,
   proposeCollectionAgentAi,
+  generateProcessDesignerAi,
   listTenantAgentsAi,
   createTenantAgentAi,
   updateTenantAgentAi,
   deleteTenantAgentAi,
   askTenantAgentAi,
+  applyAstraMutationAi,
   suggestTenantAgentTriggersAi,
   listAiConversations,
   getAiConversation,
