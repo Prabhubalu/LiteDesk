@@ -168,7 +168,13 @@
       </div>
     </BubbleMenu>
 
-    <input ref="imageInputRef" type="file" accept="image/*" class="hidden" @change="handleImageSelect" />
+    <input
+      ref="imageInputRef"
+      type="file"
+      accept="image/*,.heic,.heif,.avif,.tif,.tiff,.bmp,.ico,.svg"
+      class="hidden"
+      @change="handleImageSelect"
+    />
 
     <BuilderImageAssetPicker
       v-model:open="coverPickerOpen"
@@ -310,6 +316,7 @@ import { useContentAssets } from '@/composables/useContentAssets';
 import { useMarketingAssets } from '@/composables/useMarketingAssets';
 import BuilderImageAssetPicker from '@/components/templates/builder/BuilderImageAssetPicker.vue';
 import { consumePendingGalleryIntent, applyGalleryImageFromUpload, setPendingGalleryIntent } from '../editor/slashCommands';
+import { isImageFile } from '../editor/imageFileTransfer';
 import { isEditorInGallery, removeGalleryImage } from '../editor/blockCommands';
 import {
   normalizeImagePosition,
@@ -347,13 +354,22 @@ const props = defineProps({
   authorName: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:title', 'update:subtitle', 'image-uploaded', 'register-image-trigger', 'cover-uploaded', 'remove-cover']);
+const emit = defineEmits([
+  'update:title',
+  'update:subtitle',
+  'image-uploaded',
+  'register-image-trigger',
+  'register-image-file-handler',
+  'cover-uploaded',
+  'remove-cover',
+]);
 
 const { t } = useI18n();
 const ui = useBuilderUi();
 const contentAssets = useContentAssets();
 const marketingAssets = useMarketingAssets();
 const editorAssetLibrary = computed(() => (props.mode === 'blog' ? marketingAssets : contentAssets));
+const imageUploading = ref(false);
 
 const bubbleMenuTippyOptions = {
   duration: 100,
@@ -530,24 +546,33 @@ function handleCoverAssetSelect(payload) {
   emit('cover-uploaded', { asset, url });
 }
 
-async function handleImageSelect(event) {
-  const file = event.target.files?.[0];
-  event.target.value = '';
-  if (!file || !props.editor) return;
+async function insertImageFromFile(file) {
+  if (!isImageFile(file) || !props.editor || imageUploading.value) return;
+  imageUploading.value = true;
   try {
     const asset = await editorAssetLibrary.value.uploadAsset(file, { type: 'image' });
     const url = asset?.downloadUrl || asset?.url || asset?.publicUrl;
-    if (!url) return;
+    if (!url || !props.editor) return;
     const intent = consumePendingGalleryIntent(props.editor);
     if (intent) {
       applyGalleryImageFromUpload(props.editor, url, file.name, intent);
+    } else if (isEditorInGallery(props.editor) || props.editor.isActive('gallery')) {
+      applyGalleryImageFromUpload(props.editor, url, file.name, 'add');
     } else {
-      props.editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+      props.editor.chain().focus().setImage({ src: url, alt: file.name || '' }).run();
     }
     emit('image-uploaded', url);
   } catch {
     /* handled by composable notifications elsewhere if needed */
+  } finally {
+    imageUploading.value = false;
   }
+}
+
+async function handleImageSelect(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (file) await insertImageFromFile(file);
 }
 
 function toggleLink() {
@@ -562,12 +587,17 @@ function toggleLink() {
   ed.chain().focus().extendMarkRange('link').setLink({ href }).run();
 }
 
-onMounted(() => {
+function registerImageHandlers() {
   emit('register-image-trigger', openImagePicker);
+  emit('register-image-file-handler', insertImageFromFile);
+}
+
+onMounted(() => {
+  registerImageHandlers();
 });
 
 watch(
   () => props.editor,
-  () => emit('register-image-trigger', openImagePicker),
+  () => registerImageHandlers(),
 );
 </script>
