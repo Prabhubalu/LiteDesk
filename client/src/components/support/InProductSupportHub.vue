@@ -1317,8 +1317,8 @@ const pageContextHint = computed(() => {
 });
 
 function assistantAgentLabel(msg) {
-  const name = String(msg?.meta?.agentName || '').trim();
-  if (name) return name;
+  // Astra presents as a single identity; the internal specialist that routed
+  // the answer is never surfaced (avoids confusing "random agent" personas).
   if (msg?.source === 'graph') return t('liveChat.inAppAiFromRecord');
   if (msg?.source === 'page') return t('liveChat.inAppAiFromPage');
   if (msg?.source === 'knowledge') return t('liveChat.inAppAiFromKnowledge');

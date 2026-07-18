@@ -42,6 +42,7 @@
               :preview-record-label="previewRecordLabel"
               :currency-display="currencyDisplay"
               :output-format="outputFormat"
+              :is-default="isDefault"
               @update:name="emit('update-name', $event)"
               @update:description="emit('update-description', $event)"
               @update:module-scope="emit('update-module-scope', $event)"
@@ -50,6 +51,7 @@
               @update:preview-record-id="emit('update:preview-record-id', $event)"
               @update:preview-record-label="emit('update:preview-record-label', $event)"
               @update:currency-display="emit('update-currency-display', $event)"
+              @update:is-default="emit('update-is-default', $event)"
             />
           </TabPanel>
           <TabPanel :class="ui.tabPanel" :unmount="false">
@@ -95,6 +97,7 @@ const props = defineProps({
   previewRecordId: { type: String, default: '' },
   previewRecordLabel: { type: String, default: '' },
   currencyDisplay: { type: String, default: 'code' },
+  isDefault: { type: Boolean, default: false },
   editor: { type: Object, default: null },
   pageMargins: { type: Object, default: () => ({ ...DEFAULT_PAGE_MARGINS_MM }) },
   outputFormat: { type: String, default: 'pdf' },
@@ -115,7 +118,8 @@ const emit = defineEmits([
   'update-page-settings',
   'update:preview-record-id',
   'update:preview-record-label',
-  'update-currency-display'
+  'update-currency-display',
+  'update-is-default'
 ]);
 
 const { t } = useI18n();

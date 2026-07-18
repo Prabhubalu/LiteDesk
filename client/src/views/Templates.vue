@@ -30,6 +30,18 @@
       @delete="handleDelete"
       @bulk-action="handleBulkAction"
     >
+      <template #cell-name="{ value, row }">
+        <span class="inline-flex items-center gap-2">
+          <span>{{ value }}</span>
+          <span
+            v-if="row?.isDefault"
+            class="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+          >
+            {{ t('templates.defaultBadge') }}
+          </span>
+        </span>
+      </template>
+
       <template #cell-status="{ value }">
         <BadgeCell
           :value="formatStatus(value)"

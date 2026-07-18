@@ -230,12 +230,49 @@ function injectPrintAreaLayoutCss(
       padding: 0 !important;
     }
 
+    /* Imported HTML often uses fixed px table widths wider than the content area. */
+    [${PRINT_AREA_ATTR}="true"] > table,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] > table,
+    [${PRINT_AREA_ATTR}="true"] > div,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] > div {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
     [${PRINT_AREA_ATTR}="true"] .gjs-row,
     [data-gjs-type="${PRINT_AREA_TYPE}"] .gjs-row,
     [${PRINT_AREA_ATTR}="true"] table,
     [data-gjs-type="${PRINT_AREA_TYPE}"] table {
       max-width: 100% !important;
       box-sizing: border-box !important;
+    }
+
+    [${PRINT_AREA_ATTR}="true"] > table,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] > table {
+      table-layout: fixed !important;
+    }
+
+    [${PRINT_AREA_ATTR}="true"] img,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] img,
+    [${PRINT_AREA_ATTR}="true"] svg,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    [${PRINT_AREA_ATTR}="true"] td,
+    [${PRINT_AREA_ATTR}="true"] th,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] td,
+    [data-gjs-type="${PRINT_AREA_TYPE}"] th {
+      word-wrap: break-word !important;
+      overflow-wrap: anywhere !important;
+    }
+
+    /* Nested fixed-width wrappers from pasted HTML */
+    [${PRINT_AREA_ATTR}="true"] [style*="width"],
+    [data-gjs-type="${PRINT_AREA_TYPE}"] [style*="width"] {
+      max-width: 100% !important;
     }
   `;
 }
@@ -293,6 +330,7 @@ export function applyPrintAreaLayout(
   if (!wrapper || !printArea) return;
 
   clearPersistedLayoutStyles(wrapper, printArea);
+  fitImportedRootsToPrintArea(printArea, contentArea.width);
   injectPrintAreaLayoutCss(editor, dimensions, margins, contentArea);
   injectLayoutGridFrameCss(editor);
   const supplementalCss = getSupplementalCss(editor);
@@ -303,6 +341,75 @@ export function applyPrintAreaLayout(
   const frame = editor.Canvas.getFrameEl();
   frame?.contentWindow?.dispatchEvent(new Event('resize'));
   editor.refresh();
+}
+
+/**
+ * Pasted HTML often sets root table width to a fixed px (600–900) wider than the
+ * A4 content area. Force roots to 100% so Design matches Preview after reload.
+ */
+function fitImportedRootsToPrintArea(printArea: Component, contentWidthPx: number): void {
+  const maxPx = Math.max(0, Math.floor(contentWidthPx));
+  if (!maxPx) return;
+
+  const rewriteWidth = (component: Component, forcePercent = false) => {
+    const tag = String(component.get('tagName') || '').toLowerCase();
+    if (tag !== 'table' && tag !== 'div') return;
+
+    const attrs = { ...(component.getAttributes?.() || {}) };
+    const style = { ...(component.getStyle?.() || {}) };
+    let changed = false;
+
+    const widthAttr = String(attrs.width || '').trim();
+    const widthPxMatch = widthAttr.match(/^(\d+(?:\.\d+)?)(px)?$/i);
+    if (forcePercent || (widthPxMatch && Number(widthPxMatch[1]) > maxPx)) {
+      if (attrs.width !== '100%') {
+        attrs.width = '100%';
+        changed = true;
+      }
+    }
+
+    const styleWidth = String(style.width || '').trim();
+    const stylePxMatch = styleWidth.match(/^(\d+(?:\.\d+)?)px$/i);
+    if (forcePercent || (stylePxMatch && Number(stylePxMatch[1]) > maxPx) || styleWidth === '') {
+      if (style.width !== '100%') {
+        style.width = '100%';
+        changed = true;
+      }
+    }
+    if (style['max-width'] !== '100%') {
+      style['max-width'] = '100%';
+      changed = true;
+    }
+    if (style['min-width']) {
+      delete style['min-width'];
+      changed = true;
+    }
+
+    if (!changed) return;
+    component.setAttributes(attrs, { silent: true });
+    component.setStyle(style, { silent: true });
+
+    const el = component.view?.el;
+    if (el instanceof HTMLElement) {
+      el.style.width = '100%';
+      el.style.maxWidth = '100%';
+      el.style.minWidth = '';
+      if (tag === 'table') {
+        el.setAttribute('width', '100%');
+      }
+    }
+  };
+
+  printArea.components().forEach((child: Component) => {
+    const tag = String(child.get('tagName') || '').toLowerCase();
+    rewriteWidth(child, tag === 'table');
+    // One level of wrapper div around the main table is common in pasted HTML.
+    if (tag === 'div') {
+      child.components().forEach((nested: Component) => {
+        rewriteWidth(nested, String(nested.get('tagName') || '').toLowerCase() === 'table');
+      });
+    }
+  });
 }
 
 function normalizeLayoutGridRow(component: Component): void {

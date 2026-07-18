@@ -28,7 +28,7 @@ const {
   resolveArticlesHeadlessPublicKey,
   resolveHeadlessContentOrgKey,
 } = require('./articlesHeadlessPublicKeyService');
-const { encryptTenantSecret, decryptTenantSecret } = require('../../utils/tenantSecretCrypto');
+const { encryptTenantSecret, tryDecryptTenantSecret } = require('../../utils/tenantSecretCrypto');
 
 function mergeStoredAppearance(stored = {}, organization = {}) {
   const defaults = ADDON_DEFAULT_SETTINGS[ADDON_KEYS.ARTICLES]?.appearance || {};
@@ -94,6 +94,7 @@ function normalizePublishing(raw = {}, legacy = {}) {
     embedWebsiteOrigins: normalizedEmbed.origins,
     staticSyncHostType,
     hasPublishWebhookSecret: Boolean(encryptedPublishWebhookSecret),
+    publishWebhookSecretUnreadable: false,
   };
 }
 
@@ -190,6 +191,16 @@ async function getArticlesAddonSettings(organizationId, options = {}) {
     .select('_id name slug parentId')
     .sort({ sortOrder: 1, name: 1 })
     .lean();
+
+  const encryptedSecret = String(
+    config?.settings?.publishing?.encryptedPublishWebhookSecret || '',
+  ).trim();
+  if (encryptedSecret) {
+    const decrypted = tryDecryptTenantSecret(encryptedSecret);
+    if (!decrypted.ok) {
+      settings.publishing.publishWebhookSecretUnreadable = true;
+    }
+  }
 
   return {
     settings,
@@ -290,11 +301,15 @@ async function resolvePublishWebhookSecret(organizationId) {
   const config = await getTenantAddonConfiguration(organizationId, ADDON_KEYS.ARTICLES);
   const encrypted = String(config?.settings?.publishing?.encryptedPublishWebhookSecret || '').trim();
   if (!encrypted) return '';
-  try {
-    return decryptTenantSecret(encrypted);
-  } catch {
-    return '';
+  const decrypted = tryDecryptTenantSecret(encrypted);
+  if (!decrypted.ok) {
+    const error = new Error(
+      'Stored webhook secret cannot be decrypted. Regenerate the webhook secret and update ARIVU_WEBHOOK_SECRET on your site.',
+    );
+    error.code = 'WEBHOOK_SECRET_UNREADABLE';
+    throw error;
   }
+  return decrypted.value;
 }
 
 async function generateArticlesPublishWebhookSecret(organizationId, options = {}) {

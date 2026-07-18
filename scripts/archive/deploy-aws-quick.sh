@@ -274,7 +274,7 @@ server {
     add_header X-XSS-Protection "1; mode=block" always;
 
     # Increase upload size (for CSV imports)
-    client_max_body_size 10M;
+    client_max_body_size 26M;
 }
 NGINXCONF
 

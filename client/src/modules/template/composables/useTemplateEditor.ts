@@ -12,6 +12,7 @@ import {
   hasGrapesProjectContent,
   isEmptyGrapesDefinition,
   isGrapesDefinition,
+  isGrapesDefinitionDegraded,
   type GrapesTemplateDefinition
 } from '../editor/storage';
 import {
@@ -211,8 +212,10 @@ export function useTemplateEditor(getTemplateId: () => string) {
     /** Explicitly allow saving a blank canvas over existing content. */
     allowClearingContent?: boolean;
   } = {}): Promise<boolean> {
-    const id = getTemplateId();
-    if (!id || (!serializeFn && !options.jsonDefinition)) return false;
+    const id = String(getTemplateId() || templateMeta.value?._id || '').trim();
+    if (!id || id === 'undefined' || id === 'null' || (!serializeFn && !options.jsonDefinition)) {
+      return false;
+    }
 
     if (!options.force && isAutosaveBlocked()) {
       scheduleAutosaveRetry();
@@ -248,10 +251,26 @@ export function useTemplateEditor(getTemplateId: () => string) {
         jsonDefinition = protectedDefinition;
       }
 
+      // PDF/document: block flattened serializes on autosave only.
+      // Explicit Save draft / Publish (force) must always persist user intent.
+      if (
+        outputFormat.value !== 'email'
+        && !options.force
+        && !options.allowClearingContent
+        && isGrapesDefinitionDegraded(jsonDefinition, lastGoodDefinition)
+      ) {
+        if (!silent) {
+          saveStatus.value = 'dirty';
+        }
+        return false;
+      }
+
       // Never persist an empty canvas over a template that previously had content.
-      // Snapshot-only payloads are not renderable — do not treat them as successful content.
-      if (!hasRenderableEmailHtml(jsonDefinition) && loadedDefinitionHadContent) {
-        if (!options.allowClearingContent) {
+      const nextHasContent = outputFormat.value === 'email'
+        ? hasRenderableEmailHtml(jsonDefinition)
+        : hasGrapesDefinitionContent(jsonDefinition);
+      if (!nextHasContent && loadedDefinitionHadContent) {
+        if (!options.allowClearingContent && !options.force) {
           if (!silent) {
             saveStatus.value = 'dirty';
           }
@@ -260,10 +279,15 @@ export function useTemplateEditor(getTemplateId: () => string) {
       }
 
       if (
-        !hasRenderableEmailHtml(jsonDefinition)
+        !nextHasContent
         && lastGoodDefinition
-        && hasRenderableEmailHtml(lastGoodDefinition)
+        && (
+          outputFormat.value === 'email'
+            ? hasRenderableEmailHtml(lastGoodDefinition)
+            : hasGrapesDefinitionContent(lastGoodDefinition)
+        )
         && !options.allowClearingContent
+        && !options.force
       ) {
         if (!silent) {
           saveStatus.value = 'dirty';
@@ -272,11 +296,20 @@ export function useTemplateEditor(getTemplateId: () => string) {
       }
 
       const updated = await updateTemplateDefinition(id, { jsonDefinition });
-      // Only promote lastGood when the saved payload is not a regression.
-      if (
-        hasRenderableEmailHtml(jsonDefinition)
-        && !isEmailDefinitionDegraded(jsonDefinition, lastGoodDefinition)
-      ) {
+      // Promote lastGood after a successful write. Force saves always re-baseline.
+      const savedOk = options.force
+        || (
+          outputFormat.value === 'email'
+            ? (
+              hasRenderableEmailHtml(jsonDefinition)
+              && !isEmailDefinitionDegraded(jsonDefinition, lastGoodDefinition)
+            )
+            : (
+              hasGrapesDefinitionContent(jsonDefinition)
+              && !isGrapesDefinitionDegraded(jsonDefinition, lastGoodDefinition)
+            )
+        );
+      if (savedOk && hasGrapesDefinitionContent(jsonDefinition)) {
         loadedDefinitionHadContent = true;
         lastGoodDefinition = jsonDefinition;
         persistEmailBackup(id, jsonDefinition);
@@ -352,8 +385,12 @@ export function useTemplateEditor(getTemplateId: () => string) {
   }
 
   function seedLastGoodDefinition(definition: GrapesTemplateDefinition | null | undefined) {
-    if (!definition || !String(definition.html || '').trim()) return;
-    if (isEmailDefinitionDegraded(definition, lastGoodDefinition)) return;
+    if (!definition || !hasGrapesDefinitionContent(definition)) return;
+    if (outputFormat.value === 'email') {
+      if (isEmailDefinitionDegraded(definition, lastGoodDefinition)) return;
+    } else if (isGrapesDefinitionDegraded(definition, lastGoodDefinition)) {
+      return;
+    }
     lastGoodDefinition = definition;
     loadedDefinitionHadContent = true;
     persistEmailBackup(getTemplateId(), definition);

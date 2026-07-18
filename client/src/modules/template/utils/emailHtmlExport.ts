@@ -31,14 +31,102 @@ export function filterImportedDocumentCss(css: string): string {
   if (!source) return '';
 
   source = source.replace(/@page\s*\{[\s\S]*?\}/gi, '');
+  source = source.replace(/@media\s+print\s*\{[\s\S]*?\}\s*/gi, '');
   source = source.replace(
     /\.builder-merge-chip\s*,\s*\[data-merge-field="true"\]\s*\{[\s\S]*?\}/gi,
     ''
   );
   source = source.replace(/\/\*\s*arivu-layout-grid\s*\*\/[\s\S]*$/i, '');
   source = scopeDocumentSelectorsToPrintArea(source);
+  source = stripPrintAreaBrowserChrome(source);
+  source = normalizeA4PageBoxCss(source);
+  // Fixed px widths from email/print HTML break A4 print-area fit in Design.
+  source = clampOversizedCssWidths(source);
 
   return source.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/**
+ * Pasted "browser preview" sheets often set width:210mm / height:297mm on an
+ * inner .a4-page. That is full A4 — wider than the Design print area (A4 minus
+ * margins) — so rewrite to fill the print area instead.
+ */
+export function normalizeA4PageBoxCss(css: string): string {
+  let source = String(css || '');
+
+  // Common A4 absolute sizes → fluid fill of the builder print area.
+  source = source.replace(
+    /(^|;|{)\s*width\s*:\s*210mm\s*(?=;|})/gi,
+    '$1width: 100%'
+  );
+  source = source.replace(
+    /(^|;|{)\s*min-width\s*:\s*210mm\s*(?=;|})/gi,
+    '$1min-width: 0'
+  );
+  source = source.replace(
+    /(^|;|{)\s*height\s*:\s*297mm\s*(?=;|})/gi,
+    '$1height: auto'
+  );
+  source = source.replace(
+    /(^|;|{)\s*min-height\s*:\s*297mm\s*(?=;|})/gi,
+    '$1min-height: 100%'
+  );
+  // Letter size (US) variants.
+  source = source.replace(
+    /(^|;|{)\s*width\s*:\s*8\.5in\s*(?=;|})/gi,
+    '$1width: 100%'
+  );
+  source = source.replace(
+    /(^|;|{)\s*height\s*:\s*11in\s*(?=;|})/gi,
+    '$1height: auto'
+  );
+
+  source = source.replace(
+    /(^|;|{)\s*box-shadow\s*:\s*[^;{}]+(?=;|})/gi,
+    '$1box-shadow: none'
+  );
+
+  return source;
+}
+
+/**
+ * Body styles meant for a browser canvas (gray background, flex centering,
+ * outer padding) must not apply to the Design print area.
+ */
+function stripPrintAreaBrowserChrome(css: string): string {
+  const scope = PRINT_AREA_CSS_SCOPE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const bodyRule = new RegExp(
+    `(${scope})\\s*\\{([^{}]*)\\}`,
+    'gi'
+  );
+
+  return String(css || '').replace(bodyRule, (_full, selector, body) => {
+    let next = String(body || '');
+    next = next.replace(/(^|;)\s*background(?:-color)?\s*:\s*[^;]+/gi, '$1');
+    next = next.replace(/(^|;)\s*padding\s*:\s*[^;]+/gi, '$1');
+    next = next.replace(/(^|;)\s*margin\s*:\s*[^;]+/gi, '$1');
+    next = next.replace(/(^|;)\s*display\s*:\s*flex\s*/gi, '$1');
+    next = next.replace(/(^|;)\s*justify-content\s*:\s*[^;]+/gi, '$1');
+    next = next.replace(/(^|;)\s*align-items\s*:\s*[^;]+/gi, '$1');
+    next = next.replace(/;;+/g, ';').replace(/^\s*;\s*/, '').trim();
+    return `${selector} { ${next} }`;
+  });
+}
+
+/** Replace large fixed widths with 100% so content stays inside the print area. */
+function clampOversizedCssWidths(css: string): string {
+  return String(css || '').replace(
+    /(^|;|{)\s*(min-width|max-width|width)\s*:\s*(\d+(?:\.\d+)?)px\s*(?=;|})/gi,
+    (full, prefix, prop, value) => {
+      const px = Number(value);
+      // A4 content area is typically ~650–720px with margins; clamp anything larger.
+      if (Number.isFinite(px) && px > 640) {
+        const nextProp = String(prop).toLowerCase() === 'min-width' ? 'max-width' : prop;
+        return `${prefix}${nextProp}: 100%`;
+      }
+      return full;
+    }
+  );
 }
 
 function scopeDocumentSelectorsToPrintArea(css: string): string {
@@ -56,14 +144,65 @@ export function parseTemplateHtmlDocumentForCanvas(
   raw: string,
   options: ParseTemplateHtmlDocumentOptions = {}
 ): ParsedEmailHtml {
-  const { html, css } = parseEmailHtmlInput(raw);
-  const bodyHtml = stripGrapesDocumentWrapper(extractEmailBodyHtml(html));
   const isEmail = Boolean(options.isEmail);
+  const { html, css } = parseEmailHtmlInput(raw);
+  // parseEmailHtmlInput already returns body inner HTML — do not run extractEmailBodyHtml
+  // again (that defaults to email centering wraps).
+  let bodyHtml = stripGrapesDocumentWrapper(String(html || '').trim());
+  // Malformed pastes can leave orphan <body> tags after DOM unwrap.
+  bodyHtml = bodyHtml.replace(/<\/?body[^>]*>/gi, '').trim();
+
+  if (isEmail) {
+    bodyHtml = normalizeImportedEmailHtml(bodyHtml);
+  } else {
+    bodyHtml = normalizePrintBodyHtml(bodyHtml);
+  }
 
   return {
-    html: isEmail ? normalizeImportedEmailHtml(bodyHtml) : bodyHtml,
+    html: bodyHtml,
     css: isEmail ? css : filterImportedDocumentCss(css)
   };
+}
+
+/**
+ * Keep a single page wrapper (e.g. .a4-page) for flex layouts, but strip inline
+ * A4 mm sizes that overflow the Design print area.
+ */
+export function normalizePrintBodyHtml(html: string): string {
+  const source = String(html || '').trim();
+  if (!source) return '';
+
+  try {
+    const doc = new DOMParser().parseFromString(
+      `<div id="arivu-print-root">${source}</div>`,
+      'text/html'
+    );
+    const root = doc.getElementById('arivu-print-root');
+    if (!root) return source;
+
+    // Nested <body> from malformed paste — unwrap into the print root.
+    root.querySelectorAll('body').forEach((bodyEl) => {
+      const parent = bodyEl.parentNode;
+      if (!parent) return;
+      while (bodyEl.firstChild) {
+        parent.insertBefore(bodyEl.firstChild, bodyEl);
+      }
+      parent.removeChild(bodyEl);
+    });
+
+    root.querySelectorAll('[style]').forEach((el) => {
+      const style = el.getAttribute('style') || '';
+      const next = normalizeA4PageBoxCss(`x{${style}}`)
+        .replace(/^x\{/, '')
+        .replace(/\}$/, '');
+      if (next.trim()) el.setAttribute('style', next);
+      else el.removeAttribute('style');
+    });
+
+    return root.innerHTML.trim() || source;
+  } catch {
+    return source;
+  }
 }
 
 export function parseEmailHtmlInput(raw: string): ParsedEmailHtml {
@@ -76,7 +215,8 @@ export function parseEmailHtmlInput(raw: string): ParsedEmailHtml {
     const doc = new DOMParser().parseFromString(source, 'text/html');
     const parserError = doc.querySelector('parsererror');
     if (parserError) {
-      return { html: extractEmailBodyHtml(source), css: '' };
+      // Raw extract only — caller decides email vs print normalization.
+      return { html: extractEmailBodyHtml(source, { normalizeEmail: false }), css: '' };
     }
 
     const cssBlocks = [...doc.querySelectorAll('style')]
@@ -86,27 +226,34 @@ export function parseEmailHtmlInput(raw: string): ParsedEmailHtml {
       .map((node) => `/* ignored external: ${node.getAttribute('href') || ''} */`)
       .filter(Boolean);
 
-    const bodyHtml = doc.body?.innerHTML?.trim() || extractEmailBodyHtml(source);
+    const bodyHtml = doc.body?.innerHTML?.trim()
+      || extractEmailBodyHtml(source, { normalizeEmail: false });
 
     return {
       html: bodyHtml,
       css: [...cssBlocks, ...linkedCss].join('\n\n').trim()
     };
   } catch {
-    return { html: extractEmailBodyHtml(source), css: '' };
+    return { html: extractEmailBodyHtml(source, { normalizeEmail: false }), css: '' };
   }
 }
 
 /**
  * Extract canvas-safe body HTML from a full email document or fragment.
+ * @param options.normalizeEmail When false, skip email-only table centering wraps (PDF/print).
  */
-export function extractEmailBodyHtml(html: string): string {
+export function extractEmailBodyHtml(
+  html: string,
+  options: { normalizeEmail?: boolean } = {}
+): string {
+  const normalizeEmail = options.normalizeEmail !== false;
   let source = String(html || '').trim();
   if (!source) return '';
 
   const bodyMatch = source.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   if (bodyMatch?.[1]) {
-    return normalizeImportedEmailHtml(bodyMatch[1]);
+    const inner = bodyMatch[1];
+    return normalizeEmail ? normalizeImportedEmailHtml(inner) : String(inner || '').trim();
   }
 
   source = source.replace(/^<!DOCTYPE[^>]*>/i, '');
@@ -114,7 +261,7 @@ export function extractEmailBodyHtml(html: string): string {
   source = source.replace(/<head[\s\S]*?<\/head>/gi, '');
   source = source.replace(/<\/?body[^>]*>/gi, '');
 
-  return normalizeImportedEmailHtml(source);
+  return normalizeEmail ? normalizeImportedEmailHtml(source) : source.trim();
 }
 
 export function isFullHtmlDocument(html: string): boolean {

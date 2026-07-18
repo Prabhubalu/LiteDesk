@@ -28,7 +28,7 @@ const {
   resolveBlogHeadlessPublicKey,
   resolveHeadlessBlogOrgKey,
 } = require('./blogHeadlessPublicKeyService');
-const { encryptTenantSecret, decryptTenantSecret } = require('../../utils/tenantSecretCrypto');
+const { encryptTenantSecret, tryDecryptTenantSecret } = require('../../utils/tenantSecretCrypto');
 
 function normalizeUrlPrefix(value, fallback = '/blog') {
   const raw = String(value || fallback).trim() || fallback;
@@ -80,6 +80,7 @@ function normalizePublishing(raw = {}) {
     embedWebsiteOrigins: normalizedEmbed.origins,
     staticSyncHostType,
     hasPublishWebhookSecret: Boolean(encryptedPublishWebhookSecret),
+    publishWebhookSecretUnreadable: false,
   };
 }
 
@@ -195,6 +196,16 @@ async function getBlogAddonSettings(organizationId, options = {}) {
     .select('slug')
     .lean();
 
+  const encryptedSecret = String(
+    config?.settings?.publishing?.encryptedPublishWebhookSecret || '',
+  ).trim();
+  if (encryptedSecret) {
+    const decrypted = tryDecryptTenantSecret(encryptedSecret);
+    if (!decrypted.ok) {
+      settings.publishing.publishWebhookSecretUnreadable = true;
+    }
+  }
+
   return {
     settings,
     integration: buildBlogIntegration(organizationForIntegration, settings, {
@@ -300,9 +311,17 @@ async function getBlogPublishingSettings(organizationId) {
 
 async function resolvePublishWebhookSecret(organizationId) {
   const config = await getTenantAddonConfiguration(organizationId, ADDON_KEYS.BLOG);
-  const encrypted = config?.settings?.publishing?.encryptedPublishWebhookSecret;
+  const encrypted = String(config?.settings?.publishing?.encryptedPublishWebhookSecret || '').trim();
   if (!encrypted) return '';
-  return decryptTenantSecret(encrypted) || '';
+  const decrypted = tryDecryptTenantSecret(encrypted);
+  if (!decrypted.ok) {
+    const error = new Error(
+      'Stored webhook secret cannot be decrypted. Regenerate the webhook secret and update ARIVU_WEBHOOK_SECRET on your site.',
+    );
+    error.code = 'WEBHOOK_SECRET_UNREADABLE';
+    throw error;
+  }
+  return decrypted.value;
 }
 
 async function generateBlogPublishWebhookSecret(organizationId, options = {}) {

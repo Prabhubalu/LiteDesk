@@ -2271,6 +2271,46 @@
     "message": "Copy URL",
     "description": "Copy URL button"
   },
+  "printDrawerTitle": {
+    "message": "Print preview",
+    "description": "Record print drawer title"
+  },
+  "printDrawerSubtitle": {
+    "message": "Choose a print template and preview before printing.",
+    "description": "Record print drawer subtitle"
+  },
+  "printTemplateLabel": {
+    "message": "Print template",
+    "description": "Label for print template selector"
+  },
+  "printNoTemplates": {
+    "message": "No templates available",
+    "description": "Empty option when no print templates exist for module"
+  },
+  "printNoTemplatesHint": {
+    "message": "No published print templates are available for this module. Create one under Templates.",
+    "description": "Empty state hint in record print drawer"
+  },
+  "printLoadingTemplates": {
+    "message": "Loading templates…",
+    "description": "Loading state while fetching print templates"
+  },
+  "printLoadFailed": {
+    "message": "Could not load print templates",
+    "description": "Error when print template list fails"
+  },
+  "printDownloadPdf": {
+    "message": "Download PDF",
+    "description": "Download rendered PDF from print drawer"
+  },
+  "printPdfFailed": {
+    "message": "Could not generate PDF",
+    "description": "Error when PDF download fails"
+  },
+  "printDefaultBadge": {
+    "message": "Default",
+    "description": "Badge for default print template in selector"
+  },
   "aiSummarizing": {
     "message": "Summarizing…",
     "description": "Record AI summarize in progress"

@@ -94,6 +94,11 @@
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
             </button>
+            <RecordPrintButton
+              v-if="record?._id"
+              :module-key="moduleKey"
+              :record-id="String(record._id)"
+            />
             <Menu as="div" class="relative">
               <MenuButton
                 class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -1194,6 +1199,7 @@ import {
 } from '@/utils/orgContactFormPairing';
 import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
 import RecordHeader from '@/components/record-page/RecordHeader.vue';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import RecordStateSection from '@/components/record-page/RecordStateSection.vue';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';

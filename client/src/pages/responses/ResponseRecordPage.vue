@@ -97,6 +97,11 @@
             >
               <ClipboardDocumentIcon class="h-5 w-5" />
             </button>
+            <RecordPrintButton
+              v-if="response?._id"
+              module-key="responses"
+              :record-id="String(response._id)"
+            />
           </template>
         </RecordHeader>
       </template>
@@ -488,6 +493,7 @@ import {
 import FormComparisonView from '@/components/forms/FormComparisonView.vue';
 import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
 import RecordHeader from '@/components/record-page/RecordHeader.vue';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
 import RelatedRecordsPanel from '@/components/relationships/RelatedRecordsPanel.vue';
 import EngagementResponseContent from '@/components/forms/EngagementResponseContent.vue';

@@ -1,6 +1,7 @@
 import type { Editor } from 'grapesjs';
-import { ensurePrintArea, stripPrintAreaLayoutFromProject } from './printArea';
+import { applyPrintAreaLayout, ensurePrintArea, stripPrintAreaLayoutFromProject } from './printArea';
 import { injectLayoutGridFrameCss } from './layoutGridCss';
+import type { PageLayoutOptions } from './pageDimensions';
 import { flushTableSheetEdits, refreshCanvasTablesAfterHtmlApply, syncActiveSheetEditForSerialize, getActiveTableSheetCell } from './tableSheetEditor';
 import { hydrateTableCellsFromDom, syncTableCellsForSerialize } from './tableModel';
 import { hydrateEditableTextComponents } from './textContent';
@@ -41,6 +42,8 @@ export interface GrapesTemplateDefinition {
 
 export interface LoadDefinitionOptions {
   isEmail?: boolean;
+  /** Required for PDF so print-area fit CSS + width rewrite run after project load. */
+  pageLayout?: PageLayoutOptions;
 }
 
 export function createBlankGrapesDefinition(): GrapesTemplateDefinition {
@@ -73,21 +76,80 @@ function countProjectComponents(node: unknown): number {
   return count;
 }
 
-export function hasGrapesProjectContent(project: Record<string, unknown> | null | undefined): boolean {
-  if (!project || typeof project !== 'object') return false;
+export function countGrapesProjectComponents(
+  project: Record<string, unknown> | null | undefined
+): number {
+  if (!project || typeof project !== 'object') return 0;
   const pages = (project as { pages?: unknown[] }).pages;
-  if (!Array.isArray(pages) || pages.length === 0) return false;
+  if (!Array.isArray(pages) || pages.length === 0) return 0;
 
+  let total = 0;
   for (const page of pages) {
     const frames = (page as { frames?: unknown[] }).frames;
     if (!Array.isArray(frames)) continue;
     for (const frame of frames) {
-      if (countProjectComponents((frame as { component?: unknown }).component) > 0) {
-        return true;
-      }
+      total += countProjectComponents((frame as { component?: unknown }).component);
     }
   }
+  return total;
+}
+
+/** True when HTML still has layout structure (tables / multiple blocks), not a flat text blob. */
+export function grapesHtmlLooksStructured(html: string): boolean {
+  const source = String(html || '');
+  if (/<table\b/i.test(source)) return true;
+  if (/<(td|th|tr)\b/i.test(source)) return true;
+  const blocks = source.match(/<(div|section|article|header|footer|p|h[1-6]|ul|ol)\b/gi);
+  return Boolean(blocks && blocks.length >= 2);
+}
+
+/**
+ * True when `next` would discard a richer definition (empty, flattened tables, or severe shrink).
+ * PDF source of truth is Grapes `project` — do not treat HTML-only export quirks as degradation.
+ */
+export function isGrapesDefinitionDegraded(
+  next: GrapesTemplateDefinition | null | undefined,
+  previous: GrapesTemplateDefinition | null | undefined
+): boolean {
+  if (!previous) return false;
+
+  const prevHtml = String(previous.html || '').trim();
+  const nextHtml = String(next?.html || '').trim();
+  const prevProjectCount = countGrapesProjectComponents(previous.project);
+  const nextProjectCount = countGrapesProjectComponents(next?.project);
+  const prevHadContent = Boolean(prevHtml) || prevProjectCount > 0;
+  const nextHasContent = Boolean(nextHtml) || nextProjectCount > 0;
+
+  if (prevHadContent && !nextHasContent) return true;
+
+  // Severe project shrink (PDF canvas structure).
+  if (prevProjectCount > 15 && nextProjectCount < Math.floor(prevProjectCount * 0.4)) {
+    return true;
+  }
+
+  // HTML structure loss only when project is also empty/tiny.
+  if (
+    nextProjectCount < 5
+    && grapesHtmlLooksStructured(prevHtml)
+    && !grapesHtmlLooksStructured(nextHtml)
+  ) {
+    return true;
+  }
+
+  // Severe HTML shrink only when project also collapsed.
+  if (
+    nextProjectCount < Math.floor(Math.max(prevProjectCount, 1) * 0.4)
+    && prevHtml.length > 800
+    && nextHtml.length < Math.floor(prevHtml.length * 0.4)
+  ) {
+    return true;
+  }
+
   return false;
+}
+
+export function hasGrapesProjectContent(project: Record<string, unknown> | null | undefined): boolean {
+  return countGrapesProjectComponents(project) > 0;
 }
 
 export function hasGrapesDefinitionContent(definition: GrapesTemplateDefinition | null | undefined): boolean {
@@ -121,10 +183,14 @@ function applyCanvasHtml(
   html: string,
   css: string,
   msoChunks: string[],
-  isEmail: boolean
+  isEmail: boolean,
+  pageLayout?: PageLayoutOptions
 ): void {
   runWhenEditorCanvasReady(editor, () => {
-    applyHtmlToEditorCanvas(editor, html, css, { isEmail });
+    applyHtmlToEditorCanvas(editor, html, css, {
+      isEmail,
+      pageLayout: isEmail ? undefined : pageLayout
+    });
     if (isEmail && msoChunks.length) {
       setEditorMsoChunks(editor, msoChunks);
     } else {
@@ -239,6 +305,10 @@ export function loadDefinition(
         if (!isEmail) {
           ensurePrintArea(editor);
           injectLayoutGridFrameCss(editor);
+          const layout = options.pageLayout;
+          if (layout?.dimensions?.width && layout.dimensions.height) {
+            applyPrintAreaLayout(editor, layout.dimensions, layout.marginsMm);
+          }
         }
         const wrapper = editor.getWrapper();
         if (wrapper) {
@@ -247,6 +317,13 @@ export function loadDefinition(
         hydrateTableCellsFromDom(editor);
         refreshCanvasTablesAfterHtmlApply(editor);
         hydrateCanvasImages(editor);
+        // Re-apply after hydrate/repaint — those can restore fixed widths from DOM.
+        if (!isEmail) {
+          const layout = options.pageLayout;
+          if (layout?.dimensions?.width && layout.dimensions.height) {
+            applyPrintAreaLayout(editor, layout.dimensions, layout.marginsMm);
+          }
+        }
         editor.refresh();
       });
     });
@@ -263,7 +340,7 @@ export function loadDefinition(
       msoChunks = encoded.chunks;
     }
 
-    applyCanvasHtml(editor, canvasHtml, css, msoChunks, isEmail);
+    applyCanvasHtml(editor, canvasHtml, css, msoChunks, isEmail, options.pageLayout);
     return;
   }
 
