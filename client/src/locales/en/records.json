@@ -191,6 +191,10 @@
     "message": "Pick variant",
     "description": "Modal title for quote line variant picker"
   },
+  "linesAddSelected": {
+    "message": "Add selected ({count})",
+    "description": "Confirm button for multi-select product lookup on quote lines"
+  },
   "linesVariantSearchPlaceholder": {
     "message": "Search variants…",
     "description": "Search input placeholder in quote line variant picker"

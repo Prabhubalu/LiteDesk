@@ -16,6 +16,7 @@ const {
     getProfile,
     updateProfile,
     changePassword,
+    resendUserInvite,
     resetUserPassword,
     getAddCapabilities,
     uploadAvatar,
@@ -73,6 +74,7 @@ router.get('/:id', canManageUsers(), async (req, res, next) => {
 }, getUser);
 
 router.put('/:id', canManageUsers(), updateUser);
+router.post('/:id/resend-invite', canManageUsers(), resendUserInvite);
 router.post('/:id/reset-password', canManageUsers(), resetUserPassword);
 router.delete('/:id', canManageUsers(), deleteUser);
 

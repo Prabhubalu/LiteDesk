@@ -1874,6 +1874,146 @@ exports.changePassword = async (req, res) => {
 };
 
 // --- Reset user password (Admin only) ---
+exports.resendUserInvite = async (req, res) => {
+    try {
+        const organization = req.organization || await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+
+        const ScopedUser = await getScopedUserModel(organization);
+        const scopeQuery = buildUserScopeQuery(req, organization);
+
+        const user = await ScopedUser.findOne({
+            _id: req.params.id,
+            ...scopeQuery
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        if (user.isOwner) {
+            return res.status(403).json({
+                success: false,
+                message: 'Cannot resend invite for the organization owner',
+                code: 'CANNOT_RESEND_OWNER_INVITE'
+            });
+        }
+
+        if (!['invited', 'inactive'].includes(user.status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Only invited or inactive users can be reinvited',
+                code: 'INVALID_STATUS_FOR_RESEND_INVITE'
+            });
+        }
+
+        const wasInactive = user.status === 'inactive';
+        const inviteCredentials = userInviteService.buildInviteCredentials({ wantsEmail: true });
+        const inviteTokenHash = hashToken(inviteCredentials.inviteTokenRaw);
+        const hashedPassword = await bcrypt.hash(inviteCredentials.password, 10);
+
+        user.password = hashedPassword;
+        user.status = inviteCredentials.initialStatus;
+        user.mustChangePassword = inviteCredentials.mustChangePassword;
+        user.invitedAt = new Date();
+        user.invitedBy = req.user._id;
+        user.emailVerifiedAt = null;
+        user.inviteAcceptedAt = null;
+        user.inviteTokenHash = inviteTokenHash;
+        user.inviteTokenExpiresAt = inviteCredentials.inviteTokenExpiresAt;
+        user.emailVerificationTokenHash = null;
+        user.emailVerificationExpiresAt = null;
+        user.emailVerificationSentAt = null;
+
+        await user.save();
+
+        const persistedInvite = await ScopedUser.findById(user._id)
+            .select('status inviteTokenHash inviteTokenExpiresAt')
+            .lean();
+        if (
+            !persistedInvite
+            || persistedInvite.status !== 'invited'
+            || persistedInvite.inviteTokenHash !== inviteTokenHash
+        ) {
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to persist invitation. Please try again.',
+                code: 'INVITE_TOKEN_PERSIST_FAILED'
+            });
+        }
+
+        await UserDirectory.findOneAndUpdate(
+            { email: user.email.toLowerCase() },
+            {
+                $set: {
+                    organizationId: organization._id,
+                    tenantDatabaseName: organization.database?.name || null,
+                    tenantUserId: user._id,
+                    status: 'active',
+                    inviteTokenHash,
+                    emailVerificationTokenHash: null
+                }
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        if (wasInactive && Array.isArray(user.appAccess)) {
+            for (const appAccessEntry of user.appAccess) {
+                if (appAccessEntry?.appKey) {
+                    await incrementSeat(organization._id, appAccessEntry.appKey);
+                }
+            }
+        }
+
+        const inviteEmailResult = await userInviteService.sendInviteForUser({
+            user,
+            organization,
+            inviter: req.user,
+            inviteToken: inviteCredentials.inviteTokenRaw,
+            welcomeNote: null
+        });
+
+        const emailSent = inviteEmailResult.sent === true;
+        if (!emailSent) {
+            console.warn('[resendUserInvite] Invitation email failed:', {
+                invitedEmail: user.email,
+                organizationId: organization._id,
+                reason: inviteEmailResult.reason || null,
+                channel: inviteEmailResult.channel || null
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: emailSent
+                ? 'Invitation resent successfully. Invitation email sent.'
+                : 'Invitation updated, but the invitation email could not be sent.',
+            data: {
+                _id: user._id,
+                email: user.email,
+                status: user.status,
+                invitedAt: user.invitedAt,
+                emailSent,
+                emailError: emailSent ? undefined : (inviteEmailResult.reason || 'Failed to send invitation email')
+            }
+        });
+    } catch (error) {
+        console.error('Resend invite error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Server error resending invitation'
+        });
+    }
+};
+
 exports.resetUserPassword = async (req, res) => {
     try {
         const organization = req.organization || await Organization.findById(req.user.organizationId);
@@ -1893,15 +2033,15 @@ exports.resetUserPassword = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'User not found' 
+                message: 'User not found'
             });
         }
 
         // Prevent resetting owner password
         if (user.isOwner) {
-            return res.status(403).json({ 
+            return res.status(403).json({
                 success: false,
                 message: 'Cannot reset the organization owner password',
                 code: 'CANNOT_RESET_OWNER_PASSWORD'
