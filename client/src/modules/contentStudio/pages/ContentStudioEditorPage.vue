@@ -81,6 +81,7 @@
             @update:title="handleTitleChange"
             @update:subtitle="handleSubtitleChange"
             @register-image-trigger="imageUploadTrigger = $event"
+            @register-image-file-handler="imageFileHandler = $event"
             @cover-uploaded="handleCoverUploaded"
             @remove-cover="handleRemoveCover"
           />
@@ -207,6 +208,7 @@ const previewDevice = ref('desktop');
 const leftPanel = ref('blocks');
 const previewOpen = ref(false);
 const imageUploadTrigger = ref(null);
+const imageFileHandler = ref(null);
 const {
   open: mediaInsertOpen,
   blockType: mediaInsertBlockType,
@@ -240,6 +242,7 @@ const {
   placeholder: computed(() => t('contentStudio.editorPlaceholder')),
   imageCaptionPlaceholder: computed(() => t('contentStudio.imageCaptionPlaceholder')),
   imageUploadTrigger,
+  imageFileHandler,
   mediaInsertHandler,
   onUpdate: (json) => {
     blocksSnapshot.value = json;

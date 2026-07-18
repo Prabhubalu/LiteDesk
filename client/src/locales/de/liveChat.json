@@ -1604,12 +1604,12 @@
     "description": "Live Chat toast fallback category"
   },
   "inAppTitle": {
-    "message": "Support",
-    "description": "In-product support hub panel title"
+    "message": "Astra",
+    "description": "In-product Astra panel title"
   },
   "inAppOpen": {
-    "message": "Open support chat",
-    "description": "In-product support FAB aria label"
+    "message": "Open Astra",
+    "description": "Open Astra FAB aria label"
   },
   "inAppSections": {
     "message": "Support sections",
@@ -1712,8 +1712,8 @@
     "description": "In-product assistant composer placeholder"
   },
   "inAppPoweredBy": {
-    "message": "Powered by Arivu",
-    "description": "In-product assistant footer credit"
+    "message": "Powered by Astra",
+    "description": "In-product Astra footer credit"
   },
   "inAppBackHome": {
     "message": "Home",
@@ -1797,7 +1797,7 @@
   },
   "inAppAiNextActions": {
     "message": "Suggested next actions",
-    "description": "Heading above next-best-action chips in Arivu Assistant"
+    "description": "Heading above next-best-action chips in Astra"
   },
   "inAppAiActionEmail": {
     "message": "Email",
@@ -1832,12 +1832,12 @@
     "description": "Hint on email draft action card"
   },
   "inAppAiFromAgent": {
-    "message": "Specialist agent",
-    "description": "Badge when a tenant agent answered"
+    "message": "Astra · Specialist",
+    "description": "Badge when Astra routed to a tenant agent"
   },
   "inAppAiFromAgentNamed": {
-    "message": "Agent · {name}",
-    "description": "Badge showing which specialist agent answered"
+    "message": "Astra · {name}",
+    "description": "Badge showing which specialist agent Astra routed to"
   },
   "inAppAiRunAgent": {
     "message": "Run agent",
@@ -1873,11 +1873,11 @@
   },
   "inAppAiNewChat": {
     "message": "New chat",
-    "description": "Start a new Arivu Assistant conversation"
+    "description": "Start a new Astra conversation"
   },
   "inAppAiMeetBanner": {
     "message": "Ask about this page, research records, or get the next best action.",
-    "description": "Empty-state intro line for Arivu Assistant"
+    "description": "Empty-state intro line for Astra"
   },
   "inAppAiCapabilityAsk": {
     "message": "Ask",
@@ -1941,23 +1941,23 @@
   },
   "inAppResize": {
     "message": "Resize assistant panel",
-    "description": "Drag handle aria label for resizing Arivu Assistant"
+    "description": "Drag handle aria label for resizing Astra"
   },
   "inAppAiBrandShort": {
-    "message": "Astra kennenlernen",
+    "message": "Meet Astra",
     "description": "Centered empty-state title under Astra logo"
   },
   "inAppAiMeetTitle": {
-    "message": "Arivu kennenlernen",
-    "description": "Arivu Assistant empty-state intro title"
+    "message": "Meet Astra",
+    "description": "Astra empty-state intro title"
   },
   "inAppAiMeetTagline": {
     "message": "Deutlich smarter, deutlich fähiger.",
-    "description": "Arivu Assistant empty-state intro tagline"
+    "description": "Astra empty-state intro tagline"
   },
   "inAppAiNewBadge": {
     "message": "Neu",
-    "description": "New badge on Arivu Assistant intro banner"
+    "description": "New badge on Astra intro banner"
   },
   "inAppAiSuggestShortSummarize": {
     "message": "Zusammenfassen",
@@ -1998,5 +1998,89 @@
   "inAppAiBrandTagline": {
     "message": "Die Intelligenz hinter Ihrer Arbeit.",
     "description": "Tagline under Meet Astra on empty AI panel"
+  },
+  "inAppAiNoMatchingAgent": {
+    "message": "No matching Agent for that request. Available: {agents}. Name an Agent or refine your ask.",
+    "description": "Assistant is router-only; no tenant agent matched the question"
+  },
+  "inAppAiNoAgentsConfigured": {
+    "message": "No Agents are configured yet. Create a specialist Agent in AI Settings, then ask again.",
+    "description": "Assistant router when tenant has zero enabled agents"
+  },
+  "inAppAiAgentNoAnswer": {
+    "message": "The matched Agent ran but could not produce a usable answer. Try a more specific question.",
+    "description": "Tenant agent matched but returned a thin/empty response"
+  },
+  "inAppAiFromAstraNewAgent": {
+    "message": "Astra · New agent · {name}",
+    "description": "Badge when Astra auto-created a specialist for this ask"
+  },
+  "inAppAiFromAstraNewAgentGeneric": {
+    "message": "Astra · New agent",
+    "description": "Badge when Astra auto-created a specialist"
+  },
+  "inAppAiActionCreate": {
+    "message": "Create",
+    "description": "Badge for create_record Astra mutation"
+  },
+  "inAppAiActionApplyUpdate": {
+    "message": "Update",
+    "description": "Badge for update_record Astra mutation"
+  },
+  "inAppAiMutationIncomplete": {
+    "message": "This action is missing module or fields. Ask Astra to propose a complete change.",
+    "description": "Astra mutation missing payload"
+  },
+  "inAppAiMutationCreated": {
+    "message": "Created {module} record {id}.",
+    "description": "Astra create success"
+  },
+  "inAppAiMutationUpdated": {
+    "message": "Updated {module} record {id}.",
+    "description": "Astra update success"
+  },
+  "inAppAiMutationFailed": {
+    "message": "Astra could not apply that change. Check permissions and try again.",
+    "description": "Astra mutation failure"
+  },
+  "inAppAiNeedDetails": {
+    "message": "Need a few details",
+    "description": "Heading when Astra agent asks clarifying questions"
+  },
+  "inAppAiNeedDetailsHint": {
+    "message": "Reply in the chat with the answers — Astra will finish the task.",
+    "description": "Hint under clarifying questions"
+  },
+  "inAppAiIntroCta": {
+    "message": "Try Astra",
+    "description": "Primary CTA on first-open Astra intro overlay"
+  },
+  "inAppAiIntroSkip": {
+    "message": "Not now",
+    "description": "Skip link on first-open Astra intro overlay"
+  },
+  "inAppAiWorking": {
+    "message": "Astra is working…",
+    "description": "Astra loading status with logo"
+  },
+  "inAppAiWorkingOnIt": {
+    "message": "Astra is on it…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingGathering": {
+    "message": "Astra is gathering context…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingAnalyzing": {
+    "message": "Astra is analyzing…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingDigging": {
+    "message": "Astra is digging in…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingAlmost": {
+    "message": "Astra is almost there…",
+    "description": "Astra loading synonym"
   }
 }

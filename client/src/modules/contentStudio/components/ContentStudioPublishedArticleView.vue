@@ -75,8 +75,10 @@ import {
   contentStudioSubtitleOverlapSizeClass,
 } from '../editor/articlePresentation';
 import { initContentStudioGalleries } from '../editor/contentStudioGallery';
+import { initContentStudioImageLightbox } from '../editor/contentStudioImageLightbox';
 import { buildArticleAppearanceShell, resolvePublicAssetUrl } from '../utils/articleAppearance';
 import '../editor/contentStudioGallery.css';
+import '../editor/contentStudioImageLightbox.css';
 import '../editor/contentStudioChecklist.css';
 import '../editor/contentStudioFaq.css';
 import '../editor/contentStudioSteps.css';
@@ -149,16 +151,18 @@ const formattedDate = computed(() => {
 });
 const readTimeLabel = computed(() => t('contentStudio.readTime', { minutes: props.readMinutes }));
 
-async function syncGalleries() {
+async function syncInteractiveBody() {
   await nextTick();
-  if (bodyRoot.value) initContentStudioGalleries(bodyRoot.value);
+  if (!bodyRoot.value) return;
+  initContentStudioGalleries(bodyRoot.value);
+  initContentStudioImageLightbox(bodyRoot.value);
 }
 
 onMounted(() => {
-  void syncGalleries();
+  void syncInteractiveBody();
 });
 
 watch(() => props.bodyHtml, () => {
-  void syncGalleries();
+  void syncInteractiveBody();
 });
 </script>

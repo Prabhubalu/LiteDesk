@@ -73,3 +73,42 @@ describe('aiWorkGraphContext richness', () => {
     assert.equal(out[0].email.to, 'im.prabhub@gmail.com');
   });
 });
+
+const {
+  resolveAstraContextMode,
+  buildAstraVisualsFromSeries,
+  resolveAstraChartType,
+} = require('../aiWorkGraphContextService');
+
+describe('resolveAstraContextMode', () => {
+  it('uses sample by default', () => {
+    assert.equal(resolveAstraContextMode('who owns this deal?'), 'sample');
+  });
+  it('detects report intent', () => {
+    assert.equal(resolveAstraContextMode('generate a pipeline report'), 'report');
+  });
+  it('detects complete data intent', () => {
+    assert.equal(resolveAstraContextMode('sum of all deal amounts across all stages'), 'complete');
+  });
+  it('detects pie chart as report mode', () => {
+    assert.equal(resolveAstraContextMode('Give me in a Pie Chart'), 'report');
+  });
+});
+
+describe('buildAstraVisualsFromSeries', () => {
+  it('builds pie points from stage series', () => {
+    const visuals = buildAstraVisualsFromSeries({
+      question: 'pie chart of deals by stage',
+      moduleKey: 'deals',
+      groupField: 'stage',
+      series: [
+        { label: 'New', value: 5, amount: 100 },
+        { label: 'Qualification', value: 3, amount: 200 },
+      ],
+    });
+    assert.equal(visuals.length, 1);
+    assert.equal(visuals[0].chartType, 'pie');
+    assert.equal(visuals[0].points.length, 2);
+    assert.equal(resolveAstraChartType('bar chart please'), 'bar');
+  });
+});

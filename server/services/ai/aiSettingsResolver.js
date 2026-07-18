@@ -37,6 +37,9 @@ const TENANT_MODEL_ABILITIES = new Set([
   'draft_reply',
   'tenant_agent',
   'tenant_agent_triggers',
+  'astra_synthesize_agent',
+  'astra_mutation',
+  'process_designer',
   'echo',
 ]);
 

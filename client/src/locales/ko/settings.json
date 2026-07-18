@@ -16690,5 +16690,13 @@
   "editUserResendInviteFailed": {
     "message": "Failed to resend invitation",
     "description": "Resend invite failed toast"
+  },
+  "aiCustomAgentWebResearch": {
+    "message": "Allow public web research",
+    "description": "Enable bounded website fetch for this tenant agent"
+  },
+  "aiCustomAgentWebResearchHint": {
+    "message": "Fetches the CRM record website (same host only) for research questions. Not arbitrary internet scraping.",
+    "description": "Hint for web research capability"
   }
 }

@@ -1604,12 +1604,12 @@
     "description": "Live Chat closed list exported column"
   },
   "inAppTitle": {
-    "message": "Arivu Assistant",
-    "description": "In-product support hub panel title"
+    "message": "Astra",
+    "description": "In-product Astra panel title"
   },
   "inAppOpen": {
-    "message": "Open Arivu Assistant",
-    "description": "In-product support FAB aria label"
+    "message": "Open Astra",
+    "description": "Open Astra FAB aria label"
   },
   "inAppAiBadge": {
     "message": "Live",
@@ -1681,27 +1681,27 @@
   },
   "inAppAiNewChat": {
     "message": "New chat",
-    "description": "Start a new Arivu Assistant conversation"
+    "description": "Start a new Astra conversation"
   },
   "inAppAiBrandShort": {
     "message": "Meet Astra",
     "description": "Centered empty-state title under Astra logo"
   },
   "inAppAiMeetTitle": {
-    "message": "Meet Arivu",
-    "description": "Arivu Assistant empty-state intro title"
+    "message": "Meet Astra",
+    "description": "Astra empty-state intro title"
   },
   "inAppAiMeetTagline": {
     "message": "Way smarter, wildly more capable.",
-    "description": "Arivu Assistant empty-state intro tagline"
+    "description": "Astra empty-state intro tagline"
   },
   "inAppAiNewBadge": {
     "message": "New",
-    "description": "New badge on Arivu Assistant intro banner"
+    "description": "New badge on Astra intro banner"
   },
   "inAppAiMeetBanner": {
     "message": "Ask about this page, research records, or get the next best action.",
-    "description": "Empty-state intro line for Arivu Assistant"
+    "description": "Empty-state intro line for Astra"
   },
   "inAppAiCapabilityAsk": {
     "message": "Ask",
@@ -1807,9 +1807,45 @@
     "message": "Thinking…",
     "description": "In-product assistant AI loading state"
   },
+  "inAppAiWorking": {
+    "message": "Astra is working…",
+    "description": "Astra loading status with logo"
+  },
+  "inAppAiWorkingOnIt": {
+    "message": "Astra is on it…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingGathering": {
+    "message": "Astra is gathering context…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingAnalyzing": {
+    "message": "Astra is analyzing…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingDigging": {
+    "message": "Astra is digging in…",
+    "description": "Astra loading synonym"
+  },
+  "inAppAiWorkingAlmost": {
+    "message": "Astra is almost there…",
+    "description": "Astra loading synonym"
+  },
   "inAppAiNoAnswer": {
     "message": "I could not find an answer from this page or your knowledge base. Try rephrasing, or Talk to Agent.",
     "description": "In-product assistant empty AI answer"
+  },
+  "inAppAiNoMatchingAgent": {
+    "message": "No matching Agent for that request. Available: {agents}. Name an Agent or refine your ask.",
+    "description": "Assistant is router-only; no tenant agent matched the question"
+  },
+  "inAppAiNoAgentsConfigured": {
+    "message": "No Agents are configured yet. Create a specialist Agent in AI Settings, then ask again.",
+    "description": "Assistant router when tenant has zero enabled agents"
+  },
+  "inAppAiAgentNoAnswer": {
+    "message": "The matched Agent ran but could not produce a usable answer. Try a more specific question.",
+    "description": "Tenant agent matched but returned a thin/empty response"
   },
   "inAppAiTalkToAgentCta": {
     "message": "Talk to Agent",
@@ -1821,7 +1857,7 @@
   },
   "inAppAiNextActions": {
     "message": "Suggested next actions",
-    "description": "Heading above next-best-action chips in Arivu Assistant"
+    "description": "Heading above next-best-action chips in Astra"
   },
   "inAppAiActionEmail": {
     "message": "Email",
@@ -1884,12 +1920,52 @@
     "description": "Badge when answer used knowledge base"
   },
   "inAppAiFromAgent": {
-    "message": "Specialist agent",
-    "description": "Badge when a tenant agent answered"
+    "message": "Astra · Specialist",
+    "description": "Badge when Astra routed to a tenant agent"
   },
   "inAppAiFromAgentNamed": {
-    "message": "Agent · {name}",
-    "description": "Badge showing which specialist agent answered"
+    "message": "Astra · {name}",
+    "description": "Badge showing which specialist agent Astra routed to"
+  },
+  "inAppAiNeedDetails": {
+    "message": "Need a few details",
+    "description": "Heading when Astra agent asks clarifying questions"
+  },
+  "inAppAiNeedDetailsHint": {
+    "message": "Reply in the chat with the answers — Astra will finish the task.",
+    "description": "Hint under clarifying questions"
+  },
+  "inAppAiFromAstraNewAgent": {
+    "message": "Astra · New agent · {name}",
+    "description": "Badge when Astra auto-created a specialist for this ask"
+  },
+  "inAppAiFromAstraNewAgentGeneric": {
+    "message": "Astra · New agent",
+    "description": "Badge when Astra auto-created a specialist"
+  },
+  "inAppAiActionCreate": {
+    "message": "Create",
+    "description": "Badge for create_record Astra mutation"
+  },
+  "inAppAiActionApplyUpdate": {
+    "message": "Update",
+    "description": "Badge for update_record Astra mutation"
+  },
+  "inAppAiMutationIncomplete": {
+    "message": "This action is missing module or fields. Ask Astra to propose a complete change.",
+    "description": "Astra mutation missing payload"
+  },
+  "inAppAiMutationCreated": {
+    "message": "Created {module} record {id}.",
+    "description": "Astra create success"
+  },
+  "inAppAiMutationUpdated": {
+    "message": "Updated {module} record {id}.",
+    "description": "Astra update success"
+  },
+  "inAppAiMutationFailed": {
+    "message": "Astra could not apply that change. Check permissions and try again.",
+    "description": "Astra mutation failure"
   },
   "inAppAiRunAgent": {
     "message": "Run agent",
@@ -1940,8 +2016,8 @@
     "description": "Hint when assistant has CRM list page context"
   },
   "inAppPoweredBy": {
-    "message": "Powered by Arivu",
-    "description": "In-product assistant footer credit"
+    "message": "Powered by Astra",
+    "description": "In-product Astra footer credit"
   },
   "inAppBackHome": {
     "message": "Home",
@@ -1961,7 +2037,7 @@
   },
   "inAppResize": {
     "message": "Resize assistant panel",
-    "description": "Drag handle aria label for resizing Arivu Assistant"
+    "description": "Drag handle aria label for resizing Astra"
   },
   "inAppSections": {
     "message": "Support sections",
@@ -1998,5 +2074,13 @@
   "inAppAiBrandTagline": {
     "message": "The intelligence behind your work.",
     "description": "Tagline under Meet Astra on empty AI panel"
+  },
+  "inAppAiIntroCta": {
+    "message": "Try Astra",
+    "description": "Primary CTA on first-open Astra intro overlay"
+  },
+  "inAppAiIntroSkip": {
+    "message": "Not now",
+    "description": "Skip link on first-open Astra intro overlay"
   }
 }
