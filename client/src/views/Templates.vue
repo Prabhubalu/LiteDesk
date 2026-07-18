@@ -216,7 +216,11 @@ async function loadTemplates() {
 }
 
 async function refreshPage() {
-  await Promise.all([fetchTemplateSummary(), loadTemplates()]);
+  try {
+    await Promise.all([fetchTemplateSummary(), loadTemplates()]);
+  } catch (error) {
+    notifications.error(t('templates.loadFailed'));
+  }
 }
 
 function onSearchChange(query) {
@@ -276,7 +280,7 @@ async function handleCreate(payload) {
     await refreshPage();
     openTemplateBuilder(created, payload?.name);
   } catch (error) {
-    notifications.error(error?.message || t('templates.loadFailed'));
+    notifications.error(t('templates.createFailed'));
   }
 }
 

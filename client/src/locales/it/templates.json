@@ -2566,5 +2566,9 @@
   "previewUnavailable": {
     "message": "Publish a version to enable preview.",
     "description": "Empty state when template preview is not available"
+  },
+  "createFailed": {
+    "message": "Failed to create template",
+    "description": "Template create error toast"
   }
 }

@@ -13,7 +13,8 @@ const {
 const { 
     authLimiter, 
     registrationLimiter, 
-    passwordResetLimiter 
+    passwordResetLimiter,
+    authTokenActionLimiter
 } = require('../middleware/rateLimitMiddleware');
 const { progressiveAuthThrottle } = require('../middleware/progressiveAuthThrottleMiddleware');
 const { protect } = require('../middleware/authMiddleware');
@@ -38,14 +39,14 @@ router.get('/test-version', (req, res) => {
 router.post('/register', registrationLimiter, registerUser);
 router.post('/login', progressiveAuthThrottle, authLimiter, loginUser);
 
-router.get('/invite/validate', passwordResetLimiter, validateInvite);
-router.post('/invite/accept', passwordResetLimiter, acceptInvite);
-router.get('/verify-email/confirm', passwordResetLimiter, confirmEmailVerification);
-router.post('/verify-email/confirm', passwordResetLimiter, confirmEmailVerification);
+router.get('/invite/validate', authTokenActionLimiter, validateInvite);
+router.post('/invite/accept', authTokenActionLimiter, acceptInvite);
+router.get('/verify-email/confirm', authTokenActionLimiter, confirmEmailVerification);
+router.post('/verify-email/confirm', authTokenActionLimiter, confirmEmailVerification);
 
 router.post('/forgot-password', passwordResetLimiter, forgotPassword);
-router.get('/reset-password/validate', passwordResetLimiter, validateResetPassword);
-router.post('/reset-password', passwordResetLimiter, resetPassword);
+router.get('/reset-password/validate', authTokenActionLimiter, validateResetPassword);
+router.post('/reset-password', authTokenActionLimiter, resetPassword);
 
 router.get('/portal/list', protect, listPortals);
 router.post('/portal/select', protect, selectPortal);
