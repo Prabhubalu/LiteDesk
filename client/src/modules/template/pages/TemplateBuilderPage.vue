@@ -738,7 +738,9 @@ onMounted(async () => {
   try {
     await loadTemplate();
   } catch (error) {
-    notifications.error(error?.message || t('templates.loadFailed'));
+    if (!error?.is404 && error?.status !== 404) {
+      notifications.error(t('templates.loadFailed'));
+    }
   }
 });
 

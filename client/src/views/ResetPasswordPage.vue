@@ -105,10 +105,10 @@ async function loadToken() {
   try {
     const url = getApiUrlForFetch(`/api/auth/reset-password/validate?token=${encodeURIComponent(token())}`);
     const response = await fetch(url, { headers: { Accept: 'application/json' } });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.success) {
       tokenValid.value = false;
-      errorMessage.value = data.message || t('auth.resetPasswordInvalidBody');
+      errorMessage.value = data.message || data.error || t('auth.resetPasswordInvalidBody');
       return;
     }
     resetEmail.value = data.data?.email || '';
@@ -141,9 +141,9 @@ async function submit() {
         password: password.value
       })
     });
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.success) {
-      errorMessage.value = data.message || t('auth.resetPasswordFailed');
+      errorMessage.value = data.message || data.error || t('auth.resetPasswordFailed');
       return;
     }
     success.value = true;

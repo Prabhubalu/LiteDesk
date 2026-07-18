@@ -151,6 +151,10 @@
     "message": "Template created",
     "description": "Template create success toast"
   },
+  "createFailed": {
+    "message": "Failed to create template",
+    "description": "Template create error toast"
+  },
   "deleteSuccess": {
     "message": "Template deleted",
     "description": "Template delete success toast"

@@ -6,6 +6,7 @@
  * Set DISABLE_SECURITY=true in .env to bypass all rate limiting
  */
 
+const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const {
@@ -101,6 +102,15 @@ const PASSWORD_RESET_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
 const PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS,
     3
+);
+// Token validate/confirm must tolerate email-security link prefetchers (Safe Links, etc.)
+const AUTH_TOKEN_ACTION_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.AUTH_TOKEN_ACTION_RATE_LIMIT_WINDOW_MS,
+    ONE_HOUR_MS
+);
+const AUTH_TOKEN_ACTION_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.AUTH_TOKEN_ACTION_RATE_LIMIT_MAX_REQUESTS,
+    30
 );
 const AUTH_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
     process.env.AUTH_RATE_LIMIT_WINDOW_MS,
@@ -303,7 +313,14 @@ const logRateLimitHit = (limiterName, req) => {
 
 const makeRateLimitHandler = (limiterName, message) => (req, res) => {
     logRateLimitHit(limiterName, req);
-    res.status(429).json(message);
+    const payload = typeof message === 'string'
+        ? { success: false, error: message, message }
+        : {
+            success: false,
+            ...message,
+            message: message.message || message.error
+        };
+    res.status(429).json(payload);
 };
 
 const RATE_LIMIT_APP_NAME = process.env.CACHE_APP_NAME || process.env.APP_NAME || 'arivu';
@@ -411,7 +428,7 @@ const authLimiter = rateLimit({
     }
 });
 
-// Strict rate limiter for password reset
+// Strict rate limiter for password-reset / invite *request* endpoints (email-keyed)
 const passwordResetLimiter = rateLimit({
     windowMs: PASSWORD_RESET_RATE_LIMIT_WINDOW_MS,
     max: PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS,
@@ -435,6 +452,35 @@ const passwordResetLimiter = rateLimit({
     keyGenerator: (req) => {
         const email = String(req.body?.email || '').trim().toLowerCase();
         return `password-reset:ip:${getClientIp(req)}:email:${email}`;
+    }
+});
+
+// Separate limiter for token validate/confirm — do not share the 3/hr request bucket.
+// Key by IP + token so prefetchers on one link do not block every other auth token on that IP.
+const authTokenActionLimiter = rateLimit({
+    windowMs: AUTH_TOKEN_ACTION_RATE_LIMIT_WINDOW_MS,
+    max: AUTH_TOKEN_ACTION_RATE_LIMIT_MAX_REQUESTS,
+    ...rateLimitHeadersAndStore('auth-token-action', AUTH_TOKEN_ACTION_RATE_LIMIT_WINDOW_MS, AUTH_RATE_LIMIT_REDIS_FAILURE_MODE),
+    message: {
+        error: 'Too many attempts with this link, please try again later.',
+        code: 'AUTH_TOKEN_ACTION_LIMIT_EXCEEDED'
+    },
+    handler: makeRateLimitHandler('auth-token-action', {
+        error: 'Too many attempts with this link, please try again later.',
+        code: 'AUTH_TOKEN_ACTION_LIMIT_EXCEEDED'
+    }),
+    skip: (req) => {
+        if (SECURITY_DISABLED) {
+            return true;
+        }
+        return process.env.NODE_ENV !== 'production';
+    },
+    keyGenerator: (req) => {
+        const token = String(req.query?.token || req.body?.token || '').trim();
+        const tokenKey = token
+            ? crypto.createHash('sha256').update(token).digest('hex').slice(0, 16)
+            : 'missing';
+        return `auth-token-action:ip:${getClientIp(req)}:token:${tokenKey}`;
     }
 });
 
@@ -800,6 +846,7 @@ module.exports = {
     apiLimiter,
     authLimiter,
     passwordResetLimiter,
+    authTokenActionLimiter,
     registrationLimiter,
     sensitiveOperationLimiter,
     searchLimiter,

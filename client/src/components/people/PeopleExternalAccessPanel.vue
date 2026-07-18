@@ -8,6 +8,7 @@ import {
   capturePortalDisabled,
   capturePortalSessionsTerminated
 } from '@/config/posthogPortal';
+import { isPortalFrameworkV1Enabled } from '@/utils/portalFeatureFlags';
 
 const props = defineProps({
   peopleId: { type: String, required: true }
@@ -33,7 +34,7 @@ const canManage = computed(() =>
 );
 
 const frameworkEnabled = computed(() =>
-  authStore.organization?.settings?.portalFrameworkV1Enabled === true
+  isPortalFrameworkV1Enabled(authStore.organization)
 );
 
 const visible = computed(() =>
@@ -43,7 +44,11 @@ const visible = computed(() =>
 const portalEnabled = computed(() => state.value?.portalAccess?.enabled === true);
 const portalUser = computed(() => state.value?.user || null);
 const assignedRoles = computed(() => state.value?.roles || []);
-const availableRoles = computed(() => state.value?.availableExternalRoles || []);
+const availableRoles = computed(() =>
+  (state.value?.availableExternalRoles || []).filter(
+    (role) => String(role.name || '').trim().toLowerCase() !== 'portal viewer'
+  )
+);
 const eligibility = computed(() => state.value?.eligibility || null);
 const usage = computed(() => state.value?.usage || null);
 const activeExternalUsers = computed(() => usage.value?.active ?? 0);
