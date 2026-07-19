@@ -122,6 +122,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import PhoneInput from '@/components/common/PhoneInput.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
@@ -231,10 +232,9 @@ const loadFieldDefinitions = async () => {
     error.value = null;
 
     // Fetch People module configuration to get field settings (like "Required in Form")
-    const response = await apiClient.get('/modules?key=people');
+    const peopleModule = await fetchModuleDefinitionCached('people');
     
-    if (response.success && response.data && response.data.length > 0) {
-      const peopleModule = response.data[0];
+    if (peopleModule) {
       const moduleFields = peopleModule.fields || [];
       
       // Filter to only eligible fields (core identity + system fields with allowOnCreate)

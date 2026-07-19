@@ -4840,7 +4840,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { Switch, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import apiClient from '@/utils/apiClient';
-import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
+import { invalidateTenantSchemaCaches, fetchModulesListCached, fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getDefaultEmailValidations } from '@/utils/defaultFieldValidations';
 import {
   CURRENCY_OPTIONS,
@@ -8362,7 +8362,7 @@ const fetchModules = async (apiGetOptions = {}) => {
   try {
     // Use context=all so Settings receives both global and app-specific custom fields
     // Pass cache: 'no-store' after saves — otherwise metadata cache can serve stale quickCreate for 5 minutes
-    const data = await apiClient.get('/modules', { params: { context: 'all' }, ...apiGetOptions });
+    const data = await fetchModulesListCached({ context: 'all' }, apiGetOptions);
     if (data.success) {
       modules.value = normalizeModulesForSettingsDefaults(data.data);
       // Initialize from URL when present. startWithModuleList only blocks implicit auto-select
@@ -12714,16 +12714,9 @@ async function fetchStatusTypes() {
     // Step 2: Fetch module configuration to get enum metadata (defaults)
     // Try multiple contexts to ensure we get all fields
     // First try with sales context (for app-scoped fields), then fallback to platform
-    let module = null;
-    let response = await apiClient.get(`/modules?key=organizations&context=sales`);
-    if (response.success && response.data && response.data.length > 0) {
-      module = response.data[0];
-    } else {
-      // Fallback to platform context
-      response = await apiClient.get(`/modules?key=organizations&context=platform`);
-      if (response.success && response.data && response.data.length > 0) {
-        module = response.data[0];
-      }
+    let module = await fetchModuleDefinitionCached('organizations', { context: 'sales' });
+    if (!module) {
+      module = await fetchModuleDefinitionCached('organizations', { context: 'platform' });
     }
     
     if (module) {

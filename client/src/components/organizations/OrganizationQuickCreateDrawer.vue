@@ -241,6 +241,7 @@ import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
 import OrganizationTypesSection from '@/components/organizations/OrganizationTypesSection.vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { useTabs } from '@/composables/useTabs';
 import {
   isTenantPlatformOrganizationFieldKey,
@@ -440,9 +441,9 @@ const fetchOrganizationModuleDefinition = async () => {
     }
 
     try {
-      const fallbackResponse = await apiClient.get('/modules?context=platform');
-      const moduleList = Array.isArray(fallbackResponse?.data) ? fallbackResponse.data : [];
-      const organizationsModule = moduleList.find((moduleItem) => String(moduleItem?.key || '').toLowerCase() === 'organizations');
+      const organizationsModule = await fetchModuleDefinitionCached('organizations', {
+        context: 'platform',
+      });
       if (organizationsModule) {
         moduleDefinition.value = organizationsModule;
       }

@@ -215,11 +215,16 @@ export function useTemplates() {
   }
 
   async function renderHtmlPreview(id, options = {}) {
+    const templateId = String(id || '').trim();
+    if (!templateId || templateId === 'undefined' || templateId === 'null') {
+      throw new Error('Template id is required');
+    }
+
     const runtimeContext = {};
     if (options.recordId) runtimeContext.recordId = options.recordId;
     if (options.recordModuleKey) runtimeContext.recordModuleKey = options.recordModuleKey;
 
-    const response = await apiClient.post(`/templates/${id}/render/preview`, {
+    const response = await apiClient.post(`/templates/${templateId}/render/preview`, {
       outputFormat: 'html',
       persistOutput: false,
       preview: true,

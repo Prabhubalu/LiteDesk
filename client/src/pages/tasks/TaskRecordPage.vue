@@ -81,6 +81,11 @@
           >
             <ClipboardDocumentIcon class="w-5 h-5" />
           </button>
+          <RecordPrintButton
+            v-if="task?._id"
+            module-key="tasks"
+            :record-id="String(task._id)"
+          />
           <button
             type="button"
             @click="handleToggleFollow"
@@ -1624,6 +1629,7 @@ import {
   EditableLabeledValue,
   RecordTagPopover
 } from '@/components/record-page';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import SectionStack from '@/components/record-page/sections/SectionStack.vue';
 import { useRecordTagPopoverPosition } from '@/components/record-page/composables/useRecordTagPopoverPosition';
 import { useRecordTags } from '@/components/record-page/composables/useRecordTags';

@@ -202,7 +202,20 @@ async function emitContentWebhook({
   const addonKey = resolveAddonKey(document);
   if (addonKey !== 'articles' && addonKey !== 'blog') return;
 
-  const { publishing, webhookSecret } = await resolveAddonPublishing(organizationId, addonKey);
+  let publishing;
+  let webhookSecret;
+  try {
+    ({ publishing, webhookSecret } = await resolveAddonPublishing(organizationId, addonKey));
+  } catch (error) {
+    if (error?.code === 'WEBHOOK_SECRET_UNREADABLE') {
+      console.error(
+        `[contentPublishingWebhook] Skipping ${event}: stored webhook secret is unreadable for org ${organizationId}`,
+      );
+      return;
+    }
+    throw error;
+  }
+
   const webhookUrl = String(publishing.publishWebhookUrl || '').trim();
   if (!webhookUrl) return;
 

@@ -757,8 +757,9 @@ exports.list = async (req, res) => {
       },
       /** Registry-aligned stats for ModuleList / ListView cards (full query, not current page) */
       listStatistics: {
+        ...listCardBreakdown,
         totalPeople: total,
-        ...listCardBreakdown
+        myPeople: total
       }
     });
   } catch (error) {

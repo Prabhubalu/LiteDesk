@@ -51,10 +51,12 @@ function formatTemplateOption(template) {
  * @param {string | null} [params.exceptTemplateId]
  */
 async function clearModuleDefaultTemplates({ organizationId, moduleScope, purpose, exceptTemplateId = null }) {
+  // One default per module (print/pdf). Purpose kept for listing filters only.
+  void purpose;
   const filter = {
     organizationId,
     moduleScope,
-    purpose,
+    outputFormat: 'pdf',
     isDefault: true,
     ...notDeletedFilter()
   };
@@ -77,7 +79,7 @@ async function getModuleDocumentTemplateSettings({ organizationId, moduleKey }) 
     ContentTemplate.findOne({
       organizationId,
       moduleScope: config.moduleScope,
-      purpose: config.purpose,
+      outputFormat: 'pdf',
       isDefault: true,
       ...notDeletedFilter()
     })

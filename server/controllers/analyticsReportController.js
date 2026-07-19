@@ -150,7 +150,7 @@ async function listReports(req, res) {
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
     const skip = (page - 1) * limit;
 
-    const [data, total] = await Promise.all([
+    const [data, total, statusCounts] = await Promise.all([
       AnalyticsReport.find(query)
         .select('-formulas -variables -executionOrder')
         .sort({ updatedAt: -1 })
@@ -160,12 +160,32 @@ async function listReports(req, res) {
         .populate('ownerId', 'firstName lastName email')
         .lean(),
       AnalyticsReport.countDocuments(query),
+      AnalyticsReport.aggregate([
+        { $match: query },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
     ]);
+
+    const byStatus = Object.fromEntries(
+      (statusCounts || []).map((row) => [String(row._id || ''), row.count])
+    );
 
     return res.json({
       success: true,
       data,
       meta: { page, perPage: limit, total, totalPages: Math.ceil(total / limit) },
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit) || 1,
+        totalRecords: total,
+        limit,
+      },
+      listStatistics: {
+        totalReports: total,
+        draft: byStatus.draft || 0,
+        published: byStatus.published || 0,
+        archived: byStatus.archived || 0,
+      },
     });
   } catch (error) {
     return handleError(res, error, 'Error fetching analytics reports');

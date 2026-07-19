@@ -678,5 +678,13 @@
   "tabPortalDocument": {
     "message": "Document",
     "description": "Portal document detail tab title"
+  },
+  "astra": {
+    "message": "Astra",
+    "description": "Full-page Astra AI assistant navigation label"
+  },
+  "arivuCanvas": {
+    "message": "Arivu Canvas",
+    "description": "Generative Arivu Canvas workspace navigation label"
   }
 }

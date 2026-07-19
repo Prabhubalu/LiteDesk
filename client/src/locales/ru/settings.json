@@ -16958,5 +16958,13 @@
   "inviteSuccessResendHint": {
     "message": "You can resend the invite from the user profile if they need the link again.",
     "description": "Fallback invite success without email or link"
+  },
+  "addonsArticlesWebhookSecretUnreadable": {
+    "message": "Stored webhook secret cannot be decrypted. Generate a new secret and set ARIVU_WEBHOOK_SECRET on your site to the same value.",
+    "description": "Warning when Articles encrypted webhook secret is unreadable"
+  },
+  "aiUsageColAgent": {
+    "message": "Agent",
+    "description": "AI audit table specialist agent column"
   }
 }

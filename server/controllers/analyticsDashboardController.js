@@ -151,7 +151,7 @@ async function listDashboards(req, res) {
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
     const skip = (page - 1) * limit;
 
-    const [data, total] = await Promise.all([
+    const [data, total, statusCounts] = await Promise.all([
       AnalyticsDashboard.find(query)
         .sort({ updatedAt: -1 })
         .skip(skip)
@@ -159,12 +159,32 @@ async function listDashboards(req, res) {
         .populate('ownerId', 'firstName lastName email')
         .lean(),
       AnalyticsDashboard.countDocuments(query),
+      AnalyticsDashboard.aggregate([
+        { $match: query },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
     ]);
+
+    const byStatus = Object.fromEntries(
+      (statusCounts || []).map((row) => [String(row._id || ''), row.count])
+    );
 
     return res.json({
       success: true,
       data,
       meta: { page, perPage: limit, total, totalPages: Math.ceil(total / limit) },
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit) || 1,
+        totalRecords: total,
+        limit,
+      },
+      listStatistics: {
+        totalDashboards: total,
+        draft: byStatus.draft || 0,
+        published: byStatus.published || 0,
+        archived: byStatus.archived || 0,
+      },
     });
   } catch (error) {
     return handleError(res, error, 'Error fetching analytics dashboards');
@@ -688,6 +708,78 @@ async function uncertifyDashboard(req, res) {
   }
 }
 
+const { pinAstraVisualToDashboard, pinExistingReportToDashboard } = require('../services/analytics/pinAstraVisualToDashboard');
+
+async function pinAstraVisual(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const userId = req.user._id;
+    const visual = req.body?.visual;
+    if (!visual || typeof visual !== 'object') {
+      return res.status(400).json({ success: false, message: 'visual is required' });
+    }
+
+    const result = await pinAstraVisualToDashboard({
+      organizationId,
+      userId,
+      visual,
+      dashboardId: String(req.body?.dashboardId || '').trim(),
+      appKey: String(req.body?.appKey || req.appKey || 'SALES'),
+      titleOverride: String(req.body?.title || '').trim(),
+    });
+
+    return res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    const status = error.statusCode || 400;
+    console.error('pinAstraVisual', error);
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'Failed to pin Astra visual',
+      code: error.code,
+    });
+  }
+}
+
+async function pinAstraReport(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const userId = req.user._id;
+    const reportId = String(req.body?.reportId || '').trim();
+    if (!reportId) {
+      return res.status(400).json({ success: false, message: 'reportId is required' });
+    }
+
+    const report = await AnalyticsReport.findOne({
+      _id: reportId,
+      organizationId,
+      status: { $ne: 'archived' },
+    });
+    if (!report) {
+      return res.status(404).json({ success: false, message: 'Report not found' });
+    }
+
+    const result = await pinExistingReportToDashboard({
+      organizationId,
+      userId,
+      report,
+      dashboardId: String(req.body?.dashboardId || '').trim(),
+      appKey: String(req.body?.appKey || req.appKey || 'SALES'),
+      chartType: String(req.body?.chartType || 'bar'),
+      titleOverride: String(req.body?.title || '').trim(),
+    });
+
+    return res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    const status = error.statusCode || 400;
+    console.error('pinAstraReport', error);
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'Failed to pin Astra report',
+      code: error.code,
+    });
+  }
+}
+
 module.exports = {
   listDashboards,
   createDashboard,
@@ -701,4 +793,6 @@ module.exports = {
   getDashboardTemplates,
   certifyDashboard,
   uncertifyDashboard,
+  pinAstraVisual,
+  pinAstraReport,
 };

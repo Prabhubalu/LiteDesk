@@ -393,12 +393,20 @@ exports.listCampaigns = async (req, res, next) => {
     }
 
     const result = await runWithOrganizationTenantContext(organizationId, async () => {
-      const [items, total] = await Promise.all([
+      const [items, total, statusCounts] = await Promise.all([
         Campaign.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limit).lean(),
-        Campaign.countDocuments(filter)
+        Campaign.countDocuments(filter),
+        Campaign.aggregate([
+          { $match: filter },
+          { $group: { _id: '$status', count: { $sum: 1 } } }
+        ])
       ]);
-      return { items, total };
+      return { items, total, statusCounts };
     });
+
+    const byStatus = Object.fromEntries(
+      (result.statusCounts || []).map((row) => [String(row._id || ''), row.count])
+    );
 
     return res.json({
       success: true,
@@ -407,7 +415,15 @@ exports.listCampaigns = async (req, res, next) => {
         page,
         limit,
         total: result.total,
+        totalRecords: result.total,
         totalPages: Math.max(1, Math.ceil(result.total / limit))
+      },
+      listStatistics: {
+        totalCampaigns: result.total,
+        draft: byStatus.draft || 0,
+        scheduled: byStatus.scheduled || 0,
+        running: byStatus.running || 0,
+        completed: byStatus.completed || 0
       }
     });
   } catch (err) {

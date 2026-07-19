@@ -100,6 +100,8 @@ export interface ReportBuilderFieldOption {
   label: string;
   type?: string;
   moduleKey?: string;
+  filterable?: boolean;
+  options?: Array<{ value: string; label: string }>;
 }
 
 const AGGREGATION_FNS = ['count', 'sum', 'avg', 'min', 'max'];
@@ -133,6 +135,7 @@ export function useReportBuilder(reportId?: string | null) {
   const loadedReportStatus = ref<string | null>(null);
   const scheduleIdsByFormat = ref<Record<string, string>>({});
   const isHydratingReport = ref(false);
+  const reportHydrationDone = ref(false);
   let previewTimer: ReturnType<typeof setTimeout> | null = null;
 
   const isNew = computed(
@@ -211,7 +214,13 @@ export function useReportBuilder(reportId?: string | null) {
     const buildModuleFields = (moduleKey: string, qualifyRelated: boolean) => {
       const mod = catalogModules.value.find((m) => m.moduleKey === moduleKey);
       const moduleLabel = mod?.label || moduleKey;
-      const mapField = (field: { key: string; label?: string; type?: string }) => {
+      const mapField = (field: {
+        key: string;
+        label?: string;
+        type?: string;
+        filterable?: boolean;
+        options?: Array<{ value: string; label: string }>;
+      }) => {
         const bareKey = field.key;
         const key = qualifyRelated ? `${moduleKey}.${bareKey}` : bareKey;
         const label = qualifyRelated
@@ -222,6 +231,8 @@ export function useReportBuilder(reportId?: string | null) {
           label,
           type: field.type,
           moduleKey,
+          filterable: field.filterable,
+          options: field.options,
         };
       };
 
@@ -252,6 +263,8 @@ export function useReportBuilder(reportId?: string | null) {
           label: mod?.label ? `${mod.label}: ${bareKey}` : key,
           type: undefined,
           moduleKey,
+          filterable: undefined,
+          options: undefined,
         });
       } else {
         fields.push({
@@ -259,6 +272,8 @@ export function useReportBuilder(reportId?: string | null) {
           label: key,
           type: undefined,
           moduleKey: form.primaryModule,
+          filterable: undefined,
+          options: undefined,
         });
       }
       knownKeys.add(key);
@@ -627,6 +642,7 @@ export function useReportBuilder(reportId?: string | null) {
     if (!report?.filterTree) {
       filterInitialState.value = null;
       filterState.value = null;
+      filterRemountToken.value += 1;
       return;
     }
 
@@ -634,17 +650,49 @@ export function useReportBuilder(reportId?: string | null) {
       report.filterTree,
       form.primaryModule,
     );
-    filterInitialState.value = {
+    // Plain clone so FilterBuilder structuredClone / remount never sees Proxies or Date objs.
+    const plainFilters: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(hydrated.filters || {})) {
+      if (value instanceof Date) {
+        plainFilters[key] = value.toISOString();
+      } else if (value != null && typeof value === 'object' && typeof (value as { toISOString?: () => string }).toISOString === 'function') {
+        try {
+          plainFilters[key] = (value as { toISOString: () => string }).toISOString();
+        } catch {
+          plainFilters[key] = value;
+        }
+      } else {
+        plainFilters[key] = value;
+      }
+    }
+    // Map server/Astra comparison ops onto FilterBuilder-supported operators for display.
+    const plainOperators: Record<string, string> = {};
+    for (const [key, op] of Object.entries(hydrated.operators || {})) {
+      const raw = String(op || 'is');
+      if (['gt', 'gte', 'lt', 'lte', 'eq'].includes(raw)) {
+        plainOperators[key] = 'is';
+      } else {
+        plainOperators[key] = raw;
+      }
+    }
+    const nextState: ReportFilterState = JSON.parse(JSON.stringify({
       query: hydrated.query,
-      filters: hydrated.filters,
-      operators: hydrated.operators,
-    };
-    filterState.value = filterInitialState.value;
+      filters: plainFilters,
+      operators: plainOperators,
+    }));
+    filterInitialState.value = nextState;
+    filterState.value = nextState;
+    // Force Filters step remount so values always paint (avoids race with early ?step=).
+    filterRemountToken.value += 1;
   }
 
-  function onFilterStateChange(nextState: ReportFilterState | null) {
-    filterState.value = nextState;
-  }
+function onFilterStateChange(nextState: ReportFilterState | null) {
+  filterState.value = nextState;
+  // Keep remount seed in sync so Filters step always paints applied rules.
+  filterInitialState.value = nextState
+    ? (JSON.parse(JSON.stringify(nextState)) as ReportFilterState)
+    : null;
+}
 
   function selectModule(moduleKey: string) {
     form.primaryModule = moduleKey;
@@ -1015,6 +1063,13 @@ export function useReportBuilder(reportId?: string | null) {
     [rowGroups, columnGroups],
     () => {
       if (isHydratingReport.value) return;
+      // Keep Fields selection in sync when grouping uses a field not yet selected
+      const missing = [...rowGroups.value, ...columnGroups.value].filter(
+        (key) => key && !selectedFields.value.includes(key),
+      );
+      if (missing.length) {
+        selectedFields.value = [...selectedFields.value, ...missing];
+      }
       if (form.type === 'kpi') return;
       if (columnGroups.value.length > 0) {
         form.type = 'matrix';
@@ -1062,6 +1117,7 @@ export function useReportBuilder(reportId?: string | null) {
   );
 
   async function initialize() {
+    reportHydrationDone.value = false;
     await Promise.all([fetchCatalog(), fetchFolders(), fetchHome()]);
 
     const id = reportId || route.params.id;
@@ -1155,6 +1211,7 @@ export function useReportBuilder(reportId?: string | null) {
 
     autoPreview.value = true;
     schedulePreview();
+    reportHydrationDone.value = true;
   }
 
   onMounted(() => {
@@ -1200,6 +1257,7 @@ export function useReportBuilder(reportId?: string | null) {
     filterState,
     filterInitialState,
     filterRemountToken,
+    reportHydrationDone,
     previewResult,
     expandedMatrixRows,
     saving,

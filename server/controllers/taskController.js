@@ -446,6 +446,47 @@ const createTask = async (req, res) => {
   }
 };
 
+/** Combine list filter with an extra predicate for facet counts */
+function tasksQueryAnd(baseQuery, clause) {
+  if (!baseQuery || Object.keys(baseQuery).length === 0) {
+    return clause;
+  }
+  return { $and: [baseQuery, clause] };
+}
+
+/**
+ * Full-result stats for list UI cards (same Mongo filter as the list query).
+ * Keys: open, dueToday, overdue (+ totalTasks/myTasks set by caller).
+ */
+async function computeTasksListStatistics(query) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date(startOfToday);
+  endOfToday.setDate(endOfToday.getDate() + 1);
+  endOfToday.setMilliseconds(-1);
+
+  const openStatus = { status: { $nin: ['completed', 'cancelled'] } };
+
+  const [open, dueToday, overdue] = await Promise.all([
+    Task.countDocuments(tasksQueryAnd(query, openStatus)),
+    Task.countDocuments(
+      tasksQueryAnd(query, {
+        ...openStatus,
+        dueDate: { $gte: startOfToday, $lte: endOfToday }
+      })
+    ),
+    // Before today — does not overlap Due Today
+    Task.countDocuments(
+      tasksQueryAnd(query, {
+        ...openStatus,
+        dueDate: { $lt: startOfToday }
+      })
+    )
+  ]);
+
+  return { open, dueToday, overdue };
+}
+
 // @desc    Get all tasks (with filters)
 // @route   GET /api/tasks
 // @access  Private
@@ -495,10 +536,10 @@ const getTasks = async (req, res) => {
           .skip(skip)
           .lean();
 
-    // Execute query and count concurrently for faster response.
-    const [tasks, total] = await Promise.all([
+    const [tasks, total, listCardBreakdown] = await Promise.all([
       tasksPromise,
-      Task.countDocuments(query)
+      Task.countDocuments(query),
+      computeTasksListStatistics(query)
     ]);
 
     // Populate relatedTo names for list/kanban display
@@ -517,6 +558,11 @@ const getTasks = async (req, res) => {
         totalRecords: total,
         totalTasks: total,
         tasksPerPage: limitNum
+      },
+      listStatistics: {
+        ...listCardBreakdown,
+        totalTasks: total,
+        myTasks: total
       }
     });
   } catch (error) {

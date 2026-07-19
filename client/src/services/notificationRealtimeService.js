@@ -27,6 +27,8 @@ let lastSyncOnConnectAt = 0;
 let pollInFlight = null;
 const disconnectByAppKey = new Map();
 const connectedAppKeys = new Set();
+/** Single multiplex connection key (sorted appKeys join) currently open. */
+let activeMultiplexKey = null;
 
 function refreshStreamConnectedFlag() {
   notificationStreamConnected.value = connectedAppKeys.size > 0;
@@ -47,37 +49,68 @@ function isSseHealthy() {
   return lastSseActivityAt > 0 && Date.now() - lastSseActivityAt < SSE_HEALTH_MS;
 }
 
+function multiplexKey(appKeys) {
+  return [...appKeys].map((k) => String(k).toUpperCase()).sort().join(',');
+}
+
 function syncConnections(appKeys, onNotification, authStore, store) {
-  const desired = new Set(appKeys);
-  for (const [appKey, disconnect] of [...disconnectByAppKey.entries()]) {
-    if (!desired.has(appKey)) {
+  const desiredKeys = [...new Set(
+    (appKeys || []).map((k) => String(k).toUpperCase()).filter(Boolean)
+  )];
+  const desired = multiplexKey(desiredKeys);
+
+  if (!desiredKeys.length) {
+    for (const disconnect of disconnectByAppKey.values()) {
       disconnect();
-      disconnectByAppKey.delete(appKey);
-      markSseDisconnected(appKey);
     }
+    disconnectByAppKey.clear();
+    connectedAppKeys.clear();
+    activeMultiplexKey = null;
+    refreshStreamConnectedFlag();
+    return;
   }
-  for (const appKey of desired) {
-    if (disconnectByAppKey.has(appKey)) continue;
-    const disconnect = connectNotificationStream(appKey, onNotification, {
-      authStore,
-      isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
-      onConnected: () => {
+
+  if (activeMultiplexKey === desired && disconnectByAppKey.has(desired)) {
+    return;
+  }
+
+  for (const disconnect of [...disconnectByAppKey.values()]) {
+    disconnect();
+  }
+  disconnectByAppKey.clear();
+  connectedAppKeys.clear();
+  refreshStreamConnectedFlag();
+
+  const disconnect = connectNotificationStream(desiredKeys, onNotification, {
+    authStore,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+    onConnected: () => {
+      for (const appKey of desiredKeys) {
         markSseActivity(appKey);
-        const now = Date.now();
-        if (now - lastSyncOnConnectAt >= SYNC_ON_CONNECT_MIN_GAP_MS) {
-          lastSyncOnConnectAt = now;
-          store.syncIncomingNotificationsFromServer({
-            sinceMs: now - 15_000,
-            appKeys: [appKey]
-          });
-          lastPollAt = now;
-        }
-      },
-      onHeartbeat: () => markSseActivity(appKey),
-      onDisconnected: () => markSseDisconnected(appKey)
-    });
-    disconnectByAppKey.set(appKey, disconnect);
-  }
+      }
+      const now = Date.now();
+      if (now - lastSyncOnConnectAt >= SYNC_ON_CONNECT_MIN_GAP_MS) {
+        lastSyncOnConnectAt = now;
+        store.syncIncomingNotificationsFromServer({
+          sinceMs: now - 15_000,
+          appKeys: desiredKeys
+        });
+        lastPollAt = now;
+      }
+    },
+    onHeartbeat: () => {
+      for (const appKey of desiredKeys) {
+        markSseActivity(appKey);
+      }
+    },
+    onDisconnected: () => {
+      for (const appKey of desiredKeys) {
+        markSseDisconnected(appKey);
+      }
+    }
+  });
+  disconnectByAppKey.set(desired, disconnect);
+  activeMultiplexKey = desired;
 }
 
 async function pollForNewNotifications(store) {
@@ -210,6 +243,7 @@ export function stopNotificationRealtime() {
     disconnect();
   }
   disconnectByAppKey.clear();
+  activeMultiplexKey = null;
   disconnectAllStreams();
 }
 

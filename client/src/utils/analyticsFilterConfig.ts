@@ -6,6 +6,7 @@ import {
   type ServerFilterQuery,
 } from '@/platform/filters/filterQueryAstCompiler';
 import { inferFallbackFilterConfig } from '@/platform/filters/columnFilterResolver';
+import { normalizeFilterSelectOptions } from '@/utils/picklistOptionUtils';
 
 const STATUS_FIELD_KEYS = new Set(['status', 'stage', 'priority']);
 const DATE_FIELD_KEYS = new Set([
@@ -14,14 +15,33 @@ const DATE_FIELD_KEYS = new Set([
   'validuntil',
   'createdat',
   'updatedat',
+  'completeddate',
+  'reminderdate',
 ]);
-const NUMBER_FIELD_KEYS = new Set(['amount']);
-const USER_FIELD_KEYS = new Set(['assignedto', 'ownerid', 'createdby']);
+const NUMBER_FIELD_KEYS = new Set(['amount', 'actualhours', 'estimatedhours']);
+const USER_FIELD_KEYS = new Set([
+  'assignedto',
+  'assignedby',
+  'ownerid',
+  'createdby',
+  'modifiedby',
+  'updatedby',
+  'submittedby',
+]);
+
+export type AnalyticsFilterFieldSource = {
+  key: string;
+  label?: string;
+  type?: string;
+  filterable?: boolean;
+  options?: FilterConfig['options'];
+};
 
 function normalizeFieldKey(key: string): string {
-  return String(key || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
+  const bare = String(key || '').includes('.')
+    ? String(key).slice(String(key).lastIndexOf('.') + 1)
+    : String(key || '');
+  return bare.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 function humanizeFieldKey(key: string): string {
@@ -31,24 +51,61 @@ function humanizeFieldKey(key: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function inferFilterType(fieldKey: string): FilterConfig['filterType'] {
+function inferFilterTypeFromKey(fieldKey: string): FilterConfig['filterType'] {
   const normalized = normalizeFieldKey(fieldKey);
   if (USER_FIELD_KEYS.has(normalized)) return 'user';
-  if (DATE_FIELD_KEYS.has(normalized)) return 'date';
+  if (DATE_FIELD_KEYS.has(normalized) || normalized.endsWith('date') || normalized.endsWith('datetime')) {
+    return 'date';
+  }
   if (NUMBER_FIELD_KEYS.has(normalized)) return 'number';
   if (STATUS_FIELD_KEYS.has(normalized)) return 'select';
   return 'text';
 }
 
+function mapFieldTypeToFilterType(field: AnalyticsFilterFieldSource): FilterConfig['filterType'] {
+  const type = String(field.type || '').toLowerCase();
+  const normalized = normalizeFieldKey(field.key);
+
+  if (type === 'user' || USER_FIELD_KEYS.has(normalized)) return 'user';
+  if (type === 'date') return 'date';
+  if (type === 'number' || type === 'currency') return 'number';
+  if (
+    type === 'picklist' ||
+    type === 'select' ||
+    type === 'multi-select' ||
+    type === 'multiselect' ||
+    STATUS_FIELD_KEYS.has(normalized)
+  ) {
+    return type === 'multi-select' || type === 'multiselect' ? 'multi-select' : 'select';
+  }
+  if (type === 'boolean') return 'boolean';
+  if (type === 'entity' || type === 'lookup') return 'entity';
+  return inferFilterTypeFromKey(field.key);
+}
+
 export function buildAnalyticsFilterConfigFromFieldKeys(fieldKeys: string[]): FilterConfig[] {
-  return fieldKeys.map((fieldKey, index) => ({
-    key: fieldKey,
-    label: humanizeFieldKey(fieldKey),
-    filterType: inferFilterType(fieldKey),
-    fieldPath: fieldKey,
-    options: [],
-    priority: index + 1,
-  }));
+  return buildAnalyticsFilterConfigFromFields(fieldKeys.map((key) => ({ key })));
+}
+
+export function buildAnalyticsFilterConfigFromFields(
+  fields: AnalyticsFilterFieldSource[],
+): FilterConfig[] {
+  // Report filters must include every catalog field for the module.
+  // Do not honor list-view `filterable: false` — that flag is for column filters only.
+  return fields
+    .filter((field) => Boolean(field?.key))
+    .map((field, index) => {
+      const key = field.key;
+      const options = normalizeFilterSelectOptions(field.options || []);
+      return {
+        key,
+        label: field.label || humanizeFieldKey(key),
+        filterType: mapFieldTypeToFilterType(field),
+        fieldPath: key,
+        options,
+        priority: index + 1,
+      };
+    });
 }
 
 export function buildAnalyticsFilterConfigByKey(filterConfig: FilterConfig[]): Record<string, FilterConfig> {

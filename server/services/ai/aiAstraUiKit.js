@@ -40,7 +40,11 @@ function formatAstraUiCatalogForPrompt() {
     '=== ASTRA UI KIT (choose best components; product renders them — never ASCII) ===',
     'Emit visuals as an array of UI blocks using ONLY these keys:',
     ...ASTRA_UI_COMPONENTS.map((c) => `- ${c.key}: ${c.when}. Props: ${c.props}`),
-    'For reports / charts / dashboards: prefer kpi_strip + chart + data_table + callout (insight).',
+    'RELEVANCE (critical): pick ONLY blocks that directly answer THIS question. Do not add unrelated pipeline KPIs, win rates, or stage distributions the user did not ask about.',
+    '- Single-fact / comparison / "which X" questions (e.g. highest value deal): answer in headline + a short data_table of just the compared rows. No KPI strip, no distribution chart unless asked.',
+    '- Only build the full stack (kpi_strip + chart + data_table + callout) when the user explicitly asks for a report / dashboard / overview / breakdown.',
+    'ACCURACY (critical): Never invent, guess, or zero-fill metrics. Every number in visuals/bullets must appear in CRM context aggregates or record fields. If an amount is missing in context, omit it — do not emit 0.',
+    'Predictions / next actions: only from CRM facts (stage, probability, dates, open tasks, quotes). Each action must name a real record from context (recordId when known). No speculative forecasts without a probability/date basis.',
     'Never invent metrics — use CRM context / aggregates only.',
     'visuals example: [{"component":"kpi_strip","items":[{"label":"Open","value":"14"}]},{"component":"chart","chartType":"pie","points":[{"label":"New","value":5}]}]',
   ].join('\n');
@@ -65,10 +69,43 @@ function pct(part, whole) {
   return `${Math.round((Number(part) / w) * 100)}%`;
 }
 
+function withPinSource(block, { moduleKey = '', groupField = '', metric = 'count' } = {}) {
+  if (!block || !moduleKey) return block;
+  return {
+    ...block,
+    pinSource: {
+      moduleKey: String(moduleKey).slice(0, 40),
+      groupField: String(groupField || '').slice(0, 40),
+      metric: metric === 'amount' ? 'amount' : 'count',
+    },
+  };
+}
+
 /**
  * Deterministic premium layout from DB aggregates (authoritative).
  * Agent can refine tone via callout/headline; numbers stay DB-backed.
  */
+function mergeSeriesByLabel(series = []) {
+  const map = new Map();
+  for (const row of Array.isArray(series) ? series : []) {
+    const raw = String(row?.label ?? '(empty)').trim() || '(empty)';
+    const key = raw.toLowerCase();
+    const prev = map.get(key);
+    const value = Number(row?.value) || 0;
+    const amount = Number(row?.amount) || 0;
+    if (!prev) {
+      map.set(key, { label: raw, value, amount });
+      continue;
+    }
+    prev.value += value;
+    prev.amount += amount;
+    // Prefer Title Case / longer display label when merging case variants
+    if (/[A-Z]/.test(raw) && !/[A-Z]/.test(prev.label)) prev.label = raw;
+    else if (raw.length > prev.label.length) prev.label = raw;
+  }
+  return [...map.values()].sort((a, b) => b.value - a.value);
+}
+
 function composeAstraUiFromData({
   question = '',
   moduleKey = '',
@@ -81,18 +118,34 @@ function composeAstraUiFromData({
   const blocks = [];
   const mod = String(moduleKey || 'records');
   const dim = groupField || 'category';
-  const rows = Array.isArray(series) ? series : [];
+  const rows = mergeSeriesByLabel(series);
   const totalCount = rows.reduce((s, r) => s + (Number(r.value) || 0), 0) || totalRecords;
   const wantChart = Boolean(chartType)
     || /\b(chart|graph|pie|bar|line|visuali|report|dashboard)\b/i.test(question);
+  const pinBase = { moduleKey: mod, groupField: dim };
 
-  if (stats && mod === 'deals') {
+  if (rows.length) {
+    // Any group-by dimension (status, stage, assignedTo, type, …): Total + each bucket.
+    const items = [
+      { label: 'Total', value: String(totalRecords || totalCount) },
+      ...rows.map((r) => ({
+        label: String(r.label || '(empty)'),
+        value: String(Number(r.value) || 0),
+      })),
+    ].slice(0, 12);
+    blocks.push(withPinSource({
+      id: 'kpi_module',
+      component: 'kpi_strip',
+      title: `${mod} by ${dim}`,
+      items,
+    }, { ...pinBase, metric: 'count' }));
+  } else if (stats && mod === 'deals') {
     const open = Number(stats.openCount) || 0;
     const won = Number(stats.wonCount) || 0;
     const lost = Number(stats.lostCount) || 0;
     const decided = won + lost;
     const winRate = decided ? `${Math.round((won / decided) * 100)}%` : '—';
-    blocks.push({
+    blocks.push(withPinSource({
       id: 'kpi_pipeline',
       component: 'kpi_strip',
       title: 'Pipeline snapshot',
@@ -102,50 +155,66 @@ function composeAstraUiFromData({
         { label: 'Won', value: String(won) },
         { label: 'Win rate', value: winRate, hint: 'Won / (Won+Lost)' },
       ],
-    });
+    }, { ...pinBase, metric: 'count' }));
   } else if (totalCount > 0) {
-    blocks.push({
+    blocks.push(withPinSource({
       id: 'kpi_module',
       component: 'kpi_strip',
       title: `${mod} snapshot`,
       items: [
         { label: 'Total', value: String(totalRecords || totalCount) },
-        { label: `Groups (${dim})`, value: String(rows.length) },
       ],
-    });
+    }, { ...pinBase, metric: 'count' }));
   }
 
   if (wantChart && rows.length) {
-    const useAmount = /\b(value|amount|revenue|pipeline value|\$)\b/i.test(question)
-      && rows.some((r) => Number(r.amount) > 0);
+    const hasAmounts = rows.some((r) => Number(r.amount) > 0);
+    const chartUseAmount = hasAmounts
+      && /\b(value|amount|revenue|pipeline value|\$)\b/i.test(question)
+      && !/\b(count|how many)\b/i.test(question);
     const points = rows.map((r) => ({
       label: String(r.label || '(empty)'),
-      value: useAmount ? Number(r.amount) || 0 : Number(r.value) || 0,
+      value: chartUseAmount ? Number(r.amount) || 0 : Number(r.value) || 0,
     }));
     const type = chartType || 'pie';
-    blocks.push({
+    blocks.push(withPinSource({
       id: `chart_${dim}`,
       component: 'chart',
       chartType: type,
       title: `${mod} by ${dim}`,
-      metricLabel: useAmount ? 'amount' : 'count',
+      metricLabel: chartUseAmount ? 'amount' : 'count',
       points,
-    });
-    blocks.push({
+    }, { ...pinBase, metric: chartUseAmount ? 'amount' : 'count' }));
+    // Count share (always when charting)
+    blocks.push(withPinSource({
       id: `progress_${dim}`,
       component: 'progress_list',
-      title: 'Share by stage',
-      items: points.map((p) => ({
-        label: p.label,
-        value: p.value,
-        max: points.reduce((s, x) => s + x.value, 0) || 1,
+      title: `Share by ${dim}`,
+      items: rows.map((r) => ({
+        label: String(r.label || '(empty)'),
+        value: Number(r.value) || 0,
+        max: totalCount || 1,
       })),
-    });
+    }, { ...pinBase, metric: 'count' }));
+    // Pipeline $ by stage from DB amounts only — never leave this to the LLM
+    if (hasAmounts && mod === 'deals') {
+      const amountTotal = rows.reduce((s, r) => s + (Number(r.amount) || 0), 0) || 1;
+      blocks.push(withPinSource({
+        id: `progress_amount_${dim}`,
+        component: 'progress_list',
+        title: 'Pipeline value by stage',
+        items: rows.map((r) => ({
+          label: String(r.label || '(empty)'),
+          value: Number(r.amount) || 0,
+          max: amountTotal,
+        })),
+      }, { ...pinBase, metric: 'amount' }));
+    }
   }
 
   if (rows.length) {
     const useAmount = rows.some((r) => Number(r.amount) > 0);
-    blocks.push({
+    blocks.push(withPinSource({
       id: `table_${dim}`,
       component: 'data_table',
       title: 'Breakdown',
@@ -158,7 +227,7 @@ function composeAstraUiFromData({
         if (useAmount) base.push(formatMoney(r.amount));
         return base;
       }),
-    });
+    }, { ...pinBase, metric: useAmount ? 'amount' : 'count' }));
   }
 
   if (wantChart || /\breport|dashboard|analy/i.test(question)) {
@@ -174,6 +243,17 @@ function composeAstraUiFromData({
   return blocks.slice(0, 8);
 }
 
+function normalizePinSource(raw) {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const moduleKey = String(raw.moduleKey || '').trim().toLowerCase().slice(0, 40);
+  if (!moduleKey) return undefined;
+  return {
+    moduleKey,
+    groupField: String(raw.groupField || '').trim().slice(0, 40),
+    metric: raw.metric === 'amount' ? 'amount' : 'count',
+  };
+}
+
 function normalizeAstraVisuals(rawVisuals = []) {
   if (!Array.isArray(rawVisuals)) return [];
   const out = [];
@@ -182,6 +262,7 @@ function normalizeAstraVisuals(rawVisuals = []) {
     const component = String(row.component || '').trim().toLowerCase();
     if (!ALLOWED.has(component)) continue;
     const id = String(row.id || `${component}_${out.length}`).slice(0, 80);
+    const pinSource = normalizePinSource(row.pinSource);
 
     if (component === 'chart') {
       const points = Array.isArray(row.points)
@@ -200,6 +281,7 @@ function normalizeAstraVisuals(rawVisuals = []) {
         title: String(row.title || '').trim().slice(0, 120),
         metricLabel: String(row.metricLabel || 'value').slice(0, 40),
         points: points.slice(0, 40),
+        ...(pinSource ? { pinSource } : {}),
       });
       continue;
     }
@@ -217,7 +299,8 @@ function normalizeAstraVisuals(rawVisuals = []) {
         id,
         component: 'kpi_strip',
         title: String(row.title || '').trim().slice(0, 120),
-        items: items.slice(0, 6),
+        items: items.slice(0, 12),
+        ...(pinSource ? { pinSource } : {}),
       });
       continue;
     }
@@ -236,6 +319,7 @@ function normalizeAstraVisuals(rawVisuals = []) {
         component: 'progress_list',
         title: String(row.title || '').trim().slice(0, 120),
         items: items.slice(0, 20),
+        ...(pinSource ? { pinSource } : {}),
       });
       continue;
     }
@@ -258,6 +342,7 @@ function normalizeAstraVisuals(rawVisuals = []) {
         title: String(row.title || '').trim().slice(0, 120),
         columns: columns.slice(0, 8),
         rows,
+        ...(pinSource ? { pinSource } : {}),
       });
       continue;
     }
@@ -292,6 +377,8 @@ function mergeAstraUiBlocks({ composed = [], fromAgent = [] } = {}) {
 
   const agentCallouts = agent.filter((b) => b.component === 'callout');
   const agentCharts = agent.filter((b) => b.component === 'chart');
+  // Keep agent tables that add row-level detail (e.g. top deals) — DB owns kpi/chart/progress.
+  const agentTables = agent.filter((b) => b.component === 'data_table');
   const out = base.map((b) => {
     if (b.component === 'chart' && agentCharts[0]?.chartType) {
       return { ...b, chartType: agentCharts[0].chartType };
@@ -303,6 +390,11 @@ function mergeAstraUiBlocks({ composed = [], fromAgent = [] } = {}) {
       out.push(c);
     }
   }
+  for (const t of agentTables) {
+    if (!out.some((b) => b.component === 'data_table' && b.title === t.title)) {
+      out.push(t);
+    }
+  }
   return out.slice(0, 8);
 }
 
@@ -312,5 +404,6 @@ module.exports = {
   composeAstraUiFromData,
   normalizeAstraVisuals,
   mergeAstraUiBlocks,
+  mergeSeriesByLabel,
   formatMoney,
 };

@@ -426,13 +426,9 @@
                   </ul>
                   <div
                     v-if="displayVisuals(msg).length"
-                    class="mt-1 space-y-1"
+                    class="mt-1"
                   >
-                    <AstraUiBlock
-                      v-for="viz in displayVisuals(msg)"
-                      :key="`${msg.id}-${viz.id || viz.component}-${viz.title}`"
-                      :visual="viz"
-                    />
+                    <AstraVisualStack :visuals="displayVisuals(msg)" />
                   </div>
                   <div
                     v-if="displayClarifyingQuestions(msg).length"
@@ -841,9 +837,20 @@ import {
 import { useAuthStore } from '@/stores/authRegistry';
 import { useInProductSupportChat } from '@/composables/useInProductSupportChat';
 import { useInProductAiAsk } from '@/composables/useInProductAiAsk';
-import AstraUiBlock from '@/components/support/AstraUiBlock.vue';
+import AstraVisualStack from '@/components/support/AstraVisualStack.vue';
 import { resolvePageAiContext } from '@/utils/resolvePageAiContext';
 import { resolveModuleRecordRoute } from '@/utils/resolveModuleRecordRoute';
+import { openContentStudioFromAstraAction } from '@/utils/openContentStudioFromAstra';
+import { openArivuCanvasFromAstraAction } from '@/utils/openArivuCanvasFromAstra';
+import {
+  openReportBuilderFromAstraAction,
+  openReportFromAstraAction,
+  publishReportFromAstraAction,
+  exportReportFromAstraAction,
+  pinReportFromAstraAction,
+  openWidgetFromAstraAction,
+  openDashboardFromAstraAction,
+} from '@/utils/openReportFromAstra';
 import apiClient from '@/utils/apiClient';
 import { getTabTitleMetaForPath, resolveTabTitle, getPersistedRecordTabName, isGenericRecordTabTitleKey } from '@/utils/navigationLabels';
 import {
@@ -1323,8 +1330,8 @@ const pageContextHint = computed(() => {
 });
 
 function assistantAgentLabel(msg) {
-  const name = String(msg?.meta?.agentName || '').trim();
-  if (name) return name;
+  // Astra presents as a single identity; the internal specialist that routed
+  // the answer is never surfaced (avoids confusing "random agent" personas).
   if (msg?.source === 'graph') return t('liveChat.inAppAiFromRecord');
   if (msg?.source === 'page') return t('liveChat.inAppAiFromPage');
   if (msg?.source === 'knowledge') return t('liveChat.inAppAiFromKnowledge');
@@ -1368,6 +1375,15 @@ function actionKindLabel(kind) {
   if (key === 'talk_to_agent') return t('liveChat.inAppAiTalkToAgentCta');
   if (key === 'create_record') return t('liveChat.inAppAiActionCreate');
   if (key === 'update_record') return t('liveChat.inAppAiActionApplyUpdate');
+  if (key === 'open_content_studio') return t('liveChat.inAppAiActionContentStudio');
+  if (key === 'open_canvas') return t('liveChat.inAppAiActionCanvas');
+  if (key === 'open_report_builder') return t('liveChat.inAppAiActionReportBuilder');
+  if (key === 'open_report') return t('liveChat.inAppAiActionOpenReport');
+  if (key === 'publish_report') return t('liveChat.inAppAiActionPublishReport');
+  if (key === 'export_report') return t('liveChat.inAppAiActionExportReport');
+  if (key === 'pin_report_to_dashboard') return t('liveChat.inAppAiActionPinReport');
+  if (key === 'open_widget') return t('liveChat.inAppAiActionOpenWidget');
+  if (key === 'open_dashboard') return t('liveChat.inAppAiActionOpenDashboard');
   return t('liveChat.inAppAiActionDo');
 }
 
@@ -1378,21 +1394,184 @@ async function onAssistantAction(action) {
     return;
   }
 
+  if (action.kind === 'open_canvas') {
+    try {
+      const result = await openArivuCanvasFromAstraAction(router, action, {
+        fallbackDetail: String(
+          aiMessages.value.slice().reverse().find((m) => m.role === 'assistant')?.structured?.detail
+          || '',
+        ),
+        fallbackHeadline: String(
+          aiMessages.value.slice().reverse().find((m) => m.role === 'assistant')?.structured?.headline
+          || '',
+        ),
+      });
+      if (!result.ok) {
+        aiError.value = result.error || t('liveChat.inAppAiCanvasOpenFailed');
+        return;
+      }
+      aiMessages.value.push({
+        id: `a-${Date.now()}`,
+        role: 'assistant',
+        body: t('liveChat.inAppAiCanvasOpened'),
+        source: 'agent',
+        createdAt: Date.now(),
+      });
+      await nextTick();
+      scrollAiMessages();
+    } catch (err) {
+      aiError.value = err?.message || t('liveChat.inAppAiCanvasOpenFailed');
+    }
+    return;
+  }
+
+  if (action.kind === 'open_content_studio' || action.kind === 'draft_deck') {
+    try {
+      const result = await openContentStudioFromAstraAction(router, action, {
+        fallbackDetail: String(
+          aiMessages.value.slice().reverse().find((m) => m.role === 'assistant')?.structured?.detail
+          || '',
+        ),
+      });
+      if (!result.ok) {
+        aiError.value = result.error || t('liveChat.inAppAiContentStudioOpenFailed');
+        return;
+      }
+      aiMessages.value.push({
+        id: `a-${Date.now()}`,
+        role: 'assistant',
+        body: t('liveChat.inAppAiContentStudioOpened'),
+        source: 'agent',
+        createdAt: Date.now(),
+      });
+      await nextTick();
+      scrollAiMessages();
+    } catch (err) {
+      aiError.value = err?.message || t('liveChat.inAppAiContentStudioOpenFailed');
+    }
+    return;
+  }
+
+  if (action.kind === 'open_report_builder') {
+    const result = await openReportBuilderFromAstraAction(router, action);
+    if (!result.ok) {
+      aiError.value = result.error || t('liveChat.inAppAiReportOpenFailed');
+    } else {
+      aiMessages.value.push({
+        id: `a-${Date.now()}`,
+        role: 'assistant',
+        body: t('liveChat.inAppAiReportBuilderOpened'),
+        source: 'agent',
+        createdAt: Date.now(),
+      });
+      await nextTick();
+      scrollAiMessages();
+    }
+    return;
+  }
+
+  if (action.kind === 'open_report') {
+    const result = await openReportFromAstraAction(router, action);
+    if (!result.ok) {
+      aiError.value = result.error || t('liveChat.inAppAiReportOpenFailed');
+    }
+    return;
+  }
+
+  if (action.kind === 'publish_report') {
+    const result = await publishReportFromAstraAction(router, action);
+    if (!result.ok) {
+      aiError.value = result.error || t('liveChat.inAppAiReportPublishFailed');
+      return;
+    }
+    aiMessages.value.push({
+      id: `a-${Date.now()}`,
+      role: 'assistant',
+      body: t('liveChat.inAppAiReportPublished'),
+      source: 'agent',
+      createdAt: Date.now(),
+    });
+    await nextTick();
+    scrollAiMessages();
+    return;
+  }
+
+  if (action.kind === 'export_report') {
+    const result = await exportReportFromAstraAction(action);
+    if (!result.ok) {
+      aiError.value = result.error || t('liveChat.inAppAiReportExportFailed');
+      return;
+    }
+    aiMessages.value.push({
+      id: `a-${Date.now()}`,
+      role: 'assistant',
+      body: t('liveChat.inAppAiReportExported'),
+      source: 'agent',
+      createdAt: Date.now(),
+    });
+    await nextTick();
+    scrollAiMessages();
+    return;
+  }
+
+  if (action.kind === 'pin_report_to_dashboard') {
+    const result = await pinReportFromAstraAction(router, action);
+    if (!result.ok) {
+      aiError.value = result.error || t('liveChat.inAppAiReportPinFailed');
+      return;
+    }
+    aiMessages.value.push({
+      id: `a-${Date.now()}`,
+      role: 'assistant',
+      body: t('liveChat.inAppAiReportPinned', { name: result.dashboardName || 'dashboard' }),
+      source: 'agent',
+      createdAt: Date.now(),
+    });
+    await nextTick();
+    scrollAiMessages();
+    return;
+  }
+
+  if (action.kind === 'open_widget') {
+    const result = await openWidgetFromAstraAction(router, action);
+    if (!result.ok) {
+      aiError.value = result.error || t('liveChat.inAppAiWidgetOpenFailed');
+    }
+    return;
+  }
+
+  if (action.kind === 'open_dashboard') {
+    const result = await openDashboardFromAstraAction(router, action);
+    if (!result.ok) {
+      aiError.value = result.error || t('liveChat.inAppAiDashboardOpenFailed');
+    }
+    return;
+  }
+
   // Astra CRM mutations — user confirms by clicking; never delete.
   if (action.kind === 'create_record' || action.kind === 'update_record') {
     const moduleKey = String(action.moduleKey || '').trim().toLowerCase();
-    const fields = action.fields && typeof action.fields === 'object' ? action.fields : {};
+    const fields = action.fields && typeof action.fields === 'object' ? { ...action.fields } : {};
     if (!moduleKey || !Object.keys(fields).length) {
       aiError.value = t('liveChat.inAppAiMutationIncomplete');
       return;
     }
+    const lastUser = [...aiMessages.value].reverse().find((m) => m.role === 'user');
+    if (/\b(force\s+create|create\s+anyway|create\s+a\s+new\s+one|duplicate\s+ok|new\s+meeting\s+anyway)\b/i
+      .test(String(lastUser?.body || ''))) {
+      fields.forceCreate = true;
+      fields.forceCreateReason = String(lastUser?.body || 'create anyway');
+    }
+    const page = resolvePageAiContext(route);
     try {
       const data = await apiClient.post('/ai/astra/mutations/apply', {
         op: action.kind === 'create_record' ? 'create' : 'update',
         moduleKey,
         recordId: action.recordId || '',
         fields,
-        appKey: resolvePageAiContext(route)?.appKey || 'SALES',
+        appKey: page?.appKey || 'SALES',
+        pageModuleKey: page?.moduleKey || '',
+        pageRecordId: page?.kind === 'record' ? (page.recordId || '') : '',
       });
       const rid = data?.recordId ? String(data.recordId) : '';
       aiMessages.value.push({
@@ -1412,8 +1591,37 @@ async function onAssistantAction(action) {
         else if (dest?.path) await router.push(dest.path);
       }
     } catch (err) {
+      const code = err?.response?.data?.code || '';
       const msg = err?.response?.data?.message || err?.message || t('liveChat.inAppAiMutationFailed');
       aiError.value = String(msg);
+      if (code === 'AI_ASTRA_DUPLICATE') {
+        const dup = err?.response?.data?.details?.duplicates?.[0];
+        if (dup?.moduleKey && dup?.recordId) {
+          aiMessages.value.push({
+            id: `a-${Date.now()}`,
+            role: 'assistant',
+            body: t('liveChat.inAppAiDuplicateBlocked', { label: dup.label || 'existing record' }),
+            source: 'agent',
+            createdAt: Date.now(),
+            structured: {
+              headline: t('liveChat.inAppAiDuplicateHeadline'),
+              bullets: [
+                t('liveChat.inAppAiDuplicateBlocked', { label: dup.label || 'existing record' }),
+                t('liveChat.inAppAiDuplicateCreateAnyway'),
+              ],
+              actions: [{
+                label: t('liveChat.inAppAiDuplicateOpenExisting', { label: dup.label || 'record' }),
+                kind: 'review_record',
+                moduleKey: dup.moduleKey,
+                recordId: dup.recordId,
+                priority: 'high',
+              }],
+            },
+          });
+          await nextTick();
+          scrollAiMessages();
+        }
+      }
     }
     return;
   }
@@ -1683,6 +1891,34 @@ function formatRecentWhen(ts) {
   return t('liveChat.inAppRecentDaysAgo', { days });
 }
 
+async function maybeAutoOpenReportBuilder() {
+  const last = [...aiMessages.value].reverse().find((m) => m.role === 'assistant');
+  const actions = last?.structured?.actions;
+  if (!Array.isArray(actions)) return;
+  const reportAction = actions.find((a) => {
+    if (String(a?.kind || '') !== 'open_report_builder') return false;
+    if (a.executeNow) return true;
+    const fields = a.fields && typeof a.fields === 'object' ? a.fields : {};
+    return Boolean(fields.autoOpen);
+  });
+  if (!reportAction) return;
+  await onAssistantAction(reportAction);
+}
+
+async function maybeAutoOpenWidget() {
+  const last = [...aiMessages.value].reverse().find((m) => m.role === 'assistant');
+  const actions = last?.structured?.actions;
+  if (!Array.isArray(actions)) return;
+  const widgetAction = actions.find((a) => {
+    if (String(a?.kind || '') !== 'open_widget') return false;
+    if (a.executeNow) return true;
+    const fields = a.fields && typeof a.fields === 'object' ? a.fields : {};
+    return Boolean(fields.autoOpen);
+  });
+  if (!widgetAction) return;
+  await onAssistantAction(widgetAction);
+}
+
 async function runAiTurn() {
   const text = draft.value.trim();
   if (!text || aiAsking.value || typingMessageId.value) return;
@@ -1690,6 +1926,8 @@ async function runAiTurn() {
   await askAssistant(text);
   await nextTick();
   scrollAiMessages();
+  await maybeAutoOpenReportBuilder();
+  await maybeAutoOpenWidget();
 }
 
 async function onHomeAsk() {

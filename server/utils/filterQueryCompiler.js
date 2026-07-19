@@ -194,6 +194,26 @@ function compileRuleToMongo(rule, moduleKey, context = {}) {
     return { [fieldKey]: { $ne: value } };
   }
 
+  if (operator === 'eq') {
+    return { [fieldKey]: value };
+  }
+
+  if (operator === 'gt' || operator === 'gte' || operator === 'lt' || operator === 'lte') {
+    const mongoOp = `$${operator}`;
+    const numeric = typeof value === 'number' ? value : Number(value);
+    const resolved = Number.isFinite(numeric) && String(value).trim() !== '' && !Number.isNaN(numeric)
+      && !/^\d{4}-\d{2}-\d{2}/.test(String(value))
+      ? numeric
+      : value;
+    // Prefer Date for ISO date strings
+    let finalValue = resolved;
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+      const d = new Date(value);
+      if (!Number.isNaN(d.getTime())) finalValue = d;
+    }
+    return { [fieldKey]: { [mongoOp]: finalValue } };
+  }
+
   if (value === null) {
     return { [fieldKey]: null };
   }

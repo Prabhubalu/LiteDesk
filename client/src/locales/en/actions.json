@@ -103,6 +103,10 @@
     "message": "Export",
     "description": "Export record or list data"
   },
+  "print": {
+    "message": "Print",
+    "description": "Open print preview for the current record"
+  },
   "send": {
     "message": "Send",
     "description": "Send a message or submit outbound content"

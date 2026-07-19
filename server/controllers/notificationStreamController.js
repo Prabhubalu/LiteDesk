@@ -7,14 +7,30 @@ const { materializeEffectiveCRMEnvelopeOnUser } = require('../utils/rolePermissi
 
 const APP_KEYS = ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK', 'PLATFORM'];
 
-function normalizeAppKey(req) {
+/**
+ * Resolve requested app keys from query.
+ * Supports:
+ * - appKeys=SALES,AUDIT,HELPDESK (preferred multiplex)
+ * - appKey=SALES (legacy single-app)
+ */
+function resolveRequestedAppKeys(req) {
+  const fromMulti = req.query.appKeys;
+  if (fromMulti != null && String(fromMulti).trim() !== '') {
+    return [...new Set(
+      String(fromMulti)
+        .split(',')
+        .map((k) => String(k || '').toUpperCase().trim())
+        .filter((k) => APP_KEYS.includes(k))
+    )];
+  }
+
   const fromQuery = req.query.appKey;
   const fromContext = req.appContext?.appKey;
   const appKey = fromQuery || fromContext;
-  if (!appKey || !APP_KEYS.includes(appKey)) {
-    return null;
+  if (!appKey || !APP_KEYS.includes(String(appKey).toUpperCase())) {
+    return [];
   }
-  return appKey;
+  return [String(appKey).toUpperCase()];
 }
 
 /**
@@ -59,14 +75,32 @@ async function hydrateUserForStream(user) {
   return user;
 }
 
+async function filterEntitledAppKeys(requestedKeys, user) {
+  const allowedApps = resolveAllowedAppsForStream(user);
+  const entitled = [];
+  for (const appKey of requestedKeys) {
+    if (appKey === 'PLATFORM') {
+      const canPlatform = await canAccessLiveChatNotifications(user, user.organizationId);
+      if (canPlatform) entitled.push(appKey);
+      continue;
+    }
+    if (allowedApps.includes(appKey)) {
+      entitled.push(appKey);
+    }
+  }
+  return entitled;
+}
+
 /**
- * GET /api/notifications/stream?appKey=SALES|AUDIT|PORTAL|HELPDESK&token=<bearer_token>
- * 
+ * GET /api/notifications/stream?appKeys=SALES,AUDIT&token=…
+ * GET /api/notifications/stream?appKey=SALES&token=… (legacy)
+ *
  * Server-Sent Events endpoint for real-time notification delivery.
- * 
+ * One connection can subscribe to multiple entitled apps (connection-pool friendly).
+ *
  * Note: EventSource doesn't support custom headers, so token is passed as query param.
  * This route handles its own authentication (bypasses protect middleware).
- * 
+ *
  * Security: Token is validated via JWT verification.
  */
 exports.streamNotifications = async (req, res) => {
@@ -74,17 +108,17 @@ exports.streamNotifications = async (req, res) => {
 
   console.log('[notificationStreamController] Stream request received:', {
     appKey: req.query.appKey,
+    appKeys: req.query.appKeys,
     hasToken: !!req.query.token,
     method: req.method,
     path: req.path
   });
 
-  const appKey = normalizeAppKey(req);
-  if (!appKey) {
-    console.warn('[notificationStreamController] Invalid or missing appKey');
-    // For SSE, we can't send JSON error - just close connection
+  const requestedKeys = resolveRequestedAppKeys(req);
+  if (requestedKeys.length === 0) {
+    console.warn('[notificationStreamController] Invalid or missing appKey/appKeys');
     res.writeHead(400, { 'Content-Type': 'text/plain' });
-    res.end('appKey is required');
+    res.end('appKey or appKeys is required');
     return;
   }
 
@@ -93,7 +127,6 @@ exports.streamNotifications = async (req, res) => {
   const user = await validateTokenFromQuery(req);
   if (!user || !user._id || !user.organizationId) {
     console.warn('[notificationStreamController] Authentication failed');
-    // For SSE, we can't send JSON error - just close connection
     res.writeHead(401, { 'Content-Type': 'text/plain' });
     res.end('Unauthorized');
     return;
@@ -101,26 +134,12 @@ exports.streamNotifications = async (req, res) => {
 
   await hydrateUserForStream(user);
 
-  // Validate app entitlement (user must have access to this app)
-  const allowedApps = resolveAllowedAppsForStream(user);
-  if (appKey === 'PLATFORM') {
-    const canPlatform = await canAccessLiveChatNotifications(user, user.organizationId);
-    if (!canPlatform) {
-      console.warn('[notificationStreamController] Live Chat notification access denied:', {
-        userId: user._id,
-        appKey,
-      });
-      res.writeHead(403, { 'Content-Type': 'text/plain' });
-      res.end('App access denied');
-      return;
-    }
-  } else if (!allowedApps.includes(appKey)) {
+  const appKeys = await filterEntitledAppKeys(requestedKeys, user);
+  if (appKeys.length === 0) {
     console.warn('[notificationStreamController] App access denied:', {
       userId: user._id,
-      appKey,
-      allowedApps
+      requestedKeys,
     });
-    // For SSE, we can't send JSON error - just close connection
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('App access denied');
     return;
@@ -129,7 +148,7 @@ exports.streamNotifications = async (req, res) => {
   console.log('[notificationStreamController] Stream authorized for:', {
     userId: user._id,
     organizationId: user.organizationId,
-    appKey
+    appKeys
   });
 
   // Set SSE headers
@@ -143,14 +162,14 @@ exports.streamNotifications = async (req, res) => {
   }
 
   // Send initial connection message
-  res.write(`event: connected\ndata: ${JSON.stringify({ appKey, timestamp: Date.now() })}\n\n`);
+  res.write(`event: connected\ndata: ${JSON.stringify({ appKeys, timestamp: Date.now() })}\n\n`);
 
-  // Register connection in hub
+  // Register connection in hub (one socket, many apps)
   const connectionId = notificationSSEHub.subscribe(
     res,
     user._id,
     user.organizationId,
-    appKey
+    appKeys
   );
 
   // Keep connection alive
@@ -177,4 +196,3 @@ exports.streamNotifications = async (req, res) => {
     notificationSSEHub.unsubscribe(connectionId);
   });
 };
-

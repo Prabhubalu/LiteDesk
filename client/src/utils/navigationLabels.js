@@ -8,6 +8,7 @@ import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 export const SURFACE_LABEL_KEYS = {
   home: 'navigation.home',
   inbox: 'navigation.inbox',
+  astra: 'navigation.astra',
   'live-chat': 'navigation.liveChat',
   announcements: 'navigation.announcements',
   approvals: 'navigation.approvals',
@@ -72,6 +73,8 @@ export const ROUTE_TITLE_KEYS = {
   '/sales/dashboard': 'navigation.salesDashboard',
   '/dashboard': 'navigation.dashboard',
   '/inbox': 'navigation.inbox',
+  '/astra': 'navigation.astra',
+  '/astra/canvas': 'navigation.arivuCanvas',
   '/live-chat/sessions': 'navigation.liveChat',
   '/live-chat/closed': 'liveChat.navClosed',
   '/live-chat/reports': 'liveChat.navReports',

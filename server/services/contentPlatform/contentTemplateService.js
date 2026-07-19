@@ -9,7 +9,8 @@ const {
   isGrapesTemplateDefinition,
   hasGrapesTemplateDefinitionContent,
   hasRenderableGrapesTemplateContent,
-  isEmailDefinitionDegraded
+  isEmailDefinitionDegraded,
+  isGrapesDefinitionDegraded
 } = require('../../constants/grapesTemplateDefinition');
 const { normalizeTemplatePageSettings, DEFAULT_PAGE_MARGINS_MM } = require('../../constants/contentPaperSizes');
 const {
@@ -28,6 +29,36 @@ const {
 
 function notDeletedFilter() {
   return { deletedAt: null };
+}
+
+/**
+ * One default per organization + moduleScope + outputFormat.
+ * @param {object} params
+ * @param {string} params.organizationId
+ * @param {string} params.moduleScope
+ * @param {string} [params.outputFormat]
+ * @param {string | null} [params.exceptTemplateId]
+ */
+async function clearSiblingDefaultTemplates({
+  organizationId,
+  moduleScope,
+  outputFormat = 'pdf',
+  exceptTemplateId = null
+}) {
+  const scope = String(moduleScope || '').trim();
+  if (!scope) return;
+
+  const filter = {
+    organizationId,
+    moduleScope: scope,
+    outputFormat: String(outputFormat || 'pdf').toLowerCase() === 'email' ? 'email' : 'pdf',
+    isDefault: true,
+    ...notDeletedFilter()
+  };
+  if (exceptTemplateId) {
+    filter._id = { $ne: exceptTemplateId };
+  }
+  await ContentTemplate.updateMany(filter, { $set: { isDefault: false } });
 }
 
 /**
@@ -177,40 +208,50 @@ async function getTemplateById(params) {
   let draftDefinition = draftVersion?.jsonDefinition || null;
   let healedDefinition = null;
 
-  // Recover draft emptied by a canvas serialize race: prefer import snapshot, then last publish.
-  if (
-    isGrapesTemplateDefinition(draftDefinition)
-    && !hasRenderableGrapesTemplateContent(draftDefinition)
-  ) {
-    const snapshotHtml = String(draftDefinition.importSnapshot?.html || '').trim();
-    if (snapshotHtml) {
-      healedDefinition = {
-        ...draftDefinition,
-        html: draftDefinition.importSnapshot.html,
-        css: String(draftDefinition.importSnapshot.css || draftDefinition.css || '')
-      };
-    } else if (template.latestPublishedVersion) {
+  // Recover draft emptied or flattened by a canvas serialize race.
+  if (isGrapesTemplateDefinition(draftDefinition)) {
+    const needsEmptyHeal = !hasRenderableGrapesTemplateContent(draftDefinition);
+    let publishedDefinition = null;
+
+    if (template.latestPublishedVersion) {
       const published = await ContentTemplateVersion.findOne({
         organizationId,
         templateId: template._id,
         version: Number(template.latestPublishedVersion),
         published: true
       }).lean();
-      if (
-        isGrapesTemplateDefinition(published?.jsonDefinition)
-        && hasRenderableGrapesTemplateContent(published.jsonDefinition)
-      ) {
-        healedDefinition = published.jsonDefinition;
+      if (isGrapesTemplateDefinition(published?.jsonDefinition)) {
+        publishedDefinition = published.jsonDefinition;
       }
     }
 
-    if (healedDefinition && draftVersion?._id) {
-      draftDefinition = healedDefinition;
-      // Persist heal so the next empty autosave cannot wipe snapshot-only drafts.
-      await ContentTemplateVersion.updateOne(
-        { _id: draftVersion._id, organizationId },
-        { $set: { jsonDefinition: healedDefinition } }
-      );
+    const needsFlattenHeal =
+      Boolean(publishedDefinition)
+      && hasRenderableGrapesTemplateContent(publishedDefinition)
+      && isGrapesDefinitionDegraded(draftDefinition, publishedDefinition);
+
+    if (needsEmptyHeal || needsFlattenHeal) {
+      const snapshotHtml = String(draftDefinition.importSnapshot?.html || '').trim();
+      if (needsEmptyHeal && snapshotHtml) {
+        healedDefinition = {
+          ...draftDefinition,
+          html: draftDefinition.importSnapshot.html,
+          css: String(draftDefinition.importSnapshot.css || draftDefinition.css || '')
+        };
+      } else if (
+        publishedDefinition
+        && hasRenderableGrapesTemplateContent(publishedDefinition)
+      ) {
+        healedDefinition = publishedDefinition;
+      }
+
+      if (healedDefinition && draftVersion?._id) {
+        draftDefinition = healedDefinition;
+        await ContentTemplateVersion.updateOne(
+          { _id: draftVersion._id, organizationId },
+          { $set: { jsonDefinition: healedDefinition } }
+        );
+      }
     }
   }
 
@@ -352,18 +393,26 @@ async function updateTemplate(params) {
     }
   }
 
-  if (payload.isDefault === true && template.moduleScope && template.purpose) {
-    await ContentTemplate.updateMany(
-      {
-        organizationId,
-        moduleScope: template.moduleScope,
-        purpose: template.purpose,
-        isDefault: true,
-        _id: { $ne: template._id },
-        ...notDeletedFilter()
-      },
-      { $set: { isDefault: false } }
-    );
+  const moduleScope = String(template.moduleScope || '').trim();
+  if (!moduleScope && template.isDefault === true) {
+    template.isDefault = false;
+  }
+
+  if (payload.isDefault === true) {
+    if (!moduleScope) {
+      throw new ContentPlatformError(
+        CONTENT_PLATFORM_ERROR_CODES.VALIDATION_FAILED,
+        'Module scope is required to set a template as default',
+        { statusCode: 400 }
+      );
+    }
+    await clearSiblingDefaultTemplates({
+      organizationId,
+      moduleScope,
+      outputFormat: template.outputFormat || 'pdf',
+      exceptTemplateId: template._id
+    });
+    template.isDefault = true;
   }
 
   if (Object.prototype.hasOwnProperty.call(payload, 'margins') && payload.margins && typeof payload.margins === 'object') {
@@ -422,6 +471,7 @@ async function updateTemplate(params) {
           && !hasRenderableGrapesTemplateContent(incoming)
         )
         || isEmailDefinitionDegraded(incoming, existing)
+        || isGrapesDefinitionDegraded(incoming, existing)
       )
     ) {
       // Keep existing definition; still allow metadata updates below.

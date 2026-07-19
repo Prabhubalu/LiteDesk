@@ -531,6 +531,7 @@
                 <tr>
                   <th class="px-4 py-3 font-medium">{{ t('settings.aiUsageColTime') }}</th>
                   <th class="px-4 py-3 font-medium">{{ t('settings.aiUsageColAbility') }}</th>
+                  <th class="px-4 py-3 font-medium">{{ t('settings.aiUsageColAgent') }}</th>
                   <th class="px-4 py-3 font-medium">{{ t('settings.aiUsageColUser') }}</th>
                   <th class="px-4 py-3 font-medium">{{ t('settings.aiUsageColModel') }}</th>
                   <th class="px-4 py-3 font-medium">{{ t('settings.aiUsageColStatus') }}</th>
@@ -547,6 +548,7 @@
                 >
                   <td class="px-4 py-3 whitespace-nowrap text-xs">{{ formatUsageTime(row.createdAt) }}</td>
                   <td class="px-4 py-3 font-mono text-xs">{{ row.abilityKey }}</td>
+                  <td class="px-4 py-3 text-xs">{{ usageAgentLabel(row) }}</td>
                   <td class="px-4 py-3 text-xs">{{ row.user?.name || t('settings.aiUsageSystemUser') }}</td>
                   <td class="px-4 py-3 text-xs">{{ row.model }}</td>
                   <td class="px-4 py-3 text-xs">
@@ -841,6 +843,13 @@ function formatNumber(value) {
 function formatUsageTime(value) {
   if (!value) return '—';
   return new Date(value).toLocaleString();
+}
+
+/** Specialist that executed the turn (audit metadata); empty for non-agent abilities. */
+function usageAgentLabel(row) {
+  const meta = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+  const name = String(meta.agentName || meta.name || '').trim();
+  return name || '—';
 }
 
 function formatLatency(ms) {

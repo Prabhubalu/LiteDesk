@@ -150,13 +150,10 @@ async function getInvoices(req, res) {
       : 'updatedAt';
     const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
 
-    const statsMatch = { ...q };
-    delete statsMatch.status;
-
-    const [rows, total, listStatistics] = await Promise.all([
+    const [rows, total, statusBreakdown] = await Promise.all([
       Invoice.find(q).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit).lean(),
       Invoice.countDocuments(q),
-      computeInvoiceListStatistics(statsMatch)
+      computeInvoiceListStatistics(q)
     ]);
 
     return res.json({
@@ -169,7 +166,11 @@ async function getInvoices(req, res) {
         limit
       },
       meta: { page, limit, total },
-      listStatistics
+      listStatistics: {
+        ...statusBreakdown,
+        totalInvoices: total,
+        myInvoices: total
+      }
     });
   } catch (err) {
     return handleControllerError(res, err);

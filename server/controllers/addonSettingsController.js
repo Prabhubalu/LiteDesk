@@ -648,7 +648,7 @@ exports.sendArticlesPublishWebhookTest = async (req, res) => {
     const payload = await sendArticlesPublishWebhookTest(req.user.organizationId);
     return res.json({ success: true, payload });
   } catch (error) {
-    if (error?.code === 'WEBHOOK_NOT_CONFIGURED') {
+    if (error?.code === 'WEBHOOK_NOT_CONFIGURED' || error?.code === 'WEBHOOK_SECRET_UNREADABLE') {
       return res.status(400).json({ success: false, message: error.message, code: error.code });
     }
     console.error('[addonSettingsController] sendArticlesPublishWebhookTest', error);
@@ -764,7 +764,7 @@ exports.sendBlogPublishWebhookTest = async (req, res) => {
     const payload = await sendBlogPublishWebhookTest(req.user.organizationId);
     return res.json({ success: true, payload });
   } catch (error) {
-    if (error?.code === 'WEBHOOK_NOT_CONFIGURED') {
+    if (error?.code === 'WEBHOOK_NOT_CONFIGURED' || error?.code === 'WEBHOOK_SECRET_UNREADABLE') {
       return res.status(400).json({ success: false, message: error.message, code: error.code });
     }
     console.error('[addonSettingsController] sendBlogPublishWebhookTest', error);

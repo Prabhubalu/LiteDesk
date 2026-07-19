@@ -44,7 +44,6 @@
               :sessions="recordPresenceOthers"
             />
             <button
-              v-if="primaryContact?.email"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               :aria-label="t('records.dealEmailContact')"
@@ -90,6 +89,11 @@
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
             </button>
+            <RecordPrintButton
+              v-if="deal?._id"
+              module-key="deals"
+              :record-id="String(deal._id)"
+            />
             <button
               type="button"
               :class="[
@@ -875,7 +879,6 @@
               <ArrowTopRightOnSquareIcon class="w-5 h-5" />
             </button>
             <button
-              v-if="primaryContact?.email"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               :aria-label="t('records.dealEmailContact')"
@@ -1335,6 +1338,7 @@ import {
   RecordRightPane,
   RecordTagPopover
 } from '@/components/record-page';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import ActivitySection from '@/components/activity/ActivitySection.vue';
 import DatePicker from '@/components/common/DatePicker.vue';
 import 'emoji-picker-element';

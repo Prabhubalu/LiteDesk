@@ -2082,5 +2082,637 @@
   "inAppAiWorkingAlmost": {
     "message": "Astra is almost there…",
     "description": "Astra loading synonym"
+  },
+  "astraFullPagePlaceholder": {
+    "message": "Curious about something? Ask away.",
+    "description": "Full-page Astra composer placeholder"
+  },
+  "astraFullPageRecentChats": {
+    "message": "Recent chats",
+    "description": "Full-page Astra recent conversations section"
+  },
+  "astraFullPageNewChat": {
+    "message": "New chat",
+    "description": "Full-page Astra start new conversation"
+  },
+  "astraFullPageComposerHint": {
+    "message": "From quick questions to big projects, I'm here to help you get it done.",
+    "description": "Brain-style full-page Astra composer placeholder"
+  },
+  "astraFullPageAskTab": {
+    "message": "Ask",
+    "description": "Full-page Astra Ask mode tab"
+  },
+  "astraFullPageAgentsTab": {
+    "message": "Agents",
+    "description": "Full-page Astra Agents mode tab"
+  },
+  "astraFullPageAgentsSoon": {
+    "message": "Agents coming soon",
+    "description": "Tooltip for disabled Agents tab"
+  },
+  "astraFullPageSkills": {
+    "message": "Skills",
+    "description": "Full-page Astra skills chip label"
+  },
+  "astraCardSummarizeTitle": {
+    "message": "Pipeline summary",
+    "description": "Suggestion card title"
+  },
+  "astraCardSummarizeHint": {
+    "message": "Summarize open deals and next steps…",
+    "description": "Suggestion card hint"
+  },
+  "astraCardSummarizePrompt": {
+    "message": "Summarize my open pipeline and highlight what needs attention.",
+    "description": "Suggestion card prompt"
+  },
+  "astraCardBrainstormTitle": {
+    "message": "Brainstorm workflow",
+    "description": "Suggestion card title"
+  },
+  "astraCardBrainstormHint": {
+    "message": "Brainstorm an engineering handoff…",
+    "description": "Suggestion card hint"
+  },
+  "astraCardBrainstormPrompt": {
+    "message": "Brainstorm a clean handoff workflow between sales and delivery.",
+    "description": "Suggestion card prompt"
+  },
+  "astraCardDraftTitle": {
+    "message": "Draft email",
+    "description": "Suggestion card title"
+  },
+  "astraCardDraftHint": {
+    "message": "Draft a project kickoff email…",
+    "description": "Suggestion card hint"
+  },
+  "astraCardDraftPrompt": {
+    "message": "Draft a concise project kickoff email for a new customer.",
+    "description": "Suggestion card prompt"
+  },
+  "astraCardFindTitle": {
+    "message": "Find pending tasks",
+    "description": "Suggestion card title"
+  },
+  "astraCardFindHint": {
+    "message": "Find all to-do tasks.",
+    "description": "Suggestion card hint"
+  },
+  "astraCardFindPrompt": {
+    "message": "Find all my pending to-do tasks and prioritize them.",
+    "description": "Suggestion card prompt"
+  },
+  "astraRecRecordFallback": {
+    "message": "this record",
+    "description": "Fallback record label in Astra recommendations"
+  },
+  "astraRecEventFallback": {
+    "message": "upcoming event",
+    "description": "Fallback event label in Astra recommendations"
+  },
+  "astraRecOverdueTitle": {
+    "message": "overdue work",
+    "description": "Fallback title for overdue recommendation"
+  },
+  "astraRecDueTodayTitle": {
+    "message": "work due today",
+    "description": "Fallback title for due-today recommendation"
+  },
+  "astraRecOverdueCardTitle": {
+    "message": "Clear overdue work",
+    "description": "Personalized overdue card title"
+  },
+  "astraRecOverdueCardHint": {
+    "message": "{count} overdue items need action first.",
+    "description": "Personalized overdue card hint"
+  },
+  "astraRecOverdueCardHintNamed": {
+    "message": "Start with “{title}” ({count} overdue).",
+    "description": "Personalized overdue card hint with item name"
+  },
+  "astraRecOverduePrompt": {
+    "message": "List my {count} overdue items, prioritize them, and suggest the fastest way to clear them today.",
+    "description": "Personalized overdue card prompt"
+  },
+  "astraRecOverduePromptNamed": {
+    "message": "Help me clear overdue work starting with “{title}”. Prioritize remaining overdue items and suggest next actions.",
+    "description": "Personalized overdue card prompt with item name"
+  },
+  "astraRecApprovalsTitle": {
+    "message": "Review approvals",
+    "description": "Personalized approvals card title"
+  },
+  "astraRecApprovalsHint": {
+    "message": "{count} approvals are waiting on you.",
+    "description": "Personalized approvals card hint"
+  },
+  "astraRecApprovalsPrompt": {
+    "message": "Summarize my {count} pending approvals and recommend what to approve or reject first.",
+    "description": "Personalized approvals card prompt"
+  },
+  "astraRecDueTodayCardTitle": {
+    "message": "Finish today’s work",
+    "description": "Personalized due-today card title"
+  },
+  "astraRecDueTodayCardHint": {
+    "message": "{count} items are due today.",
+    "description": "Personalized due-today card hint"
+  },
+  "astraRecDueTodayCardHintNamed": {
+    "message": "Due today: “{title}” (+{count}).",
+    "description": "Personalized due-today card hint with item name"
+  },
+  "astraRecDueTodayPrompt": {
+    "message": "Help me finish my {count} items due today. Order them by impact and give a short action plan.",
+    "description": "Personalized due-today card prompt"
+  },
+  "astraRecDueTodayPromptNamed": {
+    "message": "Help me finish today’s work starting with “{title}”. Prioritize the rest and keep it actionable.",
+    "description": "Personalized due-today card prompt with item name"
+  },
+  "astraRecMailTitle": {
+    "message": "Catch up on mail",
+    "description": "Personalized unread mail card title"
+  },
+  "astraRecMailHint": {
+    "message": "{count} unread messages in your inbox.",
+    "description": "Personalized unread mail card hint"
+  },
+  "astraRecMailPrompt": {
+    "message": "Help me triage {count} unread emails. Suggest which to answer first and what can wait.",
+    "description": "Personalized unread mail card prompt"
+  },
+  "astraRecEventTitle": {
+    "message": "Prep for next event",
+    "description": "Personalized next-event card title"
+  },
+  "astraRecEventHint": {
+    "message": "Coming up: {title}",
+    "description": "Personalized next-event card hint"
+  },
+  "astraRecEventPrompt": {
+    "message": "Prepare me for “{title}”. Summarize related context and suggest talking points.",
+    "description": "Personalized next-event card prompt"
+  },
+  "astraRecDocsTitle": {
+    "message": "Review documents",
+    "description": "Personalized documents card title"
+  },
+  "astraRecDocsHintReview": {
+    "message": "{count} documents need review.",
+    "description": "Personalized documents pending-review hint"
+  },
+  "astraRecDocsHintExpiring": {
+    "message": "{count} documents are expiring soon.",
+    "description": "Personalized documents expiring hint"
+  },
+  "astraRecDocsPromptReview": {
+    "message": "List my {count} documents pending review and recommend what to handle first.",
+    "description": "Personalized documents review prompt"
+  },
+  "astraRecDocsPromptExpiring": {
+    "message": "List my {count} expiring documents and recommend renewals or next steps.",
+    "description": "Personalized documents expiring prompt"
+  },
+  "astraRecResumeTitle": {
+    "message": "Continue recent work",
+    "description": "Personalized resume card title"
+  },
+  "astraRecResumeHint": {
+    "message": "Pick up “{title}”",
+    "description": "Personalized resume card hint"
+  },
+  "astraRecResumeDealPrompt": {
+    "message": "Summarize deal “{title}”, risks, and the single best next action to move it forward.",
+    "description": "Personalized resume deal prompt"
+  },
+  "astraRecResumeTaskPrompt": {
+    "message": "Help me finish task “{title}”. Break it into the next concrete steps.",
+    "description": "Personalized resume task prompt"
+  },
+  "astraRecResumeCasePrompt": {
+    "message": "Summarize case “{title}” and recommend the fastest path to resolution.",
+    "description": "Personalized resume case prompt"
+  },
+  "astraRecResumeGenericPrompt": {
+    "message": "Summarize “{title}” and suggest the most productive next action.",
+    "description": "Personalized resume generic prompt"
+  },
+  "astraRecReasonOverdue": {
+    "message": "Based on {count} overdue items",
+    "description": "Why this overdue recommendation is shown"
+  },
+  "astraRecReasonApprovals": {
+    "message": "Based on {count} pending approvals",
+    "description": "Why this approvals recommendation is shown"
+  },
+  "astraRecReasonDueToday": {
+    "message": "Based on {count} items due today",
+    "description": "Why this due-today recommendation is shown"
+  },
+  "astraRecReasonMail": {
+    "message": "Based on {count} unread messages",
+    "description": "Why this mail recommendation is shown"
+  },
+  "astraRecReasonEvent": {
+    "message": "Based on your next scheduled event",
+    "description": "Why this event recommendation is shown"
+  },
+  "astraRecReasonDocs": {
+    "message": "Based on {count} document alerts",
+    "description": "Why this documents recommendation is shown"
+  },
+  "astraRecReasonResume": {
+    "message": "Based on recent {module} activity",
+    "description": "Why this resume recommendation is shown"
+  },
+  "astraRecReasonFallback": {
+    "message": "Suggested to keep you productive",
+    "description": "Why a fallback recommendation is shown"
+  },
+  "astraRecOverdueCardHintOne": {
+    "message": "1 overdue item needs action first.",
+    "description": "Personalized overdue card hint singular"
+  },
+  "astraRecOverdueCardHintMany": {
+    "message": "{count} overdue items need action first.",
+    "description": "Personalized overdue card hint plural"
+  },
+  "astraRecOverdueCountOne": {
+    "message": "1 overdue",
+    "description": "Short overdue count label singular"
+  },
+  "astraRecOverdueCountMany": {
+    "message": "{count} overdue",
+    "description": "Short overdue count label plural"
+  },
+  "astraRecApprovalsHintOne": {
+    "message": "1 approval is waiting on you.",
+    "description": "Personalized approvals card hint singular"
+  },
+  "astraRecApprovalsHintMany": {
+    "message": "{count} approvals are waiting on you.",
+    "description": "Personalized approvals card hint plural"
+  },
+  "astraRecDueTodayCardHintOne": {
+    "message": "1 item is due today.",
+    "description": "Personalized due-today card hint singular"
+  },
+  "astraRecDueTodayCardHintMany": {
+    "message": "{count} items are due today.",
+    "description": "Personalized due-today card hint plural"
+  },
+  "astraRecMailHintOne": {
+    "message": "1 unread message in your inbox.",
+    "description": "Personalized unread mail card hint singular"
+  },
+  "astraRecMailHintMany": {
+    "message": "{count} unread messages in your inbox.",
+    "description": "Personalized unread mail card hint plural"
+  },
+  "astraRecDocsHintReviewOne": {
+    "message": "1 document needs review.",
+    "description": "Personalized documents pending-review hint singular"
+  },
+  "astraRecDocsHintReviewMany": {
+    "message": "{count} documents need review.",
+    "description": "Personalized documents pending-review hint plural"
+  },
+  "astraRecDocsHintExpiringOne": {
+    "message": "1 document is expiring soon.",
+    "description": "Personalized documents expiring hint singular"
+  },
+  "astraRecDocsHintExpiringMany": {
+    "message": "{count} documents are expiring soon.",
+    "description": "Personalized documents expiring hint plural"
+  },
+  "astraRecReasonOverdueOne": {
+    "message": "Based on 1 overdue item",
+    "description": "Why this overdue recommendation is shown singular"
+  },
+  "astraRecReasonOverdueMany": {
+    "message": "Based on {count} overdue items",
+    "description": "Why this overdue recommendation is shown plural"
+  },
+  "astraRecReasonApprovalsOne": {
+    "message": "Based on 1 pending approval",
+    "description": "Why this approvals recommendation is shown singular"
+  },
+  "astraRecReasonApprovalsMany": {
+    "message": "Based on {count} pending approvals",
+    "description": "Why this approvals recommendation is shown plural"
+  },
+  "astraRecReasonDueTodayOne": {
+    "message": "Based on 1 item due today",
+    "description": "Why this due-today recommendation is shown singular"
+  },
+  "astraRecReasonDueTodayMany": {
+    "message": "Based on {count} items due today",
+    "description": "Why this due-today recommendation is shown plural"
+  },
+  "astraRecReasonMailOne": {
+    "message": "Based on 1 unread message",
+    "description": "Why this mail recommendation is shown singular"
+  },
+  "astraRecReasonMailMany": {
+    "message": "Based on {count} unread messages",
+    "description": "Why this mail recommendation is shown plural"
+  },
+  "astraRecReasonDocsOne": {
+    "message": "Based on 1 document alert",
+    "description": "Why this documents recommendation is shown singular"
+  },
+  "astraRecReasonDocsMany": {
+    "message": "Based on {count} document alerts",
+    "description": "Why this documents recommendation is shown plural"
+  },
+  "astraPlaceholderPrioritize": {
+    "message": "What should I focus on first today?",
+    "description": "Rotating Astra productivity placeholder"
+  },
+  "astraPlaceholderSummarize": {
+    "message": "Summarize my recent work and recommend the next step.",
+    "description": "Rotating Astra summary placeholder"
+  },
+  "astraPlaceholderPrepare": {
+    "message": "Help me prepare for my next meeting.",
+    "description": "Rotating Astra meeting preparation placeholder"
+  },
+  "astraPlaceholderDraft": {
+    "message": "Draft a clear follow-up from my recent activity.",
+    "description": "Rotating Astra drafting placeholder"
+  },
+  "astraPlaceholderFind": {
+    "message": "Find anything that needs my attention.",
+    "description": "Rotating Astra attention placeholder"
+  },
+  "inAppAiActionContentStudio": {
+    "message": "Content Studio",
+    "description": "Badge for open_content_studio deck/content action"
+  },
+  "inAppAiContentStudioOpened": {
+    "message": "Opened Content Studio with your deck outline.",
+    "description": "Confirmation after Astra opens Content Studio from an action"
+  },
+  "inAppAiContentStudioOpenFailed": {
+    "message": "Could not open Content Studio. Check Marketing Blog or Help Articles permissions.",
+    "description": "Error when Astra fails to open Content Studio"
+  },
+  "inAppAiActionCanvas": {
+    "message": "Arivu Canvas",
+    "description": "Badge for open_canvas generative workspace action"
+  },
+  "inAppAiActionReportBuilder": {
+    "message": "Report Builder",
+    "description": "Badge for open_report_builder action"
+  },
+  "inAppAiActionOpenReport": {
+    "message": "Open report",
+    "description": "Badge for open_report action"
+  },
+  "inAppAiActionPublishReport": {
+    "message": "Publish report",
+    "description": "Badge for publish_report action"
+  },
+  "inAppAiReportBuilderOpened": {
+    "message": "Opened Report Builder with your draft.",
+    "description": "Confirmation after Astra opens Report Builder"
+  },
+  "inAppAiReportPublished": {
+    "message": "Report published. You can run it and pin it to dashboards.",
+    "description": "Confirmation after Astra publishes a report"
+  },
+  "inAppAiReportPublishFailed": {
+    "message": "Could not publish the report. Check Reports permissions.",
+    "description": "Error when publish_report fails"
+  },
+  "inAppAiReportOpenFailed": {
+    "message": "Could not open the report. Check Reports permissions.",
+    "description": "Error when open_report / open_report_builder fails"
+  },
+  "inAppAiCanvasOpened": {
+    "message": "Opened Arivu Canvas.",
+    "description": "Confirmation after Astra opens Arivu Canvas"
+  },
+  "inAppAiCanvasOpenFailed": {
+    "message": "Could not open Arivu Canvas.",
+    "description": "Error when Astra fails to open Arivu Canvas"
+  },
+  "arivuCanvasTitle": {
+    "message": "Arivu Canvas",
+    "description": "Arivu Canvas page title fallback"
+  },
+  "arivuCanvasModeCrm": {
+    "message": "CRM",
+    "description": "CRM mode badge on Arivu Canvas"
+  },
+  "arivuCanvasModePresentation": {
+    "message": "Presentation",
+    "description": "Presentation mode badge on Arivu Canvas"
+  },
+  "arivuCanvasBackAstra": {
+    "message": "Back to Astra",
+    "description": "Return to Astra full page from Canvas"
+  },
+  "arivuCanvasExportStudio": {
+    "message": "Export to Content Studio",
+    "description": "Secondary export from presentation canvas"
+  },
+  "arivuCanvasEmptyTitle": {
+    "message": "No canvas loaded",
+    "description": "Empty state title when canvas session missing"
+  },
+  "arivuCanvasEmptyBody": {
+    "message": "Ask Astra to prepare a meeting brief or deck, then open Arivu Canvas from the action chip.",
+    "description": "Empty state body for Arivu Canvas"
+  },
+  "arivuCanvasBrief": {
+    "message": "Brief",
+    "description": "Summary section label on Arivu Canvas"
+  },
+  "arivuCanvasSlides": {
+    "message": "Slides",
+    "description": "Presentation slides section label"
+  },
+  "arivuCanvasStarters": {
+    "message": "Conversation starters",
+    "description": "Conversation starters section on CRM canvas"
+  },
+  "arivuCanvasOpportunities": {
+    "message": "Related records",
+    "description": "Opportunities / related CRM records section"
+  },
+  "arivuCanvasSuggested": {
+    "message": "Suggested prompts",
+    "description": "Suggested follow-up prompts on Arivu Canvas"
+  },
+  "arivuCanvasActions": {
+    "message": "Actions",
+    "description": "Action chips section on Arivu Canvas"
+  },
+  "inAppAiDuplicateHeadline": {
+    "message": "Existing record matches this request",
+    "description": "Headline when Astra blocks a duplicate create"
+  },
+  "inAppAiDuplicateBlocked": {
+    "message": "Possible duplicate of \"{label}\". Open the existing record instead of creating another.",
+    "description": "Message when create is blocked due to intent duplicate"
+  },
+  "inAppAiDuplicateOpenExisting": {
+    "message": "Open existing: {label}",
+    "description": "CTA to open the recommended existing record"
+  },
+  "inAppAiDuplicateCreateAnyway": {
+    "message": "If you still need a new record, reply create anyway.",
+    "description": "Hint for forcing create after duplicate block"
+  },
+  "arivuCanvasAskPlaceholder": {
+    "message": "Ask Arivu Canvas anything — add stakeholders, topics, or refine analysis",
+    "description": "Placeholder for generative canvas improvise input"
+  },
+  "arivuCanvasAskSend": {
+    "message": "Send",
+    "description": "Send canvas improvise question"
+  },
+  "arivuCanvasAskDisclaimer": {
+    "message": "Arivu Canvas uses generative AI. Review CRM facts before acting.",
+    "description": "Disclaimer under canvas ask bar"
+  },
+  "arivuCanvasAskFailed": {
+    "message": "Could not update the canvas. Try again.",
+    "description": "Error when canvas improvise fails"
+  },
+  "arivuCanvasAskEmpty": {
+    "message": "Updated. Refine further or open a linked record.",
+    "description": "Fallback when improvise returns empty"
+  },
+  "arivuCanvasImproviseLog": {
+    "message": "Canvas updates",
+    "description": "Log of improvise chat on canvas"
+  },
+  "arivuCanvasMeetingGoals": {
+    "message": "Meeting goals",
+    "description": "Meeting notes goals label"
+  },
+  "arivuCanvasDiscussionTopics": {
+    "message": "Discussion topics",
+    "description": "Meeting notes topics label"
+  },
+  "arivuCanvasNoStakeholders": {
+    "message": "No stakeholders loaded yet — ask below to add contacts.",
+    "description": "Empty stakeholders card"
+  },
+  "astraCollapseTable": {
+    "message": "Collapse",
+    "description": "Collapse Astra data table disclosure"
+  },
+  "astraExpandTable": {
+    "message": "Expand",
+    "description": "Expand Astra data table disclosure"
+  },
+  "astraShowDetails": {
+    "message": "Show details",
+    "description": "Expand Astra answer detail disclosure"
+  },
+  "astraHideDetails": {
+    "message": "Hide details",
+    "description": "Collapse Astra answer detail disclosure"
+  },
+  "astraVisualTabMetrics": {
+    "message": "Metrics",
+    "description": "Astra visual stack tab for KPI strip"
+  },
+  "astraVisualTabChart": {
+    "message": "Chart",
+    "description": "Astra visual stack tab for chart"
+  },
+  "astraVisualTabShare": {
+    "message": "Distribution",
+    "description": "Astra visual stack tab for progress list"
+  },
+  "astraVisualTabTable": {
+    "message": "Table",
+    "description": "Astra visual stack tab for data table"
+  },
+  "astraVisualTabInsight": {
+    "message": "Insight",
+    "description": "Astra visual stack tab for callout"
+  },
+  "astraVisualTabView": {
+    "message": "View",
+    "description": "Astra visual stack fallback tab label"
+  },
+  "astraPinToDashboard": {
+    "message": "Pin to dashboard",
+    "description": "Pin Astra chart/table to analytics dashboard"
+  },
+  "astraPinning": {
+    "message": "Pinning…",
+    "description": "Astra pin in progress"
+  },
+  "astraPinChooseDashboard": {
+    "message": "Choose dashboard",
+    "description": "Astra pin dashboard picker heading"
+  },
+  "astraPinNoDashboards": {
+    "message": "No published dashboards yet.",
+    "description": "Empty state in Astra pin picker"
+  },
+  "astraPinNewPersonal": {
+    "message": "Pin to my Astra Pins dashboard",
+    "description": "Create/use personal Astra Pins dashboard"
+  },
+  "astraPinSuccess": {
+    "message": "Pinned to {name}",
+    "description": "Astra pin success toast text"
+  },
+  "astraPinFailed": {
+    "message": "Could not pin to dashboard",
+    "description": "Astra pin failure message"
+  },
+  "astraPinAuthRequired": {
+    "message": "Sign in again to pin to a dashboard",
+    "description": "Astra pin when session is invalid without forcing global logout"
+  },
+  "inAppAiActionExportReport": {
+    "message": "Export",
+    "description": "Badge for export_report action"
+  },
+  "inAppAiActionPinReport": {
+    "message": "Pin to dashboard",
+    "description": "Badge for pin_report_to_dashboard action"
+  },
+  "inAppAiReportExported": {
+    "message": "Export started.",
+    "description": "Confirmation after Astra exports a report"
+  },
+  "inAppAiReportExportFailed": {
+    "message": "Could not export the report. Publish it first and check Reports export permission.",
+    "description": "Error when export_report fails"
+  },
+  "inAppAiReportPinned": {
+    "message": "Pinned to {name}.",
+    "description": "Confirmation after Astra pins a report to a dashboard"
+  },
+  "inAppAiReportPinFailed": {
+    "message": "Could not pin the report to a dashboard.",
+    "description": "Error when pin_report_to_dashboard fails"
+  },
+  "inAppAiActionOpenWidget": {
+    "message": "Open widget",
+    "description": "Badge for open_widget action"
+  },
+  "inAppAiActionOpenDashboard": {
+    "message": "Open dashboard",
+    "description": "Badge for open_dashboard action"
+  },
+  "inAppAiWidgetOpenFailed": {
+    "message": "Could not open the widget. Check Reports permissions.",
+    "description": "Error when open_widget fails"
+  },
+  "inAppAiDashboardOpenFailed": {
+    "message": "Could not open the dashboard.",
+    "description": "Error when open_dashboard fails"
   }
 }

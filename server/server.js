@@ -156,8 +156,8 @@ app.use('/api/payment-gateways/webhooks', require('./routes/paymentGatewayWebhoo
 app.use('/api/public/pay', require('./routes/publicPaymentLinkRoutes'));
 
 // Body Parsing
-app.use(express.json({ limit: '10mb' })); // Limit request size
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '26mb' })); // Align with content asset upload limit (25MB + overhead)
+app.use(express.urlencoded({ extended: true, limit: '26mb' }));
 
 if (!SECURITY_DISABLED && process.env.RATE_LIMIT_IP_DEBUG === 'true') {
     app.use('/api', (req, res, next) => {

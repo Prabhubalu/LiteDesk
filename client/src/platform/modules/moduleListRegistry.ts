@@ -38,6 +38,16 @@ export interface StatisticsConfig {
     key: string;
     formatter?: 'number' | 'currency' | 'percentage';
   }>;
+  /**
+   * `view` (default): refresh cards only for saved-view scope.
+   * `query`: always recompute from the current list query (search/filters/views).
+   */
+  scope?: 'view' | 'query';
+  /** Optional dynamic card set from active view + filters */
+  resolveStats?: (
+    filters: Record<string, any>,
+    activeViewId?: string | null
+  ) => StatisticsConfig['stats'];
   /** Function to compute statistics from currently loaded rows; pass totalRecords for full-query totals */
   computeFunction: (
     data: any[],
@@ -154,8 +164,10 @@ function computePeopleStatistics(
   currentUserId?: string,
   context?: ModuleListStatisticsContext
 ): Record<string, number> {
+  const total = context?.totalRecords ?? data.length;
   const stats = {
-    totalPeople: context?.totalRecords ?? data.length,
+    totalPeople: total,
+    myPeople: total,
     assignedToMe: 0,
     unassigned: 0,
     withOrganization: 0,
@@ -163,7 +175,6 @@ function computePeopleStatistics(
   };
 
   data.forEach(person => {
-    // Assigned to me
     const assignedToId = typeof person.assignedTo === 'object' && person.assignedTo?._id
       ? person.assignedTo._id
       : person.assignedTo;
@@ -171,18 +182,20 @@ function computePeopleStatistics(
       stats.assignedToMe++;
     }
 
-    // Unassigned
     if (!assignedToId || assignedToId === null) {
       stats.unassigned++;
     }
 
-    // With/without sales organization (People.organization — not tenant organizationId)
     if (person.organization) {
       stats.withOrganization++;
     } else {
       stats.withoutOrganization++;
     }
   });
+
+  if (context?.totalRecords == null) {
+    stats.myPeople = stats.assignedToMe;
+  }
 
   return stats;
 }
@@ -297,8 +310,10 @@ function computeOrganizationsStatistics(
   currentUserId?: string,
   context?: ModuleListStatisticsContext
 ): Record<string, number> {
+  const total = context?.totalRecords ?? data.length;
   const stats = {
-    totalOrganizations: context?.totalRecords ?? data.length,
+    totalOrganizations: total,
+    myOrganizations: total,
     assignedToMe: 0,
     unassigned: 0,
     activeOrganizations: 0,
@@ -306,7 +321,6 @@ function computeOrganizationsStatistics(
   };
 
   data.forEach(org => {
-    // Assigned to me
     const assignedToId = typeof org.assignedTo === 'object' && org.assignedTo?._id
       ? org.assignedTo._id
       : org.assignedTo;
@@ -314,21 +328,23 @@ function computeOrganizationsStatistics(
       stats.assignedToMe++;
     }
 
-    // Unassigned
     if (!assignedToId || assignedToId === null) {
       stats.unassigned++;
     }
 
-    // Active organizations
     if (org.isActive === true) {
       stats.activeOrganizations++;
     }
 
-    // Trial organizations
-    if (org.subscription?.tier === 'trial' || org.subscription?.status === 'trial') {
+    const tier = org.subscription?.tier || org.subscription?.status;
+    if (tier === 'trial') {
       stats.trialOrganizations++;
     }
   });
+
+  if (context?.totalRecords == null) {
+    stats.myOrganizations = stats.assignedToMe;
+  }
 
   return stats;
 }
@@ -556,38 +572,210 @@ function normalizeTasksViewFilters(filters: Record<string, any>, currentUserId?:
 }
 
 /**
- * Compute Tasks statistics
+ * Task summary cards — All Tasks vs My Tasks (no redundant Assigned to Me).
  */
+function resolveTasksStatsConfig(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  const isMyTasks =
+    activeViewId === 'assigned-to-me' ||
+    filters?.assignedTo === 'me';
+
+  return [
+    isMyTasks
+      ? { name: 'My Tasks', key: 'myTasks', formatter: 'number' as const }
+      : { name: 'Total Tasks', key: 'totalTasks', formatter: 'number' as const },
+    { name: 'Open', key: 'open', formatter: 'number' as const },
+    { name: 'Due Today', key: 'dueToday', formatter: 'number' as const },
+    { name: 'Overdue', key: 'overdue', formatter: 'number' as const }
+  ];
+}
+
+function isMyAssigneeScope(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null,
+  myViewIds: string[] = []
+): boolean {
+  return myViewIds.includes(String(activeViewId || '')) || filters?.assignedTo === 'me';
+}
+
+/** People: drop Assigned to Me; hide Unassigned on My People. */
+function resolvePeopleStatsConfig(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  const isMy = isMyAssigneeScope(filters, activeViewId, ['assigned-to-me']);
+  return [
+    isMy
+      ? { name: 'My People', key: 'myPeople', formatter: 'number' as const }
+      : { name: 'Total People', key: 'totalPeople', formatter: 'number' as const },
+    ...(isMy
+      ? []
+      : [{ name: 'Unassigned', key: 'unassigned', formatter: 'number' as const }]),
+    { name: 'With Organization', key: 'withOrganization', formatter: 'number' as const },
+    { name: 'Without Organization', key: 'withoutOrganization', formatter: 'number' as const }
+  ];
+}
+
+/** Organizations: drop Assigned to Me; hide Unassigned on My Organizations. */
+function resolveOrganizationsStatsConfig(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  const isMy = isMyAssigneeScope(filters, activeViewId, ['assigned-to-me']);
+  return [
+    isMy
+      ? { name: 'My Organizations', key: 'myOrganizations', formatter: 'number' as const }
+      : { name: 'Total Organizations', key: 'totalOrganizations', formatter: 'number' as const },
+    ...(isMy
+      ? []
+      : [{ name: 'Unassigned', key: 'unassigned', formatter: 'number' as const }]),
+    { name: 'Active', key: 'activeOrganizations', formatter: 'number' as const },
+    { name: 'Trial', key: 'trialOrganizations', formatter: 'number' as const }
+  ];
+}
+
+/** Events: drop Past + My Events on All; My Events headline when scoped to me. */
+function resolveEventsStatsConfig(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  const isMy = isMyAssigneeScope(filters, activeViewId, ['my-events']);
+  return [
+    isMy
+      ? { name: 'My Events', key: 'myEvents', formatter: 'number' as const }
+      : { name: 'Total Events', key: 'totalEvents', formatter: 'number' as const },
+    { name: 'Upcoming', key: 'upcoming', formatter: 'number' as const },
+    { name: 'Today', key: 'today', formatter: 'number' as const },
+    { name: 'This Week', key: 'thisWeek', formatter: 'number' as const }
+  ];
+}
+
+/** Deals: pipeline-focused; same cards on My Deals (query-scoped). */
+function resolveDealsStatsConfig(
+  _filters: Record<string, any> = {},
+  _activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  return [
+    { name: 'Pipeline Value', key: 'pipelineValue', formatter: 'currency' as const },
+    { name: 'Open Deals', key: 'activeDeals', formatter: 'number' as const },
+    { name: 'Won Value', key: 'wonValue', formatter: 'currency' as const },
+    { name: 'Win Rate', key: 'winRate', formatter: 'percentage' as const }
+  ];
+}
+
+/** Quotes: drop My Quotes card on All; headline My Quotes when scoped. */
+function resolveQuotesStatsConfig(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  const isMy = isMyAssigneeScope(filters, activeViewId, ['my-quotes']);
+  return [
+    isMy
+      ? { name: 'My Quotes', key: 'myQuotes', formatter: 'number' as const }
+      : { name: 'Total Quotes', key: 'totalQuotes', formatter: 'number' as const },
+    { name: 'Open Quotes', key: 'openQuotes', formatter: 'number' as const },
+    { name: 'Open Value', key: 'openValue', formatter: 'currency' as const },
+    { name: 'Accepted Value', key: 'acceptedValue', formatter: 'currency' as const }
+  ];
+}
+
+/** Sales orders: actionable fulfillment strip (not every status). */
+function resolveSalesOrdersStatsConfig(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  const isMy = isMyAssigneeScope(filters, activeViewId, ['my-orders']);
+  return [
+    isMy
+      ? { name: 'My Orders', key: 'mySalesOrders', formatter: 'number' as const }
+      : { name: 'Total Orders', key: 'totalSalesOrders', formatter: 'number' as const },
+    { name: 'Open', key: 'open', formatter: 'number' as const },
+    { name: 'In Fulfillment', key: 'inFulfillment', formatter: 'number' as const },
+    { name: 'Completed', key: 'completed', formatter: 'number' as const }
+  ];
+}
+
+/** Campaigns: drop Completed from strip. */
+function resolveCampaignsStatsConfig(): StatisticsConfig['stats'] {
+  return [
+    { name: 'Total', key: 'totalCampaigns', formatter: 'number' as const },
+    { name: 'Draft', key: 'draft', formatter: 'number' as const },
+    { name: 'Scheduled', key: 'scheduled', formatter: 'number' as const },
+    { name: 'Running', key: 'running', formatter: 'number' as const }
+  ];
+}
+
+/** Analytics publishables: Total / Draft / Published (drop Archived). */
+function resolvePublishableStatsConfig(
+  totalKey: string,
+  totalName: string
+): StatisticsConfig['stats'] {
+  return [
+    { name: totalName, key: totalKey, formatter: 'number' as const },
+    { name: 'Draft', key: 'draft', formatter: 'number' as const },
+    { name: 'Published', key: 'published', formatter: 'number' as const }
+  ];
+}
+
+/** Items: lifecycle strip (drop Product/Service type cards). */
+function resolveItemsStatsConfig(): StatisticsConfig['stats'] {
+  return [
+    { name: 'Total Items', key: 'totalItems', formatter: 'number' as const },
+    { name: 'Active', key: 'activeItems', formatter: 'number' as const },
+    { name: 'Draft', key: 'draftItems', formatter: 'number' as const },
+    { name: 'Discontinued', key: 'discontinuedItems', formatter: 'number' as const }
+  ];
+}
+
+/** Invoices: actionable status strip. */
+function resolveInvoicesStatsConfig(
+  filters: Record<string, any> = {},
+  activeViewId?: string | null
+): StatisticsConfig['stats'] {
+  const isMy = isMyAssigneeScope(filters, activeViewId, ['my-invoices']);
+  return [
+    isMy
+      ? { name: 'My Invoices', key: 'myInvoices', formatter: 'number' as const }
+      : { name: 'Total Invoices', key: 'totalInvoices', formatter: 'number' as const },
+    { name: 'Draft', key: 'draft', formatter: 'number' as const },
+    { name: 'Pending Approval', key: 'pendingApproval', formatter: 'number' as const },
+    { name: 'Posted', key: 'posted', formatter: 'number' as const }
+  ];
+}
+
 function computeTasksStatistics(
   data: any[],
-  currentUserId?: string,
+  _currentUserId?: string,
   context?: ModuleListStatisticsContext
 ): Record<string, number> {
   const stats = {
     totalTasks: context?.totalRecords ?? data.length,
-    assignedToMe: 0,
-    completed: 0,
+    myTasks: context?.totalRecords ?? data.length,
+    open: 0,
+    dueToday: 0,
     overdue: 0
   };
 
-  const now = new Date();
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date(startOfToday);
+  endOfToday.setDate(endOfToday.getDate() + 1);
+  endOfToday.setMilliseconds(-1);
 
   data.forEach(task => {
-    // Assigned to me
-    const assignedToId = typeof task.assignedTo === 'object' && task.assignedTo?._id
-      ? task.assignedTo._id
-      : task.assignedTo;
-    if (assignedToId === currentUserId) {
-      stats.assignedToMe++;
+    const status = task.status;
+    const isOpen = status !== 'completed' && status !== 'cancelled';
+    if (isOpen) {
+      stats.open++;
     }
 
-    // Completed
-    if (task.status === 'completed') {
-      stats.completed++;
-    }
-
-    // Overdue
-    if (task.dueDate && new Date(task.dueDate) < now && task.status !== 'completed') {
+    if (!task.dueDate || !isOpen) return;
+    const due = new Date(task.dueDate);
+    if (due >= startOfToday && due <= endOfToday) {
+      stats.dueToday++;
+    } else if (due < startOfToday) {
       stats.overdue++;
     }
   });
@@ -635,7 +823,7 @@ function computeEventsStatistics(
     const assignedTo = typeof event.assignedTo === 'object' && event.assignedTo?._id
       ? event.assignedTo._id
       : event.assignedTo;
-    if (assignedTo === currentUserId) {
+    if (currentUserId && String(assignedTo) === String(currentUserId)) {
       stats.myEvents++;
     }
 
@@ -812,33 +1000,39 @@ function computeQuotesStatistics(
   currentUserId?: string,
   context?: ModuleListStatisticsContext
 ): Record<string, number> {
+  const total = context?.totalRecords ?? data.length;
   const stats = {
-    totalQuotes: context?.totalRecords ?? data.length,
-    myQuotes: 0,
+    totalQuotes: total,
+    myQuotes: total,
     openValue: 0,
     openQuotes: 0,
     acceptedValue: 0,
   };
 
+  let myQuotesFromRows = 0;
   data.forEach((quote) => {
     const assignedTo =
       typeof quote.assignedTo === 'object' && quote.assignedTo?._id ? quote.assignedTo._id : quote.assignedTo;
     if (assignedTo === currentUserId) {
-      stats.myQuotes++;
+      myQuotesFromRows++;
     }
 
     const status = quote.status;
-    const total = Number(quote.grandTotal) || 0;
+    const amount = Number(quote.grandTotal) || 0;
 
     if (!CLOSED_QUOTE_STATUSES.has(status)) {
       stats.openQuotes++;
-      stats.openValue += total;
+      stats.openValue += amount;
     }
 
     if (ACCEPTED_QUOTE_STATUSES.has(status)) {
-      stats.acceptedValue += total;
+      stats.acceptedValue += amount;
     }
   });
+
+  if (context?.totalRecords == null) {
+    stats.myQuotes = myQuotesFromRows;
+  }
 
   return stats;
 }
@@ -979,11 +1173,13 @@ function normalizeSalesOrdersViewFilters(filters: Record<string, any>, currentUs
  */
 function computeSalesOrdersStatistics(
   data: any[],
-  currentUserId?: string,
+  _currentUserId?: string,
   context?: ModuleListStatisticsContext
 ): Record<string, number> {
   const stats = {
     totalSalesOrders: context?.totalRecords ?? data.length,
+    mySalesOrders: context?.totalRecords ?? data.length,
+    open: 0,
     draft: 0,
     confirmed: 0,
     inFulfillment: 0,
@@ -1000,6 +1196,15 @@ function computeSalesOrdersStatistics(
     else if (status === 'Partially Fulfilled') stats.partiallyFulfilled++;
     else if (status === 'Fulfilled') stats.completed++;
     else if (status === 'Cancelled') stats.cancelled++;
+
+    if (
+      status === 'Draft' ||
+      status === 'Confirmed' ||
+      status === 'In Fulfillment' ||
+      status === 'Partially Fulfilled'
+    ) {
+      stats.open++;
+    }
   });
 
   return stats;
@@ -1034,11 +1239,13 @@ function normalizeInvoicesViewFilters(filters: Record<string, any>, currentUserI
 
 function computeInvoicesStatistics(
   data: any[],
-  currentUserId?: string,
+  _currentUserId?: string,
   context?: ModuleListStatisticsContext
 ): Record<string, number> {
+  const total = context?.totalRecords ?? data.length;
   const stats = {
-    totalInvoices: context?.totalRecords ?? data.length,
+    totalInvoices: total,
+    myInvoices: total,
     draft: 0,
     pendingApproval: 0,
     approved: 0,
@@ -1182,13 +1389,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Total People', key: 'totalPeople', formatter: 'number' },
-        { name: 'Assigned to Me', key: 'assignedToMe', formatter: 'number' },
-        { name: 'Unassigned', key: 'unassigned', formatter: 'number' },
-        { name: 'With Organization', key: 'withOrganization', formatter: 'number' },
-        { name: 'Without Organization', key: 'withoutOrganization', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolvePeopleStatsConfig({}, 'all'),
+      resolveStats: resolvePeopleStatsConfig,
       computeFunction: computePeopleStatistics
     },
     systemViews: [
@@ -1250,13 +1453,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       ]
     },
     statistics: {
-      stats: [
-        { name: 'Total Organizations', key: 'totalOrganizations', formatter: 'number' },
-        { name: 'Assigned to Me', key: 'assignedToMe', formatter: 'number' },
-        { name: 'Unassigned', key: 'unassigned', formatter: 'number' },
-        { name: 'Active', key: 'activeOrganizations', formatter: 'number' },
-        { name: 'Trial', key: 'trialOrganizations', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveOrganizationsStatsConfig({}, 'all'),
+      resolveStats: resolveOrganizationsStatsConfig,
       computeFunction: computeOrganizationsStatistics
     },
     systemViews: [
@@ -1309,12 +1508,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Total Tasks', key: 'totalTasks', formatter: 'number' },
-        { name: 'Assigned to Me', key: 'assignedToMe', formatter: 'number' },
-        { name: 'Completed', key: 'completed', formatter: 'number' },
-        { name: 'Overdue', key: 'overdue', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveTasksStatsConfig({}, 'all'),
+      resolveStats: resolveTasksStatsConfig,
       computeFunction: computeTasksStatistics
     },
     systemViews: [
@@ -1353,14 +1549,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       'appointmentMeetingLink'
     ],
     statistics: {
-      stats: [
-        { name: 'Total Events', key: 'totalEvents', formatter: 'number' },
-        { name: 'Upcoming', key: 'upcoming', formatter: 'number' },
-        { name: 'Past', key: 'past', formatter: 'number' },
-        { name: 'My Events', key: 'myEvents', formatter: 'number' },
-        { name: 'Today', key: 'today', formatter: 'number' },
-        { name: 'This Week', key: 'thisWeek', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveEventsStatsConfig({}, 'all'),
+      resolveStats: resolveEventsStatsConfig,
       computeFunction: computeEventsStatistics
     },
     systemViews: [
@@ -1419,12 +1610,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Pipeline Value', key: 'pipelineValue', formatter: 'currency' },
-        { name: 'Open Deals', key: 'activeDeals', formatter: 'number' },
-        { name: 'Won This Month', key: 'wonValue', formatter: 'currency' },
-        { name: 'Win Rate', key: 'winRate', formatter: 'percentage' }
-      ],
+      scope: 'query',
+      stats: resolveDealsStatsConfig(),
+      resolveStats: resolveDealsStatsConfig,
       computeFunction: computeDealsStatistics
     },
     systemViews: [
@@ -1446,12 +1634,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: ['customFields', 'sourceRef']
     },
     statistics: {
-      stats: [
-        { name: 'Open Value', key: 'openValue', formatter: 'currency' },
-        { name: 'Open Quotes', key: 'openQuotes', formatter: 'number' },
-        { name: 'Accepted Value', key: 'acceptedValue', formatter: 'currency' },
-        { name: 'My Quotes', key: 'myQuotes', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveQuotesStatsConfig({}, 'all'),
+      resolveStats: resolveQuotesStatsConfig,
       computeFunction: computeQuotesStatistics
     },
     systemViews: [
@@ -1483,14 +1668,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: ['customFields']
     },
     statistics: {
-      stats: [
-        { name: 'Draft', key: 'draft', formatter: 'number' },
-        { name: 'Confirmed', key: 'confirmed', formatter: 'number' },
-        { name: 'In Fulfillment', key: 'inFulfillment', formatter: 'number' },
-        { name: 'Partially Fulfilled', key: 'partiallyFulfilled', formatter: 'number' },
-        { name: 'Completed', key: 'completed', formatter: 'number' },
-        { name: 'Cancelled', key: 'cancelled', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveSalesOrdersStatsConfig({}, 'all'),
+      resolveStats: resolveSalesOrdersStatsConfig,
       computeFunction: computeSalesOrdersStatistics
     },
     systemViews: [
@@ -1516,13 +1696,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Total campaigns', key: 'totalCampaigns', formatter: 'number' },
-        { name: 'Draft', key: 'draft', formatter: 'number' },
-        { name: 'Scheduled', key: 'scheduled', formatter: 'number' },
-        { name: 'Running', key: 'running', formatter: 'number' },
-        { name: 'Completed', key: 'completed', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveCampaignsStatsConfig(),
+      resolveStats: resolveCampaignsStatsConfig,
       computeFunction: computeCampaignsStatistics
     },
     systemViews: [
@@ -1546,12 +1722,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Total reports', key: 'totalReports', formatter: 'number' },
-        { name: 'Draft', key: 'draft', formatter: 'number' },
-        { name: 'Published', key: 'published', formatter: 'number' },
-        { name: 'Archived', key: 'archived', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolvePublishableStatsConfig('totalReports', 'Total Reports'),
+      resolveStats: () => resolvePublishableStatsConfig('totalReports', 'Total Reports'),
       computeFunction: computeReportsStatistics
     },
     systemViews: [
@@ -1575,12 +1748,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Total widgets', key: 'totalWidgets', formatter: 'number' },
-        { name: 'Draft', key: 'draft', formatter: 'number' },
-        { name: 'Published', key: 'published', formatter: 'number' },
-        { name: 'Archived', key: 'archived', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolvePublishableStatsConfig('totalWidgets', 'Total Widgets'),
+      resolveStats: () => resolvePublishableStatsConfig('totalWidgets', 'Total Widgets'),
       computeFunction: computeWidgetsStatistics
     },
     systemViews: [
@@ -1601,12 +1771,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Total dashboards', key: 'totalDashboards', formatter: 'number' },
-        { name: 'Draft', key: 'draft', formatter: 'number' },
-        { name: 'Published', key: 'published', formatter: 'number' },
-        { name: 'Archived', key: 'archived', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolvePublishableStatsConfig('totalDashboards', 'Total Dashboards'),
+      resolveStats: () => resolvePublishableStatsConfig('totalDashboards', 'Total Dashboards'),
       computeFunction: computeDashboardsStatistics
     },
     systemViews: [
@@ -1635,13 +1802,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: ['customFields']
     },
     statistics: {
-      stats: [
-        { name: 'Draft', key: 'draft', formatter: 'number' },
-        { name: 'Pending Approval', key: 'pendingApproval', formatter: 'number' },
-        { name: 'Approved', key: 'approved', formatter: 'number' },
-        { name: 'Posted', key: 'posted', formatter: 'number' },
-        { name: 'Void', key: 'void', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveInvoicesStatsConfig({}, 'all'),
+      resolveStats: resolveInvoicesStatsConfig,
       computeFunction: computeInvoicesStatistics
     },
     systemViews: [
@@ -1730,14 +1893,9 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       excludedFromDefault: []
     },
     statistics: {
-      stats: [
-        { name: 'Total Items', key: 'totalItems', formatter: 'number' },
-        { name: 'Active', key: 'activeItems', formatter: 'number' },
-        { name: 'Draft', key: 'draftItems', formatter: 'number' },
-        { name: 'Discontinued', key: 'discontinuedItems', formatter: 'number' },
-        { name: 'Products', key: 'products', formatter: 'number' },
-        { name: 'Services', key: 'services', formatter: 'number' }
-      ],
+      scope: 'query',
+      stats: resolveItemsStatsConfig(),
+      resolveStats: resolveItemsStatsConfig,
       computeFunction: computeItemsStatistics
     },
     systemViews: [

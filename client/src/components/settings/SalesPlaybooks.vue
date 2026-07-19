@@ -569,6 +569,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import PlaybookActivityModal from '@/components/settings/PlaybookActivityModal.vue';
 import { usePlaybookStageActions } from '@/composables/usePlaybookStageActions';
@@ -797,25 +798,20 @@ async function fetchDealsModule() {
   loading.value = true;
   error.value = '';
   try {
-    const data = await apiClient.get('/modules');
-    if (data.success) {
-      const deals = data.data.find(m => m.key === 'deals');
-      if (!deals) {
-        error.value = t('settings.salesPlayDealsModuleNotFound');
-        return;
-      }
-      dealsModule.value = deals;
-      const raw = Array.isArray(deals.pipelineSettings) ? JSON.parse(JSON.stringify(deals.pipelineSettings)) : [];
-      pipelineSettings.value = normalizePipelineSettings(raw);
-      if (pipelineSettings.value.length) {
-        selectedPipelineKey.value = resolveInitialPipelineKey(pipelineSettings.value);
-        syncPipelineQuery(selectedPipelineKey.value);
-      }
-      originalSnapshot.value = JSON.stringify(pipelineSettings.value);
-      await fetchPlaybookRuntimeSummary();
-    } else {
-      error.value = data.message || t('settings.salesPlayLoadFailed');
+    const deals = await fetchModuleDefinitionCached('deals');
+    if (!deals) {
+      error.value = t('settings.salesPlayDealsModuleNotFound');
+      return;
     }
+    dealsModule.value = deals;
+    const raw = Array.isArray(deals.pipelineSettings) ? JSON.parse(JSON.stringify(deals.pipelineSettings)) : [];
+    pipelineSettings.value = normalizePipelineSettings(raw);
+    if (pipelineSettings.value.length) {
+      selectedPipelineKey.value = resolveInitialPipelineKey(pipelineSettings.value);
+      syncPipelineQuery(selectedPipelineKey.value);
+    }
+    originalSnapshot.value = JSON.stringify(pipelineSettings.value);
+    await fetchPlaybookRuntimeSummary();
   } catch (err) {
     console.error('Error fetching deals module:', err);
     error.value = err.message || t('settings.salesPlayLoadFailed');

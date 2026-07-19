@@ -247,9 +247,73 @@ exports.getItems = async (req, res) => {
                 .skip(skip);
         
         const total = await Item.countDocuments(query);
-        
-        // Get statistics
-        const stats = await Item.getItemStatistics(req.user.organizationId);
+
+        // Full-query KPIs for ModuleList cards (same filter as list rows).
+        const listCardBreakdown = await Item.aggregate([
+            { $match: query },
+            {
+                $group: {
+                    _id: null,
+                    activeItems: {
+                        $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Active'] }, 1, 0] }
+                    },
+                    draftItems: {
+                        $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Draft'] }, 1, 0] }
+                    },
+                    discontinuedItems: {
+                        $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Discontinued'] }, 1, 0] }
+                    },
+                    archivedItems: {
+                        $sum: { $cond: [{ $eq: ['$lifecycle_state', 'Archived'] }, 1, 0] }
+                    },
+                    inactiveItems: {
+                        $sum: { $cond: [{ $ne: ['$lifecycle_state', 'Active'] }, 1, 0] }
+                    },
+                    products: {
+                        $sum: { $cond: [{ $eq: ['$item_type', 'Product'] }, 1, 0] }
+                    },
+                    services: {
+                        $sum: { $cond: [{ $eq: ['$item_type', 'Service'] }, 1, 0] }
+                    },
+                    serializedProducts: {
+                        $sum: { $cond: [{ $eq: ['$item_type', 'Serialized Product'] }, 1, 0] }
+                    },
+                    nonStockProducts: {
+                        $sum: { $cond: [{ $eq: ['$item_type', 'Non-Stock Product'] }, 1, 0] }
+                    },
+                    totalStockValue: {
+                        $sum: {
+                            $cond: [
+                                { $in: ['$item_type', ['Product', 'Serialized Product']] },
+                                { $multiply: [{ $ifNull: ['$stock_quantity', 0] }, { $ifNull: ['$cost_price', 0] }] },
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
+        ]);
+
+        const statsRow = listCardBreakdown[0] || {
+            activeItems: 0,
+            draftItems: 0,
+            discontinuedItems: 0,
+            archivedItems: 0,
+            inactiveItems: 0,
+            products: 0,
+            services: 0,
+            serializedProducts: 0,
+            nonStockProducts: 0,
+            totalStockValue: 0
+        };
+        const listStatistics = {
+            totalItems: total,
+            activeItems: statsRow.activeItems || 0,
+            draftItems: statsRow.draftItems || 0,
+            discontinuedItems: statsRow.discontinuedItems || 0,
+            products: statsRow.products || 0,
+            services: statsRow.services || 0
+        };
 
         const itemIds = items.map((item) => item._id);
         const defaultVariants = itemIds.length
@@ -277,21 +341,14 @@ exports.getItems = async (req, res) => {
                 currentPage: page,
                 limit,
                 totalItems: total,
+                totalRecords: total,
                 totalPages: Math.ceil(total / limit)
             },
-            statistics: stats[0] || {
-                totalItems: 0,
-                activeItems: 0,
-                draftItems: 0,
-                discontinuedItems: 0,
-                archivedItems: 0,
-                inactiveItems: 0,
-                products: 0,
-                services: 0,
-                serializedProducts: 0,
-                nonStockProducts: 0,
-                totalStockValue: 0
-            }
+            statistics: {
+                totalItems: total,
+                ...statsRow
+            },
+            listStatistics
         });
     } catch (error) {
         console.error('Get items error:', error);

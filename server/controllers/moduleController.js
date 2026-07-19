@@ -2515,9 +2515,20 @@ exports.listModules = async (req, res) => {
     try {
         // Get context from query parameter (default to 'platform')
         const currentContext = (req.query.context || 'platform').toLowerCase();
+
+        // Early key filter: callers like Tasks/Deals pass ?key= — avoid building every system module.
+        const keyParamEarly = req.query.key || req.query.keys;
+        const requestedKeys = keyParamEarly
+            ? new Set(
+                String(keyParamEarly)
+                    .split(',')
+                    .map((k) => k.toLowerCase().trim())
+                    .filter(Boolean)
+              )
+            : null;
         
         // Static system modules (always present)
-        const systemModules = [
+        const SYSTEM_MODULE_CATALOG = [
             { key: 'people', name: 'People' },
             { key: 'organizations', name: 'Organizations' },
             { key: 'deals', name: 'Deals' },
@@ -2534,7 +2545,11 @@ exports.listModules = async (req, res) => {
             { key: 'imports', name: 'Imports' },
             { key: 'reports', name: 'Reports' },
             { key: 'users', name: 'Users' } // For lookup targets (assignedTo, lead_owner, createdBy)
-        ].map(m => {
+        ];
+        const systemModuleDefs = requestedKeys
+            ? SYSTEM_MODULE_CATALOG.filter((m) => requestedKeys.has(m.key))
+            : SYSTEM_MODULE_CATALOG;
+        const systemModules = systemModuleDefs.map(m => {
             const baseModule = {
                 _id: `system:${m.key}`,
                 organizationId: req.user.organizationId,
@@ -2621,12 +2636,24 @@ exports.listModules = async (req, res) => {
         // Query organization-specific modules (overrides)
         // Also query platform-level modules (appKey: 'platform', organizationId: null) for core entities
         // Note: Using .lean() returns plain objects, and .select('+quickCreate') only works if field has select: false
-        const custom = await ModuleDefinition.find({ 
-            $or: [
-                { organizationId: req.user.organizationId, key: { $ne: 'groups' } }, // Org-specific overrides
-                { appKey: 'platform', organizationId: null, moduleKey: { $in: ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents'] } } // Platform core entities
-            ]
-        })
+        const platformCoreKeys = ['people', 'organizations', 'tasks', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents'];
+        const platformKeysForQuery = requestedKeys
+            ? platformCoreKeys.filter((k) => requestedKeys.has(k))
+            : platformCoreKeys;
+        const orgKeyFilter = requestedKeys
+            ? { $in: [...requestedKeys].filter((k) => k !== 'groups') }
+            : { $ne: 'groups' };
+        const customQueryOr = [
+            { organizationId: req.user.organizationId, key: orgKeyFilter },
+        ];
+        if (platformKeysForQuery.length > 0) {
+            customQueryOr.push({
+                appKey: 'platform',
+                organizationId: null,
+                moduleKey: { $in: platformKeysForQuery },
+            });
+        }
+        const custom = await ModuleDefinition.find({ $or: customQueryOr })
         .select('+quickCreate +quickCreateLayout')
         .lean();
         
@@ -2635,39 +2662,25 @@ exports.listModules = async (req, res) => {
         const mongoose = require('mongoose');
         const db = mongoose.connection.db;
         const collection = db.collection('moduledefinitions');
+        const orgObjectId = new mongoose.Types.ObjectId(req.user.organizationId);
         
         // Check for organization-specific People module (same filter as updateSystemModule upsert)
-        const peopleModuleRaw = await collection.findOne({
-            organizationId: new mongoose.Types.ObjectId(req.user.organizationId),
-            key: 'people'
-        });
+        const needsPeopleRaw = !requestedKeys || requestedKeys.has('people');
+        const peopleModuleRaw = needsPeopleRaw
+            ? await collection.findOne({
+                organizationId: orgObjectId,
+                key: 'people'
+            })
+            : null;
         
         // Also check for platform-level People module
-        const platformPeopleModuleRaw = await collection.findOne({
-            appKey: 'platform',
-            moduleKey: 'people',
-            organizationId: null
-        });
-        
-        console.log('🔍 People raw (listModules):', {
-            org: peopleModuleRaw ? { hasQuickCreate: !!peopleModuleRaw.quickCreate, quickCreateLength: (peopleModuleRaw.quickCreate || []).length } : null,
-            platform: platformPeopleModuleRaw ? { hasQuickCreate: !!platformPeopleModuleRaw.quickCreate, quickCreateLength: (platformPeopleModuleRaw.quickCreate || []).length } : null
-        });
-        
-        console.log('🔍 Custom modules query result:', {
-            organizationId: req.user.organizationId.toString(),
-            count: custom.length,
-            modules: custom.map(m => ({
-                key: m.key || m.moduleKey,
-                appKey: m.appKey,
-                organizationId: m.organizationId ? m.organizationId.toString() : 'null',
-                hasQuickCreate: 'quickCreate' in m,
-                quickCreate: m.quickCreate,
-                quickCreateLength: m.quickCreate?.length || 0,
-                quickCreateType: typeof m.quickCreate,
-                quickCreateIsArray: Array.isArray(m.quickCreate)
-            }))
-        });
+        const platformPeopleModuleRaw = needsPeopleRaw
+            ? await collection.findOne({
+                appKey: 'platform',
+                moduleKey: 'people',
+                organizationId: null
+            })
+            : null;
         
         // Merge quickCreate from raw MongoDB for people. Raw is source of truth (Settings saves via direct MongoDB).
         // Prefer org override > platform. Always use raw when it has non-empty quickCreate (overwrite Mongoose).
@@ -2681,13 +2694,9 @@ exports.listModules = async (req, res) => {
                     module.quickCreateLayout = (peopleModuleRaw.quickCreateLayout && typeof peopleModuleRaw.quickCreateLayout === 'object')
                         ? peopleModuleRaw.quickCreateLayout
                         : { version: 1, rows: [] };
-                    console.log('✅ People quickCreate from org override (raw):', module.quickCreate.length, 'fields');
                 } else if (fromPlatform) {
                     module.quickCreate = platformPeopleModuleRaw.quickCreate;
                     module.quickCreateLayout = platformPeopleModuleRaw.quickCreateLayout || { version: 1, rows: [] };
-                    console.log('✅ People quickCreate from platform (raw):', module.quickCreate.length, 'fields');
-                } else if (!module.quickCreate || module.quickCreate.length === 0) {
-                    console.log('⚠️ People quickCreate empty (no org/platform raw with config)');
                 }
             }
         }
@@ -2695,49 +2704,51 @@ exports.listModules = async (req, res) => {
         // Other tenant system modules: quickCreate is persisted via raw Mongo in updateSystemModule / updateModule.
         // Mongoose .lean() + select('+quickCreate') can still omit quickCreate on some documents; when undefined,
         // merge falls back to [] and listModules applies canonical defaults — Settings "saves" but reload shows defaults.
-        // Overlay from native driver (same reliability as People raw merge above).
-        const orgQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents', 'cases', 'forms']);
-        for (const module of custom) {
-            if (!module.organizationId) continue;
-            const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
-            if (!orgQuickCreateRawKeys.has(moduleKey)) continue;
-            try {
-                const orgId = module.organizationId instanceof mongoose.Types.ObjectId
-                    ? module.organizationId
-                    : new mongoose.Types.ObjectId(String(module.organizationId));
-                const raw = await collection.findOne({ organizationId: orgId, key: moduleKey });
+        // Overlay from native driver (same reliability as People raw merge above). Batch by $in (avoid N+1 findOne).
+        const orgQuickCreateRawKeys = ['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents', 'cases', 'forms'];
+        const orgKeysToOverlay = orgQuickCreateRawKeys.filter((k) => !requestedKeys || requestedKeys.has(k));
+        if (orgKeysToOverlay.length > 0) {
+            const orgRawDocs = await collection.find({
+                organizationId: orgObjectId,
+                key: { $in: orgKeysToOverlay },
+            }).toArray();
+            const orgRawByKey = new Map(
+                orgRawDocs.map((doc) => [String(doc.key || '').toLowerCase(), doc])
+            );
+            for (const module of custom) {
+                if (!module.organizationId) continue;
+                const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
+                const raw = orgRawByKey.get(moduleKey);
                 if (!raw || !Array.isArray(raw.quickCreate)) continue;
                 module.quickCreate = raw.quickCreate;
                 if (raw.quickCreateLayout && typeof raw.quickCreateLayout === 'object') {
                     module.quickCreateLayout = raw.quickCreateLayout;
                 }
-                console.log(`✅ ${moduleKey} quickCreate from org doc (raw Mongo):`, module.quickCreate.length, 'fields');
-            } catch (e) {
-                console.warn(`⚠️ Raw quickCreate overlay failed for ${moduleKey}:`, e.message);
             }
         }
 
         // Platform core modules: overlay quickCreate from raw Mongo (Settings saves to platform doc for quotes, etc.)
-        const platformQuickCreateRawKeys = new Set(['tasks', 'organizations', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents']);
-        for (const module of custom) {
-            if (module.organizationId) continue;
-            if (String(module.appKey || '').toLowerCase() !== 'platform') continue;
-            const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
-            if (!platformQuickCreateRawKeys.has(moduleKey)) continue;
-            try {
-                const raw = await collection.findOne({
-                    appKey: 'platform',
-                    moduleKey,
-                    organizationId: null
-                });
+        const platformQuickCreateRawKeys = ['tasks', 'organizations', 'events', 'items', 'forms', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents'];
+        const platformKeysToOverlay = platformQuickCreateRawKeys.filter((k) => !requestedKeys || requestedKeys.has(k));
+        if (platformKeysToOverlay.length > 0) {
+            const platformRawDocs = await collection.find({
+                appKey: 'platform',
+                organizationId: null,
+                moduleKey: { $in: platformKeysToOverlay },
+            }).toArray();
+            const platformRawByKey = new Map(
+                platformRawDocs.map((doc) => [String(doc.moduleKey || '').toLowerCase(), doc])
+            );
+            for (const module of custom) {
+                if (module.organizationId) continue;
+                if (String(module.appKey || '').toLowerCase() !== 'platform') continue;
+                const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
+                const raw = platformRawByKey.get(moduleKey);
                 if (!raw || !Array.isArray(raw.quickCreate)) continue;
                 module.quickCreate = raw.quickCreate;
                 if (raw.quickCreateLayout && typeof raw.quickCreateLayout === 'object') {
                     module.quickCreateLayout = raw.quickCreateLayout;
                 }
-                console.log(`✅ platform.${moduleKey} quickCreate from raw Mongo:`, module.quickCreate.length, 'fields');
-            } catch (e) {
-                console.warn(`⚠️ Raw platform quickCreate overlay failed for ${moduleKey}:`, e.message);
             }
         }
         
@@ -2804,15 +2815,6 @@ exports.listModules = async (req, res) => {
                 }
             }
         }
-        
-        // Debug: Log what's in the map
-        console.log('🔍 customByKey map contents:', Array.from(customByKey.entries()).map(([k, v]) => ({
-            key: k,
-            moduleKey: v.moduleKey || v.key,
-            organizationId: v.organizationId ? v.organizationId.toString() : 'null',
-            hasQuickCreate: 'quickCreate' in v,
-            quickCreateLength: v.quickCreate?.length || 0
-        })));
 
         // Canonicalize/normalize known system field keys to avoid duplicates from legacy casing/kebab-case.
         // This prevents UI from rendering the same field twice (e.g., "linkedFormId" vs "Linked Form ID").

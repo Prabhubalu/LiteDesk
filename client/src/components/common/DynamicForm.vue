@@ -413,7 +413,7 @@ const TaskDescriptionEditor = defineAsyncComponent(
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
 import TaskSubtasksField from '@/components/tasks/TaskSubtasksField.vue';
 import apiClient from '@/utils/apiClient';
-import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import {
   mergeOrgContactLookupForField,
@@ -1611,68 +1611,24 @@ const fetchModule = async () => {
       context: context,
       contextSource: props.context ? 'prop' : 'route'
     });
-    const data = await fetchModulesListCached(context ? { context } : {});
-    
-    // Validate response structure
-    if (!data || !data.data) {
-      error.value = 'Invalid API response: missing data';
-      console.error('❌ Invalid API response:', data);
-      loading.value = false;
-      return;
-    }
-    
-    if (!Array.isArray(data.data)) {
-      error.value = 'Invalid API response: data is not an array';
-      console.error('❌ API data is not an array:', typeof data.data, data.data);
-      loading.value = false;
-      return;
-    }
-    
-    const peopleModuleRaw = data.data?.find(m => m.key === 'people');
-    formDbg('🔍 Raw API response for modules:', {
-      success: data.success,
-      dataLength: data.data?.length || 0,
-      dataIsArray: Array.isArray(data.data),
-      peopleModule: peopleModuleRaw,
-      peopleModuleQuickCreate: peopleModuleRaw?.quickCreate,
-      peopleModuleQuickCreateLength: peopleModuleRaw?.quickCreate?.length || 0,
-      peopleModuleQuickCreateType: typeof peopleModuleRaw?.quickCreate,
-      peopleModuleQuickCreateIsArray: Array.isArray(peopleModuleRaw?.quickCreate),
-      peopleModuleHasQuickCreate: 'quickCreate' in (peopleModuleRaw || {}),
-      peopleModuleKeys: peopleModuleRaw ? Object.keys(peopleModuleRaw).slice(0, 20) : [],
-      allModuleKeys: data.data?.map(m => m.key) || []
+    const targetModuleRaw = await fetchModuleDefinitionCached(props.moduleKey, {
+      context: context || 'all',
     });
-    if (data.success) {
-      // Case-insensitive lookup for module key
-      const moduleKeyLower = (props.moduleKey || '').toLowerCase().trim();
-      
-      // Debug: Check each module individually
-      const moduleMatches = data.data.map(m => {
-        const moduleKey = (m.key || '').toLowerCase().trim();
-        const matches = moduleKey === moduleKeyLower;
-        return { key: m.key, normalized: moduleKey, matches, searchingFor: moduleKeyLower };
-      });
-      
-      const targetModule = data.data.find(m => {
-        const moduleKey = (m.key || '').toLowerCase().trim();
-        return moduleKey === moduleKeyLower;
-      });
-      
-      formDbg('🎯 Module lookup:', {
-        searchingFor: props.moduleKey,
-        searchingForNormalized: moduleKeyLower,
-        availableKeys: data.data.map(m => m.key),
-        availableKeysNormalized: data.data.map(m => (m.key || '').toLowerCase().trim()),
-        moduleMatches: moduleMatches,
-        found: !!targetModule,
-        foundKey: targetModule?.key,
-        foundModuleType: typeof targetModule,
-        hasQuickCreate: 'quickCreate' in (targetModule || {}),
-        quickCreateValue: targetModule?.quickCreate,
-        quickCreateLength: targetModule?.quickCreate?.length || 0
-      });
-      
-      if (targetModule) {
+    
+    if (!targetModuleRaw) {
+      error.value = `Module "${props.moduleKey}" not found`;
+      console.error('Module not found:', props.moduleKey);
+      loading.value = false;
+      return;
+    }
+
+    const targetModule = { ...targetModuleRaw };
+    formDbg('🔍 Raw API response for module:', {
+      key: targetModule.key,
+      quickCreate: targetModule.quickCreate,
+      quickCreateLength: targetModule.quickCreate?.length || 0,
+    });
+    {
         // Ensure quickCreate and quickCreateLayout are always present
         if (!targetModule.quickCreate) targetModule.quickCreate = [];
         if (!targetModule.quickCreateLayout) targetModule.quickCreateLayout = { version: 1, rows: [] };
@@ -1715,12 +1671,6 @@ const fetchModule = async () => {
         }
         
         applyModule(targetModule);
-      } else {
-        error.value = `Module "${props.moduleKey}" not found`;
-        console.error('Module not found:', props.moduleKey, 'Available modules:', data.data.map(m => m.key));
-      }
-    } else {
-      error.value = data.message || 'Failed to fetch modules';
     }
   } catch (err) {
     console.error('Error fetching module definition:', err);

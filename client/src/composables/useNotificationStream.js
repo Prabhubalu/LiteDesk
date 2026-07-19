@@ -13,12 +13,37 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useOffline } from './useOffline';
 import { getApiUrlForEventSource } from '@/config/apiBase';
 
-const connections = new Map(); // appKey -> EventSource
-const reconnectTimers = new Map(); // appKey -> timer
-const reconnectAttempts = new Map(); // appKey -> attempt count
+const connections = new Map(); // connectionKey -> EventSource
+const reconnectTimers = new Map(); // connectionKey -> timer
+const reconnectAttempts = new Map(); // connectionKey -> attempt count
 
 const INITIAL_RECONNECT_DELAY = 1000; // 1 second
 const MAX_RECONNECT_DELAY = 30000; // 30 seconds
+
+function normalizeAppKeys(appKeyOrKeys) {
+  const list = Array.isArray(appKeyOrKeys)
+    ? appKeyOrKeys
+    : String(appKeyOrKeys || '')
+        .split(',')
+        .map((k) => k.trim())
+        .filter(Boolean);
+  return [...new Set(list.map((k) => String(k).toUpperCase()).filter(Boolean))];
+}
+
+function connectionKeyFor(appKeys) {
+  return appKeys.slice().sort().join(',') || 'NONE';
+}
+
+function buildStreamUrl(appKeys, token) {
+  if (appKeys.length > 1) {
+    return getApiUrlForEventSource(
+      `/api/notifications/stream?appKeys=${encodeURIComponent(appKeys.join(','))}&token=${encodeURIComponent(token)}`
+    );
+  }
+  return getApiUrlForEventSource(
+    `/api/notifications/stream?appKey=${encodeURIComponent(appKeys[0])}&token=${encodeURIComponent(token)}`
+  );
+}
 
 /**
  * Get current app key from route
@@ -47,18 +72,20 @@ function getReconnectDelay(attempt) {
 /**
  * Standalone connection function (no lifecycle hooks).
  * Use this when calling from watch callbacks or other non-setup contexts.
- * 
- * @param {string} appKey - 'CRM' | 'AUDIT' | 'PORTAL'
+ *
+ * @param {string|string[]} appKeyOrKeys - one app or multiplexed list
  * @param {Function} onNotification - Callback when notification arrives
  * @param {Object} options - { isOnline, authStore }
  * @returns {Function} Disconnect function
  */
-export function connectNotificationStream(appKey, onNotification, options = {}) {
+export function connectNotificationStream(appKeyOrKeys, onNotification, options = {}) {
   const authStore = options.authStore || useAuthStore();
   const isOnline = options.isOnline ?? (typeof window !== 'undefined' ? navigator.onLine : true);
   const onConnected = options.onConnected;
   const onHeartbeat = options.onHeartbeat;
   const onDisconnected = options.onDisconnected;
+  const appKeys = normalizeAppKeys(appKeyOrKeys);
+  const connectionKey = connectionKeyFor(appKeys);
 
   let eventSource = null;
   let reconnectTimer = null;
@@ -69,28 +96,29 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
     if (reconnectTimer) {
       clearTimeout(reconnectTimer);
       reconnectTimer = null;
-      reconnectTimers.delete(appKey);
+      reconnectTimers.delete(connectionKey);
     }
 
     if (eventSource) {
       eventSource.close();
       eventSource = null;
-      connections.delete(appKey);
+      connections.delete(connectionKey);
     }
   }
 
   function connect() {
     if (disposed) return;
+    if (appKeys.length === 0) return;
 
     // Don't connect if offline
     if (!isOnline) {
-      console.log(`[connectNotificationStream] Skipping connection for ${appKey} (offline)`);
+      console.log(`[connectNotificationStream] Skipping connection for ${connectionKey} (offline)`);
       return;
     }
 
     // Don't connect if not authenticated
     if (!authStore.isAuthenticated || !authStore.user?.token) {
-      console.log(`[connectNotificationStream] Skipping connection for ${appKey} (not authenticated)`);
+      console.log(`[connectNotificationStream] Skipping connection for ${connectionKey} (not authenticated)`);
       return;
     }
 
@@ -99,13 +127,11 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
 
     const token = authStore.user?.token;
     if (!token) {
-      console.warn(`[connectNotificationStream] No token available for ${appKey}`);
+      console.warn(`[connectNotificationStream] No token available for ${connectionKey}`);
       return;
     }
 
-    const url = getApiUrlForEventSource(
-      `/api/notifications/stream?appKey=${appKey}&token=${encodeURIComponent(token)}`
-    );
+    const url = buildStreamUrl(appKeys, token);
     console.log(`[connectNotificationStream] Connecting to ${url}...`);
 
     try {
@@ -114,9 +140,9 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
       });
 
       eventSource.onopen = () => {
-        console.log(`[connectNotificationStream] Connected to ${appKey} stream`);
+        console.log(`[connectNotificationStream] Connected to ${connectionKey} stream`);
         attemptCount = 0;
-        reconnectAttempts.set(appKey, 0);
+        reconnectAttempts.set(connectionKey, 0);
         onConnected?.();
       };
 
@@ -150,22 +176,22 @@ export function connectNotificationStream(appKey, onNotification, options = {}) 
 
       eventSource.onerror = (err) => {
         if (disposed) return;
-        console.error(`[connectNotificationStream] Stream error for ${appKey}:`, err);
+        console.error(`[connectNotificationStream] Stream error for ${connectionKey}:`, err);
         onDisconnected?.();
 
         closeTransport();
 
-        attemptCount = reconnectAttempts.get(appKey) || 0;
+        attemptCount = reconnectAttempts.get(connectionKey) || 0;
         const delay = getReconnectDelay(Math.min(attemptCount, 8));
         reconnectTimer = setTimeout(() => {
           if (disposed) return;
-          reconnectAttempts.set(appKey, attemptCount + 1);
+          reconnectAttempts.set(connectionKey, attemptCount + 1);
           connect();
         }, delay);
-        reconnectTimers.set(appKey, reconnectTimer);
+        reconnectTimers.set(connectionKey, reconnectTimer);
       };
 
-      connections.set(appKey, eventSource);
+      connections.set(connectionKey, eventSource);
     } catch (err) {
       console.error(`[connectNotificationStream] Failed to create EventSource:`, err);
     }

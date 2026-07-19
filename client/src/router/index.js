@@ -434,6 +434,18 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/astra',
+    name: 'astra',
+    component: () => import('@/views/astra/AstraFullPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/astra/canvas',
+    name: 'arivu-canvas',
+    component: () => import('@/views/astra/ArivuCanvasPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/live-chat/sessions',
     name: 'live-chat-sessions',
     component: () => import('@/views/live-chat/LiveChatSessionsView.vue'),

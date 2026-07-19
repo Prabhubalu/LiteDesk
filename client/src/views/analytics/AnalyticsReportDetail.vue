@@ -297,7 +297,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
@@ -319,6 +319,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import ReportTypePreviewPanel from '@/components/analytics/ReportTypePreviewPanel.vue';
 import type { MatrixExpandedRowState } from '@/components/analytics/ReportMatrixPreviewPanel.vue';
 import { useAnalyticsReports } from '@/composables/useAnalyticsReports';
+import { useTabs } from '@/composables/useTabs';
 import type { AnalyticsExecuteResult } from '@/types/analytics.types';
 import {
   captureAnalyticsReportCertified,
@@ -331,6 +332,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { activeTabId, updateTabTitle } = useTabs();
 
 const {
   report,
@@ -586,4 +588,14 @@ onMounted(async () => {
     await runReport();
   }
 });
+
+watch(
+  () => report.value?.name,
+  (name) => {
+    const trimmed = String(name || '').trim();
+    if (!trimmed || !activeTabId.value) return;
+    updateTabTitle(activeTabId.value, trimmed);
+  },
+  { immediate: true },
+);
 </script>

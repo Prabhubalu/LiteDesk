@@ -17,7 +17,7 @@
         <ReportFilterSection
           :key="`${primaryModule}-${filterRemountToken}`"
           :module-key="primaryModule"
-          :field-keys="moduleFields"
+          :fields="fieldOptions"
           :initial-state="filterInitialState"
           @update:state="$emit('filter-change', $event)"
         />
@@ -37,7 +37,6 @@ defineProps<{
   primaryModule: string;
   primaryModuleLabel: string;
   fieldOptions: ReportBuilderFieldOption[];
-  moduleFields: string[];
   selectedFields: string[];
   filterInitialState: ReportFilterState | null;
   filterRemountToken: number;

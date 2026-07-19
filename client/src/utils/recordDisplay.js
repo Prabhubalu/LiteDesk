@@ -14,7 +14,7 @@
 
 import apiClient from '@/utils/apiClient';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
-import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getKeyFields, getFieldValue, getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { formatCurrencyValue, resolveCurrencyCodeForField } from '@/utils/currencyOptions';
 
@@ -26,6 +26,24 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 let relatedModuleDefinitionsByKey = null;
 let relatedModuleDefinitionsPromise = null;
 
+/** Common related-module keys for display enrichment (keyed fetches, not full /modules). */
+const RELATED_MODULE_KEYS = [
+  'people',
+  'organizations',
+  'deals',
+  'tasks',
+  'events',
+  'items',
+  'cases',
+  'forms',
+  'quotes',
+  'sales_orders',
+  'invoices',
+  'payments',
+  'documents',
+  'users',
+];
+
 /**
  * Load and cache module definitions for related-record key field resolution.
  * Must complete before deciding a related record is "enriched" (avoids refresh race).
@@ -33,10 +51,11 @@ let relatedModuleDefinitionsPromise = null;
 export async function ensureRelatedModuleDefinitions() {
   if (relatedModuleDefinitionsByKey) return relatedModuleDefinitionsByKey;
   if (!relatedModuleDefinitionsPromise) {
-    relatedModuleDefinitionsPromise = fetchModulesListCached({})
-      .then((response) => {
-        const modules = Array.isArray(response) ? response : response?.data ?? response?.modules ?? [];
-        const next = {};
+    relatedModuleDefinitionsPromise = Promise.all(
+      RELATED_MODULE_KEYS.map((key) => fetchModuleDefinitionCached(key).catch(() => null))
+    )
+      .then((modules) => {
+        const next = { ...(relatedModuleDefinitionsByKey || {}) };
         for (const mod of modules) {
           const key = normalizeRelatedModuleKey(mod?.key);
           if (key) next[key] = mod;

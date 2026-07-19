@@ -265,6 +265,7 @@
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 
@@ -385,9 +386,8 @@ const fetchUsers = async () => {
 const fetchPipelineConfig = async () => {
   try {
     loadingConfig.value = true;
-    const response = await apiClient.get('/modules', { params: { key: 'deals' } });
-    if (!response?.success || !Array.isArray(response.data) || !response.data[0]) return;
-    const mod = response.data[0];
+    const mod = await fetchModuleDefinitionCached('deals');
+    if (!mod) return;
     const raw = mod.pipelineSettings || [];
     if (raw.length === 0) {
       pipelines.value = [];

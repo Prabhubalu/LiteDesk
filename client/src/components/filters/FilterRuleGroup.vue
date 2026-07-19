@@ -142,9 +142,24 @@ function availableFieldsForRule(rule: { id: string; fieldKey: string | null }) {
       }
     }
   }
-  return props.filterConfig
-    .filter((filter) => !blocked.has(filter.key))
+  const options = props.filterConfig
+    .filter((filter) => !blocked.has(filter.key) || filter.key === rule.fieldKey)
     .map((filter) => props.filterByKey[filter.key] ?? filter);
+
+  if (rule.fieldKey && !options.some((filter) => filter.key === rule.fieldKey)) {
+    const current =
+      props.filterByKey[rule.fieldKey] ??
+      props.filterConfig.find((filter) => filter.key === rule.fieldKey) ?? {
+        key: rule.fieldKey,
+        label: rule.fieldKey,
+        filterType: 'text' as const,
+        fieldPath: rule.fieldKey,
+        options: [],
+        priority: 999,
+      };
+    options.unshift(current);
+  }
+  return options;
 }
 
 function getNestedRuleIndex(ruleId: string): number {

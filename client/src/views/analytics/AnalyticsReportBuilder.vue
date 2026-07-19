@@ -113,9 +113,8 @@
                 :primary-module="form.primaryModule"
                 :primary-module-label="primaryModuleLabel"
                 :field-options="moduleFieldOptions"
-                :module-fields="moduleFields"
                 :selected-fields="selectedFields"
-                :filter-initial-state="filterInitialState"
+                :filter-initial-state="filterState || filterInitialState"
                 :filter-remount-token="filterRemountToken"
                 @filter-change="onFilterStateChange"
               />
@@ -253,7 +252,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import {
@@ -281,6 +280,7 @@ import {
   useReportBuilder,
 } from '@/composables/useReportBuilder';
 import { useColorMode } from '@/composables/useColorMode';
+import { useTabs } from '@/composables/useTabs';
 
 const props = defineProps({
   reportId: { type: String, default: null },
@@ -288,6 +288,7 @@ const props = defineProps({
 
 const route = useRoute();
 const { effectiveDark } = useColorMode();
+const { activeTabId, updateTabTitle } = useTabs();
 const {
   t,
   currentStep,
@@ -320,6 +321,7 @@ const {
   filterState,
   filterInitialState,
   filterRemountToken,
+  reportHydrationDone,
   previewResult,
   expandedMatrixRows,
   saving,
@@ -373,4 +375,27 @@ const loadedReportId = computed(() => {
   const id = props.reportId || route.params.id;
   return id ? String(id) : null;
 });
+
+watch(
+  reportHydrationDone,
+  (done) => {
+    if (!done) return;
+    const raw = route.query.step;
+    if (raw == null || raw === '') return;
+    const asNum = Number(Array.isArray(raw) ? raw[0] : raw);
+    if (Number.isFinite(asNum)) {
+      goToStep(asNum);
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  () => form.name,
+  (name) => {
+    const trimmed = String(name || '').trim();
+    if (!trimmed || !activeTabId.value) return;
+    updateTabTitle(activeTabId.value, trimmed);
+  },
+);
 </script>

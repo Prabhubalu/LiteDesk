@@ -19,6 +19,14 @@
     "message": "Inbox",
     "description": "Communications inbox navigation label"
   },
+  "astra": {
+    "message": "Astra",
+    "description": "Full-page Astra AI assistant navigation label"
+  },
+  "arivuCanvas": {
+    "message": "Arivu Canvas",
+    "description": "Generative Arivu Canvas workspace navigation label"
+  },
   "liveChat": {
     "message": "Live Chat",
     "description": "Live Chat addon sessions navigation label"

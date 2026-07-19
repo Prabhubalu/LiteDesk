@@ -304,7 +304,9 @@ async function executeAnalyticsWidgets() {
     await Promise.all(items.map(async (item) => {
       const widgetId = String(item.widgetId);
       try {
-        const response = await apiClient.post(`/analytics/widgets/${widgetId}/execute`, {});
+        const response = await apiClient.post(`/analytics/widgets/${widgetId}/execute`, {}, {
+          skipAuthLogout: true,
+        });
 
         if (response?.success && response.data) {
           analyticsPayloadByInstance.value.set(item.instanceId, {

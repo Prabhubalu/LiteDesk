@@ -23,7 +23,7 @@ const FONT_MIMES = [
   'application/octet-stream'
 ];
 
-const MAX_ASSET_SIZE = parseInt(process.env.CONTENT_ASSET_MAX_BYTES || '5242880', 10);
+const MAX_ASSET_SIZE = parseInt(process.env.CONTENT_ASSET_MAX_BYTES || '26214400', 10);
 const MAX_FONT_SIZE = parseInt(process.env.CONTENT_FONT_MAX_BYTES || '2097152', 10);
 
 function wrapMulter(mw) {

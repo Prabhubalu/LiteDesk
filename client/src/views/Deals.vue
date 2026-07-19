@@ -437,6 +437,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -815,9 +816,8 @@ const getStageValue = (stage) => {
 // Fetch stage options and colors from deals module; stages = selected pipeline's stages
 const fetchStageOptions = async () => {
   try {
-    const response = await apiClient.get('/modules', { params: { key: 'deals' } });
-    if (!response?.success || !Array.isArray(response.data) || !response.data[0]) return;
-    const mod = response.data[0];
+    const mod = await fetchModuleDefinitionCached('deals');
+    if (!mod) return;
     const fields = mod.fields || [];
     const rawPipelines = mod.pipelineSettings || [];
 

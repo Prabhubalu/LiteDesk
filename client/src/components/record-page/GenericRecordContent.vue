@@ -56,6 +56,16 @@
               {{ t('common.summaryViewResponses') }}
             </button>
             <button
+              v-if="supportsEmail"
+              type="button"
+              class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              :aria-label="t('records.genericSendEmail')"
+              :title="t('records.genericSendEmail')"
+              @click="openEmailComposeModal()"
+            >
+              <EnvelopeIcon class="w-5 h-5" />
+            </button>
+            <button
               v-if="canEditFormRecord"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -94,6 +104,11 @@
             >
               <ClipboardDocumentIcon class="w-5 h-5" />
             </button>
+            <RecordPrintButton
+              v-if="record?._id"
+              :module-key="moduleKey"
+              :record-id="String(record._id)"
+            />
             <Menu as="div" class="relative">
               <MenuButton
                 class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -659,6 +674,16 @@
               <ArrowTopRightOnSquareIcon class="w-5 h-5" />
             </button>
             <button
+              v-if="supportsEmail"
+              type="button"
+              class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              :aria-label="t('records.genericSendEmail')"
+              :title="t('records.genericSendEmail')"
+              @click="openEmailComposeModal()"
+            >
+              <EnvelopeIcon class="w-5 h-5" />
+            </button>
+            <button
               v-if="canEditFormRecord"
               type="button"
               class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -1194,6 +1219,7 @@ import {
 } from '@/utils/orgContactFormPairing';
 import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
 import RecordHeader from '@/components/record-page/RecordHeader.vue';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import RecordStateSection from '@/components/record-page/RecordStateSection.vue';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
@@ -1803,18 +1829,77 @@ const attachableAppsForRecordContext = computed(() => {
   }
   return raw;
 });
-const supportsEmail = computed(() => MODULES_WITH_EMAIL.has(moduleKeyLower.value));
+const supportsEmail = computed(() => {
+  const key = moduleKeyLower.value;
+  // Cases keep their own email UX; do not surface generic header compose here.
+  if (key === 'cases') return false;
+  if (key === 'people') return true;
 
-/** Default To: line for EmailComposeDrawer (case contact when populated). */
+  const defRels = Array.isArray(moduleDefinition.value?.relationships)
+    ? moduleDefinition.value.relationships
+    : [];
+  if (relationshipsIncludePeople(defRels)) return true;
+
+  const fields = Array.isArray(moduleDefinition.value?.fields)
+    ? moduleDefinition.value.fields
+    : [];
+  if (fields.some((field) => {
+    const lookup = String(field?.lookupModule || field?.targetModule || '').toLowerCase();
+    return lookup === 'people';
+  })) {
+    return true;
+  }
+
+  const ctxRels = Array.isArray(genericRecordContext.value?.relationships)
+    ? genericRecordContext.value.relationships
+    : [];
+  return ctxRels.some((rel) => {
+    const linkedModule = String(
+      rel?.target?.moduleKey
+      || rel?.source?.moduleKey
+      || rel?.moduleKey
+      || ''
+    ).toLowerCase();
+    if (linkedModule === 'people') return true;
+    const records = Array.isArray(rel?.records) ? rel.records : [];
+    return records.some((r) => String(r?.moduleKey || '').toLowerCase() === 'people');
+  });
+});
+
+function relationshipsIncludePeople(relationships) {
+  if (!Array.isArray(relationships) || relationships.length === 0) return false;
+  return relationships.some((rel) => {
+    const target = String(rel?.targetModuleKey || rel?.target?.moduleKey || '').toLowerCase();
+    const source = String(rel?.sourceModuleKey || rel?.source?.moduleKey || '').toLowerCase();
+    return target === 'people' || source === 'people';
+  });
+}
+
+/** Default To: line for EmailComposeDrawer (person email or first related people contact). */
 const emailComposeInitialTo = computed(() => {
   const r = record.value;
   if (!r) return '';
-  if (moduleKeyLower.value === 'cases') {
-    const c = r.contactId;
-    if (c && typeof c === 'object' && c.email) return String(c.email).trim();
-    return '';
+  if (moduleKeyLower.value === 'people' && r.email) {
+    return String(r.email).trim();
   }
-  return r.email || r.primaryContact?.email || '';
+  const ctxRels = Array.isArray(genericRecordContext.value?.relationships)
+    ? genericRecordContext.value.relationships
+    : [];
+  for (const rel of ctxRels) {
+    const records = Array.isArray(rel?.records) ? rel.records : [];
+    for (const item of records) {
+      const itemModule = String(item?.moduleKey || rel?.target?.moduleKey || rel?.source?.moduleKey || '').toLowerCase();
+      if (itemModule !== 'people') continue;
+      const email = String(item?.email || '').trim();
+      if (email) return email;
+    }
+  }
+  if (r.email) return String(r.email).trim();
+  if (r.primaryContact?.email) return String(r.primaryContact.email).trim();
+  if (r.contactId && typeof r.contactId === 'object' && r.contactId.email) {
+    return String(r.contactId.email).trim();
+  }
+  return '';
 });
 
 /** App key for record context / link drawer (must match RelationshipDefinition source/target appKey). */
@@ -3330,8 +3415,6 @@ const activityUi = computed(() => {
   return normalizeActivityUiContract(moduleUi);
 });
 
-const MODULES_WITH_EMAIL = new Set(['people', 'organizations', 'deals', 'tasks', 'cases']);
-
 const activityEvents = computed(() => {
   const raw = activityRaw.value || [];
   const recordRef = { module: props.moduleKey, id: String(props.recordId) };
@@ -3447,7 +3530,7 @@ const combinedActivityEvents = computed(() => {
     }
     return true;
   });
-  if (!MODULES_WITH_EMAIL.has((props.moduleKey || '').toLowerCase())) {
+  if (!supportsEmail.value) {
     return base;
   }
   const threadEvents = (emailThreads.value || [])
@@ -3982,7 +4065,7 @@ async function loadNeighborsForRecord(isCurrentRun) {
 }
 
 async function loadEmailThreadsForRecord(loadedRecord, isCurrentRun) {
-  if (!MODULES_WITH_EMAIL.has((props.moduleKey || '').toLowerCase()) || !loadedRecord?._id) {
+  if (!supportsEmail.value || !loadedRecord?._id) {
     if (isCurrentRun()) emailThreads.value = [];
     return;
   }

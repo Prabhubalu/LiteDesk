@@ -57,6 +57,11 @@
                   : 'block w-full flex-none p-4 lg:p-6'
               ]"
             >
+              <EmailVerificationBanner
+                v-if="!isRecordDetailRoute && !isProcessDesignerRoute && !isInboxRoute && !isAstraRoute && !isFormCreateRoute"
+                class="mb-2"
+              />
+
               <RouterView v-slot="{ Component }">
                 <keep-alive :max="5">
                   <component
@@ -91,6 +96,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
+import EmailVerificationBanner from '@/components/auth/EmailVerificationBanner.vue';
 import OnboardingCoachmarks from '@/components/onboarding/OnboardingCoachmarks.vue';
 import { useAppShellStore } from '@/stores/appShell';
 import { useTabs } from '@/composables/useTabs';
@@ -133,6 +139,11 @@ const routerViewKey = computed(() => {
 });
 
 const isInboxRoute = computed(() => route.name === 'inbox');
+const isAstraRoute = computed(
+  () => route.name === 'astra'
+    || route.name === 'arivu-canvas'
+    || String(route.path || '').startsWith('/astra')
+);
 const isLiveChatRoute = computed(() => String(route.path || '').startsWith('/live-chat/'));
 const isAnnouncementsRoute = computed(() => String(route.path || '').startsWith('/announcements'));
 /** Only the Settings split-pane shell — not standalone /settings/* admin pages (processes, flows, notifications). */
@@ -156,6 +167,7 @@ const isContentStudioEditorRoute = computed(() => {
 
 const useViewportLock = computed(
   () => isInboxRoute.value
+    || isAstraRoute.value
     || isLiveChatRoute.value
     || isAnnouncementsRoute.value
     || isSettingsRoute.value
