@@ -36,6 +36,15 @@ const {
 const {
     buildAuthenticatedSessionResponse
 } = require('../services/authSessionService');
+const {
+    admitOrBlockAuthSession,
+    createLoginChallenge,
+    verifyLoginChallenge,
+    listActiveSessions,
+    listSessionsForLimitChallenge,
+    revokeSessionById,
+    DEVICE_CLASS_LIMITS
+} = require('../services/sessionService');
 const { isPortalFrameworkV1Enabled } = require('../utils/portalFeatureFlags');
 const {
     resolveExternalLoginSession,
@@ -46,6 +55,74 @@ const securityLogger = require('../middleware/securityLoggingMiddleware');
 const { getDefaultRoleForApp } = require('../utils/appAccessUtils');
 const { ensureDefaultCommunicationSettingsForOrganization } = require('../services/communicationDefaultsSeeder');
 const { ensureOrgEmailPolicy } = require('../services/orgEmailPolicyService');
+
+function sessionMetaFromRequest(req) {
+    return {
+        ip: req.ip || null,
+        userAgent: req.get('user-agent') || null
+    };
+}
+
+function buildSessionLimitResponse(orgUser, organization, admission) {
+    const challengeId = createLoginChallenge({
+        userId: orgUser._id,
+        organizationId: organization._id,
+        deviceClass: admission.deviceClass,
+        email: orgUser.email
+    });
+    return {
+        code: 'SESSION_LIMIT',
+        message: 'Password verified. Free a session slot to continue on this device.',
+        challengeId,
+        deviceClass: admission.deviceClass,
+        limits: admission.limits || { ...DEVICE_CLASS_LIMITS },
+        usage: admission.usage || null,
+        sessions: admission.sessions || []
+    };
+}
+
+async function resolveOrgUserForSessionChallenge(challenge) {
+    const organization = await Organization.findById(challenge.organizationId)
+        .select('name industry subscription limits enabledApps enabledModules settings isActive database security');
+    if (!organization) {
+        return { ok: false, status: 401, message: 'Invalid or expired login challenge.' };
+    }
+
+    let orgUser = null;
+    if (organization.database?.name && organization.database.initialized) {
+        try {
+            const dbConnectionManager = require('../utils/databaseConnectionManager');
+            const orgDbConnection = await dbConnectionManager.getOrganizationConnection(organization.database.name);
+            const OrgUser = getOrgUserModel(orgDbConnection);
+            orgUser = await OrgUser.findById(challenge.userId);
+            if (!orgUser && challenge.email) {
+                orgUser = await OrgUser.findOne({ email: String(challenge.email).toLowerCase().trim() });
+            }
+        } catch (_err) {
+            orgUser = null;
+        }
+    }
+    if (!orgUser) {
+        orgUser = await User.findById(challenge.userId);
+        if (!orgUser && challenge.email) {
+            orgUser = await User.findOne({ email: String(challenge.email).toLowerCase().trim() });
+        }
+    }
+    if (!orgUser || orgUser.status !== 'active') {
+        return { ok: false, status: 401, message: 'Invalid or expired login challenge.' };
+    }
+
+    return { ok: true, orgUser, organization };
+}
+
+function resolveChallengeFromRequest(req) {
+    return (
+        req.body?.challengeId
+        || req.query?.challengeId
+        || req.get('x-login-challenge')
+        || null
+    );
+}
 
 function getOrgUserModel(orgDbConnection) {
     if (orgDbConnection.models.User) {
@@ -404,8 +481,9 @@ exports.loginUser = async (req, res) => {
         console.log('\n🔐 Login attempt for:', email);
         
         // 1. Find User by Email (check master database first)
+        const orgLoginSelect = 'name industry subscription limits enabledApps enabledModules settings isActive database security';
         let user = await User.findOne({ email: normalizedEmail })
-            .populate('organizationId', 'name industry subscription limits enabledApps enabledModules settings isActive database')
+            .populate('organizationId', orgLoginSelect)
             .populate(
                 'roleId',
                 'name description color icon level permissions canViewAllData canManageTeam canExportData isSystemRole'
@@ -415,7 +493,7 @@ exports.loginUser = async (req, res) => {
         // Fallback: resolve organization from master user directory when user is tenant-only
         if (!user) {
             const directoryEntry = await UserDirectory.findOne({ email: normalizedEmail, status: 'active' })
-                .populate('organizationId', 'name industry subscription limits enabledApps enabledModules settings isActive database');
+                .populate('organizationId', orgLoginSelect);
             if (directoryEntry?.organizationId) {
                 organizationFromDirectory = directoryEntry.organizationId;
             }
@@ -428,7 +506,7 @@ exports.loginUser = async (req, res) => {
             const tenantOrgs = await Organization.find({
                 'database.initialized': true,
                 'database.name': { $exists: true, $ne: null }
-            }).select('_id name industry subscription limits enabledApps enabledModules settings isActive database');
+            }).select('_id name industry subscription limits enabledApps enabledModules settings isActive database security');
 
             for (const tenantOrg of tenantOrgs) {
                 try {
@@ -627,6 +705,28 @@ exports.loginUser = async (req, res) => {
             await user.save();
         }
 
+        const activePortal = portalSession?.portals?.find(
+            (p) => portalSession.activeExternalRoleId
+                && String(p.roleId) === String(portalSession.activeExternalRoleId)
+        ) || null;
+
+        const admission = await admitOrBlockAuthSession(
+            orgUser,
+            organizationForLogin,
+            sessionMetaFromRequest(req)
+        );
+        if (!admission.ok) {
+            securityLogger.logAuthEvent('LOGIN_SESSION_LIMIT', {
+                email: normalizedEmail,
+                userId: orgUser._id,
+                organizationId: organizationForLogin._id,
+                deviceClass: admission.deviceClass,
+                ip: req.ip,
+                userAgent: req.get('user-agent')
+            });
+            return res.status(409).json(buildSessionLimitResponse(orgUser, organizationForLogin, admission));
+        }
+
         console.log('✅ Login successful for:', email);
 
         securityLogger.logAuthEvent('LOGIN_SUCCESS', {
@@ -655,11 +755,6 @@ exports.loginUser = async (req, res) => {
             });
         }
 
-        const activePortal = portalSession?.portals?.find(
-            (p) => portalSession.activeExternalRoleId
-                && String(p.roleId) === String(portalSession.activeExternalRoleId)
-        ) || null;
-
         const { buildTrialStatusSnapshot } = require('../services/trialExtensionService');
         const sessionPayload = await buildAuthenticatedSessionResponse(orgUser, organizationForLogin, {
             activeExternalRoleId: portalSession?.activeExternalRoleId || null,
@@ -667,9 +762,10 @@ exports.loginUser = async (req, res) => {
             portals: portalSession?.portals || [],
             activePortal,
             markLogin: false,
-            sessionMeta: {
-                ip: req.ip || null,
-                userAgent: req.get('user-agent') || null
+            issueSession: false,
+            sessionIds: {
+                jti: admission.jti,
+                sessionVersion: admission.sessionVersion
             }
         });
         sessionPayload.trial = buildTrialStatusSnapshot(organizationForLogin);
@@ -689,5 +785,171 @@ exports.loginUser = async (req, res) => {
             stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
             name: error.name
         });
+    }
+};
+
+exports.continueLogin = async (req, res) => {
+    try {
+        const challenge = verifyLoginChallenge(resolveChallengeFromRequest(req));
+        if (!challenge) {
+            return res.status(401).json({
+                code: 'CHALLENGE_INVALID',
+                message: 'Invalid or expired login challenge. Please sign in again.'
+            });
+        }
+
+        const resolved = await resolveOrgUserForSessionChallenge(challenge);
+        if (!resolved.ok) {
+            return res.status(resolved.status).json({ message: resolved.message, code: 'CHALLENGE_INVALID' });
+        }
+
+        const { orgUser, organization } = resolved;
+        let portalSession = null;
+        if (isExternalUser(orgUser) && isPortalFrameworkV1Enabled(organization)) {
+            portalSession = await resolveExternalLoginSession(orgUser, organization);
+            if (!portalSession.ok) {
+                return res.status(portalSession.status || 403).json({
+                    message: portalSession.message,
+                    code: portalSession.code
+                });
+            }
+        }
+
+        const admission = await admitOrBlockAuthSession(
+            orgUser,
+            organization,
+            sessionMetaFromRequest(req)
+        );
+        if (!admission.ok) {
+            return res.status(409).json(buildSessionLimitResponse(orgUser, organization, admission));
+        }
+
+        const activePortal = portalSession?.portals?.find(
+            (p) => portalSession.activeExternalRoleId
+                && String(p.roleId) === String(portalSession.activeExternalRoleId)
+        ) || null;
+
+        const { buildTrialStatusSnapshot } = require('../services/trialExtensionService');
+        const sessionPayload = await buildAuthenticatedSessionResponse(orgUser, organization, {
+            activeExternalRoleId: portalSession?.activeExternalRoleId || null,
+            requiresPortalSelection: portalSession?.requiresPortalSelection === true,
+            portals: portalSession?.portals || [],
+            activePortal,
+            markLogin: false,
+            issueSession: false,
+            sessionIds: {
+                jti: admission.jti,
+                sessionVersion: admission.sessionVersion
+            }
+        });
+        sessionPayload.trial = buildTrialStatusSnapshot(organization);
+
+        securityLogger.logAuthEvent('LOGIN_CONTINUE_SUCCESS', {
+            email: orgUser.email,
+            userId: orgUser._id,
+            organizationId: organization._id,
+            ip: req.ip,
+            userAgent: req.get('user-agent'),
+            success: true
+        });
+
+        return res.json(sessionPayload);
+    } catch (error) {
+        console.error('❌ Login continue error:', error);
+        return res.status(500).json({ message: 'Server error during login continue.' });
+    }
+};
+
+function resolveSessionActor(req) {
+    if (req.user?._id) {
+        return {
+            userId: req.user._id,
+            organizationId: req.user.organizationId?._id || req.user.organizationId
+        };
+    }
+    const challenge = verifyLoginChallenge(resolveChallengeFromRequest(req));
+    if (!challenge) {
+        return null;
+    }
+    return {
+        userId: challenge.userId,
+        organizationId: challenge.organizationId
+    };
+}
+
+exports.listAuthSessions = async (req, res) => {
+    try {
+        const actor = resolveSessionActor(req);
+        if (!actor?.userId || !actor?.organizationId) {
+            return res.status(401).json({ message: 'Authentication required.' });
+        }
+
+        const sessions = await listActiveSessions(actor.userId, actor.organizationId);
+        return res.json({
+            sessions,
+            limits: { ...DEVICE_CLASS_LIMITS }
+        });
+    } catch (error) {
+        console.error('❌ List sessions error:', error);
+        return res.status(500).json({ message: 'Failed to list sessions.' });
+    }
+};
+
+exports.revokeAuthSession = async (req, res) => {
+    try {
+        const sessionId = req.params.sessionId;
+        if (!sessionId) {
+            return res.status(400).json({ message: 'Session id is required.' });
+        }
+
+        const actor = resolveSessionActor(req);
+        if (!actor?.userId || !actor?.organizationId) {
+            return res.status(401).json({ message: 'Authentication required.' });
+        }
+
+        const { userId, organizationId } = actor;
+        const result = await revokeSessionById(userId, organizationId, sessionId);
+        if (!result.revoked) {
+            return res.status(404).json({ message: 'Session not found or already signed out.' });
+        }
+
+        securityLogger.logAuthEvent('SESSION_REVOKED', {
+            userId,
+            organizationId,
+            sessionId,
+            ip: req.ip,
+            userAgent: req.get('user-agent')
+        });
+
+        const challenge = !req.user?._id
+            ? verifyLoginChallenge(resolveChallengeFromRequest(req))
+            : null;
+        const deviceClass = challenge?.deviceClass
+            || (req.body?.deviceClass === 'mobile' ? 'mobile' : null)
+            || req.user?._sessionDeviceClass
+            || 'desktop';
+        const limitPayload = await listSessionsForLimitChallenge(userId, organizationId, deviceClass);
+        return res.json({
+            success: true,
+            ...limitPayload
+        });
+    } catch (error) {
+        console.error('❌ Revoke session error:', error);
+        return res.status(500).json({ message: 'Failed to revoke session.' });
+    }
+};
+
+exports.logoutUser = async (req, res) => {
+    try {
+        const jti = req.user?._sessionJti || null;
+        const userId = req.user?._id;
+        const organizationId = req.user?.organizationId?._id || req.user?.organizationId;
+        if (jti && userId && organizationId) {
+            await revokeSessionById(userId, organizationId, jti);
+        }
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+        return res.status(500).json({ message: 'Failed to logout.' });
     }
 };

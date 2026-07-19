@@ -311,9 +311,9 @@ onUnmounted(() => {
   right: var(--header-right, 0px);
 }
 
-/* Add padding-top to body to account for fixed header and TabBar */
+/* Body padding = record header only; PlatformShell already offsets nav/TabBar (pt-16 / md:pt-[7.5rem]) */
 .record-page-layout__body--with-header {
-  padding-top: calc(var(--tabbar-height, 48px) + var(--header-height, 120px));
+  padding-top: var(--header-height, 120px);
   margin-top: 0;
 }
 

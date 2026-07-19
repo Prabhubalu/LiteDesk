@@ -25,6 +25,7 @@ export const useAuthStore = defineStore('auth', {
         lastTrialSyncAt: 0,
         loading: false,
         error: null,
+        sessionLimit: null,
     }),
     getters: {
         isAuthenticated: (state) => {
@@ -471,7 +472,51 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-    async authenticate(endpoint, credentials) {
+    _applyAuthenticatedSession(data, endpoint) {
+            this.sessionLimit = null;
+            this.setUser(data);
+            if (endpoint === 'login' || endpoint === 'login/continue') {
+                this.lastLoginResult = data;
+                if (data.trial) {
+                    this.organization = applyTrialSnapshotToOrganization(this.organization, data.trial);
+                    if (this.organization) {
+                        localStorage.setItem('organization', JSON.stringify(this.organization));
+                    }
+                }
+            }
+            try {
+                captureUserLoggedIn({ method: 'password' });
+                if (data.userType === 'EXTERNAL') {
+                    capturePortalLogin({
+                        requires_portal_selection: data.requiresPortalSelection === true,
+                        active_external_role_id: data.activeExternalRoleId || undefined
+                    });
+                }
+            } catch (_e) {
+                /* optional */
+            }
+
+            import('@/stores/appShell').then(({ useAppShellStore }) => {
+                const appShellStore = useAppShellStore();
+                appShellStore.loadUIMetadata().catch(err => {
+                    console.error('[Auth] Error loading UI metadata:', err);
+                });
+            });
+        },
+
+        _captureSessionLimit(data) {
+            this.sessionLimit = {
+                challengeId: data.challengeId,
+                deviceClass: data.deviceClass || data.usage?.deviceClass || 'desktop',
+                limits: data.limits || { desktop: 2, mobile: 1 },
+                usage: data.usage || null,
+                sessions: Array.isArray(data.sessions) ? data.sessions : [],
+                message: data.message || null
+            };
+            this.error = null;
+        },
+
+        async authenticate(endpoint, credentials) {
             this.loading = true;
             this.error = null;
             try {
@@ -497,38 +542,13 @@ export const useAuthStore = defineStore('auth', {
                 }
 
                 const data = JSON.parse(text);
+                if (response.status === 409 && data.code === 'SESSION_LIMIT' && data.challengeId) {
+                    this._captureSessionLimit(data);
+                    return { sessionLimit: true };
+                }
                 if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
 
-                this.setUser(data);
-                if (endpoint === 'login') {
-                    this.lastLoginResult = data;
-                    if (data.trial) {
-                        this.organization = applyTrialSnapshotToOrganization(this.organization, data.trial);
-                        if (this.organization) {
-                            localStorage.setItem('organization', JSON.stringify(this.organization));
-                        }
-                    }
-                }
-                try {
-                    captureUserLoggedIn({ method: 'password' });
-                    if (data.userType === 'EXTERNAL') {
-                        capturePortalLogin({
-                            requires_portal_selection: data.requiresPortalSelection === true,
-                            active_external_role_id: data.activeExternalRoleId || undefined
-                        });
-                    }
-                } catch (_e) {
-                    /* optional */
-                }
-                
-                // Phase 0D: Load UI metadata after successful login
-                import('@/stores/appShell').then(({ useAppShellStore }) => {
-                    const appShellStore = useAppShellStore();
-                    appShellStore.loadUIMetadata().catch(err => {
-                        console.error('[Auth] Error loading UI metadata:', err);
-                    });
-                });
-                
+                this._applyAuthenticatedSession(data, endpoint);
                 return true;
             } catch (err) {
                 console.error('Auth error:', err);
@@ -543,7 +563,130 @@ export const useAuthStore = defineStore('auth', {
             return this.authenticate('register', userData);
         },
         async login(credentials) {
+            this.sessionLimit = null;
             return this.authenticate('login', credentials);
+        },
+
+        async continueLoginAfterSessionRevoke() {
+            if (!this.sessionLimit?.challengeId) {
+                this.error = 'Session challenge expired. Please sign in again.';
+                return false;
+            }
+            this.loading = true;
+            this.error = null;
+            try {
+                const url = getApiUrlForFetch('/api/auth/login/continue');
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Login-Challenge': this.sessionLimit.challengeId
+                    },
+                    body: JSON.stringify({ challengeId: this.sessionLimit.challengeId })
+                });
+                const data = await response.json();
+                if (response.status === 409 && data.code === 'SESSION_LIMIT' && data.challengeId) {
+                    this._captureSessionLimit(data);
+                    return { sessionLimit: true };
+                }
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+                this._applyAuthenticatedSession(data, 'login/continue');
+                return true;
+            } catch (err) {
+                this.error = err.message || 'Unable to continue sign-in';
+                return false;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async revokeLoginSession(sessionId) {
+            if (!this.sessionLimit?.challengeId || !sessionId) {
+                return false;
+            }
+            this.loading = true;
+            this.error = null;
+            try {
+                const url = getApiUrlForFetch(`/api/auth/sessions/${encodeURIComponent(sessionId)}`);
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-Login-Challenge': this.sessionLimit.challengeId
+                    },
+                    body: JSON.stringify({
+                        challengeId: this.sessionLimit.challengeId,
+                        deviceClass: this.sessionLimit.deviceClass
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+                this.sessionLimit = {
+                    ...this.sessionLimit,
+                    sessions: Array.isArray(data.sessions) ? data.sessions : this.sessionLimit.sessions,
+                    limits: data.limits || this.sessionLimit.limits,
+                    usage: data.usage || this.sessionLimit.usage,
+                    deviceClass: data.deviceClass || this.sessionLimit.deviceClass
+                };
+                return true;
+            } catch (err) {
+                this.error = err.message || 'Unable to sign out that session';
+                return false;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        clearSessionLimit() {
+            this.sessionLimit = null;
+        },
+
+        canContinueAfterSessionLimit() {
+            const limit = this.sessionLimit;
+            if (!limit) return false;
+            if (limit.usage && typeof limit.usage.used === 'number' && typeof limit.usage.max === 'number') {
+                return limit.usage.used < limit.usage.max;
+            }
+            const deviceClass = limit.deviceClass === 'mobile' ? 'mobile' : 'desktop';
+            const max = Number(limit.limits?.[deviceClass]) || (deviceClass === 'mobile' ? 1 : 2);
+            const activeForClass = (limit.sessions || []).filter(
+                (s) => (s.deviceClass === 'mobile' ? 'mobile' : 'desktop') === deviceClass
+            ).length;
+            return activeForClass < max;
+        },
+
+        getSessionLimitUsage() {
+            const limit = this.sessionLimit;
+            if (!limit) return null;
+            if (limit.usage) return limit.usage;
+            const deviceClass = limit.deviceClass === 'mobile' ? 'mobile' : 'desktop';
+            const max = Number(limit.limits?.[deviceClass]) || (deviceClass === 'mobile' ? 1 : 2);
+            const used = (limit.sessions || []).filter(
+                (s) => (s.deviceClass === 'mobile' ? 'mobile' : 'desktop') === deviceClass
+            ).length;
+            return {
+                deviceClass,
+                used,
+                max,
+                needToFree: Math.max(0, used - max + 1)
+            };
+        },
+
+        getRecommendedSessionToRevoke() {
+            const sessions = this.sessionLimit?.sessions || [];
+            const recommended = sessions.find((s) => s.recommended);
+            if (recommended) return recommended;
+            const deviceClass = this.sessionLimit?.deviceClass === 'mobile' ? 'mobile' : 'desktop';
+            const conflicting = sessions.filter(
+                (s) => (s.deviceClass === 'mobile' ? 'mobile' : 'desktop') === deviceClass
+            );
+            return conflicting.length ? conflicting[conflicting.length - 1] : null;
         },
 
         resolvePostLoginRoute() {
@@ -670,7 +813,22 @@ export const useAuthStore = defineStore('auth', {
             return data.portals || [];
         },
         
-        logout() {
+        async logout() {
+            const token = this.user?.token;
+            if (token && token !== 'undefined' && token !== 'null') {
+                try {
+                    await fetch(getApiUrlForFetch('/api/auth/logout'), {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/json'
+                        }
+                    });
+                } catch (_error) {
+                    // Client logout must proceed even if revoke fails.
+                }
+            }
+            this.sessionLimit = null;
             this.clearUser();
             if (typeof window !== 'undefined') {
                 try {

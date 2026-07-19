@@ -17,7 +17,7 @@
 
       <div class="fixed inset-0 overflow-hidden">
         <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
             <TransitionChild 
               as="template" 
               enter="transform transition ease-in-out duration-300 sm:duration-300" 
@@ -27,11 +27,11 @@
               leave-from="translate-x-0" 
               leave-to="translate-x-full"
             >
-              <div class="pointer-events-auto h-full flex">
+              <div class="pointer-events-auto h-full flex max-w-full">
                 <DialogPanel
                   :class="[
-                    'flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] transition-[width] duration-200 ease-out',
-                    isQuoteForm || fullMode ? 'w-[60rem]' : 'w-[30rem]'
+                    'flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
+                    isQuoteForm || fullMode ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]'
                   ]"
                   @pointerdown.capture="markUserInteraction"
                   @focusin.capture="markUserInteraction"

@@ -2,7 +2,7 @@
   <button
     v-if="canPrint"
     type="button"
-    :class="buttonClass"
+    :class="[buttonClass, hideOnMobile ? 'hidden sm:inline-flex' : '']"
     :aria-label="t('actions.print')"
     :title="t('actions.print')"
     @click="showDrawer = true"
@@ -32,6 +32,11 @@ const props = defineProps({
     type: String,
     default: 'default',
     validator: (v) => ['default', 'compact'].includes(v)
+  },
+  /** Hide toolbar icon below `sm`; open via `open()` from a More menu instead. */
+  hideOnMobile: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -52,4 +57,11 @@ const buttonClass = computed(() => {
 });
 
 const iconClass = computed(() => (props.variant === 'compact' ? 'h-4 w-4' : 'w-5 h-5'));
+
+function open() {
+  if (!canPrint.value) return;
+  showDrawer.value = true;
+}
+
+defineExpose({ open, canPrint });
 </script>

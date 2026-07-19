@@ -106,6 +106,8 @@
             </button>
             <RecordPrintButton
               v-if="record?._id"
+              ref="recordPrintButtonRef"
+              hide-on-mobile
               :module-key="moduleKey"
               :record-id="String(record._id)"
             />
@@ -128,6 +130,19 @@
                 <MenuItems
                   class="absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50"
                 >
+                  <MenuItem v-if="canPrintRecord" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2 sm:hidden',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="openRecordPrint"
+                    >
+                      <PrinterIcon class="w-4 h-4" />
+                      <span>{{ t('actions.print') }}</span>
+                    </button>
+                  </MenuItem>
                   <MenuItem v-slot="{ active }">
                     <button
                       type="button"
@@ -741,6 +756,19 @@
                 <MenuItems
                   class="absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50"
                 >
+                  <MenuItem v-if="canPrintRecord" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2 sm:hidden',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="openRecordPrint"
+                    >
+                      <PrinterIcon class="w-4 h-4" />
+                      <span>{{ t('actions.print') }}</span>
+                    </button>
+                  </MenuItem>
                   <MenuItem v-slot="{ active }">
                     <button
                       type="button"
@@ -1304,6 +1332,7 @@ import {
   ArchiveBoxIcon,
   ArrowDownTrayIcon,
   EnvelopeIcon,
+  PrinterIcon,
   LinkIcon,
   PlusIcon,
   ArrowLeftIcon,
@@ -2180,6 +2209,14 @@ const recordAvatarIcon = computed(() => {
 });
 
 const canEditRecord = computed(() => authStore.can?.(props.moduleKey, 'edit') ?? false);
+const canPrintRecord = computed(() => {
+  if (!props.moduleKey || !record.value?._id) return false;
+  return authStore.can('templates', 'view') && authStore.can('templates', 'render');
+});
+const recordPrintButtonRef = ref(null);
+function openRecordPrint() {
+  recordPrintButtonRef.value?.open?.();
+}
 const canEditRecordTitle = computed(() => {
   if (isFormsModule.value) return canEditFormRecord.value && canEditRecord.value;
   return canEditRecord.value;

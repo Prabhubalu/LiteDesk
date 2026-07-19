@@ -42,7 +42,7 @@
 
       <div class="fixed inset-0 overflow-hidden">
         <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
             <TransitionChild 
               as="template" 
               enter="transform transition ease-in-out duration-300 sm:duration-300" 
@@ -52,10 +52,10 @@
               leave-from="translate-x-0" 
               leave-to="translate-x-full"
             >
-              <div class="pointer-events-auto h-full flex">
+              <div class="pointer-events-auto h-full flex max-w-full">
               <DialogPanel
                 :class="[
-                  'flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] transition-[width] duration-200 ease-out',
+                  'flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
                   drawerPanelClass
                 ]"
               >
@@ -783,7 +783,7 @@ const submitDisabled = computed(() =>
 );
 
 // Drawer panel width — narrow quick, wide full (aligned with CreateRecordDrawer)
-const drawerPanelClass = computed(() => (fullMode.value ? 'w-[60rem]' : 'w-[30rem]'));
+const drawerPanelClass = computed(() => (fullMode.value ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]'));
 
 function getParticipationFieldKeySet(): Set<string> {
   const keys = new Set<string>(['sales_type', 'helpdesk_role', 'type']);

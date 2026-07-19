@@ -164,7 +164,7 @@
           </div>
           
           <!-- Mobile Action Buttons with Stats Icon -->
-          <div class="sm:hidden flex items-center gap-2 ml-auto">
+          <div class="sm:hidden flex flex-nowrap items-center gap-2 ml-auto shrink-0">
             <!-- Stats Toggle Button (Mobile) -->
             <button
               v-if="showStats && statsConfig && statsConfig.length > 0"

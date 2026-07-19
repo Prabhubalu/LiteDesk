@@ -39,6 +39,15 @@ const UserSessionSchema = new Schema(
       enum: ['INTERNAL', 'EXTERNAL', 'SYSTEM'],
       default: 'INTERNAL'
     },
+    deviceClass: {
+      type: String,
+      enum: ['desktop', 'mobile'],
+      default: 'desktop',
+      index: true
+    },
+    browser: { type: String, trim: true, default: null },
+    os: { type: String, trim: true, default: null },
+    uaHash: { type: String, trim: true, default: null, index: true },
     ipAddress: { type: String, trim: true, default: null },
     userAgent: { type: String, trim: true, default: null },
     issuedAt: { type: Date, default: Date.now },
@@ -49,5 +58,6 @@ const UserSessionSchema = new Schema(
 );
 
 UserSessionSchema.index({ organizationId: 1, userId: 1, revokedAt: 1, issuedAt: -1 });
+UserSessionSchema.index({ organizationId: 1, userId: 1, revokedAt: 1, deviceClass: 1 });
 
 module.exports = wrapTenantModel(mongoose.model('UserSession', UserSessionSchema));

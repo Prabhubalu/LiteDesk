@@ -1,5 +1,12 @@
 const express = require('express');
-const { registerUser, loginUser } = require('../controllers/authController');
+const {
+    registerUser,
+    loginUser,
+    continueLogin,
+    listAuthSessions,
+    revokeAuthSession,
+    logoutUser
+} = require('../controllers/authController');
 const {
     validateInvite,
     acceptInvite,
@@ -18,6 +25,7 @@ const {
 } = require('../middleware/rateLimitMiddleware');
 const { progressiveAuthThrottle } = require('../middleware/progressiveAuthThrottleMiddleware');
 const { protect } = require('../middleware/authMiddleware');
+const { optionalAuth } = require('../middleware/optionalAuthMiddleware');
 const {
     selectPortal,
     switchPortal,
@@ -38,6 +46,11 @@ router.get('/test-version', (req, res) => {
 // Apply strict rate limiting to authentication endpoints
 router.post('/register', registrationLimiter, registerUser);
 router.post('/login', progressiveAuthThrottle, authLimiter, loginUser);
+router.post('/login/continue', progressiveAuthThrottle, authLimiter, continueLogin);
+
+router.get('/sessions', optionalAuth, authLimiter, listAuthSessions);
+router.delete('/sessions/:sessionId', optionalAuth, authLimiter, revokeAuthSession);
+router.post('/logout', protect, logoutUser);
 
 router.get('/invite/validate', authTokenActionLimiter, validateInvite);
 router.post('/invite/accept', authTokenActionLimiter, acceptInvite);
