@@ -124,7 +124,7 @@
       <template #cell-dueDate="{ row }">
         <span v-if="row.dueDate" :class="[
           'text-sm font-medium',
-          isOverdue(row.dueDate) && row.status !== 'completed' ? 'text-red-600 dark:text-red-400' :
+          isOverdue(row.dueDate) && row.status !== 'completed' && row.status !== 'cancelled' ? 'text-red-600 dark:text-red-400' :
           isDueToday(row.dueDate) && row.status !== 'completed' ? 'text-yellow-600 dark:text-yellow-400' :
           'text-gray-700 dark:text-gray-300'
         ]">
@@ -201,7 +201,7 @@
           >
             <template v-for="key in kanbanMetaFieldKeys" :key="key">
               <template v-if="kanbanShowEmptyFields || !isTaskFieldEmpty(task, key)">
-                <div v-if="key === 'dueDate'" class="flex items-center gap-1.5 min-w-0" :class="isOverdue(task.dueDate) && task.status !== 'completed' ? 'text-red-600 dark:text-red-400 font-medium' : ''">
+                <div v-if="key === 'dueDate'" class="flex items-center gap-1.5 min-w-0" :class="isOverdue(task.dueDate) && task.status !== 'completed' && task.status !== 'cancelled' ? 'text-red-600 dark:text-red-400 font-medium' : ''">
                   <CalendarDaysIcon class="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
                   <DateCell :value="task.dueDate" format="short" />
                 </div>
@@ -296,6 +296,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
@@ -533,9 +534,8 @@ const toggleTableView = (showTable) => {
 // Fetch task status / taskType picklist options from tasks module
 const fetchTaskStatusOptions = async () => {
   try {
-    const response = await apiClient.get('/modules', { params: { key: 'tasks' } });
-    if (!response?.success || !Array.isArray(response.data) || !response.data[0]) return;
-    const mod = response.data[0];
+    const mod = await fetchModuleDefinitionCached('tasks');
+    if (!mod) return;
     const fields = mod.fields || [];
     const statusField = fields.find(f => String(f?.key || '').toLowerCase() === 'status');
     const opts = statusField?.options || [];

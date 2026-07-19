@@ -120,6 +120,8 @@ function buildTasksListQuery(req) {
     dueDateTo,
     dueDateDays,
     overdue,
+    open,
+    dueToday,
     search,
   } = req.query;
 
@@ -168,8 +170,24 @@ function buildTasksListQuery(req) {
     query.dueDate = dueDateCondition;
   }
   if (overdue === 'true') {
-    query.dueDate = { $lt: new Date() };
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    query.dueDate = { $lt: start };
     query.status = { $nin: ['completed', 'cancelled'] };
+  }
+
+  if (open === 'true' || dueToday === 'true') {
+    query.status = { $nin: ['completed', 'cancelled'] };
+  }
+
+  if (dueToday === 'true') {
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    end.setMilliseconds(-1);
+    query.dueDate = { $gte: start, $lte: end };
   }
 
   const { buildSearchOrConditions } = require('../searchRelevance');

@@ -608,8 +608,8 @@
     "description": "Deals list statistics card"
   },
   "listStatWonThisMonth": {
-    "message": "Won This Month",
-    "description": "Deals list statistics card"
+    "message": "Won Value",
+    "description": "Deals list statistics card — won pipeline value in current query"
   },
   "listStatWinRate": {
     "message": "Win Rate",

@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModulesListCached, parseModulesListResponse } from '@/utils/tenantSchemaApiCache';
 import { useNotificationStore } from '@/stores/notifications';
 import { useNotificationPreferencesStore } from '@/stores/notificationPreferences';
 
@@ -208,23 +209,13 @@ export function useNotificationRules() {
    */
   async function getEligibleModules() {
     try {
-      const response = await apiClient.get('/modules', {
-        params: { appKey: currentAppKey.value }
+      const response = await fetchModulesListCached({
+        appKey: currentAppKey.value,
+        context: 'all',
       });
       
       // Handle response format - apiClient already parses JSON
-      let modules = [];
-      if (response?.success && response.data) {
-        modules = Array.isArray(response.data) ? response.data : [];
-      } else if (Array.isArray(response)) {
-        modules = response;
-      } else if (response?.data && Array.isArray(response.data)) {
-        modules = response.data;
-      } else if (response?.data?.success && response?.data?.data) {
-        modules = Array.isArray(response.data.data) ? response.data.data : [];
-      } else if (response?.success && response?.data && Array.isArray(response.data)) {
-        modules = response.data;
-      }
+      let modules = parseModulesListResponse(response);
       
       // Filter to only rule-eligible modules
       return modules.filter(module => 

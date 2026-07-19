@@ -1,5 +1,5 @@
-import apiClient from '@/utils/apiClient';
 import { mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldRegistry';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 
 /**
  * Load full module definition for webform builder (all fields, tenant overrides).
@@ -12,8 +12,7 @@ export async function fetchWebformModuleDefinition(moduleKey) {
     return { moduleRow: null, fields: [] };
   }
 
-  const res = await apiClient.get('/modules', { params: { key, context: 'all' } });
-  const moduleRow = res?.success && Array.isArray(res.data) ? res.data[0] : null;
+  const moduleRow = await fetchModuleDefinitionCached(key, { context: 'all' });
   let fields = Array.isArray(moduleRow?.fields) ? moduleRow.fields : [];
 
   if (key === 'people') {

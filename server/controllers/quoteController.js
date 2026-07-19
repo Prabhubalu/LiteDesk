@@ -1,6 +1,7 @@
 const Quote = require('../models/Quote');
 const QuoteLine = require('../models/QuoteLine');
 const QuoteConversionLink = require('../models/QuoteConversionLink');
+const mongoose = require('mongoose');
 const {
   assertValidStatus,
   assertCanTransitionQuoteStatus,
@@ -131,11 +132,73 @@ async function createQuote(req, res) {
   }
 }
 
+const CLOSED_QUOTE_STATUSES = ['Converted', 'Cancelled', 'Rejected', 'Expired'];
+const ACCEPTED_QUOTE_STATUSES = ['Accepted', 'Partially Accepted'];
+
+function quotesQueryAnd(baseQuery, clause) {
+  if (!baseQuery || Object.keys(baseQuery).length === 0) {
+    return clause;
+  }
+  return { $and: [baseQuery, clause] };
+}
+
+/**
+ * Full-result stats for list UI cards (same Mongo filter as the list query).
+ * Matches client registry keys: totalQuotes, myQuotes, openValue, openQuotes, acceptedValue.
+ */
+async function computeQuotesListStatistics(query, userId) {
+  const uid =
+    mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+
+  const [aggRows, myQuotes] = await Promise.all([
+    Quote.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          openQuotes: {
+            $sum: {
+              $cond: [{ $not: [{ $in: ['$status', CLOSED_QUOTE_STATUSES] }] }, 1, 0]
+            }
+          },
+          openValue: {
+            $sum: {
+              $cond: [
+                { $not: [{ $in: ['$status', CLOSED_QUOTE_STATUSES] }] },
+                { $ifNull: ['$grandTotal', 0] },
+                0
+              ]
+            }
+          },
+          acceptedValue: {
+            $sum: {
+              $cond: [
+                { $in: ['$status', ACCEPTED_QUOTE_STATUSES] },
+                { $ifNull: ['$grandTotal', 0] },
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]),
+    uid ? Quote.countDocuments(quotesQueryAnd(query, { assignedTo: uid })) : Promise.resolve(0)
+  ]);
+
+  const row = aggRows[0] || { openQuotes: 0, openValue: 0, acceptedValue: 0 };
+  return {
+    myQuotes,
+    openQuotes: row.openQuotes || 0,
+    openValue: row.openValue || 0,
+    acceptedValue: row.acceptedValue || 0
+  };
+}
+
 async function getQuotes(req, res) {
   try {
     const organizationId = req.user.organizationId;
-    const status = req.query?.status;
-    const assignedTo = req.query?.assignedTo;
+    let status = req.query?.status;
+    let assignedTo = req.query?.assignedTo;
 
     const q = { organizationId, deletedAt: null };
     const includeAllRevisions =
@@ -148,7 +211,17 @@ async function getQuotes(req, res) {
       assertValidStatus(status);
       q.status = status;
     }
-    if (assignedTo) q.assignedTo = assignedTo;
+    if (assignedTo === 'me') {
+      assignedTo = req.user._id;
+    }
+    if (assignedTo === 'unassigned') {
+      q.$and = [
+        ...(q.$and || []),
+        { $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }] }
+      ];
+    } else if (assignedTo) {
+      q.assignedTo = assignedTo;
+    }
 
     const searchTerm = req.query?.search != null ? String(req.query.search).trim() : '';
     if (searchTerm) {
@@ -179,9 +252,10 @@ async function getQuotes(req, res) {
       : 'updatedAt';
     const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
 
-    const [rows, total] = await Promise.all([
+    const [rows, total, listCardBreakdown] = await Promise.all([
       Quote.find(q).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit).lean(),
-      Quote.countDocuments(q)
+      Quote.countDocuments(q),
+      computeQuotesListStatistics(q, req.user._id)
     ]);
 
     return res.json({
@@ -193,7 +267,12 @@ async function getQuotes(req, res) {
         totalRecords: total,
         limit
       },
-      meta: { page, limit, total }
+      meta: { page, limit, total },
+      listStatistics: {
+        ...listCardBreakdown,
+        totalQuotes: total,
+        myQuotes: total
+      }
     });
   } catch (err) {
     const code = err?.code;

@@ -16,6 +16,7 @@ const CACHEABLE_GET_PATHS = [
     /^\/settings\/core-modules(?:$|\/|\?)/,
     /^\/settings\/integrations(?:$|\/|\?)/,
     /^\/ui\/apps(?:$|\/|\?)/,
+    /^\/ui\/registry(?:$|\?)/,
     /^\/ui\/entities(?:$|\?)/,
     /^\/ui\/routes(?:$|\?)/,
     /^\/people(?:$|\?)/,

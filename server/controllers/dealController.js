@@ -484,6 +484,82 @@ exports.createDeal = async (req, res) => {
     }
 };
 
+/** Combine list filter with an extra predicate for facet counts */
+function dealsQueryAnd(baseQuery, clause) {
+    if (!baseQuery || Object.keys(baseQuery).length === 0) {
+        return clause;
+    }
+    return { $and: [baseQuery, clause] };
+}
+
+/**
+ * Full-result stats for list UI cards (same Mongo filter as the list query).
+ * Matches client registry keys: pipelineValue, activeDeals, wonValue, winRate, totalDeals, myDeals.
+ */
+async function computeDealsListStatistics(query, userId) {
+    const uid =
+        mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+
+    const [aggRows, myDeals] = await Promise.all([
+        Deal.aggregate([
+            { $match: query },
+            {
+                $group: {
+                    _id: null,
+                    pipelineValue: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $ne: ['$status', 'Won'] }, { $ne: ['$status', 'Lost'] }] },
+                                { $ifNull: ['$amount', 0] },
+                                0
+                            ]
+                        }
+                    },
+                    activeDeals: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $ne: ['$status', 'Won'] }, { $ne: ['$status', 'Lost'] }] },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    wonValue: {
+                        $sum: {
+                            $cond: [{ $eq: ['$status', 'Won'] }, { $ifNull: ['$amount', 0] }, 0]
+                        }
+                    },
+                    wonCount: {
+                        $sum: { $cond: [{ $eq: ['$status', 'Won'] }, 1, 0] }
+                    },
+                    lostCount: {
+                        $sum: { $cond: [{ $eq: ['$status', 'Lost'] }, 1, 0] }
+                    }
+                }
+            }
+        ]),
+        uid ? Deal.countDocuments(dealsQueryAnd(query, { assignedTo: uid })) : Promise.resolve(0)
+    ]);
+
+    const row = aggRows[0] || {
+        pipelineValue: 0,
+        activeDeals: 0,
+        wonValue: 0,
+        wonCount: 0,
+        lostCount: 0
+    };
+    const totalClosed = (row.wonCount || 0) + (row.lostCount || 0);
+    const winRate = totalClosed > 0 ? Math.round((row.wonCount / totalClosed) * 100) : 0;
+
+    return {
+        pipelineValue: row.pipelineValue || 0,
+        activeDeals: row.activeDeals || 0,
+        wonValue: row.wonValue || 0,
+        winRate,
+        myDeals
+    };
+}
+
 // @desc    Get all deals
 // @route   GET /api/deals
 // @access  Private
@@ -531,41 +607,29 @@ exports.getDeals = async (req, res) => {
                 .limit(limit)
                 .skip(skip);
         
-        const total = await Deal.countDocuments(query);
-
         try {
             const { refreshPlaybookStatesForDealList } = require('../services/playbookExecutionService');
             await refreshPlaybookStatesForDealList(deals, req.user.organizationId);
         } catch (playbookErr) {
             console.error('[dealController] playbook refresh on list failed:', playbookErr?.message || playbookErr);
         }
-        
-        // Get statistics
-        const stats = await Deal.aggregate([
-            { $match: { organizationId: req.user.organizationId, deletedAt: null } },
-            {
-                $group: {
-                    _id: null,
-                    totalDeals: { $sum: 1 },
-                    activeDeals: {
-                        $sum: { $cond: [{ $eq: ['$status', 'Open'] }, 1, 0] }
-                    },
-                    wonDeals: {
-                        $sum: { $cond: [{ $eq: ['$status', 'Won'] }, 1, 0] }
-                    },
-                    lostDeals: {
-                        $sum: { $cond: [{ $eq: ['$status', 'Lost'] }, 1, 0] }
-                    },
-                    totalValue: { $sum: '$amount' },
-                    wonValue: {
-                        $sum: { $cond: [{ $eq: ['$status', 'Won'] }, '$amount', 0] }
-                    },
-                    pipelineValue: {
-                        $sum: { $cond: [{ $eq: ['$status', 'Open'] }, '$amount', 0] }
-                    }
-                }
-            }
+
+        // Full-query KPIs for ModuleList cards (same filter as list rows).
+        const [total, listCardBreakdown] = await Promise.all([
+            Deal.countDocuments(query),
+            computeDealsListStatistics(query, req.user._id)
         ]);
+
+        const legacyStats = {
+            totalDeals: total,
+            activeDeals: listCardBreakdown.activeDeals || 0,
+            stalledDeals: 0,
+            wonDeals: 0,
+            lostDeals: 0,
+            totalValue: 0,
+            wonValue: listCardBreakdown.wonValue || 0,
+            pipelineValue: listCardBreakdown.pipelineValue || 0
+        };
         
         res.status(200).json({
             success: true,
@@ -574,17 +638,13 @@ exports.getDeals = async (req, res) => {
                 currentPage: page,
                 limit,
                 totalDeals: total,
+                totalRecords: total,
                 totalPages: Math.ceil(total / limit)
             },
-            statistics: stats[0] || {
-                totalDeals: 0,
-                activeDeals: 0,
-                stalledDeals: 0,
-                wonDeals: 0,
-                lostDeals: 0,
-                totalValue: 0,
-                wonValue: 0,
-                pipelineValue: 0
+            statistics: legacyStats,
+            listStatistics: {
+                totalDeals: total,
+                ...listCardBreakdown
             }
         });
     } catch (error) {

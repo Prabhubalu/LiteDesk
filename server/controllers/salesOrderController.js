@@ -37,18 +37,26 @@ const SALES_ORDER_LIST_STATUSES = [
 function buildSalesOrderListQuery(req) {
   const organizationId = req.user.organizationId;
   const status = req.query?.status;
-  const assignedTo = req.query?.assignedTo;
+  let assignedTo = req.query?.assignedTo;
   const sourceQuoteId = req.query?.sourceQuoteId;
   const sourceType = req.query?.sourceType;
+  const open = req.query?.open;
 
   const q = { organizationId, deletedAt: null };
   if (status) {
     assertValidSalesOrderStatus(status);
     q.status = status;
   }
+  if (assignedTo === 'me') {
+    assignedTo = req.user._id;
+  }
   if (assignedTo) q.assignedTo = assignedTo;
   if (sourceQuoteId) q.sourceQuoteId = sourceQuoteId;
   if (sourceType) q.sourceType = String(sourceType).trim();
+
+  if (open === 'true' || open === true) {
+    q.status = { $in: ['Draft', 'Confirmed', 'In Fulfillment', 'Partially Fulfilled'] };
+  }
 
   if (req.filterByUser && !req.viewAll) {
     q.assignedTo = req.filterByUser;
@@ -75,13 +83,20 @@ async function computeSalesOrderListStatistics(matchQuery) {
   ]);
 
   const byStatus = Object.fromEntries(statusCounts.map((row) => [row._id, row.count]));
+  const draft = byStatus.Draft || 0;
+  const confirmed = byStatus.Confirmed || 0;
+  const inFulfillment = byStatus['In Fulfillment'] || 0;
+  const partiallyFulfilled = byStatus['Partially Fulfilled'] || 0;
+  const completed = byStatus.Fulfilled || 0;
+  const cancelled = byStatus.Cancelled || 0;
   return {
-    draft: byStatus.Draft || 0,
-    confirmed: byStatus.Confirmed || 0,
-    inFulfillment: byStatus['In Fulfillment'] || 0,
-    partiallyFulfilled: byStatus['Partially Fulfilled'] || 0,
-    completed: byStatus.Fulfilled || 0,
-    cancelled: byStatus.Cancelled || 0,
+    draft,
+    confirmed,
+    inFulfillment,
+    partiallyFulfilled,
+    completed,
+    cancelled,
+    open: draft + confirmed + inFulfillment + partiallyFulfilled,
     totalSalesOrders: SALES_ORDER_LIST_STATUSES.reduce((sum, key) => sum + (byStatus[key] || 0), 0)
   };
 }
@@ -169,13 +184,10 @@ async function getSalesOrders(req, res) {
       : 'updatedAt';
     const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
 
-    const statsMatch = { ...q };
-    delete statsMatch.status;
-
-    const [rows, total, listStatistics] = await Promise.all([
+    const [rows, total, statusBreakdown] = await Promise.all([
       SalesOrder.find(q).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit).lean(),
       SalesOrder.countDocuments(q),
-      computeSalesOrderListStatistics(statsMatch)
+      computeSalesOrderListStatistics(q)
     ]);
 
     return res.json({
@@ -188,7 +200,12 @@ async function getSalesOrders(req, res) {
         limit
       },
       meta: { page, limit, total },
-      listStatistics
+      listStatistics: {
+        ...statusBreakdown,
+        totalSalesOrders: total,
+        mySalesOrders: total,
+        open: statusBreakdown.open
+      }
     });
   } catch (err) {
     const code = err?.code;

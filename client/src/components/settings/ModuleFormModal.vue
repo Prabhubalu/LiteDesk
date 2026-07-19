@@ -80,6 +80,7 @@
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { fetchModulesListCached, parseModulesListResponse } from '@/utils/tenantSchemaApiCache';
 
 const { t } = useI18n();
 
@@ -106,10 +107,11 @@ const form = ref({
 // Fetch existing modules to check for duplicates
 const fetchExistingModules = async () => {
   try {
-    const data = await apiClient.get('/modules');
-    if (data.success && Array.isArray(data.data)) {
-      existingModules.value = data.data.map(m => m.key.toLowerCase());
-    }
+    const data = await fetchModulesListCached({ context: 'all' });
+    const list = parseModulesListResponse(data);
+    existingModules.value = list
+      .map((m) => String(m.key || '').toLowerCase())
+      .filter(Boolean);
   } catch (error) {
     console.error('Error fetching modules:', error);
     existingModules.value = [];

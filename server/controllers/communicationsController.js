@@ -56,14 +56,30 @@ const InboundDeadLetter = require('../models/InboundDeadLetter');
 const { getCommunicationConfigForOrganization } = require('../platform/communication/config/communicationConfigService');
 const { classifyCommunicationFailure } = require('../platform/communication/domain/failureTaxonomy');
 const {
-  SUPPORTED_MODULES
-} = require('../platform/communication/domain/sendEmailContract');
+  isEmailEligibleModule,
+  loadEmailRelatedRecord
+} = require('../platform/communication/domain/emailRelatedModulePolicy');
 
 const WEBHOOK_TEST_EVENT_TYPES = ['delivered', 'opened', 'bounced', 'complained'];
 
 async function findAccessibleOrganizationRecord(tenantOrganizationId, recordId) {
   const { findTenantAccessibleCrmOrganization } = require('../utils/crmOrganizationAccess');
   return findTenantAccessibleCrmOrganization(tenantOrganizationId, recordId);
+}
+
+async function assertEmailEligibleRelatedModule(orgId, moduleKey) {
+  const eligible = await isEmailEligibleModule({
+    organizationId: orgId,
+    moduleKey
+  });
+  if (!eligible) {
+    return {
+      ok: false,
+      status: 403,
+      message: `Module "${moduleKey}" cannot send email because it has no People relationship.`
+    };
+  }
+  return { ok: true };
 }
 
 /**
@@ -190,15 +206,14 @@ exports.sendEmail = async (req, res) => {
         message: 'Workspace (inbox) email is disabled by tenant communication policy.'
       });
     }
-    if (
-      Array.isArray(outboundPolicy.allowedModuleKeys)
-      && !outboundPolicy.allowedModuleKeys.includes(moduleKey)
-      && moduleKey !== 'workspace'
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: `Module "${moduleKey}" is not allowed by tenant communication policy.`
-      });
+    {
+      const eligibility = await assertEmailEligibleRelatedModule(orgId, moduleKey);
+      if (!eligibility.ok) {
+        return res.status(eligibility.status).json({
+          success: false,
+          message: eligibility.message
+        });
+      }
     }
     const totalRecipients =
       (Array.isArray(toList) ? toList.length : 0) +
@@ -287,16 +302,13 @@ exports.sendEmail = async (req, res) => {
         });
       }
       record = await Organization.findById(orgId).select('_id name').lean();
-    } else if (moduleKey === 'people') {
-      record = await People.findOne({ _id: recordId, organizationId: orgId, deletedAt: null }).lean();
-    } else if (moduleKey === 'organizations') {
-      record = await findAccessibleOrganizationRecord(orgId, recordId);
-    } else if (moduleKey === 'deals') {
-      record = await Deal.findOne({ _id: recordId, organizationId: orgId }).lean();
-    } else if (moduleKey === 'tasks') {
-      record = await Task.findOne({ _id: recordId, organizationId: orgId }).lean();
-    } else if (moduleKey === 'cases') {
-      record = await Case.findOne({ _id: recordId, organizationId: orgId, deletedAt: null }).lean();
+    } else {
+      record = await loadEmailRelatedRecord({
+        organizationId: orgId,
+        moduleKey,
+        recordId,
+        findAccessibleOrganizationRecord
+      });
     }
 
     if (!record) {
@@ -657,11 +669,14 @@ exports.getThreads = async (req, res) => {
       });
     }
 
-    if (!SUPPORTED_MODULES.has(moduleKey)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Unsupported moduleKey. Supported: people, organizations, deals, tasks, cases, workspace'
-      });
+    {
+      const eligibility = await assertEmailEligibleRelatedModule(orgId, moduleKey);
+      if (!eligibility.ok) {
+        return res.status(eligibility.status).json({
+          success: false,
+          message: eligibility.message
+        });
+      }
     }
 
     let record = null;
@@ -673,16 +688,13 @@ exports.getThreads = async (req, res) => {
         });
       }
       record = await Organization.findById(orgId).select('_id').lean();
-    } else if (moduleKey === 'people') {
-      record = await People.findOne({ _id: recordId, organizationId: orgId, deletedAt: null }).lean();
-    } else if (moduleKey === 'organizations') {
-      record = await findAccessibleOrganizationRecord(orgId, recordId);
-    } else if (moduleKey === 'deals') {
-      record = await Deal.findOne({ _id: recordId, organizationId: orgId }).lean();
-    } else if (moduleKey === 'tasks') {
-      record = await Task.findOne({ _id: recordId, organizationId: orgId }).lean();
-    } else if (moduleKey === 'cases') {
-      record = await Case.findOne({ _id: recordId, organizationId: orgId, deletedAt: null }).lean();
+    } else {
+      record = await loadEmailRelatedRecord({
+        organizationId: orgId,
+        moduleKey,
+        recordId,
+        findAccessibleOrganizationRecord
+      });
     }
 
     if (!record) {

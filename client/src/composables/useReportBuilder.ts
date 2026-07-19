@@ -100,6 +100,8 @@ export interface ReportBuilderFieldOption {
   label: string;
   type?: string;
   moduleKey?: string;
+  filterable?: boolean;
+  options?: Array<{ value: string; label: string }>;
 }
 
 const AGGREGATION_FNS = ['count', 'sum', 'avg', 'min', 'max'];
@@ -212,7 +214,13 @@ export function useReportBuilder(reportId?: string | null) {
     const buildModuleFields = (moduleKey: string, qualifyRelated: boolean) => {
       const mod = catalogModules.value.find((m) => m.moduleKey === moduleKey);
       const moduleLabel = mod?.label || moduleKey;
-      const mapField = (field: { key: string; label?: string; type?: string }) => {
+      const mapField = (field: {
+        key: string;
+        label?: string;
+        type?: string;
+        filterable?: boolean;
+        options?: Array<{ value: string; label: string }>;
+      }) => {
         const bareKey = field.key;
         const key = qualifyRelated ? `${moduleKey}.${bareKey}` : bareKey;
         const label = qualifyRelated
@@ -223,6 +231,8 @@ export function useReportBuilder(reportId?: string | null) {
           label,
           type: field.type,
           moduleKey,
+          filterable: field.filterable,
+          options: field.options,
         };
       };
 
@@ -672,9 +682,13 @@ export function useReportBuilder(reportId?: string | null) {
     filterRemountToken.value += 1;
   }
 
-  function onFilterStateChange(nextState: ReportFilterState | null) {
-    filterState.value = nextState;
-  }
+function onFilterStateChange(nextState: ReportFilterState | null) {
+  filterState.value = nextState;
+  // Keep remount seed in sync so Filters step always paints applied rules.
+  filterInitialState.value = nextState
+    ? (JSON.parse(JSON.stringify(nextState)) as ReportFilterState)
+    : null;
+}
 
   function selectModule(moduleKey: string) {
     form.primaryModule = moduleKey;

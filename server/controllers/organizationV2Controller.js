@@ -309,8 +309,9 @@ exports.list = async (req, res) => {
       },
       meta: { page, limit, total }, // Keep for backward compatibility
       listStatistics: {
+        ...listCardBreakdown,
         totalOrganizations: total,
-        ...listCardBreakdown
+        myOrganizations: total
       }
     };
     

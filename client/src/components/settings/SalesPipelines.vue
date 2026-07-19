@@ -368,6 +368,7 @@ import { ref, computed, onMounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { TrashIcon, Bars3Icon, PlusIcon, StarIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
@@ -594,18 +595,13 @@ async function fetchDealsModule(preferredPipelineKey = '') {
   loading.value = true;
   error.value = '';
   try {
-    const data = await apiClient.get('/modules');
-    if (data.success) {
-      const deals = data.data.find(m => m.key === 'deals');
-      if (!deals) {
-        error.value = t('settings.salesPipeErrDealsModule');
-        return;
-      }
-      dealsModule.value = deals;
-      applyPipelineSettingsFromSource(deals.pipelineSettings, preferredPipelineKey || selectedPipelineKey.value);
-    } else {
-      error.value = data.message || t('settings.salesPipeErrLoadFailed');
+    const deals = await fetchModuleDefinitionCached('deals');
+    if (!deals) {
+      error.value = t('settings.salesPipeErrDealsModule');
+      return;
     }
+    dealsModule.value = deals;
+    applyPipelineSettingsFromSource(deals.pipelineSettings, preferredPipelineKey || selectedPipelineKey.value);
   } catch (err) {
     console.error('Error fetching deals module:', err);
     error.value = err.message || t('settings.salesPipeErrLoadFailed');

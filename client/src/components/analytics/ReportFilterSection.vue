@@ -23,9 +23,13 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { createDefaultRootGroup } from '@/platform/filters/filterQueryAst';
 import type { FilterOperatorId } from '@/platform/filters/filterOperators';
 import type { FilterGroupNode } from '@/platform/filters/filterQueryAst';
+import { syncRootGroupFromActiveFilters } from '@/platform/filters/filterQueryAstCompiler';
+import { isFilterRuleActive } from '@/platform/filters/filterQueryCompiler';
 import {
   buildAnalyticsFilterConfigByKey,
+  buildAnalyticsFilterConfigFromFields,
   buildAnalyticsFilterConfigFromFieldKeys,
+  type AnalyticsFilterFieldSource,
 } from '@/utils/analyticsFilterConfig';
 
 export interface ReportFilterState {
@@ -36,7 +40,10 @@ export interface ReportFilterState {
 
 const props = defineProps<{
   moduleKey: string;
-  fieldKeys: string[];
+  /** Preferred: full catalog fields (label/type/options). */
+  fields?: AnalyticsFilterFieldSource[];
+  /** @deprecated Prefer `fields` — key-only fallback. */
+  fieldKeys?: string[];
   initialState?: ReportFilterState | null;
 }>();
 
@@ -49,12 +56,20 @@ const filterQuery = ref<FilterGroupNode>(createDefaultRootGroup());
 const filterValues = ref<Record<string, unknown>>({});
 const filterOperators = ref<Record<string, FilterOperatorId>>({});
 
-const filterConfig = computed(() => buildAnalyticsFilterConfigFromFieldKeys(props.fieldKeys));
-const filterByKey = computed(() => buildAnalyticsFilterConfigByKey(filterConfig.value));
+const filterConfig = computed(() => {
+  if (props.fields?.length) {
+    return buildAnalyticsFilterConfigFromFields(props.fields);
+  }
+  return buildAnalyticsFilterConfigFromFieldKeys(props.fieldKeys || []);
+});
 
-const { handleFilterOpened: loadFilterFieldOptions } = useFilterFieldOptions(
+const { handleFilterOpened: loadFilterFieldOptions, enrichFilterMap } = useFilterFieldOptions(
   computed(() => props.moduleKey),
   computed(() => String(authStore.user?._id || '')),
+);
+
+const filterByKey = computed(() =>
+  enrichFilterMap(buildAnalyticsFilterConfigByKey(filterConfig.value), props.moduleKey),
 );
 
 /** structuredClone fails on Vue Proxies — unwrap + JSON fallback for Dates/ObjectIds. */
@@ -86,10 +101,52 @@ function emitState() {
   });
 }
 
+/** Ensure query rules exist for every active flat filter (summary can outlive empty AST). */
+function reconcileQueryWithFilters() {
+  const activeKeys = Object.keys(filterValues.value).filter((key) =>
+    isFilterRuleActive(filterValues.value[key], filterOperators.value[key] ?? 'is'),
+  );
+  if (activeKeys.length === 0) return;
+
+  const queryKeys = new Set<string>();
+  const walk = (nodes: FilterGroupNode['children']) => {
+    for (const node of nodes) {
+      if (node.kind === 'rule' && node.fieldKey) queryKeys.add(node.fieldKey);
+      if (node.kind === 'rule' && node.nested) walk(node.nested.children);
+      if (node.kind === 'group') walk(node.children);
+    }
+  };
+  walk(filterQuery.value.children);
+
+  const missing = activeKeys.some((key) => !queryKeys.has(key));
+  if (!missing) return;
+
+  const configForSync = [...filterConfig.value];
+  for (const key of activeKeys) {
+    if (configForSync.some((filter) => filter.key === key)) continue;
+    configForSync.push({
+      key,
+      label: key,
+      filterType: 'text',
+      fieldPath: key,
+      options: [],
+      priority: 999,
+    });
+  }
+
+  filterQuery.value = syncRootGroupFromActiveFilters(
+    filterQuery.value,
+    configForSync,
+    filterValues.value,
+    filterOperators.value,
+  );
+}
+
 function resetState(next?: ReportFilterState | null) {
   filterQuery.value = next?.query ? clonePlain(next.query) : createDefaultRootGroup();
   filterValues.value = clonePlain(next?.filters || {});
   filterOperators.value = clonePlain(next?.operators || {}) as Record<string, FilterOperatorId>;
+  reconcileQueryWithFilters();
   emitState();
 }
 
@@ -125,13 +182,21 @@ function onFilterOpened(key: string) {
   void loadFilterFieldOptions(key, filterByKey.value[key], props.moduleKey);
 }
 
+// Seed once per mount. Parent remounts via :key / step v-if with latest filterState.
+if (props.initialState) {
+  resetState(props.initialState);
+}
+
+// When catalog fields arrive after seed, repair AST so applied filters paint in the picker.
 watch(
-  () => props.initialState,
-  (next) => {
-    if (next) {
-      resetState(next);
+  filterConfig,
+  () => {
+    const before = JSON.stringify(filterQuery.value);
+    reconcileQueryWithFilters();
+    if (JSON.stringify(filterQuery.value) !== before) {
+      emitState();
     }
   },
-  { immediate: true, deep: true },
+  { flush: 'post' },
 );
 </script>

@@ -29,9 +29,10 @@ function normalizeAllowedModules(modules) {
   if (!Array.isArray(modules) || modules.length === 0) {
     return Array.from(SUPPORTED_MODULES);
   }
+  // Allow any module key string — eligibility is enforced via People-relationship policy at send time.
   const normalized = modules
     .map((m) => String(m || '').trim().toLowerCase())
-    .filter((m) => SUPPORTED_MODULES.has(m));
+    .filter(Boolean);
   return normalized.length > 0 ? Array.from(new Set(normalized)) : Array.from(SUPPORTED_MODULES);
 }
 

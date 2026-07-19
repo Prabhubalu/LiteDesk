@@ -138,33 +138,31 @@ class UICompositionService {
       
       console.log(`[UIComposition] Non-owner user, checking access for ${uiApps.length} apps`);
 
-      const accessibleApps = [];
-      for (const app of uiApps) {
-        // Skip CONTROL_PLANE - it's platform-only, never shown to tenants
-        if (app.appKey.toUpperCase() === 'CONTROL_PLANE') {
-          continue;
-        }
-        
-        try {
-          const accessResult = await resolveAppAccess({
-            user: user,
-            organization: organization,
-            appKey: app.appKey,
-            intent: 'VIEW' // App switcher just needs VIEW access
-          });
-
-          if (accessResult.allowed) {
-            accessibleApps.push(app);
+      const accessChecks = await Promise.all(
+        uiApps.map(async (app) => {
+          if (app.appKey.toUpperCase() === 'CONTROL_PLANE') {
+            return null;
           }
-        } catch (error) {
-          console.warn(`[UIComposition] Error resolving access for app ${app.appKey}:`, error);
-          // On error, fall back to legacy check for backward compatibility
-          const userAllowedApps = user.allowedApps || [];
-          if (userAllowedApps.includes(app.appKey)) {
-            accessibleApps.push(app);
+          try {
+            const accessResult = await resolveAppAccess({
+              user: user,
+              organization: organization,
+              appKey: app.appKey,
+              intent: 'VIEW' // App switcher just needs VIEW access
+            });
+            return accessResult.allowed ? app : null;
+          } catch (error) {
+            console.warn(`[UIComposition] Error resolving access for app ${app.appKey}:`, error);
+            // On error, fall back to legacy check for backward compatibility
+            const userAllowedApps = user.allowedApps || [];
+            if (userAllowedApps.includes(app.appKey)) {
+              return app;
+            }
+            return null;
           }
-        }
-      }
+        })
+      );
+      const accessibleApps = accessChecks.filter(Boolean);
 
       return this.filterAppsByUserType(accessibleApps, user);
     } catch (error) {
@@ -183,19 +181,8 @@ class UICompositionService {
     try {
       const appKeyLower = appKey.toLowerCase();
 
-      // Quote-to-cash core modules are lazy-seeded on Settings; ensure they exist for sidebar/registry too.
-      if (appKeyLower === 'platform') {
-        const {
-          ensurePlatformCommercialCoreModules,
-          ensurePlatformReportsModuleDefinition,
-          ensurePlatformAnalyticsModuleDefinition,
-          ensurePlatformDashboardsModuleDefinition,
-        } = require('../controllers/settingsController');
-        await ensurePlatformCommercialCoreModules();
-        await ensurePlatformReportsModuleDefinition();
-        await ensurePlatformAnalyticsModuleDefinition();
-        await ensurePlatformDashboardsModuleDefinition();
-      }
+      // Do not seed platform modules on the registry/sidebar hot path.
+      // Seeding belongs to Settings / getCoreModules (ensurePlatformCommercialCoreModules).
 
       // Get module definitions for this app
       // Priority: platform-level modules (organizationId: null) first, then organization-specific
@@ -561,9 +548,14 @@ class UICompositionService {
       /** Dedicated static routes in client router — skip duplicate dynamic injection. */
       const staticAnalyticsModuleKeys = new Set(['reports', 'dashboards', 'analytics']);
 
-      for (const app of apps) {
-        const modules = await this.getUIModulesForApp(organizationId, app.appKey);
-        
+      const modulesByApp = await Promise.all(
+        apps.map(async (app) => ({
+          app,
+          modules: await this.getUIModulesForApp(organizationId, app.appKey),
+        }))
+      );
+
+      for (const { app, modules } of modulesByApp) {
         for (const module of modules) {
           const moduleKey = String(module.moduleKey || '').toLowerCase();
           if (staticAnalyticsModuleKeys.has(moduleKey)) {

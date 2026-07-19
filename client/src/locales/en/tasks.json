@@ -238,5 +238,13 @@
   "listStatTotal": {
     "message": "Total Tasks",
     "description": "Tasks list statistics card"
+  },
+  "listStatOpen": {
+    "message": "Open",
+    "description": "Tasks list open (not completed/cancelled) statistics card"
+  },
+  "listStatDueToday": {
+    "message": "Due Today",
+    "description": "Tasks list due-today statistics card"
   }
 }
