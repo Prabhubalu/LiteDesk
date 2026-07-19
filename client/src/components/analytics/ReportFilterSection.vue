@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, toRaw, watch } from 'vue';
 import FilterBuilderPanel from '@/components/filters/FilterBuilderPanel.vue';
 import { useFilterFieldOptions } from '@/composables/useFilterFieldOptions';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -57,6 +57,27 @@ const { handleFilterOpened: loadFilterFieldOptions } = useFilterFieldOptions(
   computed(() => String(authStore.user?._id || '')),
 );
 
+/** structuredClone fails on Vue Proxies — unwrap + JSON fallback for Dates/ObjectIds. */
+function clonePlain<T>(value: T): T {
+  if (value == null) return value;
+  const raw = toRaw(value) as T;
+  try {
+    return structuredClone(raw);
+  } catch {
+    return JSON.parse(JSON.stringify(raw, (_key, v) => {
+      if (v instanceof Date) return v.toISOString();
+      if (v != null && typeof v === 'object' && typeof (v as { toISOString?: () => string }).toISOString === 'function') {
+        try {
+          return (v as { toISOString: () => string }).toISOString();
+        } catch {
+          return v;
+        }
+      }
+      return v;
+    })) as T;
+  }
+}
+
 function emitState() {
   emit('update:state', {
     query: filterQuery.value,
@@ -66,9 +87,9 @@ function emitState() {
 }
 
 function resetState(next?: ReportFilterState | null) {
-  filterQuery.value = next?.query ? structuredClone(next.query) : createDefaultRootGroup();
-  filterValues.value = { ...(next?.filters || {}) };
-  filterOperators.value = { ...(next?.operators || {}) };
+  filterQuery.value = next?.query ? clonePlain(next.query) : createDefaultRootGroup();
+  filterValues.value = clonePlain(next?.filters || {});
+  filterOperators.value = clonePlain(next?.operators || {}) as Record<string, FilterOperatorId>;
   emitState();
 }
 
@@ -111,6 +132,6 @@ watch(
       resetState(next);
     }
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 );
 </script>

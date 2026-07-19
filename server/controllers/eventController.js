@@ -275,6 +275,44 @@ function enrichEventForList(event) {
     };
 }
 
+function eventsQueryAnd(baseQuery, extra) {
+    if (!extra || typeof extra !== 'object') return baseQuery;
+    return { $and: [baseQuery, extra] };
+}
+
+/** Scope-level list KPI cards — same keys as client `computeEventsStatistics`. */
+async function computeEventsListStatistics(query, userId) {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const uid =
+        userId && mongoose.Types.ObjectId.isValid(userId)
+            ? new mongoose.Types.ObjectId(userId)
+            : userId;
+
+    const [upcoming, past, myEvents, today, thisWeek] = await Promise.all([
+        Event.countDocuments(eventsQueryAnd(query, { startDateTime: { $gte: now } })),
+        Event.countDocuments(eventsQueryAnd(query, { startDateTime: { $lt: now } })),
+        uid
+            ? Event.countDocuments(eventsQueryAnd(query, { assignedTo: uid }))
+            : Promise.resolve(0),
+        Event.countDocuments(
+            eventsQueryAnd(query, { startDateTime: { $gte: startOfToday, $lte: endOfToday } })
+        ),
+        Event.countDocuments(
+            eventsQueryAnd(query, { startDateTime: { $gte: startOfWeek, $lte: endOfWeek } })
+        )
+    ]);
+
+    return { upcoming, past, myEvents, today, thisWeek };
+}
+
 // Get all events (with date range filtering for calendar)
 exports.getEvents = async (req, res) => {
     try {
@@ -454,20 +492,32 @@ exports.getEvents = async (req, res) => {
               .skip(eventSkip)
               .lean();
 
-        // Fetch events and count in parallel for lower request latency.
-        const [events, count] = await Promise.all([
+        // Fetch events, count, and list KPIs in parallel for lower request latency.
+        const [events, count, listCardBreakdown] = await Promise.all([
           eventsPromise,
-          Event.countDocuments(query)
+          Event.countDocuments(query),
+          computeEventsListStatistics(query, req.user._id)
         ]);
 
         const enrichedEvents = events.map(enrichEventForList);
-        
+        const totalPages = Math.ceil(count / limitNum);
+
         res.status(200).json({
             success: true,
             data: enrichedEvents,
-            totalPages: Math.ceil(count / limitNum),
+            totalPages,
             currentPage: pageNum,
-            total: count
+            total: count,
+            pagination: {
+                currentPage: pageNum,
+                totalPages,
+                totalRecords: count,
+                totalEvents: count
+            },
+            listStatistics: {
+                totalEvents: count,
+                ...listCardBreakdown
+            }
         });
     } catch (error) {
         console.error('Error fetching events:', error);
@@ -1462,11 +1512,12 @@ exports.getEventStats = async (req, res) => {
         // Total events
         const totalEvents = await Event.countDocuments({ organizationId });
         
-        // Upcoming events (today onwards)
+        // Upcoming events (now onwards; status enum is Planned/Completed/Cancelled)
         const upcomingEvents = await Event.countDocuments({
             organizationId,
+            deletedAt: null,
             startDateTime: { $gte: new Date() },
-            status: 'Scheduled'
+            status: 'Planned'
         });
         
         // Today's events

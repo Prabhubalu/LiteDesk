@@ -11,6 +11,7 @@ const { resolveRuntimePermission } = require('../runtimePermissionResolver');
 const { isTenantPrivilegedUser } = require('../../utils/tenantPrivilegedAccess');
 const { AiConfigurationError } = require('./errors');
 const { writeAiAuditLog } = require('./aiAuditLogService');
+const { findIntentDuplicatesForCreate, allowsForceCreate } = require('./aiAstraDuplicateGuard');
 
 const ALLOWED_MODULES = new Set([
   'people',
@@ -44,6 +45,8 @@ const BLOCKED_FIELDS = new Set([
   'relatedToType',
   'relatedToModule',
   'relatedModule',
+  'forceCreate',
+  'forceCreateReason',
 ]);
 
 function resolveRecordLabel(moduleKey, doc) {
@@ -265,6 +268,25 @@ async function applyAstraMutation({
   let result;
   try {
     if (operation === 'create') {
+      const forceCreate = Boolean(fields?.forceCreate) || allowsForceCreate(String(fields?.forceCreateReason || ''));
+      if (!forceCreate) {
+        const duplicates = await findIntentDuplicatesForCreate({
+          organizationId,
+          moduleKey: mod,
+          fields: { ...clean, linkPeopleId },
+          userId,
+        });
+        if (duplicates.length) {
+          const top = duplicates[0];
+          const err = new AiConfigurationError(
+            `Possible duplicate: "${top.label}". Open the existing record instead, or say "create anyway".`,
+            'AI_ASTRA_DUPLICATE',
+          );
+          err.details = { duplicates, recommendedRecordId: top.recordId, moduleKey: top.moduleKey };
+          throw err;
+        }
+      }
+
       const payload = { ...clean };
 
       // Normalize aliases before system stamps

@@ -214,7 +214,7 @@ async function getQuoteById(req, res) {
 
     const quoteDoc = await Quote.findOne({ _id: quoteId, organizationId, deletedAt: null })
       .populate({ path: 'assignedTo', select: 'firstName lastName email username' })
-      .populate({ path: 'organizationRefId', select: 'name' })
+      .populate({ path: 'organizationRefId', select: 'name industry status email phone website' })
       .populate({ path: 'contactId', select: 'first_name last_name email phone mobile' })
       .populate({ path: 'dealId', select: 'name stage pipeline amount value currency' })
       .populate({ path: 'caseId', select: 'caseId title status priority' });

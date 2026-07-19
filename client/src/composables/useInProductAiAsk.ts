@@ -19,7 +19,7 @@ export type InAppAiCitation = {
 
 export type InAppAiAction = {
   label: string;
-  kind: 'send_email' | 'complete_task' | 'follow_up' | 'review_record' | 'update_status' | 'talk_to_agent' | 'manual' | 'open_record' | 'none' | 'create_record' | 'update_record';
+  kind: 'send_email' | 'complete_task' | 'follow_up' | 'review_record' | 'update_status' | 'talk_to_agent' | 'manual' | 'open_record' | 'none' | 'create_record' | 'update_record' | 'open_content_studio' | 'open_canvas' | 'open_report_builder' | 'open_report' | 'publish_report' | 'export_report' | 'pin_report_to_dashboard' | 'open_widget' | 'open_dashboard';
   moduleKey?: string;
   recordId?: string;
   targetLabel?: string;
@@ -47,6 +47,12 @@ export type InAppAiVisual = {
   rows?: Array<Array<string | number>>;
   tone?: 'insight' | 'success' | 'warning' | 'danger';
   body?: string;
+  /** Live CRM binding so the visual can be pinned to Analytics dashboards */
+  pinSource?: {
+    moduleKey: string;
+    groupField?: string;
+    metric?: 'count' | 'amount';
+  };
 };
 
 export type InAppAiStructured = {
@@ -91,7 +97,7 @@ export type InAppAiConversation = {
   messageCount?: number;
 };
 
-const MAX_AI_CONVERSATIONS = 30;
+const MAX_AI_CONVERSATIONS = 100;
 const MAX_AI_MESSAGES = 120;
 
 function aiConversationsStorageKey(orgId: string, userId: string) {
@@ -583,14 +589,27 @@ export function useInProductAiAsk() {
     writeActiveId(orgId, userId, id);
   }
 
-  function applyConversationToList(entry: InAppAiConversation) {
+  function applyConversationToList(
+    entry: InAppAiConversation,
+    { bumpToFront = true }: { bumpToFront?: boolean } = {},
+  ) {
+    const idx = aiConversations.value.findIndex((c) => c.id === entry.id);
+    if (!bumpToFront && idx >= 0) {
+      const next = aiConversations.value.slice();
+      next[idx] = entry;
+      aiConversations.value = next;
+      return;
+    }
     aiConversations.value = [
       entry,
       ...aiConversations.value.filter((c) => c.id !== entry.id),
     ].slice(0, MAX_AI_CONVERSATIONS);
   }
 
-  async function persistConversationNow(entry: InAppAiConversation): Promise<InAppAiConversation | null> {
+  async function persistConversationNow(
+    entry: InAppAiConversation,
+    { bumpToFront = true }: { bumpToFront?: boolean } = {},
+  ): Promise<InAppAiConversation | null> {
     const seq = ++persistSeq;
     try {
       if (entry.id && isMongoId(entry.id)) {
@@ -600,10 +619,13 @@ export function useInProductAiAsk() {
           moduleKey: entry.moduleKey || '',
           recordId: entry.recordId || '',
           contextLabel: entry.contextLabel || '',
-        });
+        }, { skipAuthLogout: true });
         if (seq !== persistSeq) return null;
         const saved = mapApiConversation(data?.conversation || entry);
-        applyConversationToList(saved);
+        if (!bumpToFront) {
+          saved.updatedAt = entry.updatedAt;
+        }
+        applyConversationToList(saved, { bumpToFront });
         return saved;
       }
       const data = await apiClient.post('/ai/conversations', {
@@ -612,14 +634,14 @@ export function useInProductAiAsk() {
         moduleKey: entry.moduleKey || '',
         recordId: entry.recordId || '',
         contextLabel: entry.contextLabel || '',
-      });
+      }, { skipAuthLogout: true });
       if (seq !== persistSeq) return null;
       const saved = mapApiConversation(data?.conversation || {});
       if (activeConversationId.value === entry.id || !activeConversationId.value) {
         activeConversationId.value = saved.id;
         rememberActiveId(saved.id);
       }
-      applyConversationToList(saved);
+      applyConversationToList(saved, { bumpToFront });
       return saved;
     } catch {
       return null;
@@ -670,7 +692,7 @@ export function useInProductAiAsk() {
           moduleKey: conv.moduleKey || '',
           recordId: conv.recordId || '',
           contextLabel: conv.contextLabel || '',
-        });
+        }, { skipAuthLogout: true });
         const saved = mapApiConversation(data?.conversation || {});
         applyConversationToList(saved);
       } catch {
@@ -691,7 +713,7 @@ export function useInProductAiAsk() {
       return;
     }
     try {
-      const data = await apiClient.get('/ai/conversations');
+      const data = await apiClient.get('/ai/conversations', { skipAuthLogout: true });
       let list = Array.isArray(data?.conversations)
         ? (data.conversations as Record<string, unknown>[]).map((c) => mapApiConversation(c))
         : [];
@@ -699,7 +721,7 @@ export function useInProductAiAsk() {
       if (!list.length && aiConversations.value.length) {
         list = [...aiConversations.value];
       } else if (!list.length) {
-        const refresh = await apiClient.get('/ai/conversations');
+        const refresh = await apiClient.get('/ai/conversations', { skipAuthLogout: true });
         list = Array.isArray(refresh?.conversations)
           ? (refresh.conversations as Record<string, unknown>[]).map((c) => mapApiConversation(c))
           : [];
@@ -712,7 +734,9 @@ export function useInProductAiAsk() {
         : (list[0]?.id || null);
 
       if (activeId) {
-        const full = await apiClient.get(`/ai/conversations/${encodeURIComponent(activeId)}`);
+        const full = await apiClient.get(`/ai/conversations/${encodeURIComponent(activeId)}`, {
+          skipAuthLogout: true,
+        });
         const conv = mapApiConversation(full?.conversation || { id: activeId });
         applyConversationToList(conv);
         activeConversationId.value = conv.id;
@@ -783,7 +807,7 @@ export function useInProductAiAsk() {
         messages: [],
         moduleKey: page?.moduleKey || '',
         recordId: page?.kind === 'record' ? (page.recordId || '') : '',
-      });
+      }, { skipAuthLogout: true });
       const created = mapApiConversation(data?.conversation || {});
       activeConversationId.value = created.id;
       aiMessages.value = [];
@@ -813,19 +837,26 @@ export function useInProductAiAsk() {
     if (aiMessages.value.length && activeConversationId.value && activeConversationId.value !== id) {
       const existing = aiConversations.value.find((c) => c.id === activeConversationId.value);
       if (existing) {
+        // Sync messages only — do not bump updatedAt / list position on mere select.
         void persistConversationNow({
           ...existing,
           messages: aiMessages.value.slice(-MAX_AI_MESSAGES),
-          updatedAt: Date.now(),
+          updatedAt: existing.updatedAt,
           title: titleFromMessages(aiMessages.value) || existing.title,
-        });
+        }, { bumpToFront: false });
       }
     }
     try {
       if (isMongoId(id)) {
-        const data = await apiClient.get(`/ai/conversations/${encodeURIComponent(id)}`);
+        const data = await apiClient.get(`/ai/conversations/${encodeURIComponent(id)}`, {
+          skipAuthLogout: true,
+        });
         const conv = mapApiConversation(data?.conversation || {});
-        applyConversationToList(conv);
+        const prev = aiConversations.value.find((c) => c.id === conv.id);
+        if (prev?.updatedAt) {
+          conv.updatedAt = prev.updatedAt;
+        }
+        applyConversationToList(conv, { bumpToFront: false });
         activeConversationId.value = conv.id;
         aiMessages.value = [...(conv.messages || [])];
         rememberActiveId(conv.id);
@@ -854,6 +885,8 @@ export function useInProductAiAsk() {
   const recentAiConversations = computed(() =>
     aiConversations.value
       .filter(conversationHasUserContent)
+      .slice()
+      .sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0))
       .slice(0, 12),
   );
 
@@ -1095,8 +1128,33 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         appKey: page?.appKey || 'SALES',
         history: aiMessages.value
           .slice(-12)
-          .map((m) => ({ role: m.role, body: String(m.body || '').trim() }))
-          .filter((m) => m.body),
+          .map((m) => {
+            const structuredBits = [
+              m.structured?.headline,
+              ...(Array.isArray(m.structured?.bullets) ? m.structured.bullets.slice(0, 4) : []),
+              m.structured?.detail,
+            ].map((s) => String(s || '').trim()).filter(Boolean);
+            const body = String(m.body || '').trim();
+            const content = [body, ...structuredBits.filter((s) => !body.includes(s))]
+              .join('\n')
+              .trim()
+              .slice(0, 2000);
+            const actions = Array.isArray(m.structured?.actions)
+              ? m.structured.actions.slice(0, 6).map((a) => ({
+                kind: String(a?.kind || ''),
+                recordId: String(a?.recordId || ''),
+                fields: a?.fields && typeof a.fields === 'object'
+                  ? {
+                    reportId: a.fields.reportId,
+                    widgetId: a.fields.widgetId,
+                    dashboardId: a.fields.dashboardId,
+                  }
+                  : undefined,
+              }))
+              : [];
+            return { role: m.role, body: content, actions };
+          })
+          .filter((m) => m.body || (Array.isArray(m.actions) && m.actions.length)),
       });
       if (!data?.matched) return { matched: false, message: null };
       const answer = String(data?.answer || '').trim();
@@ -1156,6 +1214,15 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
                     ? raw.tone
                     : 'insight') as InAppAiVisual['tone'],
                   body: String(raw.body || '').trim(),
+                  ...(raw.pinSource && typeof raw.pinSource === 'object' && String((raw.pinSource as { moduleKey?: string }).moduleKey || '').trim()
+                    ? {
+                      pinSource: {
+                        moduleKey: String((raw.pinSource as { moduleKey?: string }).moduleKey || '').trim(),
+                        groupField: String((raw.pinSource as { groupField?: string }).groupField || '').trim() || undefined,
+                        metric: (raw.pinSource as { metric?: string }).metric === 'amount' ? 'amount' as const : 'count' as const,
+                      },
+                    }
+                    : {}),
                 };
               })
               .filter((v: InAppAiVisual) => {
@@ -1390,7 +1457,9 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
   async function ensureAgentsLoaded(force = false): Promise<void> {
     if (agentsLoaded.value && !force) return;
     try {
-      const data = await apiClient.get('/ai/tenant-agents?includeDisabled=false');
+      const data = await apiClient.get('/ai/tenant-agents?includeDisabled=false', {
+        skipAuthLogout: true,
+      });
       cachedAgents.value = Array.isArray(data?.agents) ? data.agents : [];
     } catch {
       cachedAgents.value = [];

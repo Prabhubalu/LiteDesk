@@ -1,31 +1,43 @@
 <template>
-  <div class="mt-3">
+  <div class="relative mt-3">
+    <div
+      v-if="showPin"
+      class="absolute right-2 top-2 z-[3]"
+    >
+      <AstraPinToDashboardButton :visual="visual" />
+    </div>
+
     <!-- KPI strip -->
     <div
       v-if="visual.component === 'kpi_strip'"
-      class="overflow-hidden rounded-xl border border-gray-200/80 bg-gradient-to-br from-white to-slate-50 p-3 dark:border-gray-700 dark:from-gray-900 dark:to-gray-950"
+      class="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm shadow-neutral-900/[0.03] dark:border-neutral-700 dark:bg-neutral-900/70 dark:shadow-none"
     >
-      <p
+      <div
         v-if="visual.title"
-        class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+        class="border-b border-neutral-100 bg-gradient-to-r from-primary-50/80 via-white to-secondary-50/40 px-3.5 py-2.5 dark:border-neutral-800 dark:from-primary-500/10 dark:via-neutral-900 dark:to-secondary-500/5"
       >
-        {{ visual.title }}
-      </p>
-      <div class="grid grid-cols-2 gap-2">
+        <p class="pr-28 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-800 dark:text-primary-200">
+          {{ visual.title }}
+        </p>
+      </div>
+      <div
+        class="grid gap-px bg-neutral-100 dark:bg-neutral-800"
+        :class="kpiGridClass"
+      >
         <div
           v-for="(item, idx) in visual.items || []"
           :key="`${visual.id}-kpi-${idx}`"
-          class="rounded-lg border border-gray-100 bg-white/80 px-2.5 py-2 dark:border-gray-700 dark:bg-gray-900/80"
+          class="bg-white px-3.5 py-3 dark:bg-neutral-900/90"
         >
-          <p class="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <p class="text-[10px] font-semibold uppercase tracking-[0.06em] text-neutral-500 dark:text-neutral-400">
             {{ item.label }}
           </p>
-          <p class="mt-0.5 text-lg font-semibold tabular-nums tracking-tight text-gray-900 dark:text-white">
+          <p class="mt-1 text-xl font-semibold tabular-nums tracking-tight text-neutral-900 dark:text-white">
             {{ item.value }}
           </p>
           <p
             v-if="item.hint"
-            class="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500"
+            class="mt-0.5 text-[11px] text-neutral-400 dark:text-neutral-500"
           >
             {{ item.hint }}
           </p>
@@ -42,28 +54,28 @@
     <!-- Progress list -->
     <div
       v-else-if="visual.component === 'progress_list'"
-      class="overflow-hidden rounded-xl border border-gray-200/80 bg-white p-3 dark:border-gray-700 dark:bg-gray-900/60"
+      class="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-3.5 shadow-sm shadow-neutral-900/[0.03] dark:border-neutral-700 dark:bg-neutral-900/70 dark:shadow-none"
     >
       <p
         v-if="visual.title"
-        class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+        class="mb-3 pr-28 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-800 dark:text-primary-200"
       >
         {{ visual.title }}
       </p>
-      <ul class="space-y-2.5">
+      <ul class="space-y-3">
         <li
           v-for="(item, idx) in visual.items || []"
           :key="`${visual.id}-p-${idx}`"
         >
-          <div class="mb-1 flex items-center justify-between gap-2 text-[12px]">
-            <span class="truncate font-medium text-gray-800 dark:text-gray-100">{{ item.label }}</span>
-            <span class="shrink-0 tabular-nums text-gray-500 dark:text-gray-400">
-              {{ item.value }} · {{ progressPct(item) }}%
+          <div class="mb-1.5 flex items-center justify-between gap-2 text-[12.5px]">
+            <span class="truncate font-medium text-neutral-800 dark:text-neutral-100">{{ item.label }}</span>
+            <span class="shrink-0 rounded-md bg-primary-50 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-primary-800 dark:bg-primary-500/15 dark:text-primary-200">
+              {{ formatProgressValue(item) }} · {{ progressPct(item) }}%
             </span>
           </div>
-          <div class="h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+          <div class="h-2 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
             <div
-              class="h-full rounded-full bg-primary-600 transition-all dark:bg-primary-400"
+              class="h-full rounded-full bg-gradient-to-r from-primary-600 to-secondary-500 transition-all duration-500 dark:from-primary-400 dark:to-secondary-400"
               :style="{ width: `${progressPct(item)}%` }"
             />
           </div>
@@ -74,73 +86,150 @@
     <!-- Data table -->
     <div
       v-else-if="visual.component === 'data_table'"
-      class="overflow-hidden rounded-xl border border-gray-200/80 bg-white dark:border-gray-700 dark:bg-gray-900/60"
+      class="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm shadow-neutral-900/[0.03] dark:border-neutral-700 dark:bg-neutral-900/70 dark:shadow-none"
     >
-      <p
-        v-if="visual.title"
-        class="border-b border-gray-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:text-gray-400"
+      <Disclosure
+        v-slot="{ open }"
+        :default-open="true"
       >
-        {{ visual.title }}
-      </p>
-      <div class="max-h-64 overflow-auto">
-        <table class="w-full min-w-full text-left text-[12px]">
-          <thead class="sticky top-0 bg-slate-50 dark:bg-gray-900">
-            <tr>
-              <th
-                v-for="(col, cIdx) in visual.columns || []"
-                :key="`${visual.id}-c-${cIdx}`"
-                class="px-3 py-2 font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-              >
-                {{ col }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(row, rIdx) in visual.rows || []"
-              :key="`${visual.id}-r-${rIdx}`"
-              class="border-t border-gray-100 dark:border-gray-800"
-            >
-              <td
-                v-for="(cell, cellIdx) in row"
-                :key="`${visual.id}-r-${rIdx}-${cellIdx}`"
-                class="px-3 py-1.5 tabular-nums text-gray-800 dark:text-gray-100"
-              >
-                {{ cell }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="flex items-center justify-between gap-2 border-b border-neutral-100 px-3.5 py-2.5 dark:border-neutral-800">
+          <p
+            v-if="visual.title"
+            class="text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-800 dark:text-primary-200"
+          >
+            {{ visual.title }}
+          </p>
+          <DisclosureButton
+            class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-neutral-500 transition hover:bg-primary-50 hover:text-primary-800 dark:text-neutral-400 dark:hover:bg-primary-500/10 dark:hover:text-primary-200"
+          >
+            {{ open ? t('liveChat.astraCollapseTable') : t('liveChat.astraExpandTable') }}
+            <ChevronDownIcon
+              class="h-3.5 w-3.5 transition-transform"
+              :class="open ? 'rotate-180' : ''"
+              aria-hidden="true"
+            />
+          </DisclosureButton>
+        </div>
+        <DisclosurePanel>
+          <div class="max-h-72 overflow-auto">
+            <table class="w-full min-w-full text-left text-[12.5px]">
+              <thead class="sticky top-0 z-[1] bg-neutral-50/95 backdrop-blur dark:bg-neutral-900/95">
+                <tr>
+                  <th
+                    v-for="(col, cIdx) in visual.columns || []"
+                    :key="`${visual.id}-c-${cIdx}`"
+                    class="whitespace-nowrap px-3.5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-neutral-500 dark:text-neutral-400"
+                  >
+                    {{ col }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(row, rIdx) in visual.rows || []"
+                  :key="`${visual.id}-r-${rIdx}`"
+                  class="border-t border-neutral-100 transition hover:bg-primary-50/40 dark:border-neutral-800 dark:hover:bg-primary-500/5"
+                >
+                  <td
+                    v-for="(cell, cellIdx) in row"
+                    :key="`${visual.id}-r-${rIdx}-${cellIdx}`"
+                    class="px-3.5 py-2 align-middle text-neutral-800 dark:text-neutral-100"
+                    :class="cellIdx === 0 ? 'font-medium' : 'tabular-nums'"
+                  >
+                    <span
+                      v-if="isStatusLike(visual.columns?.[cellIdx], cell)"
+                      class="inline-flex rounded-md px-1.5 py-0.5 text-[11px] font-semibold"
+                      :class="statusBadgeClass(cell)"
+                    >
+                      {{ cell }}
+                    </span>
+                    <template v-else>
+                      {{ cell }}
+                    </template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </DisclosurePanel>
+      </Disclosure>
     </div>
 
     <!-- Callout -->
     <div
       v-else-if="visual.component === 'callout'"
-      class="rounded-xl border px-3 py-2.5"
+      class="flex gap-3 rounded-2xl border px-3.5 py-3 shadow-sm shadow-neutral-900/[0.02] dark:shadow-none"
       :class="calloutClass"
     >
-      <p
-        v-if="visual.title"
-        class="text-[11px] font-semibold uppercase tracking-wide opacity-80"
+      <span
+        class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl"
+        :class="calloutIconWrap"
+        aria-hidden="true"
       >
-        {{ visual.title }}
-      </p>
-      <p class="mt-1 text-[13px] leading-snug">
-        {{ visual.body }}
-      </p>
+        <SparklesIcon
+          v-if="(visual.tone || 'insight') === 'insight'"
+          class="h-4 w-4"
+        />
+        <CheckCircleIcon
+          v-else-if="visual.tone === 'success'"
+          class="h-4 w-4"
+        />
+        <ExclamationTriangleIcon
+          v-else-if="visual.tone === 'warning'"
+          class="h-4 w-4"
+        />
+        <ExclamationCircleIcon
+          v-else
+          class="h-4 w-4"
+        />
+      </span>
+      <div class="min-w-0 flex-1">
+        <p
+          v-if="visual.title"
+          class="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80"
+        >
+          {{ visual.title }}
+        </p>
+        <p class="mt-1 text-[13px] leading-snug">
+          {{ visual.body }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
+import {
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+  SparklesIcon,
+} from '@heroicons/vue/24/outline';
 import AstraVisualChart from '@/components/support/AstraVisualChart.vue';
+import AstraPinToDashboardButton from '@/components/support/AstraPinToDashboardButton.vue';
 import type { InAppAiVisual } from '@/composables/useInProductAiAsk';
 
 const props = defineProps<{
   visual: InAppAiVisual;
 }>();
+
+const { t } = useI18n();
+
+const showPin = computed(() => {
+  const c = props.visual.component;
+  return c === 'chart' || c === 'data_table' || c === 'progress_list' || c === 'kpi_strip';
+});
+
+const kpiGridClass = computed(() => {
+  const n = (props.visual.items || []).length;
+  if (n <= 2) return 'grid-cols-2';
+  if (n === 3) return 'grid-cols-3';
+  return 'grid-cols-2 sm:grid-cols-4';
+});
 
 function progressPct(item: { value?: string | number; max?: number }) {
   const max = Number(item.max) > 0
@@ -149,17 +238,67 @@ function progressPct(item: { value?: string | number; max?: number }) {
   return Math.min(100, Math.round(((Number(item.value) || 0) / max) * 100));
 }
 
+function formatProgressValue(item: { value?: string | number }) {
+  const n = Number(item.value);
+  const title = String(props.visual.title || '');
+  if (
+    Number.isFinite(n)
+    && /\b(value|amount|pipeline|revenue|\$)\b/i.test(title)
+  ) {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      }).format(n);
+    } catch {
+      return `$${Math.round(n).toLocaleString('en-US')}`;
+    }
+  }
+  if (Number.isFinite(n)) return String(n);
+  return String(item.value ?? '');
+}
+
+function isStatusLike(column: string | undefined, cell: string | number) {
+  const col = String(column || '').toLowerCase();
+  if (/\b(status|stage|state)\b/.test(col)) return true;
+  const v = String(cell || '').toLowerCase();
+  return ['open', 'won', 'lost', 'new', 'qualification', 'proposal', 'negotiation', 'closed won', 'closed lost'].includes(v);
+}
+
+function statusBadgeClass(cell: string | number) {
+  const v = String(cell || '').toLowerCase();
+  if (/\b(won|closed won|success|active)\b/.test(v)) {
+    return 'bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200';
+  }
+  if (/\b(lost|closed lost|danger|failed)\b/.test(v)) {
+    return 'bg-rose-50 text-rose-800 dark:bg-rose-500/15 dark:text-rose-200';
+  }
+  if (/\b(negotiation|proposal|warning|partial)\b/.test(v)) {
+    return 'bg-amber-50 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100';
+  }
+  return 'bg-primary-50 text-primary-800 dark:bg-primary-500/15 dark:text-primary-200';
+}
+
 const calloutClass = computed(() => {
   const tone = props.visual.tone || 'insight';
   if (tone === 'success') {
-    return 'border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-50';
+    return 'border-emerald-200/80 bg-emerald-50/90 text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-50';
   }
   if (tone === 'warning') {
-    return 'border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-50';
+    return 'border-amber-200/80 bg-amber-50/90 text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-50';
   }
   if (tone === 'danger') {
-    return 'border-rose-200 bg-rose-50 text-rose-950 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-50';
+    return 'border-rose-200/80 bg-rose-50/90 text-rose-950 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-50';
   }
-  return 'border-sky-200 bg-sky-50 text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-50';
+  return 'border-primary-200/80 bg-primary-50/70 text-primary-950 dark:border-primary-500/30 dark:bg-primary-500/10 dark:text-primary-50';
+});
+
+const calloutIconWrap = computed(() => {
+  const tone = props.visual.tone || 'insight';
+  if (tone === 'success') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200';
+  if (tone === 'warning') return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200';
+  if (tone === 'danger') return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200';
+  return 'bg-primary-100 text-primary-700 dark:bg-primary-500/20 dark:text-primary-200';
 });
 </script>

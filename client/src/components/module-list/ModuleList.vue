@@ -1204,22 +1204,29 @@ function shouldRefreshStatisticsFromListFetch(ctx) {
   return filtersPayloadSignature(currentFilters) === filtersPayloadSignature(viewFilters);
 }
 
-function applyListStatisticsFromResponse(response, totalRecords, ctx) {
+function applyListStatisticsFromResponse(response, totalRecords, ctx, rowsForCompute = null) {
   if (totalRecords === 0) {
     statistics.value = zeroListStatistics(ctx, 0);
     return;
   }
 
+  const computeRows = Array.isArray(rowsForCompute) ? rowsForCompute : data.value;
+
   if (response.listStatistics && typeof response.listStatistics === 'object') {
     const raw = response.listStatistics;
     const reportedTotal = Number(
-      raw.totalOrganizations ?? raw.totalPeople ?? raw.totalRecords ?? totalRecords
+      raw.totalEvents
+        ?? raw.totalTasks
+        ?? raw.totalOrganizations
+        ?? raw.totalPeople
+        ?? raw.totalRecords
+        ?? totalRecords
     ) || 0;
 
     // Stale cache or race can return unfiltered aggregates while pagination is filtered.
     if (reportedTotal !== totalRecords) {
       if (ctx.moduleConfig?.statistics?.computeFunction) {
-        statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
+        statistics.value = ctx.moduleConfig.statistics.computeFunction(computeRows, authStore.user?._id, {
           totalRecords
         });
         return;
@@ -1231,13 +1238,15 @@ function applyListStatisticsFromResponse(response, totalRecords, ctx) {
     statistics.value = {
       ...raw,
       totalPeople: raw.totalPeople ?? totalRecords,
-      totalOrganizations: raw.totalOrganizations ?? totalRecords
+      totalOrganizations: raw.totalOrganizations ?? totalRecords,
+      totalEvents: raw.totalEvents ?? totalRecords,
+      totalTasks: raw.totalTasks ?? totalRecords
     };
     return;
   }
 
   if (ctx.moduleConfig?.statistics?.computeFunction) {
-    statistics.value = ctx.moduleConfig.statistics.computeFunction(data.value, authStore.user?._id, {
+    statistics.value = ctx.moduleConfig.statistics.computeFunction(computeRows, authStore.user?._id, {
       totalRecords
     });
     return;
@@ -1497,6 +1506,19 @@ function applyPaginationFromResponse(response, fetchedRowCountForTotal, requeste
     pagination.value = normalizeListPagination(response.meta, fallback, {
       totalRecordsOverride: peopleTotalOverride
     });
+  } else if (response.total != null || response.totalRecords != null || response.totalPages != null) {
+    // Legacy list payloads (e.g. older /events shape): top-level total/currentPage/totalPages
+    pagination.value = normalizeListPagination(
+      {
+        currentPage: response.currentPage,
+        totalPages: response.totalPages,
+        totalRecords: response.totalRecords ?? response.total,
+        total: response.total ?? response.totalRecords,
+        [moduleTotalKey]: response[moduleTotalKey] ?? response.totalRecords ?? response.total
+      },
+      fallback,
+      { totalRecordsOverride: peopleTotalOverride }
+    );
   }
 }
 
@@ -1529,7 +1551,7 @@ async function fetchListStatistics(opts = {}) {
     if (!shouldFetchListData()) {
       data.value = fetchedData;
     }
-    applyListStatisticsFromResponse(response, totalRecords, ctx);
+    applyListStatisticsFromResponse(response, totalRecords, ctx, fetchedData);
     if (!shouldFetchListData()) {
       data.value = prevData;
     }
@@ -1589,7 +1611,7 @@ async function fetchListReplace(opts = {}) {
         applyPaginationFromResponse(response, fetchedData.length, ctx.params.page);
         const totalRecords = Number(pagination.value.totalRecords ?? 0) || 0;
         if (refreshStats || !Object.keys(statistics.value).length) {
-          applyListStatisticsFromResponse(response, totalRecords, ctx);
+          applyListStatisticsFromResponse(response, totalRecords, ctx, fetchedData);
         }
         recordListFingerprintFromState();
       } else {

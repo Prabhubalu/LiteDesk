@@ -635,7 +635,7 @@ function computeEventsStatistics(
     const assignedTo = typeof event.assignedTo === 'object' && event.assignedTo?._id
       ? event.assignedTo._id
       : event.assignedTo;
-    if (assignedTo === currentUserId) {
+    if (currentUserId && String(assignedTo) === String(currentUserId)) {
       stats.myEvents++;
     }
 

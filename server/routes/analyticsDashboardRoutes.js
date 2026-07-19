@@ -15,6 +15,8 @@ const {
   getDefaultDashboard,
   certifyDashboard,
   uncertifyDashboard,
+  pinAstraVisual,
+  pinAstraReport,
 } = require('../controllers/analyticsDashboardController');
 const {
   listDashboardEmbedTokens,
@@ -38,6 +40,18 @@ router.get(
   '/default',
   checkAnalyticsPermission(ANALYTICS_MODULE_KEYS.DASHBOARDS, 'read'),
   getDefaultDashboard
+);
+
+router.post(
+  '/pin-astra-visual',
+  checkAnalyticsPermission(ANALYTICS_MODULE_KEYS.DASHBOARDS, 'update'),
+  pinAstraVisual
+);
+
+router.post(
+  '/pin-astra-report',
+  checkAnalyticsPermission(ANALYTICS_MODULE_KEYS.DASHBOARDS, 'update'),
+  pinAstraReport
 );
 
 router

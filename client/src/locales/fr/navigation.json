@@ -666,5 +666,13 @@
   "announcements": {
     "message": "Announcements",
     "description": "Announcements & Alerts addon navigation label"
+  },
+  "astra": {
+    "message": "Astra",
+    "description": "Full-page Astra AI assistant navigation label"
+  },
+  "arivuCanvas": {
+    "message": "Arivu Canvas",
+    "description": "Generative Arivu Canvas workspace navigation label"
   }
 }

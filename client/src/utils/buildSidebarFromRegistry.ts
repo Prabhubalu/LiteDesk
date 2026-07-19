@@ -181,6 +181,14 @@ function buildShell(snapshot: PermissionSnapshot, addonNav: AddonNavItem[] = [])
     icon: 'inbox',
   });
 
+  shell.push({
+    kind: 'surface',
+    id: 'astra',
+    ...sidebarLabel(getSurfaceLabelKey('astra'), 'Astra'),
+    route: '/astra',
+    icon: 'sparkles',
+  });
+
   for (const addon of addonNav) {
     const surfaceId = addon.surfaceId as 'live-chat' | 'announcements';
     shell.push({

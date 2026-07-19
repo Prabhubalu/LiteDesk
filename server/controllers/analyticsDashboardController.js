@@ -688,6 +688,78 @@ async function uncertifyDashboard(req, res) {
   }
 }
 
+const { pinAstraVisualToDashboard, pinExistingReportToDashboard } = require('../services/analytics/pinAstraVisualToDashboard');
+
+async function pinAstraVisual(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const userId = req.user._id;
+    const visual = req.body?.visual;
+    if (!visual || typeof visual !== 'object') {
+      return res.status(400).json({ success: false, message: 'visual is required' });
+    }
+
+    const result = await pinAstraVisualToDashboard({
+      organizationId,
+      userId,
+      visual,
+      dashboardId: String(req.body?.dashboardId || '').trim(),
+      appKey: String(req.body?.appKey || req.appKey || 'SALES'),
+      titleOverride: String(req.body?.title || '').trim(),
+    });
+
+    return res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    const status = error.statusCode || 400;
+    console.error('pinAstraVisual', error);
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'Failed to pin Astra visual',
+      code: error.code,
+    });
+  }
+}
+
+async function pinAstraReport(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const userId = req.user._id;
+    const reportId = String(req.body?.reportId || '').trim();
+    if (!reportId) {
+      return res.status(400).json({ success: false, message: 'reportId is required' });
+    }
+
+    const report = await AnalyticsReport.findOne({
+      _id: reportId,
+      organizationId,
+      status: { $ne: 'archived' },
+    });
+    if (!report) {
+      return res.status(404).json({ success: false, message: 'Report not found' });
+    }
+
+    const result = await pinExistingReportToDashboard({
+      organizationId,
+      userId,
+      report,
+      dashboardId: String(req.body?.dashboardId || '').trim(),
+      appKey: String(req.body?.appKey || req.appKey || 'SALES'),
+      chartType: String(req.body?.chartType || 'bar'),
+      titleOverride: String(req.body?.title || '').trim(),
+    });
+
+    return res.status(201).json({ success: true, data: result });
+  } catch (error) {
+    const status = error.statusCode || 400;
+    console.error('pinAstraReport', error);
+    return res.status(status).json({
+      success: false,
+      message: error.message || 'Failed to pin Astra report',
+      code: error.code,
+    });
+  }
+}
+
 module.exports = {
   listDashboards,
   createDashboard,
@@ -701,4 +773,6 @@ module.exports = {
   getDashboardTemplates,
   certifyDashboard,
   uncertifyDashboard,
+  pinAstraVisual,
+  pinAstraReport,
 };
