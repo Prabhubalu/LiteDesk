@@ -1,4 +1,4 @@
-import { ref, computed, watch, getCurrentInstance, nextTick } from 'vue';
+import { ref, computed, watch, getCurrentInstance, nextTick, h } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import appRouter from '@/router';
 import { 
@@ -34,9 +34,19 @@ import {
   MegaphoneIcon,
   FunnelIcon,
   PhotoIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  SparklesIcon
 } from '@heroicons/vue/24/outline';
 import { MODULE_ICON_IDS, resolveStoredModuleIconId } from '@/utils/moduleIcons';
+
+// Astra tab uses the brand AI logo (kept consistent with the cinematic intro).
+const AstraTabIcon = (_props, { attrs }) => h('img', {
+  ...attrs,
+  src: '/assets/logo/Ai%20Logo.svg',
+  alt: '',
+  'aria-hidden': 'true',
+  class: ['object-contain', attrs?.class],
+});
 import {
   getPersistedRecordTabName,
   getTabTitleMetaForPath,
@@ -280,7 +290,9 @@ const iconMap = {
   megaphone: MegaphoneIcon,
   funnel: FunnelIcon,
   photo: PhotoIcon,
-  'chart-bar': ChartBarIcon
+  'chart-bar': ChartBarIcon,
+  sparkles: SparklesIcon,
+  astra: AstraTabIcon
 };
 
 const GENERIC_TAB_ICON_IDS = new Set(['document', 'document-text']);
@@ -295,6 +307,10 @@ function isResponsesPath(path = '') {
 function resolveTabIconForPath(pathOnly, optionsIcon) {
   if (isResponsesPath(pathOnly)) {
     return getIconForPath(pathOnly);
+  }
+  // Astra always uses the brand AI logo, ignoring generic sidebar hints (e.g. sparkles).
+  if (String(pathOnly || '').split('?')[0].split('#')[0] === '/astra') {
+    return 'astra';
   }
   if (optionsIcon) {
     const resolved = resolveTabIconId(optionsIcon, pathOnly);
@@ -796,10 +812,9 @@ function serializeTabForStorage(tab) {
 
 // Save tabs to localStorage
 const saveTabsToStorage = () => {
+  // Title/route updates can race ahead of per-user bootstrap — skip until configured.
+  if (!storageConfigured || !storageKey) return;
   try {
-    if (!storageConfigured || !storageKey) {
-      throw new Error('[Tabs] saveTabsToStorage called before storage was configured.');
-    }
     const tabsToSave = tabs.value.map(serializeTabForStorage);
 
     localStorage.setItem(storageKey, JSON.stringify({
@@ -985,7 +1000,8 @@ const getIconForPath = (path) => {
     '/quotes': MODULE_ICON_IDS.quotes,
     '/sales-orders': MODULE_ICON_IDS.sales_orders,
     '/invoices': MODULE_ICON_IDS.invoices,
-    '/payments': MODULE_ICON_IDS.payments
+    '/payments': MODULE_ICON_IDS.payments,
+    '/astra': 'astra'
   };
 
   // Audit app route-specific mappings (must run before base-path fallback).

@@ -1,21 +1,41 @@
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="transition-transform duration-300 ease-out"
-      enter-from-class="translate-x-full"
-      enter-to-class="translate-x-0"
-      leave-active-class="transition-transform duration-250 ease-in"
-      leave-from-class="translate-x-0"
-      leave-to-class="translate-x-full"
+      enter-active-class="transition-opacity duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <button
+        v-if="panelOpen && isSheetLayout"
+        type="button"
+        class="fixed inset-0 z-[9005] bg-black/40 dark:bg-black/55"
+        :aria-label="t('actions.close')"
+        @click="closePanel"
+      />
+    </Transition>
+
+    <Transition
+      :enter-active-class="panelMotion?.enterActive"
+      :enter-from-class="panelMotion?.enterFrom"
+      :enter-to-class="panelMotion?.enterTo"
+      :leave-active-class="panelMotion?.leaveActive"
+      :leave-from-class="panelMotion?.leaveFrom"
+      :leave-to-class="panelMotion?.leaveTo"
     >
       <div
         v-if="panelOpen"
         class="fixed z-[9010]"
-        :class="isResizing ? '' : 'transition-[width] duration-200 ease-out'"
-        :style="assistantRailStyle"
+        :class="isSheetLayout
+          ? 'inset-x-0 bottom-0 top-auto flex h-[min(85dvh,780px)] max-h-[92dvh] flex-col'
+          : (isResizing ? '' : 'transition-[width] duration-200 ease-out')"
+        :style="isSheetLayout ? undefined : assistantRailStyle"
       >
-        <!-- Rail gap between App Shell and AI — resize slider -->
+        <!-- Rail gap between App Shell and AI — resize slider (desktop only) -->
         <div
+          v-if="!isSheetLayout"
           class="absolute inset-y-0 left-0 z-20 flex cursor-col-resize touch-none items-center justify-center hover:bg-primary-500/10"
           :style="resizeGapStyle"
           role="separator"
@@ -35,12 +55,20 @@
         </div>
 
         <div
-          class="absolute inset-y-0 right-0 flex flex-col overflow-hidden"
-          :class="assistantSurfaceClass"
-          :style="{ width: `${panelWidthPx}px` }"
+          class="flex flex-col overflow-hidden"
+          :class="isSheetLayout ? assistantSheetSurfaceClass : ['absolute inset-y-0 right-0', assistantSurfaceClass]"
+          :style="isSheetLayout ? undefined : { width: `${panelWidthPx}px` }"
           role="dialog"
+          :aria-modal="isSheetLayout ? 'true' : undefined"
           :aria-label="t('liveChat.inAppTitle')"
         >
+        <div
+          v-if="isSheetLayout"
+          class="flex shrink-0 justify-center pb-1 pt-2"
+          aria-hidden="true"
+        >
+          <span class="h-1 w-10 rounded-full bg-neutral-300 dark:bg-neutral-600" />
+        </div>
         <!-- Header: AI surface — history menu; New chat when in a thread -->
         <header
           v-if="isAiSurface"
@@ -112,7 +140,16 @@
               :title="t('actions.close')"
               @click="closePanel"
             >
-              <ChevronDoubleRightIcon class="h-4 w-4" aria-hidden="true" />
+              <XMarkIcon
+                v-if="isSheetLayout"
+                class="h-4 w-4"
+                aria-hidden="true"
+              />
+              <ChevronDoubleRightIcon
+                v-else
+                class="h-4 w-4"
+                aria-hidden="true"
+              />
             </button>
           </div>
         </header>
@@ -873,8 +910,39 @@ const showAstraIntro = ref(false);
 const astraWorkingLabel = ref('');
 
 const assistantSurfaceClass = WORK_PANEL_SURFACE_CLASS;
+/** Bottom sheet chrome — same surfaces as work panel, top-rounded for mobile/tablet. */
+const assistantSheetSurfaceClass =
+  'relative h-full min-h-0 w-full overflow-hidden rounded-t-2xl border border-b-0 border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_32px_-8px_rgba(15,23,42,0.18)] dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.45)]';
 /** Matches App Shell `p-2` inset on all sides of the AI rail (incl. App↔AI gutter). */
 const ASSISTANT_SHELL_INSET_REM = SIDEBAR_SHELL_PADDING_REM;
+
+/** Below Tailwind `lg` (1024px): bottom sheet instead of docked side rail. */
+const ASSISTANT_SHEET_MQ = '(max-width: 1023px)';
+const isSheetLayout = ref(
+  typeof window !== 'undefined' && window.matchMedia(ASSISTANT_SHEET_MQ).matches,
+);
+let sheetMq = null;
+
+const panelMotion = computed(() => {
+  if (isSheetLayout.value) {
+    return {
+      enterActive: 'transition-transform duration-300 ease-out',
+      enterFrom: 'translate-y-full',
+      enterTo: 'translate-y-0',
+      leaveActive: 'transition-transform duration-250 ease-in',
+      leaveFrom: 'translate-y-0',
+      leaveTo: 'translate-y-full',
+    };
+  }
+  return {
+    enterActive: 'transition-transform duration-300 ease-out',
+    enterFrom: 'translate-x-full',
+    enterTo: 'translate-x-0',
+    leaveActive: 'transition-transform duration-250 ease-in',
+    leaveFrom: 'translate-x-0',
+    leaveTo: 'translate-x-full',
+  };
+});
 
 function rootRemPx() {
   if (typeof document === 'undefined') return 16;
@@ -985,21 +1053,27 @@ function persistPanelWidth() {
 
 function syncAssistantRail({ animate = true } = {}) {
   const open = Boolean(panelOpen.value);
+  const sheet = isSheetLayout.value;
   const inset = shellPaddingPx();
   const gap = interPanelGapPx();
-  // Panel + inter-panel gap + right shell inset.
-  const width = open ? panelWidthPx.value + gap + inset : 0;
+  // Docked rail only — sheet overlays and must not push the App Shell.
+  const width = open && !sheet ? panelWidthPx.value + gap + inset : 0;
   if (!animate) {
     document.body.classList.add('arivu-assistant-resizing');
   }
   document.documentElement.style.setProperty('--arivu-assistant-rail', `${width}px`);
   document.body.style.paddingRight = width ? `${width}px` : '';
-  document.body.classList.toggle('arivu-assistant-rail-open', open);
+  document.body.classList.toggle('arivu-assistant-rail-open', open && !sheet);
   // Collapse App Shell's right p-2 so the inter-panel gap isn't doubled.
   document.documentElement.style.setProperty(
     '--arivu-work-panel-pad-right',
-    open ? '0px' : '',
+    width ? '0px' : '',
   );
+  if (open && sheet) {
+    document.body.style.overflow = 'hidden';
+  } else if (!document.body.classList.contains('astra-intro-lock')) {
+    document.body.style.overflow = '';
+  }
   window.dispatchEvent(new CustomEvent('arivu:assistant-rail', { detail: { open } }));
   if (!animate) {
     // Keep transition suppressed through the first layout frame after restore.
@@ -1064,6 +1138,11 @@ function onResizePointerDown(event) {
 
 function onWindowResize() {
   setPanelWidth(panelWidthPx.value, { persist: false });
+}
+
+function onSheetMqChange(e) {
+  isSheetLayout.value = e.matches;
+  syncAssistantRail({ animate: false });
 }
 
 const {
@@ -1999,7 +2078,7 @@ watch(
 );
 
 watch(
-  () => [panelOpen.value, panelWidthPx.value],
+  () => [panelOpen.value, panelWidthPx.value, isSheetLayout.value],
   () => {
     syncAssistantRail({ animate: railSyncReady });
     railSyncReady = true;
@@ -2017,6 +2096,11 @@ watch(
 onMounted(() => {
   syncAssistantRail({ animate: false });
   railSyncReady = true;
+  if (typeof window !== 'undefined') {
+    sheetMq = window.matchMedia(ASSISTANT_SHEET_MQ);
+    isSheetLayout.value = sheetMq.matches;
+    sheetMq.addEventListener('change', onSheetMqChange);
+  }
   window.addEventListener('resize', onWindowResize);
   window.addEventListener('arivu:open-assistant', onOpenAssistantEvent);
   void loadBootstrap();
@@ -2025,9 +2109,12 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onWindowResize);
   window.removeEventListener('arivu:open-assistant', onOpenAssistantEvent);
+  sheetMq?.removeEventListener('change', onSheetMqChange);
+  sheetMq = null;
   document.documentElement.style.removeProperty('--arivu-assistant-rail');
   document.documentElement.style.removeProperty('--arivu-work-panel-pad-right');
   document.body.style.paddingRight = '';
+  document.body.style.overflow = '';
   document.body.classList.remove('arivu-assistant-rail-open');
   document.body.classList.remove('arivu-assistant-resizing');
   document.body.classList.remove('astra-intro-lock');
@@ -2099,7 +2186,7 @@ body.arivu-assistant-resizing {
   );
 }
 
-:global(html.dark) .arivu-hero-title {
+html.dark .arivu-hero-title {
   background-image: linear-gradient(
     100deg,
     rgb(255 255 255) 0%,
@@ -2132,7 +2219,7 @@ body.arivu-assistant-resizing {
     -webkit-text-fill-color: currentColor;
   }
 
-  :global(html.dark) .arivu-hero-title,
+  html.dark .arivu-hero-title,
   .astra-intro .arivu-hero-title {
     color: rgb(255 255 255);
   }
@@ -2208,7 +2295,7 @@ body.arivu-assistant-resizing {
   animation: astra-intro-bg-reveal 1.9s ease-in-out forwards;
 }
 
-:global(html.dark) .astra-intro__bg {
+html.dark .astra-intro__bg {
   background: color-mix(in srgb, #000 48%, color-mix(in srgb, var(--ai-c1) 16%, transparent));
 }
 
@@ -2256,7 +2343,7 @@ body.arivu-assistant-resizing {
   background: radial-gradient(ellipse at center, transparent 36%, rgb(0 0 0 / 0.52) 100%);
 }
 
-:global(html.dark) .astra-intro__vignette {
+html.dark .astra-intro__vignette {
   background: radial-gradient(ellipse at center, transparent 42%, rgb(0 0 0 / 0.45) 100%);
 }
 

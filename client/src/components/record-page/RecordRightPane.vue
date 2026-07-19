@@ -97,7 +97,7 @@
                       'record-right-pane__summary-content w-full',
                       props.summaryLayout === 'fill'
                         ? 'flex h-full min-h-0 flex-1 flex-col overflow-hidden max-w-none mx-0 px-0 pt-0 pb-0'
-                        : 'max-w-4xl mx-auto px-6 pt-0 pb-6'
+                        : 'max-w-4xl mx-auto px-0 pt-0 pb-4'
                     ]"
                   >
                     <!-- Content will be teleported here from RecordPageLayout -->

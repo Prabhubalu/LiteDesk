@@ -30,7 +30,9 @@
             </button>
           </div>
         </template>
-        <slot name="breadcrumbs" />
+        <div class="hidden md:contents">
+          <slot name="breadcrumbs" />
+        </div>
       </div>
       <!-- Page actions (right side) -->
       <div class="record-header__page-actions flex items-center gap-2">

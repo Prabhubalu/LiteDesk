@@ -54,7 +54,7 @@
 
       <div class="fixed inset-0 overflow-hidden">
         <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
             <TransitionChild 
               enter="transform transition ease-in-out duration-300 sm:duration-300" 
               enter-from="translate-x-full" 
@@ -66,7 +66,7 @@
               <!-- Drawer width behavior aligned with shared create drawers -->
               <DialogPanel
                 :class="[
-                  'pointer-events-auto h-full flex flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] transition-[width] duration-200 ease-out',
+                  'pointer-events-auto h-full flex flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
                   drawerWidthClass
                 ]"
               >
@@ -464,7 +464,7 @@ const helperText = computed(() => {
 
 // Computed: Drawer width class based on mode (quick vs full)
 const drawerWidthClass = computed(() => {
-  return mode.value === 'full' ? 'w-[60rem]' : 'w-[30rem]';
+  return mode.value === 'full' ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]';
 });
 
 // Exclude only system and tenant fields from Quick Create rendering.

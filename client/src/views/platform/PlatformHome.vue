@@ -717,11 +717,11 @@ onActivated(() => {
 <template>
   <div class="min-h-full w-full">
     <div class="mx-auto w-full space-y-4 pb-2" :class="homeWidthClass">
-      <header ref="customizeAnchorRef" class="flex items-start justify-between gap-4">
-        <h1 class="text-xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-2xl">
+      <header ref="customizeAnchorRef" class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <h1 class="min-w-0 text-xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-2xl">
           {{ greetingTitle }}
         </h1>
-        <div v-if="!pageLoading && !customizeMode" class="flex shrink-0 items-center gap-2">
+        <div v-if="!pageLoading && !customizeMode" class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
           <button
             v-if="canSaveDefaultLayout"
             type="button"

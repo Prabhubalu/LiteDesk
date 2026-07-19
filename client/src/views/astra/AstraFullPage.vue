@@ -8,19 +8,42 @@
         <div class="astra-full__veil" />
       </div>
 
-      <aside class="astra-rail relative z-[1] flex h-full min-h-0 w-[15rem] shrink-0 flex-col self-stretch">
+      <button
+        v-if="railOpen"
+        type="button"
+        class="absolute inset-0 z-[30] bg-black/40 md:hidden"
+        :aria-label="t('navigation.closeSidebar')"
+        @click="railOpen = false"
+      />
+
+      <aside
+        class="astra-rail z-[40] flex h-full min-h-0 w-[15rem] shrink-0 flex-col self-stretch
+          max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:shadow-xl max-md:transition-transform max-md:duration-200
+          md:relative md:z-[1] md:translate-x-0"
+        :class="railOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'"
+      >
         <div class="flex shrink-0 items-center justify-between gap-2 px-3.5 pb-2 pt-3.5">
           <h2 class="truncate text-[13px] font-semibold tracking-tight text-neutral-800 dark:text-neutral-100">
             {{ t('liveChat.inAppTitle') }}
           </h2>
-          <button
-            type="button"
-            class="astra-rail__new inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-            @click="onNewChat"
-          >
-            <PlusIcon class="h-3 w-3" aria-hidden="true" />
-            {{ t('liveChat.astraFullPageNewChat') }}
-          </button>
+          <div class="flex items-center gap-1">
+            <button
+              type="button"
+              class="astra-rail__new inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
+              @click="onNewChat"
+            >
+              <PlusIcon class="h-3 w-3" aria-hidden="true" />
+              {{ t('liveChat.astraFullPageNewChat') }}
+            </button>
+            <button
+              type="button"
+              class="-mr-1 inline-flex h-7 w-7 items-center justify-center rounded-full text-neutral-500 hover:bg-black/5 hover:text-neutral-800 md:hidden dark:hover:bg-white/10 dark:hover:text-neutral-100"
+              :aria-label="t('navigation.closeSidebar')"
+              @click="railOpen = false"
+            >
+              <XMarkIcon class="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
         <div class="arivu-scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-4 pt-1">
           <p class="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
@@ -54,12 +77,24 @@
       </aside>
 
       <main class="relative z-[1] flex h-full min-h-0 min-w-0 flex-1 flex-col self-stretch">
+        <div class="absolute left-3 top-3 z-[2] md:hidden">
+          <button
+            type="button"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/90 text-neutral-700 shadow-sm backdrop-blur hover:bg-white dark:border-white/10 dark:bg-neutral-900/90 dark:text-neutral-200 dark:hover:bg-neutral-900"
+            :aria-label="t('liveChat.astraFullPageRecentChats')"
+            :aria-expanded="railOpen"
+            @click="railOpen = true"
+          >
+            <Bars3Icon class="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+
         <!-- Landing (Brain²-style) -->
         <div
           v-if="!aiMessages.length && !aiAsking"
-          class="astra-landing flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-10"
+          class="astra-landing arivu-scrollbar flex min-h-0 flex-1 flex-col items-center overflow-y-auto overscroll-contain px-6"
         >
-          <div class="flex w-full max-w-[44rem] flex-col items-center">
+          <div class="my-auto flex w-full max-w-[44rem] flex-col items-center py-10 pt-14 md:pt-10">
             <div class="flex flex-col items-center">
               <img
                 src="/assets/logo/Ai%20Logo.svg"
@@ -332,9 +367,11 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
+  Bars3Icon,
   ChevronDownIcon,
   PaperAirplaneIcon,
   PlusIcon,
+  XMarkIcon,
 } from '@heroicons/vue/24/outline';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import AstraVisualStack from '@/components/support/AstraVisualStack.vue';
@@ -371,7 +408,20 @@ const composerEl = ref<HTMLTextAreaElement | null>(null);
 const messagesEl = ref<HTMLElement | null>(null);
 const placeholderIndex = ref(0);
 const mutationBusy = ref(false);
+/** Mobile chat history drawer; always visible as a side rail from md up. */
+const railOpen = ref(false);
 let placeholderTimer: ReturnType<typeof setInterval> | null = null;
+let railMq: MediaQueryList | null = null;
+
+function onRailMqChange(e: MediaQueryListEvent | MediaQueryList) {
+  if (e.matches) railOpen.value = false;
+}
+
+function closeRailOnMobile() {
+  if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+    railOpen.value = false;
+  }
+}
 
 const COMPOSER_PLACEHOLDER_INTERVAL_MS = 3200;
 const composerPlaceholderKeys = [
@@ -779,6 +829,7 @@ async function onSuggestion(prompt: string) {
 async function onNewChat() {
   await startNewConversation();
   draft.value = '';
+  closeRailOnMobile();
   await nextTick();
   composerEl.value?.focus();
 }
@@ -786,6 +837,7 @@ async function onNewChat() {
 async function onOpenConversation(id: string) {
   const ok = await openConversation(id);
   if (!ok) return;
+  closeRailOnMobile();
   await scrollMessages();
 }
 
@@ -799,6 +851,11 @@ watch(
 onMounted(() => {
   composerEl.value?.focus();
   void fetchSnapshot();
+  if (typeof window !== 'undefined') {
+    railMq = window.matchMedia('(min-width: 768px)');
+    onRailMqChange(railMq);
+    railMq.addEventListener('change', onRailMqChange);
+  }
   placeholderTimer = setInterval(() => {
     if (draft.value) return;
     placeholderIndex.value = (placeholderIndex.value + 1) % composerPlaceholderKeys.length;
@@ -818,6 +875,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (placeholderTimer) clearInterval(placeholderTimer);
+  railMq?.removeEventListener('change', onRailMqChange);
+  railMq = null;
 });
 </script>
 
@@ -832,10 +891,6 @@ onBeforeUnmount(() => {
   min-height: 0;
   height: 100%;
   max-height: 100%;
-}
-
-:global(html.dark) .astra-full {
-  background: #0b0d12;
 }
 
 .astra-full__atmosphere {
@@ -884,28 +939,18 @@ onBeforeUnmount(() => {
   );
 }
 
-:global(html.dark) .astra-full__veil {
-  background: linear-gradient(
-    180deg,
-    rgba(11, 13, 18, 0.25) 0%,
-    rgba(11, 13, 18, 0.8) 40%,
-    #0b0d12 100%
-  );
-}
-
-:global(html.dark) .astra-full__orb {
-  opacity: 0.28;
-}
-
 .astra-rail {
   border-right: 1px solid rgba(0, 0, 0, 0.05);
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(12px);
 }
 
-:global(html.dark) .astra-rail {
-  border-right-color: rgba(255, 255, 255, 0.06);
-  background: rgba(11, 13, 18, 0.55);
+/* Mobile drawer: opaque so the dim backdrop does not wash the rail out. */
+@media (max-width: 767px) {
+  .astra-rail {
+    background: #ffffff;
+    backdrop-filter: none;
+  }
 }
 
 .astra-rail__new {
@@ -915,11 +960,6 @@ onBeforeUnmount(() => {
 
 .astra-rail__new:hover {
   background: rgba(0, 0, 0, 0.07);
-}
-
-:global(html.dark) .astra-rail__new {
-  color: #d4d4d4;
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .astra-rail__dot {
@@ -940,14 +980,6 @@ onBeforeUnmount(() => {
 
 .astra-rail__item--active .astra-rail__dot {
   opacity: 1;
-}
-
-:global(html.dark) .astra-rail__item:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-:global(html.dark) .astra-rail__item--active {
-  background: rgba(142, 46, 247, 0.14);
 }
 
 .astra-landing {
@@ -1024,18 +1056,6 @@ onBeforeUnmount(() => {
   padding: 0.8rem 0.95rem 0.75rem;
 }
 
-:global(html.dark) .astra-board {
-  background:
-    linear-gradient(#14161d, #14161d) padding-box,
-    linear-gradient(
-      120deg,
-      rgba(255, 78, 102, 0.45),
-      rgba(142, 46, 247, 0.5),
-      rgba(50, 119, 254, 0.45)
-    ) border-box;
-  box-shadow: 0 16px 40px -24px rgba(0, 0, 0, 0.55);
-}
-
 .astra-model {
   border-radius: 9999px;
 }
@@ -1048,11 +1068,6 @@ onBeforeUnmount(() => {
 
 .astra-send:hover:not(:disabled) {
   transform: translateY(-1px);
-}
-
-:global(html.dark) .astra-send {
-  color: #111;
-  background: #f5f5f5;
 }
 
 .astra-card {
@@ -1125,48 +1140,111 @@ onBeforeUnmount(() => {
   letter-spacing: 0.01em;
 }
 
-:global(html.dark) .astra-card {
-  background: rgba(24, 27, 36, 0.85);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-:global(html.dark) .astra-card:hover {
-  background: rgba(32, 36, 48, 0.95);
-  border-color: rgba(255, 255, 255, 0.14);
-  box-shadow: none;
-}
-
-:global(html.dark) .astra-card__icon {
-  color: #a3a3a3;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-:global(html.dark) .astra-card:hover .astra-card__icon {
-  color: #d4d4d4;
-  background: rgba(255, 255, 255, 0.09);
-}
-
-:global(html.dark) .astra-card__title {
-  color: #f5f5f5;
-}
-
-:global(html.dark) .astra-card__hint {
-  color: #a3a3a3;
-}
-
-:global(html.dark) .astra-card__reason {
-  color: #8b8b8b;
-}
-
 .astra-user-bubble {
   border-radius: 1.15rem;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 8px 24px -18px rgba(15, 23, 42, 0.35);
 }
+</style>
 
-:global(html.dark) .astra-user-bubble {
-  background: rgba(24, 27, 36, 0.9);
+<style>
+/* Unscoped: Vue scoped :global(html.dark) compiles onto <html>, so dark overrides never apply. */
+/* Match PlatformShell work panel: dark:bg-neutral-900 (#111827). */
+html.dark .astra-full {
+  background: var(--color-neutral-900);
+}
+
+html.dark .astra-full__veil {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-neutral-900) 25%, transparent) 0%,
+    color-mix(in srgb, var(--color-neutral-900) 80%, transparent) 40%,
+    var(--color-neutral-900) 100%
+  );
+}
+
+html.dark .astra-full__orb {
+  opacity: 0.28;
+}
+
+html.dark .astra-rail {
+  border-right-color: rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--color-neutral-900) 72%, transparent);
+}
+
+@media (max-width: 767px) {
+  html.dark .astra-rail {
+    background: var(--color-neutral-900);
+    backdrop-filter: none;
+  }
+}
+
+html.dark .astra-rail__new {
+  color: #d4d4d4;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .astra-rail__item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+html.dark .astra-rail__item--active {
+  background: rgba(142, 46, 247, 0.14);
+}
+
+html.dark .astra-board {
+  background:
+    linear-gradient(var(--color-neutral-800), var(--color-neutral-800)) padding-box,
+    linear-gradient(
+      120deg,
+      rgba(255, 78, 102, 0.45),
+      rgba(142, 46, 247, 0.5),
+      rgba(50, 119, 254, 0.45)
+    ) border-box;
+  box-shadow: 0 16px 40px -24px rgba(0, 0, 0, 0.55);
+}
+
+html.dark .astra-send {
+  color: #111;
+  background: #f5f5f5;
+}
+
+html.dark .astra-card {
+  background: color-mix(in srgb, var(--color-neutral-800) 92%, transparent);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark .astra-card:hover {
+  background: var(--color-neutral-800);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+
+html.dark .astra-card__icon {
+  color: #a3a3a3;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .astra-card:hover .astra-card__icon {
+  color: #d4d4d4;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+html.dark .astra-card__title {
+  color: #f5f5f5;
+}
+
+html.dark .astra-card__hint {
+  color: #a3a3a3;
+}
+
+html.dark .astra-card__reason {
+  color: #8b8b8b;
+}
+
+html.dark .astra-user-bubble {
+  background: color-mix(in srgb, var(--color-neutral-800) 92%, transparent);
   border-color: rgba(255, 255, 255, 0.08);
 }
 </style>

@@ -22,8 +22,6 @@ import {
   isTabTitleTruncated,
   shouldShowTabPreview,
 } from '@/utils/tabPreviewContext';
-import { sidebarMainColumnOffsetPx } from '@/utils/sidebarLayout';
-
 /** Floor below which tabs stop shrinking and the strip scrolls (Chrome / VS Code). */
 const TAB_MIN_WIDTH_PX = 120;
 const TAB_MAX_WIDTH_PX = 200;
@@ -153,26 +151,10 @@ const tabsArray = computed(() => {
 
 const isSettingsRouteActive = computed(() => route.path.startsWith('/settings'));
 
-// Get sidebar state from parent (App.vue passes it via provide/inject or we calculate it)
-const viewportWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
 const tabBarRef = ref(null);
 
-const isDesktopShell = computed(() => viewportWidth.value >= 1024);
-
-const tabBarPositionStyle = computed(() => {
-  if (isDesktopShell.value) {
-    return { width: '100%', maxWidth: '100%', minWidth: 0 };
-  }
-
-  const sidebarCollapsed = localStorage.getItem('arivu-sidebar-collapsed') === 'true';
-  const width = viewportWidth.value - sidebarMainColumnOffsetPx(sidebarCollapsed);
-  return {
-    width: `${width}px`,
-    maxWidth: `${width}px`,
-    minWidth: 0,
-    left: `${sidebarMainColumnOffsetPx(sidebarCollapsed)}px`,
-  };
-});
+// Full-bleed under Nav on tablet (sidebar is overlay). Desktop: sticky in work column (PlatformShell already offsets).
+const tabBarPositionStyle = { width: '100%', maxWidth: '100%', minWidth: 0 };
 
 const updateTabBarOffset = () => {
   const el = tabBarRef.value;
@@ -469,31 +451,16 @@ const handleClickOutside = (event) => {
   }
 };
 
-// Update viewport width on resize
 const handleResize = () => {
-  viewportWidth.value = window.innerWidth;
   updateTabBarOffset();
   updateTabsOverflow();
 };
 
 const handleSidebarToggle = () => {
-  if (isDesktopShell.value) {
-    nextTick(() => {
-      updateTabBarOffset();
-      updateTabsOverflow();
-    });
-    return;
-  }
-
-  const currentWidth = viewportWidth.value;
-  viewportWidth.value = currentWidth + 1;
-  setTimeout(() => {
-    viewportWidth.value = currentWidth;
-    nextTick(() => {
-      updateTabBarOffset();
-      updateTabsOverflow();
-    });
-  }, 0);
+  nextTick(() => {
+    updateTabBarOffset();
+    updateTabsOverflow();
+  });
 };
 
 let tabsResizeObserver = null;
@@ -516,8 +483,6 @@ onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   window.addEventListener('resize', handleResize);
   window.addEventListener('sidebar-toggle', handleSidebarToggle);
-  
-  viewportWidth.value = window.innerWidth;
 
   if (tabsArray.value.length === 0) {
     setTimeout(() => updateTabBarOffset(), 100);
@@ -559,7 +524,7 @@ onUnmounted(() => {
     :class="{ 'tab-strip--settings-active': isSettingsRouteActive }"
     :style="tabBarPositionStyle"
   >
-    <div class="flex items-center h-11 min-w-0 w-full gap-2 pl-0 pr-2" :style="{ width: '100%', maxWidth: '100%' }">
+    <div class="flex items-center h-11 min-w-0 w-full gap-2 px-2 sm:px-3 lg:pl-0 lg:pr-2" :style="{ width: '100%', maxWidth: '100%' }">
       <div
         ref="tabsContainerRef"
         class="tab-strip__scroller flex flex-1 min-w-0 items-center gap-0 h-full"

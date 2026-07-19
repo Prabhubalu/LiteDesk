@@ -85,31 +85,77 @@
 
       <!-- Custom Header Slot - View Switcher + Actions -->
       <template #header-actions>
-        <div class="flex gap-3 items-center">
-          <!-- View Toggle - Segmented control (h-[34px] to match header action buttons) -->
-          <div class="relative flex h-[34px] items-stretch rounded-lg bg-gray-100 dark:bg-gray-700/90 p-[0.1rem] border border-gray-200/80 dark:border-gray-600 shadow-inner min-w-[200px]">
-            <!-- <div
-              class="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-600 transition-all duration-200 ease-out pointer-events-none"
-              :style="{ left: currentView === 'kanban' ? '4px' : 'calc(50% + 2px)' }"
-            /> -->
+        <div class="flex flex-nowrap items-center gap-2">
+          <!-- Mobile: layout view dropdown -->
+          <Menu as="div" class="relative sm:hidden">
+            <MenuButton
+              type="button"
+              class="inline-flex h-[34px] items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-0 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            >
+              <component :is="currentView === 'list' ? ListBulletIcon : ViewColumnsIcon" class="h-4 w-4 shrink-0" />
+              <span>{{ layoutViewLabel }}</span>
+              <ChevronDownIcon class="h-3.5 w-3.5 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+            </MenuButton>
+            <Transition
+              enter-active-class="transition ease-out duration-100"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-75"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
+            >
+              <MenuItems class="absolute right-0 z-50 mt-2 w-44 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800 dark:ring-white/10">
+                <div class="py-1">
+                  <MenuItem v-slot="{ active }">
+                    <button
+                      type="button"
+                      class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+                      :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+                      @click="switchView('kanban')"
+                    >
+                      <ViewColumnsIcon class="h-4 w-4 shrink-0" />
+                      <span class="flex-1 text-left">{{ t('settings.assignRulesCondFieldPipeline') }}</span>
+                      <CheckIcon v-if="currentView === 'kanban'" class="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-slot="{ active }">
+                    <button
+                      type="button"
+                      class="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300"
+                      :class="active ? 'bg-gray-100 dark:bg-gray-700' : ''"
+                      @click="switchView('list')"
+                    >
+                      <ListBulletIcon class="h-4 w-4 shrink-0" />
+                      <span class="flex-1 text-left">{{ t('forms.rbLayoutList') }}</span>
+                      <CheckIcon v-if="currentView === 'list'" class="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                    </button>
+                  </MenuItem>
+                </div>
+              </MenuItems>
+            </Transition>
+          </Menu>
+          <!-- Desktop: segmented Pipeline | List -->
+          <div class="relative hidden h-[34px] min-w-[200px] items-stretch rounded-lg border border-gray-200/80 bg-gray-100 p-[0.1rem] shadow-inner dark:border-gray-600 dark:bg-gray-700/90 sm:flex">
             <button
               type="button"
+              class="relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-1.5 overflow-visible rounded-md px-2.5 py-0 text-xs font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 sm:text-sm"
+              :class="currentView === 'kanban' ? 'bg-white text-indigo-600 dark:bg-gray-800 dark:text-indigo-400' : 'text-gray-600 hover:bg-gray-200/50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-600/50 dark:hover:text-gray-200'"
               @click="switchView('kanban')"
-              class="relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 py-0 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
-              :class="currentView === 'kanban' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ViewColumnsIcon class="w-4 h-4 shrink-0" />{{ t('settings.assignRulesCondFieldPipeline') }}</button>
+              <ViewColumnsIcon class="h-4 w-4 shrink-0" />{{ t('settings.assignRulesCondFieldPipeline') }}
+            </button>
             <button
               type="button"
+              class="relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-1.5 overflow-visible rounded-md px-2.5 py-0 text-xs font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 sm:text-sm"
+              :class="currentView === 'list' ? 'bg-white text-indigo-600 dark:bg-gray-800 dark:text-indigo-400' : 'text-gray-600 hover:bg-gray-200/50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-600/50 dark:hover:text-gray-200'"
               @click="switchView('list')"
-              class="relative z-10 flex-1 flex items-center justify-center gap-1.5 px-2.5 py-0 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:ring-offset-gray-800 overflow-visible"
-              :class="currentView === 'list' ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'"
             >
-              <ListBulletIcon class="w-4 h-4 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
+              <ListBulletIcon class="h-4 w-4 shrink-0" />{{ t('forms.rbLayoutList') }}
+            </button>
           </div>
-          <ModuleActions 
+          <ModuleActions
             module="deals"
-            create-:label="t('deals.dealsNewDeal')"
+            :create-label="t('deals.dealsNewDeal')"
             @create="openCreateModal"
             @import="showImportModal = true"
             @export="exportDeals"
@@ -450,8 +496,9 @@ import DealPlaybookStatusBadge from '@/components/deals/DealPlaybookStatusBadge.
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useLocale } from '@/composables/useLocale';
-import { ViewColumnsIcon, ListBulletIcon, UserIcon, CalendarDaysIcon, InboxIcon, RectangleStackIcon, PlusIcon, BuildingOfficeIcon, ChartBarIcon, BanknotesIcon, HashtagIcon } from '@heroicons/vue/24/outline';
-import { FlagIcon as FlagIconSolid } from '@heroicons/vue/24/solid';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
+import { ViewColumnsIcon, ListBulletIcon, UserIcon, CalendarDaysIcon, InboxIcon, RectangleStackIcon, PlusIcon, BuildingOfficeIcon, ChartBarIcon, BanknotesIcon, HashtagIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
+import { CheckIcon, FlagIcon as FlagIconSolid } from '@heroicons/vue/24/solid';
 
 const router = useRouter();
 const route = useRoute();
@@ -473,6 +520,9 @@ const getInitialView = () => {
   }
 };
 const currentView = ref(getInitialView());
+const layoutViewLabel = computed(() =>
+  currentView.value === 'list' ? t('forms.rbLayoutList') : t('settings.assignRulesCondFieldPipeline')
+);
 
 // Kanban data state
 const kanbanDeals = ref([]);

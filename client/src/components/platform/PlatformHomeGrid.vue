@@ -349,4 +349,19 @@ defineExpose({
 .platform-home-grid:not(.platform-home-grid--locked) :deep(.grid-stack-item-content > *) {
   pointer-events: auto;
 }
+
+/* Mobile only: stack widgets full-width. Desktop keeps customized GridStack layout. */
+@media (max-width: 639px) {
+  .platform-home-grid.grid-stack {
+    height: auto !important;
+  }
+
+  .platform-home-grid :deep(.grid-stack-item) {
+    position: relative !important;
+    left: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    margin-bottom: 8px;
+  }
+}
 </style>
