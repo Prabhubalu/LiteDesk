@@ -1,8 +1,8 @@
 <template>
-  <div class="mt-3 overflow-hidden rounded-xl border border-gray-200/80 bg-white p-3 dark:border-gray-700 dark:bg-gray-900/40">
+  <div class="mt-3 overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-3.5 shadow-sm shadow-neutral-900/[0.03] dark:border-neutral-700 dark:bg-neutral-900/70 dark:shadow-none">
     <p
       v-if="visual.title"
-      class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+      class="mb-2.5 pr-28 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-800 dark:text-primary-200"
     >
       {{ visual.title }}
     </p>
@@ -53,13 +53,13 @@ echarts.use([
 ]);
 
 const PALETTE = [
-  '#2563eb',
+  '#6049E7',
+  '#3b82f6',
   '#7c3aed',
-  '#db2777',
-  '#ea580c',
-  '#ca8a04',
-  '#16a34a',
   '#0891b2',
+  '#16a34a',
+  '#ea580c',
+  '#db2777',
   '#4f46e5',
 ];
 
@@ -97,8 +97,13 @@ function buildOption() {
       },
       series: [{
         type: 'bar' as const,
-        data: values,
-        itemStyle: { borderRadius: [4, 4, 0, 0] },
+        data: values.map((value, i) => ({
+          value,
+          itemStyle: {
+            color: PALETTE[i % PALETTE.length],
+            borderRadius: [4, 4, 0, 0],
+          },
+        })),
       }],
     };
   }

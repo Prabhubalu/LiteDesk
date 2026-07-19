@@ -30,6 +30,13 @@ try {
   console.error('[SearchService] Error loading core models:', error);
 }
 
+let Quote;
+try {
+  Quote = require('../models/Quote');
+} catch (error) {
+  console.warn('[SearchService] Quote model not available:', error.message);
+}
+
 try {
   Form = require('../models/Form');
 } catch (error) {
@@ -85,6 +92,12 @@ class SearchService {
     } else {
       searchPromises.push(Promise.resolve([]));
     }
+
+    if (Quote) {
+      searchPromises.push(this.searchQuotes(organizationId, query, searchRegex, limit, fetchLimit));
+    } else {
+      searchPromises.push(Promise.resolve([]));
+    }
     
     // Run all searches in parallel for speed
     const [
@@ -94,7 +107,8 @@ class SearchService {
       tasks,
       events,
       forms,
-      items
+      items,
+      quotes,
     ] = await Promise.all(searchPromises);
 
     return {
@@ -106,10 +120,11 @@ class SearchService {
         tasks,
         events,
         forms,
-        items
+        items,
+        quotes,
       },
-      total: people.length + organizations.length + deals.length + 
-             tasks.length + events.length + forms.length + items.length
+      total: people.length + organizations.length + deals.length
+             + tasks.length + events.length + forms.length + items.length + quotes.length
     };
   }
 
@@ -120,33 +135,36 @@ class SearchService {
     try {
       const results = await People.find({
         organizationId,
-        $or: buildSearchOrConditions(query, ['first_name', 'last_name', 'email', 'company', 'phone'])
+        deletedAt: null,
+        $or: buildSearchOrConditions(query, ['first_name', 'last_name', 'email', 'phone', 'mobile']),
       })
-      .select('first_name last_name email company phone avatar')
-      .limit(fetchLimit)
-      .lean();
+        .select('first_name last_name email phone mobile avatar organization')
+        .populate('organization', 'name')
+        .limit(fetchLimit)
+        .lean();
 
       const ranked = rankAndLimit(results, query, [
         { getValue: (person) => person.first_name, primary: true },
         { getValue: (person) => person.last_name, primary: true },
         {
           getValue: (person) => `${person.first_name || ''} ${person.last_name || ''}`.trim(),
-          primary: true
+          primary: true,
         },
         { getValue: (person) => person.email, primary: false },
-        { getValue: (person) => person.company, primary: false },
-        { getValue: (person) => person.phone, primary: false }
+        { getValue: (person) => person.phone, primary: false },
       ], limit);
 
-      return ranked.map(person => ({
+      return ranked.map((person) => ({
         id: person._id,
         type: 'people',
         title: `${person.first_name || ''} ${person.last_name || ''}`.trim() || person.email,
-        subtitle: person.company || person.email,
+        subtitle: (person.organization && person.organization.name) || person.email,
         first_name: person.first_name,
         last_name: person.last_name,
+        organizationId: person.organization?._id || person.organization || null,
+        organizationName: person.organization?.name || '',
         avatar: person.avatar || null,
-        route: `/people/${person._id}`
+        route: `/people/${person._id}`,
       }));
     } catch (error) {
       console.error('[SearchService] Error searching people:', error);
@@ -238,6 +256,40 @@ class SearchService {
       }));
     } catch (error) {
       console.error('[SearchService] Error searching deals:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Search Quotes
+   */
+  async searchQuotes(organizationId, query, searchRegex, limit, fetchLimit) {
+    try {
+      if (!Quote) return [];
+      const results = await Quote.find({
+        organizationId,
+        deletedAt: null,
+        $or: buildSearchOrConditions(query, ['quoteTitle', 'quoteNumber', 'status']),
+      })
+        .select('quoteTitle quoteNumber status validUntil currency')
+        .limit(fetchLimit)
+        .lean();
+
+      const ranked = rankAndLimit(results, query, [
+        { getValue: (q) => q.quoteTitle, primary: true },
+        { getValue: (q) => q.quoteNumber, primary: true },
+        { getValue: (q) => q.status, primary: false },
+      ], limit);
+
+      return ranked.map((q) => ({
+        id: q._id,
+        type: 'quotes',
+        title: q.quoteTitle || q.quoteNumber || 'Quote',
+        subtitle: [q.status, q.quoteNumber].filter(Boolean).join(' • '),
+        route: `/quotes/${q._id}`,
+      }));
+    } catch (error) {
+      console.error('[SearchService] Error searching quotes:', error);
       return [];
     }
   }

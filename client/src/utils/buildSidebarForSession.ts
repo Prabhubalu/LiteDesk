@@ -104,7 +104,7 @@ function applyPortalOnlySidebarFilters(
 
   structure.coreModules = [];
   // Platform shell surfaces are not part of the customer portal experience.
-  const portalHiddenShellIds = new Set(['home', 'inbox', 'approvals', 'attention']);
+  const portalHiddenShellIds = new Set(['home', 'inbox', 'astra', 'approvals', 'attention']);
   structure.shell = structure.shell.filter((item) => !portalHiddenShellIds.has(item.id));
 }
 

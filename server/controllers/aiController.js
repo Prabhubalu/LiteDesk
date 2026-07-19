@@ -533,6 +533,7 @@ function assistErrorResponse(res, error, fallbackCode) {
     code,
     message,
     notConfigured: isConfig,
+    ...(error.details && typeof error.details === 'object' ? { details: error.details } : {}),
   });
 }
 
@@ -1047,6 +1048,8 @@ async function applyAstraMutationAi(req, res) {
       recordId: req.body?.recordId,
       fields: req.body?.fields,
       appKey: req.body?.appKey || req.appKey || 'SALES',
+      pageModuleKey: req.body?.pageModuleKey || req.body?.moduleKey || '',
+      pageRecordId: req.body?.pageRecordId || '',
     });
     return res.json({ success: true, ...result });
   } catch (error) {

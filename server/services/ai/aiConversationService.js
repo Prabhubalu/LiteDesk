@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const AiConversation = require('../../models/AiConversation');
 
-const MAX_CONVERSATIONS = 30;
+const MAX_CONVERSATIONS = 100;
 const MAX_MESSAGES = 120;
 
 function toPublic(doc, { includeMessages = true } = {}) {

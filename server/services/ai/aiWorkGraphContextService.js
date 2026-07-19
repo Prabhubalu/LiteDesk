@@ -18,11 +18,19 @@ const Quote = require('../../models/Quote');
 const Item = require('../../models/Item');
 const Document = require('../../models/Document');
 const RecordActivity = require('../../models/RecordActivity');
+const User = require('../../models/User');
+const {
+  detectGroupField,
+  detectExplicitGroupField,
+} = require('./aiAstraReportBuilderService');
 
 const MAX_CONTEXT_CHARS = 20000;
 const MAX_LIST_CONTEXT_CHARS = 24000;
 const MAX_COMPLETE_CONTEXT_CHARS = 120000;
+/** Report/overview: aggregates are 100%; detail rows stay small to control tokens. */
+const MAX_REPORT_CONTEXT_CHARS = 28000;
 const MAX_LIST_SAMPLE = 50;
+const MAX_REPORT_RECORDS = 40;
 const MAX_COMPLETE_RECORDS = 2000;
 const MAX_RELATED_GROUPS = 20;
 const MAX_RELATED_PER_GROUP = 10;
@@ -126,18 +134,69 @@ function summarizeListDoc(moduleKey, doc) {
   return `- ${bits.join(' | ')}`.slice(0, 420);
 }
 
-async function buildModuleAggregates(Model, match, moduleKey) {
+function resolveSchemaGroupField(Model, fieldKey = '') {
+  const key = String(fieldKey || '').trim();
+  if (!key || !Model?.schema?.paths) return '';
+  if (Model.schema.paths[key]) return key;
+  const lower = key.toLowerCase();
+  const compact = lower.replace(/_/g, '');
+  for (const pathKey of Object.keys(Model.schema.paths)) {
+    if (pathKey.startsWith('_') || pathKey.includes('.')) continue;
+    const pl = pathKey.toLowerCase();
+    if (pl === lower || pl.replace(/_/g, '') === compact) return pathKey;
+  }
+  // "type" → taskType / caseType / eventType / *Type picklists
+  if (compact === 'type') {
+    for (const preferred of ['taskType', 'caseType', 'eventType', 'type']) {
+      if (Model.schema.paths[preferred]) return preferred;
+    }
+    const typed = Object.keys(Model.schema.paths).find(
+      (p) => !p.includes('.') && /type$/i.test(p) && p.toLowerCase() !== 'relatedto'
+    );
+    if (typed) return typed;
+  }
+  return '';
+}
+
+function isUserRefGroupField(Model, fieldKey = '') {
+  const path = Model?.schema?.paths?.[fieldKey];
+  if (!path) return false;
+  if (['assignedTo', 'createdBy', 'updatedBy', 'ownerId', 'modifiedBy'].includes(fieldKey)) {
+    return true;
+  }
+  return path.options?.ref === 'User' || path.caster?.options?.ref === 'User';
+}
+
+async function buildModuleAggregates(Model, match, moduleKey, { question = '' } = {}) {
   const key = String(moduleKey || '').toLowerCase();
   const lines = [];
   const series = [];
   const total = await Model.countDocuments(match);
   lines.push(`Total accessible records: ${total}`);
 
-  const groupField = key === 'deals'
-    ? 'stage'
-    : (key === 'tasks' || key === 'events' || key === 'cases' || key === 'organizations'
-      ? 'status'
-      : null);
+  const explicit = detectExplicitGroupField(question, key);
+  // detectGroupField always returns a default — only use defaults when user did not name a dimension
+  const fallbackDefault = key === 'deals' ? 'stage' : (key === 'events' ? 'eventType' : 'status');
+  const preferred = explicit || fallbackDefault;
+
+  let groupField = resolveSchemaGroupField(Model, preferred);
+  if (!groupField && explicit && Model.schema?.paths?.[explicit]) {
+    groupField = explicit;
+  }
+  if (!groupField && !explicit) {
+    groupField = resolveSchemaGroupField(Model, fallbackDefault) || null;
+  }
+
+  // Last resort: any known categorical path (only when no explicit dimension was asked)
+  if (!groupField && !explicit && Model.schema?.paths) {
+    for (const candidate of ['status', 'stage', 'priority', 'taskType', 'caseType', 'eventType', 'type', 'assignedTo']) {
+      const resolved = resolveSchemaGroupField(Model, candidate);
+      if (resolved) {
+        groupField = resolved;
+        break;
+      }
+    }
+  }
 
   if (groupField && Model.schema?.paths?.[groupField]) {
     const groups = await Model.aggregate([
@@ -152,10 +211,33 @@ async function buildModuleAggregates(Model, match, moduleKey) {
       { $sort: { count: -1 } },
       { $limit: 25 },
     ]);
+
+    let labelById = null;
+    if (groups.length && isUserRefGroupField(Model, groupField)) {
+      const ids = groups
+        .map((row) => row._id)
+        .filter((id) => id != null && mongoose.isValidObjectId(id));
+      if (ids.length) {
+        const users = await User.find({ _id: { $in: ids } })
+          .select('firstName lastName email username')
+          .lean();
+        labelById = new Map(
+          users.map((u) => [String(u._id), formatUserRef(u) || String(u._id)])
+        );
+      }
+    }
+
     if (groups.length) {
       lines.push(`Breakdown by ${groupField}:`);
       for (const row of groups) {
-        const label = row._id == null || row._id === '' ? '(empty)' : String(row._id);
+        let label;
+        if (row._id == null || row._id === '') {
+          label = '(empty)';
+        } else if (labelById) {
+          label = labelById.get(String(row._id)) || String(row._id);
+        } else {
+          label = String(row._id);
+        }
         const amountBit = row.totalAmount != null ? `, amount=${row.totalAmount}` : '';
         lines.push(`  ${label}: ${row.count}${amountBit}`);
         series.push({
@@ -309,7 +391,7 @@ async function loadDocument(organizationId, moduleKey, recordId) {
     query = query.populate('lead_owner', 'firstName lastName email username');
   }
   if (key === 'people' && Model.schema?.paths?.organization) {
-    query = query.populate('organization', 'name industry status');
+    query = query.populate('organization', 'name industry status email phone website');
   }
 
   return query.lean();
@@ -475,7 +557,7 @@ function collectRelatedRefs(context, { maxPerGroup = MAX_RELATED_PER_GROUP } = {
  * Astra chooses context depth from the question.
  * - sample: fast Q&A (bounded)
  * - complete: full DB coverage for counts/sums/"every record"
- * - report: same as complete + report-oriented framing
+ * - report: 100% aggregates + small detail sample (token-safe)
  */
 function resolveAstraContextMode(question = '') {
   const q = String(question || '').toLowerCase();
@@ -538,7 +620,9 @@ async function buildWorkGraphContextPack({
   const normalizedModule = String(moduleKey || '').toLowerCase();
   const contextMode = ['complete', 'report'].includes(String(mode || '')) ? String(mode) : 'sample';
   const relatedCap = contextMode === 'sample' ? MAX_RELATED_PER_GROUP : MAX_RELATED_PER_GROUP_COMPLETE;
-  const charCap = contextMode === 'sample' ? MAX_CONTEXT_CHARS : MAX_COMPLETE_CONTEXT_CHARS;
+  const charCap = contextMode === 'sample'
+    ? MAX_CONTEXT_CHARS
+    : (contextMode === 'report' ? MAX_REPORT_CONTEXT_CHARS : MAX_COMPLETE_CONTEXT_CHARS);
 
   const [context, primaryDoc] = await Promise.all([
     getRecordContext(organizationId, appKey, normalizedModule, recordId, {
@@ -666,6 +750,7 @@ async function buildModuleListContextPack({
   organizationId,
   moduleKey,
   mode = 'sample',
+  question = '',
 }) {
   const normalizedModule = String(moduleKey || '').toLowerCase();
   const Model = getModel(normalizedModule);
@@ -675,9 +760,14 @@ async function buildModuleListContextPack({
     return { text: '', citations: [], found: false, pageKind: 'list', contextMode };
   }
 
-  const complete = contextMode !== 'sample';
-  const rowLimit = complete ? MAX_COMPLETE_RECORDS : MAX_LIST_SAMPLE;
-  const charCap = complete ? MAX_COMPLETE_CONTEXT_CHARS : MAX_LIST_CONTEXT_CHARS;
+  const complete = contextMode === 'complete';
+  const report = contextMode === 'report';
+  const rowLimit = complete
+    ? MAX_COMPLETE_RECORDS
+    : (report ? MAX_REPORT_RECORDS : MAX_LIST_SAMPLE);
+  const charCap = complete
+    ? MAX_COMPLETE_CONTEXT_CHARS
+    : (report ? MAX_REPORT_CONTEXT_CHARS : MAX_LIST_CONTEXT_CHARS);
 
   const lines = [
     `CRM LIST PAGE CONTEXT for module=${normalizedModule}`,
@@ -685,22 +775,31 @@ async function buildModuleListContextPack({
     `Context mode: ${contextMode}`,
     complete
       ? 'COMPLETE DATA MODE: aggregates cover 100% of matching DB records. Detail rows below are loaded from the database for this answer.'
-      : 'SAMPLE MODE: use aggregates + sample. Prefer names over ids.',
+      : report
+        ? 'REPORT MODE: aggregates cover 100% of matching DB records. Detail rows are a ranked sample for examples — use aggregates for totals, never invent amounts.'
+        : 'SAMPLE MODE: use aggregates + sample. Prefer names over ids.',
   ];
-  if (contextMode === 'report') {
+  if (report) {
     lines.push(
-      'REPORT MODE: produce a proper staff report (title, summary, sections, markdown tables). Use only DB facts below. Do not invent rows or amounts.',
+      'REPORT MODE: produce a proper staff report from aggregates + sample rows. Use only DB facts below. Do not invent rows or amounts.',
     );
   }
 
-  const { total, lines: aggLines, series, groupField, stats } = await buildModuleAggregates(Model, match, normalizedModule);
+  const { total, lines: aggLines, series, groupField, stats } = await buildModuleAggregates(
+    Model,
+    match,
+    normalizedModule,
+    { question }
+  );
   lines.push(...aggLines);
   lines.push('=== AGGREGATES ARE COMPLETE (100% of matching records in DB) ===');
 
   const docs = await loadListDocuments(Model, match, normalizedModule, { limit: rowLimit });
   const sectionLabel = complete
     ? `=== DETAIL RECORDS FROM DB (${docs.length} of ${total}; hard cap ${MAX_COMPLETE_RECORDS}) ===`
-    : `=== SAMPLE RECORDS (newest ${docs.length} of ${total}; cap ${MAX_LIST_SAMPLE}) ===`;
+    : report
+      ? `=== REPORT SAMPLE ROWS (${docs.length} of ${total}; cap ${MAX_REPORT_RECORDS}; aggregates above are complete) ===`
+      : `=== SAMPLE RECORDS (newest ${docs.length} of ${total}; cap ${MAX_LIST_SAMPLE}) ===`;
   lines.push(sectionLabel);
 
   const citations = [];
@@ -726,10 +825,10 @@ async function buildModuleListContextPack({
   }
 
   const notLoaded = Math.max(0, total - docs.length);
-  if (complete) {
+  if (complete || report) {
     if (notLoaded > 0) {
       lines.push(
-        `Memory cap: ${notLoaded} record(s) exist beyond the ${MAX_COMPLETE_RECORDS} row load. Aggregates above still include ALL ${total} records — use aggregates for totals; do not invent missing detail rows.`,
+        `Memory cap: ${notLoaded} record(s) exist beyond the ${rowLimit} row load. Aggregates above still include ALL ${total} records — use aggregates for totals; do not invent missing detail rows.`,
       );
     }
     if (omittedForSize > 0) {
@@ -737,7 +836,7 @@ async function buildModuleListContextPack({
         `Size cap: ${omittedForSize} loaded row(s) omitted from text to fit context. Aggregates remain complete for all ${total} records.`,
       );
     }
-    if (notLoaded === 0 && omittedForSize === 0) {
+    if (complete && notLoaded === 0 && omittedForSize === 0) {
       lines.push(`All ${total} matching record(s) are included in detail below/above.`);
     }
   } else if (total > docs.length) {
@@ -764,9 +863,747 @@ async function buildModuleListContextPack({
   };
 }
 
+const WORKSPACE_STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'to', 'for', 'of', 'in', 'on', 'at', 'with', 'from',
+  'me', 'my', 'i', 'we', 'our', 'you', 'your', 'this', 'that', 'these', 'those',
+  'prepare', 'prep', 'help', 'please', 'summarize', 'summary', 'suggest', 'suggestion',
+  'talking', 'points', 'point', 'related', 'context', 'lookup', 'search', 'find',
+  'about', 'into', 'across', 'based', 'using', 'need', 'needs', 'want', 'can', 'could',
+  'should', 'would', 'today', 'tomorrow', 'upcoming', 'next', 'all', 'every', 'brief',
+  'meeting', 'call', 'email', 'draft', 'write', 'create', 'update', 'clear', 'finish',
+  'item', 'items', 'thing', 'things', 'due', 'overdue', 'order', 'impact', 'action',
+  'plan', 'short', 'give', 'them', 'their', 'by', 'first',
+]);
+
+/**
+ * Extract search phrases from a free-form Astra question for workspace lookup.
+ */
+function extractWorkspaceSearchQueries(question = '') {
+  const raw = String(question || '').trim();
+  if (!raw) return [];
+
+  const queries = [];
+  const quoted = [...raw.matchAll(/[“”"']([^“”"']{2,80})[“”"']/g)];
+  for (const match of quoted) {
+    const phrase = String(match[1] || '').trim();
+    if (phrase) queries.push(phrase);
+  }
+
+  const cleaned = raw
+    .replace(/[“”"']/g, ' ')
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const tokens = cleaned
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 && !WORKSPACE_STOP_WORDS.has(t.toLowerCase()));
+
+  // Prefer multi-word name/title fragments (e.g. "Sports meeting Darshan" → keep meaningful chunks)
+  if (tokens.length >= 2) {
+    queries.push(tokens.slice(0, 6).join(' '));
+  }
+  for (const token of tokens) {
+    if (/^[A-Z]/.test(token) || token.length >= 4) {
+      queries.push(token);
+    }
+  }
+
+  const unique = [];
+  const seen = new Set();
+  for (const q of queries) {
+    const key = q.toLowerCase();
+    if (seen.has(key) || key.length < 2) continue;
+    seen.add(key);
+    unique.push(q);
+    if (unique.length >= 4) break;
+  }
+  return unique;
+}
+
+/** Short / definite-reference turns that inherit the active contact/deal from chat history. */
+function isThinFollowUpQuestion(question = '') {
+  const q = String(question || '').trim();
+  if (!q || q.length > 140) return false;
+  if (/\b(the|that|this|his|her|their|its)\s+(quote|quotes|deal|deals|contact|person|lead|account|organization|company|task|event|meeting|case|email|opportunity)\b/i.test(q)) {
+    return true;
+  }
+  if (/^(give|show|get|fetch|open|send|share|find)\s+(me\s+)?(the|that|this)\b/i.test(q)) {
+    return true;
+  }
+  if (/^(what about|and|also|same)\b/i.test(q)) return true;
+  if (/\b(for (him|her|them|this)|same (person|contact|deal))\b/i.test(q)) return true;
+  return false;
+}
+
+/**
+ * Pull person/company name anchors from recent chat turns so follow-ups
+ * like "give me the quote" stay on the same contact.
+ */
+function extractConversationEntityAnchors(history = []) {
+  const texts = (Array.isArray(history) ? history : [])
+    .slice(-8)
+    .map((row) => String(row?.content || row?.body || '').trim())
+    .filter(Boolean);
+  const anchors = [];
+  const push = (phrase) => {
+    const p = String(phrase || '').trim().replace(/\s+/g, ' ');
+    if (p.length < 2 || p.length > 80) return;
+    if (/^(reports?e2e|give|show|the|and|open|deal|quote|summarize|summary|pipeline|overview)\b/i.test(p)) {
+      return;
+    }
+    anchors.push(p);
+  };
+
+  for (const text of texts) {
+    for (const match of text.matchAll(/[“”"']([^“”"']{2,80})[“”"']/g)) {
+      push(match[1]);
+    }
+    const withName = text.match(
+      /\b(?:summarize|summary of|about|with|for|contact|person)\s+([A-Z][\p{L}'.-]+(?:\s+[A-Z][\p{L}'.-]+){0,3})/u,
+    );
+    if (withName) push(withName[1]);
+    for (const match of text.matchAll(/\b([A-Z][\p{L}'.-]+(?:\s+[A-Z][\p{L}'.-]+)+)\b/gu)) {
+      push(match[1]);
+    }
+  }
+
+  const unique = [];
+  const seen = new Set();
+  // Prefer longer phrases (full names) first.
+  for (const a of anchors.sort((x, y) => y.length - x.length)) {
+    const key = a.toLowerCase();
+    if (seen.has(key)) continue;
+    // Skip if a longer unique already contains this token-only fragment.
+    if (unique.some((u) => u.toLowerCase().includes(key) && u.length > a.length)) continue;
+    seen.add(key);
+    unique.push(a);
+    if (unique.length >= 3) break;
+  }
+  return unique;
+}
+
+function resolveWorkspaceQuestionWithHistory(question = '', history = []) {
+  const q = String(question || '').trim();
+  const anchors = extractConversationEntityAnchors(history);
+  if (!q || !anchors.length) {
+    return { question: q, anchors, searchQueries: extractWorkspaceSearchQueries(q) };
+  }
+  const qLower = q.toLowerCase();
+  const alreadyNamed = anchors.some((a) => qLower.includes(a.toLowerCase()));
+  const thin = isThinFollowUpQuestion(q);
+  const baseQueries = extractWorkspaceSearchQueries(q);
+  const needsAnchor = !alreadyNamed && (thin || baseQueries.length <= 1);
+  const blended = needsAnchor
+    ? `${q}\n[Conversation focus: ${anchors.join('; ')}]`
+    : q;
+  const searchQueries = [];
+  const seen = new Set();
+  for (const item of [...(needsAnchor ? anchors : []), ...baseQueries, ...extractWorkspaceSearchQueries(blended)]) {
+    const key = String(item || '').toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    searchQueries.push(item);
+    if (searchQueries.length >= 5) break;
+  }
+  return { question: blended, anchors, searchQueries };
+}
+
+function flattenSearchHits(results = {}) {
+  const modules = ['people', 'organizations', 'deals', 'tasks', 'events', 'forms', 'items', 'quotes'];
+  const hits = [];
+  for (const moduleKey of modules) {
+    const rows = Array.isArray(results[moduleKey]) ? results[moduleKey] : [];
+    for (const row of rows) {
+      hits.push({
+        moduleKey,
+        id: String(row.id || row._id || ''),
+        title: String(row.title || '').trim(),
+        subtitle: String(row.subtitle || '').trim(),
+        route: String(row.route || '').trim(),
+      });
+    }
+  }
+  return hits.filter((h) => h.id && h.title);
+}
+
+function isAttentionWorkQuestion(question = '') {
+  const q = String(question || '').toLowerCase();
+  return /\b(due today|due tomorrow|overdue|needs? attention|action items?|work items?|to-?dos?)\b/.test(q)
+    || /\b(items?|things?)\s+(due|overdue)\b/.test(q)
+    || /\b(due|overdue)\s+(items?|things?|tasks?|work)\b/.test(q);
+}
+
+/** Meetings / events schedule questions ("do I have any meetings today?"). */
+function isCalendarScheduleQuestion(question = '') {
+  const q = String(question || '').toLowerCase();
+  const hasCalendarNoun = /\b(meeting|meetings|event|events|appointment|appointments|calendar)\b/.test(q);
+  if (!hasCalendarNoun) return false;
+  return /\b(today|tonight|tomorrow|this week|next week|upcoming|scheduled|do i have|any (meetings|events)|next (meeting|event)|my (meetings|events|calendar))\b/.test(q);
+}
+
+/**
+ * User wants content produced (deck/slides/brief), not a CRM reminder task.
+ * Includes common typos (prepate) and "prepare … for the meeting" without saying task.
+ */
+function isContentCreationQuestion(question = '') {
+  const q = String(question || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  if (!q) return false;
+  if (/\b(create|add|schedule|set)\s+(a\s+)?(task|reminder|to-?do)\b/.test(q)) return false;
+
+  // Require an explicit content artifact — bare "prepare for the meeting" is CRM Canvas, not a deck.
+  const artifact = /\b(deck|slides?|slideshow|presentation|pitch\s*deck|one[- ]pager|leave[- ]behind|meeting\s+brief|briefing|outline)\b/;
+  const verb = /\b(prepare|prepate|prep|create|make|build|draft|write|generate|compose|put together)\b/;
+  return artifact.test(q) && verb.test(q);
+}
+
+function ymdInTimeZone(date, timeZone) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timeZone || 'UTC',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(date instanceof Date ? date : new Date(date));
+    const get = (type) => parts.find((p) => p.type === type)?.value;
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  } catch {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toISOString().slice(0, 10);
+  }
+}
+
+function formatInstantInTimeZone(date, timeZone) {
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: timeZone || 'UTC',
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZoneName: 'short',
+    }).format(date instanceof Date ? date : new Date(date));
+  } catch {
+    return String(date);
+  }
+}
+
+async function resolveAstraTimeZone(organizationId, userId) {
+  try {
+    const [org, user] = await Promise.all([
+      organizationId
+        ? Organization.findById(organizationId).select('settings.timeZone').lean()
+        : null,
+      userId
+        ? User.findById(userId).select('onboarding.profile.timeZone').lean()
+        : null,
+    ]);
+    return (
+      user?.onboarding?.profile?.timeZone
+      || org?.settings?.timeZone
+      || 'UTC'
+    );
+  } catch {
+    return 'UTC';
+  }
+}
+
+/**
+ * Deterministic calendar buckets for "meetings today / next meeting" — assigned to current user.
+ * Prefer this over unsorted module samples so the model cannot pick a past event as "next".
+ */
+async function buildCalendarMeetingsContextLines({ organizationId, userId }) {
+  if (!organizationId || !userId) {
+    return { lines: [], citations: [], todayCount: 0, upcomingCount: 0 };
+  }
+
+  const timeZone = await resolveAstraTimeZone(organizationId, userId);
+  const now = new Date();
+  const todayYmd = ymdInTimeZone(now, timeZone);
+  const rangeStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const rangeEnd = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+  let docs = [];
+  try {
+    docs = await Event.find({
+      organizationId,
+      deletedAt: null,
+      status: { $nin: ['Cancelled'] },
+      startDateTime: { $gte: rangeStart, $lte: rangeEnd },
+      $or: [
+        { assignedTo: userId },
+        { createdBy: userId },
+        { auditorId: userId },
+        { reviewerId: userId },
+        { correctiveOwnerId: userId },
+      ],
+    })
+      .sort({ startDateTime: 1 })
+      .limit(100)
+      .select('eventName eventType startDateTime endDateTime status')
+      .lean();
+  } catch (err) {
+    console.warn('[AstraWorkspaceContext] Calendar meetings query failed:', err?.message || err);
+    return { lines: [], citations: [], todayCount: 0, upcomingCount: 0 };
+  }
+
+  const today = [];
+  const upcoming = [];
+  const recentPast = [];
+  for (const doc of docs) {
+    if (!doc.startDateTime) continue;
+    const start = new Date(doc.startDateTime);
+    const ymd = ymdInTimeZone(start, timeZone);
+    if (ymd === todayYmd) today.push(doc);
+    else if (start >= now) upcoming.push(doc);
+    else recentPast.push(doc);
+  }
+
+  const remainingToday = today.filter((d) => new Date(d.startDateTime) >= now);
+  const nextMeeting = remainingToday[0] || upcoming[0] || null;
+  const plannedTotal = docs.filter((d) => String(d.status || '') === 'Planned').length;
+
+  const formatRow = (doc, idx) => {
+    const start = new Date(doc.startDateTime);
+    const local = formatInstantInTimeZone(start, timeZone);
+    return `${idx}. ${doc.eventName || 'Untitled'} type=${doc.eventType || 'Meeting'} status=${doc.status || ''} start=${doc.startDateTime} local=${local} (id=${doc._id})`;
+  };
+
+  const lines = [
+    '=== CALENDAR MEETINGS (source of truth for meetings/events today / next meeting — assigned to current user) ===',
+    `Now: ${now.toISOString()} (timezone=${timeZone}, todayYmd=${todayYmd})`,
+    `Counts: today=${today.length}, remainingToday=${remainingToday.length}, upcomingAfterToday=${upcoming.length}, plannedInWindow=${plannedTotal}`,
+    'For "meetings today / any meetings today": answer ONLY from Today below. Do not claim zero if Today lists any rows.',
+    'Next meeting = first Remaining today, else first Upcoming after today. Never pick a past startDateTime as next.',
+  ];
+  const citations = [];
+
+  const pushGroup = (title, rows, limit = 25) => {
+    lines.push(`--- ${title} (${rows.length}) ---`);
+    if (!rows.length) {
+      lines.push('(none)');
+      return;
+    }
+    rows.slice(0, limit).forEach((doc, idx) => {
+      lines.push(formatRow(doc, idx + 1));
+      citations.push({
+        index: citations.length + 1,
+        sourceType: 'events',
+        sourceId: String(doc._id),
+        excerpt: String(doc.eventName || '').slice(0, 200),
+      });
+    });
+  };
+
+  pushGroup('Today', today);
+  pushGroup('Remaining today (start >= now)', remainingToday);
+  pushGroup('Upcoming after today', upcoming, 15);
+  if (nextMeeting) {
+    lines.push(
+      `--- Next meeting ---`,
+      formatRow(nextMeeting, 1),
+    );
+  } else {
+    lines.push('--- Next meeting ---', '(none in window)');
+  }
+  if (recentPast.length) {
+    pushGroup('Recent past (context only — not next)', recentPast.slice(-5), 5);
+  }
+
+  return {
+    lines,
+    citations,
+    todayCount: today.length,
+    upcomingCount: upcoming.length + remainingToday.length,
+  };
+}
+
+/**
+ * Same Attention source as Platform Home / inbox — assigned tasks & events for this user.
+ * Calendar-day "due today" matches summarizeAttentionItems in platformHomeService.
+ */
+async function buildAttentionInboxContextLines({ organizationId, userId }) {
+  if (!organizationId || !userId) {
+    return { lines: [], citations: [], dueTodayCount: 0, overdueCount: 0 };
+  }
+  let items = [];
+  try {
+    const { buildInboxItemsForUser } = require('../../controllers/inboxController');
+    items = await buildInboxItemsForUser(userId, organizationId);
+  } catch (err) {
+    console.warn('[AstraWorkspaceContext] Attention inbox failed:', err?.message || err);
+    return { lines: [], citations: [], dueTodayCount: 0, overdueCount: 0 };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const overdue = [];
+  const dueToday = [];
+  const upcoming = [];
+  for (const item of items) {
+    if (item.isOverdue) {
+      overdue.push(item);
+      continue;
+    }
+    if (!item.dueAt) continue;
+    const due = new Date(item.dueAt);
+    if (due >= today && due < tomorrow) dueToday.push(item);
+    else if (due >= tomorrow) upcoming.push(item);
+  }
+
+  const formatRow = (item, idx) => {
+    const kind = item.kind === 'event' ? 'event' : 'task';
+    const due = item.dueAt ? ` dueAt=${item.dueAt}` : '';
+    const label = item.attentionLabel ? ` [${item.attentionLabel}]` : '';
+    const related = item.relatedLabel ? ` — ${item.relatedLabel}` : '';
+    return `${idx}. (${kind}) ${item.title || 'Untitled'}${label}${related}${due} (id=${item.id})`;
+  };
+
+  const lines = [
+    '=== ATTENTION (source of truth for due today / overdue — assigned to current user) ===',
+    `Counts: overdue=${overdue.length}, dueToday=${dueToday.length}, upcomingNearTerm=${upcoming.length}, attentionTotal=${items.length}`,
+    'For "due today" / "finish my tasks due today" questions: answer ONLY from Due today / Overdue below. Do not claim zero if Due today lists any rows.',
+  ];
+  const citations = [];
+
+  const pushGroup = (title, rows) => {
+    lines.push(`--- ${title} (${rows.length}) ---`);
+    if (!rows.length) {
+      lines.push('(none)');
+      return;
+    }
+    rows.slice(0, 25).forEach((item, idx) => {
+      lines.push(formatRow(item, idx + 1));
+      citations.push({
+        index: citations.length + 1,
+        sourceType: item.kind === 'event' ? 'events' : 'tasks',
+        sourceId: String(item.id),
+        excerpt: String(item.title || '').slice(0, 200),
+      });
+    });
+  };
+
+  pushGroup('Overdue', overdue);
+  pushGroup('Due today', dueToday);
+  pushGroup('Upcoming (near-term Attention)', upcoming.slice(0, 10));
+
+  return {
+    lines,
+    citations,
+    dueTodayCount: dueToday.length,
+    overdueCount: overdue.length,
+  };
+}
+
+/**
+ * Infer which CRM modules a workspace question likely needs (tenant-scoped list queries).
+ */
+function detectWorkspaceModulesFromQuestion(question = '') {
+  const q = String(question || '').toLowerCase();
+  const modules = [];
+  const push = (key) => {
+    if (!modules.includes(key)) modules.push(key);
+  };
+
+  // "items due today / overdue items" = attention work (tasks/events), NOT inventory Items module.
+  const attentionWork = isAttentionWorkQuestion(q);
+
+  if (attentionWork) {
+    push('tasks');
+    push('events');
+  }
+
+  if (/\b(deal|deals|pipeline|opportunit|won|lost|stage)\b/.test(q)) push('deals');
+  if (/\b(task|tasks|to-?dos?|todo)\b/.test(q) || attentionWork) push('tasks');
+  if (/\b(event|events|meeting|meetings|calendar|appointment)\b/.test(q) || attentionWork) {
+    push('events');
+  }
+  if (/\b(people|person|contact|contacts|lead|leads)\b/.test(q)) push('people');
+  if (/\b(organization|organizations|company|companies|account|accounts)\b/.test(q)) {
+    push('organizations');
+  }
+  if (/\b(case|cases|ticket|tickets|helpdesk)\b/.test(q)) push('cases');
+
+  // Inventory Items only when clearly product/SKU language — never from "items due today".
+  if (!attentionWork && /\b(sku|inventory|product|products|catalog)\b/.test(q)) {
+    push('items');
+  } else if (!attentionWork && /\b(item module|items module|inventory items?)\b/.test(q)) {
+    push('items');
+  }
+
+  // Broad analytics / “what’s going on” → deals first (token control).
+  // Only pull tasks/events when the question names them.
+  if (!modules.length && /\b(how many|count|total|pipeline|report|dashboard|summary|overview)\b/.test(q)) {
+    push('deals');
+    if (/\b(task|tasks|to-?dos?|todo)\b/.test(q)) push('tasks');
+    if (/\b(event|events|meeting|meetings|calendar)\b/.test(q)) push('events');
+  }
+
+  return modules.slice(0, 4);
+}
+
+/**
+ * Full-app Astra context when no single CRM page is focused.
+ * Tenant-isolated reads only (Global Search + module list packs + record expansion).
+ * Never used for deletes; callers must not auto-write from this pack.
+ */
+async function buildWorkspaceContextPack({
+  organizationId,
+  userId = null,
+  appKey = 'SALES',
+  question = '',
+  mode = 'sample',
+  history = [],
+}) {
+  const contextMode = ['complete', 'report'].includes(String(mode || '')) ? String(mode) : 'sample';
+  const searchService = require('../searchService');
+  const resolved = resolveWorkspaceQuestionWithHistory(question, history);
+  const effectiveQuestion = resolved.question || question;
+  const queries = resolved.searchQueries.length
+    ? resolved.searchQueries
+    : extractWorkspaceSearchQueries(effectiveQuestion);
+  const moduleKeys = detectWorkspaceModulesFromQuestion(effectiveQuestion);
+  const qLower = String(effectiveQuestion || '').toLowerCase();
+  const attentionWork = isAttentionWorkQuestion(qLower);
+  const calendarSchedule = isCalendarScheduleQuestion(qLower);
+  const citations = [];
+  const lines = [
+    'CRM workspace context (full-app mode — tenant-isolated READS only)',
+    'Policy: query/search allowed; never delete; never write directly (propose create/update only).',
+    `Context mode: ${contextMode}`,
+    `Organization scope: ${organizationId}`,
+  ];
+  if (resolved.anchors.length) {
+    lines.push(`Conversation focus (from chat history): ${resolved.anchors.join('; ')}`);
+  }
+  if (isThinFollowUpQuestion(question) && resolved.anchors.length) {
+    lines.push(
+      'FOLLOW-UP RULE: resolve "the quote/deal/contact" against Conversation focus above — do not switch to a different primary contact.',
+    );
+  }
+  if (attentionWork) {
+    lines.push(
+      'Semantic note: "items due today / overdue items" means Attention tasks and events — NOT the inventory Items product module.',
+    );
+  }
+
+  // 0) Attention inbox (Platform Home source of truth) for due-today / overdue questions
+  let hasAttentionPack = false;
+  if (attentionWork) {
+    const attention = await buildAttentionInboxContextLines({ organizationId, userId });
+    if (attention.lines.length) {
+      hasAttentionPack = true;
+      lines.push('');
+      lines.push(...attention.lines);
+      for (const c of attention.citations) {
+        citations.push({ ...c, index: citations.length + 1 });
+      }
+    }
+  }
+
+  // 0b) Calendar meetings pack — source of truth for "meetings today / next meeting"
+  let hasCalendarPack = false;
+  if (calendarSchedule) {
+    const calendar = await buildCalendarMeetingsContextLines({ organizationId, userId });
+    if (calendar.lines.length) {
+      hasCalendarPack = true;
+      lines.push('');
+      lines.push(...calendar.lines);
+      for (const c of calendar.citations) {
+        citations.push({ ...c, index: citations.length + 1 });
+      }
+    }
+  }
+
+  // 1) Entity search from question phrases (people/deals/events/…)
+  if (queries.length) {
+    lines.push(`Search queries: ${queries.join(' | ')}`);
+    const hitMap = new Map();
+    for (const q of queries) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const pack = await searchService.searchAll(organizationId, q, { limitPerModule: 4 });
+        for (const hit of flattenSearchHits(pack.results)) {
+          if (attentionWork && hit.moduleKey === 'items') continue;
+          const key = `${hit.moduleKey}:${hit.id}`;
+          if (!hitMap.has(key)) hitMap.set(key, hit);
+        }
+      } catch (err) {
+        console.warn('[AstraWorkspaceContext] search failed:', err?.message || err);
+      }
+    }
+
+    const hitsRaw = [...hitMap.values()];
+    const anchorLower = (resolved.anchors || []).map((a) => a.toLowerCase());
+    const scoreHit = (hit) => {
+      const title = `${hit.title} ${hit.subtitle}`.toLowerCase();
+      let score = 0;
+      if (hit.moduleKey === 'people') score += 5;
+      if (anchorLower.some((a) => title.includes(a) || a.includes(title.slice(0, 40)))) score += 20;
+      if (/\bquote\b/.test(qLower) && /quote/i.test(hit.moduleKey + hit.title)) score += 3;
+      return score;
+    };
+    const hits = hitsRaw
+      .sort((a, b) => scoreHit(b) - scoreHit(a))
+      .slice(0, 12);
+    if (hits.length) {
+      lines.push(`=== SEARCH HITS (${hits.length}) ===`);
+      hits.forEach((hit, idx) => {
+        lines.push(
+          `${idx + 1}. [${hit.moduleKey}] ${hit.title}`
+          + (hit.subtitle ? ` — ${hit.subtitle}` : '')
+          + ` (id=${hit.id})`,
+        );
+        citations.push({
+          index: citations.length + 1,
+          sourceType: hit.moduleKey,
+          sourceId: hit.id,
+          excerpt: hit.title.slice(0, 200),
+        });
+      });
+
+      // Prefer expanding the conversation-focus person/org before unrelated quotes/deals.
+      const expandable = hits
+        .filter((h) => ['people', 'organizations', 'deals', 'tasks', 'events', 'cases', 'quotes'].includes(h.moduleKey))
+        .sort((a, b) => scoreHit(b) - scoreHit(a))
+        .slice(0, 3);
+
+      for (const hit of expandable) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const pack = await buildWorkGraphContextPack({
+            organizationId,
+            appKey,
+            moduleKey: hit.moduleKey,
+            recordId: hit.id,
+            mode: contextMode === 'sample' ? 'sample' : contextMode,
+          });
+          if (pack?.text) {
+            lines.push('');
+            lines.push(`=== EXPANDED RECORD: ${hit.moduleKey} / ${hit.title} ===`);
+            lines.push(pack.text);
+            for (const c of pack.citations || []) {
+              citations.push({
+                ...c,
+                index: citations.length + 1,
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('[AstraWorkspaceContext] expand failed:', err?.message || err);
+        }
+      }
+    } else {
+      lines.push('No CRM records matched those search queries.');
+    }
+  } else {
+    lines.push('No searchable entity names detected in the question.');
+  }
+
+  // 2) Module list / aggregate packs (counts, stages, open work) — still org-scoped.
+  // When Attention / Calendar packs are present, skip org-wide tasks/events samples — they confuse "today".
+  let listModules = (moduleKeys.length
+    ? moduleKeys
+    : (contextMode === 'complete' || contextMode === 'report' ? ['deals', 'tasks'] : []))
+    .filter((key) => !(attentionWork && key === 'items'))
+    .filter((key) => !(hasAttentionPack && (key === 'tasks' || key === 'events')))
+    .filter((key) => !(hasCalendarPack && key === 'events'));
+
+  // Overview / pipeline summary: deals aggregates are enough — avoid multi-module dumps.
+  if (
+    /\b(overview|pipeline|dashboard|summary)\b/.test(qLower)
+    && !/\b(task|tasks|event|events|meeting|meetings|contact|contacts|every record|all records|complete data)\b/.test(qLower)
+  ) {
+    listModules = listModules.includes('deals') ? ['deals'] : listModules.slice(0, 1);
+  }
+
+  // Report mode still uses sample-sized packs per module unless user asked for every row.
+  const listPackMode = contextMode === 'complete' ? 'complete' : (
+    contextMode === 'report' ? 'report' : 'sample'
+  );
+
+  let visualSeries = [];
+  let visualGroupField = '';
+  let visualStats = null;
+  let visualModuleKey = '';
+  let visualTotalRecords = 0;
+
+  for (const moduleKey of listModules) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const pack = await buildModuleListContextPack({
+        organizationId,
+        moduleKey,
+        mode: listPackMode,
+        question: effectiveQuestion || question,
+      });
+      if (pack?.text) {
+        lines.push('');
+        lines.push(`=== MODULE QUERY: ${moduleKey} ===`);
+        lines.push(pack.text);
+        for (const c of pack.citations || []) {
+          citations.push({
+            ...c,
+            index: citations.length + 1,
+          });
+        }
+      }
+      // Prefer deals aggregates for DB-backed Astra visuals (anti-hallucination).
+      const series = Array.isArray(pack?.visualSeries) ? pack.visualSeries : [];
+      if (
+        series.length
+        && (!visualSeries.length || moduleKey === 'deals')
+      ) {
+        visualSeries = series;
+        visualGroupField = pack.groupField || '';
+        visualStats = pack.stats || null;
+        visualModuleKey = moduleKey;
+        visualTotalRecords = Number(pack.totalRecords) || 0;
+      }
+    } catch (err) {
+      console.warn('[AstraWorkspaceContext] module list failed:', moduleKey, err?.message || err);
+    }
+  }
+
+  const charCap = contextMode === 'sample'
+    ? MAX_CONTEXT_CHARS
+    : (contextMode === 'report' ? MAX_REPORT_CONTEXT_CHARS : MAX_COMPLETE_CONTEXT_CHARS);
+  const text = redactText(lines.join('\n').slice(0, charCap), {
+    preserveEmails: true,
+  });
+  return {
+    text,
+    citations,
+    found: text.length > 80,
+    pageKind: 'workspace',
+    contextMode,
+    visualSeries,
+    groupField: visualGroupField,
+    stats: visualStats,
+    visualModuleKey,
+    totalRecords: visualTotalRecords,
+  };
+}
+
 module.exports = {
   buildWorkGraphContextPack,
   buildModuleListContextPack,
+  buildWorkspaceContextPack,
+  extractWorkspaceSearchQueries,
+  extractConversationEntityAnchors,
+  isThinFollowUpQuestion,
+  resolveWorkspaceQuestionWithHistory,
+  detectWorkspaceModulesFromQuestion,
+  isAttentionWorkQuestion,
+  isCalendarScheduleQuestion,
+  isContentCreationQuestion,
   resolveAstraContextMode,
   resolveAstraChartType,
   looksLikeChartIntent,

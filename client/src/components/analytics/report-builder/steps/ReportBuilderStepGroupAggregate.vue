@@ -196,21 +196,33 @@ const { t } = useI18n();
 const sortingLocal = sorting;
 const metricsLocal = metrics;
 
-const groupableFields = computed(() =>
-  props.selectedFields
-    .map((key) => props.fieldOptions.find((field) => field.key === key))
-    .filter(Boolean) as ReportBuilderFieldOption[],
-);
+/** All catalog fields (same pool as Fields / Filters) — selected fields listed first. */
+const groupableFields = computed(() => {
+  const selected = new Set(props.selectedFields || []);
+  const all = props.fieldOptions.filter((field) => Boolean(field?.key));
+  return [
+    ...all.filter((field) => selected.has(field.key)),
+    ...all.filter((field) => !selected.has(field.key)),
+  ];
+});
 
 const rowGroupItems = computed(() =>
   rowGroups.value
-    .map((key) => groupableFields.value.find((field) => field.key === key))
+    .map((key) => groupableFields.value.find((field) => field.key === key) || {
+      key,
+      label: key,
+      moduleKey: '',
+    })
     .filter(Boolean) as ReportBuilderFieldOption[],
 );
 
 const columnGroupItems = computed(() =>
   columnGroups.value
-    .map((key) => groupableFields.value.find((field) => field.key === key))
+    .map((key) => groupableFields.value.find((field) => field.key === key) || {
+      key,
+      label: key,
+      moduleKey: '',
+    })
     .filter(Boolean) as ReportBuilderFieldOption[],
 );
 

@@ -180,6 +180,10 @@ import { captureArticlePublished, captureArticlePreviewed, captureArticleSaved, 
 import { captureBlogPostCreated, captureBlogPostPublished, captureBlogPostSaved } from '@/config/posthogBlog';
 import { useTabs } from '@/composables/useTabs';
 import { useContentStudioDocument } from '../composables/useContentStudioDocument';
+import {
+  consumeAstraContentDraft,
+  outlineTextToProseMirrorDoc,
+} from '../utils/outlineToProseMirror';
 import { addGalleryImage, isEditorInGallery } from '../editor/blockCommands';
 import { setPendingGalleryIntent } from '../editor/slashCommands';
 import '../editor/contentStudioTabs.css';
@@ -571,8 +575,26 @@ function goBack() {
 onMounted(async () => {
   await load();
   if (isNew.value && !record.value) {
-    setDocumentContent(initialBlocksFromRecord(null));
-    blocksSnapshot.value = getDocumentContent();
+    const draftId = typeof route.query.astraDraft === 'string' ? route.query.astraDraft : null;
+    const astraDraft = consumeAstraContentDraft(draftId);
+    if (astraDraft?.outline || astraDraft?.title) {
+      setSuppressAutosave(true);
+      if (astraDraft.title) applyTitle(astraDraft.title);
+      if (astraDraft.summary) summary.value = astraDraft.summary;
+      const blocks = outlineTextToProseMirrorDoc(astraDraft.outline || '', astraDraft.title);
+      setDocumentContent(blocks);
+      blocksSnapshot.value = blocks;
+      setSuppressAutosave(false);
+      markDirty();
+      if (route.query.astraDraft) {
+        const nextQuery = { ...route.query };
+        delete nextQuery.astraDraft;
+        await router.replace({ query: nextQuery });
+      }
+    } else {
+      setDocumentContent(initialBlocksFromRecord(null));
+      blocksSnapshot.value = getDocumentContent();
+    }
   }
 });
 

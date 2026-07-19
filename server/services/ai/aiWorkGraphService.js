@@ -97,10 +97,25 @@ const ACTION_KINDS = new Set([
   'manual',
   'create_record',
   'update_record',
+  'open_content_studio',
+  'open_canvas',
+  'open_report_builder',
+  'open_report',
+  'publish_report',
+  'export_report',
+  'pin_report_to_dashboard',
+  'open_widget',
+  'open_dashboard',
 ]);
 
 function looksLikeOpenOnlyLabel(label) {
-  return /^open\b/i.test(String(label || '').trim());
+  const s = String(label || '').trim();
+  if (!/^open\b/i.test(s)) return false;
+  // Keep product CTAs (Content Studio / Canvas / Report Builder / compose / editor) — only drop bare "Open <record>".
+  if (/\b(content studio|arivu canvas|canvas|compose|email|deck|editor|studio|inbox|report builder|report|dashboard|export|widget)\b/i.test(s)) {
+    return false;
+  }
+  return true;
 }
 
 function normalizeStructuredAnswer(raw, citations = [], options = {}) {
@@ -141,6 +156,8 @@ function normalizeStructuredAnswer(raw, citations = [], options = {}) {
       if (actions.length >= maxActions) break;
       let kind = String(row?.kind || 'manual').trim();
       if (kind === 'open_record' || kind === 'none') kind = 'manual';
+      if (kind === 'draft_deck') kind = 'open_canvas';
+      if (kind === 'open_arivu_canvas' || kind === 'generative_canvas') kind = 'open_canvas';
       if (!ACTION_KINDS.has(kind)) kind = 'manual';
 
       const label = String(row?.label || '').trim().slice(0, 120);
@@ -154,22 +171,55 @@ function normalizeStructuredAnswer(raw, citations = [], options = {}) {
         executeNow: Boolean(row?.executeNow),
       };
 
-      if (kind === 'create_record' || kind === 'update_record') {
+      const isReportNav = kind === 'open_report_builder'
+        || kind === 'open_report'
+        || kind === 'publish_report'
+        || kind === 'export_report'
+        || kind === 'pin_report_to_dashboard'
+        || kind === 'open_widget'
+        || kind === 'open_dashboard';
+      if (
+        kind === 'create_record'
+        || kind === 'update_record'
+        || kind === 'open_content_studio'
+        || kind === 'open_canvas'
+        || isReportNav
+      ) {
         const fieldsRaw = row?.fields && typeof row.fields === 'object' ? row.fields : {};
         const fields = {};
         for (const [fk, fv] of Object.entries(fieldsRaw)) {
           if (fv === undefined || typeof fv === 'object') continue;
-          fields[String(fk).slice(0, 80)] = typeof fv === 'string' ? fv.slice(0, 2000) : fv;
+          let maxLen = 2000;
+          if (kind === 'open_content_studio' && String(fk) === 'outline') maxLen = 12000;
+          if (kind === 'open_canvas' && String(fk) === 'canvasJson') maxLen = 48000;
+          if (kind === 'open_canvas' && String(fk) === 'outline') maxLen = 12000;
+          fields[String(fk).slice(0, 80)] = typeof fv === 'string' ? fv.slice(0, maxLen) : fv;
         }
         if (Object.keys(fields).length) action.fields = fields;
         const mk = String(row?.moduleKey || '').trim().toLowerCase();
         if (mk) action.moduleKey = mk;
-        if (kind === 'update_record') {
-          const rid = String(row?.recordId || '').trim();
+        if (kind === 'update_record' || isReportNav) {
+          const rid = String(
+            row?.recordId
+            || fields.reportId
+            || fields.widgetId
+            || fields.dashboardId
+            || ''
+          ).trim();
           if (rid) action.recordId = rid;
         }
         // Default: execute mutation actions unless explicitly false
-        if (row?.executeNow === undefined) action.executeNow = true;
+        if (
+          kind !== 'open_content_studio'
+          && kind !== 'open_canvas'
+          && !isReportNav
+          && row?.executeNow === undefined
+        ) {
+          action.executeNow = true;
+        }
+        if (kind === 'open_content_studio' || kind === 'open_canvas' || isReportNav) {
+          action.executeNow = false;
+        }
       }
 
       const emailRaw = row?.email && typeof row.email === 'object' ? row.email : null;
@@ -220,22 +270,71 @@ function normalizeStructuredAnswer(raw, citations = [], options = {}) {
     actions,
     visuals: Array.isArray(raw?.visuals)
       ? raw.visuals
-        .filter((v) => v && typeof v === 'object' && Array.isArray(v.points) && v.points.length)
-        .slice(0, 4)
-        .map((v) => ({
-          id: String(v.id || `viz_${Math.random().toString(36).slice(2, 8)}`).slice(0, 80),
-          component: 'chart',
-          chartType: ['pie', 'bar', 'line'].includes(String(v.chartType || ''))
-            ? String(v.chartType)
-            : 'pie',
-          title: String(v.title || '').trim().slice(0, 120),
-          metricLabel: String(v.metricLabel || 'value').slice(0, 40),
-          points: v.points.slice(0, 40).map((p) => ({
-            label: String(p?.label || '').trim().slice(0, 80),
-            value: Number(p?.value) || 0,
-          })).filter((p) => p.label),
-        }))
-        .filter((v) => v.points.length)
+        .filter((v) => v && typeof v === 'object' && v.component)
+        .slice(0, 6)
+        .map((v) => {
+          const component = String(v.component || '').trim();
+          if (!['chart', 'kpi_strip', 'progress_list', 'data_table', 'callout'].includes(component)) {
+            return null;
+          }
+          const base = {
+            id: String(v.id || `viz_${Math.random().toString(36).slice(2, 8)}`).slice(0, 80),
+            component,
+            title: String(v.title || '').trim().slice(0, 120) || undefined,
+          };
+          if (component === 'chart') {
+            const points = Array.isArray(v.points)
+              ? v.points.slice(0, 40).map((p) => ({
+                label: String(p?.label || '').trim().slice(0, 80),
+                value: Number(p?.value) || 0,
+              })).filter((p) => p.label)
+              : [];
+            if (!points.length) return null;
+            return {
+              ...base,
+              chartType: ['pie', 'bar', 'line'].includes(String(v.chartType || ''))
+                ? String(v.chartType)
+                : 'pie',
+              metricLabel: String(v.metricLabel || 'value').slice(0, 40),
+              points,
+            };
+          }
+          if (component === 'kpi_strip' || component === 'progress_list') {
+            const items = Array.isArray(v.items)
+              ? v.items.slice(0, 12).map((it) => ({
+                label: String(it?.label || '').trim().slice(0, 80),
+                value: it?.value ?? '',
+                hint: it?.hint ? String(it.hint).slice(0, 80) : undefined,
+                max: typeof it?.max === 'number' ? it.max : undefined,
+              })).filter((it) => it.label)
+              : [];
+            if (!items.length) return null;
+            return { ...base, items };
+          }
+          if (component === 'data_table') {
+            const columns = Array.isArray(v.columns)
+              ? v.columns.map((c) => String(c || '').trim()).filter(Boolean).slice(0, 12)
+              : [];
+            const rows = Array.isArray(v.rows)
+              ? v.rows.filter((r) => Array.isArray(r)).slice(0, 40).map((r) => (
+                r.slice(0, 12).map((c) => (typeof c === 'number' ? c : String(c ?? '').slice(0, 120)))
+              ))
+              : [];
+            if (!columns.length || !rows.length) return null;
+            return { ...base, columns, rows };
+          }
+          // callout
+          const body = String(v.body || '').trim().slice(0, 2000);
+          if (!body) return null;
+          return {
+            ...base,
+            tone: ['insight', 'success', 'warning', 'danger'].includes(String(v.tone || ''))
+              ? String(v.tone)
+              : 'insight',
+            body,
+          };
+        })
+        .filter(Boolean)
       : undefined,
     talkToAgent: Boolean(raw?.talkToAgent) || actions.some((a) => a.kind === 'talk_to_agent'),
     body: bodyFromStructured,

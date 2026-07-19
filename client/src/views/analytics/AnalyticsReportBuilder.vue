@@ -253,7 +253,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { ChevronRightIcon } from '@heroicons/vue/24/outline';
 import {
@@ -320,6 +320,7 @@ const {
   filterState,
   filterInitialState,
   filterRemountToken,
+  reportHydrationDone,
   previewResult,
   expandedMatrixRows,
   saving,
@@ -373,4 +374,18 @@ const loadedReportId = computed(() => {
   const id = props.reportId || route.params.id;
   return id ? String(id) : null;
 });
+
+watch(
+  reportHydrationDone,
+  (done) => {
+    if (!done) return;
+    const raw = route.query.step;
+    if (raw == null || raw === '') return;
+    const asNum = Number(Array.isArray(raw) ? raw[0] : raw);
+    if (Number.isFinite(asNum)) {
+      goToStep(asNum);
+    }
+  },
+  { immediate: true },
+);
 </script>
