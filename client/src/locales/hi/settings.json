@@ -16966,5 +16966,13 @@
   "aiUsageColAgent": {
     "message": "Agent",
     "description": "AI audit table specialist agent column"
+  },
+  "aiModelAuto": {
+    "message": "Auto (best for each task)",
+    "description": "Auto model selection option label"
+  },
+  "aiModelAutoHint": {
+    "message": "Picks a fast model for background tasks and the best model for user-facing responses.",
+    "description": "Auto model selection helper text"
   }
 }

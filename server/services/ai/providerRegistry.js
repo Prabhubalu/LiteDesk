@@ -1,5 +1,9 @@
 const { AI_PROVIDERS } = require('../../constants/aiProviders');
-const { createOpenAiLlmAdapter, createOpenRouterLlmAdapter } = require('./adapters/openAiLlmAdapter');
+const {
+  createOpenAiLlmAdapter,
+  createOpenRouterLlmAdapter,
+  createNvidiaLlmAdapter,
+} = require('./adapters/openAiLlmAdapter');
 const { createAzureOpenAiLlmAdapter } = require('./adapters/azureOpenAiLlmAdapter');
 const { createAnthropicLlmAdapter } = require('./adapters/anthropicLlmAdapter');
 const { createGeminiLlmAdapter } = require('./adapters/geminiLlmAdapter');
@@ -13,6 +17,7 @@ const llmAdapters = new Map([
   [AI_PROVIDERS.ANTHROPIC, createAnthropicLlmAdapter()],
   [AI_PROVIDERS.GEMINI, createGeminiLlmAdapter()],
   [AI_PROVIDERS.OPENROUTER, createOpenRouterLlmAdapter()],
+  [AI_PROVIDERS.NVIDIA, createNvidiaLlmAdapter()],
 ]);
 
 const embeddingAdapters = new Map([
@@ -40,6 +45,7 @@ function getEmbeddingAdapter(provider) {
     normalized === AI_PROVIDERS.AZURE_OPENAI
     || normalized === AI_PROVIDERS.ANTHROPIC
     || normalized === AI_PROVIDERS.GEMINI
+    || normalized === AI_PROVIDERS.NVIDIA
     || normalized === AI_PROVIDERS.BEDROCK
   ) {
     return embeddingAdapters.get(AI_PROVIDERS.OPENAI);

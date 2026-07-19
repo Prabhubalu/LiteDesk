@@ -10,6 +10,7 @@ function getPlatformApiKey(provider) {
   if (normalized === AI_PROVIDERS.ANTHROPIC) return process.env.ANTHROPIC_API_KEY || null;
   if (normalized === AI_PROVIDERS.GEMINI) return process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || null;
   if (normalized === AI_PROVIDERS.OPENROUTER) return process.env.OPENROUTER_API_KEY || process.env.AI_OPENROUTER_API_KEY || null;
+  if (normalized === AI_PROVIDERS.NVIDIA) return process.env.NVIDIA_API_KEY || process.env.AI_NVIDIA_API_KEY || null;
   if (normalized === AI_PROVIDERS.BEDROCK) return process.env.AWS_BEDROCK_API_KEY || null;
   return null;
 }

@@ -6,7 +6,7 @@ function validateEnv() {
   const defaultProvider = String(process.env.AI_DEFAULT_LLM_PROVIDER || 'openai').toLowerCase();
   const vectorStore = String(process.env.AI_VECTOR_STORE || 'atlas').toLowerCase();
 
-  if (!['openai', 'azure_openai', 'anthropic', 'gemini', 'bedrock'].includes(defaultProvider)) {
+  if (!['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'nvidia', 'bedrock'].includes(defaultProvider)) {
     console.warn(`⚠️  Unknown AI_DEFAULT_LLM_PROVIDER=${defaultProvider}. AI requests will return NOT_CONFIGURED until a supported provider is selected.`);
   }
 
@@ -41,6 +41,9 @@ function validateEnv() {
     }
     if (defaultProvider === 'openrouter' && !process.env.OPENROUTER_API_KEY && !process.env.AI_OPENROUTER_API_KEY) {
       console.warn('⚠️  OpenRouter is the default AI provider but OPENROUTER_API_KEY / AI_OPENROUTER_API_KEY is not set. Platform-key AI will return NOT_CONFIGURED.');
+    }
+    if (defaultProvider === 'nvidia' && !process.env.NVIDIA_API_KEY && !process.env.AI_NVIDIA_API_KEY) {
+      console.warn('⚠️  NVIDIA is the default AI provider but NVIDIA_API_KEY / AI_NVIDIA_API_KEY is not set. Platform-key AI will return NOT_CONFIGURED.');
     }
     if (vectorStore === 'atlas' && !process.env.AI_ATLAS_VECTOR_INDEX) {
       console.warn('⚠️  AI_VECTOR_STORE=atlas uses Atlas Vector Search index ai_vector_chunks_embedding by default. Set AI_ATLAS_VECTOR_INDEX if your index uses another name.');

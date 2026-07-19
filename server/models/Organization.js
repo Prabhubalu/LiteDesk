@@ -179,7 +179,7 @@ const OrganizationSchema = new mongoose.Schema({
         },
         llmProvider: {
             type: String,
-            enum: ['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'bedrock'],
+            enum: ['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'nvidia', 'bedrock'],
             default: 'openai'
         },
         llmModel: {

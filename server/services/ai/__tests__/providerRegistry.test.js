@@ -4,7 +4,7 @@ const { getLlmAdapter, getEmbeddingAdapter, listSupportedProviders } = require('
 
 describe('providerRegistry', () => {
   it('resolves all shipped LLM adapters', () => {
-    for (const provider of ['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter']) {
+    for (const provider of ['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'nvidia']) {
       const adapter = getLlmAdapter(provider);
       assert.equal(adapter.provider, provider);
       assert.equal(typeof adapter.complete, 'function');
@@ -22,7 +22,7 @@ describe('providerRegistry', () => {
     const supported = listSupportedProviders();
     assert.deepEqual(
       supported.llmProviders.sort(),
-      ['anthropic', 'azure_openai', 'gemini', 'openai', 'openrouter']
+      ['anthropic', 'azure_openai', 'gemini', 'nvidia', 'openai', 'openrouter']
     );
     assert.deepEqual(
       supported.embeddingProviders.sort(),

@@ -4203,6 +4203,14 @@
     "message": "Model",
     "description": "AI LLM model field label"
   },
+  "aiModelAuto": {
+    "message": "Auto (best for each task)",
+    "description": "Auto model selection option label"
+  },
+  "aiModelAutoHint": {
+    "message": "Picks a fast model for background tasks and the best model for user-facing responses.",
+    "description": "Auto model selection helper text"
+  },
   "aiKeyMode": {
     "message": "Key mode",
     "description": "AI key mode field label"
