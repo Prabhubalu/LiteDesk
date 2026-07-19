@@ -17,6 +17,7 @@ function createOpenAiLlmAdapter(options = {}) {
   const provider = options.provider || 'openai';
   const chatUrl = options.chatUrl || OPENAI_CHAT_URL;
   const label = options.label || 'OpenAI';
+  const includeStreamUsage = options.includeStreamUsage !== false;
   const buildExtraHeaders = typeof options.buildExtraHeaders === 'function'
     ? options.buildExtraHeaders
     : () => ({});
@@ -46,7 +47,9 @@ function createOpenAiLlmAdapter(options = {}) {
 
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const message = payload?.error?.message || `${label} request failed with status ${response.status}`;
+        const message = payload?.error?.message
+          || payload?.detail
+          || `${label} request failed with status ${response.status}`;
         throw new AiProviderError(message, payload?.error?.code || `${provider.toUpperCase()}_REQUEST_FAILED`, response.status);
       }
 
@@ -66,6 +69,18 @@ function createOpenAiLlmAdapter(options = {}) {
         throw new AiProviderError(`${label} API key is not configured`, `${provider.toUpperCase()}_KEY_MISSING`, 400);
       }
 
+      const body = {
+        model,
+        messages: toOpenAiMessages(messages),
+        temperature,
+        max_tokens: maxTokens,
+        stream: true,
+      };
+      // OpenAI-only; NVIDIA NIM rejects unknown stream_options.
+      if (includeStreamUsage) {
+        body.stream_options = { include_usage: true };
+      }
+
       const response = await fetch(chatUrl, {
         method: 'POST',
         headers: {
@@ -73,19 +88,14 @@ function createOpenAiLlmAdapter(options = {}) {
           'Content-Type': 'application/json',
           ...buildExtraHeaders(),
         },
-        body: JSON.stringify({
-          model,
-          messages: toOpenAiMessages(messages),
-          temperature,
-          max_tokens: maxTokens,
-          stream: true,
-          stream_options: { include_usage: true },
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
-        const message = payload?.error?.message || `${label} stream failed with status ${response.status}`;
+        const message = payload?.error?.message
+          || payload?.detail
+          || `${label} stream failed with status ${response.status}`;
         throw new AiProviderError(message, payload?.error?.code || `${provider.toUpperCase()}_STREAM_FAILED`, response.status);
       }
 
@@ -154,7 +164,17 @@ function createOpenRouterLlmAdapter() {
   });
 }
 
+function createNvidiaLlmAdapter() {
+  return createOpenAiLlmAdapter({
+    provider: 'nvidia',
+    label: 'NVIDIA NIM',
+    chatUrl: 'https://integrate.api.nvidia.com/v1/chat/completions',
+    includeStreamUsage: false,
+  });
+}
+
 module.exports = {
   createOpenAiLlmAdapter,
   createOpenRouterLlmAdapter,
+  createNvidiaLlmAdapter,
 };

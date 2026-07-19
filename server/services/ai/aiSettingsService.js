@@ -25,6 +25,7 @@ function getPlatformApiKey(provider) {
   if (provider === AI_PROVIDERS.ANTHROPIC) return process.env.ANTHROPIC_API_KEY || null;
   if (provider === AI_PROVIDERS.GEMINI) return process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || null;
   if (provider === AI_PROVIDERS.OPENROUTER) return process.env.OPENROUTER_API_KEY || process.env.AI_OPENROUTER_API_KEY || null;
+  if (provider === AI_PROVIDERS.NVIDIA) return process.env.NVIDIA_API_KEY || process.env.AI_NVIDIA_API_KEY || null;
   return null;
 }
 
@@ -69,7 +70,12 @@ async function listAvailableLlmModels({ organizationId, provider }) {
       source: 'azure_deployment',
     };
   }
-  if (!apiKey && normalizedProvider !== AI_PROVIDERS.OPENROUTER) {
+  // OpenRouter + NVIDIA ship usable catalogs without a key (static / public list).
+  if (
+    !apiKey
+    && normalizedProvider !== AI_PROVIDERS.OPENROUTER
+    && normalizedProvider !== AI_PROVIDERS.NVIDIA
+  ) {
     throw new AiConfigurationError('AI provider key is not configured', 'AI_KEY_NOT_CONFIGURED');
   }
 
@@ -109,6 +115,19 @@ async function listAvailableLlmModels({ organizationId, provider }) {
       headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
     });
     models = (payload.data || []).map((model) => model?.id);
+  } else if (normalizedProvider === AI_PROVIDERS.NVIDIA) {
+    models = AI_PROVIDER_LLM_MODELS[AI_PROVIDERS.NVIDIA] || [];
+    if (apiKey) {
+      try {
+        const payload = await fetchProviderJson('https://integrate.api.nvidia.com/v1/models', {
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+        const live = (payload.data || []).map((model) => model?.id).filter(Boolean);
+        if (live.length) models = live;
+      } catch {
+        // Keep static NVIDIA catalog when live /models is unavailable.
+      }
+    }
   }
 
   const storedModels = [
@@ -133,6 +152,8 @@ function toPublicAiSettings(aiSettings) {
   return {
     enabled: Boolean(aiSettings.enabled),
     llmProvider,
+    // Empty stored model = "Auto": resolver routes per-ability tier defaults.
+    autoModel: !String(aiSettings.llmModel || '').trim(),
     llmModel: String(aiSettings.llmModel || '').trim() || fallbackModel,
     embeddingProvider: aiSettings.embeddingProvider || AI_DEFAULTS.embeddingProvider,
     keyMode: aiSettings.keyMode || AI_KEY_MODES.PLATFORM,
@@ -196,8 +217,9 @@ async function updateAiSettings({ organizationId, userId, patch }) {
     // Live provider catalogs (Anthropic/OpenAI) include models outside the static fallback list.
     if (providerChanged && patch.llmModel === undefined) {
       const allowedModels = AI_PROVIDER_LLM_MODELS[provider];
-      if (Array.isArray(allowedModels) && allowedModels.length) {
-        const currentModel = String(settings.llmModel || '').trim();
+      const currentModel = String(settings.llmModel || '').trim();
+      // Keep "Auto" (empty) selection across provider switches.
+      if (currentModel && Array.isArray(allowedModels) && allowedModels.length) {
         if (!allowedModels.includes(currentModel)) {
           settings.llmModel = AI_PROVIDER_MODEL_DEFAULTS[provider]?.generate || allowedModels[0];
         }
@@ -206,11 +228,16 @@ async function updateAiSettings({ organizationId, userId, patch }) {
   }
 
   if (patch.llmModel !== undefined) {
-    const model = String(patch.llmModel || '').trim();
-    if (!MODEL_ID_RE.test(model)) {
-      throw new AiConfigurationError(`Invalid model identifier: ${model || '(empty)'}`, 'AI_MODEL_INVALID');
+    // null / empty = "Auto": clear the override so resolver uses tier defaults.
+    if (patch.llmModel === null || String(patch.llmModel).trim() === '') {
+      settings.llmModel = null;
+    } else {
+      const model = String(patch.llmModel).trim();
+      if (!MODEL_ID_RE.test(model)) {
+        throw new AiConfigurationError(`Invalid model identifier: ${model}`, 'AI_MODEL_INVALID');
+      }
+      settings.llmModel = model;
     }
-    settings.llmModel = model;
   }
 
   if (patch.embeddingProvider !== undefined) {

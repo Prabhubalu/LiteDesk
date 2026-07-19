@@ -4,6 +4,7 @@ const AI_PROVIDERS = {
   ANTHROPIC: 'anthropic',
   GEMINI: 'gemini',
   OPENROUTER: 'openrouter',
+  NVIDIA: 'nvidia',
   BEDROCK: 'bedrock',
 };
 
@@ -29,6 +30,10 @@ const AI_PROVIDER_MODEL_DEFAULTS = {
   [AI_PROVIDERS.GEMINI]: { classify: 'gemini-2.5-flash', generate: 'gemini-2.5-pro' },
   // OpenRouter model ids are provider-prefixed.
   [AI_PROVIDERS.OPENROUTER]: { classify: 'openai/gpt-4o-mini', generate: 'openai/gpt-4o' },
+  [AI_PROVIDERS.NVIDIA]: {
+    classify: 'nvidia/nemotron-3-nano-30b-a3b',
+    generate: 'nvidia/nemotron-3-super-120b-a12b',
+  },
 };
 
 const AI_PROVIDER_EMBEDDING_DEFAULTS = {
@@ -51,6 +56,12 @@ const AI_PROVIDER_LLM_MODELS = {
   ],
   [AI_PROVIDERS.GEMINI]: ['gemini-2.5-flash', 'gemini-2.5-pro'],
   [AI_PROVIDERS.OPENROUTER]: ['openai/gpt-4o-mini', 'openai/gpt-4o', 'anthropic/claude-sonnet-4'],
+  [AI_PROVIDERS.NVIDIA]: [
+    'nvidia/nemotron-3-nano-30b-a3b',
+    'nvidia/nemotron-3-super-120b-a12b',
+    'nvidia/llama-3.3-nemotron-super-49b-v1.5',
+    'nvidia/llama-3.1-nemotron-nano-8b-v1',
+  ],
 };
 
 function resolveEmbeddingModel(embeddingProvider) {

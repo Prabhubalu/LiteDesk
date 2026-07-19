@@ -85,7 +85,7 @@
               class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
             >
               <option v-for="model in llmModelOptions" :key="model" :value="model">
-                {{ model }}
+                {{ model === AUTO_MODEL ? t('settings.aiModelAuto') : model }}
               </option>
             </select>
             <span v-if="modelsLoading" class="mt-1 block text-xs text-gray-500 dark:text-gray-400">
@@ -93,6 +93,9 @@
             </span>
             <span v-else-if="modelsError" class="mt-1 block text-xs text-amber-600 dark:text-amber-400">
               {{ modelsError }}
+            </span>
+            <span v-else-if="form.llmModel === AUTO_MODEL" class="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+              {{ t('settings.aiModelAutoHint') }}
             </span>
           </label>
           <label class="block text-sm">
@@ -948,10 +951,14 @@ const form = reactive({
   azureDeploymentName: '',
 });
 
+const AUTO_MODEL = '__auto__';
+
 const llmModelOptions = computed(() => {
   const models = llmModelsByProvider.value?.[form.llmProvider];
-  if (Array.isArray(models) && models.length) return models;
-  return form.llmModel ? [form.llmModel] : [];
+  const base = Array.isArray(models) && models.length
+    ? [...models]
+    : (form.llmModel && form.llmModel !== AUTO_MODEL ? [form.llmModel] : []);
+  return [AUTO_MODEL, ...base.filter((m) => m !== AUTO_MODEL)];
 });
 
 watch(
@@ -1020,7 +1027,7 @@ async function load() {
     form.acceptDataUseConsent = Boolean(settings.value.dataUseConsent?.accepted);
     form.platformHomeAiFocus = Boolean(settings.value.platformHomeAiFocus);
     form.llmProvider = settings.value.llmProvider || 'openai';
-    form.llmModel = settings.value.llmModel || 'gpt-4o';
+    form.llmModel = settings.value.autoModel ? AUTO_MODEL : (settings.value.llmModel || AUTO_MODEL);
     form.keyMode = settings.value.keyMode || 'platform';
     form.creditsBalance = Number(settings.value.creditsBalance || 0);
     form.azureResourceName = settings.value.azureResourceName || '';
@@ -1034,7 +1041,7 @@ async function load() {
 
     // Seed catalog from static list, but always keep the saved model visible.
     const staticByProvider = data.supported?.llmModelsByProvider || {};
-    const savedModel = String(form.llmModel || '').trim();
+    const savedModel = form.llmModel === AUTO_MODEL ? '' : String(form.llmModel || '').trim();
     const providerModels = Array.isArray(staticByProvider[form.llmProvider])
       ? [...staticByProvider[form.llmProvider]]
       : [];
@@ -1234,7 +1241,8 @@ async function save() {
     const patch = {
       enabled: form.enabled,
       llmProvider: form.llmProvider,
-      llmModel: form.llmModel,
+      // Auto = clear override; server routes best model per ability tier.
+      llmModel: form.llmModel === AUTO_MODEL ? null : form.llmModel,
       keyMode: form.keyMode,
       platformHomeAiFocus: form.platformHomeAiFocus,
     };
@@ -1266,9 +1274,9 @@ async function save() {
     clearKey.value = false;
     form.creditsBalance = Number(settings.value.creditsBalance || 0);
     form.llmProvider = settings.value.llmProvider || form.llmProvider;
-    form.llmModel = settings.value.llmModel || form.llmModel;
+    form.llmModel = settings.value.autoModel ? AUTO_MODEL : (settings.value.llmModel || form.llmModel);
     // Keep the just-saved model in the dropdown even if provider catalog is stale.
-    const savedModel = String(form.llmModel || '').trim();
+    const savedModel = form.llmModel === AUTO_MODEL ? '' : String(form.llmModel || '').trim();
     if (savedModel) {
       const current = Array.isArray(llmModelsByProvider.value[form.llmProvider])
         ? llmModelsByProvider.value[form.llmProvider]
