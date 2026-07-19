@@ -77,7 +77,7 @@ export async function openContentStudioFromAstraAction(
       tags: ['astra', 'meeting-deck'],
       blocks,
     });
-    const documentId = String(record?._id || record?.id || '');
+    const documentId = String(record?._id || '');
     if (!documentId) {
       throw new Error('Content Studio create returned no id');
     }

@@ -4,7 +4,7 @@ export type ArivuCanvasMode = 'crm' | 'presentation';
 
 export interface ArivuCanvasBlock {
   id?: string;
-  component: string;
+  component: 'chart' | 'kpi_strip' | 'data_table' | 'callout' | 'progress_list' | string;
   title?: string;
   chartType?: string;
   metricLabel?: string;

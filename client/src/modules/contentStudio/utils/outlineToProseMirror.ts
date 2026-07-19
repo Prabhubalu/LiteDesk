@@ -65,21 +65,23 @@ export function outlineTextToProseMirrorDoc(outline: string, title?: string): Pr
     const mdHeading = line.match(/^(#{1,3})\s+(.+)$/);
     if (mdHeading) {
       flushBullets();
-      const level = Math.min(3, mdHeading[1].length) as 1 | 2 | 3;
-      content.push(heading(level, mdHeading[2]));
+      const hashes = mdHeading[1] ?? '#';
+      const title = mdHeading[2] ?? '';
+      const level = Math.min(3, hashes.length) as 1 | 2 | 3;
+      content.push(heading(level, title));
       continue;
     }
 
     const numbered = line.match(/^\d+[\).]\s+(.+)$/);
     if (numbered) {
       flushBullets();
-      content.push(heading(2, numbered[1]));
+      content.push(heading(2, numbered[1] ?? ''));
       continue;
     }
 
     const bullet = line.match(/^[-*•]\s+(.+)$/);
     if (bullet) {
-      pendingBullets.push(bullet[1]);
+      pendingBullets.push(bullet[1] ?? '');
       continue;
     }
 

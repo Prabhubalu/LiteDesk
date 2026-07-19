@@ -441,13 +441,13 @@ import {
   consumeArivuCanvasDocument,
   persistArivuCanvasDocument,
   type ArivuCanvasAction,
-  type ArivuCanvasBlock,
   type ArivuCanvasDocument,
   type ArivuCanvasKpi,
   type ArivuCanvasOpportunity,
   type ArivuCanvasWidget,
   type ArivuCanvasWidgetRecord,
 } from '@/utils/arivuCanvasSession';
+import type { InAppAiVisual } from '@/composables/useInProductAiAsk';
 import { openContentStudioFromAstraAction } from '@/utils/openContentStudioFromAstra';
 import { resolveModuleRecordRoute } from '@/utils/resolveModuleRecordRoute';
 import { useTabs } from '@/composables/useTabs';
@@ -569,12 +569,39 @@ const displayWidgets = computed((): ArivuCanvasWidget[] => {
   return widgets.filter((w) => w.type !== 'kpi_strip');
 });
 
-const visibleBlocks = computed((): ArivuCanvasBlock[] => {
+const visibleBlocks = computed((): InAppAiVisual[] => {
+  const allowed = new Set(['chart', 'kpi_strip', 'data_table', 'callout', 'progress_list']);
   const blocks = canvas.value?.blocks || [];
-  return blocks.filter((b) => {
-    if (b.component === 'callout' && b.body && META_BRIEF_RE.test(String(b.body))) return false;
-    return true;
-  });
+  return blocks
+    .filter((b) => {
+      if (!allowed.has(String(b.component || ''))) return false;
+      if (b.component === 'callout' && b.body && META_BRIEF_RE.test(String(b.body))) return false;
+      return true;
+    })
+    .map((b) => ({
+      ...b,
+      component: b.component as InAppAiVisual['component'],
+      chartType: b.chartType === 'pie' || b.chartType === 'bar' || b.chartType === 'line'
+        ? b.chartType
+        : undefined,
+      tone: b.tone === 'insight' || b.tone === 'success' || b.tone === 'warning' || b.tone === 'danger'
+        ? b.tone
+        : undefined,
+      points: Array.isArray(b.points)
+        ? b.points.map((p) => ({
+          label: String(p?.label || ''),
+          value: Number(p?.value) || 0,
+        })).filter((p) => p.label)
+        : undefined,
+      items: Array.isArray(b.items)
+        ? b.items.map((it) => ({
+          label: String(it?.label || ''),
+          value: it?.value ?? '',
+          hint: it?.hint,
+          max: it?.max,
+        })).filter((it) => it.label)
+        : undefined,
+    }));
 });
 
 onMounted(() => {
@@ -582,7 +609,7 @@ onMounted(() => {
   canvasId.value = id;
   canvas.value = consumeArivuCanvasDocument(id);
   if (canvas.value) {
-    const next = {
+    const next: ArivuCanvasDocument & { widgets: ArivuCanvasWidget[] } = {
       ...canvas.value,
       widgets: [...(canvas.value.widgets || [])],
     };
@@ -710,11 +737,12 @@ function detectCanvasAddIntent(text: string): 'organization' | 'stakeholder' | '
 }
 
 function upsertWidget(next: ArivuCanvasDocument, widget: ArivuCanvasWidget) {
-  const idx = (next.widgets || []).findIndex(
+  const widgets = next.widgets ?? (next.widgets = []);
+  const idx = widgets.findIndex(
     (w) => w.id === widget.id || (w.type === widget.type && w.title === widget.title),
   );
-  if (idx >= 0) next.widgets[idx] = { ...next.widgets[idx], ...widget };
-  else next.widgets.push(widget);
+  if (idx >= 0) widgets[idx] = { ...widgets[idx], ...widget };
+  else widgets.push(widget);
 }
 
 async function searchCrmModule(
@@ -781,7 +809,10 @@ async function findPersonByName(personName: string): Promise<{
 
   // Prefer last name / first name alone (global search ranks full-string poorly sometimes)
   if (parts.length >= 2) {
-    for (const part of [parts[parts.length - 1], parts[0]]) {
+    const lastPart = parts[parts.length - 1];
+    const firstPart = parts[0];
+    for (const part of [lastPart, firstPart]) {
+      if (!part) continue;
       const hits = await searchCrmModule(part, 'people');
       const match = hits.find((h) => {
         const t = h.title.toLowerCase();
@@ -825,9 +856,11 @@ async function findPersonByName(personName: string): Promise<{
   };
 
   try {
+    const firstPart = parts[0];
+    const lastPart = parts.length > 1 ? parts[parts.length - 1] : undefined;
     return await tryPeopleList(personName)
-      || (parts[0] ? await tryPeopleList(parts[0]) : null)
-      || (parts.length > 1 ? await tryPeopleList(parts[parts.length - 1]) : null);
+      || (firstPart ? await tryPeopleList(firstPart) : null)
+      || (lastPart ? await tryPeopleList(lastPart) : null);
   } catch {
     return null;
   }
@@ -1149,7 +1182,8 @@ async function resolveOrganizationForCanvas(personName: string, userText: string
 }
 
 function scrubTimelineEchoes(next: ArivuCanvasDocument) {
-  const timeline = next.widgets.find((w) => w.type === 'timeline');
+  const widgets = next.widgets ?? (next.widgets = []);
+  const timeline = widgets.find((w) => w.type === 'timeline');
   if (!timeline?.items?.length) return;
   timeline.items = timeline.items.filter((item) => {
     const body = String(item.body || '');
@@ -1165,7 +1199,12 @@ async function applyAddWidgetIntent(
   userText: string,
 ): Promise<string> {
   if (!canvas.value) return '';
-  const next: ArivuCanvasDocument = {
+  type EditableCanvas = Omit<ArivuCanvasDocument, 'widgets' | 'cards'> & {
+    widgets: ArivuCanvasWidget[];
+    cards: NonNullable<ArivuCanvasDocument['cards']>;
+  };
+
+  const next: EditableCanvas = {
     ...canvas.value,
     widgets: [...(canvas.value.widgets || [])],
     cards: [...(canvas.value.cards || [])],
@@ -1306,7 +1345,10 @@ function applyImproviseToCanvas(answer: string, bullets: string[] = []) {
   if (!canvas.value) return;
   if (isEchoAnswer(answer) && !bullets.length) return;
 
-  const next: ArivuCanvasDocument = {
+  const next: Omit<ArivuCanvasDocument, 'widgets' | 'cards'> & {
+    widgets: ArivuCanvasWidget[];
+    cards: NonNullable<ArivuCanvasDocument['cards']>;
+  } = {
     ...canvas.value,
     widgets: [...(canvas.value.widgets || [])],
     cards: [...(canvas.value.cards || [])],

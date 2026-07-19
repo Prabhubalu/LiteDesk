@@ -1,9 +1,12 @@
 <template>
-  <div
-    v-if="visuals.length === 1"
+    <div
+    v-if="soleVisual"
     class="mt-1"
   >
-    <AstraUiBlock :visual="visuals[0]" />
+    <AstraUiBlock
+      v-if="soleVisual"
+      :visual="soleVisual"
+    />
   </div>
   <TabGroup
     v-else-if="visuals.length > 1"
@@ -55,6 +58,10 @@ const { t } = useI18n();
 
 const visuals = computed(() => (
   Array.isArray(props.visuals) ? props.visuals.filter(Boolean) : []
+));
+
+const soleVisual = computed(() => (
+  visuals.value.length === 1 ? visuals.value[0] : undefined
 ));
 
 function tabLabel(viz: InAppAiVisual) {

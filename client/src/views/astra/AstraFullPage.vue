@@ -345,6 +345,7 @@ import {
   type InAppAiMessage,
 } from '@/composables/useInProductAiAsk';
 import { buildAstraRecommendations } from '@/utils/buildAstraRecommendations';
+import type { AstraRecommendationSnapshot } from '@/utils/buildAstraRecommendations';
 import { openContentStudioFromAstraAction } from '@/utils/openContentStudioFromAstra';
 import { openArivuCanvasFromAstraAction } from '@/utils/openArivuCanvasFromAstra';
 import {
@@ -381,9 +382,11 @@ const composerPlaceholderKeys = [
   'liveChat.astraPlaceholderDraft',
   'liveChat.astraPlaceholderFind',
 ];
-const composerPlaceholder = computed(() => (
-  t(composerPlaceholderKeys[placeholderIndex.value] || composerPlaceholderKeys[0])
-));
+const composerPlaceholder = computed(() => {
+  const key = composerPlaceholderKeys[placeholderIndex.value]
+    ?? 'liveChat.astraFullPageComposerHint';
+  return t(key);
+});
 
 const {
   aiMessages,
@@ -408,7 +411,10 @@ const sidebarConversations = allAiConversations;
 
 const { snapshot, fetchSnapshot } = usePlatformHome();
 
-const suggestionCards = computed(() => buildAstraRecommendations(snapshot.value, t));
+const suggestionCards = computed(() => buildAstraRecommendations(
+  snapshot.value as AstraRecommendationSnapshot,
+  t,
+));
 
 const ASTRA_WORKING_KEYS = [
   'liveChat.inAppAiWorking',
@@ -422,7 +428,8 @@ const astraWorkingLabel = ref(t('liveChat.inAppAiWorking'));
 
 watch(aiAsking, (asking) => {
   if (!asking) return;
-  const key = ASTRA_WORKING_KEYS[Math.floor(Math.random() * ASTRA_WORKING_KEYS.length)];
+  const key = ASTRA_WORKING_KEYS[Math.floor(Math.random() * ASTRA_WORKING_KEYS.length)]
+    ?? 'liveChat.inAppAiWorking';
   astraWorkingLabel.value = t(key);
 });
 
@@ -628,7 +635,7 @@ async function onAssistantAction(action: InAppAiAction, msg?: InAppAiMessage) {
                 recordId: dup.recordId,
                 priority: 'high',
               }],
-              body: '',
+              detail: '',
             },
           });
         }
