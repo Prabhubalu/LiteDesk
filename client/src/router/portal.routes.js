@@ -53,6 +53,18 @@ const portalRoutes = [
         meta: { requiresAuth: true, requiresPortalApp: true, requiresPermission: { module: 'documents', action: 'read' } }
       },
       {
+        path: 'documents',
+        name: 'portal-documents',
+        component: () => import('@/views/portal/PortalDocuments.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true, requiresPermission: { module: 'documents', action: 'read' } }
+      },
+      {
+        path: 'documents/:id',
+        name: 'portal-document-detail',
+        component: () => import('@/views/portal/PortalDocumentDetail.vue'),
+        meta: { requiresAuth: true, requiresPortalApp: true, requiresPermission: { module: 'documents', action: 'read' } }
+      },
+      {
         path: 'invoices',
         name: 'portal-invoices',
         component: () => import('@/views/portal/PortalInvoices.vue'),

@@ -5,7 +5,11 @@
 
 import type { AppRegistry } from '@/types/sidebar.types';
 import apiClient from '@/utils/apiClient';
-import { resolvePortalModulePermission, isPortalKnowledgeModuleKey } from '@/utils/portalModulePermissions';
+import {
+  resolvePortalModulePermission,
+  isPortalKnowledgeModuleKey,
+  isPortalDocumentsModuleKey
+} from '@/utils/portalModulePermissions';
 
 function resolveModulePermission(appKey: string, moduleKey: string): string | undefined {
   const normalizedAppKey = String(appKey || '').toUpperCase();
@@ -70,16 +74,16 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
       if (normalizedModuleKey === 'portal_support' || normalizedModuleKey === 'support') {
         route = '/portal/cases';
       }
-      if (normalizedModuleKey === 'portal_knowledge' || normalizedModuleKey === 'knowledge') {
-        route = '/portal/knowledge';
-      }
       if (
-        normalizedModuleKey === 'documents' ||
-        normalizedModuleKey === 'portal_documents' ||
-        normalizedModuleKey === 'knowledge-base' ||
-        normalizedModuleKey === 'knowledge_base'
+        normalizedModuleKey === 'portal_knowledge'
+        || normalizedModuleKey === 'knowledge'
+        || normalizedModuleKey === 'knowledge_base'
+        || normalizedModuleKey === 'knowledge-base'
       ) {
         route = '/portal/knowledge';
+      }
+      if (normalizedModuleKey === 'documents' || normalizedModuleKey === 'portal_documents') {
+        route = '/portal/documents';
       }
       if (normalizedModuleKey === 'portal_audits') {
         route = '/portal/audits';
@@ -261,6 +265,41 @@ function injectPortalKnowledgeModule(registry: AppRegistry): void {
   };
 
   app.modules = [...otherModules, { ...(knowledgeModules[0] || {}), ...normalizedModule }];
+  app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+}
+
+function injectPortalDocumentsModule(registry: AppRegistry): void {
+  const portalKey = Object.keys(registry).find((k) => String(k).toUpperCase() === 'PORTAL');
+  if (!portalKey) return;
+  const app = registry[portalKey];
+  if (!app) return;
+
+  const isDocumentsSurface = (m: { moduleKey?: string; route?: string }) =>
+    isPortalDocumentsModuleKey(String(m.moduleKey || '')) || m.route === '/portal/documents';
+
+  app.modules = app.modules || [];
+  const documentModules = app.modules.filter(isDocumentsSurface);
+  const otherModules = app.modules.filter((m) => !isDocumentsSurface(m));
+
+  const normalizedModule = {
+    moduleKey: 'portal_documents',
+    label: 'Documents',
+    route: '/portal/documents',
+    permission: resolvePortalModulePermission('portal_documents'),
+    icon: 'document-text',
+    order: documentModules.length
+      ? Math.min(...documentModules.map((m) => m.order ?? 4))
+      : 4,
+    appKey: portalKey,
+    navigationCore: false,
+    navigationEntity: false,
+    excludeFromApps: false,
+    system: false,
+    coreEntity: false,
+    showInSidebar: true
+  };
+
+  app.modules = [...otherModules, { ...(documentModules[0] || {}), ...normalizedModule }];
   app.modules.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 
@@ -605,6 +644,7 @@ function buildRegistryFromPayload(payload: {
   injectPortalCustomerSupportModule(registry);
   injectPortalInvoicesModule(registry);
   injectPortalKnowledgeModule(registry);
+  injectPortalDocumentsModule(registry);
   injectPortalAuditsModule(registry);
   injectPortalActionsModule(registry);
   injectPortalPeopleModule(registry);

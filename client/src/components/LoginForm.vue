@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter, useRoute } from 'vue-router';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import { isOrganizationTrialExpired } from '@/utils/trialStatus';
 
@@ -9,6 +10,7 @@ const { t } = useI18n();
 
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
@@ -142,10 +144,24 @@ onMounted(() => {
               <router-link to="/forgot-password" class="font-semibold text-indigo-400 hover:text-indigo-300">{{ t('auth.forgotPassword') }}</router-link>
             </div>
           </div>
-          <div class="mt-2">
-            <input type="password" id="password" v-model="password" autocomplete="current-password" required :placeholder="t('auth.passwordPlaceholder')" 
-            class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 
-            dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"/>
+          <div class="relative mt-2">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              id="password"
+              v-model="password"
+              autocomplete="current-password"
+              required
+              :placeholder="t('auth.passwordPlaceholder')"
+              class="block w-full rounded-md bg-gray-100 px-3 py-1.5 pr-10 text-gray-900 text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:text-white dark:bg-gray-700 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              @click="showPassword = !showPassword"
+            >
+              <EyeSlashIcon v-if="showPassword" class="h-4 w-4" aria-hidden="true" />
+              <EyeIcon v-else class="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         </div>
 

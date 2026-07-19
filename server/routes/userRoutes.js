@@ -12,6 +12,9 @@ const {
     getUser,
     inviteUser,
     updateUser,
+    deactivateUser,
+    getUserOwnershipSummary,
+    transferUserRecords,
     deleteUser,
     getProfile,
     updateProfile,
@@ -74,6 +77,9 @@ router.get('/:id', canManageUsers(), async (req, res, next) => {
 }, getUser);
 
 router.put('/:id', canManageUsers(), updateUser);
+router.post('/:id/deactivate', canManageUsers(), deactivateUser);
+router.get('/:id/ownership-summary', canManageUsers(), getUserOwnershipSummary);
+router.post('/:id/transfer-records', canManageUsers(), transferUserRecords);
 router.post('/:id/resend-invite', canManageUsers(), resendUserInvite);
 router.post('/:id/reset-password', canManageUsers(), resetUserPassword);
 router.delete('/:id', canManageUsers(), deleteUser);

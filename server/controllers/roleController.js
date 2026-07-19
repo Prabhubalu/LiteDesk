@@ -21,8 +21,22 @@ const {
     listExternalRolesForOrganization,
     ensureExternalPortalRolesForOrganization
 } = require('../services/portalExternalRoleSeedService');
+const Profile = require('../models/Profile');
+const { pickModulePermissionOverrides } = require('../services/roleProfileResolver');
 
 const upgradedPrivilegedRolesOrgs = new Set();
+
+async function normalizeProfileModePermissions(profileId, incomingPermissions) {
+    if (!profileId || incomingPermissions == null) {
+        return { permissions: {}, appPermissions: undefined };
+    }
+    const profile = await Profile.findById(profileId).select('permissions').lean();
+    const overrides = pickModulePermissionOverrides(
+        profile?.permissions,
+        incomingPermissions
+    );
+    return normalizeRolePermissions(overrides);
+}
 
 function attachUIPermissionAliases(roleObj) {
     if (!roleObj) return roleObj;
@@ -89,6 +103,10 @@ exports.seedExternalRoles = async (req, res) => {
 exports.getRoles = async (req, res) => {
     try {
         await ensurePrivilegedSystemRolesUpgraded(req.user.organizationId);
+        const organization = await Organization.findById(req.user.organizationId)
+            .select('enabledApps settings')
+            .lean();
+        await ensureExternalPortalRolesForOrganization(req.user.organizationId, organization);
         await syncRoleUserCounts(req.user.organizationId);
         let roles = await Role.find({
             organizationId: req.user.organizationId 
@@ -220,7 +238,7 @@ exports.createRole = async (req, res) => {
         const usesProfilePrivileges =
             String(privilegeMode || 'inline').toLowerCase() === 'profile' && profileId;
         const { permissions: normalizedPermissions, appPermissions } = usesProfilePrivileges
-            ? { permissions: {}, appPermissions: undefined }
+            ? await normalizeProfileModePermissions(profileId, permissions || {})
             : normalizeRolePermissions(permissions);
 
         const organization = await Organization.findById(req.user.organizationId).select('settings').lean();
@@ -333,8 +351,16 @@ exports.updateRole = async (req, res) => {
             && (req.body.profileId !== undefined ? req.body.profileId : role.profileId);
 
         if (usesProfilePrivileges) {
-            req.body.permissions = {};
-            req.body.appPermissions = {};
+            if (req.body.permissions !== undefined) {
+                const profileIdForNorm =
+                    req.body.profileId !== undefined ? req.body.profileId : role.profileId;
+                const normalized = await normalizeProfileModePermissions(
+                    profileIdForNorm,
+                    req.body.permissions
+                );
+                req.body.permissions = normalized.permissions;
+                req.body.appPermissions = normalized.appPermissions || {};
+            }
         } else if (req.body.permissions) {
             const merged = mergeIncomingRolePermissions(role, req.body.permissions);
             req.body.permissions = merged.permissions;
@@ -367,6 +393,9 @@ exports.updateRole = async (req, res) => {
         allowedUpdates.forEach(field => {
             if (req.body[field] !== undefined) {
                 role[field] = req.body[field];
+                if (field === 'permissions' || field === 'appPermissions' || field === 'fieldPermissions') {
+                    role.markModified(field);
+                }
             }
         });
 

@@ -147,7 +147,7 @@
               {{ t('settings.inviteSendEmail') }}
             </label>
             <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
-              {{ form.sendEmail ? t('settings.inviteSendEmailOn') : t('settings.inviteSendEmailOff') }}
+              {{ form.sendEmail ? t('settings.inviteSendEmailOnInvite') : t('settings.inviteSendEmailOffLink') }}
             </p>
           </div>
         </div>
@@ -500,47 +500,11 @@
 
                         <section class="space-y-4">
                           <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            {{ t('settings.inviteSectionCredentials') }}
+                            {{ t('settings.inviteSectionDelivery') }}
                           </h4>
 
-                          <div class="space-y-1">
-                            <span class="block text-sm/6 font-medium text-gray-900 dark:text-white">
-                              {{ t('settings.invitePassword') }}
-                            </span>
-                            <div class="mt-2 flex rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50 p-1">
-                              <button
-                                v-for="option in passwordOptions"
-                                :key="option.value"
-                                type="button"
-                                :class="[
-                                  passwordOption === option.value
-                                    ? 'bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 shadow-sm'
-                                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
-                                  'flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors'
-                                ]"
-                                @click="passwordOption = option.value"
-                              >
-                                {{ option.label }}
-                              </button>
-                            </div>
-                          </div>
-
-                          <div v-if="passwordOption === 'manual'" class="space-y-1">
-                            <label for="invite-password" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
-                              {{ t('settings.invitePassword') }}
-                            </label>
-                            <input
-                              id="invite-password"
-                              v-model="form.password"
-                              type="password"
-                              required
-                              minlength="8"
-                              :placeholder="t('settings.invitePasswordMin')"
-                              class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                            />
-                          </div>
-                          <p v-else class="text-xs text-gray-500 dark:text-gray-400">
-                            {{ passwordAutoHint }}
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ t('settings.inviteLinkOnlyHint') }}
                           </p>
 
                           <div class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-4 py-3">
@@ -555,7 +519,7 @@
                                   {{ t('settings.inviteSendEmail') }}
                                 </label>
                                 <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
-                                  {{ form.sendEmail ? t('settings.inviteSendEmailOn') : t('settings.inviteSendEmailOff') }}
+                                  {{ sendEmailHelp }}
                                 </p>
                               </div>
                             </div>
@@ -637,13 +601,11 @@ const form = ref({
   email: '',
   userType: 'INTERNAL',
   roleId: '',
-  password: '',
   sendEmail: true,
   welcomeNote: '',
   suggestedTask: ''
 });
 
-const passwordOption = ref('auto');
 const saving = ref(false);
 const error = ref('');
 const successMessage = ref('');
@@ -657,11 +619,6 @@ const validationErrors = ref({});
 const userTypeOptions = computed(() => [
   { value: 'INTERNAL', label: t('settings.inviteInternal') },
   { value: 'EXTERNAL', label: t('settings.inviteExternal') }
-]);
-
-const passwordOptions = computed(() => [
-  { value: 'auto', label: t('settings.invitePasswordAuto') },
-  { value: 'manual', label: t('settings.invitePasswordManual') }
 ]);
 
 const roleSelectOptions = computed(() => [
@@ -696,12 +653,10 @@ const selectedRoleProfileName = computed(() => {
   return '';
 });
 
-const passwordAutoHint = computed(() =>
-  t('settings.invitePasswordAutoHint', {
-    delivery: form.value.sendEmail
-      ? t('settings.invitePasswordEmailDelivery')
-      : t('settings.invitePasswordManualDelivery')
-  })
+const sendEmailHelp = computed(() =>
+  form.value.sendEmail
+    ? t('settings.inviteSendEmailOnInvite')
+    : t('settings.inviteSendEmailOffLink')
 );
 
 const suggestedTaskPresets = computed(() => [
@@ -804,12 +759,6 @@ const isFormValid = computed(() => {
   return true;
 });
 
-watch(passwordOption, (value) => {
-  if (value === 'auto') {
-    form.value.sendEmail = true;
-  }
-});
-
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     initializeForm();
@@ -892,12 +841,10 @@ const resetForm = () => {
     email: '',
     userType: 'INTERNAL',
     roleId: '',
-    password: '',
     sendEmail: true,
     welcomeNote: '',
     suggestedTask: ''
   };
-  passwordOption.value = 'auto';
   error.value = '';
   successMessage.value = '';
   successDetail.value = '';
@@ -1022,9 +969,6 @@ const handleSubmit = async () => {
         welcomeNote: form.value.welcomeNote || undefined,
         suggestedTask: form.value.suggestedTask || undefined
       };
-      if (passwordOption.value === 'manual' && form.value.password) {
-        payload.password = form.value.password;
-      }
     } else if (form.value.userType && selectedApps.value.length > 0) {
       payload = {
         firstName: form.value.firstName,
@@ -1040,18 +984,17 @@ const handleSubmit = async () => {
         welcomeNote: form.value.welcomeNote || undefined,
         suggestedTask: form.value.suggestedTask || undefined
       };
-
-      if (passwordOption.value === 'manual' && form.value.password) {
-        payload.password = form.value.password;
-      }
     } else {
       payload = {
-        ...form.value
+        firstName: form.value.firstName,
+        lastName: form.value.lastName,
+        email: form.value.email,
+        roleId: form.value.roleId,
+        userType: form.value.userType,
+        sendEmail: form.value.sendEmail,
+        welcomeNote: form.value.welcomeNote || undefined,
+        suggestedTask: form.value.suggestedTask || undefined
       };
-
-      if (passwordOption.value === 'auto') {
-        delete payload.password;
-      }
     }
 
     const response = await apiClient.post('/users', payload);
@@ -1067,20 +1010,22 @@ const handleSubmit = async () => {
       if (form.value.sendEmail && data.emailSent) {
         successMessage.value = t('settings.inviteSuccessEmailSent', { email: form.value.email });
         successDetail.value = t('settings.inviteSuccessEmailVerifyHint');
+      } else if (data.inviteUrl) {
+        successMessage.value = t('settings.inviteSuccessCreated');
+        successDetail.value = form.value.sendEmail
+          ? t('settings.inviteSuccessEmailFailedWithLink', {
+              reason: data.emailError || t('settings.inviteSuccessEmailFailedGeneric'),
+              link: data.inviteUrl
+            })
+          : t('settings.inviteSuccessShareLink', { link: data.inviteUrl });
       } else if (form.value.sendEmail && !data.emailSent) {
         successMessage.value = t('settings.inviteSuccessCreated');
         successDetail.value = t('settings.inviteSuccessEmailFailed', {
           reason: data.emailError || t('settings.inviteSuccessEmailFailedGeneric')
         });
-      } else if (data.tempPassword) {
-        successMessage.value = t('settings.inviteSuccessCreated');
-        successDetail.value = t('settings.inviteCreatedWithPassword', { password: data.tempPassword });
-      } else if (data.verificationEmailSent) {
-        successMessage.value = t('settings.inviteSuccessCreated');
-        successDetail.value = t('settings.inviteSuccessVerificationSent', { email: form.value.email });
       } else {
         successMessage.value = t('settings.inviteSuccessCreated');
-        successDetail.value = t('settings.inviteSuccessManualDelivery');
+        successDetail.value = t('settings.inviteSuccessResendHint');
       }
       if (props.inline) {
         emit('user-invited');

@@ -390,6 +390,7 @@ import {
   BookOpenIcon,
   ChatBubbleLeftRightIcon,
   DocumentChartBarIcon,
+  DocumentTextIcon,
   ExclamationTriangleIcon,
   LifebuoyIcon,
   PresentationChartLineIcon,
@@ -618,6 +619,7 @@ function getFigmaNavIcon(item: any) {
     if (route.startsWith('/portal/dashboard')) return FigmaHomeIcon;
     if (route.startsWith('/portal/cases')) return wrapHeroIcon(LifebuoyIcon);
     if (route.startsWith('/portal/invoices')) return wrapHeroIcon(BanknotesIcon);
+    if (route.startsWith('/portal/documents')) return wrapHeroIcon(DocumentTextIcon);
     if (route.startsWith('/portal/knowledge')) return wrapHeroIcon(BookOpenIcon);
 
     // App dashboard row (no moduleKey): route-specific analytics icons

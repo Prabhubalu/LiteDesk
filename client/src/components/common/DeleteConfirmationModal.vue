@@ -17,8 +17,9 @@
               class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
               <div class="sm:flex sm:items-start">
                 <div
-                  class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-500/10 sm:mx-0 sm:size-10">
-                  <ExclamationTriangleIcon class="size-6 text-red-600 dark:text-red-400" aria-hidden="true" />
+                  class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full sm:mx-0 sm:size-10"
+                  :class="iconWrapClass">
+                  <ExclamationTriangleIcon class="size-6" :class="iconClass" aria-hidden="true" />
                 </div>
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                   <DialogTitle as="h3" class="text-base font-semibold text-gray-900 dark:text-white">
@@ -30,8 +31,8 @@
                     </p>
                     <div class="h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                       <div
-                        class="h-full rounded-full bg-red-600 transition-all duration-300 ease-out"
-                        :class="{ 'animate-pulse': bulkDeleteStore.progressIndeterminate }"
+                        class="h-full rounded-full transition-all duration-300 ease-out"
+                        :class="[progressBarClass, { 'animate-pulse': bulkDeleteStore.progressIndeterminate }]"
                         :style="{
                           width: bulkDeleteStore.progressIndeterminate
                             ? '35%'
@@ -61,11 +62,12 @@
               </div>
               <div v-else class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-0">
                 <button type="button"
-                  class="inline-flex w-full justify-center rounded-md bg-red-600 dark:bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 dark:hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:focus-visible:outline-red-500 sm:ml-3 sm:w-auto"
+                  class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:ml-3 sm:w-auto"
+                  :class="confirmButtonClass"
                   :disabled="deleting"
                   @click="handleConfirm">
-                  <span v-if="deleting">{{ t('common.deleteInProgress') }}</span>
-                  <span v-else>{{ t('actions.delete') }}</span>
+                  <span v-if="deleting">{{ confirmBusyLabel }}</span>
+                  <span v-else>{{ confirmActionLabel }}</span>
                 </button>
                 <button type="button"
                   class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 sm:mt-0 sm:w-auto"
@@ -116,6 +118,32 @@ const props = defineProps({
   bulkCount: {
     type: Number,
     default: 0
+  },
+  /** Optional override for dialog title (e.g. users offboarding). */
+  title: {
+    type: String,
+    default: ''
+  },
+  /** Optional override for dialog body. */
+  message: {
+    type: String,
+    default: ''
+  },
+  /** Optional confirm button label (defaults to Delete). */
+  confirmLabel: {
+    type: String,
+    default: ''
+  },
+  /** Optional busy label while confirming. */
+  confirmingLabel: {
+    type: String,
+    default: ''
+  },
+  /** Visual tone for icon + primary button. */
+  tone: {
+    type: String,
+    default: 'danger',
+    validator: (value) => ['danger', 'warning', 'success'].includes(value)
   }
 });
 
@@ -127,6 +155,37 @@ const bulkProgressLabel = computed(() => {
   const processed = Number(bulkDeleteStore.processed || 0).toLocaleString();
   const total = Number(bulkDeleteStore.total || 0).toLocaleString();
   return t('common.bulkDeleteProgressDeleting', { processed, total });
+});
+
+const confirmActionLabel = computed(() => props.confirmLabel || t('actions.delete'));
+const confirmBusyLabel = computed(() => props.confirmingLabel || t('common.deleteInProgress'));
+
+const iconWrapClass = computed(() => {
+  if (props.tone === 'success') return 'bg-emerald-100 dark:bg-emerald-500/10';
+  if (props.tone === 'warning') return 'bg-amber-100 dark:bg-amber-500/10';
+  return 'bg-red-100 dark:bg-red-500/10';
+});
+
+const iconClass = computed(() => {
+  if (props.tone === 'success') return 'text-emerald-600 dark:text-emerald-400';
+  if (props.tone === 'warning') return 'text-amber-600 dark:text-amber-400';
+  return 'text-red-600 dark:text-red-400';
+});
+
+const confirmButtonClass = computed(() => {
+  if (props.tone === 'success') {
+    return 'bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-500 dark:hover:bg-emerald-400 focus-visible:outline-emerald-600 dark:focus-visible:outline-emerald-500';
+  }
+  if (props.tone === 'warning') {
+    return 'bg-amber-600 dark:bg-amber-500 hover:bg-amber-500 dark:hover:bg-amber-400 focus-visible:outline-amber-600 dark:focus-visible:outline-amber-500';
+  }
+  return 'bg-red-600 dark:bg-red-500 hover:bg-red-500 dark:hover:bg-red-400 focus-visible:outline-red-600 dark:focus-visible:outline-red-500';
+});
+
+const progressBarClass = computed(() => {
+  if (props.tone === 'success') return 'bg-emerald-600';
+  if (props.tone === 'warning') return 'bg-amber-600';
+  return 'bg-red-600';
 });
 
 const recordTypeLabel = computed(() => {
@@ -144,12 +203,15 @@ const recordTypeLabel = computed(() => {
     'trash item': 'Trash item',
     'quote line': 'Quote line',
     'folder': 'Folder',
-    'instance': 'Instance'
+    'instance': 'Instance',
+    'settings-users': 'User',
+    'users': 'User'
   };
   return labels[type] || type.charAt(0).toUpperCase() + type.slice(1);
 });
 
 const deleteDialogTitle = computed(() => {
+  if (props.title) return props.title;
   if (props.isBulk) {
     return t('common.deleteTitleBulk', {
       count: props.bulkCount,
@@ -160,6 +222,7 @@ const deleteDialogTitle = computed(() => {
 });
 
 const deleteDialogMessage = computed(() => {
+  if (props.message) return props.message;
   if (props.isBulk) {
     const label =
       props.bulkCount === 1
@@ -190,7 +253,9 @@ const recordTypeLabelPlural = computed(() => {
     'item': 'Items',
     'trash item': 'Trash items',
     'quote line': 'Quote lines',
-    'instance': 'Instances'
+    'instance': 'Instances',
+    'settings-users': 'Users',
+    'users': 'Users'
   };
   return labels[type] || (recordTypeLabel.value + 's');
 });

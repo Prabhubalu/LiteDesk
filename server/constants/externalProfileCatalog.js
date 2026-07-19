@@ -12,19 +12,11 @@ const { SYSTEM_PROFILE_KEYS } = require('../permissions/profileKeys');
 const EXTERNAL_PROFILE_DEFAULT_MODULE_KEYS = Object.freeze({
   [SYSTEM_PROFILE_KEYS.PORTAL_CUSTOMER]: Object.freeze([
     'cases',
-    'documents',
-    'invoices',
-    'forms',
-    'responses',
-    'events'
+    'documents'
   ]),
   [SYSTEM_PROFILE_KEYS.PORTAL_VIEWER]: Object.freeze([
     'cases',
-    'documents',
-    'invoices',
-    'forms',
-    'responses',
-    'events'
+    'documents'
   ])
 });
 
@@ -52,6 +44,8 @@ function isPlatformAdminCatalogModule(mod) {
 /**
  * Role-editor catalog for external profiles / external roles:
  * tenant core + app modules only (no platform administration).
+ * Portal customer/viewer catalogs prefer default modules when present, and
+ * inject stubs for missing defaults so profile grants remain editable.
  * @param {{ modules: object[], sections: object[] }} catalog
  * @param {{ profileKey?: string|null }} [options]
  */
@@ -61,15 +55,58 @@ function filterCatalogForExternalAccess(catalog, options = {}) {
   }
 
   const modules = (catalog.modules || []).filter((mod) => !isPlatformAdminCatalogModule(mod));
-  const visibleSectionIds = new Set(modules.map((m) => m.sectionId || 'default'));
-  const sections = (catalog.sections || []).filter((s) => visibleSectionIds.has(s.id));
-
   const profileKey = options.profileKey ? String(options.profileKey) : null;
+  const defaultKeys = getExternalProfileDefaultModuleKeys(profileKey);
+  let nextModules = modules;
+
+  if (defaultKeys && defaultKeys.length) {
+    const byKey = new Map(modules.map((mod) => [mod.key, mod]));
+    const preferred = [];
+    for (const key of defaultKeys) {
+      if (byKey.has(key)) {
+        preferred.push(byKey.get(key));
+        byKey.delete(key);
+      } else {
+        preferred.push({
+          key,
+          moduleKey: key,
+          label: key.charAt(0).toUpperCase() + key.slice(1),
+          description: `${key} — portal default module`,
+          kind: 'crud',
+          scope: key === 'cases' ? 'app' : 'core',
+          appKey: key === 'cases' ? 'HELPDESK' : null,
+          order: preferred.length,
+          hasScope: true,
+          supportsViewAll: true,
+          actions: ['read', 'create', 'update', 'delete'],
+          sectionId: key === 'cases' ? 'app-helpdesk' : 'core'
+        });
+      }
+    }
+    // Keep other tenant modules after defaults so admins can still grant extras.
+    nextModules = [...preferred, ...byKey.values()];
+  }
+
+  const visibleSectionIds = new Set(nextModules.map((m) => m.sectionId || 'default'));
+  if (defaultKeys?.includes('cases')) visibleSectionIds.add('app-helpdesk');
+  if (defaultKeys?.includes('documents')) visibleSectionIds.add('core');
+
+  const sections = [...(catalog.sections || [])];
+  if (defaultKeys?.includes('cases') && !sections.some((s) => s.id === 'app-helpdesk')) {
+    sections.push({
+      id: 'app-helpdesk',
+      label: 'Helpdesk',
+      description: 'Support case access for portal users',
+      appKey: 'HELPDESK',
+      order: 15
+    });
+  }
+  const visibleSections = sections.filter((s) => visibleSectionIds.has(s.id));
 
   return {
     ...catalog,
-    modules,
-    sections,
+    modules: nextModules,
+    sections: visibleSections,
     externalProfile: true,
     profileScoped: false,
     profileKey

@@ -228,12 +228,12 @@ function projectRoleToUserPermissions(rolePlain, appAccess = []) {
   };
 
   const documents = {
-    view: p.documents?.read === true,
+    view: p.documents?.read === true || p.documents?.view === true,
     create: p.documents?.create === true,
-    edit: p.documents?.update === true,
+    edit: p.documents?.update === true || p.documents?.edit === true,
     delete: p.documents?.delete === true,
     viewAll: viewAllForModule(p.documents, rolePlain),
-    exportData: p.documents?.export === true
+    exportData: p.documents?.export === true || p.documents?.exportData === true
   };
 
   const templates = {

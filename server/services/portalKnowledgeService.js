@@ -1,8 +1,6 @@
 'use strict';
 
-const documentService = require('./documentService');
 const contentStudioPortalService = require('./contentStudio/contentStudioPortalService');
-const { mergePortalKnowledgeRows } = require('./portalKnowledgeMerge');
 
 function shapePortalKnowledgeSummary(doc) {
   return {
@@ -13,7 +11,7 @@ function shapePortalKnowledgeSummary(doc) {
     documentType: doc.documentType,
     tags: Array.isArray(doc.tags) ? doc.tags : [],
     updatedAt: doc.updatedAt,
-    source: doc.source || 'legacy',
+    source: doc.source || 'content_studio',
     collectionId: doc.collectionId || null,
     collectionName: doc.collectionName || null,
     collectionSlug: doc.collectionSlug || null,
@@ -30,6 +28,10 @@ function shapePortalKnowledgeDetail(doc) {
   };
 }
 
+/**
+ * Help Center articles — Content Studio published portal content only.
+ * Customer file library lives at /portal/documents (visibility.portalVisible).
+ */
 async function listPortalKnowledgeArticles({
   organizationId,
   page = 1,
@@ -39,52 +41,28 @@ async function listPortalKnowledgeArticles({
 }) {
   const safeLimit = Math.min(Math.max(Number(limit) || 25, 1), 100);
   const safePage = Math.max(Number(page) || 1, 1);
-  const fetchSize = safePage * safeLimit;
   const safeCollectionId = collectionId ? String(collectionId).trim() : '';
 
-  const legacyPromise = safeCollectionId
-    ? Promise.resolve({ data: [], pagination: { total: 0 } })
-    : documentService.listPortalKnowledgeDocuments({
-        organizationId,
-        page: 1,
-        limit: fetchSize,
-        search,
-      });
-
-  const [legacyResult, studioResult] = await Promise.all([
-    legacyPromise,
-    contentStudioPortalService.listPortalArticles({
-      organizationId,
-      page: 1,
-      limit: fetchSize,
-      search,
-      collectionId: safeCollectionId || null,
-    }),
-  ]);
-
-  const merged = mergePortalKnowledgeRows(legacyResult.data, studioResult.data);
-  const skip = (safePage - 1) * safeLimit;
-  const pageRows = merged.slice(skip, skip + safeLimit);
-  const total = legacyResult.pagination.total + studioResult.pagination.total;
+  const studioResult = await contentStudioPortalService.listPortalArticles({
+    organizationId,
+    page: safePage,
+    limit: safeLimit,
+    search,
+    collectionId: safeCollectionId || null,
+  });
 
   return {
-    data: pageRows,
-    pagination: {
+    data: studioResult.data || [],
+    pagination: studioResult.pagination || {
       page: safePage,
       limit: safeLimit,
-      total,
-      totalPages: Math.max(Math.ceil(total / safeLimit), 1),
+      total: 0,
+      totalPages: 1,
     },
   };
 }
 
 async function getPortalKnowledgeArticle({ organizationId, documentId }) {
-  const legacyDoc = await documentService.getPortalKnowledgeDocument({
-    organizationId,
-    documentId,
-  });
-  if (legacyDoc) return legacyDoc;
-
   return contentStudioPortalService.getPortalArticle({
     organizationId,
     documentId,
@@ -98,7 +76,6 @@ async function listPortalKnowledgeCollections({ organizationId }) {
 module.exports = {
   shapePortalKnowledgeSummary,
   shapePortalKnowledgeDetail,
-  mergePortalKnowledgeRows,
   listPortalKnowledgeArticles,
   listPortalKnowledgeCollections,
   getPortalKnowledgeArticle,

@@ -1738,15 +1738,20 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
+  // Force password change for any user with a temporary/admin-set password
+  if (
+    authStore.isAuthenticated
+    && authStore.user?.mustChangePassword
+    && to.name !== 'portal-set-password'
+  ) {
+    logNavDebug('Redirecting: User must change password');
+    next({ name: 'portal-set-password' });
+    return;
+  }
+
   // External portal session guards (E3)
   if (authStore.isAuthenticated && authStore.isExternalUser) {
     const allowWithoutActivePortal = to.meta.allowWithoutActivePortal === true;
-
-    if (authStore.user?.mustChangePassword && to.name !== 'portal-set-password') {
-      logNavDebug('Redirecting: External user must change password');
-      next({ name: 'portal-set-password' });
-      return;
-    }
 
     if (authStore.needsPortalSelection && !allowWithoutActivePortal && to.name !== 'portal-select') {
       logNavDebug('Redirecting: External user must select portal');

@@ -19,7 +19,7 @@ const Organization = require('../models/Organization');
 const UserDirectory = require('../models/UserDirectory');
 const bcrypt = require('bcrypt');
 const userInviteService = require('../services/userInviteService');
-const { hashToken } = require('../utils/userAuthTokens');
+const { hashToken, buildInviteUrl } = require('../utils/userAuthTokens');
 const { generateSecurePassword } = require('../services/provisioning/utils/passwordGenerator');
 const mongoose = require('mongoose');
 const { APP_KEYS } = require('../constants/appKeys');
@@ -47,6 +47,77 @@ const {
     isSubscriptionUsable,
     ensureOrgSubscriptionForEnabledApps
 } = require('../utils/subscriptionUtils');
+const userRecordTransferService = require('../services/userRecordTransferService');
+
+async function mirrorUserStatusToMaster(ScopedUser, user, organization, status) {
+    if (ScopedUser === User) return;
+    const mirrorSet = {
+        status,
+        inviteTokenHash: null,
+        inviteTokenExpiresAt: null,
+        emailVerificationTokenHash: null,
+        emailVerificationExpiresAt: null
+    };
+    try {
+        let mirrorResult = await User.updateOne(
+            { _id: user._id },
+            { $set: mirrorSet, $inc: { authSessionVersion: 1 } }
+        );
+        if (mirrorResult.matchedCount === 0 && user.email) {
+            mirrorResult = await User.updateOne(
+                {
+                    email: String(user.email).toLowerCase().trim(),
+                    organizationId: organization._id
+                },
+                { $set: mirrorSet, $inc: { authSessionVersion: 1 } }
+            );
+        }
+        if (mirrorResult.matchedCount === 0) {
+            console.warn('[userLifecycle] Master user mirror matched 0 docs', {
+                userId: String(user._id),
+                organizationId: String(organization._id),
+                status
+            });
+        }
+    } catch (mirrorError) {
+        console.warn('[userLifecycle] Master user mirror failed:', mirrorError.message);
+    }
+}
+
+/**
+ * Deactivate: inactive status, revoke sessions, release seats, disable app access.
+ * Does not transfer records or set deleted.
+ */
+async function applyUserDeactivation(user, organization, ScopedUser) {
+    const appAccess = user.appAccess || [];
+    for (const appAccessEntry of appAccess) {
+        if (appAccessEntry.status === 'ACTIVE') {
+            await decrementSeat(organization._id, appAccessEntry.appKey);
+        }
+    }
+
+    user.status = 'inactive';
+    user.inviteTokenHash = null;
+    user.inviteTokenExpiresAt = null;
+    user.emailVerificationTokenHash = null;
+    user.emailVerificationExpiresAt = null;
+    user.authSessionVersion = Number(user.authSessionVersion || 0) + 1;
+    if (Array.isArray(user.appAccess) && user.appAccess.length > 0) {
+        user.appAccess.forEach((entry) => {
+            if (entry && String(entry.status || 'ACTIVE').toUpperCase() === 'ACTIVE') {
+                entry.status = 'DISABLED';
+            }
+        });
+        user.markModified('appAccess');
+    }
+    await user.save();
+    await mirrorUserStatusToMaster(ScopedUser, user, organization, 'inactive');
+    await userInviteService.syncDirectoryEntry(user.email, {
+        inviteTokenHash: null,
+        emailVerificationTokenHash: null,
+        status: 'inactive'
+    });
+}
 
 function getTenantModel(connection, modelName, sourceModel) {
     if (connection.models[modelName]) {
@@ -460,9 +531,23 @@ exports.getUsers = async (req, res) => {
                 : Promise.resolve([])
         ]);
 
+        // Dedicated tenant DB: never resurrect a master copy when the tenant already
+        // has that user (e.g. soft-deleted/inactive in tenant, still active on master).
+        let masterUsersForMerge = masterUsersRaw;
+        if (usingDedicatedTenantDb && masterUsersRaw.length > 0) {
+            const masterIds = masterUsersRaw.map((row) => row._id).filter(Boolean);
+            const existingInTenant = masterIds.length
+                ? await ScopedUser.find({ _id: { $in: masterIds } }).select('_id').lean()
+                : [];
+            const tenantOwnedIds = new Set(existingInTenant.map((row) => String(row._id)));
+            masterUsersForMerge = masterUsersRaw.filter(
+                (row) => !tenantOwnedIds.has(String(row._id))
+            );
+        }
+
         const dedupedUsers = [];
         const seenIds = new Set();
-        [...scopedUsersRaw, ...masterUsersRaw].forEach((row) => {
+        [...scopedUsersRaw, ...masterUsersForMerge].forEach((row) => {
             const key = String(row?._id || '');
             if (!key || seenIds.has(key)) return;
             seenIds.add(key);
@@ -875,7 +960,7 @@ exports.inviteUser = async (req, res) => {
                     message: 'User with this email already exists in your organization'
                 });
             }
-            if (!['inactive', 'invited'].includes(existingUser.status)) {
+            if (!['inactive', 'invited', 'deleted'].includes(existingUser.status)) {
                 return res.status(409).json({
                     success: false,
                     message: 'User with this email already exists in your organization'
@@ -884,7 +969,7 @@ exports.inviteUser = async (req, res) => {
             reinviteUser = existingUser;
         }
 
-        const wasInactive = reinviteUser?.status === 'inactive';
+        const wasInactive = reinviteUser?.status === 'inactive' || reinviteUser?.status === 'deleted';
 
         let finalAppAccess = [];
         let finalUserType = userType || 'INTERNAL';
@@ -1121,6 +1206,13 @@ exports.inviteUser = async (req, res) => {
         // Use provided password or generate temporary password
         const wantsEmail = sendEmail === true || sendEmail === 'true' || sendEmail === 1 || sendEmail === '1';
         const manualPassword = password ? String(password) : null;
+        if (manualPassword && manualPassword.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 8 characters',
+                code: 'PASSWORD_TOO_SHORT'
+            });
+        }
         const inviteCredentials = userInviteService.buildInviteCredentials({
             wantsEmail,
             manualPassword
@@ -1219,7 +1311,7 @@ exports.inviteUser = async (req, res) => {
         await materializeEffectiveCRMEnvelopeOnUser(newUser);
         await newUser.save();
 
-        if (wantsEmail && inviteCredentials.inviteTokenRaw) {
+        if (inviteCredentials.inviteTokenRaw) {
             const persistedInvite = await ScopedUser.findById(newUser._id)
                 .select('status inviteTokenHash inviteTokenExpiresAt')
                 .lean();
@@ -1283,6 +1375,7 @@ exports.inviteUser = async (req, res) => {
         let verificationEmailSent = false;
 
         if (wantsEmail && inviteCredentials.inviteTokenRaw) {
+            // Invite-link email (user sets password on accept)
             const inviteEmailResult = await userInviteService.sendInviteForUser({
                 user: newUser,
                 organization,
@@ -1307,7 +1400,8 @@ exports.inviteUser = async (req, res) => {
                     messageId: inviteEmailResult.messageId || null
                 });
             }
-        } else {
+        } else if (manualPassword && wantsEmail) {
+            // API-only temporary password path: notification / verification email (no secret).
             const verificationResult = await userInviteService.issueVerificationForUser({
                 user: newUser,
                 organization,
@@ -1319,6 +1413,8 @@ exports.inviteUser = async (req, res) => {
                 await userInviteService.syncDirectoryEntry(newUser.email, {
                     emailVerificationTokenHash: newUser.emailVerificationTokenHash
                 });
+            } else {
+                emailError = verificationResult.reason || 'Failed to send verification email';
             }
         }
 
@@ -1351,8 +1447,9 @@ exports.inviteUser = async (req, res) => {
             responseData.emailError = emailError;
         }
 
-        if (!wantsEmail && !manualPassword && process.env.NODE_ENV === 'development') {
-            responseData.tempPassword = tempPassword;
+        // When invite email was not delivered, return the link so admin can share it.
+        if (inviteCredentials.inviteTokenRaw && !emailSent) {
+            responseData.inviteUrl = buildInviteUrl(inviteCredentials.inviteTokenRaw);
         }
 
         res.status(201).json({
@@ -1429,7 +1526,35 @@ exports.updateUser = async (req, res) => {
             if (firstName !== undefined) user.firstName = firstName;
             if (lastName !== undefined) user.lastName = lastName;
             if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
-            if (status !== undefined) user.status = status;
+            if (status !== undefined) {
+                const nextStatus = String(status);
+                if (nextStatus === 'deleted') {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Use DELETE /users/:id after deactivate and transfer to delete a user',
+                        code: 'USE_DELETE_ENDPOINT'
+                    });
+                }
+                if (nextStatus === 'inactive' && user.status !== 'inactive') {
+                    await applyUserDeactivation(user, organization, ScopedUser);
+                    const ownership = await userRecordTransferService.getOwnershipSummary(
+                        organization._id,
+                        user._id
+                    );
+                    return res.json({
+                        success: true,
+                        message: 'User deactivated successfully',
+                        data: {
+                            _id: user._id,
+                            status: 'inactive',
+                            openTotal: ownership.openTotal,
+                            closedTotal: ownership.closedTotal,
+                            modules: ownership.modules
+                        }
+                    });
+                }
+                user.status = nextStatus;
+            }
         }
         
         const externalUser = isExternalUserType(user.userType);
@@ -1643,6 +1768,189 @@ exports.updateUser = async (req, res) => {
 };
 
 // --- Delete/Deactivate user ---
+// --- Deactivate user (status → inactive; seats released; login blocked) ---
+exports.deactivateUser = async (req, res) => {
+    try {
+        const organization = req.organization || await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({
+                success: false,
+                message: 'Organization not found'
+            });
+        }
+
+        const ScopedUser = await getScopedUserModel(organization);
+        const scopeQuery = buildUserScopeQuery(req, organization);
+
+        const user = await ScopedUser.findOne({
+            _id: req.params.id,
+            ...scopeQuery
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        if (user.isOwner) {
+            return res.status(403).json({
+                success: false,
+                message: 'Cannot deactivate the organization owner',
+                code: 'CANNOT_DEACTIVATE_OWNER'
+            });
+        }
+
+        if (user.status === 'deleted') {
+            return res.status(400).json({
+                success: false,
+                message: 'User is already deleted',
+                code: 'USER_ALREADY_DELETED'
+            });
+        }
+
+        if (user.status === 'inactive') {
+            return res.json({
+                success: true,
+                message: 'User is already inactive',
+                data: { status: 'inactive', alreadyInactive: true }
+            });
+        }
+
+        await applyUserDeactivation(user, organization, ScopedUser);
+
+        const ownership = await userRecordTransferService.getOwnershipSummary(
+            organization._id,
+            user._id
+        );
+
+        res.json({
+            success: true,
+            message: 'User deactivated successfully',
+            data: {
+                status: 'inactive',
+                openTotal: ownership.openTotal,
+                closedTotal: ownership.closedTotal,
+                modules: ownership.modules
+            }
+        });
+    } catch (error) {
+        console.error('Deactivate user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error deactivating user'
+        });
+    }
+};
+
+// --- Ownership summary for transfer step ---
+exports.getUserOwnershipSummary = async (req, res) => {
+    try {
+        const organization = req.organization || await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({ success: false, message: 'Organization not found' });
+        }
+
+        const ScopedUser = await getScopedUserModel(organization);
+        const scopeQuery = buildUserScopeQuery(req, organization);
+        const user = await ScopedUser.findOne({ _id: req.params.id, ...scopeQuery }).select('_id status isOwner');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const ownership = await userRecordTransferService.getOwnershipSummary(
+            organization._id,
+            user._id
+        );
+
+        res.json({
+            success: true,
+            data: {
+                userId: user._id,
+                status: user.status,
+                ...ownership
+            }
+        });
+    } catch (error) {
+        console.error('Ownership summary error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error loading ownership summary'
+        });
+    }
+};
+
+// --- Transfer records from one user to another ---
+exports.transferUserRecords = async (req, res) => {
+    try {
+        const organization = req.organization || await Organization.findById(req.user.organizationId);
+        if (!organization) {
+            return res.status(404).json({ success: false, message: 'Organization not found' });
+        }
+
+        const { toUserId, includeClosed = false, moduleKeys = null } = req.body || {};
+        if (!toUserId) {
+            return res.status(400).json({
+                success: false,
+                message: 'toUserId is required',
+                code: 'TO_USER_REQUIRED'
+            });
+        }
+
+        const ScopedUser = await getScopedUserModel(organization);
+        const scopeQuery = buildUserScopeQuery(req, organization);
+
+        const fromUser = await ScopedUser.findOne({ _id: req.params.id, ...scopeQuery });
+        if (!fromUser) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const toUser = await ScopedUser.findOne({
+            _id: toUserId,
+            ...scopeQuery,
+            status: 'active'
+        });
+        if (!toUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'Destination must be an active user in this organization',
+                code: 'INVALID_DESTINATION_USER'
+            });
+        }
+
+        const result = await userRecordTransferService.transferOwnership({
+            organizationId: organization._id,
+            fromUserId: fromUser._id,
+            toUserId: toUser._id,
+            includeClosed: Boolean(includeClosed),
+            moduleKeys: Array.isArray(moduleKeys) ? moduleKeys : null,
+            actorUserId: req.user._id
+        });
+
+        if (!result.ok) {
+            return res.status(400).json({
+                success: false,
+                message: result.message,
+                code: result.code
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Records transferred successfully',
+            data: result
+        });
+    } catch (error) {
+        console.error('Transfer user records error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error transferring records'
+        });
+    }
+};
+
+// --- Delete user (requires inactive + no open records → status deleted) ---
 exports.deleteUser = async (req, res) => {
     try {
         const organization = req.organization || await Organization.findById(req.user.organizationId);
@@ -1668,7 +1976,6 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
-        // Prevent deleting owner
         if (user.isOwner) {
             return res.status(403).json({ 
                 success: false,
@@ -1677,27 +1984,49 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
-        // Decrement seat usage for each app (atomic operations)
-        const appAccess = user.appAccess || [];
-        for (const appAccessEntry of appAccess) {
-            if (appAccessEntry.status === 'ACTIVE') {
-                await decrementSeat(organization._id, appAccessEntry.appKey);
-            }
+        if (user.status === 'deleted') {
+            return res.json({
+                success: true,
+                message: 'User already deleted'
+            });
         }
 
-        // Decrement role's user count if roleId exists
+        if (user.status !== 'inactive') {
+            return res.status(400).json({
+                success: false,
+                message: 'Deactivate the user and transfer open records before deleting',
+                code: 'MUST_DEACTIVATE_BEFORE_DELETE'
+            });
+        }
+
+        const ownership = await userRecordTransferService.getOwnershipSummary(
+            organization._id,
+            user._id
+        );
+        if (ownership.openTotal > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Transfer open records before deleting this user',
+                code: 'OPEN_RECORDS_REMAIN',
+                data: ownership
+            });
+        }
+
+        // Decrement role's user count if roleId exists (seats already released on deactivate)
         if (user.roleId) {
             const ScopedRole = await getScopedRoleModel(organization);
             await ScopedRole.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
         }
 
-        // Soft delete: just deactivate the user
-        user.status = 'inactive';
+        user.status = 'deleted';
         user.inviteTokenHash = null;
         user.inviteTokenExpiresAt = null;
         user.emailVerificationTokenHash = null;
         user.emailVerificationExpiresAt = null;
+        user.authSessionVersion = Number(user.authSessionVersion || 0) + 1;
         await user.save();
+
+        await mirrorUserStatusToMaster(ScopedUser, user, organization, 'deleted');
 
         await userInviteService.syncDirectoryEntry(user.email, {
           inviteTokenHash: null,
@@ -1705,11 +2034,9 @@ exports.deleteUser = async (req, res) => {
           status: 'inactive'
         });
 
-        // For hard delete, use: await user.remove();
-
         res.json({
             success: true,
-            message: 'User deactivated successfully'
+            message: 'User deleted successfully'
         });
 
     } catch (error) {
@@ -1907,15 +2234,15 @@ exports.resendUserInvite = async (req, res) => {
             });
         }
 
-        if (!['invited', 'inactive'].includes(user.status)) {
+        if (!['invited', 'inactive', 'deleted'].includes(user.status)) {
             return res.status(400).json({
                 success: false,
-                message: 'Only invited or inactive users can be reinvited',
+                message: 'Only invited, inactive, or deleted users can be reinvited',
                 code: 'INVALID_STATUS_FOR_RESEND_INVITE'
             });
         }
 
-        const wasInactive = user.status === 'inactive';
+        const wasInactive = user.status === 'inactive' || user.status === 'deleted';
         const inviteCredentials = userInviteService.buildInviteCredentials({ wantsEmail: true });
         const inviteTokenHash = hashToken(inviteCredentials.inviteTokenRaw);
         const hashedPassword = await bcrypt.hash(inviteCredentials.password, 10);

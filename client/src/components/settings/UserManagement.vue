@@ -31,11 +31,12 @@
       row-key="_id"
       :show-import="false"
       :show-export="false"
+      :selectable="false"
       :has-actions="true"
+      row-actions-gutter="7.5rem"
       :row-can-delete="() => false"
       :empty-title="hasActiveFilters ? t('settings.usersEmptyFilteredTitle') : t('settings.usersEmptyTitle')"
       :empty-message="hasActiveFilters ? t('settings.usersEmptyFilteredBody') : t('settings.usersEmptyBody')"
-      selection-column-variant="numbered-hover"
       @create="openInviteModal"
       @search-submit="handleSearch"
       @update:search-query="handleSearch"
@@ -45,9 +46,7 @@
       @stat-click="handleStatClick"
       @fetch="fetchUsers"
       @row-click="handleRowClick"
-      @view="openEditModal"
       @edit="openEditModal"
-      @bulk-action="handleBulkAction"
     >
       <template v-if="embedded" #toolbar-trailing>
         <PermissionButton
@@ -64,8 +63,60 @@
         </PermissionButton>
       </template>
 
+      <template #actions="{ row }">
+        <div class="inline-flex items-center gap-1">
+          <button
+            type="button"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:border-gray-600 dark:bg-white dark:text-gray-700 dark:hover:bg-gray-50"
+            :title="t('actions.edit')"
+            @click.stop="openEditModal(row)"
+          >
+            <PencilSquareIcon class="h-4 w-4" />
+          </button>
+
+          <template v-if="!row.isOwner && row.status !== 'deleted'">
+            <button
+              v-if="canDeactivateUser(row)"
+              type="button"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-amber-600 transition-colors hover:bg-amber-50 hover:text-amber-700 dark:border-gray-600 dark:bg-white"
+              :title="t('settings.editUserDeactivate')"
+              @click.stop="openLifecycleModal('deactivate', row)"
+            >
+              <NoSymbolIcon class="h-4 w-4" />
+            </button>
+
+            <template v-else-if="row.status === 'inactive'">
+              <button
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:border-gray-600 dark:bg-white"
+                :title="t('settings.editUserReactivate')"
+                @click.stop="reactivateUserFromList(row)"
+              >
+                <ArrowPathIcon class="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-indigo-600 transition-colors hover:bg-indigo-50 hover:text-indigo-700 dark:border-gray-600 dark:bg-white"
+                :title="t('settings.editUserTransferRecords')"
+                @click.stop="openLifecycleModal('transfer', row)"
+              >
+                <ArrowsRightLeftIcon class="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 dark:border-gray-600 dark:bg-white"
+                :title="t('settings.editUserDeleteAccount')"
+                @click.stop="openLifecycleModal('delete', row)"
+              >
+                <TrashIcon class="h-4 w-4" />
+              </button>
+            </template>
+          </template>
+        </div>
+      </template>
+
       <template #cell-user="{ row }">
-        <div class="flex items-center gap-3">
+        <div class="flex min-w-0 items-center gap-3">
           <div class="relative shrink-0">
             <img
               v-if="row.avatar"
@@ -86,20 +137,20 @@
               :title="t('settings.usersStatActive')"
             />
           </div>
-          <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-1.5">
-              <p class="truncate font-medium text-gray-900 dark:text-white">
+          <div class="min-w-0 flex-1 overflow-hidden">
+            <div class="flex min-w-0 flex-nowrap items-center gap-1.5">
+              <p class="min-w-0 truncate font-medium text-gray-900 dark:text-white">
                 {{ userDisplayName(row) }}
               </p>
               <span
                 v-if="row.isOwner"
-                class="inline-flex items-center rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+                class="inline-flex shrink-0 items-center rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
               >
                 {{ t('settings.usersStatAdmins') }}
               </span>
               <span
                 v-if="!row.emailVerifiedAt && row.status !== 'invited'"
-                class="inline-flex items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                class="inline-flex shrink-0 items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
               >
                 {{ t('settings.usersEmailUnverified') }}
               </span>
@@ -186,7 +237,17 @@
       :user="selectedUser"
       @close="showEditModal = false"
       @user-updated="handleUserUpdated"
+      @user-deleted="handleUserDeleted"
+      @start-lifecycle="openLifecycleFromEdit"
       @portal-roles-updated="fetchUsers"
+    />
+
+    <UserTransferRecordsModal
+      :open="showLifecycleModal"
+      :mode="lifecycleMode"
+      :user="lifecycleUser"
+      @close="closeLifecycleModal"
+      @completed="handleLifecycleCompleted"
     />
   </div>
 </template>
@@ -201,12 +262,14 @@ defineProps({
 
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { PencilSquareIcon, NoSymbolIcon, ArrowPathIcon, ArrowsRightLeftIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 import ListView from '@/components/common/ListView.vue';
 import PermissionButton from '@/components/common/PermissionButton.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import InviteUserDrawer from './InviteUserDrawer.vue';
 import EditUserModal from './EditUserModal.vue';
+import UserTransferRecordsModal from './UserTransferRecordsModal.vue';
 import { useNotifications } from '@/composables/useNotifications';
 import { formatRelativeTime } from '@/utils/relativeTime';
 import { dateFilterValueToParams, parseDateFilterValue } from '@/utils/dateFilterOptions';
@@ -226,6 +289,7 @@ const stats = ref({
   total: 0,
   active: 0,
   inactive: 0,
+  deleted: 0,
   invited: 0,
   admins: 0
 });
@@ -233,12 +297,21 @@ const stats = ref({
 const filters = ref({
   user: '',
   roleId: '',
-  status: '',
+  status: 'active',
   userType: '',
   lastLogin: '',
   createdAt: ''
 });
 const adminOnlyFilter = ref(false);
+
+const showInviteModal = ref(false);
+const showEditModal = ref(false);
+const selectedUser = ref(null);
+
+const showLifecycleModal = ref(false);
+/** @type {import('vue').Ref<'deactivate' | 'transfer' | 'delete'>} */
+const lifecycleMode = ref('deactivate');
+const lifecycleUser = ref(null);
 
 function resolveListFilters(newFilters) {
   const resolved = { ...(newFilters || {}) };
@@ -272,10 +345,6 @@ function resolveListFilters(newFilters) {
 
 const availableRoles = ref([]);
 
-const showInviteModal = ref(false);
-const showEditModal = ref(false);
-const selectedUser = ref(null);
-
 const roleFilterOptions = computed(() =>
   availableRoles.value.map((role) => ({
     value: role._id,
@@ -286,6 +355,7 @@ const roleFilterOptions = computed(() =>
 const statusFilterOptions = computed(() => [
   { value: 'active', label: t('settings.usersStatActive') },
   { value: 'inactive', label: t('settings.usersStatInactive') },
+  { value: 'deleted', label: t('settings.usersStatDeleted') },
   { value: 'invited', label: t('settings.usersStatusInvited') },
   { value: 'suspended', label: t('settings.usersStatusSuspended') }
 ]);
@@ -413,6 +483,7 @@ const statsConfig = computed(() => [
   { name: t('settings.usersStatActive'), key: 'active', formatter: 'number' },
   { name: t('settings.usersStatPending'), key: 'invited', formatter: 'number' },
   { name: t('settings.usersStatInactive'), key: 'inactive', formatter: 'number' },
+  { name: t('settings.usersStatDeleted'), key: 'deleted', formatter: 'number' },
   { name: t('settings.usersStatAdmins'), key: 'admins', formatter: 'number' }
 ]);
 
@@ -520,6 +591,7 @@ const fetchStats = async () => {
         total: response.total ?? all.length,
         active: all.filter((u) => u.status === 'active' || !u.status).length,
         inactive: all.filter((u) => u.status === 'inactive').length,
+        deleted: all.filter((u) => u.status === 'deleted').length,
         invited: all.filter((u) => u.status === 'invited').length,
         admins: all.filter((u) => u.isOwner || u.role === 'admin' || u.role === 'owner').length
       };
@@ -573,6 +645,9 @@ const handleStatClick = (statItem) => {
       break;
     case 'inactive':
       filters.value = { ...filters.value, status: 'inactive' };
+      break;
+    case 'deleted':
+      filters.value = { ...filters.value, status: 'deleted' };
       break;
     case 'invited':
       filters.value = { ...filters.value, status: 'invited' };
@@ -662,73 +737,64 @@ const handleUserUpdated = () => {
   refreshAll();
 };
 
-const handleBulkAction = async (actionId, selectedRows) => {
-  switch (actionId) {
-    case 'bulk-activate':
-      await bulkActivate(selectedRows);
-      break;
-    case 'bulk-deactivate':
-      await bulkDeactivate(selectedRows);
-      break;
-    case 'bulk-delete':
-    case 'delete':
-      await bulkDelete(selectedRows);
-      break;
-    default:
-      console.warn('Unknown bulk action:', actionId);
-  }
+const handleUserDeleted = async () => {
+  showEditModal.value = false;
+  selectedUser.value = null;
+  await refreshAll();
 };
 
-const bulkActivate = async (selectedRows) => {
-  if (!confirm(t('settings.usersBulkActivateConfirm', { count: selectedRows.length }))) return;
+function openLifecycleModal(mode, user) {
+  if (!user?._id) return;
+  lifecycleMode.value = mode;
+  lifecycleUser.value = user;
+  showLifecycleModal.value = true;
+}
 
+function closeLifecycleModal() {
+  showLifecycleModal.value = false;
+  lifecycleUser.value = null;
+}
+
+function canDeactivateUser(row) {
+  const status = row?.status || 'active';
+  return ['active', 'invited', 'suspended'].includes(status);
+}
+
+async function reactivateUserFromList(row) {
+  if (!row?._id) return;
   try {
-    await Promise.all(
-      selectedRows.map((row) => apiClient.put(`/users/${row._id}`, { status: 'active' }))
-    );
-    notifySuccess(t('settings.usersBulkActivatedSuccess', { count: selectedRows.length }));
-    refreshAll();
-  } catch (error) {
-    console.error('Error activating users:', error);
-    notifyError(t('settings.usersBulkActivateFailed'));
+    const response = await apiClient.put(`/users/${row._id}`, { status: 'active' });
+    if (response.success) {
+      notifySuccess(t('settings.editUserReactivateSuccess'));
+      await refreshAll();
+    } else {
+      notifyError(t('settings.editUserReactivateFailed'));
+    }
+  } catch (err) {
+    console.error('Error reactivating user:', err);
+    notifyError(t('settings.editUserReactivateFailed'));
   }
-};
+}
 
-const bulkDeactivate = async (selectedRows) => {
-  if (!confirm(t('settings.usersBulkDeactivateConfirm', { count: selectedRows.length }))) return;
+function openLifecycleFromEdit(payload) {
+  const mode = payload?.mode || 'deactivate';
+  const user = payload?.user || selectedUser.value;
+  showEditModal.value = false;
+  openLifecycleModal(mode, user);
+}
 
-  try {
-    await Promise.all(
-      selectedRows.map((row) => apiClient.put(`/users/${row._id}`, { status: 'inactive' }))
-    );
-    notifySuccess(t('settings.usersBulkDeactivatedSuccess', { count: selectedRows.length }));
-    refreshAll();
-  } catch (error) {
-    console.error('Error deactivating users:', error);
-    notifyError(t('settings.usersBulkDeactivateFailed'));
-  }
-};
-
-const bulkDelete = async (selectedRows) => {
-  if (!confirm(t('settings.usersBulkDeleteConfirm', { count: selectedRows.length }))) return;
-
-  try {
-    await Promise.all(
-      selectedRows.map((row) => apiClient.delete(`/users/${row._id}`))
-    );
-    notifySuccess(t('settings.usersBulkDeletedSuccess', { count: selectedRows.length }));
-    refreshAll();
-  } catch (error) {
-    console.error('Error deleting users:', error);
-    notifyError(t('settings.usersBulkDeleteFailed'));
-  }
-};
+async function handleLifecycleCompleted() {
+  closeLifecycleModal();
+  selectedUser.value = null;
+  await refreshAll();
+}
 
 const formatStatusLabel = (status) => {
   const normalized = status || 'active';
   const labels = {
     active: t('settings.usersStatActive'),
     inactive: t('settings.usersStatInactive'),
+    deleted: t('settings.usersStatDeleted'),
     suspended: t('settings.usersStatusSuspended'),
     invited: t('settings.usersStatusInvited')
   };
@@ -740,6 +806,7 @@ const statusVariant = (status) => {
   const variants = {
     active: 'success',
     inactive: 'default',
+    deleted: 'danger',
     suspended: 'danger',
     invited: 'warning'
   };

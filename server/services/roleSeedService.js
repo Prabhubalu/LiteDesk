@@ -70,6 +70,41 @@ async function syncSystemProfilePermissions(organizationId, ProfileModel = Profi
   return { updated };
 }
 
+/**
+ * Portal system profiles always track code defaults (Support/Help/Documents).
+ * Bypasses updatedBy so existing tenants pick up matrix changes.
+ */
+async function forceSyncPortalSystemProfiles(organizationId, ProfileModel = Profile) {
+  const portalKeys = new Set([
+    SYSTEM_PROFILE_KEYS.PORTAL_CUSTOMER,
+    SYSTEM_PROFILE_KEYS.PORTAL_VIEWER
+  ]);
+  let updated = 0;
+  for (const def of SYSTEM_PROFILE_DEFINITIONS) {
+    if (!portalKeys.has(def.profileKey)) continue;
+    const payload = typeof def.permissions === 'function' ? def.permissions() : def.permissions;
+    const permissions = payload?.permissions ?? payload;
+    const appPermissions = payload?.appPermissions;
+    const result = await ProfileModel.updateOne(
+      {
+        organizationId,
+        profileKey: def.profileKey,
+        isSystemProfile: true
+      },
+      {
+        $set: {
+          description: def.description,
+          permissions,
+          ...(appPermissions ? { appPermissions } : {}),
+          updatedBy: null
+        }
+      }
+    );
+    if (result.modifiedCount || result.matchedCount) updated += 1;
+  }
+  return { updated };
+}
+
 async function getProfileIdByKey(organizationId, profileKey, ProfileModel = Profile) {
   const p = await ProfileModel.findOne({ organizationId, profileKey }).select('_id').lean();
   return p?._id || null;
@@ -284,6 +319,7 @@ async function seedRolesAndProfilesForOrganization(organizationId, organization,
 module.exports = {
   seedSystemProfiles,
   syncSystemProfilePermissions,
+  forceSyncPortalSystemProfiles,
   seedRolesAndProfilesForOrganization,
   getProfileIdByKey,
   buildEntitlementsAllApps,

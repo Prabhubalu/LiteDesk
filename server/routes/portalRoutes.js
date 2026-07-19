@@ -67,6 +67,9 @@ const {
   listPortalKnowledgeCollections,
   getPortalKnowledgeArticle,
   askPortalKnowledgeHandler,
+  listPortalSharedDocuments,
+  getPortalSharedDocument,
+  downloadPortalSharedDocument,
 } = require('../controllers/portalDocumentController');
 const { getPortalDashboard } = require('../controllers/portalDashboardController');
 const {
@@ -148,7 +151,12 @@ router.get('/invoices/:id/pay-eligibility', requirePortalModuleAccess('invoices'
 router.post('/invoices/:id/pay', requirePortalModuleAccess('invoices', 'read'), startPortalPayHandler);
 router.get('/payment-sessions/:id/status', requirePortalModuleAccess('invoices', 'read'), getPortalPaymentSessionStatusHandler);
 
-// Knowledge base (portal-visible published articles)
+// Customer document library (published + visibility.portalVisible)
+router.get('/documents', requirePortalModuleAccess('documents', 'read'), listPortalSharedDocuments);
+router.get('/documents/:id/download', requirePortalModuleAccess('documents', 'read'), downloadPortalSharedDocument);
+router.get('/documents/:id', requirePortalModuleAccess('documents', 'read'), getPortalSharedDocument);
+
+// Help Center (Content Studio published articles)
 router.get('/knowledge-base/collections', requirePortalModuleAccess('documents', 'read'), listPortalKnowledgeCollections);
 router.get('/knowledge-base', requirePortalModuleAccess('documents', 'read'), listPortalKnowledgeArticles);
 router.post(

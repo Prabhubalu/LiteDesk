@@ -612,6 +612,7 @@
           :loading="tableLoading"
           :selectable="selectable"
           :has-actions="hasActions"
+          :row-actions-gutter="rowActionsGutter"
           :sort-field="sortField"
           :sort-order="sortOrder"
           :mass-actions="massActions"
@@ -707,6 +708,8 @@
       :deleting="deleteModalBusy"
       :is-bulk="isBulkDelete"
       :bulk-count="bulkDeleteCount"
+      :title="customDeleteDialogTitle"
+      :message="customDeleteDialogMessage"
       @close="handleDeleteModalClose"
       @confirm="confirmDelete"
     />
@@ -1487,6 +1490,7 @@ import {
   TagIcon, 
   FlagIcon, 
   CheckCircleIcon,
+  NoSymbolIcon,
   GlobeAltIcon,
   LinkIcon
 } from '@heroicons/vue/24/outline';
@@ -1609,6 +1613,11 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  /** CSS length reserved for hover row actions in the first column */
+  rowActionsGutter: {
+    type: String,
+    default: '7rem'
+  },
   /** When false, disables inline per-column header filters */
   columnHeaderFilters: {
     type: Boolean,
@@ -1618,6 +1627,16 @@ const props = defineProps({
   rowCanDelete: {
     type: Function,
     default: () => true
+  },
+  /** Optional i18n key for delete dialog title (receives count, recordType, recordTypePlural, name) */
+  deleteConfirmTitleKey: {
+    type: String,
+    default: ''
+  },
+  /** Optional i18n key for delete dialog body (receives count, recordType, recordTypePlural, name) */
+  deleteConfirmMessageKey: {
+    type: String,
+    default: ''
   },
   /** When false, hides filter builder / filter toolbar controls (search remains) */
   showFilters: {
@@ -2007,6 +2026,28 @@ const deleteRecordName = computed(() => {
   }
   
   return '';
+});
+
+const customDeleteDialogTitle = computed(() => {
+  const key = props.deleteConfirmTitleKey;
+  if (!key || !te(key)) return '';
+  return t(key, {
+    count: bulkDeleteCount.value,
+    name: deleteRecordName.value,
+    recordType: 'User',
+    recordTypePlural: 'Users'
+  });
+});
+
+const customDeleteDialogMessage = computed(() => {
+  const key = props.deleteConfirmMessageKey;
+  if (!key || !te(key)) return '';
+  return t(key, {
+    count: bulkDeleteCount.value,
+    name: deleteRecordName.value,
+    recordType: 'User',
+    recordTypePlural: 'Users'
+  });
 });
 
 // Customize button label and click (List vs Kanban)
@@ -5324,6 +5365,8 @@ const getActionIcon = (iconName) => {
   const iconMap = {
     'trash': TrashIcon,
     'delete': TrashIcon,
+    'activate': CheckCircleIcon,
+    'deactivate': NoSymbolIcon,
     'export': ArrowUpTrayIcon,
     'download': ArrowUpTrayIcon,
     'duplicate': DocumentDuplicateIcon,

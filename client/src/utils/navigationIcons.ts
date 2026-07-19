@@ -83,6 +83,7 @@ const MODULE_ICON_MAP: Record<string, any> = {
   portal_invoices: BanknotesIcon,
   portal_knowledge: BookOpenIcon,
   knowledge: BookOpenIcon,
+  portal_documents: DocumentTextIcon,
   campaigns: MegaphoneIcon,
   audiences: UserGroupIcon,
   segments: FunnelIcon,
@@ -196,6 +197,9 @@ export function getNavigationIconComponent(item: IconLookupItem): any {
   }
   if (route.startsWith('/portal/invoices')) {
     return BanknotesIcon;
+  }
+  if (route.startsWith('/portal/documents')) {
+    return DocumentTextIcon;
   }
   if (route.startsWith('/portal/knowledge')) {
     return BookOpenIcon;

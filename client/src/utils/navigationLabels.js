@@ -39,6 +39,7 @@ export const MODULE_LABEL_KEYS = {
   widgets: 'navigation.moduleWidgets',
   dashboards: 'navigation.moduleDashboards',
   documents: 'navigation.moduleDocuments',
+  portal_documents: 'navigation.portalDocuments',
   portal_knowledge: 'navigation.portalKnowledge',
   templates: 'navigation.moduleTemplates',
   import: 'navigation.moduleImports',
@@ -123,6 +124,7 @@ export const ROUTE_TITLE_KEYS = {
   '/portal/dashboard': 'navigation.home',
   '/portal/cases': 'cases.portalCasesTitle',
   '/portal/invoices': 'navigation.portalInvoices',
+  '/portal/documents': 'navigation.portalDocuments',
   '/portal/knowledge': 'navigation.portalKnowledge',
   '/portal/audits': 'navigation.portalAudits',
   '/portal/actions': 'navigation.portalActions',
@@ -298,6 +300,12 @@ export function getTabTitleMetaForPath(path, params = {}) {
     }
     if (pathOnly.startsWith('/portal/invoices')) {
       return { titleKey: 'navigation.portalInvoices' };
+    }
+    if (pathOnly.startsWith('/portal/documents')) {
+      if (segments.length > 2) {
+        return { titleKey: 'navigation.tabPortalDocument' };
+      }
+      return { titleKey: 'navigation.portalDocuments' };
     }
     if (pathOnly.startsWith('/portal/knowledge')) {
       if (segments.length > 2) {
@@ -520,6 +528,12 @@ export function isGenericRecordTabTitleKey(titleKey) {
   return titleKey === 'navigation.tabRecordDetail';
 }
 
+/** Portal customer document detail (`/portal/documents/:id`). */
+export function isPortalDocumentDetailTabPath(path) {
+  const segments = pathSegments(path);
+  return segments[0] === 'portal' && segments[1] === 'documents' && Boolean(segments[2]);
+}
+
 /** Best available display name for a record tab (survives refresh). */
 export function getPersistedRecordTabName(tab) {
   if (!tab) return '';
@@ -534,8 +548,13 @@ export function getPersistedRecordTabName(tab) {
 
 /** True when a record tab already has a stored entity name — do not replace with module labels. */
 export function shouldPreserveRecordTabTitle(tab, path) {
-  if (!isRecordDetailTabPath(path)) return false;
-  return getPersistedRecordTabName(tab).length > 0;
+  if (isRecordDetailTabPath(path)) {
+    return getPersistedRecordTabName(tab).length > 0;
+  }
+  if (isPortalDocumentDetailTabPath(path)) {
+    return Boolean(String(tab?.recordTitle || tab?.params?.name || '').trim());
+  }
+  return false;
 }
 
 /**
@@ -608,6 +627,11 @@ export function resolveTabTitle(tab, t, te = () => false) {
     return recordName;
   }
 
+  if (isPortalDocumentDetailTabPath(tab?.path)) {
+    const portalDocName = String(tab?.recordTitle || tab?.params?.name || '').trim();
+    if (portalDocName) return portalDocName;
+  }
+
   if (tab?.titleKey === 'navigation.tabRecordNamed' && tab.titleParams?.name) {
     const params = localizedTabTitleParams(tab.titleKey, tab.titleParams, t, te);
     return t(tab.titleKey, params);
@@ -664,6 +688,22 @@ export function hydrateTabFromStorage(tab) {
     }
 
     return tab;
+  }
+
+  if (isPortalDocumentDetailTabPath(tab.path)) {
+    const customName = String(tab.recordTitle || tab.params?.name || '').trim()
+      || (!tab.titleKey ? String(tab.title || '').trim() : '');
+    if (customName) {
+      const next = {
+        ...tab,
+        recordTitle: customName,
+        title: customName,
+        params: { ...tab.params, name: customName }
+      };
+      delete next.titleKey;
+      delete next.titleParams;
+      return next;
+    }
   }
 
   // List / settings / dashboard routes

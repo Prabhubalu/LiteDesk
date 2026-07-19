@@ -8,9 +8,13 @@ import { hasPermission as checkSnapshotPermission } from '@/types/permission-sna
 const PORTAL_KNOWLEDGE_MODULE_KEYS = new Set([
   'portal_knowledge',
   'knowledge',
-  'documents',
+  'knowledge_base',
+  'knowledge-base'
+]);
+
+const PORTAL_DOCUMENTS_MODULE_KEYS = new Set([
   'portal_documents',
-  'knowledge_base'
+  'documents'
 ]);
 
 const PORTAL_MODULE_PERMISSION_MAP: Record<string, string> = {
@@ -18,9 +22,10 @@ const PORTAL_MODULE_PERMISSION_MAP: Record<string, string> = {
   support: 'cases.read',
   portal_knowledge: 'documents.read',
   knowledge: 'documents.read',
-  documents: 'documents.read',
-  portal_documents: 'documents.read',
   knowledge_base: 'documents.read',
+  'knowledge-base': 'documents.read',
+  portal_documents: 'documents.read',
+  documents: 'documents.read',
   portal_invoices: 'invoices.read',
   invoices: 'invoices.read',
   portal_organization: 'organizations.read',
@@ -46,9 +51,10 @@ const PORTAL_MODULE_RBAC_KEYS: Record<string, string[]> = {
   support: ['cases'],
   portal_knowledge: ['documents'],
   knowledge: ['documents'],
-  documents: ['documents'],
-  portal_documents: ['documents'],
   knowledge_base: ['documents'],
+  'knowledge-base': ['documents'],
+  portal_documents: ['documents'],
+  documents: ['documents'],
   portal_invoices: ['invoices'],
   invoices: ['invoices'],
   portal_organization: ['organizations'],
@@ -73,11 +79,20 @@ function normalizePortalModuleKey(moduleKey: string): string {
 }
 
 export function resolvePortalModulePermission(moduleKey: string): string | undefined {
-  return PORTAL_MODULE_PERMISSION_MAP[normalizePortalModuleKey(moduleKey)];
+  const normalized = normalizePortalModuleKey(moduleKey);
+  return PORTAL_MODULE_PERMISSION_MAP[normalized] || PORTAL_MODULE_PERMISSION_MAP[moduleKey];
 }
 
 export function isPortalKnowledgeModuleKey(moduleKey: string): boolean {
-  return PORTAL_KNOWLEDGE_MODULE_KEYS.has(normalizePortalModuleKey(moduleKey));
+  const normalized = normalizePortalModuleKey(moduleKey);
+  return (
+    PORTAL_KNOWLEDGE_MODULE_KEYS.has(normalized)
+    || PORTAL_KNOWLEDGE_MODULE_KEYS.has(String(moduleKey || '').toLowerCase())
+  );
+}
+
+export function isPortalDocumentsModuleKey(moduleKey: string): boolean {
+  return PORTAL_DOCUMENTS_MODULE_KEYS.has(normalizePortalModuleKey(moduleKey));
 }
 
 function moduleReadGranted(snapshot: PermissionSnapshot, moduleKeys: string[]): boolean {

@@ -1614,5 +1614,49 @@
   "portalKnowledgeAskEscalate": {
     "message": "Need more help? Open a support case from Cases.",
     "description": "Portal Ask escalate hint"
+  },
+  "portalDocumentsTitle": {
+    "message": "Documents",
+    "description": "Portal shared documents page title"
+  },
+  "portalDocumentsSubtitle": {
+    "message": "View files your organization has shared with you.",
+    "description": "Portal shared documents subtitle"
+  },
+  "portalDocumentsEmptyTitle": {
+    "message": "No documents shared yet",
+    "description": "Portal documents empty title"
+  },
+  "portalDocumentsEmptyMessage": {
+    "message": "When your account manager shares documents to the portal, they will appear here.",
+    "description": "Portal documents empty message"
+  },
+  "portalDocumentsSearchPlaceholder": {
+    "message": "Search documents…",
+    "description": "Portal documents search placeholder"
+  },
+  "portalDocumentsLoadFailed": {
+    "message": "Failed to load documents.",
+    "description": "Portal documents load error"
+  },
+  "portalDocumentsUpdated": {
+    "message": "Updated {date}",
+    "description": "Portal document updated label"
+  },
+  "portalDocumentsDownload": {
+    "message": "Download",
+    "description": "Portal document download button"
+  },
+  "portalDocumentsDownloading": {
+    "message": "Downloading…",
+    "description": "Portal document download in progress"
+  },
+  "portalDocumentsDownloadFailed": {
+    "message": "Failed to download document.",
+    "description": "Portal document download error"
+  },
+  "portalDocumentsNoPreview": {
+    "message": "No preview available for this document. Use Download if a file is attached.",
+    "description": "Portal document no preview message"
   }
 }

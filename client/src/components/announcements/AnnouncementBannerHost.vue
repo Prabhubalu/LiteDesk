@@ -113,6 +113,10 @@ function clearBannerOffset() {
 }
 
 function syncBannerOffset() {
+  // App.vue owns --platform-banner-offset when #platform-top-banners is mounted.
+  if (typeof document !== 'undefined' && document.getElementById('platform-top-banners')) {
+    return;
+  }
   if (!rootEl.value) {
     clearBannerOffset();
     return;
@@ -242,6 +246,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   resizeObserver?.disconnect();
   resizeObserver = null;
+  if (typeof document !== 'undefined' && document.getElementById('platform-top-banners')) {
+    return;
+  }
   clearBannerOffset();
 });
 

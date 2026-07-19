@@ -10,12 +10,21 @@ function isExternalPortalUser(user) {
   return String(user?.userType || '').toUpperCase() === 'EXTERNAL';
 }
 
+function readPermissionsRoot(user) {
+  const runtimeEnvelope = user?._permissionRuntime?.envelope;
+  if (runtimeEnvelope && typeof runtimeEnvelope === 'object') {
+    return runtimeEnvelope;
+  }
+  return user?.permissions || null;
+}
+
 function readModuleEnvelope(user, moduleKey) {
   const mod = normalizeStorageModuleKey(moduleKey);
-  const envelope = user?.permissions?.[mod];
+  const root = readPermissionsRoot(user);
+  const envelope = root?.[mod];
   if (!envelope || typeof envelope !== 'object') {
-    if (mod === 'responses' && user?.permissions?.forms) {
-      return user.permissions.forms;
+    if (mod === 'responses' && root?.forms) {
+      return root.forms;
     }
     return null;
   }

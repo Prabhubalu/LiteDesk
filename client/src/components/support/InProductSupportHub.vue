@@ -1105,7 +1105,13 @@ watch(aiAsking, (asking) => {
 
 const hideOnAgentWorkspace = computed(() => String(route.path || '').startsWith('/live-chat'));
 
-const canUseAi = computed(() => Boolean(authStore.isAuthenticated));
+const canUseAi = computed(() => {
+  if (!authStore.isAuthenticated) return false;
+  if (authStore.isExternalUser) return false;
+  const path = String(route.path || '');
+  if (path.startsWith('/portal') || path.startsWith('/live-chat')) return false;
+  return true;
+});
 
 const astraIntroCapabilities = computed(() => [
   t('liveChat.inAppAiCapabilityAsk'),
@@ -1806,19 +1812,14 @@ async function openFreshAiChat() {
 
 function onOpenAssistantEvent() {
   if (hideOnAgentWorkspace.value) return;
+  if (!canUseAi.value) return;
   if (showAstraIntro.value) return;
   if (panelOpen.value) {
     closePanel();
     return;
   }
-  if (canUseAi.value) {
-    if (maybeRevealAstraIntro()) return;
-    void openFreshAiChat();
-    return;
-  }
-  if (isAvailable.value) {
-    openPanel();
-  }
+  if (maybeRevealAstraIntro()) return;
+  void openFreshAiChat();
 }
 
 async function onNewChatFromMenu() {

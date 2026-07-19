@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useTabs, tabShowsHelpdeskAlert } from '@/composables/useTabs';
@@ -11,7 +11,7 @@ import ArivuAssistantLauncher from '@/components/support/ArivuAssistantLauncher.
 import UserMenu from '@/components/UserMenu.vue';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import { useUserStatus } from '@/composables/useUserStatus';
-import { XMarkIcon } from '@heroicons/vue/20/solid';
+import { XMarkIcon, ChevronDownIcon } from '@heroicons/vue/20/solid';
 import { resolveTabTitleWithHelpdeskAlerts } from '@/utils/helpdeskTabAlerts';
 import { resolveTabTitleWithLiveChatAlerts } from '@/utils/liveChatTabAlerts';
 import { resolveTabTitle } from '@/utils/navigationLabels';
@@ -23,6 +23,10 @@ import {
   shouldShowTabPreview,
 } from '@/utils/tabPreviewContext';
 import { sidebarMainColumnOffsetPx } from '@/utils/sidebarLayout';
+
+/** Floor below which tabs stop shrinking and the strip scrolls (Chrome / VS Code). */
+const TAB_MIN_WIDTH_PX = 120;
+const TAB_MAX_WIDTH_PX = 200;
 
 const { t, te } = useI18n();
 useHelpdeskBrowserTitle();
@@ -85,7 +89,7 @@ function tabItemClasses(tab, index) {
   if (active) {
     return [
       ...base,
-      'tab-item--active z-10 overflow-visible',
+      'tab-item--active z-10',
       'bg-white dark:bg-neutral-900',
     ];
   }
@@ -251,14 +255,81 @@ const tabItemStyle = computed(() => {
   return {
     flex: '1 1 0',
     flexBasis: '0',
-    minWidth: '0',
-    maxWidth: '200px',
+    minWidth: `${TAB_MIN_WIDTH_PX}px`,
+    maxWidth: `${TAB_MAX_WIDTH_PX}px`,
   };
 });
+
+// Overflow menu + strip scroll (shrink to floor, then scroll — never squeeze past content)
+const tabsOverflowing = ref(false);
+const showOverflowMenu = ref(false);
+const overflowMenuRef = ref(null);
+
+const showOverflowButton = computed(
+  () => tabsArray.value.length > 1 && (tabsOverflowing.value || tabsArray.value.length >= 8)
+);
+
+const updateTabsOverflow = () => {
+  const el = tabsContainerRef.value;
+  if (!(el instanceof HTMLElement)) {
+    tabsOverflowing.value = false;
+    return;
+  }
+  tabsOverflowing.value = el.scrollWidth > el.clientWidth + 1;
+};
+
+const scrollActiveTabIntoView = async () => {
+  await nextTick();
+  const container = tabsContainerRef.value;
+  if (!(container instanceof HTMLElement) || !activeTabId.value) return;
+  const activeEl = container.querySelector(`[data-tab-id="${CSS.escape(activeTabId.value)}"]`);
+  if (!(activeEl instanceof HTMLElement)) {
+    updateTabsOverflow();
+    return;
+  }
+  // Scroll only the strip — avoid scrollIntoView bubbling to the page
+  const cRect = container.getBoundingClientRect();
+  const tRect = activeEl.getBoundingClientRect();
+  if (tRect.left < cRect.left) {
+    container.scrollLeft -= cRect.left - tRect.left;
+  } else if (tRect.right > cRect.right) {
+    container.scrollLeft += tRect.right - cRect.right;
+  }
+  updateTabsOverflow();
+};
+
+const handleTabsWheel = (event) => {
+  const el = tabsContainerRef.value;
+  if (!(el instanceof HTMLElement) || el.scrollWidth <= el.clientWidth) return;
+  if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+  event.preventDefault();
+  el.scrollLeft += event.deltaY;
+};
+
+const toggleOverflowMenu = () => {
+  showOverflowMenu.value = !showOverflowMenu.value;
+  if (showOverflowMenu.value) clearTabPreview();
+};
+
+const closeOverflowMenu = () => {
+  showOverflowMenu.value = false;
+};
+
+const handleOverflowSelectTab = (tabId) => {
+  switchToTab(tabId);
+  closeOverflowMenu();
+  scrollActiveTabIntoView();
+};
+
+const handleOverflowCloseTab = (event, tabId) => {
+  event.stopPropagation();
+  closeTab(tabId);
+};
 
 const releaseFrozenTabWidth = () => {
   if (frozenTabWidth.value !== null) {
     frozenTabWidth.value = null;
+    nextTick(() => updateTabsOverflow());
   }
 };
 
@@ -283,6 +354,10 @@ const handleCloseTab = (event, tabId) => {
   }
 
   closeTab(tabId);
+  nextTick(() => {
+    updateTabsOverflow();
+    scrollActiveTabIntoView();
+  });
 };
 
 // Drag and drop handlers
@@ -380,10 +455,17 @@ const closeTabsToRight = (tabId) => {
   tabsToClose.forEach(tab => closeTab(tab.id));
 };
 
-// Close context menu on click outside (profile menu uses v-click-outside)
-const handleClickOutside = () => {
+// Close context / overflow menus on click outside (profile menu uses v-click-outside)
+const handleClickOutside = (event) => {
   if (showContextMenu.value) {
     handleCloseContextMenu();
+  }
+  if (
+    showOverflowMenu.value &&
+    overflowMenuRef.value instanceof HTMLElement &&
+    !overflowMenuRef.value.contains(event.target)
+  ) {
+    closeOverflowMenu();
   }
 };
 
@@ -391,11 +473,15 @@ const handleClickOutside = () => {
 const handleResize = () => {
   viewportWidth.value = window.innerWidth;
   updateTabBarOffset();
+  updateTabsOverflow();
 };
 
 const handleSidebarToggle = () => {
   if (isDesktopShell.value) {
-    nextTick(() => updateTabBarOffset());
+    nextTick(() => {
+      updateTabBarOffset();
+      updateTabsOverflow();
+    });
     return;
   }
 
@@ -403,9 +489,28 @@ const handleSidebarToggle = () => {
   viewportWidth.value = currentWidth + 1;
   setTimeout(() => {
     viewportWidth.value = currentWidth;
-    nextTick(() => updateTabBarOffset());
+    nextTick(() => {
+      updateTabBarOffset();
+      updateTabsOverflow();
+    });
   }, 0);
 };
+
+let tabsResizeObserver = null;
+
+watch(activeTabId, () => {
+  scrollActiveTabIntoView();
+});
+
+watch(
+  () => tabsArray.value.length,
+  () => {
+    nextTick(() => {
+      updateTabsOverflow();
+      scrollActiveTabIntoView();
+    });
+  }
+);
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
@@ -417,7 +522,20 @@ onMounted(() => {
   if (tabsArray.value.length === 0) {
     setTimeout(() => updateTabBarOffset(), 100);
   } else {
-    nextTick(() => updateTabBarOffset());
+    nextTick(() => {
+      updateTabBarOffset();
+      updateTabsOverflow();
+      scrollActiveTabIntoView();
+    });
+  }
+
+  if (typeof ResizeObserver !== 'undefined') {
+    tabsResizeObserver = new ResizeObserver(() => updateTabsOverflow());
+    nextTick(() => {
+      if (tabsContainerRef.value instanceof HTMLElement) {
+        tabsResizeObserver.observe(tabsContainerRef.value);
+      }
+    });
   }
 });
 
@@ -426,6 +544,10 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
   window.removeEventListener('sidebar-toggle', handleSidebarToggle);
   document.documentElement.style.removeProperty('--tabbar-offset');
+  if (tabsResizeObserver) {
+    tabsResizeObserver.disconnect();
+    tabsResizeObserver = null;
+  }
 });
 </script>
 
@@ -440,12 +562,14 @@ onUnmounted(() => {
     <div class="flex items-center h-11 min-w-0 w-full gap-2 pl-0 pr-2" :style="{ width: '100%', maxWidth: '100%' }">
       <div
         ref="tabsContainerRef"
-        class="flex flex-1 min-w-0 items-center gap-0 h-full overflow-x-hidden"
+        class="tab-strip__scroller flex flex-1 min-w-0 items-center gap-0 h-full"
         @mouseleave="handleTabsContainerMouseLeave"
         @mouseover="handleTabsContainerMouseOver"
+        @wheel="handleTabsWheel"
+        @scroll="updateTabsOverflow"
       >
-      <!-- Tabs - Chrome style: widths shrink to fit, and stay frozen on close
-           until the cursor leaves the strip. -->
+      <!-- Tabs - Chrome style: shrink to min-width floor, then scroll.
+           Widths freeze on close until the cursor leaves the strip. -->
       <template v-if="tabsArray.length > 0">
         <div
           v-for="(tab, index) in tabsArray"
@@ -508,6 +632,68 @@ onUnmounted(() => {
         </button>
       </div>
       </template>
+      </div>
+
+      <!-- Overflow menu: jump to any tab when the strip is crowded -->
+      <div
+        v-if="showOverflowButton"
+        ref="overflowMenuRef"
+        class="relative flex-shrink-0 self-stretch flex items-center"
+      >
+        <button
+          type="button"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          :aria-label="t('navigation.tabMoreTabs')"
+          :title="t('navigation.tabMoreTabs')"
+          aria-haspopup="true"
+          :aria-expanded="showOverflowMenu"
+          @click.stop="toggleOverflowMenu"
+        >
+          <ChevronDownIcon class="h-4 w-4" aria-hidden="true" />
+        </button>
+        <transition
+          enter-active-class="transition-all duration-100 ease-out"
+          enter-from-class="opacity-0 scale-95"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="transition-all duration-75 ease-in"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-95"
+        >
+          <div
+            v-if="showOverflowMenu"
+            class="absolute right-0 top-full mt-1 z-50 min-w-56 max-w-xs max-h-80 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1"
+            role="menu"
+            :aria-label="t('navigation.tabMoreTabs')"
+            @click.stop
+          >
+            <div
+              v-for="tab in tabsArray"
+              :key="`overflow-${tab.id}`"
+              role="menuitem"
+              class="w-full flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              :class="activeTabId === tab.id
+                ? 'bg-neutral-100 dark:bg-neutral-700/60 text-neutral-900 dark:text-neutral-100 font-medium'
+                : 'text-gray-700 dark:text-gray-200'"
+              @click="handleOverflowSelectTab(tab.id)"
+            >
+              <component
+                :is="tab.icon"
+                class="h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400"
+                aria-hidden="true"
+              />
+              <span class="flex-1 min-w-0 truncate">{{ tabDisplayTitle(tab) }}</span>
+              <button
+                v-if="tab.closable"
+                type="button"
+                class="inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                :aria-label="t('navigation.tabCloseTab')"
+                @click="handleOverflowCloseTab($event, tab.id)"
+              >
+                <XMarkIcon class="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </transition>
       </div>
 
       <!-- Tablet (md–lg): profile + bell live in Nav top bar (lg:hidden). Desktop (lg+): show here. -->
@@ -625,6 +811,18 @@ onUnmounted(() => {
 .tab-strip {
   --tab-strip-padding-y: 0.1875rem;
   --tab-strip-separator-inset-y: 0.625rem;
+}
+
+/* Contained horizontal scroll — never leaks to body (see HORIZONTAL_SCROLL_FIX) */
+.tab-strip__scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tab-strip__scroller::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 1024px) {
