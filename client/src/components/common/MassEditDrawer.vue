@@ -162,7 +162,7 @@ import {
 import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import DynamicFormField from '@/components/common/DynamicFormField.vue';
-import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getMassEditableFields } from '@/utils/massEditFieldPolicy';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { resolveFieldLabel as resolveModuleFieldLabel } from '@/utils/fieldLabelResolver';
@@ -251,11 +251,7 @@ function resetState() {
 async function loadModuleFields() {
   loading.value = true;
   try {
-    const data = await fetchModulesListCached({});
-    const modules = Array.isArray(data)
-      ? data
-      : data?.data ?? data?.modules ?? [];
-    const mod = modules.find((m) => String(m?.key || '').toLowerCase() === String(props.moduleKey).toLowerCase());
+    const mod = await fetchModuleDefinitionCached(props.moduleKey);
     moduleFields.value = Array.isArray(mod?.fields) ? mod.fields : [];
   } catch (error) {
     console.error('[MassEditDrawer] Failed to load module fields:', error);

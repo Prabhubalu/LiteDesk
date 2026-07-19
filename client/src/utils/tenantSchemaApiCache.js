@@ -115,14 +115,17 @@ export async function fetchModuleDefinitionCached(moduleKey, options = {}) {
 /**
  * Cached GET /modules. Pass same shape as apiClient.get second arg `params`.
  * For calls that use a raw query string, normalize to params first.
+ * Pass `{ cache: 'no-store' }` to bypass/refresh the in-memory entry.
  */
-export async function fetchModulesListCached(params = {}) {
+export async function fetchModulesListCached(params = {}, options = {}) {
   const normalizedParams = normalizeModulesListParams(params);
   const sk = sessionKey();
   const pk = modulesCacheKey(normalizedParams);
   const cacheKey = `${sk}|${pk}`;
 
-  if (modulesCache.has(cacheKey)) {
+  if (options.cache === 'no-store') {
+    modulesCache.delete(cacheKey);
+  } else if (modulesCache.has(cacheKey)) {
     return modulesCache.get(cacheKey);
   }
   if (modulesInflight.has(cacheKey)) {
@@ -130,7 +133,7 @@ export async function fetchModulesListCached(params = {}) {
   }
 
   const p = apiClient
-    .get('/modules', { params: normalizedParams })
+    .get('/modules', { params: normalizedParams, ...(options.cache === 'no-store' ? { cache: 'no-store' } : {}) })
     .then((res) => {
       modulesCache.set(cacheKey, res);
       return res;

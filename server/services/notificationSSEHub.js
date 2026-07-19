@@ -24,7 +24,7 @@ function debugLog(event, data) {
 
 class NotificationSSEHub {
   constructor() {
-    // Map: connectionId -> { res, userId, organizationId, appKey, lastHeartbeat, createdAt }
+    // Map: connectionId -> { res, userId, organizationId, appKey, appKeys, lastHeartbeat, createdAt }
     this.connections = new Map();
     
     // Map: key (orgId_userId_appKey) -> Set of connectionIds
@@ -59,28 +59,43 @@ class NotificationSSEHub {
     return `${String(organizationId)}_${String(userId)}_${appKey}`;
   }
 
+  normalizeAppKeys(appKeyOrKeys) {
+    const list = Array.isArray(appKeyOrKeys) ? appKeyOrKeys : [appKeyOrKeys];
+    return [...new Set(
+      list
+        .map((k) => String(k || '').toUpperCase().trim())
+        .filter(Boolean)
+    )];
+  }
+
   /**
-   * Subscribe a user to notifications for a specific app.
+   * Subscribe a user to notifications for one or more apps on a single SSE response.
    * Enforces connection limits per user/app and per organization.
-   * 
+   *
    * @param {Object} res - Express response object (SSE stream)
    * @param {string} userId - User ID
    * @param {string} organizationId - Organization ID
-   * @param {string} appKey - App key (SALES | AUDIT | PORTAL)
+   * @param {string|string[]} appKeyOrKeys - App key(s) (SALES | AUDIT | PORTAL | …)
    * @returns {string} connectionId
    */
-  subscribe(res, userId, organizationId, appKey) {
-    const connectionId = this.generateConnectionId();
-    const key = this.getSubscriberKey(userId, organizationId, appKey);
-    const orgIdStr = String(organizationId);
+  subscribe(res, userId, organizationId, appKeyOrKeys) {
+    const appKeys = this.normalizeAppKeys(appKeyOrKeys);
+    if (appKeys.length === 0) {
+      throw new Error('appKeys required');
+    }
 
-    // Check per-user-per-app limit
-    const userAppConnections = this.subscribersByKey.get(key) || new Set();
-    if (userAppConnections.size >= MAX_CONNECTIONS_PER_USER_APP) {
-      // Close oldest connection for this user/app
-      const oldestConnectionId = Array.from(userAppConnections)[0];
-      console.warn(`[notificationSSEHub] Max connections per user/app exceeded (${MAX_CONNECTIONS_PER_USER_APP}), closing oldest: ${oldestConnectionId}`);
-      this.unsubscribe(oldestConnectionId);
+    const connectionId = this.generateConnectionId();
+    const orgIdStr = String(organizationId);
+    const userIdStr = String(userId);
+
+    for (const appKey of appKeys) {
+      const key = this.getSubscriberKey(userIdStr, orgIdStr, appKey);
+      const userAppConnections = this.subscribersByKey.get(key) || new Set();
+      if (userAppConnections.size >= MAX_CONNECTIONS_PER_USER_APP) {
+        const oldestConnectionId = Array.from(userAppConnections)[0];
+        console.warn(`[notificationSSEHub] Max connections per user/app exceeded (${MAX_CONNECTIONS_PER_USER_APP}), closing oldest: ${oldestConnectionId}`);
+        this.unsubscribe(oldestConnectionId);
+      }
     }
 
     // Check per-organization limit
@@ -93,21 +108,26 @@ class NotificationSSEHub {
     }
 
     const now = Date.now();
+    const primaryAppKey = appKeys.length === 1 ? appKeys[0] : 'MULTI';
     // Store connection
     this.connections.set(connectionId, {
       res,
-      userId: String(userId),
+      userId: userIdStr,
       organizationId: orgIdStr,
-      appKey,
+      appKey: primaryAppKey,
+      appKeys,
       lastHeartbeat: now,
       createdAt: now
     });
 
-    // Index by subscriber key
-    if (!this.subscribersByKey.has(key)) {
-      this.subscribersByKey.set(key, new Set());
+    // Index by each app subscriber key (one socket, many apps)
+    for (const appKey of appKeys) {
+      const key = this.getSubscriberKey(userIdStr, orgIdStr, appKey);
+      if (!this.subscribersByKey.has(key)) {
+        this.subscribersByKey.set(key, new Set());
+      }
+      this.subscribersByKey.get(key).add(connectionId);
     }
-    this.subscribersByKey.get(key).add(connectionId);
 
     // Index by organization
     if (!this.connectionsByOrg.has(orgIdStr)) {
@@ -122,13 +142,14 @@ class NotificationSSEHub {
 
     debugLog('SSE_CONNECT', {
       connectionId,
-      userId: String(userId),
+      userId: userIdStr,
       organizationId: orgIdStr,
-      appKey,
+      appKey: primaryAppKey,
+      appKeys,
       totalConnections: this.connections.size
     });
 
-    console.log(`[notificationSSEHub] Subscribed: ${connectionId} (${key})`);
+    console.log(`[notificationSSEHub] Subscribed: ${connectionId} (${appKeys.join(',')})`);
     return connectionId;
   }
 
@@ -141,15 +162,19 @@ class NotificationSSEHub {
     const conn = this.connections.get(connectionId);
     if (!conn) return;
 
-    const key = this.getSubscriberKey(conn.userId, conn.organizationId, conn.appKey);
     const orgIdStr = conn.organizationId;
-    
-    // Remove from subscriber index
-    const subscribers = this.subscribersByKey.get(key);
-    if (subscribers) {
-      subscribers.delete(connectionId);
-      if (subscribers.size === 0) {
-        this.subscribersByKey.delete(key);
+    const appKeys = Array.isArray(conn.appKeys) && conn.appKeys.length > 0
+      ? conn.appKeys
+      : [conn.appKey].filter(Boolean);
+
+    for (const appKey of appKeys) {
+      const key = this.getSubscriberKey(conn.userId, conn.organizationId, appKey);
+      const subscribers = this.subscribersByKey.get(key);
+      if (subscribers) {
+        subscribers.delete(connectionId);
+        if (subscribers.size === 0) {
+          this.subscribersByKey.delete(key);
+        }
       }
     }
 
@@ -169,6 +194,7 @@ class NotificationSSEHub {
       userId: conn.userId,
       organizationId: orgIdStr,
       appKey: conn.appKey,
+      appKeys,
       totalConnections: this.connections.size
     });
 
@@ -340,8 +366,12 @@ class NotificationSSEHub {
     const users = new Set();
 
     for (const conn of this.connections.values()) {
-      // Count by app
-      byApp[conn.appKey] = (byApp[conn.appKey] || 0) + 1;
+      const keys = Array.isArray(conn.appKeys) && conn.appKeys.length > 0
+        ? conn.appKeys
+        : [conn.appKey].filter(Boolean);
+      for (const appKey of keys) {
+        byApp[appKey] = (byApp[appKey] || 0) + 1;
+      }
       
       // Track unique orgs and users
       orgs.add(conn.organizationId);

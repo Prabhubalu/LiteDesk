@@ -113,9 +113,8 @@
                 :primary-module="form.primaryModule"
                 :primary-module-label="primaryModuleLabel"
                 :field-options="moduleFieldOptions"
-                :module-fields="moduleFields"
                 :selected-fields="selectedFields"
-                :filter-initial-state="filterInitialState"
+                :filter-initial-state="filterState || filterInitialState"
                 :filter-remount-token="filterRemountToken"
                 @filter-change="onFilterStateChange"
               />
@@ -281,6 +280,7 @@ import {
   useReportBuilder,
 } from '@/composables/useReportBuilder';
 import { useColorMode } from '@/composables/useColorMode';
+import { useTabs } from '@/composables/useTabs';
 
 const props = defineProps({
   reportId: { type: String, default: null },
@@ -288,6 +288,7 @@ const props = defineProps({
 
 const route = useRoute();
 const { effectiveDark } = useColorMode();
+const { activeTabId, updateTabTitle } = useTabs();
 const {
   t,
   currentStep,
@@ -387,5 +388,14 @@ watch(
     }
   },
   { immediate: true },
+);
+
+watch(
+  () => form.name,
+  (name) => {
+    const trimmed = String(name || '').trim();
+    if (!trimmed || !activeTabId.value) return;
+    updateTabTitle(activeTabId.value, trimmed);
+  },
 );
 </script>

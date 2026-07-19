@@ -445,10 +445,15 @@ onMounted(async () => {
     const neededMetadata = !appShellStore.isLoaded;
     appLog('Auto-refreshing permissions on page load...');
     try {
-      await Promise.all([
-        authStore.refreshUser({ force: true }),
-        neededMetadata ? appShellStore.loadUIMetadata() : Promise.resolve()
-      ]);
+      // Do not block first paint / route recovery on shell registry+routes.
+      // Metadata still loads (single-flight); sidebar/routes hydrate when ready.
+      const metadataPromise = neededMetadata
+        ? appShellStore.loadUIMetadata()
+        : Promise.resolve();
+      await authStore.refreshUser({ force: true });
+      void metadataPromise.catch((err) => {
+        console.warn('[App] UI metadata load failed:', err);
+      });
     } catch (bootstrapErr) {
       console.warn('[App] Bootstrap refresh failed:', bootstrapErr);
     }
@@ -465,6 +470,12 @@ onMounted(async () => {
       appLog('Initializing dynamic routes...');
       if (typeof initDynamicRoutes === 'function') {
         try {
+          // Prefer awaiting metadata so dynamic routes exist, but cap wait so a slow
+          // /ui/registry cannot hang the whole shell indefinitely.
+          await Promise.race([
+            appShellStore.loadUIMetadata(),
+            new Promise((resolve) => setTimeout(resolve, 2500))
+          ]);
           await initDynamicRoutes();
         } catch (routeErr) {
           console.warn('[App] Dynamic routes init failed:', routeErr);

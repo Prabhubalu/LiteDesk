@@ -363,9 +363,12 @@ watch(
 onMounted(async () => {
   // Phase 2D: Load UI metadata if not already loaded (App.vue also does this, but safe to check)
   if (!appShellStore.isLoaded && authStore.isAuthenticated) {
-    await appShellStore.loadUIMetadata();
+    void appShellStore.loadUIMetadata().catch((err) => {
+      console.warn('[PortalLayout] UI metadata load failed:', err);
+    });
   }
-  await authStore.refreshUser({ force: true });
+  // Soften gate: do not block branding/sidebar on a forced profile refresh.
+  void authStore.refreshUser({ force: true }).catch(() => {});
   await Promise.all([buildSidebar(), loadBranding()]);
   window.addEventListener('arivu:core-modules-updated', onCoreModulesUpdated);
 });

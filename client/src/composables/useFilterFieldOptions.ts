@@ -2,6 +2,7 @@ import { type ComputedRef, type Ref, reactive } from 'vue';
 import apiClient from '@/utils/apiClient';
 import type { FilterConfig } from '@/platform/filters/filterResolver';
 import { normalizeFilterSelectOptions } from '@/utils/picklistOptionUtils';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 
 function getUserDisplayName(user: Record<string, unknown>): string {
   if (!user) return '';
@@ -26,6 +27,12 @@ type DocumentFolderRow = {
 };
 
 type FilterSelectOption = NonNullable<FilterConfig['options']>[number];
+type ModuleDefinition = {
+  fields?: Array<{
+    key?: string;
+    options?: FilterConfig['options'];
+  }>;
+};
 
 function cacheKey(moduleKey: string, fieldKey: string) {
   return `${moduleKey}:${fieldKey}`;
@@ -147,11 +154,8 @@ export function useFilterFieldOptions(
     loadingKeys.add(scopedKey);
     try {
       const mod = moduleKeyOverride || moduleKey.value;
-      const response = await apiClient.get('/modules', { params: { key: mod } });
-      const fields =
-        response.success && Array.isArray(response.data) && response.data[0]?.fields
-          ? response.data[0].fields
-          : [];
+      const moduleDef = await fetchModuleDefinitionCached(mod) as ModuleDefinition | null;
+      const fields = Array.isArray(moduleDef?.fields) ? moduleDef.fields : [];
       const field = fields.find(
         (row: { key?: string }) => String(row?.key || '') === key
       );
@@ -194,14 +198,19 @@ export function useFilterFieldOptions(
 
 function isUserAssignmentField(key: string, filter: FilterConfig | null | undefined) {
   if (!key) return false;
-  const norm = key.toLowerCase();
+  const bare = key.includes('.') ? key.slice(key.lastIndexOf('.') + 1) : key;
+  const norm = bare.toLowerCase().replace(/[^a-z0-9]/g, '');
   if (filter?.filterType === 'user') return true;
   return (
     norm === 'assignedto' ||
-    norm === 'lead_owner' ||
+    norm === 'assignedby' ||
+    norm === 'leadowner' ||
     norm === 'createdby' ||
     norm === 'modifiedby' ||
-    norm === 'owner'
+    norm === 'updatedby' ||
+    norm === 'submittedby' ||
+    norm === 'owner' ||
+    norm === 'ownerid'
   );
 }
 

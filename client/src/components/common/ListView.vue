@@ -1502,6 +1502,7 @@ import { useBulkActions } from '@/composables/useBulkActions';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { moduleSupportsGenericRecordPreview } from '@/utils/recordPresence';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
@@ -2610,29 +2611,8 @@ const fetchFieldConfiguration = async () => {
   try {
     const moduleKey = props.moduleKey;
     if (!moduleKey) return null;
-    
-    const authStore = useAuthStore();
-    const token = authStore.user?.token;
-    if (!token) return null;
-    
-    const modulesResponse = await fetch('/api/modules', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (!modulesResponse.ok) {
-      return null;
-    }
-    
-    const modulesData = await modulesResponse.json();
-    if (!modulesData.success || !Array.isArray(modulesData.data)) {
-      return null;
-    }
-    
-    // Find the module by key
-    const module = modulesData.data.find(m => m.key === moduleKey);
+
+    const module = await fetchModuleDefinitionCached(moduleKey);
     if (module) {
       // Store backend config for later use
       backendModuleConfig.value = module;
@@ -4825,32 +4805,8 @@ const syncFieldVisibilityToBackend = async (fieldKey, visible) => {
     // Get the module key from props
     const moduleKey = props.moduleKey;
     if (!moduleKey) return;
-    
-    // Fetch current module configuration from listModules endpoint
-    const authStore = useAuthStore();
-    const token = authStore.user?.token;
-    if (!token) return;
-    
-    const modulesResponse = await fetch('/api/modules', {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (!modulesResponse.ok) {
-      console.warn('Failed to fetch modules for field sync');
-      return;
-    }
-    
-    const modulesData = await modulesResponse.json();
-    if (!modulesData.success || !Array.isArray(modulesData.data)) {
-      console.warn('Modules data not found for field sync');
-      return;
-    }
-    
-    // Find the module by key
-    const module = modulesData.data.find(m => m.key === moduleKey);
+
+    const module = await fetchModuleDefinitionCached(moduleKey);
     if (!module) {
       console.warn(`Module ${moduleKey} not found for field sync`);
       return;

@@ -383,6 +383,7 @@ import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { invalidatePeopleTypesCache } from '@/utils/peopleTypesInvalidate';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import {
   PEOPLE_TYPE_COLOR_OPTIONS,
   coercePeopleTypeColorForSave,
@@ -760,8 +761,8 @@ async function load() {
       apiClient.get('/settings/core-modules/people/people-types', {
         params: { appKey: selectedAppKey.value }
       }) as Promise<{ success?: boolean; data?: unknown }>,
-      apiClient
-        .get('/modules', { params: { key: 'people', context: 'all' } })
+      fetchModuleDefinitionCached('people', { context: 'all' })
+        .then((mod) => ({ success: true, data: mod ? [mod] : [] }))
         .catch((e: unknown) => ({ __error: e }))
     ]);
     await fetchUsage();

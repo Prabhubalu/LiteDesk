@@ -1,4 +1,7 @@
-const SUPPORTED_MODULES = new Set(['people', 'organizations', 'deals', 'tasks', 'cases', 'workspace']);
+const { CORE_EMAIL_MODULES } = require('./emailRelatedModulePolicy');
+
+/** @deprecated Prefer relationship-based eligibility via isEmailEligibleModule. Kept as default allow-list seed. */
+const SUPPORTED_MODULES = new Set(CORE_EMAIL_MODULES);
 
 function normalizeAddressList(value) {
   if (!value) return [];
@@ -22,9 +25,21 @@ function normalizeSendEmailPayload(payload = {}) {
     || payload.standalone === 'true'
     || String(payload.standalone || '').toLowerCase() === 'true';
 
+  const relatedToRaw = payload.relatedTo && typeof payload.relatedTo === 'object'
+    ? payload.relatedTo
+    : {};
+  const relatedTo = {
+    moduleKey: relatedToRaw.moduleKey != null
+      ? String(relatedToRaw.moduleKey).trim().toLowerCase()
+      : '',
+    recordId: relatedToRaw.recordId != null
+      ? String(relatedToRaw.recordId).trim()
+      : ''
+  };
+
   const normalized = {
     standalone,
-    relatedTo: payload.relatedTo || {},
+    relatedTo,
     to: normalizeAddressList(payload.to),
     cc: normalizeAddressList(payload.cc),
     bcc: normalizeAddressList(payload.bcc),
@@ -48,14 +63,6 @@ function normalizeSendEmailPayload(payload = {}) {
 
   if (!normalized.subject) {
     errors.push('Subject is required');
-  }
-
-  if (
-    !standalone
-    && normalized.relatedTo.moduleKey
-    && !SUPPORTED_MODULES.has(normalized.relatedTo.moduleKey)
-  ) {
-    errors.push('Unsupported moduleKey. Supported: people, organizations, deals, tasks, cases, workspace');
   }
 
   if (normalized.mailboxId && !/^[0-9a-fA-F]{24}$/.test(normalized.mailboxId)) {

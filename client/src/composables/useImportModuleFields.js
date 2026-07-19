@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getFieldMetadataFromRegistry, isModuleRegistered } from '@/platform/fields/FieldRegistry';
 import { mergePeopleVirtualFieldDefinitions } from '@/platform/fields/peopleFieldRegistry';
 import { isGlobalSystemFieldKey } from '@/platform/fields/globalSystemFields';
@@ -90,13 +90,13 @@ export function useImportModuleFields(entityTypeRef) {
     loading.value = true;
     loadError.value = null;
     try {
-      const res = await apiClient.get('/modules', { params: { key, context: 'all' } });
-      if (!res?.success || !Array.isArray(res.data) || !res.data[0]) {
+      const mod = await fetchModuleDefinitionCached(key, { context: 'all' });
+      if (!mod) {
         moduleFields.value = [];
         return;
       }
 
-      let fields = res.data[0].fields || [];
+      let fields = mod.fields || [];
       if (key === 'people') {
         fields = mergePeopleVirtualFieldDefinitions(fields);
       }

@@ -144,6 +144,7 @@ import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 import { EmptyStateType } from '@/types/empty-state.types';
 import ListView from '@/components/common/ListView.vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModulesListCached, parseModulesListResponse } from '@/utils/tenantSchemaApiCache';
 import { getStateFields } from '@/platform/fields/peopleFieldModel';
 import { getParticipation } from '@/utils/getParticipation';
 import {
@@ -239,11 +240,12 @@ function shouldFetchListData() {
   return shouldFetchListDataForMode(props.viewMode);
 }
 
-/** Stats sample size when list rows are not loaded (kanban/calendar). */
+/** Fallback sample when API omits listStatistics and client must compute cards. */
 const KANBAN_STATS_SAMPLE_LIMIT = 500;
 
-function statisticsFetchLimit(moduleConfig) {
-  if (moduleConfig?.statistics?.computeFunction) return KANBAN_STATS_SAMPLE_LIMIT;
+function statisticsFetchLimit(_moduleConfig, opts = {}) {
+  if (opts.clientSample) return KANBAN_STATS_SAMPLE_LIMIT;
+  // Cheap probe — registry modules with KPI cards return server listStatistics.
   return 1;
 }
 
@@ -1038,12 +1040,18 @@ const listCreateLabel = computed(() => {
   return resolveListCreateLabel(props.moduleKey, fallback, t, te);
 });
 
-const localizedStatsConfig = computed(() =>
-  statsConfig.value.map((stat) => ({
+const localizedStatsConfig = computed(() => {
+  const moduleConfig = resolveModuleListConfig(props.moduleKey);
+  const resolveStats = moduleConfig?.statistics?.resolveStats;
+  const baseStats = resolveStats
+    ? resolveStats(filters.value || {}, activeSavedViewId.value)
+    : statsConfig.value;
+
+  return (baseStats || []).map((stat) => ({
     ...stat,
     name: resolveListStatLabel(props.moduleKey, stat.key, stat.name, t, te),
-  }))
-);
+  }));
+});
 
 const displaySavedViews = computed(() =>
   savedViews.value.map((view) => ({
@@ -1070,9 +1078,10 @@ const fetchModuleFieldDefinitions = async () => {
       else if (effectivePeopleContext.value === 'HELPDESK') params.context = 'helpdesk';
       else params.context = 'all';
     }
-    const response = await apiClient.get('/modules', { params });
-    if (response.success && Array.isArray(response.data) && response.data.length > 0) {
-      moduleFieldDefinitions.value = response.data[0].fields || [];
+    const response = await fetchModulesListCached(params);
+    const list = parseModulesListResponse(response);
+    if (list.length > 0) {
+      moduleFieldDefinitions.value = list[0].fields || [];
     } else {
       moduleFieldDefinitions.value = [];
       console.warn('[ModuleList] No module found or empty response');
@@ -1189,8 +1198,12 @@ function filtersPayloadSignature(payload) {
   return JSON.stringify(payload ?? {});
 }
 
-/** Refresh stat cards only for saved-view scope — not drill-down filters from stat clicks or filter bar. */
+/** Refresh stat cards for current query when scope is `query`; otherwise only for saved-view scope. */
 function shouldRefreshStatisticsFromListFetch(ctx) {
+  if (ctx?.moduleConfig?.statistics?.scope === 'query') {
+    return true;
+  }
+
   const params = ctx?.params ?? {};
   if (params.search && String(params.search).trim()) return false;
   if (params.filterQuery && String(params.filterQuery).trim()) return false;
@@ -1217,8 +1230,23 @@ function applyListStatisticsFromResponse(response, totalRecords, ctx, rowsForCom
     const reportedTotal = Number(
       raw.totalEvents
         ?? raw.totalTasks
+        ?? raw.myTasks
+        ?? raw.myPeople
+        ?? raw.myOrganizations
+        ?? raw.myQuotes
+        ?? raw.myInvoices
+        ?? raw.mySalesOrders
         ?? raw.totalOrganizations
         ?? raw.totalPeople
+        ?? raw.totalDeals
+        ?? raw.totalQuotes
+        ?? raw.totalItems
+        ?? raw.totalCampaigns
+        ?? raw.totalReports
+        ?? raw.totalWidgets
+        ?? raw.totalDashboards
+        ?? raw.totalInvoices
+        ?? raw.totalSalesOrders
         ?? raw.totalRecords
         ?? totalRecords
     ) || 0;
@@ -1238,9 +1266,25 @@ function applyListStatisticsFromResponse(response, totalRecords, ctx, rowsForCom
     statistics.value = {
       ...raw,
       totalPeople: raw.totalPeople ?? totalRecords,
+      myPeople: raw.myPeople ?? raw.totalPeople ?? totalRecords,
       totalOrganizations: raw.totalOrganizations ?? totalRecords,
+      myOrganizations: raw.myOrganizations ?? raw.totalOrganizations ?? totalRecords,
       totalEvents: raw.totalEvents ?? totalRecords,
-      totalTasks: raw.totalTasks ?? totalRecords
+      myEvents: raw.myEvents ?? raw.totalEvents ?? totalRecords,
+      totalTasks: raw.totalTasks ?? totalRecords,
+      myTasks: raw.myTasks ?? raw.totalTasks ?? totalRecords,
+      totalDeals: raw.totalDeals ?? totalRecords,
+      totalQuotes: raw.totalQuotes ?? totalRecords,
+      myQuotes: raw.myQuotes ?? raw.totalQuotes ?? totalRecords,
+      totalItems: raw.totalItems ?? totalRecords,
+      totalCampaigns: raw.totalCampaigns ?? totalRecords,
+      totalReports: raw.totalReports ?? totalRecords,
+      totalWidgets: raw.totalWidgets ?? totalRecords,
+      totalDashboards: raw.totalDashboards ?? totalRecords,
+      totalInvoices: raw.totalInvoices ?? totalRecords,
+      myInvoices: raw.myInvoices ?? raw.totalInvoices ?? totalRecords,
+      totalSalesOrders: raw.totalSalesOrders ?? totalRecords,
+      mySalesOrders: raw.mySalesOrders ?? raw.totalSalesOrders ?? totalRecords
     };
     return;
   }
@@ -1522,6 +1566,25 @@ function applyPaginationFromResponse(response, fetchedRowCountForTotal, requeste
   }
 }
 
+function totalRecordsFromListResponse(response, fallback = 0) {
+  const n = Number(
+    response?.pagination?.totalRecords
+      ?? response?.pagination?.totalTasks
+      ?? response?.pagination?.totalEvents
+      ?? response?.pagination?.totalPeople
+      ?? response?.pagination?.totalOrganizations
+      ?? response?.pagination?.totalDeals
+      ?? response?.pagination?.totalItems
+      ?? response?.pagination?.total
+      ?? response?.meta?.totalRecords
+      ?? response?.meta?.total
+      ?? response?.totalRecords
+      ?? response?.total
+      ?? fallback
+  );
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
 async function fetchListStatistics(opts = {}) {
   if (!listDefinition.value) return;
   const moduleConfig = resolveModuleListConfig(props.moduleKey);
@@ -1533,7 +1596,9 @@ async function fetchListStatistics(opts = {}) {
     const params = {
       ...ctx.params,
       page: 1,
-      limit: statisticsFetchLimit(ctx.moduleConfig)
+      limit: statisticsFetchLimit(ctx.moduleConfig, {
+        clientSample: Boolean(opts.clientSample)
+      })
     };
 
     const response = await apiClient.get(ctx.endpoint, {
@@ -1544,17 +1609,12 @@ async function fetchListStatistics(opts = {}) {
     if (!response?.success) return;
 
     const fetchedData = applyClientSideListTransforms(response.data || [], ctx);
-    applyPaginationFromResponse(response, fetchedData.length, 1);
-    const totalRecords = Number(pagination.value.totalRecords ?? 0) || 0;
-
-    const prevData = data.value;
-    if (!shouldFetchListData()) {
-      data.value = fetchedData;
-    }
+    // Stats-only: never clobber list rows or pageSize.
+    const totalRecords = totalRecordsFromListResponse(
+      response,
+      Number(pagination.value.totalRecords ?? 0) || 0
+    );
     applyListStatisticsFromResponse(response, totalRecords, ctx, fetchedData);
-    if (!shouldFetchListData()) {
-      data.value = prevData;
-    }
   } catch (error) {
     console.error('[ModuleList] Error fetching statistics:', error);
   } finally {
@@ -1611,7 +1671,24 @@ async function fetchListReplace(opts = {}) {
         applyPaginationFromResponse(response, fetchedData.length, ctx.params.page);
         const totalRecords = Number(pagination.value.totalRecords ?? 0) || 0;
         if (refreshStats || !Object.keys(statistics.value).length) {
-          applyListStatisticsFromResponse(response, totalRecords, ctx, fetchedData);
+          const hasServerListStats =
+            response.listStatistics && typeof response.listStatistics === 'object';
+          // Client compute from page rows undercounts when total > page size
+          // (e.g. board→list after a 500-row kanban sample).
+          const needsClientSample =
+            !hasServerListStats
+            && Boolean(ctx.moduleConfig?.statistics?.computeFunction)
+            && totalRecords > fetchedData.length;
+
+          if (needsClientSample) {
+            await fetchListStatistics({
+              searchOverride: opts.searchOverride,
+              clientSample: true
+            });
+            if (listDataEpoch.value !== epochForThisReplace || signal.aborted) return;
+          } else {
+            applyListStatisticsFromResponse(response, totalRecords, ctx, fetchedData);
+          }
         }
         recordListFingerprintFromState();
       } else {
@@ -2004,81 +2081,78 @@ const handleStatClick = (statItem) => {
   const newFilters = {};
   
   if (props.moduleKey === 'people') {
-    // Map stat key to filter for People module
+    const keepMyScope =
+      activeSavedViewId.value === 'assigned-to-me' || filters.value?.assignedTo === 'me';
     switch (statItem.key) {
       case 'totalPeople':
-        // Clear all filters - show all people
-        break; // newFilters stays empty
-        
-      case 'assignedToMe':
-        // Filter: assignedTo = currentUser
-        // Use 'me' string so it matches the filter dropdown option
+        break;
+      case 'myPeople':
         newFilters.assignedTo = 'me';
         break;
-        
       case 'unassigned':
-        // Filter: assignedTo = null (unassigned)
         newFilters.assignedTo = 'unassigned';
         break;
-        
       case 'withOrganization':
-        // Filter: organization != null
+        if (keepMyScope) newFilters.assignedTo = 'me';
         newFilters.organization = 'has';
         break;
-        
       case 'withoutOrganization':
-        // Filter: organization = null
+        if (keepMyScope) newFilters.assignedTo = 'me';
         newFilters.organization = null;
         break;
     }
   } else if (props.moduleKey === 'organizations') {
-    // Map stat key to filter for Organizations module
+    const keepMyScope =
+      activeSavedViewId.value === 'assigned-to-me' || filters.value?.assignedTo === 'me';
     switch (statItem.key) {
       case 'totalOrganizations':
-        // Clear all filters - show all organizations
-        break; // newFilters stays empty
-        
-      case 'assignedToMe':
-        // Filter: assignedTo = currentUser
-        // Use 'me' string so it matches the filter dropdown option
+        break;
+      case 'myOrganizations':
         newFilters.assignedTo = 'me';
         break;
-        
       case 'unassigned':
-        // Filter: assignedTo = null (unassigned)
         newFilters.assignedTo = 'unassigned';
         break;
-        
       case 'activeOrganizations':
-        // Filter: isActive = true
+        if (keepMyScope) newFilters.assignedTo = 'me';
         newFilters.isActive = true;
         break;
-        
       case 'trialOrganizations':
-        // Filter: subscription.status = 'trial' or subscription.tier = 'trial'
+        if (keepMyScope) newFilters.assignedTo = 'me';
         newFilters.tier = 'trial';
         break;
     }
   } else if (props.moduleKey === 'tasks') {
-    // Map stat key to filter for Tasks module
+    const activeView = savedViews.value.find((v) => v.id === activeSavedViewId.value);
+    const viewBase = activeView
+      ? resolveSavedViewFilters(activeView, currentUserId)
+      : {};
+    const keepMyScope =
+      activeSavedViewId.value === 'assigned-to-me' || filters.value?.assignedTo === 'me';
+
     switch (statItem.key) {
       case 'totalTasks':
-        // Clear all filters - show all tasks
-        break; // newFilters stays empty
-        
-      case 'assignedToMe':
-        // Filter: assignedTo = currentUser
-        // Use 'me' string so it matches the filter dropdown option
+        break;
+
+      case 'myTasks':
         newFilters.assignedTo = 'me';
         break;
-        
-      case 'completed':
-        // Filter: status = 'completed'
-        newFilters.status = 'completed';
+
+      case 'open':
+        Object.assign(newFilters, viewBase);
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.open = true;
         break;
-        
+
+      case 'dueToday':
+        Object.assign(newFilters, viewBase);
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.dueToday = true;
+        break;
+
       case 'overdue':
-        // Filter: overdue = true (this will be handled by the API)
+        Object.assign(newFilters, viewBase);
+        if (keepMyScope) newFilters.assignedTo = 'me';
         newFilters.overdue = true;
         break;
     }
@@ -2112,39 +2186,20 @@ const handleStatClick = (statItem) => {
         break;
     }
   } else if (props.moduleKey === 'events') {
-    // Map stat key to filter for Events module
-    // The API expects startDateTime and endDateTime as ISO date strings
-    // It will build MongoDB queries: startDateTime.$gte and startDateTime.$lte
+    const keepMyScope =
+      activeSavedViewId.value === 'my-events' || filters.value?.assignedTo === 'me';
     switch (statItem.key) {
       case 'totalEvents':
-        // Clear all filters - show all events
-        break; // newFilters stays empty
-        
-      case 'upcoming':
-        // Filter: startDateTime >= now
-        // API will interpret startDateTime as $gte
-        newFilters.startDateTime = new Date().toISOString();
         break;
-        
-      case 'past':
-        // Filter: startDateTime < now
-        // Note: API uses endDateTime for $lte on startDateTime field
-        // For "past", we need events where startDateTime < now
-        // We'll use a workaround: set endDateTime to now (but this gives $lte, not $lt)
-        // Better approach: let the API handle this or use a different filter
-        // For now, we'll skip this stat click or handle it client-side
-        // TODO: Add API support for $lt operator or handle past events differently
-        break;
-        
       case 'myEvents':
-        // Filter: assignedTo = currentUser
-        // Use 'me' string so it matches the filter dropdown option
         newFilters.assignedTo = 'me';
         break;
-        
-      case 'today':
-        // Filter: startDateTime is today
-        // API will use startDateTime for $gte and endDateTime for $lte
+      case 'upcoming':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.startDateTime = new Date().toISOString();
+        break;
+      case 'today': {
+        if (keepMyScope) newFilters.assignedTo = 'me';
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
@@ -2152,9 +2207,9 @@ const handleStatClick = (statItem) => {
         newFilters.startDateTime = today.toISOString();
         newFilters.endDateTime = tomorrow.toISOString();
         break;
-        
-      case 'thisWeek':
-        // Filter: startDateTime is this week
+      }
+      case 'thisWeek': {
+        if (keepMyScope) newFilters.assignedTo = 'me';
         const nowWeek = new Date();
         const startOfWeek = new Date(nowWeek);
         startOfWeek.setDate(nowWeek.getDate() - nowWeek.getDay());
@@ -2164,20 +2219,68 @@ const handleStatClick = (statItem) => {
         newFilters.startDateTime = startOfWeek.toISOString();
         newFilters.endDateTime = endOfWeek.toISOString();
         break;
+      }
     }
   } else if (props.moduleKey === 'quotes') {
+    const keepMyScope =
+      activeSavedViewId.value === 'my-quotes' || filters.value?.assignedTo === 'me';
     switch (statItem.key) {
-      case 'openValue':
-      case 'openQuotes':
-        // Open spans multiple statuses; clear filters (same pattern as deals pipeline stat)
+      case 'totalQuotes':
         break;
-
-      case 'acceptedValue':
-        newFilters.status = 'Accepted';
-        break;
-
       case 'myQuotes':
         newFilters.assignedTo = 'me';
+        break;
+      case 'openValue':
+      case 'openQuotes':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        break;
+      case 'acceptedValue':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.status = 'Accepted';
+        break;
+    }
+  } else if (props.moduleKey === 'sales_orders') {
+    const keepMyScope =
+      activeSavedViewId.value === 'my-orders' || filters.value?.assignedTo === 'me';
+    switch (statItem.key) {
+      case 'totalSalesOrders':
+        break;
+      case 'mySalesOrders':
+        newFilters.assignedTo = 'me';
+        break;
+      case 'open':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.open = true;
+        break;
+      case 'inFulfillment':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.status = 'In Fulfillment';
+        break;
+      case 'completed':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.status = 'Fulfilled';
+        break;
+    }
+  } else if (props.moduleKey === 'invoices') {
+    const keepMyScope =
+      activeSavedViewId.value === 'my-invoices' || filters.value?.assignedTo === 'me';
+    switch (statItem.key) {
+      case 'totalInvoices':
+        break;
+      case 'myInvoices':
+        newFilters.assignedTo = 'me';
+        break;
+      case 'draft':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.status = 'Draft';
+        break;
+      case 'pendingApproval':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.status = 'Pending Approval';
+        break;
+      case 'posted':
+        if (keepMyScope) newFilters.assignedTo = 'me';
+        newFilters.status = 'Posted';
         break;
     }
   }

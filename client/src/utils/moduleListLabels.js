@@ -121,16 +121,22 @@ const SHARED_STAT_KEYS = {
 const MODULE_STAT_KEYS = {
   people: {
     totalPeople: 'people.listStatTotal',
+    myPeople: 'people.listViewMy',
     withOrganization: 'people.listStatWithOrganization',
     withoutOrganization: 'people.listStatWithoutOrganization',
   },
   organizations: {
     totalOrganizations: 'organizations.listStatTotal',
+    myOrganizations: 'organizations.listViewMy',
     activeOrganizations: 'organizations.listStatActive',
     trialOrganizations: 'organizations.listStatTrial',
   },
   tasks: {
     totalTasks: 'tasks.listStatTotal',
+    myTasks: 'tasks.listViewMy',
+    open: 'tasks.listStatOpen',
+    dueToday: 'tasks.listStatDueToday',
+    overdue: 'common.listStatOverdue',
   },
   events: {
     totalEvents: 'events.listStatTotal',
@@ -147,10 +153,25 @@ const MODULE_STAT_KEYS = {
     winRate: 'deals.listStatWinRate',
   },
   quotes: {
+    totalQuotes: 'quotes.listStatTotalQuotes',
     openValue: 'quotes.listStatOpenValue',
     openQuotes: 'quotes.listStatOpenQuotes',
     acceptedValue: 'quotes.listStatAcceptedValue',
     myQuotes: 'quotes.listStatMyQuotes',
+  },
+  sales_orders: {
+    totalSalesOrders: 'quotes.listStatTotalOrders',
+    mySalesOrders: 'quotes.listViewMyOrders',
+    open: 'tasks.listStatOpen',
+    inFulfillment: 'quotes.listStatInFulfillment',
+    completed: 'common.listStatCompleted',
+  },
+  invoices: {
+    totalInvoices: 'quotes.listStatTotalInvoices',
+    myInvoices: 'quotes.listViewMyInvoices',
+    draft: 'quotes.listViewDraft',
+    pendingApproval: 'quotes.listViewPendingApproval',
+    posted: 'quotes.listViewPosted',
   },
   items: {
     totalItems: 'platform.listStatTotalItems',

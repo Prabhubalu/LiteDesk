@@ -238,5 +238,13 @@
   "picklistUsabilityIssue": {
     "message": "Usability Issue",
     "description": "Task type picklist value"
+  },
+  "listStatOpen": {
+    "message": "Open",
+    "description": "Tasks list open (not completed/cancelled) statistics card"
+  },
+  "listStatDueToday": {
+    "message": "Due Today",
+    "description": "Tasks list due-today statistics card"
   }
 }

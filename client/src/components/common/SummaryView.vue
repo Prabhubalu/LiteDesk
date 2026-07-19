@@ -1654,7 +1654,7 @@ import { canEditForm } from '@/utils/formEditPermissions';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import apiClient from '@/utils/apiClient';
-import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { PEOPLE_SALES_ROLE_MODULE_DEFINITION_KEYS } from '@/utils/peopleParticipationUi';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -5303,8 +5303,22 @@ const fetchModuleDefinition = async () => {
   try {
     // Pass current context to API
     const context = currentContext.value;
-    const response = await fetchModulesListCached(context ? { context } : {});
-    const modules = response.data || [];
+    const neededKeys = [
+      props.recordType,
+      'people',
+      'organizations',
+      'deals',
+      'tasks',
+      'events',
+    ].filter(Boolean);
+    const uniqueKeys = [...new Set(neededKeys.map((k) => String(k).toLowerCase()))];
+    const modules = (
+      await Promise.all(
+        uniqueKeys.map((key) =>
+          fetchModuleDefinitionCached(key, context ? { context } : {}).catch(() => null)
+        )
+      )
+    ).filter(Boolean);
     
     // Create a map of all module definitions by key
     const moduleMap = {};

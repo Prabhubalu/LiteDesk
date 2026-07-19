@@ -93,11 +93,10 @@ export const useAppShellStore = defineStore('appShell', {
 
       try {
         const cacheKey = `ui-metadata:${authStore.user?._id || ''}`;
-        const noStore = { cache: 'no-store' };
 
         // App/module composition for the shell sidebar comes from /ui/registry (see ensureCachedAppRegistry).
-        // This loader only hydrates dynamic routes — avoids redundant /ui/sidebar alongside Nav registry build.
-        await this.ensureCachedAppRegistry();
+        // Run registry + routes in parallel when session routes are cold (do not serialize behind registry).
+        const registryPromise = this.ensureCachedAppRegistry();
 
         const cachedData = sessionStorage.getItem(cacheKey);
         if (cachedData) {
@@ -106,6 +105,7 @@ export const useAppShellStore = defineStore('appShell', {
             const routesPayload = parsed?.routes ?? null;
             if (routesPayload?.success) {
               this.routes = routesPayload.data || [];
+              await registryPromise;
               this.lastLoaded = new Date();
               console.log('[AppShell] Using cached routes from sessionStorage');
               return;
@@ -116,7 +116,8 @@ export const useAppShellStore = defineStore('appShell', {
           }
         }
 
-        const routesData = await apiClient('/ui/routes', noStore);
+        const routesPromise = apiClient('/ui/routes');
+        const [, routesData] = await Promise.all([registryPromise, routesPromise]);
 
         if (routesData?.success) {
           this.routes = routesData.data || [];

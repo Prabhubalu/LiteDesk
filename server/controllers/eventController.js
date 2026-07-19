@@ -515,8 +515,9 @@ exports.getEvents = async (req, res) => {
                 totalEvents: count
             },
             listStatistics: {
+                ...listCardBreakdown,
                 totalEvents: count,
-                ...listCardBreakdown
+                myEvents: count
             }
         });
     } catch (error) {

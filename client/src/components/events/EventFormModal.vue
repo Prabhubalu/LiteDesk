@@ -413,6 +413,7 @@
 import { useI18n } from 'vue-i18n';
 import { ref, watch, computed, onMounted, nextTick } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import dateUtils from '@/utils/dateUtils';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
@@ -669,16 +670,13 @@ watch(() => form.value.eventType, (newEventType, oldEventType) => {
 // Fetch Events module definition to get field dependencies
 const fetchEventsModuleDefinition = async () => {
   try {
-    const response = await apiClient.get('/modules');
-    if (response.success) {
-      const eventsModule = response.data.find(m => m.key === 'events');
-      if (eventsModule) {
-        eventsModuleDefinition.value = eventsModule;
-        console.log('✅ Events module definition loaded:', {
-          fieldsCount: eventsModule.fields?.length || 0,
-          linkedFormIdField: linkedFormIdField.value
-        });
-      }
+    const eventsModule = await fetchModuleDefinitionCached('events');
+    if (eventsModule) {
+      eventsModuleDefinition.value = eventsModule;
+      console.log('✅ Events module definition loaded:', {
+        fieldsCount: eventsModule.fields?.length || 0,
+        linkedFormIdField: linkedFormIdField.value
+      });
     }
   } catch (error) {
     console.error('Error fetching Events module definition:', error);

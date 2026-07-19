@@ -12,6 +12,7 @@ export interface AnalyticsCatalogField {
   label: string;
   type: string;
   filterable?: boolean;
+  options?: Array<{ value: string; label: string }>;
 }
 
 export interface AnalyticsCatalogJoinTarget {

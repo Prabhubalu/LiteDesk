@@ -232,6 +232,7 @@ import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEdito
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
 import TaskSubtasksField from '@/components/tasks/TaskSubtasksField.vue';
 import apiClient from '@/utils/apiClient';
+import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -412,12 +413,7 @@ async function fetchModule() {
   loading.value = true;
   loadError.value = null;
   try {
-    const data = await apiClient.get('/modules');
-    if (!data?.data || !Array.isArray(data.data)) {
-      loadError.value = 'Failed to load module configuration';
-      return;
-    }
-    const mod = data.data.find(m => (m.key || '').toLowerCase() === 'tasks');
+    const mod = await fetchModuleDefinitionCached('tasks');
     if (!mod) {
       loadError.value = 'Tasks module not found';
       return;

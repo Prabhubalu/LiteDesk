@@ -1,4 +1,3 @@
-import apiClient from '@/utils/apiClient';
 import { fetchModulesListCached } from '@/utils/tenantSchemaApiCache';
 
 const EXCLUDED_FIELD_KEYS = new Set([
@@ -170,10 +169,10 @@ export async function fetchModuleDefinition(moduleKey) {
   const key = String(moduleKey || '').trim().toLowerCase();
   if (!key) return null;
 
-  const response = await apiClient.get('/modules', {
-    params: { key, context: 'all', purpose: 'merge-tags' },
-    cache: 'no-store'
-  });
+  const response = await fetchModulesListCached(
+    { key, context: 'all', purpose: 'merge-tags' },
+    { cache: 'no-store' }
+  );
 
   const rows = Array.isArray(response?.data) ? response.data : [];
   return rows.find((row) => String(row?.key || row?.moduleKey || '').toLowerCase() === key) || rows[0] || null;

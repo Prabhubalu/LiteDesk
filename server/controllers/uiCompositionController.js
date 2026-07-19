@@ -66,9 +66,9 @@ exports.getRegistry = async (req, res) => {
 
     const registry = await uiCompositionService.getAppRegistryDefinition(organizationId, req.user);
 
-    // Permissions can change mid-session (app enable/disable, user app access edits).
-    // Avoid long-lived caching so the sidebar/app switcher reflects updates immediately.
-    res.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate');
+    // Short private TTL: entitlements change infrequently; invalidateAppRegistryCache
+    // + client session cache cover mid-session updates without blocking every cold load.
+    res.set('Cache-Control', 'private, max-age=60, must-revalidate');
     res.json({
       success: true,
       data: registry
@@ -165,7 +165,7 @@ exports.getRoutes = async (req, res) => {
 
     const routes = await uiCompositionService.getRouteDefinitions(organizationId, req.user);
 
-    res.set('Cache-Control', 'private, no-store, max-age=0, must-revalidate');
+    res.set('Cache-Control', 'private, max-age=60, must-revalidate');
     res.json({
       success: true,
       data: routes
