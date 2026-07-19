@@ -666,5 +666,17 @@
   "announcements": {
     "message": "Announcements",
     "description": "Announcements & Alerts addon navigation label"
+  },
+  "tabMoreTabs": {
+    "message": "More tabs",
+    "description": "Tab bar overflow menu button — list all open tabs when the strip is crowded"
+  },
+  "portalDocuments": {
+    "message": "Documents",
+    "description": "Portal customer documents library navigation label"
+  },
+  "tabPortalDocument": {
+    "message": "Document",
+    "description": "Portal document detail tab title"
   }
 }

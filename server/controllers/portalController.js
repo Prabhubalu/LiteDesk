@@ -79,7 +79,9 @@ exports.getMe = async (req, res) => {
             const organizationId = user.organizationId?._id || user.organizationId;
             if (organizationId) {
                 const mailroomConfig = await mailroomConfigService.getOrCreateConfig(organizationId);
-                portalCapabilities = await getPortalRulesForUser(user, mailroomConfig);
+                // Use req.user (role/profile-hydrated permissions), not the lean User row
+                // which keeps permissions:{} for EXTERNAL portal users.
+                portalCapabilities = await getPortalRulesForUser(req.user, mailroomConfig);
             }
         } catch (capErr) {
             console.warn('[portalController] getMe portal capabilities:', capErr.message);

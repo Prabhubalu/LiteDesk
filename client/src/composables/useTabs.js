@@ -996,6 +996,7 @@ const getIconForPath = (path) => {
   if (pathOnly === '/portal/dashboard' || pathOnly.startsWith('/portal/dashboard')) return 'home';
   if (pathOnly === '/portal/cases' || pathOnly.startsWith('/portal/cases/')) return 'lifebuoy';
   if (pathOnly === '/portal/invoices' || pathOnly.startsWith('/portal/invoices')) return 'banknotes';
+  if (pathOnly === '/portal/documents' || pathOnly.startsWith('/portal/documents')) return 'document-text';
   if (pathOnly === '/portal/knowledge' || pathOnly.startsWith('/portal/knowledge')) return 'book-open';
   if (pathOnly === '/helpdesk/cases' || pathOnly.startsWith('/helpdesk/cases/')) return 'cases';
   if (pathOnly === '/helpdesk/articles' || pathOnly.startsWith('/helpdesk/articles/')) return 'book-open';
@@ -1078,6 +1079,7 @@ const getTitleForPath = (path, params = {}) => {
     '/portal/dashboard': 'Home',
     '/portal/cases': 'Support',
     '/portal/invoices': 'Invoices',
+    '/portal/documents': 'Documents',
     '/portal/knowledge': 'Help Center'
   };
   
@@ -1145,6 +1147,12 @@ const getTitleForPath = (path, params = {}) => {
     }
     if (path.startsWith('/portal/invoices')) {
       return 'Invoices';
+    }
+    if (path.startsWith('/portal/documents')) {
+      if (segments.length > 3) {
+        return 'Document';
+      }
+      return 'Documents';
     }
     if (path.startsWith('/portal/knowledge')) {
       if (segments.length > 3) {

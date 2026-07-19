@@ -1529,7 +1529,28 @@ async function fetchLinkedProfilePreview(profileId) {
       });
       linkedProfilePermissions.value = basePerms;
       linkedProfileFieldPermissions.value = toPlainFieldPerms(response.data.fieldPermissions);
-      form.value.permissions = JSON.parse(JSON.stringify(basePerms));
+      const withOverrides = JSON.parse(JSON.stringify(basePerms));
+      const roleProfileId = props.role?.profileId?._id || props.role?.profileId;
+      if (props.role && String(roleProfileId || '') === String(profileId)) {
+        const overrides = props.role.permissions || {};
+        Object.entries(overrides).forEach(([m, grant]) => {
+          if (!grant || typeof grant !== 'object') return;
+          if (Object.values(grant).some((v) => v && typeof v === 'object' && !Array.isArray(v))) {
+            return;
+          }
+          withOverrides[m] = {
+            ...(withOverrides[m] || {
+              read: false,
+              create: false,
+              update: false,
+              delete: false,
+              scope: 'own'
+            }),
+            ...grant
+          };
+        });
+      }
+      form.value.permissions = withOverrides;
       syncExpandedFieldModulesFromOverrides();
     } else {
       linkedProfilePermissions.value = null;
@@ -1570,6 +1591,15 @@ const handleSubmit = async () => {
   saving.value = true;
   error.value = '';
   try {
+    if (
+      rbacV2.value &&
+      form.value.privilegeMode === 'profile' &&
+      form.value.profileId &&
+      (loadingProfilePreview.value || !linkedProfilePermissions.value)
+    ) {
+      error.value = t('settings.roleDrawerSaveFailed');
+      return;
+    }
     const payload = { ...form.value };
     if (payload.parentRole === '') payload.parentRole = null;
     if (payload.profileId === '') payload.profileId = null;
@@ -1578,10 +1608,7 @@ const handleSubmit = async () => {
       payload.canManageTeam = false;
       payload.canExportData = false;
     }
-    if (rbacV2.value && payload.privilegeMode === 'profile' && payload.profileId) {
-      delete payload.permissions;
-      delete payload.appPermissions;
-    }
+    // Profile mode: send full matrix; server stores only deltas vs linked profile.
     const response = isEditing.value
       ? await apiClient.put(`/roles/${props.role._id}`, payload)
       : await apiClient.post('/roles', payload);

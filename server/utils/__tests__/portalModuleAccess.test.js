@@ -44,4 +44,19 @@ describe('portalModuleAccess', () => {
     assert.equal(userPortalModuleGrantedAny(user, 'cases', ['create', 'update']), true);
     assert.equal(userPortalModuleGrantedAny(user, 'cases', ['create']), false);
   });
+
+  it('prefers runtime envelope when User.permissions omits module (documents)', () => {
+    const user = {
+      permissions: {
+        cases: { view: true, create: false, edit: false, delete: false }
+      },
+      _permissionRuntime: {
+        envelope: {
+          cases: { view: true, create: false, edit: false, delete: false },
+          documents: { view: true, create: false, edit: false, delete: false }
+        }
+      }
+    };
+    assert.equal(userPortalModuleGranted(user, 'documents', 'read'), true);
+  });
 });

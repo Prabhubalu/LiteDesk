@@ -4,6 +4,7 @@
       <div
         class="table-view-shell rounded-xl bg-white shadow-sm dark:bg-gray-900 overflow-hidden"
         :class="showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]'"
+        :style="{ '--row-actions-gutter': rowActionsGutter || '7rem' }"
       >
         <div
           v-if="showScrollRestoreOverlay"
@@ -376,7 +377,7 @@
                     <template v-if="columnIndex === 0 && hasActions">
                       <div class="flex items-center">
                         <div
-                          class="min-w-0 flex-1 pr-0 transition-[padding-right] duration-150 ease-out group-hover:pr-28 group-focus-within:pr-28"
+                          class="min-w-0 flex-1 pr-0 transition-[padding-right] duration-150 ease-out group-hover:[padding-right:var(--row-actions-gutter,7rem)] group-focus-within:[padding-right:var(--row-actions-gutter,7rem)]"
                         >
                           <slot
                             :name="`cell-${columnKey(column)}`"
@@ -391,7 +392,7 @@
                         </div>
                       </div>
                       <div
-                        class="pointer-events-none absolute inset-y-0 right-0 z-10 flex items-center gap-0.5 pl-3 pr-5 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+                        class="pointer-events-none absolute inset-y-0 right-0 z-10 flex items-center gap-0.5 pr-3 opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
                         @click.stop
                       >
                         <slot name="actions" :row="item.row" />
@@ -658,6 +659,8 @@ const props = withDefaults(
     massActions?: Array<{ label: string; icon?: string; action: string; variant?: string }>
     clearSelectionTrigger?: number
     hasActions?: boolean
+    /** CSS length for first-column hover gutter (e.g. '7rem', '14rem') */
+    rowActionsGutter?: string
     emptyTitle?: string
     emptyMessage?: string
     loadMoreEnabled?: boolean
@@ -699,6 +702,7 @@ const props = withDefaults(
     massActions: () => [],
     clearSelectionTrigger: 0,
     hasActions: false,
+    rowActionsGutter: '7rem',
     loadMoreEnabled: false,
     pagination: null,
     hasMore: false,

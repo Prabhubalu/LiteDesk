@@ -7,7 +7,7 @@ const {
   invalidateTenantPermissionCaches,
   expandProfilePermissionsForUI
 } = require('../services/rolePermissionCatalogService');
-const { seedSystemProfiles } = require('../services/roleSeedService');
+const { seedSystemProfiles, forceSyncPortalSystemProfiles } = require('../services/roleSeedService');
 
 async function loadOrganization(req) {
   return req.organization || (await Organization.findById(req.user.organizationId).lean());
@@ -31,16 +31,11 @@ exports.listProfiles = async (req, res) => {
     if (!(await ensureRbacV2Enabled(req, res))) return;
 
     const orgId = req.user.organizationId;
-    let profiles = await Profile.find({ organizationId: orgId })
+    await seedSystemProfiles(orgId);
+    await forceSyncPortalSystemProfiles(orgId);
+    const profiles = await Profile.find({ organizationId: orgId })
       .sort({ isSystemProfile: -1, name: 1 })
       .lean();
-
-    if (profiles.length === 0) {
-      await seedSystemProfiles(orgId);
-      profiles = await Profile.find({ organizationId: orgId })
-        .sort({ isSystemProfile: -1, name: 1 })
-        .lean();
-    }
 
     res.json({
       success: true,
@@ -60,6 +55,8 @@ exports.listProfiles = async (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     if (!(await ensureRbacV2Enabled(req, res))) return;
+
+    await forceSyncPortalSystemProfiles(req.user.organizationId);
 
     const profile = await Profile.findOne({
       _id: req.params.id,

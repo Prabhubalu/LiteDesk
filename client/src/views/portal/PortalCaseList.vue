@@ -46,7 +46,11 @@
           {{ t('cases.portalCasesNew') }}
         </button>
         <p v-else class="mt-4 text-sm text-neutral-600 dark:text-neutral-400">
-          {{ t('cases.portalCasesPartnerNoCreate') }}
+          {{
+            portalAudience === 'partner'
+              ? t('cases.portalCasesPartnerNoCreate')
+              : t('cases.portalCasesCreateDisabled')
+          }}
         </p>
       </div>
 
@@ -138,6 +142,7 @@ const loading = ref(true);
 const error = ref(null);
 const cases = ref([]);
 const canCreateCase = ref(false);
+const portalAudience = ref('customer');
 const allowAttachments = ref(false);
 const kbEnabled = ref(true);
 const showCreate = ref(false);
@@ -204,6 +209,11 @@ async function fetchCases() {
 async function loadPortalCapabilities() {
   try {
     const res = await portalApiClient.get('/me');
+    if (res.success) {
+      portalAudience.value = res.data?.portalCapabilities?.audience
+        || res.data?.portalAudience
+        || 'customer';
+    }
     const mailroomAllowsCreate = res.success && res.data?.portalCapabilities
       ? res.data.portalCapabilities.allowCreateCase === true
       : false;

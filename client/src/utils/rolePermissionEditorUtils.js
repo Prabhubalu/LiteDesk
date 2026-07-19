@@ -73,9 +73,10 @@ export function buildCrudActionLabels(t) {
 
 export function hasAction(module, action) {
   if (!Array.isArray(module?.actions)) return false;
-  if (module.actions.includes(action)) return true;
-  if (action === 'read' && module.actions.includes('view')) return true;
-  if (action === 'update' && module.actions.includes('edit')) return true;
+  const keys = module.actions.map((a) => (typeof a === 'string' ? a : a?.key)).filter(Boolean);
+  if (keys.includes(action)) return true;
+  if (action === 'read' && keys.includes('view')) return true;
+  if (action === 'update' && keys.includes('edit')) return true;
   return false;
 }
 

@@ -1454,5 +1454,9 @@
   "recordAiProposeFailed": {
     "message": "Could not generate AI proposals",
     "description": "Case AI propose error"
+  },
+  "portalCasesCreateDisabled": {
+    "message": "You do not have permission to create cases. Contact your account manager if you need access.",
+    "description": "Shown when a non-partner portal user cannot create cases"
   }
 }

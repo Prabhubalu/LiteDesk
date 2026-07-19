@@ -391,6 +391,7 @@ const MOBILE_NAV_SOLID_BY_ROUTE = {
   '/portal/audits': DocumentTextIconSolid,
   '/portal/cases': LifebuoyIconSolid,
   '/portal/knowledge': BookOpenIconSolid,
+  '/portal/documents': DocumentTextIconSolid,
   '/portal/actions': ClipboardDocumentCheckIconSolid
 };
 

@@ -10,7 +10,8 @@ const { SYSTEM_PROFILE_KEYS } = require('../permissions/profileKeys');
 const {
   seedSystemProfiles,
   getProfileIdByKey,
-  syncSystemProfilePermissions
+  syncSystemProfilePermissions,
+  forceSyncPortalSystemProfiles
 } = require('./roleSeedService');
 const { isPortalFrameworkV1Enabled } = require('../utils/portalFeatureFlags');
 const { isAppEnabledForOrg } = require('../utils/appAccessUtils');
@@ -19,7 +20,7 @@ const { APP_KEYS } = require('../constants/appKeys');
 const EXTERNAL_ROLE_TEMPLATES = [
   {
     name: 'Portal Customer',
-    description: 'Default external portal — self-service customer access',
+    description: 'Default external portal — Support, Help, and Documents access',
     userType: 'EXTERNAL',
     parentName: null,
     profileKey: SYSTEM_PROFILE_KEYS.PORTAL_CUSTOMER,
@@ -116,9 +117,10 @@ async function ensureExternalPortalRolesForOrganization(organizationId, organiza
 
   await seedSystemProfiles(organizationId);
   await syncSystemProfilePermissions(organizationId);
+  await forceSyncPortalSystemProfiles(organizationId);
 
   const existing = await Role.find({ organizationId, userType: 'EXTERNAL' })
-    .select('name parentRole')
+    .select('name parentRole isTemplateSeed')
     .lean();
   const existingByName = new Map(existing.map((row) => [String(row.name || '').trim(), row]));
 
@@ -127,7 +129,24 @@ async function ensureExternalPortalRolesForOrganization(organizationId, organiza
   let skipped = 0;
 
   for (const template of templates) {
-    if (existingByName.has(template.name)) {
+    const existingRole = existingByName.get(template.name);
+    if (existingRole) {
+      if (existingRole.isTemplateSeed === true) {
+        const profileId = await getProfileIdByKey(organizationId, template.profileKey);
+        await Role.findByIdAndUpdate(existingRole._id, {
+          $set: {
+            description: template.description,
+            profileId,
+            privilegeMode: 'profile',
+            appEntitlements: template.appEntitlements,
+            color: template.color,
+            icon: template.icon,
+            canViewAllData: false,
+            canManageTeam: false,
+            canExportData: false
+          }
+        });
+      }
       skipped += 1;
       continue;
     }

@@ -927,6 +927,10 @@
     "message": "Partner accounts cannot create new cases. Contact your account manager for support.",
     "description": "Shown when partner users cannot create cases"
   },
+  "portalCasesCreateDisabled": {
+    "message": "You do not have permission to create cases. Contact your account manager if you need access.",
+    "description": "Shown when a non-partner portal user cannot create cases"
+  },
   "portalCasesNew": {
     "message": "New case",
     "description": "Create case button"

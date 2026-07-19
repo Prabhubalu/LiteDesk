@@ -503,24 +503,27 @@ async function resendVerificationForUser(userId, organizationId) {
   };
 }
 
-function buildInviteCredentials({ wantsEmail, manualPassword }) {
-  if (wantsEmail) {
+function buildInviteCredentials({ manualPassword }) {
+  // API-only: admin-set temporary password (not exposed in Invite User UI).
+  // Force change on first sign-in so the admin-known secret does not become permanent.
+  if (manualPassword) {
     return {
-      initialStatus: 'invited',
-      mustChangePassword: false,
-      password: generateSecurePassword(32),
-      inviteTokenRaw: generateRawToken(),
-      inviteTokenExpiresAt: getInviteExpiry()
+      initialStatus: 'active',
+      mustChangePassword: true,
+      password: String(manualPassword),
+      inviteTokenRaw: null,
+      inviteTokenExpiresAt: null
     };
   }
 
-  const password = manualPassword || generateSecurePassword(16);
+  // Default invite path: user sets their own password via invite link.
+  // Token is issued even when email is off so the admin can share the link.
   return {
-    initialStatus: 'active',
-    mustChangePassword: !manualPassword,
-    password,
-    inviteTokenRaw: null,
-    inviteTokenExpiresAt: null
+    initialStatus: 'invited',
+    mustChangePassword: false,
+    password: generateSecurePassword(32),
+    inviteTokenRaw: generateRawToken(),
+    inviteTokenExpiresAt: getInviteExpiry()
   };
 }
 

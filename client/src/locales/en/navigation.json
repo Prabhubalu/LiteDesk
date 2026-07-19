@@ -71,6 +71,14 @@
     "message": "Help",
     "description": "Portal bottom nav knowledge base tab"
   },
+  "portalDocuments": {
+    "message": "Documents",
+    "description": "Portal customer documents library navigation label"
+  },
+  "tabPortalDocument": {
+    "message": "Document",
+    "description": "Portal document detail tab title"
+  },
   "portalInvoices": {
     "message": "Invoices",
     "description": "Portal bottom nav invoices tab"
@@ -142,6 +150,10 @@
   "tabCloseTab": {
     "message": "Close tab",
     "description": "Close tab button aria-label"
+  },
+  "tabMoreTabs": {
+    "message": "More tabs",
+    "description": "Tab bar overflow menu button — list all open tabs when the strip is crowded"
   },
   "tabNewEmail": {
     "message": "New email",

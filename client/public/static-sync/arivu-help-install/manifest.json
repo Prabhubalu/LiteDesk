@@ -16,6 +16,7 @@
     "lib/install.js",
     "lib/mergeConfig.js",
     "lib/mergeConfigCjs.js",
+    "templates/.DS_Store",
     "templates/app/api/arivu-webhook/route.ts",
     "templates/next/app/help/ArivuHelpAssets.tsx",
     "templates/next/app/help/ArivuHelpContent.tsx",

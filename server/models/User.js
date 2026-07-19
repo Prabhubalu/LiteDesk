@@ -193,6 +193,24 @@ const UserSchema = new mongoose.Schema({
             create: { type: Boolean, default: false },
             delete: { type: Boolean, default: false }
         },
+        documents: {
+            view: { type: Boolean, default: false },
+            create: { type: Boolean, default: false },
+            edit: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false },
+            viewAll: { type: Boolean, default: false },
+            exportData: { type: Boolean, default: false }
+        },
+        templates: {
+            view: { type: Boolean, default: false },
+            create: { type: Boolean, default: false },
+            edit: { type: Boolean, default: false },
+            delete: { type: Boolean, default: false },
+            publish: { type: Boolean, default: false },
+            archive: { type: Boolean, default: false },
+            render: { type: Boolean, default: false },
+            viewAll: { type: Boolean, default: false }
+        },
         settings: {
             manageUsers: { type: Boolean, default: false },
             manageBilling: { type: Boolean, default: false },
@@ -283,7 +301,7 @@ const UserSchema = new mongoose.Schema({
     // Status
     status: { 
         type: String, 
-        enum: ['active', 'inactive', 'suspended', 'invited'],
+        enum: ['active', 'inactive', 'suspended', 'invited', 'deleted'],
         default: 'active'
     },
 

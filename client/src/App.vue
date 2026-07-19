@@ -209,6 +209,45 @@ const tableStickyOffset = ref(`calc(${DEFAULT_CONTENT_OFFSET}px + ${EXTRA_OFFSET
 const notificationSheetOpen = ref(false);
 const auditSyncDrawerOpen = ref(false);
 
+const PLATFORM_BANNER_OFFSET_VAR = '--platform-banner-offset';
+const topBannersEl = ref(null);
+let topBannersResizeObserver = null;
+
+const setPlatformBannerOffset = (height) => {
+  if (typeof document === 'undefined') return;
+  document.documentElement.style.setProperty(
+    PLATFORM_BANNER_OFFSET_VAR,
+    `${Math.max(0, Math.round(height))}px`
+  );
+};
+
+const syncPlatformBannerOffset = () => {
+  const el = topBannersEl.value;
+  if (!el) {
+    setPlatformBannerOffset(0);
+    return;
+  }
+  setPlatformBannerOffset(el.getBoundingClientRect().height);
+};
+
+const startTopBannersOffsetObserver = () => {
+  stopTopBannersOffsetObserver();
+  void nextTick(() => {
+    syncPlatformBannerOffset();
+    if (typeof ResizeObserver === 'undefined' || !topBannersEl.value) return;
+    topBannersResizeObserver = new ResizeObserver(() => {
+      syncPlatformBannerOffset();
+    });
+    topBannersResizeObserver.observe(topBannersEl.value);
+  });
+};
+
+const stopTopBannersOffsetObserver = () => {
+  topBannersResizeObserver?.disconnect();
+  topBannersResizeObserver = null;
+  setPlatformBannerOffset(0);
+};
+
 const handleOpenNotifications = () => {
   if (!authStore.isAuthenticated) return;
   if (window.innerWidth < 1024) {
@@ -485,6 +524,9 @@ onMounted(async () => {
   window.addEventListener('storage', handleStorageEvent);
   window.addEventListener('sales-open-notifications', handleOpenNotifications);
   window.addEventListener('arivu:open-audit-sync-drawer', handleOpenAuditSyncDrawer);
+  if (authStore.isAuthenticated) {
+    startTopBannersOffsetObserver();
+  }
 });
 
 watch(notificationSheetOpen, (val) => {
@@ -496,6 +538,7 @@ onBeforeUnmount(() => {
   if (typeof cleanupRouteWatcher === 'function') {
     cleanupRouteWatcher();
   }
+  stopTopBannersOffsetObserver();
   window.removeEventListener('resize', handleResize);
   window.removeEventListener('storage', handleStorageEvent);
   window.removeEventListener('sales-open-notifications', handleOpenNotifications);
@@ -507,6 +550,7 @@ watch(
   () => authStore.isAuthenticated,
   async (isAuthed, wasAuthed) => {
     if (wasAuthed && !isAuthed) {
+      stopTopBannersOffsetObserver();
       stopNotificationRealtimeIfLoaded();
       stopDataChangeRealtimeIfLoaded();
       void ensureShellModules().then(({ activeImportsStore }) => activeImportsStore.reset());
@@ -527,6 +571,7 @@ watch(
       } finally {
         shellTabsReady.value = true;
       }
+      startTopBannersOffsetObserver();
     }
   },
   { immediate: false }
@@ -616,18 +661,21 @@ watch(
     <RouterView />
   </div>
 
-  <!-- Authenticated layout: announcement banner above app shell -->
+  <!-- Authenticated layout: top banners above app shell -->
   <div
     v-else-if="isAuthenticated"
     class="flex min-h-dvh flex-col"
   >
     <div
-      id="platform-announcement-banner-host"
+      id="platform-top-banners"
+      ref="topBannersEl"
       class="shrink-0"
-    />
+    >
+      <div id="platform-announcement-banner-host" />
+      <EmailVerificationBanner />
+    </div>
 
     <div class="flex min-h-0 min-w-0 flex-1 flex-col">
-      <EmailVerificationBanner v-if="hideShell" />
       <!-- Shell-less pages (e.g., Settings) -->
       <div v-if="hideShell" class="min-h-0 flex-1 overflow-y-hidden overflow-x-hidden bg-gray-100/70 dark:bg-gray-900">
         <RouterView />

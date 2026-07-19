@@ -57,11 +57,6 @@
                   : 'block w-full flex-none p-4 lg:p-6'
               ]"
             >
-              <EmailVerificationBanner
-                v-if="!isRecordDetailRoute && !isProcessDesignerRoute && !isInboxRoute && !isFormCreateRoute"
-                class="mb-2"
-              />
-
               <RouterView v-slot="{ Component }">
                 <keep-alive :max="5">
                   <component
@@ -96,7 +91,6 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Nav from '@/components/Nav.vue';
 import TabBar from '@/components/TabBar.vue';
-import EmailVerificationBanner from '@/components/auth/EmailVerificationBanner.vue';
 import OnboardingCoachmarks from '@/components/onboarding/OnboardingCoachmarks.vue';
 import { useAppShellStore } from '@/stores/appShell';
 import { useTabs } from '@/composables/useTabs';

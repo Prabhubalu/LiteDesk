@@ -1858,7 +1858,7 @@ async function listKnowledgeBaseDocuments({
   });
 }
 
-async function listPortalKnowledgeDocuments({
+async function listPortalSharedDocuments({
   organizationId,
   page = 1,
   limit = 25,
@@ -1883,7 +1883,9 @@ async function listPortalKnowledgeDocuments({
   const skip = Math.max((page - 1) * limit, 0);
   const [rows, total] = await Promise.all([
     Document.find(query)
-      .select('documentNumber title description documentType tags updatedAt')
+      .select(
+        'documentNumber title description documentType tags updatedAt fileType mimeType fileSizeBytes externalUrl storagePath'
+      )
       .sort(effectiveSort)
       .skip(skip)
       .limit(limit)
@@ -1902,15 +1904,27 @@ async function listPortalKnowledgeDocuments({
   };
 }
 
-async function getPortalKnowledgeDocument({ organizationId, documentId }) {
+/** @deprecated Use listPortalSharedDocuments — kept for knowledge merge callers during transition */
+async function listPortalKnowledgeDocuments(args) {
+  return listPortalSharedDocuments(args);
+}
+
+async function getPortalSharedDocument({ organizationId, documentId }) {
   const query = {
     ...buildPortalKnowledgeQuery(organizationId),
     _id: documentId
   };
 
   return Document.findOne(query)
-    .select('documentNumber title description documentType tags richContent richContentText updatedAt')
+    .select(
+      'documentNumber title description documentType tags richContent richContentText updatedAt fileType mimeType fileSizeBytes storagePath externalUrl'
+    )
     .lean();
+}
+
+/** @deprecated Use getPortalSharedDocument */
+async function getPortalKnowledgeDocument(args) {
+  return getPortalSharedDocument(args);
 }
 
 module.exports = {
@@ -1922,7 +1936,9 @@ module.exports = {
   listDocuments,
   getDocumentsListMeta,
   listKnowledgeBaseDocuments,
+  listPortalSharedDocuments,
   listPortalKnowledgeDocuments,
+  getPortalSharedDocument,
   getPortalKnowledgeDocument,
   getDocumentById,
   createDocument,

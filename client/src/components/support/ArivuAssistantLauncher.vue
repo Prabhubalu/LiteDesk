@@ -44,7 +44,9 @@ const invitePulse = ref(false);
 
 const visible = computed(() => {
   if (!authStore.isAuthenticated) return false;
-  if (String(route.path || '').startsWith('/live-chat')) return false;
+  if (authStore.isExternalUser) return false;
+  const path = String(route.path || '');
+  if (path.startsWith('/live-chat') || path.startsWith('/portal')) return false;
   return true;
 });
 

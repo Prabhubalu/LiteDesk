@@ -476,12 +476,17 @@ async function materializeRuntimePermissionsOnUser(user, options = {}) {
   const modulesByApp = roleLean ? buildModulesByAppFromRole(roleLean) : {};
   const flat = buildFlatPermissionIndex(envelope, modulesByApp);
 
-  user.permissions = envelope;
   user._permissionRuntime = {
     envelope,
     modulesByApp,
     flat
   };
+  // Prefer set() so nested User.permissions schema paths (e.g. documents) are applied.
+  if (typeof user.set === 'function') {
+    user.set('permissions', envelope);
+  } else {
+    user.permissions = envelope;
+  }
 }
 
 function invalidateOrgPermissionContextCache(organizationId) {

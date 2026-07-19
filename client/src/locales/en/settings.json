@@ -5707,6 +5707,14 @@
     "message": "Inactive",
     "description": "Inactive users stat"
   },
+  "usersStatDeleted": {
+    "message": "Deleted",
+    "description": "Deleted users stat"
+  },
+  "usersInactiveHint": {
+    "message": "May need transfer",
+    "description": "Hint on inactive user rows"
+  },
   "usersStatAdmins": {
     "message": "Admins",
     "description": "Admin users stat"
@@ -5748,7 +5756,7 @@
     "description": "Bulk delete users"
   },
   "usersDeleteConfirm": {
-    "message": "Delete user {name}? This action cannot be undone.",
+    "message": "Remove access for {name}? This revokes sessions and removes them from the active list. Records they created are retained. This cannot be undone from here.",
     "description": "Delete user confirm"
   },
   "usersDeleteFailed": {
@@ -5756,16 +5764,32 @@
     "description": "Delete user error"
   },
   "usersBulkActivateConfirm": {
-    "message": "Activate {count} user(s)?",
+    "message": "Activate {count} user(s)? They will regain access immediately.",
     "description": "Bulk activate confirm"
   },
   "usersBulkDeactivateConfirm": {
-    "message": "Deactivate {count} user(s)?",
+    "message": "Deactivate {count} user(s)? They will lose access but can be reactivated later.",
     "description": "Bulk deactivate confirm"
   },
+  "usersBulkActivateTitle": {
+    "message": "Activate {count} user(s)",
+    "description": "Bulk activate dialog title"
+  },
+  "usersBulkDeactivateTitle": {
+    "message": "Deactivate {count} user(s)",
+    "description": "Bulk deactivate dialog title"
+  },
   "usersBulkDeleteConfirm": {
-    "message": "Delete {count} user(s)? This action cannot be undone.",
-    "description": "Bulk delete confirm"
+    "message": "Remove access for {count} user(s)? This revokes sessions and removes them from the active list. Records they created are retained. This cannot be undone from here.",
+    "description": "Bulk delete confirm (offboard, soft-delete)"
+  },
+  "usersDeleteTitleBulk": {
+    "message": "Remove access for {count} user(s)",
+    "description": "Bulk user delete dialog title"
+  },
+  "usersDeleteConfirmBulk": {
+    "message": "This revokes access, ends their sessions, and removes them from the active list. Records they created are retained. This cannot be undone from here.",
+    "description": "Bulk user delete dialog body"
   },
   "usersBulkActivateFailed": {
     "message": "Failed to activate users",
@@ -5848,8 +5872,8 @@
     "description": "Single user deactivate toast"
   },
   "usersDeletedSuccess": {
-    "message": "User removed",
-    "description": "User delete success toast"
+    "message": "User access removed",
+    "description": "User delete success toast (offboard)"
   },
   "usersBulkActivatedSuccess": {
     "message": "{count} user(s) activated",
@@ -5860,8 +5884,8 @@
     "description": "Bulk deactivate success toast"
   },
   "usersBulkDeletedSuccess": {
-    "message": "{count} user(s) removed",
-    "description": "Bulk delete success toast"
+    "message": "{count} user(s) removed from access",
+    "description": "Bulk delete success toast (offboard)"
   },
   "usersColType": {
     "message": "Type",
@@ -6188,12 +6212,12 @@
     "description": "Password section"
   },
   "invitePasswordAuto": {
-    "message": "Auto-generate",
-    "description": "Auto password"
+    "message": "Invite link",
+    "description": "Recommended: user sets their own password via email link"
   },
   "invitePasswordManual": {
-    "message": "Set manually",
-    "description": "Manual password"
+    "message": "Temporary password",
+    "description": "Admin sets a temporary password shared out-of-band"
   },
   "invitePasswordMin": {
     "message": "Minimum 8 characters",
@@ -6201,27 +6225,63 @@
   },
   "invitePasswordAutoHint": {
     "message": "A secure password will be auto-generated. {delivery}",
-    "description": "Auto password hint"
+    "description": "Legacy auto password hint (kept for locale parity)"
   },
   "invitePasswordEmailDelivery": {
     "message": "It will be sent via email.",
-    "description": "Email delivery"
+    "description": "Legacy email delivery (kept for locale parity)"
   },
   "invitePasswordManualDelivery": {
     "message": "You will need to share it with the user manually.",
-    "description": "Manual delivery"
+    "description": "Legacy manual delivery (kept for locale parity)"
+  },
+  "invitePasswordAutoHintEmail": {
+    "message": "We'll email them a secure link to set their own password. You never see their password.",
+    "description": "Invite-link mode with email on"
+  },
+  "invitePasswordAutoHintShare": {
+    "message": "A temporary password will be shown after invite so you can share it securely. They must change it on first sign-in.",
+    "description": "Invite-link mode with email off (temp password shown)"
+  },
+  "invitePasswordManualHint": {
+    "message": "Share this temporary password out-of-band. They must change it on first sign-in.",
+    "description": "Temporary password mode hint"
+  },
+  "inviteSectionCredentials": {
+    "message": "Credentials & delivery",
+    "description": "Legacy invite credentials section title"
+  },
+  "inviteSectionDelivery": {
+    "message": "Invitation delivery",
+    "description": "Invite drawer delivery section"
+  },
+  "inviteLinkOnlyHint": {
+    "message": "They'll set their own password from a secure invite link. You never see their password.",
+    "description": "Invite-link-only product hint"
   },
   "inviteSendEmail": {
-    "message": "Send invitation email with login credentials",
-    "description": "Send email checkbox"
+    "message": "Send invite email",
+    "description": "Send invite email checkbox"
   },
   "inviteSendEmailOn": {
-    "message": "Email will be sent with password",
-    "description": "Send email on"
+    "message": "We'll send an invitation link so they can set their password.",
+    "description": "Default send-email help (invite-link mode)"
+  },
+  "inviteSendEmailOnInvite": {
+    "message": "We'll email them a secure link to set their password.",
+    "description": "Send email on — invite-link mode"
+  },
+  "inviteSendEmailOnManual": {
+    "message": "We'll send a notification (no password). Share the temporary password separately.",
+    "description": "Legacy temporary-password email help"
   },
   "inviteSendEmailOff": {
-    "message": "User will be created without email notification",
-    "description": "Send email off"
+    "message": "No email. You'll share access details yourself.",
+    "description": "Legacy send email off"
+  },
+  "inviteSendEmailOffLink": {
+    "message": "We'll show you the invite link to share securely yourself.",
+    "description": "Send email off — share invite link manually"
   },
   "inviteSubmit": {
     "message": "Invite User",
@@ -6240,7 +6300,7 @@
     "description": "Load apps failed"
   },
   "inviteCreatedWithPassword": {
-    "message": "User created successfully!\n\nTemporary Password: {password}\n\nPlease share this password with the user securely.",
+    "message": "User created successfully!\n\nTemporary password: {password}\n\nShare it securely. They must change it on first sign-in.",
     "description": "Created with temp password alert"
   },
   "inviteSuccessCreated": {
@@ -6252,24 +6312,36 @@
     "description": "Invite success when email sent"
   },
   "inviteSuccessEmailVerifyHint": {
-    "message": "They can accept the invite from their email. Accepting also verifies their email address.",
+    "message": "They can accept the invite from their email to set their password. Accepting also verifies their email address.",
     "description": "Invite success hint about email verification"
   },
   "inviteSuccessEmailFailed": {
     "message": "User was created, but the invitation email could not be sent: {reason}",
     "description": "Invite success when email failed"
   },
+  "inviteSuccessEmailFailedWithLink": {
+    "message": "Invitation email could not be sent ({reason}). Share this link securely:\n{link}",
+    "description": "Invite success when email failed but invite URL is available"
+  },
   "inviteSuccessEmailFailedGeneric": {
     "message": "Configure Email Provider in Settings > Integrations, or set SYSTEM_EMAIL_* on the server",
     "description": "Generic email failure reason with setup hint"
   },
   "inviteSuccessVerificationSent": {
-    "message": "A verification email was sent to {email}. They can sign in now and verify later.",
-    "description": "Invite success when verification email sent without invite link"
+    "message": "A notification was sent to {email} (no password). Share the temporary password securely — they must change it on first sign-in.",
+    "description": "Legacy success for temporary-password verification email"
   },
   "inviteSuccessManualDelivery": {
-    "message": "Share login credentials with the user securely. They will see a reminder to verify their email after signing in.",
-    "description": "Invite success for manual credential delivery"
+    "message": "Share the temporary password securely. They must change it on first sign-in.",
+    "description": "Legacy invite success for out-of-band temporary password"
+  },
+  "inviteSuccessShareLink": {
+    "message": "Share this invite link securely:\n{link}\n\nThey'll set their own password when they open it.",
+    "description": "Invite success when admin shares invite link manually"
+  },
+  "inviteSuccessResendHint": {
+    "message": "You can resend the invite from the user profile if they need the link again.",
+    "description": "Fallback invite success without email or link"
   },
   "editUserTitle": {
     "message": "Edit User",
@@ -6351,6 +6423,198 @@
     "message": "Delete User",
     "description": "Delete user button"
   },
+  "editUserDeactivate": {
+    "message": "Deactivate",
+    "description": "Deactivate user from edit drawer"
+  },
+  "editUserReactivate": {
+    "message": "Reactivate",
+    "description": "Reactivate inactive user"
+  },
+  "editUserReactivateSuccess": {
+    "message": "User reactivated",
+    "description": "Reactivate success toast"
+  },
+  "editUserReactivateFailed": {
+    "message": "Failed to reactivate user",
+    "description": "Reactivate error toast"
+  },
+  "editUserTransferRecords": {
+    "message": "Transfer records",
+    "description": "Transfer ownership from inactive user"
+  },
+  "userLifecycleDone": {
+    "message": "Done",
+    "description": "Close transfer step when nothing to transfer"
+  },
+  "userLifecycleTransferRequiredForDelete": {
+    "message": "Transfer open records before this user can be deleted. Comments, emails, and change logs are not transferred.",
+    "description": "Transfer required before delete"
+  },
+  "userLifecycleDeactivateTitle": {
+    "message": "Deactivate user",
+    "description": "Lifecycle modal title"
+  },
+  "userLifecycleTransferTitle": {
+    "message": "Transfer records to another user",
+    "description": "Lifecycle transfer step title"
+  },
+  "userLifecycleDeleteTitle": {
+    "message": "Delete user",
+    "description": "Lifecycle delete step title"
+  },
+  "userLifecycleSubtitle": {
+    "message": "{name}",
+    "description": "Lifecycle modal subtitle with user name"
+  },
+  "userLifecycleStepDeactivate": {
+    "message": "Deactivate",
+    "description": "Wizard step"
+  },
+  "userLifecycleStepTransfer": {
+    "message": "Transfer",
+    "description": "Wizard step"
+  },
+  "userLifecycleStepDelete": {
+    "message": "Delete",
+    "description": "Wizard step"
+  },
+  "userLifecycleDeactivateInfo": {
+    "message": "Deactivating marks the user Inactive. They cannot sign in, cannot be assigned new records, and billing seats are released.",
+    "description": "Deactivate info banner"
+  },
+  "userLifecycleDeactivateBulletLogin": {
+    "message": "Login and active sessions are revoked",
+    "description": "Deactivate bullet"
+  },
+  "userLifecycleDeactivateBulletAssign": {
+    "message": "No new records can be assigned to this user",
+    "description": "Deactivate bullet"
+  },
+  "userLifecycleDeactivateBulletBilling": {
+    "message": "App seat billing stops for this user",
+    "description": "Deactivate bullet"
+  },
+  "userLifecycleDeactivateConfirm": {
+    "message": "Deactivate {name} now?",
+    "description": "Deactivate confirm"
+  },
+  "userLifecycleDeactivateAction": {
+    "message": "Deactivate",
+    "description": "Primary button"
+  },
+  "userLifecycleDeactivateSuccess": {
+    "message": "User deactivated",
+    "description": "Toast"
+  },
+  "userLifecycleDeactivateFailed": {
+    "message": "Failed to deactivate user",
+    "description": "Toast"
+  },
+  "userLifecycleTransferInfo": {
+    "message": "Comments, emails, and change logs are not transferred. Transfer open work before deleting. Optionally include closed records.",
+    "description": "Transfer info"
+  },
+  "userLifecycleOpenRecords": {
+    "message": "Open records",
+    "description": "Open records section"
+  },
+  "userLifecycleNoOpenRecords": {
+    "message": "No open records to transfer.",
+    "description": "Empty open records"
+  },
+  "userLifecycleTransferTo": {
+    "message": "Transfer records to user",
+    "description": "Recipient label"
+  },
+  "userLifecycleSelectUser": {
+    "message": "Select a user",
+    "description": "Recipient placeholder"
+  },
+  "userLifecycleIncludeClosed": {
+    "message": "Also transfer closed records ({count})",
+    "description": "Include closed checkbox"
+  },
+  "userLifecycleTransferAction": {
+    "message": "Transfer records",
+    "description": "Transfer primary"
+  },
+  "userLifecycleContinue": {
+    "message": "Continue",
+    "description": "Continue when nothing to transfer"
+  },
+  "userLifecycleSkipTransfer": {
+    "message": "Skip for now",
+    "description": "Skip transfer"
+  },
+  "userLifecycleTransferSuccess": {
+    "message": "Transferred {count} records",
+    "description": "Transfer toast"
+  },
+  "userLifecycleTransferFailed": {
+    "message": "Failed to transfer records",
+    "description": "Transfer error"
+  },
+  "userLifecycleSummaryFailed": {
+    "message": "Failed to load record counts",
+    "description": "Summary error"
+  },
+  "userLifecycleDeleteInfo": {
+    "message": "Deleted users are removed from normal lists. History is retained. You can re-invite the same email later.",
+    "description": "Delete info"
+  },
+  "userLifecycleDeleteConfirm": {
+    "message": "Permanently delete {name}? They must already be inactive with no open records.",
+    "description": "Delete confirm"
+  },
+  "userLifecycleDeleteAction": {
+    "message": "Delete user",
+    "description": "Delete primary"
+  },
+  "userLifecycleDeleteBlockedOpen": {
+    "message": "Transfer {count} open records before deleting.",
+    "description": "Blocked delete"
+  },
+  "userLifecycleMustDeactivate": {
+    "message": "Deactivate the user before deleting.",
+    "description": "Must deactivate first"
+  },
+  "userLifecycleAlreadyDeleted": {
+    "message": "This user is already deleted.",
+    "description": "Already deleted"
+  },
+  "userLifecycleModulePeople": {
+    "message": "People",
+    "description": "Module label"
+  },
+  "userLifecycleModuleOrganizations": {
+    "message": "Organizations",
+    "description": "Module label"
+  },
+  "userLifecycleModuleDeals": {
+    "message": "Deals",
+    "description": "Module label"
+  },
+  "userLifecycleModuleTasks": {
+    "message": "Tasks",
+    "description": "Module label"
+  },
+  "userLifecycleModuleCases": {
+    "message": "Cases",
+    "description": "Module label"
+  },
+  "userLifecycleModuleEvents": {
+    "message": "Events",
+    "description": "Module label"
+  },
+  "userLifecycleModuleItems": {
+    "message": "Items",
+    "description": "Module label"
+  },
+  "userLifecycleModuleDocuments": {
+    "message": "Documents",
+    "description": "Module label"
+  },
   "editUserSave": {
     "message": "Save Changes",
     "description": "Save changes button"
@@ -6364,8 +6628,8 @@
     "description": "Saving"
   },
   "editUserDeleteConfirm": {
-    "message": "Are you sure you want to delete {name}? This action cannot be undone.",
-    "description": "Delete user confirm"
+    "message": "Remove access for {name}? This revokes sessions and removes them from the active list. Records they created are retained. This cannot be undone from here.",
+    "description": "Delete user confirm from edit drawer"
   },
   "editUserUpdateFailed": {
     "message": "Failed to update user",

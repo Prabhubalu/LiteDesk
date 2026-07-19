@@ -490,14 +490,43 @@
                     </div>
 
                     <div class="flex shrink-0 items-center justify-between gap-3 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
-                      <button
-                        v-if="!user.isOwner"
-                        type="button"
-                        class="rounded-md px-3 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                        @click="deleteUser"
-                      >
-                        {{ t('settings.editUserDeleteAccount') }}
-                      </button>
+                      <div v-if="!user.isOwner" class="flex flex-wrap items-center gap-2">
+                        <button
+                          v-if="isActivatable"
+                          type="button"
+                          class="rounded-md px-3 py-2 text-sm font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20"
+                          :disabled="reactivating"
+                          @click="reactivateUser"
+                        >
+                          {{ reactivating ? t('states.saving') : t('settings.editUserReactivate') }}
+                        </button>
+                        <button
+                          v-if="isDeactivatable"
+                          type="button"
+                          class="rounded-md px-3 py-2 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
+                          @click="startLifecycle('deactivate')"
+                        >
+                          {{ t('settings.editUserDeactivate') }}
+                        </button>
+                        <template v-else-if="user.status === 'inactive'">
+                          <button
+                            v-if="openRecordCount > 0"
+                            type="button"
+                            class="rounded-md px-3 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20"
+                            @click="startLifecycle('transfer')"
+                          >
+                            {{ t('settings.editUserTransferRecords') }}
+                            <span class="ml-1 text-xs opacity-80">({{ openRecordCount }})</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="rounded-md px-3 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                            @click="startLifecycle('delete')"
+                          >
+                            {{ t('settings.editUserDeleteAccount') }}
+                          </button>
+                        </template>
+                      </div>
                       <div v-else />
 
                       <div class="flex items-center gap-3">
@@ -616,7 +645,28 @@ const props = defineProps({
   user: Object
 });
 
-const emit = defineEmits(['close', 'user-updated', 'portal-roles-updated']);
+const emit = defineEmits(['close', 'user-updated', 'user-deleted', 'start-lifecycle', 'portal-roles-updated']);
+
+const openRecordCount = ref(0);
+const reactivating = ref(false);
+
+const isDeactivatable = computed(() => {
+  const status = props.user?.status || 'active';
+  return ['active', 'invited', 'suspended'].includes(status);
+});
+
+const isActivatable = computed(() => props.user?.status === 'inactive');
+
+async function loadOwnershipHint() {
+  openRecordCount.value = 0;
+  if (!props.user?._id || props.user.status !== 'inactive') return;
+  try {
+    const res = await apiClient.get(`/users/${props.user._id}/ownership-summary`);
+    openRecordCount.value = Number(res?.data?.openTotal || 0);
+  } catch {
+    openRecordCount.value = 0;
+  }
+}
 
 const form = ref({
   firstName: '',
@@ -995,6 +1045,7 @@ watch(() => props.isOpen, (newVal) => {
     } else {
       portalState.value = null;
     }
+    void loadOwnershipHint();
   }
 });
 
@@ -1188,21 +1239,26 @@ const resendInvite = async () => {
   }
 };
 
-const deleteUser = async () => {
-  if (!confirm(t('settings.editUserDeleteConfirm', { name: userDisplayName(props.user) }))) return;
+const startLifecycle = (mode) => {
+  emit('start-lifecycle', { mode, user: props.user });
+};
 
+const reactivateUser = async () => {
+  if (!props.user?._id || reactivating.value) return;
+  reactivating.value = true;
   try {
-    const response = await apiClient.delete(`/users/${props.user._id}`);
-
+    const response = await apiClient.put(`/users/${props.user._id}`, { status: 'active' });
     if (response.success) {
-      notifySuccess(t('settings.usersDeletedSuccess'));
+      notifySuccess(t('settings.editUserReactivateSuccess'));
       emit('user-updated');
     } else {
-      notifyError(t('settings.editUserDeleteFailed'));
+      notifyError(t('settings.editUserReactivateFailed'));
     }
   } catch (err) {
-    console.error('Error deleting user:', err);
-    notifyError(t('settings.editUserDeleteFailed'));
+    console.error('Error reactivating user:', err);
+    notifyError(t('settings.editUserReactivateFailed'));
+  } finally {
+    reactivating.value = false;
   }
 };
 </script>

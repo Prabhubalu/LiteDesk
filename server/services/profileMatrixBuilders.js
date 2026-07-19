@@ -160,10 +160,6 @@ function buildPortalCustomerPermissions() {
   return toProfileStoragePayload({
     cases: { ...ownRw },
     documents: { ...ownRead },
-    invoices: { ...ownRead },
-    forms: { ...ownRead },
-    responses: { ...ownRead },
-    events: { ...ownRead },
     users: { create: false, read: false, update: false, delete: false, manageRoles: false },
     settings: { view: false, edit: false, manageRoles: false, manageBilling: false }
   });
@@ -181,10 +177,6 @@ function buildPortalViewerPermissions() {
   return toProfileStoragePayload({
     cases: { ...ownRead },
     documents: { ...ownRead },
-    invoices: { ...ownRead },
-    forms: { ...ownRead },
-    responses: { ...ownRead },
-    events: { ...ownRead },
     users: { create: false, read: false, update: false, delete: false, manageRoles: false },
     settings: { view: false, edit: false, manageRoles: false, manageBilling: false }
   });
@@ -251,7 +243,7 @@ const SYSTEM_PROFILE_DEFINITIONS = [
   {
     profileKey: SYSTEM_PROFILE_KEYS.PORTAL_CUSTOMER,
     name: 'Portal Customer',
-    description: 'Portal self-service — own records read/write where applicable',
+    description: 'Portal self-service — Support, Help, and Documents by default',
     isSystemProfile: true,
     permissions: buildPortalCustomerPermissions
   },

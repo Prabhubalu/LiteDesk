@@ -18,9 +18,9 @@ const { buildPortalCustomerPermissions } = require('../profileMatrixBuilders');
 describe('externalProfileCatalog', () => {
   it('returns portal customer default module keys', () => {
     const keys = getExternalProfileDefaultModuleKeys(SYSTEM_PROFILE_KEYS.PORTAL_CUSTOMER);
-    assert.ok(keys.includes('cases'));
-    assert.ok(keys.includes('documents'));
+    assert.deepEqual([...keys].sort(), ['cases', 'documents']);
     assert.equal(keys.includes('people'), false);
+    assert.equal(keys.includes('forms'), false);
   });
 
   it('identifies platform admin catalog rows', () => {
@@ -49,13 +49,13 @@ describe('externalProfileCatalog', () => {
     assert.equal(filtered.externalProfile, true);
     assert.equal(filtered.profileScoped, false);
     assert.deepEqual(
-      filtered.modules.map((m) => m.key).sort(),
+      filtered.modules.map((m) => m.key),
       ['cases', 'documents', 'people']
     );
     assert.deepEqual(filtered.sections.map((s) => s.id).sort(), ['app-helpdesk', 'core']);
   });
 
-  it('filterCatalogForProfileKey delegates to external access filter', () => {
+  it('filterCatalogForProfileKey injects portal default modules when missing', () => {
     const catalog = {
       modules: [
         { key: 'settings', scope: 'platform', sectionId: 'platform' },
@@ -67,8 +67,10 @@ describe('externalProfileCatalog', () => {
       ]
     };
     const filtered = filterCatalogForProfileKey(catalog, SYSTEM_PROFILE_KEYS.PORTAL_CUSTOMER);
-    assert.equal(filtered.modules.length, 1);
-    assert.equal(filtered.modules[0].key, 'invoices');
+    assert.deepEqual(
+      filtered.modules.map((m) => m.key),
+      ['cases', 'documents', 'invoices']
+    );
   });
 });
 
