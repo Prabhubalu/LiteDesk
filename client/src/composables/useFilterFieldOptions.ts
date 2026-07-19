@@ -27,6 +27,12 @@ type DocumentFolderRow = {
 };
 
 type FilterSelectOption = NonNullable<FilterConfig['options']>[number];
+type ModuleDefinition = {
+  fields?: Array<{
+    key?: string;
+    options?: FilterConfig['options'];
+  }>;
+};
 
 function cacheKey(moduleKey: string, fieldKey: string) {
   return `${moduleKey}:${fieldKey}`;
@@ -148,7 +154,7 @@ export function useFilterFieldOptions(
     loadingKeys.add(scopedKey);
     try {
       const mod = moduleKeyOverride || moduleKey.value;
-      const moduleDef = await fetchModuleDefinitionCached(mod);
+      const moduleDef = await fetchModuleDefinitionCached(mod) as ModuleDefinition | null;
       const fields = Array.isArray(moduleDef?.fields) ? moduleDef.fields : [];
       const field = fields.find(
         (row: { key?: string }) => String(row?.key || '') === key

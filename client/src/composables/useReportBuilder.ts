@@ -263,6 +263,8 @@ export function useReportBuilder(reportId?: string | null) {
           label: mod?.label ? `${mod.label}: ${bareKey}` : key,
           type: undefined,
           moduleKey,
+          filterable: undefined,
+          options: undefined,
         });
       } else {
         fields.push({
@@ -270,6 +272,8 @@ export function useReportBuilder(reportId?: string | null) {
           label: key,
           type: undefined,
           moduleKey: form.primaryModule,
+          filterable: undefined,
+          options: undefined,
         });
       }
       knownKeys.add(key);
