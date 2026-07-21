@@ -137,10 +137,10 @@ function buildOption() {
     },
     series: [{
       type: 'pie' as const,
-      radius: ['38%', '62%'],
+      radius: chartType === 'donut' ? ['38%', '62%'] : '62%',
       center: ['50%', '42%'],
       avoidLabelOverlap: true,
-      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      itemStyle: { borderRadius: chartType === 'donut' ? 4 : 2, borderColor: '#fff', borderWidth: 2 },
       label: { fontSize: 10, formatter: '{b}\n{d}%' },
       data: points.map((p, i) => ({
         name: p.label,

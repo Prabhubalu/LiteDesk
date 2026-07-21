@@ -2,11 +2,18 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
+import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { resolvePageAiContext, type PageAiContext } from '@/utils/resolvePageAiContext';
 import { submitAiFeedback, trackAiAbilityUsed } from '@/utils/aiFeedback';
 import { captureAiProviderError } from '@/config/posthogAi';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
+
+export type AstraProgressStep = {
+  step: string;
+  detail?: string;
+  at: number;
+};
 
 export type InAppAiCitation = {
   index?: number;
@@ -37,12 +44,16 @@ export type InAppAiAction = {
 
 export type InAppAiVisual = {
   id?: string;
-  component: 'chart' | 'kpi_strip' | 'data_table' | 'callout' | 'progress_list';
+  component: 'chart' | 'kpi_strip' | 'data_table' | 'callout' | 'progress_list' | 'research_brief';
   chartType?: 'pie' | 'bar' | 'line';
   title?: string;
   metricLabel?: string;
+  summary?: string;
   points?: Array<{ label: string; value: number }>;
   items?: Array<{ label: string; value: string | number; hint?: string; max?: number }>;
+  facts?: Array<{ label: string; value: string }>;
+  sections?: Array<{ title: string; body?: string; bullets?: string[] }>;
+  sources?: string[];
   columns?: string[];
   rows?: Array<Array<string | number>>;
   tone?: 'insight' | 'success' | 'warning' | 'danger';
@@ -52,13 +63,20 @@ export type InAppAiVisual = {
     moduleKey: string;
     groupField?: string;
     metric?: 'count' | 'amount';
+    reportType?: string;
+    question?: string;
+    /** Chart individual matching records (not stage/status rollup) */
+    recordLevel?: boolean;
   };
 };
-
 export type InAppAiStructured = {
   headline?: string;
   bullets?: string[];
   clarifyingQuestions?: string[];
+  /** When true, clarifyingQuestions are clickable next-ask chips (not clarify-needed). */
+  suggestionMode?: boolean;
+  /** When true, actions include grounded Next Best Action items. */
+  nbaMode?: boolean;
   detail?: string;
   actions?: InAppAiAction[];
   visuals?: InAppAiVisual[];
@@ -357,7 +375,185 @@ export function useInProductAiAsk() {
   const aiMessages = ref<InAppAiMessage[]>([]);
   const aiAsking = ref(false);
   const aiError = ref('');
+  const astraProgressSteps = ref<AstraProgressStep[]>([]);
+  /** Single behind-the-scenes line under “Astra is working…”. */
+  const astraStatusLine = ref('');
+  let astraAmbientTimer: ReturnType<typeof setInterval> | null = null;
+  let astraAmbientIndex = 0;
   const lastAbilityKey = ref('');
+
+  const ASTRA_STEP_I18N: Record<string, string> = {
+    routing: 'liveChat.inAppAiStatusRouting',
+    resolving_config: 'liveChat.inAppAiStatusResolvingConfig',
+    checking_cache: 'liveChat.inAppAiStatusCheckingCache',
+    cache_hit: 'liveChat.inAppAiStatusCacheHit',
+    gathering_context: 'liveChat.inAppAiStatusGatheringContext',
+    searching_workspace: 'liveChat.inAppAiStatusSearchingWorkspace',
+    expanding_records: 'liveChat.inAppAiStatusExpandingRecords',
+    loading_module_data: 'liveChat.inAppAiStatusLoadingModuleData',
+    loading_attention: 'liveChat.inAppAiStatusLoadingAttention',
+    loading_calendar: 'liveChat.inAppAiStatusLoadingCalendar',
+    web_research: 'liveChat.inAppAiStatusWebResearch',
+    calling_model: 'liveChat.inAppAiStatusThinking',
+    thinking: 'liveChat.inAppAiStatusThinking',
+    drafting: 'liveChat.inAppAiStatusDrafting',
+    shaping: 'liveChat.inAppAiStatusShaping',
+    polishing: 'liveChat.inAppAiStatusPolishing',
+    structuring: 'liveChat.inAppAiStatusStructuring',
+    enriching: 'liveChat.inAppAiStatusEnriching',
+    preparing_visuals: 'liveChat.inAppAiStatusPreparingVisuals',
+    almost_done: 'liveChat.inAppAiStatusAlmostDone',
+  };
+
+  /** Ambient flips while a phase is still running (keeps the line alive). */
+  const ASTRA_AMBIENT_BY_STEP: Record<string, string[]> = {
+    routing: [
+      'liveChat.inAppAiStatusRouting',
+      'liveChat.inAppAiStatusResolvingConfig',
+    ],
+    resolving_config: [
+      'liveChat.inAppAiStatusResolvingConfig',
+      'liveChat.inAppAiStatusRouting',
+    ],
+    checking_cache: [
+      'liveChat.inAppAiStatusCheckingCache',
+      'liveChat.inAppAiStatusGatheringContext',
+    ],
+    cache_hit: [
+      'liveChat.inAppAiStatusCacheHit',
+      'liveChat.inAppAiStatusAlmostDone',
+    ],
+    gathering_context: [
+      'liveChat.inAppAiStatusGatheringContext',
+      'liveChat.inAppAiStatusSearchingWorkspace',
+      'liveChat.inAppAiStatusExpandingRecords',
+    ],
+    searching_workspace: [
+      'liveChat.inAppAiStatusSearchingWorkspace',
+      'liveChat.inAppAiStatusGatheringContext',
+      'liveChat.inAppAiStatusExpandingRecords',
+    ],
+    expanding_records: [
+      'liveChat.inAppAiStatusExpandingRecords',
+      'liveChat.inAppAiStatusGatheringContext',
+    ],
+    loading_module_data: [
+      'liveChat.inAppAiStatusLoadingModuleData',
+      'liveChat.inAppAiStatusGatheringContext',
+    ],
+    loading_attention: [
+      'liveChat.inAppAiStatusLoadingAttention',
+      'liveChat.inAppAiStatusGatheringContext',
+    ],
+    loading_calendar: [
+      'liveChat.inAppAiStatusLoadingCalendar',
+      'liveChat.inAppAiStatusGatheringContext',
+    ],
+    web_research: [
+      'liveChat.inAppAiStatusWebResearch',
+      'liveChat.inAppAiStatusConnecting',
+    ],
+    thinking: [
+      'liveChat.inAppAiStatusThinking',
+      'liveChat.inAppAiStatusReviewingAsk',
+      'liveChat.inAppAiStatusConnecting',
+    ],
+    calling_model: [
+      'liveChat.inAppAiStatusThinking',
+      'liveChat.inAppAiStatusReviewingAsk',
+      'liveChat.inAppAiStatusConnecting',
+    ],
+    drafting: [
+      'liveChat.inAppAiStatusDrafting',
+      'liveChat.inAppAiStatusShaping',
+      'liveChat.inAppAiStatusPolishing',
+    ],
+    shaping: [
+      'liveChat.inAppAiStatusShaping',
+      'liveChat.inAppAiStatusDrafting',
+      'liveChat.inAppAiStatusPolishing',
+    ],
+    polishing: [
+      'liveChat.inAppAiStatusPolishing',
+      'liveChat.inAppAiStatusShaping',
+      'liveChat.inAppAiStatusStructuring',
+    ],
+    structuring: [
+      'liveChat.inAppAiStatusStructuring',
+      'liveChat.inAppAiStatusEnriching',
+      'liveChat.inAppAiStatusAlmostDone',
+    ],
+    enriching: [
+      'liveChat.inAppAiStatusEnriching',
+      'liveChat.inAppAiStatusAlmostDone',
+    ],
+    preparing_visuals: [
+      'liveChat.inAppAiStatusPreparingVisuals',
+      'liveChat.inAppAiStatusAlmostDone',
+    ],
+    almost_done: [
+      'liveChat.inAppAiStatusAlmostDone',
+      'liveChat.inAppAiStatusPolishing',
+    ],
+  };
+
+  function stopAstraAmbient() {
+    if (astraAmbientTimer != null) {
+      clearInterval(astraAmbientTimer);
+      astraAmbientTimer = null;
+    }
+    astraAmbientIndex = 0;
+  }
+
+  function labelForStep(step: string): string {
+    const key = ASTRA_STEP_I18N[step];
+    return key ? t(key) : '';
+  }
+
+  function ambientKeysForStep(step: string): string[] {
+    return ASTRA_AMBIENT_BY_STEP[step]
+      || ASTRA_AMBIENT_BY_STEP.thinking
+      || ['liveChat.inAppAiStatusThinking'];
+  }
+
+  function applyAstraStatusFromStep(step: string) {
+    const label = labelForStep(step);
+    if (label) astraStatusLine.value = label;
+    astraAmbientIndex = 0;
+    stopAstraAmbient();
+    if (!aiAsking.value) return;
+    const keys = ambientKeysForStep(step);
+    if (keys.length < 2) return;
+    astraAmbientTimer = setInterval(() => {
+      if (!aiAsking.value) {
+        stopAstraAmbient();
+        return;
+      }
+      astraAmbientIndex = (astraAmbientIndex + 1) % keys.length;
+      astraStatusLine.value = t(keys[astraAmbientIndex] || keys[0]);
+    }, 2200);
+  }
+
+  function pushAstraProgress(step: string, detail?: string) {
+    const s = String(step || '').trim();
+    if (!s) return;
+    const d = detail ? String(detail).trim() : undefined;
+    const last = astraProgressSteps.value[astraProgressSteps.value.length - 1];
+    // Always refresh display on real server phases (including same family with new phase).
+    const phaseChanged = !last || last.step !== s || (last.detail || '') !== (d || '');
+    if (!phaseChanged) return;
+    astraProgressSteps.value = [
+      ...astraProgressSteps.value.slice(-8),
+      { step: s, detail: d, at: Date.now() },
+    ];
+    applyAstraStatusFromStep(s);
+  }
+
+  function clearAstraProgress() {
+    stopAstraAmbient();
+    astraProgressSteps.value = [];
+    astraStatusLine.value = '';
+  }
   const cachedAgents = ref<Array<{
     _id: string;
     name: string;
@@ -441,75 +637,94 @@ export function useInProductAiAsk() {
     visualsRevealed.value = !hasVisuals;
     actionsRevealed.value = !hasActions;
 
-    const typeText = async (full: string, setter: (n: number) => void) => {
-      if (!full) {
-        setter(0);
-        return;
-      }
-      const durationMs = Math.min(4200, Math.max(700, full.length * 16));
-      const stepMs = 20;
-      const steps = Math.max(1, Math.ceil(durationMs / stepMs));
-      const charsPerStep = Math.max(1, Math.ceil(full.length / steps));
-      for (let i = charsPerStep; i < full.length; i += charsPerStep) {
-        if (gen !== typingGen) return;
-        setter(Math.min(i, full.length));
-        typingProgress.value += 1;
-        await waitTyping(stepMs, gen);
-      }
+    const finishTyping = () => {
       if (gen !== typingGen) return;
-      setter(full.length);
+      typedHeadlineLen.value = headline.length;
+      typedBodyLen.value = body.length;
+      typedDetailLen.value = detail.length;
+      typedBulletLens.value = bullets.map((b) => String(b || '').length);
+      revealedBulletCount.value = bullets.length;
+      revealedQuestionCount.value = questions.length;
+      visualsRevealed.value = true;
+      actionsRevealed.value = true;
+      typingMessageId.value = null;
       typingProgress.value += 1;
     };
 
-    await typeText(headline, (n) => { typedHeadlineLen.value = n; });
-    if (gen !== typingGen) return;
-    await waitTyping(180, gen);
-    if (gen !== typingGen) return;
+    try {
+      const typeText = async (full: string, setter: (n: number) => void) => {
+        if (!full) {
+          setter(0);
+          return;
+        }
+        const durationMs = Math.min(4200, Math.max(700, full.length * 16));
+        const stepMs = 20;
+        const steps = Math.max(1, Math.ceil(durationMs / stepMs));
+        const charsPerStep = Math.max(1, Math.ceil(full.length / steps));
+        for (let i = charsPerStep; i < full.length; i += charsPerStep) {
+          if (gen !== typingGen) return;
+          setter(Math.min(i, full.length));
+          typingProgress.value += 1;
+          await waitTyping(stepMs, gen);
+        }
+        if (gen !== typingGen) return;
+        setter(full.length);
+        typingProgress.value += 1;
+      };
 
-    if (showBody) {
-      await typeText(body, (n) => { typedBodyLen.value = n; });
+      await typeText(headline, (n) => { typedHeadlineLen.value = n; });
       if (gen !== typingGen) return;
-      await waitTyping(140, gen);
+      await waitTyping(180, gen);
       if (gen !== typingGen) return;
-    } else {
-      typedBodyLen.value = body.length;
-    }
 
-    for (let i = 0; i < bullets.length; i += 1) {
+      if (showBody) {
+        await typeText(body, (n) => { typedBodyLen.value = n; });
+        if (gen !== typingGen) return;
+        await waitTyping(140, gen);
+        if (gen !== typingGen) return;
+      } else {
+        typedBodyLen.value = body.length;
+      }
+
+      for (let i = 0; i < bullets.length; i += 1) {
+        if (gen !== typingGen) return;
+        revealedBulletCount.value = i + 1;
+        const bullet = String(bullets[i] || '');
+        await typeText(bullet, (n) => {
+          const next = typedBulletLens.value.slice();
+          next[i] = n;
+          typedBulletLens.value = next;
+        });
+        if (gen !== typingGen) return;
+        await waitTyping(120, gen);
+        if (gen !== typingGen) return;
+      }
+
+      if (detail) {
+        await typeText(detail, (n) => { typedDetailLen.value = n; });
+        if (gen !== typingGen) return;
+        await waitTyping(140, gen);
+        if (gen !== typingGen) return;
+      }
+
+      for (let i = 0; i < questions.length; i += 1) {
+        if (gen !== typingGen) return;
+        revealedQuestionCount.value = i + 1;
+        typingProgress.value += 1;
+        await waitTyping(160, gen);
+      }
+
       if (gen !== typingGen) return;
-      revealedBulletCount.value = i + 1;
-      const bullet = String(bullets[i] || '');
-      await typeText(bullet, (n) => {
-        const next = typedBulletLens.value.slice();
-        next[i] = n;
-        typedBulletLens.value = next;
-      });
-      if (gen !== typingGen) return;
+      visualsRevealed.value = true;
+      typingProgress.value += 1;
       await waitTyping(120, gen);
       if (gen !== typingGen) return;
+      actionsRevealed.value = true;
+      typingMessageId.value = null;
+    } finally {
+      // Never leave the UI mid-sentence if typing was interrupted or errored.
+      finishTyping();
     }
-
-    if (detail) {
-      await typeText(detail, (n) => { typedDetailLen.value = n; });
-      if (gen !== typingGen) return;
-      await waitTyping(140, gen);
-      if (gen !== typingGen) return;
-    }
-
-    for (let i = 0; i < questions.length; i += 1) {
-      if (gen !== typingGen) return;
-      revealedQuestionCount.value = i + 1;
-      typingProgress.value += 1;
-      await waitTyping(160, gen);
-    }
-
-    if (gen !== typingGen) return;
-    visualsRevealed.value = true;
-    typingProgress.value += 1;
-    await waitTyping(120, gen);
-    if (gen !== typingGen) return;
-    actionsRevealed.value = true;
-    typingMessageId.value = null;
   }
 
   function isAssistantTyping(messageId: string): boolean {
@@ -1114,184 +1329,338 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     }
   }
 
+  function buildHistoryPayload() {
+    return aiMessages.value
+      .slice(-16)
+      .map((m) => {
+        const structuredBits = [
+          m.structured?.headline,
+          ...(Array.isArray(m.structured?.bullets) ? m.structured.bullets.slice(0, 6) : []),
+          m.structured?.detail,
+        ].map((s) => String(s || '').trim()).filter(Boolean);
+        const body = String(m.body || '').trim();
+        const content = [body, ...structuredBits.filter((s) => !body.includes(s))]
+          .join('\n')
+          .trim()
+          .slice(0, 2500);
+        const actions = Array.isArray(m.structured?.actions)
+          ? m.structured.actions.slice(0, 6).map((a) => ({
+            kind: String(a?.kind || ''),
+            recordId: String(a?.recordId || ''),
+            fields: a?.fields && typeof a.fields === 'object'
+              ? {
+                reportId: a.fields.reportId,
+                widgetId: a.fields.widgetId,
+                dashboardId: a.fields.dashboardId,
+              }
+              : undefined,
+          }))
+          : [];
+        return { role: m.role, body: content, actions };
+      })
+      .filter((m) => m.body || (Array.isArray(m.actions) && m.actions.length));
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- provider payload shape
+  function parseTenantAgentStructured(data: any): InAppAiStructured | null {
+    if (!(data?.structured && typeof data.structured === 'object')) return null;
+    return {
+      headline: String(data.structured.headline || '').trim(),
+      bullets: Array.isArray(data.structured.bullets)
+        ? data.structured.bullets.map((b: unknown) => String(b || '').trim()).filter(Boolean)
+        : [],
+      clarifyingQuestions: Array.isArray(data.structured.clarifyingQuestions)
+        ? data.structured.clarifyingQuestions.map((q: unknown) => String(q || '').trim()).filter(Boolean)
+        : [],
+      suggestionMode: Boolean(data.structured.suggestionMode),
+      nbaMode: Boolean(data.structured.nbaMode),
+      detail: String(data.structured.detail || '').trim(),
+      actions: Array.isArray(data.structured.actions) ? data.structured.actions : [],
+      visuals: Array.isArray(data.structured.visuals)
+        ? data.structured.visuals
+          .filter((v: unknown) => v && typeof v === 'object')
+          .map((raw: InAppAiVisual) => {
+            const component = (
+              ['chart', 'kpi_strip', 'data_table', 'callout', 'progress_list', 'research_brief'].includes(String(raw.component))
+                ? raw.component
+                : 'chart'
+            ) as InAppAiVisual['component'];
+            return {
+              id: String(raw.id || ''),
+              component,
+              chartType: (['pie', 'bar', 'line'].includes(String(raw.chartType))
+                ? raw.chartType
+                : 'pie') as InAppAiVisual['chartType'],
+              title: String(raw.title || '').trim(),
+              metricLabel: String(raw.metricLabel || '').trim(),
+              summary: String((raw as { summary?: string }).summary || '').trim() || undefined,
+              points: Array.isArray(raw.points)
+                ? raw.points
+                  .map((p) => ({
+                    label: String(p?.label || '').trim(),
+                    value: Number(p?.value) || 0,
+                  }))
+                  .filter((p) => p.label)
+                : [],
+              items: Array.isArray(raw.items)
+                ? raw.items.map((it) => ({
+                  label: String(it?.label || '').trim(),
+                  value: it?.value ?? '',
+                  hint: String(it?.hint || '').trim() || undefined,
+                  max: typeof it?.max === 'number' ? it.max : undefined,
+                })).filter((it) => it.label)
+                : [],
+              facts: Array.isArray((raw as { facts?: unknown }).facts)
+                ? ((raw as { facts: Array<{ label?: string; value?: string }> }).facts).map((f) => ({
+                  label: String(f?.label || '').trim(),
+                  value: String(f?.value ?? '').trim(),
+                })).filter((f) => f.label && f.value)
+                : [],
+              sections: Array.isArray((raw as { sections?: unknown }).sections)
+                ? ((raw as {
+                  sections: Array<{ title?: string; body?: string; bullets?: unknown[] }>
+                }).sections).map((s) => ({
+                  title: String(s?.title || '').trim(),
+                  body: String(s?.body || '').trim() || undefined,
+                  bullets: Array.isArray(s?.bullets)
+                    ? s.bullets.map((b) => String(b || '').trim()).filter(Boolean)
+                    : [],
+                })).filter((s) => s.title && (s.body || (s.bullets && s.bullets.length)))
+                : [],
+              sources: Array.isArray((raw as { sources?: unknown }).sources)
+                ? ((raw as { sources: unknown[] }).sources).map((s) => String(s || '').trim()).filter(Boolean)
+                : [],
+              columns: Array.isArray(raw.columns)
+                ? raw.columns.map((c) => String(c || '').trim()).filter(Boolean)
+                : [],
+              rows: Array.isArray(raw.rows)
+                ? raw.rows.filter((r) => Array.isArray(r)).map((r) => r.map((c) => (
+                  typeof c === 'number' ? c : String(c ?? '')
+                )))
+                : [],
+              tone: (['insight', 'success', 'warning', 'danger'].includes(String(raw.tone))
+                ? raw.tone
+                : 'insight') as InAppAiVisual['tone'],
+              body: String(raw.body || '').trim(),
+              ...(raw.pinSource && typeof raw.pinSource === 'object' && String((raw.pinSource as { moduleKey?: string }).moduleKey || '').trim()
+                ? {
+                  pinSource: {
+                    moduleKey: String((raw.pinSource as { moduleKey?: string }).moduleKey || '').trim(),
+                    // Keep empty string — missing group means record-level, not "default to stage"
+                    groupField: Object.prototype.hasOwnProperty.call(raw.pinSource, 'groupField')
+                      ? String((raw.pinSource as { groupField?: string }).groupField || '').trim()
+                      : undefined,
+                    metric: (raw.pinSource as { metric?: string }).metric === 'amount' ? 'amount' as const : 'count' as const,
+                    reportType: String((raw.pinSource as { reportType?: string }).reportType || '').trim() || undefined,
+                    question: String((raw.pinSource as { question?: string }).question || '').trim() || undefined,
+                    recordLevel: (raw.pinSource as { recordLevel?: boolean }).recordLevel === true,
+                  },
+                }
+                : {}),
+            };
+          })
+          .filter((v: InAppAiVisual) => {
+            if (v.component === 'chart') return Boolean(v.points?.length);
+            if (v.component === 'kpi_strip' || v.component === 'progress_list') {
+              return Boolean(v.items?.length);
+            }
+            if (v.component === 'data_table') {
+              return Boolean(v.columns?.length && v.rows?.length);
+            }
+            if (v.component === 'callout') return Boolean(v.body);
+            if (v.component === 'research_brief') {
+              return Boolean(v.sections?.length || v.facts?.length || v.summary);
+            }
+            return false;
+          })
+        : [],
+      talkToAgent: Boolean(data.structured.talkToAgent),
+    };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- provider payload shape
+  function messageFromTenantAgentData(data: any): InAppAiMessage | null {
+    const answer = String(data?.answer || '').trim();
+    const structured = parseTenantAgentStructured(data);
+    const hasStructured = Boolean(
+      structured?.bullets?.length
+      || structured?.actions?.length
+      || structured?.clarifyingQuestions?.length
+      || structured?.visuals?.length
+      || structured?.detail
+      || (structured?.headline
+        && structured.headline.toLowerCase() !== String(data?.agent?.name || '').trim().toLowerCase()),
+    );
+    if (!answer && !hasStructured) return null;
+    const agentName = data?.agent?.name ? String(data.agent.name) : '';
+    if (isThinAgentResponse(answer, structured, agentName)) return null;
+    return {
+      id: nextId('a'),
+      role: 'assistant',
+      body: answer || structured?.headline || t('liveChat.inAppAiRunAgent'),
+      structured: structured || undefined,
+      citations: Array.isArray(data?.citations) ? data.citations : [],
+      source: 'agent',
+      meta: {
+        provider: data?.provider,
+        model: data?.model,
+        keyMode: data?.keyMode,
+        found: true,
+        abilityKey: 'tenant_agent',
+        agentId: data?.agent?._id ? String(data.agent._id) : '',
+        agentName: data?.agent?.name ? String(data.agent.name) : '',
+        agentAutoCreated: Boolean(data?.agentAutoCreated || data?.agent?.autoCreated),
+      },
+    };
+  }
+
+  async function streamTenantAgentAsk(
+    body: Record<string, unknown>,
+    handlers: {
+      onProgress?: (step: string, detail?: string) => void;
+      onPartial?: (data: Record<string, unknown>) => void;
+    } = {},
+  ): Promise<Record<string, unknown>> {
+    const token = authStore.user?.token;
+    const response = await fetch(getApiUrlForFetch('/ai/tenant-agents/ask'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ ...body, stream: true }),
+    });
+
+    if (!response.ok) {
+      const errPayload = await response.json().catch(() => ({}));
+      const err = new Error(
+        String((errPayload as { message?: string })?.message || `HTTP ${response.status}`),
+      ) as Error & { status?: number; code?: string; response?: { status: number; data: unknown } };
+      err.status = response.status;
+      err.code = String((errPayload as { code?: string })?.code || '');
+      err.response = { status: response.status, data: errPayload };
+      throw err;
+    }
+
+    const contentType = String(response.headers.get('content-type') || '');
+    if (!contentType.includes('text/event-stream')) {
+      return (await response.json()) as Record<string, unknown>;
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('Astra stream unavailable');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let donePayload: Record<string, unknown> | null = null;
+    let streamError: { message?: string; code?: string } | null = null;
+
+    const consumeEvent = (rawEvent: string) => {
+      const lines = rawEvent.split('\n');
+      let eventName = 'message';
+      const dataLines: string[] = [];
+      for (const line of lines) {
+        if (line.startsWith('event:')) eventName = line.slice(6).trim();
+        else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
+      }
+      if (!dataLines.length) return;
+      let payload: Record<string, unknown>;
+      try {
+        payload = JSON.parse(dataLines.join('\n')) as Record<string, unknown>;
+      } catch {
+        return;
+      }
+      if (eventName === 'progress') {
+        handlers.onProgress?.(String(payload.step || ''), payload.detail ? String(payload.detail) : undefined);
+      } else if (eventName === 'partial') {
+        handlers.onPartial?.(payload);
+      } else if (eventName === 'done') {
+        donePayload = payload;
+      } else if (eventName === 'error') {
+        streamError = {
+          message: String(payload.message || 'Ask failed'),
+          code: payload.code ? String(payload.code) : undefined,
+        };
+      }
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split('\n\n');
+      buffer = parts.pop() || '';
+      for (const part of parts) {
+        if (part.trim()) consumeEvent(part);
+      }
+    }
+    if (buffer.trim()) consumeEvent(buffer);
+
+    if (streamError) {
+      const err = new Error(streamError.message || 'Ask failed') as Error & { code?: string };
+      err.code = streamError.code;
+      throw err;
+    }
+    if (!donePayload) {
+      throw new Error('Astra stream ended without a result');
+    }
+    return donePayload;
+  }
+
   async function tryTenantAgent(
     question: string,
     page: PageAiContext | null,
     agentId = '',
+    options: {
+      onPartialMessage?: (message: InAppAiMessage) => void;
+      llmModel?: string;
+    } = {},
   ): Promise<TenantAgentTryResult> {
     try {
-      const data = await apiClient.post('/ai/tenant-agents/ask', {
+      const requestBody = {
         question,
         agentId: agentId || undefined,
         moduleKey: page?.moduleKey || '',
         recordId: page?.kind === 'record' ? (page.recordId || '') : '',
         appKey: page?.appKey || 'SALES',
-        history: aiMessages.value
-          .slice(-12)
-          .map((m) => {
-            const structuredBits = [
-              m.structured?.headline,
-              ...(Array.isArray(m.structured?.bullets) ? m.structured.bullets.slice(0, 4) : []),
-              m.structured?.detail,
-            ].map((s) => String(s || '').trim()).filter(Boolean);
-            const body = String(m.body || '').trim();
-            const content = [body, ...structuredBits.filter((s) => !body.includes(s))]
-              .join('\n')
-              .trim()
-              .slice(0, 2000);
-            const actions = Array.isArray(m.structured?.actions)
-              ? m.structured.actions.slice(0, 6).map((a) => ({
-                kind: String(a?.kind || ''),
-                recordId: String(a?.recordId || ''),
-                fields: a?.fields && typeof a.fields === 'object'
-                  ? {
-                    reportId: a.fields.reportId,
-                    widgetId: a.fields.widgetId,
-                    dashboardId: a.fields.dashboardId,
-                  }
-                  : undefined,
-              }))
-              : [];
-            return { role: m.role, body: content, actions };
-          })
-          .filter((m) => m.body || (Array.isArray(m.actions) && m.actions.length)),
+        history: buildHistoryPayload(),
+        ...(options.llmModel ? { llmModel: options.llmModel } : {}),
+      };
+
+      let partialApplied = false;
+      const data = await streamTenantAgentAsk(requestBody, {
+        onProgress: (step, detail) => pushAstraProgress(step, detail),
+        onPartial: (partial) => {
+          if (!partial?.matched || partialApplied) return;
+          const msg = messageFromTenantAgentData(partial);
+          if (!msg) return;
+          partialApplied = true;
+          options.onPartialMessage?.(msg);
+        },
       });
+
       if (!data?.matched) return { matched: false, message: null };
-      const answer = String(data?.answer || '').trim();
-      const structured = data?.structured && typeof data.structured === 'object'
-        ? {
-          headline: String(data.structured.headline || '').trim(),
-          bullets: Array.isArray(data.structured.bullets)
-            ? data.structured.bullets.map((b: unknown) => String(b || '').trim()).filter(Boolean)
-            : [],
-          clarifyingQuestions: Array.isArray(data.structured.clarifyingQuestions)
-            ? data.structured.clarifyingQuestions.map((q: unknown) => String(q || '').trim()).filter(Boolean)
-            : [],
-          detail: String(data.structured.detail || '').trim(),
-          actions: Array.isArray(data.structured.actions) ? data.structured.actions : [],
-          visuals: Array.isArray(data.structured.visuals)
-            ? data.structured.visuals
-              .filter((v: unknown) => v && typeof v === 'object')
-              .map((raw: InAppAiVisual) => {
-                const component = (
-                  ['chart', 'kpi_strip', 'data_table', 'callout', 'progress_list'].includes(String(raw.component))
-                    ? raw.component
-                    : 'chart'
-                ) as InAppAiVisual['component'];
-                return {
-                  id: String(raw.id || ''),
-                  component,
-                  chartType: (['pie', 'bar', 'line'].includes(String(raw.chartType))
-                    ? raw.chartType
-                    : 'pie') as InAppAiVisual['chartType'],
-                  title: String(raw.title || '').trim(),
-                  metricLabel: String(raw.metricLabel || '').trim(),
-                  points: Array.isArray(raw.points)
-                    ? raw.points
-                      .map((p) => ({
-                        label: String(p?.label || '').trim(),
-                        value: Number(p?.value) || 0,
-                      }))
-                      .filter((p) => p.label)
-                    : [],
-                  items: Array.isArray(raw.items)
-                    ? raw.items.map((it) => ({
-                      label: String(it?.label || '').trim(),
-                      value: it?.value ?? '',
-                      hint: String(it?.hint || '').trim() || undefined,
-                      max: typeof it?.max === 'number' ? it.max : undefined,
-                    })).filter((it) => it.label)
-                    : [],
-                  columns: Array.isArray(raw.columns)
-                    ? raw.columns.map((c) => String(c || '').trim()).filter(Boolean)
-                    : [],
-                  rows: Array.isArray(raw.rows)
-                    ? raw.rows.filter((r) => Array.isArray(r)).map((r) => r.map((c) => (
-                      typeof c === 'number' ? c : String(c ?? '')
-                    )))
-                    : [],
-                  tone: (['insight', 'success', 'warning', 'danger'].includes(String(raw.tone))
-                    ? raw.tone
-                    : 'insight') as InAppAiVisual['tone'],
-                  body: String(raw.body || '').trim(),
-                  ...(raw.pinSource && typeof raw.pinSource === 'object' && String((raw.pinSource as { moduleKey?: string }).moduleKey || '').trim()
-                    ? {
-                      pinSource: {
-                        moduleKey: String((raw.pinSource as { moduleKey?: string }).moduleKey || '').trim(),
-                        groupField: String((raw.pinSource as { groupField?: string }).groupField || '').trim() || undefined,
-                        metric: (raw.pinSource as { metric?: string }).metric === 'amount' ? 'amount' as const : 'count' as const,
-                      },
-                    }
-                    : {}),
-                };
-              })
-              .filter((v: InAppAiVisual) => {
-                if (v.component === 'chart') return Boolean(v.points?.length);
-                if (v.component === 'kpi_strip' || v.component === 'progress_list') {
-                  return Boolean(v.items?.length);
-                }
-                if (v.component === 'data_table') {
-                  return Boolean(v.columns?.length && v.rows?.length);
-                }
-                if (v.component === 'callout') return Boolean(v.body);
-                return false;
-              })
-            : [],
-          talkToAgent: Boolean(data.structured.talkToAgent),
-        }
-        : null;
-      const hasStructured = Boolean(
-        structured?.bullets?.length
-        || structured?.actions?.length
-        || structured?.clarifyingQuestions?.length
-        || structured?.visuals?.length
-        || structured?.detail
-        || (structured?.headline
-          && structured.headline.toLowerCase() !== String(data?.agent?.name || '').trim().toLowerCase()),
-      );
-      if (!answer && !hasStructured) {
-        return { matched: true, message: null };
-      }
-      const agentName = data?.agent?.name ? String(data.agent.name) : '';
-      if (isThinAgentResponse(answer, structured, agentName)) {
-        // Server should already have filled CRM fallback; if still thin, do not cascade.
+      const message = messageFromTenantAgentData(data);
+      if (!message) {
         return { matched: true, message: null };
       }
       trackAiAbilityUsed({
         abilityKey: 'tenant_agent',
-        provider: data?.provider,
-        model: data?.model,
-        found: data?.found,
-        keyMode: data?.keyMode,
-        tokens: data?.usage?.totalTokens,
+        provider: data?.provider as string | undefined,
+        model: data?.model as string | undefined,
+        found: data?.found as boolean | undefined,
+        keyMode: data?.keyMode as string | undefined,
+        tokens: (data?.usage as { totalTokens?: number } | undefined)?.totalTokens,
       });
-      return {
-        matched: true,
-        message: {
-          id: nextId('a'),
-          role: 'assistant',
-          body: answer || structured?.headline || t('liveChat.inAppAiRunAgent'),
-          structured,
-          citations: Array.isArray(data?.citations) ? data.citations : [],
-          source: 'agent',
-          meta: {
-            provider: data?.provider,
-            model: data?.model,
-            keyMode: data?.keyMode,
-            found: true,
-            abilityKey: 'tenant_agent',
-            agentId: data?.agent?._id ? String(data.agent._id) : '',
-            agentName: data?.agent?.name ? String(data.agent.name) : '',
-            agentAutoCreated: Boolean(data?.agentAutoCreated || data?.agent?.autoCreated),
-          },
-        },
-      };
+      return { matched: true, message };
     } catch (err: unknown) {
       const status = (err as { status?: number })?.status
         || (err as { response?: { status?: number } })?.response?.status;
       const is404 = (err as { is404?: boolean })?.is404 === true || status === 404;
       if (is404) {
-        // Older API builds may not expose tenant-agent ask yet; fall through to graph/knowledge.
         return { matched: false, message: null };
       }
       reportAiProviderError(err, 'tenant_agent');
@@ -1468,7 +1837,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     }
   }
 
-  async function askAssistant(question: string, options: { agentId?: string } = {}): Promise<void> {
+  async function askAssistant(question: string, options: { agentId?: string; llmModel?: string } = {}): Promise<void> {
     const q = String(question || '').trim();
     if (!q || aiAsking.value) return;
 
@@ -1480,6 +1849,8 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
 
     aiAsking.value = true;
     aiError.value = '';
+    clearAstraProgress();
+    pushAstraProgress('routing');
     aiMessages.value.push({
       id: nextId('u'),
       role: 'user',
@@ -1504,14 +1875,37 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
       }
       const agentId = resolveAgentIdByQuestion(q, stickyAgentId, page?.moduleKey || '');
       const askText = expandAgentQuestion(q, agentId);
-      const agentResult = await tryTenantAgent(askText, page, agentId);
+      let earlyMessageId: string | null = null;
+      const agentResult = await tryTenantAgent(askText, page, agentId, {
+        llmModel: options.llmModel || '',
+        onPartialMessage: (msg) => {
+          earlyMessageId = msg.id;
+          aiMessages.value.push({ ...msg, createdAt: msg.createdAt || Date.now() });
+          upsertActiveConversation(aiMessages.value);
+        },
+      });
       const chosen: InAppAiMessage | null = agentResult.message;
 
       let pushed: InAppAiMessage | null = null;
       if (chosen?.source === 'agent') {
         lastAbilityKey.value = chosen.meta?.abilityKey || '';
-        pushed = { ...chosen, createdAt: chosen.createdAt || Date.now() };
-        aiMessages.value.push(pushed);
+        if (earlyMessageId) {
+          const idx = aiMessages.value.findIndex((m) => m.id === earlyMessageId);
+          if (idx >= 0) {
+            aiMessages.value[idx] = {
+              ...chosen,
+              id: earlyMessageId,
+              createdAt: aiMessages.value[idx].createdAt || Date.now(),
+            };
+            pushed = aiMessages.value[idx];
+          } else {
+            pushed = { ...chosen, createdAt: chosen.createdAt || Date.now() };
+            aiMessages.value.push(pushed);
+          }
+        } else {
+          pushed = { ...chosen, createdAt: chosen.createdAt || Date.now() };
+          aiMessages.value.push(pushed);
+        }
       } else if (!aiError.value) {
         const names = cachedAgents.value
           .map((a) => String(a.name || '').trim())
@@ -1535,13 +1929,15 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
       }
       upsertActiveConversation(aiMessages.value);
       aiAsking.value = false;
-      if (pushed) {
+      clearAstraProgress();
+      if (pushed && !earlyMessageId) {
         await playAssistantTyping(pushed);
       }
     } catch {
       /* aiError already set by helpers when applicable */
     } finally {
       aiAsking.value = false;
+      clearAstraProgress();
       upsertActiveConversation(aiMessages.value);
     }
   }
@@ -1560,6 +1956,8 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     aiMessages,
     aiAsking,
     aiError,
+    astraProgressSteps,
+    astraStatusLine,
     aiConversations,
     recentAiConversations,
     allAiConversations,

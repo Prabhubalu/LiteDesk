@@ -543,5 +543,6 @@ async function getPlatformHomeSnapshot(req) {
 module.exports = {
   ATTENTION_PREVIEW_LIMIT,
   getPlatformHomeSnapshot,
-  summarizeAttentionItems
+  summarizeAttentionItems,
+  getResumeItems,
 };

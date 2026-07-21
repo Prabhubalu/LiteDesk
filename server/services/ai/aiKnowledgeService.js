@@ -266,9 +266,59 @@ async function askPortalKnowledge({
   };
 }
 
+/**
+ * Retrieve-only knowledge hits (no LLM). Used by Astra SearchKnowledgeBase tool.
+ */
+async function retrieveKnowledgeHits({
+  organizationId,
+  question,
+  topK = DEFAULT_TOP_K,
+  sourceType = null,
+  config = null,
+  hitFilter = null,
+} = {}) {
+  const normalizedQuestion = normalizeQuestion(question);
+  if (!normalizedQuestion) {
+    return { question: '', citations: [], hits: [] };
+  }
+
+  const resolved = config || await resolveAiRequestConfig({
+    organizationId,
+    abilityKey: 'ask',
+  });
+
+  const embeddingAdapter = getEmbeddingAdapter(resolved.embeddingProvider);
+  const embeddingModel = resolveEmbeddingModel(resolved.embeddingProvider);
+  const embedded = await embeddingAdapter.embed({
+    apiKey: resolved.embeddingApiKey || resolved.apiKey,
+    model: embeddingModel,
+    texts: [normalizedQuestion],
+  });
+
+  const queryVector = embedded.vectors?.[0] || [];
+  const store = getVectorStore();
+  const filters = {};
+  if (sourceType) filters.sourceType = sourceType;
+
+  const rawHits = await store.search({
+    organizationId,
+    vector: queryVector,
+    topK: Math.max(Number(topK) || DEFAULT_TOP_K, DEFAULT_TOP_K) * (hitFilter ? 2 : 1),
+    filters,
+  });
+  let hits = filterHitsByScore(rawHits, { topK: hitFilter ? DEFAULT_TOP_K * 2 : topK });
+  if (typeof hitFilter === 'function') {
+    hits = await hitFilter(hits);
+    hits = hits.slice(0, Math.max(1, Number(topK) || DEFAULT_TOP_K));
+  }
+  const citations = formatCitations(hits);
+  return { question: normalizedQuestion, citations, hits };
+}
+
 module.exports = {
   askKnowledge,
   askPortalKnowledge,
+  retrieveKnowledgeHits,
   normalizeQuestion,
   filterHitsByScore,
   formatCitations,

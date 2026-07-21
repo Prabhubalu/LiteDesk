@@ -5,6 +5,29 @@
  * Not the full Vue codebase (unsafe / unbounded). Mirrors CRM UI patterns.
  */
 
+/** Truncate at word/slash boundary — never mid-token (e.g. mid-URL or mid-CSS). */
+function softTruncateDisplay(text = '', maxLen = 120) {
+  const s = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!s || s.length <= maxLen) return s;
+  if (/^https?:\/\//i.test(s)) return s.slice(0, Math.min(s.length, 200));
+  const cut = s.slice(0, maxLen);
+  const atSpace = cut.lastIndexOf(' ');
+  if (atSpace >= Math.floor(maxLen * 0.55)) return `${cut.slice(0, atSpace).trim()}…`;
+  const tokenSafe = cut.replace(/[^\s/,.;:!?-]+$/u, '').trim();
+  return tokenSafe ? `${tokenSafe}…` : `${cut.trim()}…`;
+}
+
+function looksLikeCssOrMarkupJunk(value = '') {
+  const t = String(value || '');
+  if (!t) return true;
+  if (/--[a-z0-9-]+:/i.test(t)) return true;
+  if (/\b(?:bing-smtc|b_algo|result__snippet)\b/i.test(t)) return true;
+  if (/\bhtml\s*\{/i.test(t) || /\brgba?\s*\(/i.test(t)) return true;
+  if (/[{};]{3,}/.test(t)) return true;
+  if (/<\/?[a-z][\w:-]*\b/i.test(t)) return true;
+  return false;
+}
+
 const ASTRA_UI_COMPONENTS = [
   {
     key: 'kpi_strip',
@@ -31,6 +54,11 @@ const ASTRA_UI_COMPONENTS = [
     when: 'Insight, warning, or next-step recommendation',
     props: 'tone:insight|success|warning|danger, title?, body',
   },
+  {
+    key: 'research_brief',
+    when: 'Company / internet research — detailed presentable brief (always use for org web research)',
+    props: 'title?, summary?, facts:[{label,value}], sections:[{title,body,bullets?}], sources?:[string]',
+  },
 ];
 
 const ALLOWED = new Set(ASTRA_UI_COMPONENTS.map((c) => c.key));
@@ -43,10 +71,12 @@ function formatAstraUiCatalogForPrompt() {
     'RELEVANCE (critical): pick ONLY blocks that directly answer THIS question. Do not add unrelated pipeline KPIs, win rates, or stage distributions the user did not ask about.',
     '- Single-fact / comparison / "which X" questions (e.g. highest value deal): answer in headline + a short data_table of just the compared rows. No KPI strip, no distribution chart unless asked.',
     '- Only build the full stack (kpi_strip + chart + data_table + callout) when the user explicitly asks for a report / dashboard / overview / breakdown.',
+    '- WEB / COMPANY RESEARCH: emit research_brief with 4–8 titled sections (Overview, Leadership, Products, Market, Contact, Sources). Do not answer with a tiny snippet. Put the full brief in visuals — not only under detail.',
     'ACCURACY (critical): Never invent, guess, or zero-fill metrics. Every number in visuals/bullets must appear in CRM context aggregates or record fields. If an amount is missing in context, omit it — do not emit 0.',
     'Predictions / next actions: only from CRM facts (stage, probability, dates, open tasks, quotes). Each action must name a real record from context (recordId when known). No speculative forecasts without a probability/date basis.',
-    'Never invent metrics — use CRM context / aggregates only.',
+    'Never invent metrics — use CRM context / aggregates only. Web research facts must come from the web dossier / leadership facts.',
     'visuals example: [{"component":"kpi_strip","items":[{"label":"Open","value":"14"}]},{"component":"chart","chartType":"pie","points":[{"label":"New","value":5}]}]',
+    'research_brief example: {"component":"research_brief","title":"Vtiger CRM","summary":"…","facts":[{"label":"CEO","value":"Sreenivas Kanumuru"}],"sections":[{"title":"Overview","body":"…","bullets":["…"]}]}',
   ].join('\n');
 }
 
@@ -69,7 +99,7 @@ function pct(part, whole) {
   return `${Math.round((Number(part) / w) * 100)}%`;
 }
 
-function withPinSource(block, { moduleKey = '', groupField = '', metric = 'count' } = {}) {
+function withPinSource(block, { moduleKey = '', groupField = '', metric = 'count', reportType = '', question = '' } = {}) {
   if (!block || !moduleKey) return block;
   return {
     ...block,
@@ -77,6 +107,8 @@ function withPinSource(block, { moduleKey = '', groupField = '', metric = 'count
       moduleKey: String(moduleKey).slice(0, 40),
       groupField: String(groupField || '').slice(0, 40),
       metric: metric === 'amount' ? 'amount' : 'count',
+      ...(reportType ? { reportType: String(reportType).slice(0, 20) } : {}),
+      ...(question ? { question: String(question).slice(0, 240) } : {}),
     },
   };
 }
@@ -136,7 +168,7 @@ function composeAstraUiFromData({
     blocks.push(withPinSource({
       id: 'kpi_module',
       component: 'kpi_strip',
-      title: `${mod} by ${dim}`,
+      title: `${mod} snapshot`,
       items,
     }, { ...pinBase, metric: 'count' }));
   } else if (stats && mod === 'deals') {
@@ -247,10 +279,14 @@ function normalizePinSource(raw) {
   if (!raw || typeof raw !== 'object') return undefined;
   const moduleKey = String(raw.moduleKey || '').trim().toLowerCase().slice(0, 40);
   if (!moduleKey) return undefined;
+  const reportType = String(raw.reportType || '').trim().toLowerCase().slice(0, 20);
+  const question = String(raw.question || '').trim().slice(0, 240);
   return {
     moduleKey,
     groupField: String(raw.groupField || '').trim().slice(0, 40),
     metric: raw.metric === 'amount' ? 'amount' : 'count',
+    ...(reportType ? { reportType } : {}),
+    ...(question ? { question } : {}),
   };
 }
 
@@ -288,11 +324,21 @@ function normalizeAstraVisuals(rawVisuals = []) {
 
     if (component === 'kpi_strip') {
       const items = Array.isArray(row.items)
-        ? row.items.map((it) => ({
-          label: String(it?.label || '').trim().slice(0, 60),
-          value: String(it?.value ?? '').trim().slice(0, 40),
-          hint: String(it?.hint || '').trim().slice(0, 80),
-        })).filter((it) => it.label && it.value)
+        ? row.items.map((it) => {
+          const label = String(it?.label || '').trim().slice(0, 60);
+          const rawValue = String(it?.value ?? '').trim();
+          const isUrl = /^https?:\/\//i.test(rawValue);
+          // Never mid-cut URLs; allow wrapping in UI instead of ellipsis stubs.
+          const value = isUrl
+            ? rawValue.slice(0, 200)
+            : softTruncateDisplay(rawValue, 80);
+          const hintRaw = String(it?.hint || '').trim() || (isUrl && rawValue.length > 200 ? rawValue : '');
+          return {
+            label,
+            value,
+            hint: hintRaw ? softTruncateDisplay(hintRaw, 200) : '',
+          };
+        }).filter((it) => it.label && it.value)
         : [];
       if (!items.length) continue;
       out.push({
@@ -360,9 +406,122 @@ function normalizeAstraVisuals(rawVisuals = []) {
         title: String(row.title || '').trim().slice(0, 120),
         body,
       });
+      continue;
+    }
+
+    if (component === 'research_brief') {
+      const sections = Array.isArray(row.sections)
+        ? row.sections.map((s) => ({
+          title: String(s?.title || '').trim().slice(0, 80),
+          body: String(s?.body || '').trim().slice(0, 2000),
+          bullets: Array.isArray(s?.bullets)
+            ? s.bullets.map((b) => String(b || '').trim().slice(0, 280)).filter(Boolean).slice(0, 10)
+            : [],
+        })).filter((s) => s.title && (s.body || s.bullets.length))
+        : [];
+      const facts = Array.isArray(row.facts)
+        ? row.facts.map((f) => ({
+          label: String(f?.label || '').trim().slice(0, 60),
+          value: String(f?.value ?? '').trim().slice(0, 120),
+        })).filter((f) => f.label && f.value).slice(0, 12)
+        : [];
+      const sources = Array.isArray(row.sources)
+        ? row.sources.map((s) => String(s || '').trim().slice(0, 240)).filter(Boolean).slice(0, 10)
+        : [];
+      const summary = String(row.summary || '').trim().slice(0, 800);
+      if (!sections.length && !facts.length && !summary) continue;
+      out.push({
+        id,
+        component: 'research_brief',
+        title: String(row.title || '').trim().slice(0, 120),
+        summary,
+        facts,
+        sections: sections.slice(0, 10),
+        sources,
+      });
     }
   }
   return out;
+}
+
+/**
+ * Compose presentable Astra visuals from an LLM-extracted company research brief.
+ */
+function composeAstraUiFromWebResearch(brief = {}) {
+  const blocks = [];
+  const title = String(brief.title || brief.headline || 'Company research').trim().slice(0, 120);
+  const summary = softTruncateDisplay(String(brief.summary || '').trim(), 360);
+  const facts = Array.isArray(brief.facts)
+    ? brief.facts.map((f) => ({
+      label: String(f?.label || '').trim().slice(0, 60),
+      value: String(f?.value ?? '').trim().slice(0, 200),
+    })).filter((f) => {
+      if (!f.label || !f.value) return false;
+      if (looksLikeCssOrMarkupJunk(f.value)) return false;
+      // Never show placeholder / "verify on Google" as a key fact
+      if (/^general knowledge\b/i.test(f.value)) return false;
+      if (/^who is the\b/i.test(f.value)) return false;
+      if (/\bverify (on|via|at|with)\b/i.test(f.value)) return false;
+      if (/\b(not (listed|found|available|known)|unknown|n\/?a|tbd)\b/i.test(f.value)) return false;
+      if (/^(ceo|founder)$/i.test(f.label) && /\b(who|what|the is)\b/i.test(f.value)) return false;
+      return true;
+    }).slice(0, 8)
+    : [];
+  const sections = Array.isArray(brief.sections)
+    ? brief.sections.map((s) => ({
+      title: String(s?.title || '').trim().slice(0, 80),
+      body: softTruncateDisplay(
+        String(s?.body || '')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/&amp;/gi, '&')
+          .replace(/&#\d+;/g, ' ')
+          .replace(/https?:\/\/(?:www\.)?(?:bing|duckduckgo)\.com\/[^\s]+/gi, '')
+          .trim(),
+        420,
+      ),
+      bullets: Array.isArray(s?.bullets)
+        ? s.bullets
+          .map((b) => softTruncateDisplay(String(b || '').trim(), 200))
+          .filter((b) => b && !looksLikeCssOrMarkupJunk(b) && !/bing\.com|duckduckgo\.com|key findings|^finding /i.test(b))
+          .slice(0, 4)
+        : [],
+    })).filter((s) => s.title && (s.body || s.bullets.length) && !looksLikeCssOrMarkupJunk(s.body)).slice(0, 3)
+    : [];
+  const sources = Array.isArray(brief.sources)
+    ? brief.sources
+      .map((s) => String(s || '').trim().slice(0, 240))
+      .filter((s) => s && !/bing\.com\/search|duckduckgo\.com/i.test(s))
+      .slice(0, 6)
+    : [];
+
+  if (facts.length) {
+    blocks.push({
+      component: 'kpi_strip',
+      title: `${title} · key facts`,
+      items: facts.slice(0, 6).map((f) => {
+        const isUrl = /^https?:\/\//i.test(f.value);
+        return {
+          label: f.label,
+          value: isUrl ? f.value : softTruncateDisplay(f.value, 80),
+          hint: '',
+        };
+      }),
+    });
+  }
+
+  if (sections.length || summary || facts.length) {
+    blocks.push({
+      component: 'research_brief',
+      title,
+      summary,
+      facts: facts.slice(0, 6),
+      sections,
+      sources,
+    });
+  }
+
+  // Skip callouts for company research — keeps the card tight.
+  return normalizeAstraVisuals(blocks).slice(0, 3);
 }
 
 /**
@@ -373,7 +532,17 @@ function mergeAstraUiBlocks({ composed = [], fromAgent = [] } = {}) {
   const agent = normalizeAstraVisuals(fromAgent);
   const base = normalizeAstraVisuals(composed);
   if (!base.length) return agent;
-  if (!agent.length) return base;
+  if (!agent.length) return dedupeVisualTabs(base);
+
+  // Web research briefs own the layout — keep composed research_brief / kpi, add agent extras lightly.
+  if (base.some((b) => b.component === 'research_brief')) {
+    const agentCallouts = agent.filter((b) => b.component === 'callout');
+    const out = [...base];
+    for (const c of agentCallouts) {
+      if (!out.some((b) => b.component === 'callout' && b.body === c.body)) out.push(c);
+    }
+    return dedupeVisualTabs(out).slice(0, 8);
+  }
 
   const agentCallouts = agent.filter((b) => b.component === 'callout');
   const agentCharts = agent.filter((b) => b.component === 'chart');
@@ -395,15 +564,67 @@ function mergeAstraUiBlocks({ composed = [], fromAgent = [] } = {}) {
       out.push(t);
     }
   }
-  return out.slice(0, 8);
+  // Prefer DB chart; drop agent charts that only duplicate the same title.
+  return dedupeVisualTabs(out).slice(0, 8);
+}
+
+function dedupeVisualTabs(blocks = []) {
+  const seen = new Set();
+  const out = [];
+  for (const b of blocks) {
+    const titleKey = String(b.title || '').trim().toLowerCase() || b.component;
+    const key = `${b.component}:${titleKey}`;
+    if (seen.has(key)) continue;
+    // Also collapse same title across chart/kpi/progress when labels collide.
+    const titleOnly = `title:${titleKey}`;
+    if (titleKey && titleKey !== b.component && seen.has(titleOnly) && b.component !== 'data_table') {
+      continue;
+    }
+    seen.add(key);
+    if (titleKey && titleKey !== b.component) seen.add(titleOnly);
+    out.push(b);
+  }
+  return out;
+}
+
+/** Ensure pinned widgets keep the chat question (filters like amount > 10K). */
+function attachPinQuestionToVisuals(visuals = [], question = '', moduleKey = '') {
+  const q = String(question || '').trim().slice(0, 240);
+  const modHint = String(moduleKey || '').trim().toLowerCase();
+  if (!Array.isArray(visuals) || !visuals.length) return visuals;
+  return visuals.map((v) => {
+    if (!v || typeof v !== 'object') return v;
+    const cols = (Array.isArray(v.columns) ? v.columns : []).map((c) => String(c || '').toLowerCase());
+    const isRecordList = v.component === 'data_table'
+      && cols.some((c) => /deal|name|title|amount|subject/.test(c));
+    const existing = v.pinSource && typeof v.pinSource === 'object' ? v.pinSource : null;
+    const moduleKeyResolved = String(existing?.moduleKey || modHint || '')
+      || (/\bdeals?\b/i.test(String(v.title || '')) ? 'deals' : '')
+      || (/\btasks?\b/i.test(String(v.title || '')) ? 'tasks' : '');
+    if (!moduleKeyResolved && !q) return v;
+    return {
+      ...v,
+      pinSource: {
+        moduleKey: moduleKeyResolved || existing?.moduleKey || 'deals',
+        groupField: existing?.groupField || '',
+        metric: existing?.metric === 'amount' ? 'amount' : 'count',
+        ...(isRecordList
+          ? { reportType: 'tabular' }
+          : (existing?.reportType ? { reportType: existing.reportType } : {})),
+        ...(q || existing?.question ? { question: q || String(existing.question) } : {}),
+      },
+    };
+  });
 }
 
 module.exports = {
   ASTRA_UI_COMPONENTS,
   formatAstraUiCatalogForPrompt,
   composeAstraUiFromData,
+  composeAstraUiFromWebResearch,
   normalizeAstraVisuals,
   mergeAstraUiBlocks,
   mergeSeriesByLabel,
+  attachPinQuestionToVisuals,
   formatMoney,
 };

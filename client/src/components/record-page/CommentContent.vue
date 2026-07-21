@@ -3,7 +3,10 @@
     <template v-for="(part, i) in parsedParts" :key="i">
       <span
         v-if="part.type === 'mention'"
-        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200"
+        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap"
+        :class="part.entityType === 'agent'
+          ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200'
+          : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200'"
       >
         @{{ part.name }}
       </span>
@@ -34,7 +37,7 @@ const parsedParts = computed(() => {
   if (!props.content) return [];
   const normalizedContent = String(props.content).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const parts = [];
-  const mentionRegex = /@\[([^\]]+)\]\((user|group):([^)]+)\)/g;
+  const mentionRegex = /@\[([^\]]+)\]\((user|group|agent):([^)]+)\)/g;
   let lastIndex = 0;
   let match;
 

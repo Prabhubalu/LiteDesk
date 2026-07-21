@@ -172,6 +172,42 @@ describe('conversation follow-up anchors', () => {
     assert.ok(resolved.anchors.some((a) => /prabhu balu/i.test(a)));
     assert.ok(resolved.searchQueries.some((q) => /prabhu balu/i.test(q)));
     assert.match(resolved.question, /Conversation focus/i);
+    assert.equal(resolved.sticky, true);
+  });
+  it('keeps sticky focus for detail-analysis after website thread', () => {
+    const {
+      isStickyDeepenerQuestion,
+      isExplicitTopicSwitch,
+    } = require('../aiWorkGraphContextService');
+    assert.equal(isStickyDeepenerQuestion('I want detail analysis'), true);
+    const history = [
+      { role: 'user', content: 'www.vtiger.com is their website' },
+      { role: 'assistant', content: 'Vtiger CRM overview' },
+    ];
+    const sticky = resolveWorkspaceQuestionWithHistory('I want detail analysis', history);
+    assert.equal(sticky.sticky, true);
+    assert.match(sticky.question, /Conversation focus/i);
+    assert.ok(sticky.anchors.some((a) => /vtiger/i.test(a)));
+
+    const longer = resolveWorkspaceQuestionWithHistory(
+      'Can you also cover pricing tiers and who their typical buyers are?',
+      history,
+    );
+    assert.equal(longer.sticky, true);
+    assert.match(longer.question, /Conversation focus/i);
+
+    const switched = resolveWorkspaceQuestionWithHistory('Show my pipeline stage distribution', history);
+    assert.equal(switched.explicitSwitch, true);
+    assert.equal(switched.sticky, false);
+    assert.equal(isExplicitTopicSwitch('Show my pipeline stage distribution', sticky.anchors), true);
+
+    const afterContact = resolveWorkspaceQuestionWithHistory('Who is the CEO?', [
+      { role: 'user', content: "Summarize 'Prabhu Balu' and prepare for the meeting" },
+      { role: 'assistant', content: 'Prabhu Balu is a contact…' },
+    ]);
+    assert.equal(afterContact.explicitSwitch, true);
+    assert.equal(afterContact.sticky, false);
+    assert.equal(isExplicitTopicSwitch('Who is the CEO?', ['person: Prabhu Balu']), true);
   });
 });
 

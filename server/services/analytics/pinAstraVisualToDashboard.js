@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const AnalyticsReport = require('../../models/AnalyticsReport');
 const AnalyticsWidget = require('../../models/AnalyticsWidget');
 const AnalyticsDashboard = require('../../models/AnalyticsDashboard');
+const { getAnalyticsModuleConfig } = require('./analyticsModuleRegistry');
 
 const PINNABLE = new Set(['chart', 'progress_list', 'data_table', 'kpi_strip']);
 
@@ -54,10 +55,26 @@ function inferModuleAndGroup(visual = {}) {
     : null;
   if (pin?.moduleKey) {
     const moduleKey = String(pin.moduleKey).toLowerCase();
+    const reportType = String(pin.reportType || '').toLowerCase();
+    const pinHasGroup = Object.prototype.hasOwnProperty.call(pin, 'groupField');
+    const rawGroup = pinHasGroup ? String(pin.groupField || '').trim() : '';
+    const recordLevel = pin.recordLevel === true
+      || reportType === 'tabular'
+      || (pinHasGroup && rawGroup === '');
+    let groupField = '';
+    if (pinHasGroup) {
+      groupField = rawGroup; // may be '' for record-level charts
+    } else if (!recordLevel) {
+      groupField = DEFAULT_GROUP_BY[moduleKey] || 'status';
+    }
     return {
       moduleKey,
-      groupField: String(pin.groupField || DEFAULT_GROUP_BY[moduleKey] || 'status'),
+      groupField,
       metric: pin.metric === 'amount' ? 'amount' : 'count',
+      reportType,
+      question: String(pin.question || '').trim(),
+      filterTree: pin.filterTree && typeof pin.filterTree === 'object' ? pin.filterTree : null,
+      recordLevel,
     };
   }
 
@@ -80,7 +97,15 @@ function inferModuleAndGroup(visual = {}) {
     ? 'amount'
     : 'count';
 
-  return { moduleKey, groupField, metric };
+  return {
+    moduleKey,
+    groupField,
+    metric,
+    reportType: '',
+    question: '',
+    filterTree: null,
+    recordLevel: false,
+  };
 }
 
 function resolveChartType(visual = {}) {
@@ -91,6 +116,59 @@ function resolveChartType(visual = {}) {
   if (['pie', 'bar', 'line', 'donut'].includes(ct)) return ct;
   if (component === 'progress_list') return 'bar';
   return 'pie';
+}
+
+/** True when the Astra table is a record list (deal/name/amount), not a stage/count rollup. */
+function looksLikeRecordListTable(visual = {}) {
+  if (String(visual.component || '').toLowerCase() !== 'data_table') return false;
+  const cols = (Array.isArray(visual.columns) ? visual.columns : [])
+    .map((c) => String(c || '').toLowerCase().trim());
+  if (!cols.length) return false;
+  const isAgg = cols.length <= 2
+    && cols.some((c) => /^(count|total|value|amount|sum)$/.test(c))
+    && cols.some((c) => /^(stage|status|priority|type|owner|assignee)$/.test(c));
+  if (isAgg) return false;
+  if (cols.some((c) => /deal|name|title|subject|email|amount|owner|contact/.test(c))) return true;
+  return cols.length >= 3 && Array.isArray(visual.rows) && visual.rows.length > 0;
+}
+
+function wantsTabularPin(visual = {}, inferred = {}) {
+  const component = String(visual.component || '').toLowerCase();
+  // Charts stay charts — record-level pies must not be forced into a table pin.
+  if (component === 'chart' || component === 'progress_list' || component === 'kpi_strip') {
+    return false;
+  }
+  if (inferred.reportType === 'tabular') return true;
+  if (inferred.reportType === 'summary' || inferred.reportType === 'matrix') return false;
+  if (looksLikeRecordListTable(visual)) return true;
+  const blob = `${inferred.question || ''} ${visual.title || ''}`.toLowerCase();
+  if (/\b(list of|row.?level|tabular|line items?)\b/.test(blob)) return true;
+  if (/\b(over|above|more than|greater than|>|≥)\s*\$?\s*[\d,.]+/.test(blob) && inferred.moduleKey === 'deals') {
+    return true;
+  }
+  return false;
+}
+
+/** Chart of individual matching records (not stage/status rollup). */
+function wantsRecordLevelChartPin(visual = {}, inferred = {}) {
+  if (String(visual.component || '').toLowerCase() !== 'chart') return false;
+  if (inferred.recordLevel === true) return true;
+  if (inferred.reportType === 'tabular' && !inferred.groupField) return true;
+  return false;
+}
+
+function recordLabelField(moduleKey = '') {
+  const map = {
+    deals: 'name',
+    tasks: 'title',
+    cases: 'title',
+    quotes: 'quoteNumber',
+    events: 'eventName',
+    people: 'first_name',
+    organizations: 'name',
+    items: 'item_name',
+  };
+  return map[String(moduleKey || '').toLowerCase()] || 'name';
 }
 
 function buildReportPreset({ moduleKey, groupField, metric, name }) {
@@ -104,12 +182,85 @@ function buildReportPreset({ moduleKey, groupField, metric, name }) {
       ? [{ field: 'amount', fn: 'sum', label: 'amount' }]
       : [{ field: '_id', fn: 'count', label: 'count' }],
     selectedFields: [],
+    filterTree: null,
+  };
+}
+
+function buildTabularReportPreset({ moduleKey, name, question = '', filterTree = null }) {
+  const cfg = getAnalyticsModuleConfig(moduleKey);
+  const defaults = Array.isArray(cfg?.defaultFields) ? cfg.defaultFields.slice() : ['name'];
+  const filterQuestion = String(question || name || '').trim();
+  let tree = filterTree?.children?.length ? filterTree : null;
+  if (!tree) {
+    // Lazy require — avoid circular init with aiAstraReportBuilderService.
+    const { detectFilters } = require('../ai/aiAstraReportBuilderService');
+    tree = detectFilters(filterQuestion, moduleKey).filterTree;
+  }
+  if (tree?.children) {
+    for (const child of tree.children) {
+      const fk = child?.fieldKey;
+      if (fk && !defaults.includes(fk)) defaults.push(fk);
+    }
+  }
+  return {
+    name,
+    type: 'tabular',
+    primaryModule: moduleKey,
+    rowGroups: null,
+    aggregations: [],
+    selectedFields: defaults.slice(0, 10).map((field) => ({ field, role: 'attribute' })),
+    filterTree: tree,
+  };
+}
+
+/** Live pie/bar of each matching record (group by name/title + amount/count). */
+function buildRecordLevelChartPreset({
+  moduleKey,
+  metric,
+  name,
+  question = '',
+  filterTree = null,
+}) {
+  const labelField = recordLabelField(moduleKey);
+  const cfg = getAnalyticsModuleConfig(moduleKey);
+  const defaults = Array.isArray(cfg?.defaultFields) ? cfg.defaultFields.slice() : [labelField];
+  if (!defaults.includes(labelField)) defaults.unshift(labelField);
+
+  let tree = filterTree?.children?.length ? filterTree : null;
+  if (!tree) {
+    const { detectFilters } = require('../ai/aiAstraReportBuilderService');
+    tree = detectFilters(String(question || name || '').trim(), moduleKey).filterTree;
+  }
+  if (tree?.children) {
+    for (const child of tree.children) {
+      const fk = child?.fieldKey;
+      if (fk && !defaults.includes(fk)) defaults.push(fk);
+    }
+  }
+
+  const isAmount = metric === 'amount' && moduleKey === 'deals';
+  return {
+    name,
+    type: 'summary',
+    primaryModule: moduleKey,
+    rowGroups: [{ field: labelField }],
+    aggregations: isAmount
+      ? [{ field: 'amount', fn: 'sum', label: 'amount' }]
+      : [{ field: '_id', fn: 'count', label: 'count' }],
+    selectedFields: defaults.slice(0, 10).map((field) => ({
+      field,
+      role: field === labelField ? 'dimension' : 'attribute',
+    })),
+    filterTree: tree,
   };
 }
 
 function buildColumnMapping({ groupField, metric, chartType }) {
   if (chartType === 'kpi') {
     return { metric: metric === 'amount' ? 'amount' : 'count' };
+  }
+  if (chartType === 'table') {
+    return {};
   }
   return {
     dimension: groupField || 'status',
@@ -217,12 +368,47 @@ async function pinAstraVisualToDashboard({
     .trim()
     .slice(0, 120) || 'Astra chart';
 
-  const reportPreset = buildReportPreset({
-    moduleKey: inferred.moduleKey,
-    groupField: chartType === 'kpi' ? '' : inferred.groupField,
-    metric: inferred.metric,
-    name: `${name} (Astra)`,
-  });
+  const filterQuestion = [
+    inferred.question,
+    visual.title,
+    name,
+  ].filter(Boolean).join(' ');
+
+  const recordChart = wantsRecordLevelChartPin(visual, inferred);
+  const tabular = !recordChart && wantsTabularPin(visual, inferred);
+  const effectiveMetric = recordChart && inferred.moduleKey === 'deals' && inferred.metric !== 'count'
+    ? 'amount'
+    : inferred.metric;
+
+  let reportPreset;
+  if (tabular) {
+    reportPreset = buildTabularReportPreset({
+      moduleKey: inferred.moduleKey,
+      name: `${name} (Astra)`,
+      question: filterQuestion,
+      filterTree: inferred.filterTree,
+    });
+  } else if (recordChart) {
+    reportPreset = buildRecordLevelChartPreset({
+      moduleKey: inferred.moduleKey,
+      metric: effectiveMetric,
+      name: `${name} (Astra)`,
+      question: filterQuestion,
+      filterTree: inferred.filterTree,
+    });
+  } else {
+    reportPreset = buildReportPreset({
+      moduleKey: inferred.moduleKey,
+      groupField: chartType === 'kpi' ? '' : (inferred.groupField || DEFAULT_GROUP_BY[inferred.moduleKey] || 'status'),
+      metric: inferred.metric,
+      name: `${name} (Astra)`,
+    });
+    // Apply NL filters (e.g. amount ≥ $50K) onto summary pins too.
+    if (!reportPreset.filterTree) {
+      const { detectFilters } = require('../ai/aiAstraReportBuilderService');
+      reportPreset.filterTree = detectFilters(filterQuestion, inferred.moduleKey).filterTree;
+    }
+  }
 
   const reportApiName = await ensureUniqueApiName(
     organizationId,
@@ -239,6 +425,7 @@ async function pinAstraVisualToDashboard({
     selectedFields: reportPreset.selectedFields,
     rowGroups: reportPreset.rowGroups,
     aggregations: reportPreset.aggregations,
+    filterTree: reportPreset.filterTree || null,
     filterLogic: 'AND',
     status: 'published',
     version: 1,
@@ -255,25 +442,33 @@ async function pinAstraVisualToDashboard({
     AnalyticsWidget
   );
 
+  const mappedGroup = recordChart
+    ? recordLabelField(inferred.moduleKey)
+    : (inferred.groupField || DEFAULT_GROUP_BY[inferred.moduleKey] || 'status');
+
   const columnMapping = buildColumnMapping({
-    groupField: inferred.groupField,
-    metric: inferred.metric,
-    chartType,
+    groupField: mappedGroup,
+    metric: effectiveMetric,
+    chartType: tabular ? 'table' : chartType,
   });
 
   const widget = await AnalyticsWidget.create({
     organizationId,
     name,
     apiName: widgetApiName,
-    description: `Pinned from Astra · ${inferred.moduleKey}`,
-    chartType,
+    description: tabular
+      ? `Pinned from Astra · ${inferred.moduleKey} list`
+      : (recordChart
+        ? `Pinned from Astra · ${inferred.moduleKey} records`
+        : `Pinned from Astra · ${inferred.moduleKey}`),
+    chartType: tabular ? 'table' : chartType,
     category: 'custom',
     reportId: report._id,
     reportApiName: report.apiName,
     reportVersion: report.version,
     columnMapping,
-    kpiValueField: chartType === 'kpi' ? columnMapping.metric : null,
-    kpiLabel: chartType === 'kpi' ? name : null,
+    kpiValueField: chartType === 'kpi' && !tabular ? columnMapping.metric : null,
+    kpiLabel: chartType === 'kpi' && !tabular ? name : null,
     status: 'published',
     version: 1,
     publishedAt: new Date(),
@@ -379,14 +574,19 @@ async function pinExistingReportToDashboard({
     report.publishedAt = report.publishedAt || new Date();
   }
 
+  const reportType = String(report.type || '').toLowerCase();
   const groupField = Array.isArray(report.rowGroups) && report.rowGroups[0]
     ? String(report.rowGroups[0].field || report.rowGroups[0] || 'status')
-    : 'status';
+    : (reportType === 'tabular' ? '' : 'status');
   const aggs = Array.isArray(report.aggregations) ? report.aggregations : [];
   const metric = aggs.some((a) => String(a.field || '') === 'amount') ? 'amount' : 'count';
-  const resolvedChart = ['pie', 'bar', 'line', 'kpi', 'table'].includes(String(chartType))
+  let resolvedChart = ['pie', 'bar', 'line', 'kpi', 'table'].includes(String(chartType))
     ? String(chartType)
     : 'bar';
+  // Tabular reports have no stage dimension — never pin them as a fake stage pie.
+  if (reportType === 'tabular' && ['pie', 'bar', 'line', 'donut'].includes(resolvedChart)) {
+    resolvedChart = 'table';
+  }
   const name = String(titleOverride || report.name || `${report.primaryModule} chart`)
     .trim()
     .slice(0, 120);
@@ -493,5 +693,10 @@ module.exports = {
   pinExistingReportToDashboard,
   inferModuleAndGroup,
   resolveChartType,
+  looksLikeRecordListTable,
+  wantsTabularPin,
+  wantsRecordLevelChartPin,
+  recordLabelField,
+  buildRecordLevelChartPreset,
   PINNABLE,
 };

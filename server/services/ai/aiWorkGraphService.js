@@ -22,7 +22,8 @@ function formatActionableRecords(citations = []) {
     .slice(0, 24)
     .map((c) => {
       const email = c.email ? ` email=${c.email}` : '';
-      return `[${c.index}] moduleKey=${c.sourceType} recordId=${c.sourceId} label=${c.excerpt || ''}${email}`;
+      const label = String(c.excerpt || '').trim() || '(untitled)';
+      return `[${c.index}] label=${label} moduleKey=${c.sourceType} recordId=${c.sourceId}${email}`;
     })
     .join('\n');
 }

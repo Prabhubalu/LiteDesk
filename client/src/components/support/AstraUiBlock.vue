@@ -14,7 +14,7 @@
     >
       <div
         v-if="visual.title"
-        class="border-b border-neutral-100 bg-gradient-to-r from-primary-50/80 via-white to-secondary-50/40 px-3.5 py-2.5 dark:border-neutral-800 dark:from-primary-500/10 dark:via-neutral-900 dark:to-secondary-500/5"
+        class="border-b border-neutral-100 bg-gradient-to-r from-primary-50/80 via-white to-secondary-50/40 px-3.5 py-2 dark:border-neutral-800 dark:from-primary-500/10 dark:via-neutral-900 dark:to-secondary-500/5"
       >
         <p class="pr-28 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-800 dark:text-primary-200">
           {{ visual.title }}
@@ -27,17 +27,20 @@
         <div
           v-for="(item, idx) in visual.items || []"
           :key="`${visual.id}-kpi-${idx}`"
-          class="bg-white px-3.5 py-3 dark:bg-neutral-900/90"
+          class="bg-white px-3 py-2.5 dark:bg-neutral-900/90"
         >
-          <p class="text-[10px] font-semibold uppercase tracking-[0.06em] text-neutral-500 dark:text-neutral-400">
+          <p class="text-[10px] font-semibold uppercase tracking-[0.07em] text-neutral-500 dark:text-neutral-400">
             {{ item.label }}
           </p>
-          <p class="mt-1 text-xl font-semibold tabular-nums tracking-tight text-neutral-900 dark:text-white">
+          <p
+            class="mt-1 break-words leading-snug tracking-tight text-neutral-900 dark:text-white"
+            :class="kpiValueClass(item)"
+          >
             {{ item.value }}
           </p>
           <p
             v-if="item.hint"
-            class="mt-0.5 text-[11px] text-neutral-400 dark:text-neutral-500"
+            class="mt-0.5 text-[11px] leading-snug text-neutral-400 dark:text-neutral-500"
           >
             {{ item.hint }}
           </p>
@@ -195,6 +198,95 @@
         </p>
       </div>
     </div>
+
+    <!-- Research brief (company / internet research) -->
+    <div
+      v-else-if="visual.component === 'research_brief'"
+      class="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm shadow-neutral-900/[0.03] dark:border-neutral-700 dark:bg-neutral-900/70 dark:shadow-none"
+    >
+      <div class="border-b border-neutral-100 bg-gradient-to-r from-primary-50/90 via-white to-secondary-50/50 px-4 py-3.5 dark:border-neutral-800 dark:from-primary-500/10 dark:via-neutral-900 dark:to-secondary-500/5">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-800 dark:text-primary-200">
+          {{ visual.title || 'Company research' }}
+        </p>
+        <p
+          v-if="visual.summary"
+          class="mt-2 text-[13.5px] leading-relaxed text-neutral-700 dark:text-neutral-200"
+        >
+          {{ visual.summary }}
+        </p>
+      </div>
+
+      <div
+        v-if="(visual.facts || []).length"
+        class="grid gap-px border-b border-neutral-100 bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-800"
+        :class="(visual.facts || []).length <= 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'"
+      >
+        <div
+          v-for="(fact, fIdx) in visual.facts"
+          :key="`${visual.id}-f-${fIdx}`"
+          class="bg-white px-3.5 py-2.5 dark:bg-neutral-900/90"
+        >
+          <p class="text-[10px] font-semibold uppercase tracking-[0.06em] text-neutral-500 dark:text-neutral-400">
+            {{ fact.label }}
+          </p>
+          <p class="mt-0.5 break-words text-[13px] font-medium leading-snug text-neutral-900 dark:text-white">
+            {{ fact.value }}
+          </p>
+        </div>
+      </div>
+
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-800">
+        <section
+          v-for="(section, sIdx) in visual.sections || []"
+          :key="`${visual.id}-s-${sIdx}`"
+          class="px-4 py-3.5"
+        >
+          <h4 class="text-[12px] font-semibold tracking-tight text-neutral-900 dark:text-white">
+            {{ section.title }}
+          </h4>
+          <p
+            v-if="section.body"
+            class="mt-1.5 whitespace-pre-wrap text-[13px] leading-relaxed text-neutral-700 dark:text-neutral-200"
+          >
+            {{ section.body }}
+          </p>
+          <ul
+            v-if="(section.bullets || []).length"
+            class="mt-2 space-y-1.5"
+          >
+            <li
+              v-for="(bullet, bIdx) in section.bullets"
+              :key="`${visual.id}-s-${sIdx}-b-${bIdx}`"
+              class="flex gap-2 text-[12.5px] leading-snug text-neutral-700 dark:text-neutral-200"
+            >
+              <span
+                class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-600 dark:bg-primary-300"
+                aria-hidden="true"
+              />
+              <span>{{ bullet }}</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <div
+        v-if="(visual.sources || []).length"
+        class="border-t border-neutral-100 bg-neutral-50/80 px-4 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/50"
+      >
+        <p class="text-[10px] font-semibold uppercase tracking-[0.06em] text-neutral-500 dark:text-neutral-400">
+          Sources
+        </p>
+        <ul class="mt-1 space-y-0.5">
+          <li
+            v-for="(src, srcIdx) in visual.sources"
+            :key="`${visual.id}-src-${srcIdx}`"
+            class="truncate text-[11px] text-primary-800 dark:text-primary-200"
+          >
+            {{ src }}
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -230,6 +322,26 @@ const kpiGridClass = computed(() => {
   if (n === 3) return 'grid-cols-3';
   return 'grid-cols-2 sm:grid-cols-4';
 });
+
+/** Research key-facts use calm body type; numeric CRM KPIs stay slightly larger. */
+function isMetricKpiValue(value: unknown): boolean {
+  const v = String(value ?? '').trim();
+  if (!v || v.length > 18) return false;
+  if (/^https?:\/\//i.test(v)) return false;
+  if (/\s/.test(v)) return false;
+  return /^[$€£₹]?\s*[\d,.]+%?$/.test(v)
+    || /^\d+(\.\d+)?\s*[KMBTkmbt]?$/.test(v)
+    || /^\d{4}$/.test(v);
+}
+
+function kpiValueClass(item: { value?: string | number }): string {
+  const title = String(props.visual.title || '');
+  const factStrip = /\bkey facts?\b/i.test(title) || /\bresearch\b/i.test(title);
+  if (factStrip || !isMetricKpiValue(item.value)) {
+    return 'text-[13px] font-medium';
+  }
+  return 'text-[15px] font-semibold tabular-nums';
+}
 
 function progressPct(item: { value?: string | number; max?: number }) {
   const max = Number(item.max) > 0

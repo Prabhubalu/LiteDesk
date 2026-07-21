@@ -48,7 +48,7 @@ const ANALYTICS_MODULE_REGISTRY = Object.freeze({
     label: 'Deals',
     appKey: 'SALES',
     excludeTrash: true,
-    defaultFields: ['name', 'stage', 'amount', 'assignedTo', 'expectedCloseDate'],
+    defaultFields: ['name', 'stage', 'status', 'amount', 'assignedTo', 'expectedCloseDate'],
   }),
   people: moduleConfigEntry({
     model: People,

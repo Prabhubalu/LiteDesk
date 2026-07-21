@@ -614,6 +614,7 @@ async function buildWorkGraphContextPack({
   moduleKey,
   recordId,
   mode = 'sample',
+  redactOptions = {},
 }) {
   const citations = [];
   const lines = [];
@@ -730,8 +731,8 @@ async function buildWorkGraphContextPack({
   }
 
   const text = redactText(lines.join('\n').slice(0, charCap), {
-    // Staff work-graph Ask needs real recipient emails for compose drafts.
     preserveEmails: true,
+    ...redactOptions,
   });
   return {
     text,
@@ -751,6 +752,7 @@ async function buildModuleListContextPack({
   moduleKey,
   mode = 'sample',
   question = '',
+  redactOptions = {},
 }) {
   const normalizedModule = String(moduleKey || '').toLowerCase();
   const Model = getModel(normalizedModule);
@@ -847,6 +849,7 @@ async function buildModuleListContextPack({
 
   const text = redactText(lines.join('\n').slice(0, charCap), {
     preserveEmails: true,
+    ...redactOptions,
   });
   return {
     text,
@@ -926,6 +929,10 @@ function extractWorkspaceSearchQueries(question = '') {
 function isThinFollowUpQuestion(question = '') {
   const q = String(question || '').trim();
   if (!q || q.length > 140) return false;
+  // Non-CRM artifacts — never sticky to prior contact/pipeline context.
+  if (/\b(content|contents|document|documents|file|files|deck|slides?|presentation|brief|briefing|outline|canvas)\b/i.test(q)) {
+    return false;
+  }
   if (/\b(the|that|this|his|her|their|its)\s+(quote|quotes|deal|deals|contact|person|lead|account|organization|company|task|event|meeting|case|email|opportunity)\b/i.test(q)) {
     return true;
   }
@@ -937,20 +944,88 @@ function isThinFollowUpQuestion(question = '') {
   return false;
 }
 
+/** Short deepeners that continue the open thread without naming a new subject. */
+function isStickyDeepenerQuestion(question = '') {
+  const q = String(question || '').trim();
+  if (!q || q.length > 160) return false;
+  if (/^(more details?|tell me more|go deeper|expand on (that|this|it)|continue|keep going|go on)\.?$/i.test(q)) {
+    return true;
+  }
+  if (/^(i want |give me |get me |show me )?(more |a |the )?(detail(?:ed)?|deeper|full|further)(\s+(analy[sz]e|analysis|breakdown|overview|details?|info|information))?\.?$/i.test(q)) {
+    return true;
+  }
+  if (/^(detail(?:ed)?|deep)\s+analy[sz](is|e)\.?$/i.test(q)) return true;
+  if (/^(what else|anything else|and then|next)\??$/i.test(q)) return true;
+  // Pronoun / relative asks without a new primary entity
+  if (/\b(their|them|they|this|that|it)\b/i.test(q) && q.length <= 120) return true;
+  return false;
+}
+
 /**
- * Pull person/company name anchors from recent chat turns so follow-ups
- * like "give me the quote" stay on the same contact.
+ * User clearly starts a different task (org-wide CRM, new person, pivot language).
+ * Sticky conversation focus must NOT override these.
+ * Keep this conservative — false switches break free-form follow-ups.
+ */
+function isExplicitTopicSwitch(question = '', anchors = []) {
+  const q = String(question || '').trim();
+  if (!q) return false;
+  if (/\b(instead|different topic|new topic|forget (?:that|this|it)|never ?mind|unrelated|start over|new (?:chat|thread))\b/i.test(q)) {
+    return true;
+  }
+  // Company leadership / public role — never answer from sticky CRM contact
+  try {
+    const { isCompanyLeadershipQuestion } = require('./aiWebResearchService');
+    if (isCompanyLeadershipQuestion(q)) return true;
+  } catch (_) { /* ignore */ }
+  // Org-wide / personal CRM analytics with no thread reference
+  if (/\b(my |our |all |the )?(pipeline|open deals?|closed won|closed lost|stage distribution|deals? by stage)\b/i.test(q)
+    && !/\b(their|this company|that company|the (?:company|organization|website|site)|about (?:them|it))\b/i.test(q)) {
+    return true;
+  }
+  if (/\b(due today|overdue|my (?:tasks?|meetings?|calendar)|meetings? today|tasks? due)\b/i.test(q)) {
+    return true;
+  }
+  const focusBlob = (Array.isArray(anchors) ? anchors : []).join(' ').toLowerCase();
+
+  // New contact/company only when user explicitly introduces them
+  const intro = q.match(
+    /\b(?:about|summarize|summary of|contact|person|with|for)\s+([A-Z][\p{L}'.-]+(?:\s+[A-Z][\p{L}'.-]+)+)/u,
+  );
+  if (intro?.[1]) {
+    const name = intro[1].trim().toLowerCase();
+    if (name.length >= 3 && focusBlob && !focusBlob.includes(name)) {
+      return true;
+    }
+  }
+
+  // New website host when ask is about that host and it is not already in focus
+  const host = q.match(/\b(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?)\b/i);
+  if (host?.[1]) {
+    const h = host[1].toLowerCase();
+    const brand = h.split('.')[0];
+    if (focusBlob && !focusBlob.includes(h) && !focusBlob.includes(brand)) {
+      if (/\b(website|site|analy[sz]|research|about|look up|from (?:the )?(?:web|internet))\b/i.test(q)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Pull person/company/website anchors from recent chat turns so follow-ups
+ * stay on the same thread without re-naming the subject every time.
  */
 function extractConversationEntityAnchors(history = []) {
   const texts = (Array.isArray(history) ? history : [])
-    .slice(-8)
+    .slice(-12)
     .map((row) => String(row?.content || row?.body || '').trim())
     .filter(Boolean);
   const anchors = [];
   const push = (phrase) => {
     const p = String(phrase || '').trim().replace(/\s+/g, ' ');
     if (p.length < 2 || p.length > 80) return;
-    if (/^(reports?e2e|give|show|the|and|open|deal|quote|summarize|summary|pipeline|overview)\b/i.test(p)) {
+    if (/^(reports?e2e|give|show|the|and|open|deal|quote|summarize|summary|pipeline|overview|metrics|analysis|key takeaway)\b/i.test(p)) {
       return;
     }
     anchors.push(p);
@@ -967,6 +1042,16 @@ function extractConversationEntityAnchors(history = []) {
     for (const match of text.matchAll(/\b([A-Z][\p{L}'.-]+(?:\s+[A-Z][\p{L}'.-]+)+)\b/gu)) {
       push(match[1]);
     }
+    for (const match of text.matchAll(/\b(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.(?:com|io|co|net|org|ai|app)(?:\.[a-z]{2,})?)\b/gi)) {
+      push(match[1]);
+      const brand = String(match[1] || '').split('.')[0];
+      if (brand && brand.length >= 3) push(brand.charAt(0).toUpperCase() + brand.slice(1));
+    }
+    // "Conversation focus: X; Y" from prior blended turns
+    const focusLine = text.match(/\[?Conversation focus[:\]]\s*([^\n]+)/i);
+    if (focusLine?.[1]) {
+      for (const part of focusLine[1].split(/[;|,]/)) push(part);
+    }
   }
 
   const unique = [];
@@ -979,35 +1064,53 @@ function extractConversationEntityAnchors(history = []) {
     if (unique.some((u) => u.toLowerCase().includes(key) && u.length > a.length)) continue;
     seen.add(key);
     unique.push(a);
-    if (unique.length >= 3) break;
+    if (unique.length >= 5) break;
   }
   return unique;
 }
 
+/**
+ * Default for ALL same-chat turns: keep Conversation focus.
+ * Only drop sticky focus when the user explicitly starts a different task.
+ */
 function resolveWorkspaceQuestionWithHistory(question = '', history = []) {
   const q = String(question || '').trim();
   const anchors = extractConversationEntityAnchors(history);
   if (!q || !anchors.length) {
-    return { question: q, anchors, searchQueries: extractWorkspaceSearchQueries(q) };
+    return {
+      question: q,
+      anchors,
+      searchQueries: extractWorkspaceSearchQueries(q),
+      sticky: false,
+      explicitSwitch: false,
+    };
   }
   const qLower = q.toLowerCase();
   const alreadyNamed = anchors.some((a) => qLower.includes(a.toLowerCase()));
-  const thin = isThinFollowUpQuestion(q);
+  const explicitSwitch = isExplicitTopicSwitch(q, anchors);
   const baseQueries = extractWorkspaceSearchQueries(q);
-  const needsAnchor = !alreadyNamed && (thin || baseQueries.length <= 1);
-  const blended = needsAnchor
+  // Always sticky in the same chat unless user explicitly switches task.
+  const sticky = !explicitSwitch;
+  const blended = sticky
     ? `${q}\n[Conversation focus: ${anchors.join('; ')}]`
     : q;
   const searchQueries = [];
   const seen = new Set();
-  for (const item of [...(needsAnchor ? anchors : []), ...baseQueries, ...extractWorkspaceSearchQueries(blended)]) {
+  for (const item of [...(sticky ? anchors : []), ...baseQueries, ...extractWorkspaceSearchQueries(blended)]) {
     const key = String(item || '').toLowerCase();
     if (!key || seen.has(key)) continue;
     seen.add(key);
     searchQueries.push(item);
-    if (searchQueries.length >= 5) break;
+    if (searchQueries.length >= 6) break;
   }
-  return { question: blended, anchors, searchQueries };
+  return {
+    question: blended,
+    anchors,
+    searchQueries,
+    sticky,
+    explicitSwitch,
+    alreadyNamed,
+  };
 }
 
 function flattenSearchHits(results = {}) {
@@ -1051,6 +1154,12 @@ function isContentCreationQuestion(question = '') {
   const q = String(question || '').toLowerCase().replace(/\s+/g, ' ').trim();
   if (!q) return false;
   if (/\b(create|add|schedule|set)\s+(a\s+)?(task|reminder|to-?do)\b/.test(q)) return false;
+
+  // Bare content asks ("give me the content") — Content Studio / docs, not CRM pipeline.
+  if (/^(give|show|get|open|find|share)\s+(me\s+)?(the\s+)?content\b/.test(q)
+    || /\b(content studio|my content|content documents?)\b/.test(q)) {
+    return true;
+  }
 
   // Require an explicit content artifact — bare "prepare for the meeting" is CRM Canvas, not a deck.
   const artifact = /\b(deck|slides?|slideshow|presentation|pitch\s*deck|one[- ]pager|leave[- ]behind|meeting\s+brief|briefing|outline)\b/;
@@ -1361,7 +1470,14 @@ async function buildWorkspaceContextPack({
   question = '',
   mode = 'sample',
   history = [],
+  onProgress = null,
+  redactOptions = {},
 }) {
+  const emit = (step, detail = '') => {
+    if (typeof onProgress === 'function') {
+      try { onProgress({ step, detail: detail || undefined }); } catch (_) { /* ignore */ }
+    }
+  };
   const contextMode = ['complete', 'report'].includes(String(mode || '')) ? String(mode) : 'sample';
   const searchService = require('../searchService');
   const resolved = resolveWorkspaceQuestionWithHistory(question, history);
@@ -1383,9 +1499,13 @@ async function buildWorkspaceContextPack({
   if (resolved.anchors.length) {
     lines.push(`Conversation focus (from chat history): ${resolved.anchors.join('; ')}`);
   }
-  if (isThinFollowUpQuestion(question) && resolved.anchors.length) {
+  if (resolved.sticky && resolved.anchors.length) {
     lines.push(
-      'FOLLOW-UP RULE: resolve "the quote/deal/contact" against Conversation focus above — do not switch to a different primary contact.',
+      'FOLLOW-UP RULE: keep answering about Conversation focus above. Do not switch to org-wide pipeline/deals/tasks unless the user explicitly names that new task.',
+    );
+  } else if (resolved.explicitSwitch) {
+    lines.push(
+      'EXPLICIT TASK SWITCH: user started a new task — answer that ask; Conversation focus is background only.',
     );
   }
   if (attentionWork) {
@@ -1394,49 +1514,58 @@ async function buildWorkspaceContextPack({
     );
   }
 
-  // 0) Attention inbox (Platform Home source of truth) for due-today / overdue questions
+  // 0) Attention + calendar packs in parallel when both apply
+  emit('gathering_context');
+  const [attentionResult, calendarResult] = await Promise.all([
+    attentionWork
+      ? (emit('loading_attention'), buildAttentionInboxContextLines({ organizationId, userId }))
+      : Promise.resolve(null),
+    calendarSchedule
+      ? (emit('loading_calendar'), buildCalendarMeetingsContextLines({ organizationId, userId }))
+      : Promise.resolve(null),
+  ]);
+
   let hasAttentionPack = false;
-  if (attentionWork) {
-    const attention = await buildAttentionInboxContextLines({ organizationId, userId });
-    if (attention.lines.length) {
-      hasAttentionPack = true;
-      lines.push('');
-      lines.push(...attention.lines);
-      for (const c of attention.citations) {
-        citations.push({ ...c, index: citations.length + 1 });
-      }
+  if (attentionResult?.lines?.length) {
+    hasAttentionPack = true;
+    lines.push('');
+    lines.push(...attentionResult.lines);
+    for (const c of attentionResult.citations) {
+      citations.push({ ...c, index: citations.length + 1 });
     }
   }
 
-  // 0b) Calendar meetings pack — source of truth for "meetings today / next meeting"
   let hasCalendarPack = false;
-  if (calendarSchedule) {
-    const calendar = await buildCalendarMeetingsContextLines({ organizationId, userId });
-    if (calendar.lines.length) {
-      hasCalendarPack = true;
-      lines.push('');
-      lines.push(...calendar.lines);
-      for (const c of calendar.citations) {
-        citations.push({ ...c, index: citations.length + 1 });
-      }
+  if (calendarResult?.lines?.length) {
+    hasCalendarPack = true;
+    lines.push('');
+    lines.push(...calendarResult.lines);
+    for (const c of calendarResult.citations) {
+      citations.push({ ...c, index: citations.length + 1 });
     }
   }
 
-  // 1) Entity search from question phrases (people/deals/events/…)
+  // 1) Entity search — parallel queries
   if (queries.length) {
+    emit('searching_workspace', queries.slice(0, 3).join(', '));
     lines.push(`Search queries: ${queries.join(' | ')}`);
     const hitMap = new Map();
-    for (const q of queries) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const pack = await searchService.searchAll(organizationId, q, { limitPerModule: 4 });
-        for (const hit of flattenSearchHits(pack.results)) {
-          if (attentionWork && hit.moduleKey === 'items') continue;
-          const key = `${hit.moduleKey}:${hit.id}`;
-          if (!hitMap.has(key)) hitMap.set(key, hit);
+    const searchPacks = await Promise.all(
+      queries.map(async (q) => {
+        try {
+          return await searchService.searchAll(organizationId, q, { limitPerModule: 4 });
+        } catch (err) {
+          console.warn('[AstraWorkspaceContext] search failed:', err?.message || err);
+          return null;
         }
-      } catch (err) {
-        console.warn('[AstraWorkspaceContext] search failed:', err?.message || err);
+      }),
+    );
+    for (const pack of searchPacks) {
+      if (!pack?.results) continue;
+      for (const hit of flattenSearchHits(pack.results)) {
+        if (attentionWork && hit.moduleKey === 'items') continue;
+        const key = `${hit.moduleKey}:${hit.id}`;
+        if (!hitMap.has(key)) hitMap.set(key, hit);
       }
     }
 
@@ -1469,35 +1598,41 @@ async function buildWorkspaceContextPack({
         });
       });
 
-      // Prefer expanding the conversation-focus person/org before unrelated quotes/deals.
       const expandable = hits
         .filter((h) => ['people', 'organizations', 'deals', 'tasks', 'events', 'cases', 'quotes'].includes(h.moduleKey))
         .sort((a, b) => scoreHit(b) - scoreHit(a))
         .slice(0, 3);
 
-      for (const hit of expandable) {
-        try {
-          // eslint-disable-next-line no-await-in-loop
-          const pack = await buildWorkGraphContextPack({
-            organizationId,
-            appKey,
-            moduleKey: hit.moduleKey,
-            recordId: hit.id,
-            mode: contextMode === 'sample' ? 'sample' : contextMode,
-          });
-          if (pack?.text) {
-            lines.push('');
-            lines.push(`=== EXPANDED RECORD: ${hit.moduleKey} / ${hit.title} ===`);
-            lines.push(pack.text);
-            for (const c of pack.citations || []) {
-              citations.push({
-                ...c,
-                index: citations.length + 1,
+      if (expandable.length) {
+        emit('expanding_records', expandable.map((h) => h.title).slice(0, 2).join(', '));
+        const expandedPacks = await Promise.all(
+          expandable.map(async (hit) => {
+            try {
+              const pack = await buildWorkGraphContextPack({
+                organizationId,
+                appKey,
+                moduleKey: hit.moduleKey,
+                recordId: hit.id,
+                mode: contextMode === 'sample' ? 'sample' : contextMode,
               });
+              return { hit, pack };
+            } catch (err) {
+              console.warn('[AstraWorkspaceContext] expand failed:', err?.message || err);
+              return { hit, pack: null };
             }
+          }),
+        );
+        for (const { hit, pack } of expandedPacks) {
+          if (!pack?.text) continue;
+          lines.push('');
+          lines.push(`=== EXPANDED RECORD: ${hit.moduleKey} / ${hit.title} ===`);
+          lines.push(pack.text);
+          for (const c of pack.citations || []) {
+            citations.push({
+              ...c,
+              index: citations.length + 1,
+            });
           }
-        } catch (err) {
-          console.warn('[AstraWorkspaceContext] expand failed:', err?.message || err);
         }
       }
     } else {
@@ -1507,8 +1642,7 @@ async function buildWorkspaceContextPack({
     lines.push('No searchable entity names detected in the question.');
   }
 
-  // 2) Module list / aggregate packs (counts, stages, open work) — still org-scoped.
-  // When Attention / Calendar packs are present, skip org-wide tasks/events samples — they confuse "today".
+  // 2) Module list / aggregate packs — parallel
   let listModules = (moduleKeys.length
     ? moduleKeys
     : (contextMode === 'complete' || contextMode === 'report' ? ['deals', 'tasks'] : []))
@@ -1516,7 +1650,6 @@ async function buildWorkspaceContextPack({
     .filter((key) => !(hasAttentionPack && (key === 'tasks' || key === 'events')))
     .filter((key) => !(hasCalendarPack && key === 'events'));
 
-  // Overview / pipeline summary: deals aggregates are enough — avoid multi-module dumps.
   if (
     /\b(overview|pipeline|dashboard|summary)\b/.test(qLower)
     && !/\b(task|tasks|event|events|meeting|meetings|contact|contacts|every record|all records|complete data)\b/.test(qLower)
@@ -1524,7 +1657,6 @@ async function buildWorkspaceContextPack({
     listModules = listModules.includes('deals') ? ['deals'] : listModules.slice(0, 1);
   }
 
-  // Report mode still uses sample-sized packs per module unless user asked for every row.
   const listPackMode = contextMode === 'complete' ? 'complete' : (
     contextMode === 'report' ? 'report' : 'sample'
   );
@@ -1535,15 +1667,25 @@ async function buildWorkspaceContextPack({
   let visualModuleKey = '';
   let visualTotalRecords = 0;
 
-  for (const moduleKey of listModules) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      const pack = await buildModuleListContextPack({
-        organizationId,
-        moduleKey,
-        mode: listPackMode,
-        question: effectiveQuestion || question,
-      });
+  if (listModules.length) {
+    emit('loading_module_data', listModules.join(', '));
+    const modulePacks = await Promise.all(
+      listModules.map(async (moduleKey) => {
+        try {
+          const pack = await buildModuleListContextPack({
+            organizationId,
+            moduleKey,
+            mode: listPackMode,
+            question: effectiveQuestion || question,
+          });
+          return { moduleKey, pack };
+        } catch (err) {
+          console.warn('[AstraWorkspaceContext] module list failed:', moduleKey, err?.message || err);
+          return { moduleKey, pack: null };
+        }
+      }),
+    );
+    for (const { moduleKey, pack } of modulePacks) {
       if (pack?.text) {
         lines.push('');
         lines.push(`=== MODULE QUERY: ${moduleKey} ===`);
@@ -1555,7 +1697,6 @@ async function buildWorkspaceContextPack({
           });
         }
       }
-      // Prefer deals aggregates for DB-backed Astra visuals (anti-hallucination).
       const series = Array.isArray(pack?.visualSeries) ? pack.visualSeries : [];
       if (
         series.length
@@ -1567,8 +1708,6 @@ async function buildWorkspaceContextPack({
         visualModuleKey = moduleKey;
         visualTotalRecords = Number(pack.totalRecords) || 0;
       }
-    } catch (err) {
-      console.warn('[AstraWorkspaceContext] module list failed:', moduleKey, err?.message || err);
     }
   }
 
@@ -1577,6 +1716,7 @@ async function buildWorkspaceContextPack({
     : (contextMode === 'report' ? MAX_REPORT_CONTEXT_CHARS : MAX_COMPLETE_CONTEXT_CHARS);
   const text = redactText(lines.join('\n').slice(0, charCap), {
     preserveEmails: true,
+    ...redactOptions,
   });
   return {
     text,
@@ -1599,6 +1739,8 @@ module.exports = {
   extractWorkspaceSearchQueries,
   extractConversationEntityAnchors,
   isThinFollowUpQuestion,
+  isStickyDeepenerQuestion,
+  isExplicitTopicSwitch,
   resolveWorkspaceQuestionWithHistory,
   detectWorkspaceModulesFromQuestion,
   isAttentionWorkQuestion,

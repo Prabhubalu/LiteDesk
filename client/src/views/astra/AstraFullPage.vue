@@ -142,7 +142,36 @@
                 </div>
 
                 <div class="mt-2 flex items-center justify-end gap-1.5">
-                  <span class="astra-model inline-flex items-center gap-1.5 px-2 py-1 text-[12px] font-medium text-neutral-600 dark:text-neutral-300">
+                  <label
+                    v-if="modelPickerEnabled && chatModels.length"
+                    class="astra-model inline-flex items-center gap-1.5 px-2 py-1 text-[12px] font-medium text-neutral-600 dark:text-neutral-300"
+                  >
+                    <img
+                      src="/assets/logo/Ai%20Logo.svg"
+                      alt=""
+                      class="h-3.5 w-3.5 object-contain"
+                      aria-hidden="true"
+                    />
+                    <select
+                      v-model="selectedLlmModel"
+                      class="max-w-[11rem] truncate border-0 bg-transparent p-0 text-[12px] font-medium text-neutral-600 focus:outline-none focus:ring-0 dark:text-neutral-300"
+                      :aria-label="t('liveChat.astraFullPageModel')"
+                      :disabled="aiAsking"
+                      @change="void onLlmModelChange()"
+                    >
+                      <option
+                        v-for="model in chatModels"
+                        :key="model"
+                        :value="model"
+                      >
+                        {{ model }}
+                      </option>
+                    </select>
+                  </label>
+                  <span
+                    v-else
+                    class="astra-model inline-flex items-center gap-1.5 px-2 py-1 text-[12px] font-medium text-neutral-600 dark:text-neutral-300"
+                  >
                     <img
                       src="/assets/logo/Ai%20Logo.svg"
                       alt=""
@@ -163,7 +192,10 @@
               </div>
             </form>
 
-            <div class="mt-5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              v-if="suggestionCards.length"
+              class="mt-5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4"
+            >
               <button
                 v-for="card in suggestionCards"
                 :key="card.id"
@@ -255,7 +287,7 @@
                         v-slot="{ open }"
                         as="div"
                         class="mt-3"
-                        :default-open="displayDetail(msg).length < 280"
+                        :default-open="displayDetail(msg).length < 280 && !hasResearchBrief(msg)"
                       >
                         <DisclosureButton
                           class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary-800 transition hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-500/10"
@@ -274,11 +306,71 @@
                         </DisclosurePanel>
                       </Disclosure>
                       <div
+                        v-if="displayClarifyingQuestions(msg).length"
+                        class="mt-3 rounded-xl border p-3"
+                        :class="msg.structured?.suggestionMode
+                          ? 'border-primary-200/80 bg-primary-50/70 dark:border-primary-500/40 dark:bg-primary-950/30'
+                          : 'border-amber-200/80 bg-amber-50/80 dark:border-amber-700/50 dark:bg-amber-950/30'"
+                      >
+                        <p
+                          class="text-[10px] font-semibold uppercase tracking-[0.08em]"
+                          :class="msg.structured?.suggestionMode
+                            ? 'text-primary-800 dark:text-primary-200'
+                            : 'text-amber-800 dark:text-amber-200'"
+                        >
+                          {{ msg.structured?.suggestionMode
+                            ? t('liveChat.inAppAiSuggestedNext')
+                            : t('liveChat.inAppAiNeedDetails') }}
+                        </p>
+                        <ul
+                          v-if="msg.structured?.suggestionMode"
+                          class="mt-2 flex flex-wrap gap-1.5"
+                        >
+                          <li
+                            v-for="(q, qIdx) in displayClarifyingQuestions(msg)"
+                            :key="`${msg.id}-sq-${qIdx}`"
+                          >
+                            <button
+                              type="button"
+                              class="rounded-lg border border-primary-200 bg-white px-2.5 py-1.5 text-left text-[12px] leading-snug text-primary-950 transition hover:bg-primary-50 disabled:opacity-60 dark:border-primary-500/40 dark:bg-neutral-900 dark:text-primary-100 dark:hover:bg-primary-500/10"
+                              :disabled="aiAsking"
+                              @click="void askAssistant(q)"
+                            >
+                              {{ q }}
+                            </button>
+                          </li>
+                        </ul>
+                        <ul
+                          v-else
+                          class="mt-2 space-y-1.5"
+                        >
+                          <li
+                            v-for="(q, qIdx) in displayClarifyingQuestions(msg)"
+                            :key="`${msg.id}-q-${qIdx}`"
+                            class="text-[13px] leading-snug text-amber-950 dark:text-amber-50"
+                          >
+                            {{ qIdx + 1 }}. {{ q }}
+                          </li>
+                        </ul>
+                        <p
+                          class="mt-2 text-[11px]"
+                          :class="msg.structured?.suggestionMode
+                            ? 'text-primary-800/80 dark:text-primary-200/80'
+                            : 'text-amber-800/80 dark:text-amber-200/80'"
+                        >
+                          {{ msg.structured?.suggestionMode
+                            ? t('liveChat.inAppAiSuggestedNextHint')
+                            : t('liveChat.inAppAiNeedDetailsHint') }}
+                        </p>
+                      </div>
+                      <div
                         v-if="assistantActions(msg).length"
                         class="mt-3 space-y-2"
                       >
                         <p class="text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-500 dark:text-neutral-400">
-                          {{ t('liveChat.inAppAiNextActions') }}
+                          {{ msg.structured?.nbaMode
+                            ? t('liveChat.inAppAiDoNext')
+                            : t('liveChat.inAppAiNextActions') }}
                         </p>
                         <button
                           v-for="(action, aIdx) in assistantActions(msg)"
@@ -310,15 +402,34 @@
 
               <div
                 v-if="aiAsking"
-                class="flex items-center gap-2.5 text-[13px] text-neutral-500"
+                class="flex flex-col gap-1 text-[13px] text-neutral-500"
+                aria-live="polite"
               >
-                <img
-                  src="/assets/logo/Ai%20Logo.svg"
-                  alt=""
-                  class="h-4 w-4 animate-pulse object-contain"
-                  aria-hidden="true"
-                />
-                <span>{{ astraWorkingLabel }}</span>
+                <div class="flex items-center gap-2.5">
+                  <img
+                    src="/assets/logo/Ai%20Logo.svg"
+                    alt=""
+                    class="h-4 w-4 shrink-0 animate-pulse object-contain"
+                    aria-hidden="true"
+                  />
+                  <span>{{ astraWorkingLabel }}</span>
+                </div>
+                <div
+                  v-if="astraStatusLine"
+                  class="astra-status-stage ml-[1.625rem] min-h-[1.1rem] overflow-hidden"
+                >
+                  <Transition
+                    name="astra-ph"
+                    mode="out-in"
+                  >
+                    <span
+                      :key="astraStatusLine"
+                      class="astra-ph-line block text-[11px] leading-snug text-neutral-400 dark:text-neutral-500"
+                    >
+                      {{ astraStatusLine }}
+                    </span>
+                  </Transition>
+                </div>
               </div>
 
               <p
@@ -344,7 +455,27 @@
                   :disabled="aiAsking || !!typingMessageId"
                   @keydown.enter.exact.prevent="onSend"
                 />
-                <div class="mt-1.5 flex items-center justify-end">
+                <div class="mt-1.5 flex items-center justify-end gap-1.5">
+                  <label
+                    v-if="modelPickerEnabled && chatModels.length"
+                    class="astra-model inline-flex max-w-[10rem] items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium text-neutral-600 dark:text-neutral-300"
+                  >
+                    <select
+                      v-model="selectedLlmModel"
+                      class="max-w-full truncate border-0 bg-transparent p-0 text-[11px] font-medium focus:outline-none focus:ring-0"
+                      :aria-label="t('liveChat.astraFullPageModel')"
+                      :disabled="aiAsking"
+                      @change="void onLlmModelChange()"
+                    >
+                      <option
+                        v-for="model in chatModels"
+                        :key="`c-${model}`"
+                        :value="model"
+                      >
+                        {{ model }}
+                      </option>
+                    </select>
+                  </label>
                   <button
                     type="submit"
                     class="astra-send flex h-8 w-8 shrink-0 items-center justify-center rounded-full disabled:opacity-30"
@@ -360,6 +491,16 @@
         </template>
       </main>
     </div>
+
+    <EmailComposeDrawer
+      :is-open="showEmailCompose"
+      :standalone-mode="!emailComposeRelatedTo"
+      :related-to="emailComposeRelatedTo"
+      :initial-to="emailComposeDraft?.to || ''"
+      :initial-draft="emailComposeDraft"
+      @close="closeEmailCompose"
+      @submit="onEmailComposeSubmit"
+    />
   </div>
 </template>
 
@@ -375,6 +516,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import AstraVisualStack from '@/components/support/AstraVisualStack.vue';
+import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import { usePlatformHome } from '@/composables/usePlatformHome';
 import {
   useInProductAiAsk,
@@ -383,31 +525,76 @@ import {
 } from '@/composables/useInProductAiAsk';
 import { buildAstraRecommendations } from '@/utils/buildAstraRecommendations';
 import type { AstraRecommendationSnapshot } from '@/utils/buildAstraRecommendations';
-import { openContentStudioFromAstraAction } from '@/utils/openContentStudioFromAstra';
-import { openArivuCanvasFromAstraAction } from '@/utils/openArivuCanvasFromAstra';
-import {
-  openReportBuilderFromAstraAction,
-  openReportFromAstraAction,
-  publishReportFromAstraAction,
-  exportReportFromAstraAction,
-  pinReportFromAstraAction,
-  openWidgetFromAstraAction,
-  openDashboardFromAstraAction,
-} from '@/utils/openReportFromAstra';
-import { resolveModuleRecordRoute } from '@/utils/resolveModuleRecordRoute';
-import { resolvePageAiContext } from '@/utils/resolvePageAiContext';
+import { executeAstraSuggestedAction } from '@/utils/executeAstraSuggestedAction';
+import { useInProductSupportChat } from '@/composables/useInProductSupportChat';
 import apiClient from '@/utils/apiClient';
 import { useRouter, useRoute } from 'vue-router';
 
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
+const { openChat } = useInProductSupportChat();
 
 const draft = ref('');
 const composerEl = ref<HTMLTextAreaElement | null>(null);
 const messagesEl = ref<HTMLElement | null>(null);
 const placeholderIndex = ref(0);
 const mutationBusy = ref(false);
+const showEmailCompose = ref(false);
+const emailComposeDraft = ref<{
+  to?: string;
+  subject?: string;
+  body?: string;
+  cc?: string;
+  bcc?: string;
+} | null>(null);
+const emailComposeRelatedTo = ref<{ moduleKey: string; recordId: string } | null>(null);
+
+function closeEmailCompose() {
+  showEmailCompose.value = false;
+  emailComposeDraft.value = null;
+  emailComposeRelatedTo.value = null;
+}
+
+async function onEmailComposeSubmit(payload: Record<string, unknown>) {
+  try {
+    await apiClient.post('/communications/email', payload);
+    closeEmailCompose();
+    aiMessages.value.push({
+      id: `a-${Date.now()}`,
+      role: 'assistant',
+      body: t('liveChat.inAppAiEmailSent'),
+      source: 'agent',
+      createdAt: Date.now(),
+    });
+    await scrollMessages();
+  } catch (err: unknown) {
+    const e = err as { response?: { data?: { message?: string } }; message?: string };
+    aiError.value = e?.response?.data?.message || e?.message || t('liveChat.inAppAiEmailSendFailed');
+  }
+}
+
+function openEmailComposeFromAction(action: InAppAiAction, msg?: InAppAiMessage) {
+  const detail = String(msg?.structured?.detail || '').trim();
+  const to = String(action.email?.to || '').trim();
+  let subject = String(action.email?.subject || '').trim();
+  let body = String(action.email?.body || '').trim();
+  if (!body && detail) {
+    // Detail may already be the email body from polishAstraUserFacingAnswer.
+    body = detail.replace(/^To:.*$/im, '').replace(/^Subject:.*$/im, '').trim();
+  }
+  if (!subject) {
+    const fromHeadline = String(msg?.structured?.headline || '').replace(/^Email:\s*/i, '').trim();
+    subject = fromHeadline || String(action.label || '').trim();
+  }
+  const moduleKey = String(action.moduleKey || '').trim().toLowerCase();
+  const recordId = String(action.recordId || '').trim();
+  emailComposeRelatedTo.value = (moduleKey && recordId)
+    ? { moduleKey, recordId }
+    : null;
+  emailComposeDraft.value = { to, subject, body };
+  showEmailCompose.value = true;
+}
 /** Mobile chat history drawer; always visible as a side rail from md up. */
 const railOpen = ref(false);
 let placeholderTimer: ReturnType<typeof setInterval> | null = null;
@@ -442,6 +629,7 @@ const {
   aiMessages,
   aiAsking,
   aiError,
+  astraStatusLine,
   allAiConversations,
   activeConversationId,
   typingMessageId,
@@ -453,6 +641,7 @@ const {
   displayBullets,
   displayDetail,
   displayVisuals,
+  displayClarifyingQuestions,
   showTypingCaret,
 } = useInProductAiAsk();
 
@@ -465,6 +654,50 @@ const suggestionCards = computed(() => buildAstraRecommendations(
   snapshot.value as AstraRecommendationSnapshot,
   t,
 ));
+
+const modelPickerEnabled = ref(false);
+const chatModels = ref<string[]>([]);
+const selectedLlmModel = ref('');
+
+async function fetchChatModels() {
+  try {
+    const data = await apiClient.get('/ai/astra/chat-models') as {
+      enabled?: boolean;
+      models?: string[];
+      selected?: string;
+    };
+    modelPickerEnabled.value = Boolean(data?.enabled);
+    const models = Array.isArray(data?.models)
+      ? data.models.map((m) => String(m || '').trim()).filter(Boolean)
+      : [];
+    chatModels.value = models;
+    const selected = String(data?.selected || '').trim();
+    selectedLlmModel.value = selected && models.includes(selected)
+      ? selected
+      : (models[0] || '');
+  } catch {
+    modelPickerEnabled.value = false;
+    chatModels.value = [];
+    selectedLlmModel.value = '';
+  }
+}
+
+async function onLlmModelChange() {
+  const model = String(selectedLlmModel.value || '').trim();
+  if (!model) return;
+  try {
+    await apiClient.put('/ai/astra/memory', { preferredLlmModel: model });
+  } catch {
+    /* non-blocking — ask still sends llmModel */
+  }
+}
+
+async function onSuggestion(prompt: string) {
+  const text = String(prompt || '').trim();
+  if (!text) return;
+  draft.value = text;
+  await onSend();
+}
 
 const ASTRA_WORKING_KEYS = [
   'liveChat.inAppAiWorking',
@@ -487,6 +720,10 @@ function hasStructured(msg: InAppAiMessage): boolean {
   return Boolean(msg?.structured && typeof msg.structured === 'object');
 }
 
+function hasResearchBrief(msg: InAppAiMessage): boolean {
+  return (msg?.structured?.visuals || []).some((v) => v?.component === 'research_brief');
+}
+
 function assistantActions(msg: InAppAiMessage): InAppAiAction[] {
   const actions = msg?.structured?.actions;
   return Array.isArray(actions) ? actions.filter((a) => a?.label) : [];
@@ -494,242 +731,44 @@ function assistantActions(msg: InAppAiMessage): InAppAiAction[] {
 
 async function onAssistantAction(action: InAppAiAction, msg?: InAppAiMessage) {
   if (!action) return;
-  const kind = String(action.kind || '');
-  if (kind === 'open_canvas') {
-    const result = await openArivuCanvasFromAstraAction(router, action, {
-      fallbackDetail: String(msg?.structured?.detail || ''),
-      fallbackHeadline: String(msg?.structured?.headline || ''),
-    });
-    if (!result.ok) {
-      aiError.value = result.error || t('liveChat.inAppAiCanvasOpenFailed');
-    }
-    return;
-  }
-  if (kind === 'open_content_studio' || kind === 'draft_deck') {
-    const result = await openContentStudioFromAstraAction(router, action, {
-      fallbackDetail: String(msg?.structured?.detail || ''),
-    });
-    if (!result.ok) {
-      aiError.value = result.error || t('liveChat.inAppAiContentStudioOpenFailed');
-    }
-    return;
-  }
-  if (kind === 'open_report_builder') {
-    const result = await openReportBuilderFromAstraAction(router, action);
-    if (!result.ok) {
-      aiError.value = result.error || t('liveChat.inAppAiReportOpenFailed');
-    }
-    return;
-  }
-  if (kind === 'open_report') {
-    const result = await openReportFromAstraAction(router, action);
-    if (!result.ok) {
-      aiError.value = result.error || t('liveChat.inAppAiReportOpenFailed');
-    }
-    return;
-  }
-  if (kind === 'publish_report') {
-    mutationBusy.value = true;
-    aiError.value = '';
-    try {
-      const result = await publishReportFromAstraAction(router, action);
-      if (!result.ok) {
-        aiError.value = result.error || t('liveChat.inAppAiReportPublishFailed');
-        return;
-      }
+  await executeAstraSuggestedAction(action, msg, {
+    router,
+    route,
+    t: (key, params) => t(key, params || {}),
+    askAssistant: (question) => askAssistant(question),
+    openEmailCompose: openEmailComposeFromAction,
+    openTalkToAgent: async () => {
+      await openChat({ draft: t('liveChat.inAppReportIssueDraft') });
+    },
+    pushAssistantNote: async (body, structured) => {
       aiMessages.value.push({
         id: `a-${Date.now()}`,
         role: 'assistant',
-        body: t('liveChat.inAppAiReportPublished'),
+        body,
         source: 'agent',
         createdAt: Date.now(),
+        ...(structured ? { structured } : {}),
       });
       await scrollMessages();
-    } finally {
+    },
+    setError: (message) => {
+      aiError.value = message;
+    },
+    isAskBusy: () => aiAsking.value || Boolean(typingMessageId.value),
+    beginMutation: () => {
+      if (mutationBusy.value) return false;
+      mutationBusy.value = true;
+      aiError.value = '';
+      return true;
+    },
+    endMutation: () => {
       mutationBusy.value = false;
-    }
-    return;
-  }
-  if (kind === 'export_report') {
-    mutationBusy.value = true;
-    aiError.value = '';
-    try {
-      const result = await exportReportFromAstraAction(action);
-      if (!result.ok) {
-        aiError.value = result.error || t('liveChat.inAppAiReportExportFailed');
-        return;
-      }
-      aiMessages.value.push({
-        id: `a-${Date.now()}`,
-        role: 'assistant',
-        body: t('liveChat.inAppAiReportExported'),
-        source: 'agent',
-        createdAt: Date.now(),
-      });
-      await scrollMessages();
-    } finally {
-      mutationBusy.value = false;
-    }
-    return;
-  }
-  if (kind === 'pin_report_to_dashboard') {
-    mutationBusy.value = true;
-    aiError.value = '';
-    try {
-      const result = await pinReportFromAstraAction(router, action);
-      if (!result.ok) {
-        aiError.value = result.error || t('liveChat.inAppAiReportPinFailed');
-        return;
-      }
-      aiMessages.value.push({
-        id: `a-${Date.now()}`,
-        role: 'assistant',
-        body: t('liveChat.inAppAiReportPinned', { name: result.dashboardName || 'dashboard' }),
-        source: 'agent',
-        createdAt: Date.now(),
-      });
-      await scrollMessages();
-    } finally {
-      mutationBusy.value = false;
-    }
-    return;
-  }
-  if (kind === 'open_widget') {
-    const result = await openWidgetFromAstraAction(router, action);
-    if (!result.ok) {
-      aiError.value = result.error || t('liveChat.inAppAiWidgetOpenFailed');
-    }
-    return;
-  }
-  if (kind === 'open_dashboard') {
-    const result = await openDashboardFromAstraAction(router, action);
-    if (!result.ok) {
-      aiError.value = result.error || t('liveChat.inAppAiDashboardOpenFailed');
-    }
-    return;
-  }
-
-  if (kind === 'create_record' || kind === 'update_record') {
-    if (mutationBusy.value) return;
-    const moduleKey = String(action.moduleKey || '').trim().toLowerCase();
-    const fields: Record<string, string | number | boolean> = (
-      action.fields && typeof action.fields === 'object' ? { ...action.fields } : {}
-    );
-    if (!moduleKey || !Object.keys(fields).length) {
-      aiError.value = t('liveChat.inAppAiMutationIncomplete');
-      await scrollMessages();
-      return;
-    }
-    const lastUser = [...aiMessages.value].reverse().find((m) => m.role === 'user');
-    const forcePhrase = /\b(force\s+create|create\s+anyway|create\s+a\s+new\s+one|duplicate\s+ok|new\s+meeting\s+anyway)\b/i
-      .test(String(lastUser?.body || ''));
-    if (forcePhrase) {
-      fields.forceCreate = true;
-      fields.forceCreateReason = String(lastUser?.body || 'create anyway');
-    }
-    const page = resolvePageAiContext(route);
-    mutationBusy.value = true;
-    aiError.value = '';
-    try {
-      const data = await apiClient.post('/ai/astra/mutations/apply', {
-        op: kind === 'create_record' ? 'create' : 'update',
-        moduleKey,
-        recordId: action.recordId || '',
-        fields,
-        appKey: page?.appKey || 'SALES',
-        pageModuleKey: page?.moduleKey || '',
-        pageRecordId: page?.kind === 'record' ? (page.recordId || '') : '',
-      }) as { recordId?: string; success?: boolean };
-      const rid = data?.recordId ? String(data.recordId) : '';
-      aiMessages.value.push({
-        id: `a-${Date.now()}`,
-        role: 'assistant',
-        body: kind === 'create_record'
-          ? t('liveChat.inAppAiMutationCreated', { module: moduleKey, id: rid })
-          : t('liveChat.inAppAiMutationUpdated', { module: moduleKey, id: rid || action.recordId || '' }),
-        source: 'agent',
-        createdAt: Date.now(),
-      });
-      await scrollMessages();
-      if (kind === 'create_record' && rid) {
-        const dest = resolveModuleRecordRoute(moduleKey, rid);
-        if (dest?.name) await router.push({ name: dest.name, params: dest.params });
-        else if (dest?.path) await router.push(dest.path);
-      }
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { code?: string; message?: string; details?: { duplicates?: Array<{ moduleKey?: string; recordId?: string; label?: string }> } } }; message?: string };
-      const code = e?.response?.data?.code || '';
-      const msg = e?.response?.data?.message || e?.message || t('liveChat.inAppAiMutationFailed');
-      aiError.value = String(msg);
-      if (code === 'AI_ASTRA_DUPLICATE') {
-        const dup = e?.response?.data?.details?.duplicates?.[0];
-        if (dup?.moduleKey && dup?.recordId) {
-          aiMessages.value.push({
-            id: `a-${Date.now()}`,
-            role: 'assistant',
-            body: t('liveChat.inAppAiDuplicateBlocked', {
-              label: dup.label || 'existing record',
-            }),
-            source: 'agent',
-            createdAt: Date.now(),
-            structured: {
-              headline: t('liveChat.inAppAiDuplicateHeadline'),
-              bullets: [
-                t('liveChat.inAppAiDuplicateBlocked', { label: dup.label || 'existing record' }),
-                t('liveChat.inAppAiDuplicateCreateAnyway'),
-              ],
-              actions: [{
-                label: t('liveChat.inAppAiDuplicateOpenExisting', { label: dup.label || 'record' }),
-                kind: 'review_record',
-                moduleKey: dup.moduleKey,
-                recordId: dup.recordId,
-                priority: 'high',
-              }],
-              detail: '',
-            },
-          });
-        }
-      }
-      await scrollMessages();
-    } finally {
-      mutationBusy.value = false;
-    }
-    return;
-  }
-
-  if (kind === 'send_email' || action.email?.subject || action.email?.body || action.email?.to) {
-    window.dispatchEvent(new CustomEvent('arivu:open-email-compose', {
-      detail: {
-        to: String(action.email?.to || '').trim(),
-        subject: String(action.email?.subject || action.label || '').trim(),
-        body: String(action.email?.body || '').trim(),
-        relatedModuleKey: action.moduleKey || '',
-        relatedRecordId: action.recordId || '',
-      },
-    }));
-    return;
-  }
-
-  const moduleKey = String(action.moduleKey || '').trim().toLowerCase();
-  const recordId = String(action.recordId || '').trim();
-  const navigableKinds = new Set([
-    'complete_task',
-    'review_record',
-    'follow_up',
-    'update_status',
-    'open_record',
-  ]);
-  if (moduleKey && recordId && navigableKinds.has(kind)) {
-    const dest = resolveModuleRecordRoute(moduleKey, recordId);
-    if (!dest) return;
-    if (dest.name) await router.push({ name: dest.name, params: dest.params });
-    else if (dest.path) await router.push(dest.path);
-    return;
-  }
-
-  if (kind === 'talk_to_agent') {
-    return;
-  }
+    },
+    getLastUserBody: () => {
+      const lastUser = [...aiMessages.value].reverse().find((m) => m.role === 'user');
+      return String(lastUser?.body || '');
+    },
+  });
 }
 
 async function scrollMessages() {
@@ -810,20 +849,15 @@ async function onSend() {
   const text = draft.value.trim();
   if (!text || aiAsking.value || typingMessageId.value) return;
   draft.value = '';
-  await askAssistant(text);
+  await askAssistant(text, {
+    llmModel: selectedLlmModel.value || undefined,
+  });
   await scrollMessages();
   const last = [...aiMessages.value].reverse().find((m) => m.role === 'assistant');
   // Prefer report/widget auto-open; canvas only if no analytics intent.
   await maybeAutoOpenReportBuilder(last || null);
   await maybeAutoOpenWidget(last || null);
   await maybeAutoOpenCanvas(last || null);
-}
-
-async function onSuggestion(prompt: string) {
-  const text = String(prompt || '').trim();
-  if (!text) return;
-  draft.value = text;
-  await onSend();
 }
 
 async function onNewChat() {
@@ -861,16 +895,20 @@ onMounted(() => {
     placeholderIndex.value = (placeholderIndex.value + 1) % composerPlaceholderKeys.length;
   }, COMPOSER_PLACEHOLDER_INTERVAL_MS);
 
-  const seeded = typeof route.query.q === 'string' ? route.query.q.trim() : '';
-  if (seeded && !aiMessages.value.length && !aiAsking.value) {
-    void askAssistant(seeded).then(async () => {
+  void (async () => {
+    await Promise.all([fetchChatModels()]);
+    const seeded = typeof route.query.q === 'string' ? route.query.q.trim() : '';
+    if (seeded && !aiMessages.value.length && !aiAsking.value) {
+      await askAssistant(seeded, {
+        llmModel: selectedLlmModel.value || undefined,
+      });
       await scrollMessages();
       const last = [...aiMessages.value].reverse().find((m) => m.role === 'assistant');
       await maybeAutoOpenReportBuilder(last || null);
       await maybeAutoOpenWidget(last || null);
       await maybeAutoOpenCanvas(last || null);
-    });
-  }
+    }
+  })();
 });
 
 onBeforeUnmount(() => {
@@ -1008,6 +1046,10 @@ onBeforeUnmount(() => {
 
 .astra-ph-stage {
   perspective: 480px;
+}
+
+.astra-status-stage {
+  perspective: 420px;
 }
 
 .astra-ph-line {
