@@ -16974,5 +16974,81 @@
   "aiModelAutoHint": {
     "message": "Picks a fast model for background tasks and the best model for user-facing responses.",
     "description": "Auto model selection helper text"
+  },
+  "aiTabPii": {
+    "message": "PII",
+    "description": "AI settings PII redaction tab"
+  },
+  "aiPiiTitle": {
+    "message": "What is not sent to AI",
+    "description": "AI PII tab title"
+  },
+  "aiPiiHint": {
+    "message": "These values are scrubbed from prompts before they reach your LLM provider. Staff still see full CRM data in Arivu.",
+    "description": "AI PII tab hint"
+  },
+  "aiPiiSummaryFallback": {
+    "message": "Before Arivu calls an LLM provider, prompts are scanned and sensitive values are replaced with placeholders.",
+    "description": "Fallback summary when catalog is missing"
+  },
+  "aiPiiCustomTitle": {
+    "message": "Custom redaction rules",
+    "description": "Custom PII section title"
+  },
+  "aiPiiCustomHint": {
+    "message": "Add organization-specific values to scrub before prompts reach your LLM provider. Use plain text match for fixed strings, or regex for patterns.",
+    "description": "Custom PII section hint"
+  },
+  "aiPiiCustomAdd": {
+    "message": "Add rule",
+    "description": "Add custom PII rule button"
+  },
+  "aiPiiCustomEmpty": {
+    "message": "No custom rules yet. Add one to redact internal codes, account numbers, or other sensitive text.",
+    "description": "Empty custom PII rules state"
+  },
+  "aiPiiCustomEnabled": {
+    "message": "Enabled",
+    "description": "Custom PII rule enabled checkbox"
+  },
+  "aiPiiCustomLabel": {
+    "message": "Label",
+    "description": "Custom PII rule label field"
+  },
+  "aiPiiCustomLabelPlaceholder": {
+    "message": "Employee ID",
+    "description": "Custom PII rule label placeholder"
+  },
+  "aiPiiCustomMatchType": {
+    "message": "Match type",
+    "description": "Custom PII match type field"
+  },
+  "aiPiiCustomMatchLiteral": {
+    "message": "Contains text",
+    "description": "Literal match type option"
+  },
+  "aiPiiCustomMatchRegex": {
+    "message": "Regular expression",
+    "description": "Regex match type option"
+  },
+  "aiPiiCustomPattern": {
+    "message": "Match value",
+    "description": "Custom PII pattern field"
+  },
+  "aiPiiCustomReplacement": {
+    "message": "Replacement placeholder",
+    "description": "Custom PII replacement field"
+  },
+  "aiPiiCustomSave": {
+    "message": "Save custom rules",
+    "description": "Save custom PII rules button"
+  },
+  "aiPiiCustomSaveSuccess": {
+    "message": "Custom PII rules saved.",
+    "description": "Custom PII save success message"
+  },
+  "aiPiiCustomSaveFailed": {
+    "message": "Could not save custom PII rules.",
+    "description": "Custom PII save failure message"
   }
 }

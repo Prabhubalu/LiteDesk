@@ -22,7 +22,8 @@ function formatActionableRecords(citations = []) {
     .slice(0, 24)
     .map((c) => {
       const email = c.email ? ` email=${c.email}` : '';
-      return `[${c.index}] moduleKey=${c.sourceType} recordId=${c.sourceId} label=${c.excerpt || ''}${email}`;
+      const label = String(c.excerpt || '').trim() || '(untitled)';
+      return `[${c.index}] label=${label} moduleKey=${c.sourceType} recordId=${c.sourceId}${email}`;
     })
     .join('\n');
 }
@@ -118,6 +119,78 @@ function looksLikeOpenOnlyLabel(label) {
   return true;
 }
 
+/** Drop vague / meta / duplicate-looking action labels (no junk CTAs). */
+function looksLikeJunkActionLabel(label) {
+  const s = String(label || '').trim();
+  if (!s || s.length < 4) return true;
+  if (looksLikeOpenOnlyLabel(s)) return true;
+  if (/^(review|check|see|view|look at|analyze|inspect)\s+(this\s+)?(record|page|contact|deal|case|person|it)?\.?$/i.test(s)) {
+    return true;
+  }
+  if (/^(do next|next step|take action|continue|proceed|learn more|click here)\b/i.test(s)) return true;
+  if (/\b(as an (ai|example)|based on (the )?(crm )?context|objectid|modulekey)\b/i.test(s)) return true;
+  if (/^[a-f0-9]{24}$/i.test(s)) return true;
+  // Vague relationship CTAs that bounce staff back into the same chat loop.
+  if (/^reach out to\b/i.test(s)) return true;
+  if (/^keep the relationship warm\b/i.test(s)) return true;
+  return false;
+}
+
+/**
+ * Keep high-signal actions only: concrete verbs, real targets, no junk.
+ * @param {object[]} actions
+ * @param {{ max?: number, pageKind?: string }} [opts]
+ */
+function filterJunkAstraActions(actions = [], opts = {}) {
+  const max = Number.isFinite(opts.max) ? opts.max : 4;
+  const out = [];
+  const seen = new Set();
+  const hasSendEmail = (Array.isArray(actions) ? actions : []).some(
+    (a) => a && String(a.kind || '') === 'send_email',
+  );
+  const echoAsk = String(opts.echoQuestion || '').trim().toLowerCase();
+  for (const action of Array.isArray(actions) ? actions : []) {
+    if (!action || typeof action !== 'object') continue;
+    const label = String(action.label || '').trim();
+    if (looksLikeJunkActionLabel(label)) continue;
+    const kind = String(action.kind || '').trim();
+    if (kind === 'talk_to_agent' && !opts.allowTalkToAgent) continue;
+    // If we already have a real email CTA, drop redundant vague follow-ups.
+    if (
+      hasSendEmail
+      && (kind === 'follow_up' || kind === 'manual')
+      && /^(reach out to|follow up (?:on|with)|email .+ with one clear ask|email to advance|email check-in on)\b/i.test(label)
+    ) {
+      continue;
+    }
+    if (echoAsk && label.toLowerCase() === echoAsk) continue;
+    if (echoAsk && echoAsk.startsWith('reach out to') && /^reach out to\b/i.test(label)) continue;
+    const key = [
+      kind,
+      String(action.moduleKey || ''),
+      String(action.recordId || ''),
+      label.toLowerCase().slice(0, 48),
+    ].join(':');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    // Prefer human rationale; strip meta
+    const rationale = String(action.rationale || '').trim();
+    const next = { ...action, label };
+    if (!rationale || /\b(objectid|modulekey|inferred|crm context|example)\b/i.test(rationale)) {
+      next.rationale = kind === 'send_email'
+        ? 'Ready when you confirm.'
+        : (kind === 'complete_task'
+          ? 'Mark done when finished.'
+          : (kind === 'manual' || kind === 'follow_up'
+            ? 'Practical next step from this answer.'
+            : ''));
+    }
+    out.push(next);
+    if (out.length >= Math.max(1, max)) break;
+  }
+  return out;
+}
+
 function normalizeStructuredAnswer(raw, citations = [], options = {}) {
   const maxBullets = Number.isFinite(options.maxBullets) ? options.maxBullets : 4;
   const maxHeadline = Number.isFinite(options.maxHeadline) ? options.maxHeadline : 160;
@@ -145,9 +218,9 @@ function normalizeStructuredAnswer(raw, citations = [], options = {}) {
     : '';
   const clarifyingQuestions = Array.isArray(raw?.clarifyingQuestions)
     ? raw.clarifyingQuestions
-      .map((q) => String(q || '').trim().slice(0, 240))
+      .map((q) => String(q || '').trim().slice(0, 400))
       .filter(Boolean)
-      .slice(0, 6)
+      .slice(0, 8)
     : [];
 
   const actions = [];
@@ -161,7 +234,7 @@ function normalizeStructuredAnswer(raw, citations = [], options = {}) {
       if (!ACTION_KINDS.has(kind)) kind = 'manual';
 
       const label = String(row?.label || '').trim().slice(0, 120);
-      if (!label || looksLikeOpenOnlyLabel(label)) continue;
+      if (!label || looksLikeJunkActionLabel(label)) continue;
 
       const action = {
         label,
@@ -227,7 +300,7 @@ function normalizeStructuredAnswer(raw, citations = [], options = {}) {
         let to = String(emailRaw.to || '').trim().slice(0, 200);
         if (!isUsableEmail(to)) to = '';
         const subject = String(emailRaw.subject || '').trim().slice(0, 200);
-        const body = String(emailRaw.body || '').trim().slice(0, 4000);
+        const body = String(emailRaw.body || '').trim().slice(0, 8000);
         if (subject || body) {
           action.email = { to, subject, body };
           if (kind !== 'send_email') action.kind = 'send_email';
@@ -785,4 +858,6 @@ module.exports = {
   normalizeStructuredAnswer,
   isUsableEmail,
   enrichEmailActionsFromCrm,
+  looksLikeJunkActionLabel,
+  filterJunkAstraActions,
 };

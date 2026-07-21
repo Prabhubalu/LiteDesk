@@ -2,6 +2,7 @@ const Organization = require('../../models/Organization');
 const { AI_DEFAULTS, AI_KEY_MODES, AI_PROVIDERS, AI_PROVIDER_MODEL_DEFAULTS } = require('../../constants/aiProviders');
 const { AiConfigurationError } = require('./errors');
 const { decryptByokApiKey } = require('./aiSettingsService');
+const { normalizeCustomPiiRulesForDisplay } = require('./piiRedaction');
 
 function getPlatformApiKey(provider) {
   const normalized = String(provider || '').trim().toLowerCase();
@@ -36,7 +37,6 @@ const TENANT_MODEL_ABILITIES = new Set([
   'portal_ask',
   'live_chat_bot',
   'draft_reply',
-  'tenant_agent',
   'tenant_agent_triggers',
   'astra_synthesize_agent',
   'astra_mutation',
@@ -48,6 +48,7 @@ const TENANT_MODEL_ABILITIES = new Set([
 const SMALL_MODEL_ABILITIES = new Set([
   ...CLASSIFY_TIER_ABILITIES,
   ...TENANT_MODEL_ABILITIES,
+  'tenant_agent',
 ]);
 
 function resolveModel(settings, abilityKey) {
@@ -59,6 +60,11 @@ function resolveModel(settings, abilityKey) {
 
   // Per-ability override always wins.
   if (overrides[abilityKey]) return overrides[abilityKey];
+
+  // Astra ask: default to classify/mini for TTFT — opt into larger via modelOverrides.tenant_agent.
+  if (abilityKey === 'tenant_agent') {
+    return overrides.classify || providerDefaults.classify;
+  }
 
   // Org-selected model applies to user-facing abilities (BYOK / provider-specific catalogs).
   if (TENANT_MODEL_ABILITIES.has(abilityKey) && tenantModel) {
@@ -100,6 +106,7 @@ async function loadOrgAiSettings(organizationId) {
       modelOverrides: aiSettings.modelOverrides || {},
       credits: aiSettings.credits || { balance: 0 },
       dataUseConsent: aiSettings.dataUseConsent || { accepted: false },
+      piiCustomRules: normalizeCustomPiiRulesForDisplay(aiSettings.piiCustomRules),
     },
   };
 }
@@ -121,7 +128,7 @@ function resolveEmbeddingApiKey(aiSettings, llmApiKey) {
   return getPlatformApiKey(aiSettings.embeddingProvider);
 }
 
-async function resolveAiRequestConfig({ organizationId, abilityKey }) {
+async function resolveAiRequestConfig({ organizationId, abilityKey, modelOverride = '' }) {
   const { aiSettings } = await loadOrgAiSettings(organizationId);
 
   if (!aiSettings.enabled) {
@@ -147,14 +154,18 @@ async function resolveAiRequestConfig({ organizationId, abilityKey }) {
     embeddingApiKey = getPlatformApiKey(AI_PROVIDERS.OPENAI) || embeddingApiKey;
   }
 
+  const override = String(modelOverride || '').trim();
+  const resolvedModel = override || resolveModel(aiSettings, abilityKey);
+
   return {
     provider: aiSettings.llmProvider,
     embeddingProvider,
     keyMode: aiSettings.keyMode,
     apiKey,
     embeddingApiKey,
-    model: resolveModel(aiSettings, abilityKey),
+    model: resolvedModel,
     creditsBalance: Number(aiSettings.credits?.balance || 0),
+    piiCustomRules: aiSettings.piiCustomRules || [],
     providerOptions: {
       azureResourceName: aiSettings.azureResourceName || null,
       azureDeploymentName: aiSettings.azureDeploymentName || null,

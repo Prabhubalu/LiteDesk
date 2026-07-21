@@ -677,6 +677,7 @@ async function submitAiFeedback(req, res) {
       keyMode: req.body?.keyMode,
       contextRefs: Array.isArray(req.body?.contextRefs) ? req.body.contextRefs : [],
       comment: req.body?.comment,
+      actionFingerprint: req.body?.actionFingerprint || req.body?.fingerprint || null,
     });
 
     return res.json({ success: true, ...result });
@@ -960,12 +961,33 @@ async function deleteTenantAgentAi(req, res) {
 /**
  * Route (and optionally run) a tenant specialist agent from the user question.
  * If no agent matches, returns { matched: false } without falling back to work-graph.
+ * Set body.stream=true for SSE progress + partial + done events.
  */
 async function askTenantAgentAi(req, res) {
+  const wantsStream = Boolean(req.body?.stream)
+    || String(req.headers.accept || '').includes('text/event-stream');
+
+  const sendSse = (event, data) => {
+    if (res.writableEnded) return;
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    if (typeof res.flush === 'function') {
+      try { res.flush(); } catch (_) { /* ignore */ }
+    }
+  };
+
   try {
     const organizationId = getOrganizationId(req);
-    const question = String(req.body?.question || '').trim();
+    let question = String(req.body?.question || '').trim();
     if (!question) {
+      if (wantsStream) {
+        res.status(400);
+        res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        sendSse('error', { code: 'AI_QUESTION_REQUIRED', message: 'question is required' });
+        return res.end();
+      }
       return res.status(400).json({
         success: false,
         code: 'AI_QUESTION_REQUIRED',
@@ -973,22 +995,56 @@ async function askTenantAgentAi(req, res) {
       });
     }
 
+    if (wantsStream) {
+      res.status(200);
+      res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      if (typeof res.flushHeaders === 'function') res.flushHeaders();
+      sendSse('progress', { step: 'routing' });
+    }
+
     const appKey = req.body?.appKey || req.appKey || 'SALES';
     const moduleKey = String(req.body?.moduleKey || '').trim();
     const recordId = String(req.body?.recordId || '').trim();
     let agentId = String(req.body?.agentId || '').trim();
     let routeScore = null;
+    let mentionResolved = Boolean(req.body?.mentionResolved);
 
-    if (agentId && moduleKey) {
+    if (!agentId || !mentionResolved) {
+      try {
+        const { resolveAgentMention, isSuperAgentsEnabled } = require('../services/ai/astraSuperAgentService');
+        if (isSuperAgentsEnabled()) {
+          const agents = await listTenantAgents(organizationId, { includeDisabled: false });
+          const mentioned = resolveAgentMention(question, agents);
+          if (mentioned?.agent?._id) {
+            agentId = String(mentioned.agent._id);
+            question = mentioned.question;
+            mentionResolved = true;
+            if (wantsStream) {
+              sendSse('progress', {
+                step: 'routing',
+                detail: `mentioned @${mentioned.agent.name}`,
+              });
+            }
+          }
+        }
+      } catch (_) { /* non-fatal — fall through to normal routing */ }
+    }
+
+    if (agentId && moduleKey && !mentionResolved) {
       const agents = await listTenantAgents(organizationId, { includeDisabled: false });
       const forced = agents.find((a) => String(a._id) === agentId);
-      if (!forced || !isAgentEligibleForPage(forced, moduleKey)) {
+      // Mentionable Super Agents are cross-module teammates (same as full-page @mentions).
+      if (!forced || (!forced.mentionable && !isAgentEligibleForPage(forced, moduleKey))) {
         agentId = '';
       }
     }
 
     let agentAutoCreated = false;
     if (!agentId) {
+      if (wantsStream) sendSse('progress', { step: 'routing', detail: 'matching specialist' });
       const routed = await routeTenantAgent({
         organizationId,
         question,
@@ -997,7 +1053,22 @@ async function askTenantAgentAi(req, res) {
       if (routed?.agent?._id) {
         agentId = routed.agent._id;
         routeScore = routed.score;
-      } else {
+      } else if (recordId && moduleKey) {
+        // Record pages: never block on LLM agent synthesis — pick any eligible specialist.
+        const agents = await listTenantAgents(organizationId, { includeDisabled: false });
+        const eligible = agents.filter((a) => (
+          a?.mentionable || isAgentEligibleForPage(a, moduleKey)
+        ));
+        const preferred = eligible.find((a) => (
+          /record|coach|deal|sales|pipeline/i.test(String(a?.name || ''))
+        )) || eligible[0];
+        if (preferred?._id) {
+          agentId = String(preferred._id);
+          routeScore = 1;
+        }
+      }
+      if (!agentId) {
+        if (wantsStream) sendSse('progress', { step: 'routing', detail: 'creating specialist' });
         const synthesized = await synthesizeAndCreateTenantAgent({
           organizationId,
           userId: req.user?._id,
@@ -1019,21 +1090,74 @@ async function askTenantAgentAi(req, res) {
       appKey,
       moduleKey,
       recordId,
+      recordTitle: String(req.body?.recordTitle || '').trim(),
       history: Array.isArray(req.body?.history) ? req.body.history : [],
+      llmModel: String(req.body?.llmModel || req.body?.model || '').trim(),
+      preferStream: wantsStream,
+      onProgress: wantsStream
+        ? (p) => sendSse('progress', p)
+        : null,
+      onPartialResult: wantsStream
+        ? (partial) => sendSse('partial', {
+          success: true,
+          matched: true,
+          routeScore,
+          agentAutoCreated,
+          ...partial,
+          agent: {
+            ...(partial.agent || {}),
+            autoCreated: agentAutoCreated || Boolean(partial.agent?.autoCreated),
+          },
+        })
+        : null,
     });
-    return res.json({
+
+    const chosenModel = String(req.body?.llmModel || req.body?.model || '').trim();
+    if (chosenModel) {
+      try {
+        const { upsertUserMemory } = require('../services/ai/aiUserMemoryService');
+        await upsertUserMemory({
+          organizationId,
+          userId: req.user?._id,
+          patch: { preferredLlmModel: chosenModel },
+        });
+      } catch (_) { /* non-fatal */ }
+    }
+
+    const payload = {
       success: true,
       matched: true,
       routeScore,
       agentAutoCreated,
+      mentionResolved,
       ...result,
       agent: {
         ...(result.agent || {}),
         autoCreated: agentAutoCreated || Boolean(result.agent?.autoCreated),
       },
-    });
+    };
+
+    if (wantsStream) {
+      sendSse('done', payload);
+      return res.end();
+    }
+    return res.json(payload);
   } catch (error) {
     console.error('[aiController.askTenantAgentAi] error:', error);
+    if (wantsStream && !res.headersSent) {
+      res.status(200);
+      res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+    }
+    if (wantsStream && !res.writableEnded) {
+      sendSse('error', {
+        code: error.code || 'AI_TENANT_AGENT_ASK_FAILED',
+        message: error.message || 'Ask failed',
+      });
+      return res.end();
+    }
     return assistErrorResponse(res, error, 'AI_TENANT_AGENT_ASK_FAILED');
   }
 }
@@ -1055,6 +1179,343 @@ async function applyAstraMutationAi(req, res) {
   } catch (error) {
     console.error('[aiController.applyAstraMutationAi] error:', error);
     return assistErrorResponse(res, error, 'AI_ASTRA_MUTATION_FAILED');
+  }
+}
+
+async function verifyAstraMutationAi(req, res) {
+  try {
+    const { verifyMutationOutcome } = require('../services/ai/aiAstraMutationVerifyService');
+    const { writeAiAuditLog } = require('../services/ai/aiAuditLogService');
+    const organizationId = getOrganizationId(req);
+    const userId = req.user?._id;
+    const verify = await verifyMutationOutcome({
+      organizationId,
+      op: String(req.body?.op || 'update'),
+      moduleKey: String(req.body?.moduleKey || '').trim(),
+      recordId: String(req.body?.recordId || '').trim(),
+      expectedFields: req.body?.fields && typeof req.body.fields === 'object' ? req.body.fields : {},
+    });
+    const outcomeNote = [verify.summary, verify.nextHint].filter(Boolean).join(' ');
+    try {
+      await writeAiAuditLog({
+        organizationId,
+        userId,
+        abilityKey: 'astra_mutation_verify',
+        provider: 'none',
+        model: 'none',
+        keyMode: 'platform',
+        status: verify.verified ? 'success' : 'failed',
+        promptVersion: 'astra_verify_v1',
+        latencyMs: verify.latencyMs || 0,
+        metadata: {
+          outcomeVerified: Boolean(verify.verified),
+          verifyMismatches: verify.mismatches || [],
+          moduleKey: verify.moduleKey,
+          recordId: verify.recordId,
+        },
+      });
+    } catch (_) { /* non-fatal */ }
+    return res.json({ success: true, verify, outcomeNote });
+  } catch (error) {
+    console.error('[aiController.verifyAstraMutationAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_VERIFY_FAILED');
+  }
+}
+
+async function getAstraUserMemoryAi(req, res) {
+  try {
+    const { getUserMemory } = require('../services/ai/aiUserMemoryService');
+    const memory = await getUserMemory({
+      organizationId: getOrganizationId(req),
+      userId: req.user?._id,
+    });
+    return res.json({ success: true, memory });
+  } catch (error) {
+    console.error('[aiController.getAstraUserMemoryAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_MEMORY_FAILED');
+  }
+}
+
+async function putAstraUserMemoryAi(req, res) {
+  try {
+    const { upsertUserMemory } = require('../services/ai/aiUserMemoryService');
+    const memory = await upsertUserMemory({
+      organizationId: getOrganizationId(req),
+      userId: req.user?._id,
+      patch: req.body?.memory && typeof req.body.memory === 'object'
+        ? req.body.memory
+        : (req.body || {}),
+    });
+    return res.json({ success: true, memory });
+  } catch (error) {
+    console.error('[aiController.putAstraUserMemoryAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_MEMORY_UPDATE_FAILED');
+  }
+}
+
+async function listAstraSkillsAi(req, res) {
+  try {
+    const { listAstraSkills, isSkillsEnabled } = require('../services/ai/aiAstraSkillsRegistry');
+    const skills = listAstraSkills({
+      moduleKey: String(req.query?.moduleKey || '').trim(),
+    });
+    return res.json({ success: true, enabled: isSkillsEnabled(), skills });
+  } catch (error) {
+    console.error('[aiController.listAstraSkillsAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_SKILLS_FAILED');
+  }
+}
+
+async function runAstraSkillAi(req, res) {
+  try {
+    const { getAstraSkill, isSkillsEnabled } = require('../services/ai/aiAstraSkillsRegistry');
+    if (!isSkillsEnabled()) {
+      return res.status(404).json({
+        success: false,
+        code: 'ASTRA_SKILLS_DISABLED',
+        message: 'Astra Skills are disabled',
+      });
+    }
+    const skillId = String(req.params?.skillId || req.body?.skillId || '').trim();
+    const skill = getAstraSkill(skillId);
+    if (!skill) {
+      return res.status(404).json({
+        success: false,
+        code: 'ASTRA_SKILL_NOT_FOUND',
+        message: 'Skill not found',
+      });
+    }
+    return res.json({
+      success: true,
+      skill: {
+        id: skill.id,
+        label: skill.label,
+        description: skill.description,
+        seedQuestion: skill.seedQuestion,
+        moduleKeys: skill.moduleKeys,
+      },
+    });
+  } catch (error) {
+    console.error('[aiController.runAstraSkillAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_SKILL_RUN_FAILED');
+  }
+}
+
+async function listAstraChatModelsAi(req, res) {
+  try {
+    const { getPublicAiSettings, listAvailableLlmModels } = require('../services/ai/aiSettingsService');
+    const organizationId = getOrganizationId(req);
+    const settings = await getPublicAiSettings(organizationId);
+    const provider = settings?.llmProvider || 'openai';
+    let models = [];
+    try {
+      const listed = await listAvailableLlmModels({ organizationId, provider });
+      models = Array.isArray(listed?.models) ? listed.models : [];
+    } catch (_) {
+      models = settings?.llmModel ? [settings.llmModel] : [];
+    }
+    const { getUserMemory } = require('../services/ai/aiUserMemoryService');
+    const memory = await getUserMemory({ organizationId, userId: req.user?._id });
+    return res.json({
+      success: true,
+      enabled: String(process.env.ASTRA_MODEL_PICKER_V1 || 'true').toLowerCase() !== 'false',
+      provider,
+      models: models.map((m) => (typeof m === 'string' ? m : String(m?.id || m?.name || m))).filter(Boolean),
+      selected: memory.preferredLlmModel || settings?.llmModel || '',
+    });
+  } catch (error) {
+    console.error('[aiController.listAstraChatModelsAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_MODELS_FAILED');
+  }
+}
+
+async function listAstraSuperAgentsAi(req, res) {
+  try {
+    const {
+      isSuperAgentsEnabled,
+      ensureBuiltinSuperAgents,
+      listMentionableAgents,
+    } = require('../services/ai/astraSuperAgentService');
+    const { listSuperAgentCatalog } = require('../services/ai/aiAstraSuperAgentsCatalog');
+    const organizationId = getOrganizationId(req);
+    const enabled = isSuperAgentsEnabled();
+    if (!enabled) {
+      return res.json({
+        success: true,
+        enabled: false,
+        agents: [],
+        catalog: listSuperAgentCatalog(),
+      });
+    }
+    const seeded = await ensureBuiltinSuperAgents({
+      organizationId,
+      userId: req.user?._id,
+    });
+    const agents = seeded.agents?.length
+      ? seeded.agents
+      : await listMentionableAgents(organizationId);
+    return res.json({
+      success: true,
+      enabled: true,
+      seeded: { created: seeded.created, updated: seeded.updated },
+      agents,
+      catalog: listSuperAgentCatalog(),
+    });
+  } catch (error) {
+    console.error('[aiController.listAstraSuperAgentsAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_SUPER_AGENTS_FAILED');
+  }
+}
+
+async function getAstraNextBestActionsAi(req, res) {
+  try {
+    const { buildNextBestActions } = require('../services/ai/aiAstraNextBestActionService');
+    const organizationId = getOrganizationId(req);
+    const userId = req.user?._id;
+    const actions = await buildNextBestActions({
+      organizationId,
+      userId,
+      moduleKey: String(req.query?.moduleKey || req.body?.moduleKey || '').trim(),
+      recordId: String(req.query?.recordId || req.body?.recordId || '').trim(),
+      recordTitle: String(req.query?.recordTitle || req.body?.recordTitle || '').trim(),
+      limit: 3,
+    });
+    return res.json({
+      success: true,
+      actions,
+      nbaMode: actions.length > 0,
+    });
+  } catch (error) {
+    console.error('[aiController.getAstraNextBestActionsAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_NBA_FAILED');
+  }
+}
+
+async function listAstraAutopilotProposalsAi(req, res) {
+  try {
+    const {
+      isAutopilotEnabled,
+      listProposalsForUser,
+      scanUserAutopilot,
+    } = require('../services/ai/astraAutopilotService');
+    if (!isAutopilotEnabled()) {
+      return res.json({ success: true, enabled: false, proposals: [] });
+    }
+    const organizationId = getOrganizationId(req);
+    const userId = req.user?._id;
+    const refresh = String(req.query?.refresh || '').toLowerCase() === 'true'
+      || String(req.query?.refresh || '') === '1';
+    if (refresh) {
+      await scanUserAutopilot({ organizationId, userId });
+    }
+    const proposals = await listProposalsForUser({
+      organizationId,
+      userId,
+      status: 'proposed',
+      limit: 10,
+    });
+    return res.json({ success: true, enabled: true, proposals });
+  } catch (error) {
+    console.error('[aiController.listAstraAutopilotProposalsAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_AUTOPILOT_LIST_FAILED');
+  }
+}
+
+async function acceptAstraAutopilotProposalAi(req, res) {
+  try {
+    const {
+      isAutopilotEnabled,
+      acceptProposal,
+    } = require('../services/ai/astraAutopilotService');
+    if (!isAutopilotEnabled()) {
+      return res.status(404).json({
+        success: false,
+        code: 'ASTRA_AUTOPILOT_DISABLED',
+        message: 'Astra Autopilot is disabled',
+      });
+    }
+    const proposalId = String(req.params?.proposalId || req.body?.proposalId || '').trim();
+    if (!proposalId) {
+      return res.status(400).json({
+        success: false,
+        code: 'ASTRA_PROPOSAL_ID_REQUIRED',
+        message: 'proposalId is required',
+      });
+    }
+    const result = await acceptProposal({
+      organizationId: getOrganizationId(req),
+      userId: req.user?._id,
+      proposalId,
+    });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('[aiController.acceptAstraAutopilotProposalAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_AUTOPILOT_ACCEPT_FAILED');
+  }
+}
+
+async function dismissAstraAutopilotProposalAi(req, res) {
+  try {
+    const {
+      isAutopilotEnabled,
+      dismissProposal,
+    } = require('../services/ai/astraAutopilotService');
+    if (!isAutopilotEnabled()) {
+      return res.status(404).json({
+        success: false,
+        code: 'ASTRA_AUTOPILOT_DISABLED',
+        message: 'Astra Autopilot is disabled',
+      });
+    }
+    const proposalId = String(req.params?.proposalId || req.body?.proposalId || '').trim();
+    if (!proposalId) {
+      return res.status(400).json({
+        success: false,
+        code: 'ASTRA_PROPOSAL_ID_REQUIRED',
+        message: 'proposalId is required',
+      });
+    }
+    const proposal = await dismissProposal({
+      organizationId: getOrganizationId(req),
+      userId: req.user?._id,
+      proposalId,
+    });
+    return res.json({ success: true, proposal });
+  } catch (error) {
+    console.error('[aiController.dismissAstraAutopilotProposalAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_AUTOPILOT_DISMISS_FAILED');
+  }
+}
+
+async function refreshAstraAutopilotAi(req, res) {
+  try {
+    const {
+      isAutopilotEnabled,
+      scanUserAutopilot,
+      listProposalsForUser,
+    } = require('../services/ai/astraAutopilotService');
+    if (!isAutopilotEnabled()) {
+      return res.json({ success: true, enabled: false, proposals: [], created: 0 });
+    }
+    const organizationId = getOrganizationId(req);
+    const userId = req.user?._id;
+    const scan = await scanUserAutopilot({ organizationId, userId });
+    const proposals = await listProposalsForUser({
+      organizationId,
+      userId,
+      status: 'proposed',
+      limit: 10,
+    });
+    return res.json({
+      success: true,
+      enabled: true,
+      created: scan.created,
+      refreshed: scan.refreshed,
+      proposals,
+    });
+  } catch (error) {
+    console.error('[aiController.refreshAstraAutopilotAi] error:', error);
+    return assistErrorResponse(res, error, 'AI_ASTRA_AUTOPILOT_REFRESH_FAILED');
   }
 }
 
@@ -1495,6 +1956,18 @@ module.exports = {
   deleteTenantAgentAi,
   askTenantAgentAi,
   applyAstraMutationAi,
+  verifyAstraMutationAi,
+  getAstraUserMemoryAi,
+  putAstraUserMemoryAi,
+  listAstraSkillsAi,
+  runAstraSkillAi,
+  listAstraChatModelsAi,
+  listAstraSuperAgentsAi,
+  getAstraNextBestActionsAi,
+  listAstraAutopilotProposalsAi,
+  acceptAstraAutopilotProposalAi,
+  dismissAstraAutopilotProposalAi,
+  refreshAstraAutopilotAi,
   suggestTenantAgentTriggersAi,
   listAiConversations,
   getAiConversation,

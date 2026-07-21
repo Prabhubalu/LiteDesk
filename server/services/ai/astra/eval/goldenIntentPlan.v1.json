@@ -1,0 +1,488 @@
+[
+  {
+    "id": "won-list-basic",
+    "question": "Give me the listy of Won deals",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isWon": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ],
+      "statusValue": "Won"
+    }
+  },
+  {
+    "id": "won-which-are",
+    "question": "Give me the list of deals which are Won",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isWon": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "won-deals-phrase",
+    "question": "Show won deals",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isWon": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "closed-won",
+    "question": "List Closed Won deals",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isWon": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "lost-list",
+    "question": "Show lost deals",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isLost": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "closed-lost",
+    "question": "deals which are Closed Lost",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isLost": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "amount-10k",
+    "question": "Give me the list of deals which are having amount 10K$",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "amountGte": 10000
+    }
+  },
+  {
+    "id": "amount-50k",
+    "question": "deals with amount greater than 50k",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "amountGte": 50000
+    }
+  },
+  {
+    "id": "open-deals",
+    "question": "Show open deals",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "statusValue": "Open"
+    }
+  },
+  {
+    "id": "show-account-deals",
+    "question": "Show Vtiger CRM deals",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals"
+    }
+  },
+  {
+    "id": "wont-not-won",
+    "question": "deals that won't close this month",
+    "expect": {
+      "intent": "CrmDataList",
+      "isWon": false
+    }
+  },
+  {
+    "id": "chart-by-stage",
+    "question": "Show deals as a pie chart by stage",
+    "expect": {
+      "intent": "CrmDataChart",
+      "moduleKey": "deals"
+    }
+  },
+  {
+    "id": "product-howto",
+    "question": "How do I convert a deal to a quote?",
+    "expect": {
+      "intent": "ProductHowTo",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "product-expertise",
+    "question": "What modules and fields does the CRM have?",
+    "expect": {
+      "intent": "ProductExpertise",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "health-with-account",
+    "question": "How healthy is ACME?",
+    "expect": {
+      "intent": "CustomerHealthAnalysis",
+      "pipeline": true,
+      "accountHint": "ACME",
+      "needsClarification": false
+    }
+  },
+  {
+    "id": "health-clarify",
+    "question": "How healthy is this customer?",
+    "expect": {
+      "intent": "CustomerHealthAnalysis",
+      "pipeline": true,
+      "needsClarification": true
+    }
+  },
+  {
+    "id": "sticky-open",
+    "question": "only open ones",
+    "memory": {
+      "sticky": true,
+      "lastIntent": "CrmListFilter",
+      "anchors": [
+        "deals"
+      ]
+    },
+    "expect": {
+      "intent": "CrmListFilter",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "email-defer",
+    "question": "Draft an email to the customer",
+    "expect": {
+      "intent": "DeferLegacy",
+      "deferToLegacy": true
+    }
+  },
+  {
+    "id": "overlay-won-plan-filters",
+    "question": "Won deals",
+    "expect": {
+      "overlayPlan": true,
+      "isWon": true,
+      "wantList": true,
+      "headlineHint": "Won deals"
+    }
+  },
+  {
+    "id": "overlay-amount-plan",
+    "question": "list deals amount above 10000",
+    "expect": {
+      "overlayPlan": true,
+      "amountGte": 10000
+    }
+  },
+  {
+    "id": "won-that-are",
+    "question": "list deals that are Won",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isWon": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "won-are-won",
+    "question": "which deals are Won",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isWon": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "won-closed-won-phrase",
+    "question": "show me all Closed Won opportunities",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isWon": true
+    }
+  },
+  {
+    "id": "lost-that-are",
+    "question": "deals that are Lost",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isLost": true,
+      "filterFields": [
+        "status",
+        "stage"
+      ]
+    }
+  },
+  {
+    "id": "lost-which-are",
+    "question": "list deals which are Lost",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "isLost": true
+    }
+  },
+  {
+    "id": "open-pipeline",
+    "question": "list open pipeline deals",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "statusValue": "Open"
+    }
+  },
+  {
+    "id": "amount-10k-above",
+    "question": "deals amount above 10k",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "amountGte": 10000
+    }
+  },
+  {
+    "id": "amount-25k-over",
+    "question": "deals over $25000",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "amountGte": 25000
+    }
+  },
+  {
+    "id": "amount-100k",
+    "question": "list deals having amount 100K$",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals",
+      "amountGte": 100000
+    }
+  },
+  {
+    "id": "bar-chart-by-stage",
+    "question": "Show deals as a bar chart by stage",
+    "expect": {
+      "intent": "CrmDataChart",
+      "moduleKey": "deals"
+    }
+  },
+  {
+    "id": "donut-chart",
+    "question": "deals donut chart by status",
+    "expect": {
+      "intent": "CrmDataChart",
+      "moduleKey": "deals"
+    }
+  },
+  {
+    "id": "list-and-pie",
+    "question": "list deals over 50k and show pie chart",
+    "expect": {
+      "intent": "CrmDataChart",
+      "moduleKey": "deals",
+      "amountGte": 50000
+    }
+  },
+  {
+    "id": "tasks-high-priority",
+    "question": "show high priority tasks",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "tasks"
+    }
+  },
+  {
+    "id": "cases-open",
+    "question": "list open cases",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "cases"
+    }
+  },
+  {
+    "id": "quotes-list",
+    "question": "show me quotes",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "quotes"
+    }
+  },
+  {
+    "id": "product-howto-quote",
+    "question": "How do I create a quote from a deal?",
+    "expect": {
+      "intent": "ProductHowTo",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "product-howto-where",
+    "question": "Where can I configure assignment rules?",
+    "expect": {
+      "intent": "ProductHowTo",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "product-expertise-apis",
+    "question": "What APIs does the platform expose?",
+    "expect": {
+      "intent": "ProductExpertise",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "product-expertise-roles",
+    "question": "Which roles and permissions exist?",
+    "expect": {
+      "intent": "ProductExpertise",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "product-expertise-automations",
+    "question": "What automations are available?",
+    "expect": {
+      "intent": "ProductExpertise",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "health-at-risk",
+    "question": "Is ACME Corp at risk of churn?",
+    "expect": {
+      "intent": "CustomerHealthAnalysis",
+      "pipeline": true,
+      "accountHint": "ACME"
+    }
+  },
+  {
+    "id": "health-account-health",
+    "question": "customer health for Globex",
+    "expect": {
+      "intent": "CustomerHealthAnalysis",
+      "pipeline": true,
+      "accountHint": "Globex"
+    }
+  },
+  {
+    "id": "sticky-closed",
+    "question": "only closed ones",
+    "memory": {
+      "sticky": true,
+      "lastIntent": "CrmListFilter",
+      "anchors": [
+        "deals"
+      ]
+    },
+    "expect": {
+      "intent": "CrmListFilter",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "sticky-last-month",
+    "question": "last month",
+    "memory": {
+      "sticky": true,
+      "lastIntent": "CrmListFilter",
+      "anchors": [
+        "deals"
+      ]
+    },
+    "expect": {
+      "intent": "CrmListFilter",
+      "pipeline": true
+    }
+  },
+  {
+    "id": "email-compose",
+    "question": "Write an email to follow up",
+    "expect": {
+      "intent": "DeferLegacy",
+      "deferToLegacy": true
+    }
+  },
+  {
+    "id": "send-email",
+    "question": "send an email to the contact",
+    "expect": {
+      "intent": "DeferLegacy",
+      "deferToLegacy": true
+    }
+  },
+  {
+    "id": "overlay-lost-plan",
+    "question": "Lost deals",
+    "expect": {
+      "overlayPlan": true,
+      "isLost": true,
+      "headlineHint": "Lost deals",
+      "wantList": true
+    }
+  },
+  {
+    "id": "overlay-open-status",
+    "question": "open deals",
+    "expect": {
+      "overlayPlan": true,
+      "statusValue": "Open"
+    }
+  },
+  {
+    "id": "wont-close-again",
+    "question": "which deals won't close",
+    "expect": {
+      "intent": "CrmDataList",
+      "isWon": false
+    }
+  },
+  {
+    "id": "closure-diagnostic",
+    "question": "why are these deals still not closed",
+    "expect": {
+      "intent": "CrmDataList",
+      "moduleKey": "deals"
+    }
+  }
+]
