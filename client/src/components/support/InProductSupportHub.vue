@@ -496,7 +496,7 @@
                           type="button"
                           class="rounded-lg border border-primary-200 bg-white px-2.5 py-1.5 text-left text-[12px] leading-snug text-primary-950 transition hover:bg-primary-50 dark:border-primary-500/40 dark:bg-gray-900 dark:text-primary-100 dark:hover:bg-primary-500/10"
                           :disabled="aiAsking"
-                          @click.stop="askAssistant(q)"
+                          @click.stop="askAssistant(q, currentRecordContextName() ? { recordTitle: currentRecordContextName() } : {})"
                         >
                           {{ q }}
                         </button>
@@ -576,7 +576,7 @@
                         </p>
                         <p
                           v-if="action.email.body"
-                          class="mt-1 line-clamp-4 whitespace-pre-wrap text-[11px] leading-snug text-gray-600 dark:text-gray-300"
+                          class="mt-1 whitespace-pre-wrap text-[11px] leading-snug text-gray-600 dark:text-gray-300"
                         >
                           {{ action.email.body }}
                         </p>
@@ -1787,10 +1787,41 @@ async function openFreshAiChat() {
   openAiAsk();
 }
 
-function onOpenAssistantEvent() {
+function onOpenAssistantEvent(ev) {
   if (hideOnAgentWorkspace.value) return;
   if (!canUseAi.value) return;
   if (showAstraIntro.value) return;
+  const detail = (ev && typeof ev === 'object' && ev.detail && typeof ev.detail === 'object')
+    ? ev.detail
+    : {};
+  const prompt = String(detail.prompt || '').trim();
+  const agentId = String(detail.agentId || '').trim();
+  const autoAsk = detail.autoAsk === true;
+  if (prompt || agentId) {
+    if (!panelOpen.value) {
+      if (maybeRevealAstraIntro()) return;
+      openPanel();
+    }
+    void (async () => {
+      await startNewConversation();
+      openAiAsk();
+      const recordTitle = currentRecordContextName();
+      if (autoAsk && prompt) {
+        await askAssistant(prompt, {
+          ...(agentId ? { agentId } : {}),
+          ...(recordTitle ? { recordTitle } : {}),
+        });
+        openAiThread();
+        await nextTick();
+        scrollAiMessages();
+        return;
+      }
+      if (prompt) draft.value = prompt;
+      await nextTick();
+      aiComposerEl.value?.focus?.();
+    })();
+    return;
+  }
   if (panelOpen.value) {
     closePanel();
     return;
@@ -1900,7 +1931,8 @@ async function runAiTurn() {
   const text = draft.value.trim();
   if (!text || aiAsking.value || typingMessageId.value) return;
   draft.value = '';
-  await askAssistant(text);
+  const recordTitle = currentRecordContextName();
+  await askAssistant(text, recordTitle ? { recordTitle } : {});
   await nextTick();
   scrollAiMessages();
   await maybeAutoOpenReportBuilder();

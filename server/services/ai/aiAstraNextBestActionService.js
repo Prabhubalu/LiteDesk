@@ -153,7 +153,7 @@ function staleDealToActions(deal, { proposeFollowUpTask = true } = {}) {
       targetLabel: name,
       fields: {
         title: `Follow up: ${name}`.slice(0, 200),
-        description: `Next best action proposed by Astra for deal ${id}.`,
+        description: `Follow up on ${name} — proposed by Astra.`,
         status: 'todo',
         priority: 'high',
         dueDate: due.toISOString(),
@@ -206,16 +206,49 @@ function conversationAnchorAction({ moduleKey, recordId, title = '' }) {
   const mk = String(moduleKey || '').trim().toLowerCase();
   const rid = String(recordId || '').trim();
   if (!mk || !isMongoId(rid)) return null;
-  const labelTitle = trimTitle(title, mk);
+  const labelTitle = trimTitle(title, mk === 'people' ? 'this contact' : mk);
+  let label = `Follow up on ${labelTitle}`;
+  let rationale = 'Best next move on the record you have open';
+  if (mk === 'people' || mk === 'contacts') {
+    label = `Email ${labelTitle} with one clear ask`;
+    rationale = 'Warm follow-up — open compose when ready';
+  } else if (mk === 'deals') {
+    label = `Email to advance ${labelTitle}`;
+    rationale = 'Push this deal one concrete step forward';
+  } else if (mk === 'cases') {
+    label = `Unblock ${labelTitle}`;
+    rationale = 'Resolve the open case issue';
+  } else if (mk === 'organizations' || mk === 'organization') {
+    label = `Email check-in on ${labelTitle}`;
+    rationale = 'Keep the account moving';
+  }
   return makeAction({
-    label: `Follow up on ${labelTitle}`,
+    label,
     kind: 'follow_up',
     moduleKey: mk,
     recordId: rid,
-    rationale: 'Pinned from this conversation',
-    priority: 'medium',
+    rationale,
+    priority: 'high',
     targetLabel: labelTitle,
   });
+}
+
+function attentionLinkedToRecord(item, recordId) {
+  const rid = String(recordId || '').trim();
+  if (!rid || !item) return false;
+  const bags = [
+    item.id,
+    item.recordId,
+    item.relatedId,
+    item.relatedToId,
+    item.relatedTo?.id,
+    item.linkPeopleId,
+    item.dealId,
+    item.contactId,
+    item.accountId,
+    item.organizationId,
+  ];
+  return bags.some((v) => String(v || '').trim() === rid);
 }
 
 function citationActionsFromPreview(preview, moduleKey = '') {
@@ -269,21 +302,29 @@ function rankNextBestActions({
   limit = MAX_NBA,
   dismissedFingerprints = [],
   preferOpenFirst = true,
+  preferRecordContext = false,
 } = {}) {
   const now = new Date();
   const candidates = [];
   const dismissed = new Set(
     (Array.isArray(dismissedFingerprints) ? dismissedFingerprints : []).map((s) => String(s || '')),
   );
+  // On a record page, ground Do Next on this record first (match in-product Astra context).
+  const recordScoped = preferRecordContext && isMongoId(recordId);
 
   const attention = Array.isArray(attentionItems) ? attentionItems : [];
   for (const item of attention.filter((i) => i?.isOverdue)) {
     const a = attentionToAction(item);
-    if (a) candidates.push({ score: 100, action: a });
+    if (a) candidates.push({ score: recordScoped ? 55 : 100, action: a });
   }
   for (const item of attention.filter((i) => !i?.isOverdue && isDueToday(i?.dueAt, now))) {
     const a = attentionToAction(item);
-    if (a) candidates.push({ score: preferOpenFirst ? 92 : 90, action: a });
+    if (a) {
+      candidates.push({
+        score: recordScoped ? 48 : (preferOpenFirst ? 92 : 90),
+        action: a,
+      });
+    }
   }
 
   for (const deal of (Array.isArray(staleDeals) ? staleDeals : []).slice(0, 2)) {
@@ -304,7 +345,7 @@ function rankNextBestActions({
   }
 
   const anchor = conversationAnchorAction({ moduleKey, recordId, title: recordTitle });
-  if (anchor) candidates.push({ score: 65, action: anchor });
+  if (anchor) candidates.push({ score: recordScoped ? 112 : 65, action: anchor });
 
   for (const a of citationActionsFromPreview(crmPreview, crmModuleKey || moduleKey)) {
     candidates.push({ score: 55, action: a });
@@ -451,6 +492,19 @@ async function buildNextBestActions({
   const resolvedModule = String(moduleKey || memory.lastModuleKey || '').trim();
   const resolvedRecord = String(recordId || memory.lastRecordId || '').trim();
   const resolvedTitle = String(recordTitle || memory.lastRecordTitle || '').trim();
+  const recordScoped = Boolean(moduleKey && isMongoId(recordId));
+
+  // Record pages: only keep attention/stale/cases tied to THIS record — no org-wide junk.
+  if (recordScoped) {
+    attention = (Array.isArray(attention) ? attention : [])
+      .filter((item) => attentionLinkedToRecord(item, recordId));
+    stale = (Array.isArray(stale) ? stale : [])
+      .filter((d) => String(d?._id || d?.id || '') === String(recordId));
+    cases = (Array.isArray(cases) ? cases : [])
+      .filter((c) => String(c?._id || c?.id || '') === String(recordId));
+    resume = (Array.isArray(resume) ? resume : [])
+      .filter((r) => String(r?.id || r?.recordId || '') === String(recordId));
+  }
 
   if (moduleKey && recordId) {
     try {
@@ -478,6 +532,7 @@ async function buildNextBestActions({
     limit,
     dismissedFingerprints: memory.dismissedFingerprints,
     preferOpenFirst: memory.preferOpenFirst !== false,
+    preferRecordContext: recordScoped || Boolean(moduleKey && recordId),
   });
 }
 
@@ -517,10 +572,15 @@ function collectPreviewRecordIds(crmPreview) {
 
 /**
  * Named-deal / small preview answers must not dump global Attention overdue.
+ * Only scopes when a CRM preview actually exists (otherwise record-page NBA would be wiped).
  */
 function isCrmAnswerScopedToPreview(question = '', crmPreview = null) {
-  if (extractQuotedRecordNameFromQuestion(question)) return true;
   const ids = collectPreviewRecordIds(crmPreview);
+  if (!ids.size) {
+    // No preview rows — do not treat "this deal/record" as preview-scoped (keeps record NBA).
+    return false;
+  }
+  if (extractQuotedRecordNameFromQuestion(question)) return true;
   if (ids.size > 0 && ids.size <= 5) return true;
   const q = String(question || '')
     .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
@@ -635,16 +695,22 @@ async function attachNbaToStructured(structured, ctx = {}) {
     let nba = await buildNextBestActions(ctx);
     if (isCrmAnswerScopedToPreview(ctx.question, ctx.crmPreview)) {
       const previewIds = collectPreviewRecordIds(ctx.crmPreview);
-      nba = filterActionsToPreviewIds(nba, previewIds);
-      if (!nba.length && previewIds.size) {
-        nba = citationActionsFromPreview(
-          ctx.crmPreview,
-          ctx.crmModuleKey || ctx.moduleKey || '',
-        ).filter((a) => {
-          const rid = String(a?.recordId || '').trim();
-          return previewIds.has(rid);
-        }).slice(0, Math.max(1, Number(ctx.limit) || MAX_NBA));
+      if (previewIds.size) {
+        nba = filterActionsToPreviewIds(nba, previewIds);
+        if (!nba.length) {
+          nba = citationActionsFromPreview(
+            ctx.crmPreview,
+            ctx.crmModuleKey || ctx.moduleKey || '',
+          ).filter((a) => {
+            const rid = String(a?.recordId || '').trim();
+            return previewIds.has(rid);
+          }).slice(0, Math.max(1, Number(ctx.limit) || MAX_NBA));
+        }
       }
+    }
+    // Record-page asks with no preview: keep record-scoped NBA (anchor / follow-up).
+    if (!nba.length && ctx.moduleKey && isMongoId(ctx.recordId)) {
+      nba = await buildNextBestActions(ctx);
     }
     if (!nba.length) return structured;
     structured.actions = mergeNbaIntoStructuredActions(

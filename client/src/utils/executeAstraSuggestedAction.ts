@@ -356,7 +356,9 @@ export async function executeAstraSuggestedAction(
     || action.email?.subject
     || action.email?.body
     || action.email?.to
-    || /\bemail\b/i.test(String(action.label || ''))
+    || (/\bemail\b/i.test(String(action.label || ''))
+      && kind !== 'follow_up'
+      && kind !== 'manual')
   ) {
     deps.openEmailCompose(action, msg);
     return;
@@ -378,10 +380,47 @@ export async function executeAstraSuggestedAction(
 
   // Same-record navigable, manual, or unresolved: continue the chat with the action intent.
   // Use the label only — never re-ask with meta rationales ("concrete example…").
-  const followUp = String(action.label || '').trim();
+  let followUp = String(action.label || '').trim();
   if (!followUp) {
     deps.setError(deps.t('liveChat.inAppAiActionUnavailable'));
     return;
+  }
+  // Vague "Reach out to X" / "Follow up on X" chips loop into the same coaching + same CTA.
+  // Expand into a deliverable ask so Astra drafts email (or a concrete next step) instead.
+  const rationale = String(action.rationale || '').trim();
+  const reachOut = followUp.match(
+    /^(?:reach out to|follow up (?:on|with)|check in on|advance|email(?:\s+to)?(?:\s+advance)?|email check-in on)\s+(.+?)(?:\s+with one clear ask)?$/i,
+  );
+  const prepAssist = followUp.match(
+    /^(?:prep|draft|write)\s+(.+)$/i,
+  );
+  if (prepAssist && /\b(question|talking|opener|script|objection|pitch|points)\b/i.test(followUp)) {
+    followUp = [
+      `${followUp}.`,
+      'Give usable wording staff can say or send now (numbered questions or a short script).',
+      'Also include one send_email action if a contact email exists.',
+      'Do not only restate CRM fields.',
+    ].join(' ');
+  } else if (
+    kind === 'follow_up'
+    || kind === 'manual'
+    || reachOut
+    || /keep the relationship warm|warm follow-up|open compose when ready/i.test(rationale)
+  ) {
+    const who = String(reachOut?.[1] || action.targetLabel || followUp)
+      .replace(/\s+with one clear ask\s*$/i, '')
+      .replace(/\s*[.…]+\s*$/, '')
+      .trim();
+    if (
+      who
+      && /^(reach out to|follow up (?:on|with)|check in on|advance|email)\b/i.test(followUp)
+    ) {
+      followUp = [
+        `Draft a short follow-up email for ${who} with one clear ask.`,
+        'Put To/Subject/Body in a send_email action staff can open.',
+        `Do not suggest "Reach out to ${who}" or the same vague follow-up again.`,
+      ].join(' ');
+    }
   }
   if (deps.isAskBusy()) return;
   await deps.askAssistant(followUp);

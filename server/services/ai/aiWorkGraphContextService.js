@@ -27,6 +27,11 @@ const {
 const MAX_CONTEXT_CHARS = 20000;
 const MAX_LIST_CONTEXT_CHARS = 24000;
 const MAX_COMPLETE_CONTEXT_CHARS = 120000;
+/**
+ * Record-page pack: load richer raw graph; map-reduce digests (ASTRA_CHUNKED_CONTEXT_V1)
+ * compress related volume before the final answer LLM so we do not lose coverage to a hard trim.
+ */
+const MAX_RECORD_CONTEXT_CHARS = 72000;
 /** Report/overview: aggregates are 100%; detail rows stay small to control tokens. */
 const MAX_REPORT_CONTEXT_CHARS = 28000;
 const MAX_LIST_SAMPLE = 50;
@@ -34,9 +39,13 @@ const MAX_REPORT_RECORDS = 40;
 const MAX_COMPLETE_RECORDS = 2000;
 const MAX_RELATED_GROUPS = 20;
 const MAX_RELATED_PER_GROUP = 10;
+const MAX_RELATED_PER_GROUP_RECORD = 12;
 const MAX_RELATED_PER_GROUP_COMPLETE = 100;
+const MAX_RELATED_TOTAL_RECORD = 36;
 const MAX_PRIMARY_ACTIVITIES = 40;
+const MAX_PRIMARY_ACTIVITIES_RECORD = 40;
 const MAX_RELATED_ACTIVITIES = 12;
+const MAX_RELATED_ACTIVITIES_RECORD = 10;
 
 const SKIP_KEYS = new Set([
   '_id', '__v', 'organizationId', 'createdBy', 'updatedBy', 'deletedAt', 'deletedBy',
@@ -461,9 +470,12 @@ async function loadRecordActivities(organizationId, moduleKey, recordId, limit) 
   });
 }
 
-function buildPrimarySection(moduleKey, doc) {
+function buildPrimarySection(moduleKey, doc, { maxFields } = {}) {
   const lines = [];
   const key = String(moduleKey || '').toLowerCase();
+  const fieldCap = Number.isFinite(maxFields)
+    ? maxFields
+    : (key === 'people' ? 20 : 40);
   lines.push(`=== PRIMARY RECORD (${key}) ===`);
   lines.push(`Label: ${recordLabel(key, doc)}`);
 
@@ -494,7 +506,24 @@ function buildPrimarySection(moduleKey, doc) {
     if (description) lines.push(`Description: ${String(description).slice(0, 600)}`);
   }
 
-  pushScalarFields(lines, doc, { maxFields: key === 'people' ? 20 : 40 });
+  if (key === 'deals' || key === 'deal') {
+    lines.push('=== DEAL SNAPSHOT (authoritative) ===');
+    if (doc.name) lines.push(`Deal name: ${doc.name}`);
+    if (doc.stage || doc.status) lines.push(`Stage: ${doc.stage || doc.status}`);
+    if (doc.amount != null) lines.push(`Amount / expected value: ${doc.amount}`);
+    if (doc.probability != null) lines.push(`Probability: ${doc.probability}%`);
+    if (doc.weightedAmount != null) lines.push(`Weighted value: ${doc.weightedAmount}`);
+    if (doc.closeDate || doc.expectedCloseDate) {
+      lines.push(`Close date: ${doc.closeDate || doc.expectedCloseDate}`);
+    }
+    if (doc.dealType || doc.type) lines.push(`Deal type: ${doc.dealType || doc.type}`);
+    if (doc.pipeline || doc.pipelineName) lines.push(`Pipeline: ${doc.pipelineName || doc.pipeline}`);
+    const dealOwner = formatUserRef(doc.assignedTo);
+    if (dealOwner) lines.push(`Owner: ${dealOwner}`);
+    if (doc.description) lines.push(`Description: ${String(doc.description).slice(0, 400)}`);
+  }
+
+  pushScalarFields(lines, doc, { maxFields: fieldCap });
 
   if (Array.isArray(doc.stageHistory) && doc.stageHistory.length) {
     lines.push('Stage history:');
@@ -502,28 +531,30 @@ function buildPrimarySection(moduleKey, doc) {
   }
   if (Array.isArray(doc.activityLogs) && doc.activityLogs.length) {
     lines.push('Embedded activity log:');
-    lines.push(...formatEmbeddedActivities(doc.activityLogs, MAX_PRIMARY_ACTIVITIES));
+    lines.push(...formatEmbeddedActivities(doc.activityLogs, Math.max(MAX_PRIMARY_ACTIVITIES, fieldCap)));
   }
 
   return lines;
 }
 
-function buildRelatedSection(index, moduleKey, doc, activities) {
+function buildRelatedSection(index, moduleKey, doc, activities, opts = {}) {
   const lines = [];
   const key = String(moduleKey || '').toLowerCase();
+  const maxFields = Number.isFinite(opts.maxFields) ? opts.maxFields : 18;
+  const activityLimit = Number.isFinite(opts.activityLimit) ? opts.activityLimit : MAX_RELATED_ACTIVITIES;
   lines.push(`[${index}] RELATED ${key}: ${recordLabel(key, doc)}`);
   if (key === 'people' && doc.email) {
     lines.push(`  Email: ${doc.email}`);
   }
   const assignee = formatUserRef(doc.assignedTo);
   if (assignee) lines.push(`  Assigned to: ${assignee}`);
-  pushScalarFields(lines, doc, { prefix: '  ', maxFields: 18 });
+  pushScalarFields(lines, doc, { prefix: '  ', maxFields });
   if (Array.isArray(doc.activityLogs) && doc.activityLogs.length) {
     lines.push('  Embedded activity:');
-    lines.push(...formatEmbeddedActivities(doc.activityLogs, MAX_RELATED_ACTIVITIES).map((l) => `  ${l}`));
+    lines.push(...formatEmbeddedActivities(doc.activityLogs, activityLimit).map((l) => `  ${l}`));
   }
   if (activities.length) {
-    lines.push('  Record activity / comments:');
+    lines.push(`  Record activity / comments (${activities.length}):`);
     lines.push(...activities.map((l) => `  ${l}`));
   }
   return lines;
@@ -556,12 +587,17 @@ function collectRelatedRefs(context, { maxPerGroup = MAX_RELATED_PER_GROUP } = {
 /**
  * Astra chooses context depth from the question.
  * - sample: fast Q&A (bounded)
+ * - record: in-product record page — rich primary + related + activities, latency-bounded
  * - complete: full DB coverage for counts/sums/"every record"
  * - report: 100% aggregates + small detail sample (token-safe)
+ *
+ * @param {string} question
+ * @param {{ pageKind?: string }} [opts]
  */
-function resolveAstraContextMode(question = '') {
+function resolveAstraContextMode(question = '', opts = {}) {
   const q = String(question || '').toLowerCase();
-  if (!q.trim()) return 'sample';
+  const pageKind = String(opts.pageKind || '').toLowerCase();
+  if (!q.trim() && pageKind !== 'record') return 'sample';
 
   if (/\b(report|dashboard|export|spreadsheet|csv|xlsx|pdf report|status report|pipeline report|weekly report|monthly report|generate (a |an )?(report|summary)|write (a |an )?report|full report|pie chart|bar chart|line chart|chart|graph|visuali[sz]e)\b/.test(q)) {
     return 'report';
@@ -572,6 +608,10 @@ function resolveAstraContextMode(question = '') {
   if (/\b(how many|count|total value|pipeline value|by stage|by status|aggregate|analytics)\b/.test(q)
     && /\b(all|every|overall|entire|whole)\b/.test(q)) {
     return 'complete';
+  }
+  // Record page: detailed but capped (avoid complete-mode 100-related fan-out).
+  if (pageKind === 'record') {
+    return 'record';
   }
   return 'sample';
 }
@@ -619,11 +659,31 @@ async function buildWorkGraphContextPack({
   const citations = [];
   const lines = [];
   const normalizedModule = String(moduleKey || '').toLowerCase();
-  const contextMode = ['complete', 'report'].includes(String(mode || '')) ? String(mode) : 'sample';
-  const relatedCap = contextMode === 'sample' ? MAX_RELATED_PER_GROUP : MAX_RELATED_PER_GROUP_COMPLETE;
+  const rawMode = String(mode || 'sample');
+  const contextMode = ['complete', 'report', 'record'].includes(rawMode) ? rawMode : 'sample';
+  const isRecordMode = contextMode === 'record';
+  const deep = contextMode === 'complete' || contextMode === 'report' || isRecordMode;
+  const relatedCap = contextMode === 'complete'
+    ? MAX_RELATED_PER_GROUP_COMPLETE
+    : (isRecordMode ? MAX_RELATED_PER_GROUP_RECORD : MAX_RELATED_PER_GROUP);
+  const relatedTotalCap = isRecordMode ? MAX_RELATED_TOTAL_RECORD : Infinity;
   const charCap = contextMode === 'sample'
     ? MAX_CONTEXT_CHARS
-    : (contextMode === 'report' ? MAX_REPORT_CONTEXT_CHARS : MAX_COMPLETE_CONTEXT_CHARS);
+    : (contextMode === 'report'
+      ? MAX_REPORT_CONTEXT_CHARS
+      : (isRecordMode ? MAX_RECORD_CONTEXT_CHARS : MAX_COMPLETE_CONTEXT_CHARS));
+  const primaryActivityLimit = contextMode === 'complete'
+    ? 80
+    : (isRecordMode ? MAX_PRIMARY_ACTIVITIES_RECORD : MAX_PRIMARY_ACTIVITIES);
+  const relatedActivityLimit = contextMode === 'complete'
+    ? 30
+    : (isRecordMode ? MAX_RELATED_ACTIVITIES_RECORD : MAX_RELATED_ACTIVITIES);
+  const relatedFieldLimit = contextMode === 'complete' ? 40 : (isRecordMode ? 22 : 18);
+  const primaryFieldLimit = contextMode === 'complete'
+    ? (normalizedModule === 'people' ? 40 : 60)
+    : (isRecordMode
+      ? (normalizedModule === 'people' ? 28 : 36)
+      : (normalizedModule === 'people' ? 20 : 40));
 
   const [context, primaryDoc] = await Promise.all([
     getRecordContext(organizationId, appKey, normalizedModule, recordId, {
@@ -643,7 +703,14 @@ async function buildWorkGraphContextPack({
 
   lines.push(`CRM page context for ${normalizedModule} ${recordId}`);
   lines.push(`Context mode: ${contextMode}`);
-  lines.push(...buildPrimarySection(normalizedModule, primaryDoc));
+  if (deep) {
+    lines.push(
+      isRecordMode
+        ? 'RECORD ANALYSIS: Primary fields, recent activities/comments, and top related records (with their recent activities) are included. Prefer these facts over speculation.'
+        : 'DEEP RECORD ANALYSIS: Primary record fields, primary activities/comments, related records with their fields, and related-record activities are all included below. Prefer these facts over speculation.',
+    );
+  }
+  lines.push(...buildPrimarySection(normalizedModule, primaryDoc, { maxFields: primaryFieldLimit }));
 
   citations.push({
     index: 1,
@@ -673,23 +740,67 @@ async function buildWorkGraphContextPack({
         });
       }
     }
+    // Always surface linked quotes (expiry is high-signal for coaching).
+    try {
+      const orgOid = mongoose.Types.ObjectId.isValid(String(organizationId))
+        ? new mongoose.Types.ObjectId(String(organizationId))
+        : null;
+      const dealOid = mongoose.Types.ObjectId.isValid(String(primaryDoc._id))
+        ? new mongoose.Types.ObjectId(String(primaryDoc._id))
+        : null;
+      if (orgOid && dealOid) {
+        const quotes = await Quote.find({
+          organizationId: orgOid,
+          deletedAt: null,
+          dealId: dealOid,
+        })
+          .sort({ updatedAt: -1 })
+          .limit(6)
+          .select('quoteTitle quoteNumber status validUntil expiryDate totalAmount grandTotal updatedAt')
+          .lean();
+        if (quotes.length) {
+          lines.push(`=== LINKED QUOTES (${quotes.length}) ===`);
+          for (const q of quotes) {
+            const label = q.quoteTitle || q.quoteNumber || String(q._id);
+            const status = q.status || 'unknown';
+            const exp = q.validUntil || q.expiryDate || '';
+            const amt = q.grandTotal ?? q.totalAmount;
+            const expired = exp && new Date(exp).getTime() < Date.now();
+            lines.push(
+              `- Quote: ${label} · status=${status}`
+              + (amt != null ? ` · amount=${amt}` : '')
+              + (exp ? ` · validUntil=${exp}${expired ? ' (EXPIRED)' : ''}` : ''),
+            );
+            citations.push({
+              index: citations.length + 1,
+              sourceType: 'quotes',
+              sourceId: String(q._id),
+              excerpt: String(label).slice(0, 200),
+            });
+          }
+        }
+      }
+    } catch (_) { /* non-fatal */ }
   }
 
   const primaryActivities = await loadRecordActivities(
     organizationId,
     normalizedModule,
     primaryDoc._id,
-    MAX_PRIMARY_ACTIVITIES,
+    primaryActivityLimit,
   );
   if (primaryActivities.length) {
-    lines.push('Primary record activity / comments:');
+    lines.push(`Primary record activity / comments (${primaryActivities.length}):`);
     lines.push(...primaryActivities);
   }
 
-  const relatedRefs = collectRelatedRefs(context, { maxPerGroup: relatedCap });
+  let relatedRefs = collectRelatedRefs(context, { maxPerGroup: relatedCap });
+  if (Number.isFinite(relatedTotalCap) && relatedRefs.length > relatedTotalCap) {
+    relatedRefs = relatedRefs.slice(0, relatedTotalCap);
+  }
   lines.push(`=== RELATED RECORDS (${relatedRefs.length}) ===`);
 
-  let citationIndex = 2;
+  let citationIndex = citations.length + 1;
   const relatedDocs = await Promise.all(
     relatedRefs.map(async (ref) => {
       const doc = await loadDocument(organizationId, ref.moduleKey, ref.recordId);
@@ -698,7 +809,7 @@ async function buildWorkGraphContextPack({
           organizationId,
           ref.moduleKey,
           doc._id,
-          MAX_RELATED_ACTIVITIES,
+          relatedActivityLimit,
         )
         : [];
       return { ref, doc, activities };
@@ -717,7 +828,10 @@ async function buildWorkGraphContextPack({
       citationIndex += 1;
       continue;
     }
-    lines.push(...buildRelatedSection(citationIndex, ref.moduleKey, doc, activities));
+    lines.push(...buildRelatedSection(citationIndex, ref.moduleKey, doc, activities, {
+      maxFields: relatedFieldLimit,
+      activityLimit: relatedActivityLimit,
+    }));
     citations.push({
       index: citationIndex,
       sourceType: ref.moduleKey,
@@ -1233,6 +1347,14 @@ async function buildCalendarMeetingsContextLines({ organizationId, userId }) {
   const timeZone = await resolveAstraTimeZone(organizationId, userId);
   const now = new Date();
   const todayYmd = ymdInTimeZone(now, timeZone);
+  let tomorrowYmd = todayYmd;
+  try {
+    const { DateTime } = require('luxon');
+    tomorrowYmd = DateTime.fromJSDate(now, { zone: timeZone }).plus({ days: 1 }).toISODate();
+  } catch (_) {
+    const t = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    tomorrowYmd = ymdInTimeZone(t, timeZone);
+  }
   const rangeStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
   const rangeEnd = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
@@ -1261,6 +1383,7 @@ async function buildCalendarMeetingsContextLines({ organizationId, userId }) {
   }
 
   const today = [];
+  const tomorrow = [];
   const upcoming = [];
   const recentPast = [];
   for (const doc of docs) {
@@ -1268,26 +1391,28 @@ async function buildCalendarMeetingsContextLines({ organizationId, userId }) {
     const start = new Date(doc.startDateTime);
     const ymd = ymdInTimeZone(start, timeZone);
     if (ymd === todayYmd) today.push(doc);
+    else if (ymd === tomorrowYmd) tomorrow.push(doc);
     else if (start >= now) upcoming.push(doc);
     else recentPast.push(doc);
   }
 
   const remainingToday = today.filter((d) => new Date(d.startDateTime) >= now);
-  const nextMeeting = remainingToday[0] || upcoming[0] || null;
+  const nextMeeting = remainingToday[0] || tomorrow[0] || upcoming[0] || null;
   const plannedTotal = docs.filter((d) => String(d.status || '') === 'Planned').length;
 
   const formatRow = (doc, idx) => {
     const start = new Date(doc.startDateTime);
     const local = formatInstantInTimeZone(start, timeZone);
-    return `${idx}. ${doc.eventName || 'Untitled'} type=${doc.eventType || 'Meeting'} status=${doc.status || ''} start=${doc.startDateTime} local=${local} (id=${doc._id})`;
+    return `${idx}. ${doc.eventName || 'Untitled'} type=${doc.eventType || 'Meeting'} status=${doc.status || ''} start=${doc.startDateTime} local=${local} ymd=${ymdInTimeZone(start, timeZone)} (id=${doc._id})`;
   };
 
   const lines = [
-    '=== CALENDAR MEETINGS (source of truth for meetings/events today / next meeting — assigned to current user) ===',
-    `Now: ${now.toISOString()} (timezone=${timeZone}, todayYmd=${todayYmd})`,
-    `Counts: today=${today.length}, remainingToday=${remainingToday.length}, upcomingAfterToday=${upcoming.length}, plannedInWindow=${plannedTotal}`,
-    'For "meetings today / any meetings today": answer ONLY from Today below. Do not claim zero if Today lists any rows.',
-    'Next meeting = first Remaining today, else first Upcoming after today. Never pick a past startDateTime as next.',
+    '=== CALENDAR MEETINGS (source of truth for meetings/events today / tomorrow / next meeting — assigned to current user) ===',
+    `Now: ${now.toISOString()} (timezone=${timeZone}, todayYmd=${todayYmd}, tomorrowYmd=${tomorrowYmd})`,
+    `Counts: today=${today.length}, tomorrow=${tomorrow.length}, remainingToday=${remainingToday.length}, upcomingAfterTomorrow=${upcoming.length}, plannedInWindow=${plannedTotal}`,
+    'For "meetings/events today": answer ONLY from Today below.',
+    'For "meetings/events tomorrow": answer ONLY from Tomorrow below. Never include other days.',
+    'Next meeting = first Remaining today, else first Tomorrow, else first Upcoming. Never pick a past startDateTime as next.',
   ];
   const citations = [];
 
@@ -1309,8 +1434,9 @@ async function buildCalendarMeetingsContextLines({ organizationId, userId }) {
   };
 
   pushGroup('Today', today);
+  pushGroup('Tomorrow', tomorrow);
   pushGroup('Remaining today (start >= now)', remainingToday);
-  pushGroup('Upcoming after today', upcoming, 15);
+  pushGroup('Upcoming after tomorrow', upcoming, 15);
   if (nextMeeting) {
     lines.push(
       `--- Next meeting ---`,
@@ -1327,7 +1453,7 @@ async function buildCalendarMeetingsContextLines({ organizationId, userId }) {
     lines,
     citations,
     todayCount: today.length,
-    upcomingCount: upcoming.length + remainingToday.length,
+    upcomingCount: upcoming.length + remainingToday.length + tomorrow.length,
   };
 }
 
@@ -1751,6 +1877,9 @@ module.exports = {
   looksLikeChartIntent,
   buildAstraVisualsFromSeries,
   loadDocument,
+  resolveAstraTimeZone,
+  ymdInTimeZone,
+  formatInstantInTimeZone,
   MAX_CONTEXT_CHARS,
   MAX_LIST_CONTEXT_CHARS,
   MAX_COMPLETE_CONTEXT_CHARS,

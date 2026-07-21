@@ -6,9 +6,38 @@ const {
   flattenRecordContext,
   normalizeStructuredAnswer,
   enrichEmailActionsFromCrm,
+  filterJunkAstraActions,
+  looksLikeJunkActionLabel,
 } = require('../aiWorkGraphService');
 
 describe('aiWorkGraphContext richness', () => {
+  it('filterJunkAstraActions drops vague CTAs and keeps concrete ones', () => {
+    assert.equal(looksLikeJunkActionLabel('Review this record'), true);
+    assert.equal(looksLikeJunkActionLabel('Open deal'), true);
+    assert.equal(looksLikeJunkActionLabel('Reach out to Darshan'), true);
+    assert.equal(looksLikeJunkActionLabel('Email Ada about the expired quote'), false);
+    const kept = filterJunkAstraActions([
+      { kind: 'review_record', label: 'Review this record', moduleKey: 'people', recordId: 'p1' },
+      { kind: 'send_email', label: 'Email Ada about the expired quote', moduleKey: 'people', recordId: 'p1' },
+      { kind: 'manual', label: 'Ask Ada one budget question on the call', rationale: 'Clarify buying power' },
+      { kind: 'talk_to_agent', label: 'Talk to Agent' },
+      { kind: 'follow_up', label: 'Reach out to Darshan', rationale: 'Keep the relationship warm with a clear ask' },
+      { kind: 'follow_up', label: 'Email Darshan with one clear ask', rationale: 'Warm follow-up' },
+    ], { max: 4 });
+    assert.equal(kept.length, 2);
+    assert.equal(kept[0].kind, 'send_email');
+    assert.equal(kept[1].kind, 'manual');
+  });
+
+  it('filterJunkAstraActions drops echoed ask labels', () => {
+    const kept = filterJunkAstraActions([
+      { kind: 'follow_up', label: 'Email Darshan with one clear ask' },
+      { kind: 'send_email', label: 'Email Darshan to confirm sports meeting' },
+    ], { max: 4, echoQuestion: 'Email Darshan with one clear ask' });
+    assert.equal(kept.length, 1);
+    assert.equal(kept[0].kind, 'send_email');
+  });
+
   it('flattenRecordContext still supports legacy relatedGroups', () => {
     const { text, citations } = flattenRecordContext({
       moduleKey: 'deals',
@@ -151,6 +180,13 @@ describe('resolveAstraContextMode', () => {
   it('keeps overview in sample mode (token control; aggregates still load)', () => {
     assert.equal(resolveAstraContextMode('Give me the Complete overview'), 'sample');
   });
+  it('uses bounded record mode on record pages (not complete fan-out)', () => {
+    assert.equal(resolveAstraContextMode('what should I do next?', { pageKind: 'record' }), 'record');
+    assert.equal(resolveAstraContextMode('summarize this record', { pageKind: 'record' }), 'record');
+  });
+  it('still prefers report mode on record pages for chart asks', () => {
+    assert.equal(resolveAstraContextMode('show a pie chart', { pageKind: 'record' }), 'report');
+  });
 });
 
 describe('conversation follow-up anchors', () => {
@@ -264,6 +300,11 @@ describe('aiArivuCanvasService', () => {
     assert.equal(isExplicitReportOrChartQuestion('Generate task metrix report'), true);
     assert.equal(isCanvasCrmQuestion('task matrix report'), false);
     assert.equal(isArivuCanvasQuestion('task matrix report'), false);
+  });
+
+  it('does not treat record summarize / coaching summary as canvas', () => {
+    assert.equal(isCanvasCrmQuestion('Summarize this record'), false);
+    assert.equal(isCanvasCrmQuestion('Coaching summary for Mr. Prabhu Balu. Do NOT open Canvas.'), false);
   });
 
   it('builds presentation slides from outline', () => {

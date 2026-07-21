@@ -46,6 +46,13 @@ const AiUserMemorySchema = new mongoose.Schema(
     lastModuleKey: { type: String, trim: true, default: '' },
     lastRecordId: { type: String, trim: true, default: '' },
     lastRecordTitle: { type: String, trim: true, maxlength: 120, default: '' },
+    /** Astra Learn: prefer coaching briefs on Summarize */
+    preferCoachingSummary: { type: Boolean, default: true },
+    /** Astra Learn: never replace summarize with an email body */
+    preferSummaryNotEmail: { type: Boolean, default: true },
+    /** Counts for soft ranking (not model training) */
+    summarizeUpCount: { type: Number, default: 0 },
+    summarizeDownCount: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

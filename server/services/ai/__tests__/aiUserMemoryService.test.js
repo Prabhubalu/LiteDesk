@@ -12,6 +12,8 @@ describe('aiUserMemoryService', () => {
     assert.equal(mem.amountThreshold, null);
     assert.deepEqual(mem.dismissedFingerprints, []);
     assert.equal(mem.lastModuleKey, '');
+    assert.equal(mem.preferCoachingSummary, true);
+    assert.equal(mem.preferSummaryNotEmail, true);
   });
 
   it('serializes stored memory fields', () => {

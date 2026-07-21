@@ -6,10 +6,10 @@
  */
 
 const MAX_ROWS = 15;
-const MAX_CONTEXT_CHARS = 6000;
-const MAX_BULLET_CHARS = 240;
-const MAX_DETAIL_CHARS = 2000;
-const MAX_HEADLINE_CHARS = 200;
+const MAX_CONTEXT_CHARS = 8000;
+const MAX_BULLET_CHARS = 800;
+const MAX_DETAIL_CHARS = 12000;
+const MAX_HEADLINE_CHARS = 320;
 
 function emptyUsage() {
   return { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
@@ -78,7 +78,7 @@ function sanitizeSynthBullets(bullets = []) {
   return (Array.isArray(bullets) ? bullets : [])
     .map((b) => sanitizeSynthText(String(b || ''), MAX_BULLET_CHARS))
     .filter(Boolean)
-    .slice(0, 8);
+    .slice(0, 16);
 }
 
 function compactPreviewRows(preview = {}, limit = MAX_ROWS) {
@@ -193,7 +193,7 @@ async function synthesizeCrmGroundedAnswer({
         { role: 'user', content: userContent },
       ], redactOpts),
       temperature: 0.35,
-      maxTokens: 2000,
+      maxTokens: 7000,
       providerOptions: config.providerOptions,
     });
 
@@ -408,7 +408,7 @@ async function applyCrmGroundedSynthesis(structured, ctx = {}) {
         recordId: rid,
       }),
     };
-    structured.actions = [llmAction, ...pinLike].slice(0, 4);
+    structured.actions = [llmAction, ...pinLike].slice(0, 6);
     structured.nbaMode = true;
     return {
       structured,

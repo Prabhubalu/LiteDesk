@@ -287,7 +287,7 @@
                         v-slot="{ open }"
                         as="div"
                         class="mt-3"
-                        :default-open="displayDetail(msg).length < 280 && !hasResearchBrief(msg)"
+                        :default-open="!hasResearchBrief(msg)"
                       >
                         <DisclosureButton
                           class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-primary-800 transition hover:bg-primary-50 dark:text-primary-200 dark:hover:bg-primary-500/10"

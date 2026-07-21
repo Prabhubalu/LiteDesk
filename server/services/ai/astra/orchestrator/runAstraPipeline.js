@@ -31,6 +31,7 @@ async function runAstraPipeline({
   auditBase = null,
   appKey = 'SALES',
   moduleKey = '',
+  recordId = '',
   onProgress = null,
   routeIntent = null,
 } = {}) {
@@ -51,6 +52,13 @@ async function runAstraPipeline({
 
   emit('intent');
   let memory = buildConversationMemory({ question: normalizedQuestion, history });
+  if (moduleKey) {
+    memory = {
+      ...memory,
+      lastModuleKey: memory.lastModuleKey || String(moduleKey).trim().toLowerCase(),
+      lastRecordId: memory.lastRecordId || String(recordId || '').trim() || null,
+    };
+  }
   const precise = buildPreciseIntent({
     question: memory.effectiveQuestion || normalizedQuestion,
     memory,

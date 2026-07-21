@@ -136,6 +136,22 @@ describe('aiAstraNextBestActionService', () => {
     assert.equal(actions.length, 1);
     assert.equal(actions[0].kind, 'follow_up');
     assert.equal(actions[0].recordId, ID1);
+    assert.match(actions[0].label, /Email to advance Pinned Deal/i);
+  });
+
+  it('people conversation anchor prefers email CTA over vague Reach out', () => {
+    const actions = rankNextBestActions({
+      moduleKey: 'people',
+      recordId: ID1,
+      recordTitle: 'Darshan',
+      attentionItems: [],
+      resumeItems: [],
+      staleDeals: [],
+      limit: 3,
+    });
+    assert.equal(actions[0].kind, 'follow_up');
+    assert.match(actions[0].label, /Email Darshan with one clear ask/i);
+    assert.doesNotMatch(actions[0].label, /^Reach out to/i);
   });
 
   it('open case with slaBreached ranks as review_record high', () => {
@@ -165,6 +181,15 @@ describe('aiAstraNextBestActionService', () => {
         { rows: [{ _id: ID1, name: 'Sample Deal' }] },
       ),
       true,
+    );
+    // Record-page "this deal" with NO preview must NOT wipe NBA.
+    assert.equal(
+      isCrmAnswerScopedToPreview('What is the next best action I can perform on this deal', null),
+      false,
+    );
+    assert.equal(
+      isCrmAnswerScopedToPreview('next best action on this record', {}),
+      false,
     );
 
     const filtered = filterActionsToPreviewIds(

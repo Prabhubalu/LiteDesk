@@ -45,7 +45,7 @@ export type InAppAiAction = {
 export type InAppAiVisual = {
   id?: string;
   component: 'chart' | 'kpi_strip' | 'data_table' | 'callout' | 'progress_list' | 'research_brief';
-  chartType?: 'pie' | 'bar' | 'line';
+  chartType?: 'pie' | 'donut' | 'bar' | 'line';
   title?: string;
   metricLabel?: string;
   summary?: string;
@@ -77,6 +77,8 @@ export type InAppAiStructured = {
   suggestionMode?: boolean;
   /** When true, actions include grounded Next Best Action items. */
   nbaMode?: boolean;
+  /** Astra Learn: answer passed through Summarize coach. */
+  coached?: boolean;
   detail?: string;
   actions?: InAppAiAction[];
   visuals?: InAppAiVisual[];
@@ -388,6 +390,7 @@ export function useInProductAiAsk() {
     checking_cache: 'liveChat.inAppAiStatusCheckingCache',
     cache_hit: 'liveChat.inAppAiStatusCacheHit',
     gathering_context: 'liveChat.inAppAiStatusGatheringContext',
+    resolving_chunks: 'liveChat.inAppAiStatusExpandingRecords',
     searching_workspace: 'liveChat.inAppAiStatusSearchingWorkspace',
     expanding_records: 'liveChat.inAppAiStatusExpandingRecords',
     loading_module_data: 'liveChat.inAppAiStatusLoadingModuleData',
@@ -427,6 +430,11 @@ export function useInProductAiAsk() {
       'liveChat.inAppAiStatusGatheringContext',
       'liveChat.inAppAiStatusSearchingWorkspace',
       'liveChat.inAppAiStatusExpandingRecords',
+    ],
+    resolving_chunks: [
+      'liveChat.inAppAiStatusExpandingRecords',
+      'liveChat.inAppAiStatusGatheringContext',
+      'liveChat.inAppAiStatusThinking',
     ],
     searching_workspace: [
       'liveChat.inAppAiStatusSearchingWorkspace',
@@ -530,7 +538,8 @@ export function useInProductAiAsk() {
         return;
       }
       astraAmbientIndex = (astraAmbientIndex + 1) % keys.length;
-      astraStatusLine.value = t(keys[astraAmbientIndex] || keys[0]);
+      const ambientKey = keys[astraAmbientIndex] ?? keys[0] ?? '';
+      if (ambientKey) astraStatusLine.value = t(ambientKey);
     }, 2200);
   }
 
@@ -558,6 +567,7 @@ export function useInProductAiAsk() {
     _id: string;
     name: string;
     enabled?: boolean;
+    mentionable?: boolean;
     description?: string;
     triggerPhrases?: string[];
     moduleKeys?: string[];
@@ -1134,46 +1144,8 @@ export function useInProductAiAsk() {
 async function tryRecordGraph(question: string, page: PageAiContext): Promise<InAppAiMessage | null> {
     if (page.kind !== 'record' || !page.recordId) return null;
     try {
-      if (looksLikeSummarizeQuestion(question) && page.moduleKey === 'people') {
-        try {
-          const data = await apiClient.post(`/ai/people/${encodeURIComponent(page.recordId)}/summarize`, {});
-          const answer = String(data?.summary || data?.answer || data?.text || '').trim();
-          trackAiAbilityUsed({
-            abilityKey: 'summarize_people',
-            provider: data?.provider,
-            model: data?.model,
-            found: Boolean(answer),
-            keyMode: data?.keyMode,
-            tokens: data?.usage?.totalTokens,
-          });
-          if (answer) {
-            return {
-              id: nextId('a'),
-              role: 'assistant',
-              body: answer,
-              structured: {
-                headline: t('liveChat.inAppAiSummaryHeadline'),
-                bullets: answer
-                  .split(/\n+/)
-                  .map((line) => line.replace(/^[-•*]\s*/, '').trim())
-                  .filter(Boolean)
-                  .slice(0, 4),
-                actions: [],
-              },
-              source: 'graph',
-              meta: {
-                provider: data?.provider,
-                model: data?.model,
-                keyMode: data?.keyMode,
-                found: true,
-                abilityKey: 'summarize_people',
-              },
-            };
-          }
-        } catch (err: unknown) {
-          reportAiProviderError(err, 'summarize_people');
-        }
-      }
+      // Skip legacy /people/:id/summarize — it returns field dumps with no actions.
+      // Record summarize goes through tenant agents (coaching brief + Do-next).
 
       const data = await apiClient.post('/ai/ask-graph', {
         question,
@@ -1342,7 +1314,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         const content = [body, ...structuredBits.filter((s) => !body.includes(s))]
           .join('\n')
           .trim()
-          .slice(0, 2500);
+          .slice(0, 8000);
         const actions = Array.isArray(m.structured?.actions)
           ? m.structured.actions.slice(0, 6).map((a) => ({
             kind: String(a?.kind || ''),
@@ -1374,6 +1346,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         : [],
       suggestionMode: Boolean(data.structured.suggestionMode),
       nbaMode: Boolean(data.structured.nbaMode),
+      coached: Boolean(data.structured.coached),
       detail: String(data.structured.detail || '').trim(),
       actions: Array.isArray(data.structured.actions) ? data.structured.actions : [],
       visuals: Array.isArray(data.structured.visuals)
@@ -1388,7 +1361,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
             return {
               id: String(raw.id || ''),
               component,
-              chartType: (['pie', 'bar', 'line'].includes(String(raw.chartType))
+              chartType: (['pie', 'donut', 'bar', 'line'].includes(String(raw.chartType))
                 ? raw.chartType
                 : 'pie') as InAppAiVisual['chartType'],
               title: String(raw.title || '').trim(),
@@ -1480,8 +1453,17 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- provider payload shape
   function messageFromTenantAgentData(data: any): InAppAiMessage | null {
-    const answer = String(data?.answer || '').trim();
+    let answer = String(data?.answer || '').trim();
+    // Never show internal CRM pack / chunk-resolve scaffolding in the chat bubble.
+    if (/CHUNK-RESOLVED|STICKY CHAT RULE|Treat digests as compressed/i.test(answer)) {
+      answer = '';
+    }
     const structured = parseTenantAgentStructured(data);
+    if (structured?.bullets?.length) {
+      structured.bullets = structured.bullets.filter((b) => (
+        !/CHUNK-RESOLVED|STICKY CHAT RULE|Treat digests|Conversation focus|RECORD ANALYSIS|PRIMARY RECORD/i.test(b)
+      ));
+    }
     const hasStructured = Boolean(
       structured?.bullets?.length
       || structured?.actions?.length
@@ -1497,7 +1479,10 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     return {
       id: nextId('a'),
       role: 'assistant',
-      body: answer || structured?.headline || t('liveChat.inAppAiRunAgent'),
+      body: answer
+        || String(structured?.detail || '').trim()
+        || structured?.headline
+        || t('liveChat.inAppAiRunAgent'),
       structured: structured || undefined,
       citations: Array.isArray(data?.citations) ? data.citations : [],
       source: 'agent',
@@ -1599,9 +1584,11 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     }
     if (buffer.trim()) consumeEvent(buffer);
 
-    if (streamError) {
-      const err = new Error(streamError.message || 'Ask failed') as Error & { code?: string };
-      err.code = streamError.code;
+    // Closure assignment is invisible to CFA — assert after stream completes.
+    const failed = streamError as { message?: string; code?: string } | null;
+    if (failed) {
+      const err = new Error(failed.message || 'Ask failed') as Error & { code?: string };
+      err.code = failed.code;
       throw err;
     }
     if (!donePayload) {
@@ -1617,14 +1604,18 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     options: {
       onPartialMessage?: (message: InAppAiMessage) => void;
       llmModel?: string;
+      mentionResolved?: boolean;
+      recordTitle?: string;
     } = {},
   ): Promise<TenantAgentTryResult> {
     try {
       const requestBody = {
         question,
         agentId: agentId || undefined,
+        mentionResolved: options.mentionResolved === true ? true : undefined,
         moduleKey: page?.moduleKey || '',
         recordId: page?.kind === 'record' ? (page.recordId || '') : '',
+        recordTitle: options.recordTitle || undefined,
         appKey: page?.appKey || 'SALES',
         history: buildHistoryPayload(),
         ...(options.llmModel ? { llmModel: options.llmModel } : {}),
@@ -1711,6 +1702,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
       description?: string;
       triggerPhrases?: string[];
       moduleKeys?: string[];
+      mentionable?: boolean;
     },
     question: string,
     moduleKey = '',
@@ -1719,7 +1711,8 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     const moduleKeys = Array.isArray(agent.moduleKeys)
       ? agent.moduleKeys.map((k) => String(k).toLowerCase())
       : [];
-    if (pageMod && moduleKeys.length && !moduleKeys.includes(pageMod)) {
+    // Super Agents (@mentionable) stay eligible on any CRM page — same as full-page Astra.
+    if (pageMod && moduleKeys.length && !moduleKeys.includes(pageMod) && !agent.mentionable) {
       return -999;
     }
 
@@ -1733,7 +1726,7 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
       people: ['person', 'people', 'contact', 'contacts', 'lead', 'leads'],
       cases: ['case', 'cases', 'ticket', 'tickets'],
     };
-    if (pageMod) {
+    if (pageMod && !agent.mentionable) {
       for (const [mod, tokens] of Object.entries(exclusive)) {
         if (mod === pageMod) continue;
         const exclusiveHits = tokens.filter((t) => nameTokens.includes(t));
@@ -1812,6 +1805,29 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     return bestScore >= threshold && bestId ? bestId : '';
   }
 
+  function resolveClientAgentMention(question: string): { agentId: string; question: string } | null {
+    const raw = String(question || '').trim();
+    if (!raw.startsWith('@')) return null;
+    const rest = raw.slice(1);
+    const mentionable = cachedAgents.value
+      .filter((a) => a.mentionable && a.enabled !== false)
+      .slice()
+      .sort((a, b) => String(b.name || '').length - String(a.name || '').length);
+    for (const agent of mentionable) {
+      const name = String(agent.name || '').trim();
+      if (!name) continue;
+      if (!rest.toLowerCase().startsWith(name.toLowerCase())) continue;
+      const after = rest.slice(name.length);
+      if (after && !/^[\s,.:;!?]/.test(after)) continue;
+      let q = after.replace(/^[\s,.:;!?]+/, '').trim();
+      if (!q) {
+        q = 'Run your specialist analysis for the current CRM record. Focus on actionable insights and next best steps.';
+      }
+      return { agentId: String(agent._id), question: q };
+    }
+    return null;
+  }
+
   function expandAgentQuestion(question: string, agentId: string): string {
     const q = String(question || '').trim();
     if (!agentId) return q;
@@ -1819,6 +1835,48 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     const name = String(agent?.name || '').trim().toLowerCase();
     if (name && q.toLowerCase() === name) {
       return `Run your specialist analysis for the current CRM record. Focus on actionable insights and next best steps.`;
+    }
+    return q;
+  }
+
+  function withRecordIntentContext(question: string, page: PageAiContext | null, recordTitle = ''): string {
+    const q = String(question || '').trim();
+    if (!q || !page || page.kind !== 'record' || !page.recordId) return q;
+    const title = String(recordTitle || '').trim();
+    const label = title || `${page.moduleKey} record`;
+    if (
+      /\bsummar(y|ize|ise)\b/i.test(q)
+      || /\brecap\b/i.test(q)
+      || /\boverview\b/i.test(q)
+    ) {
+      return [
+        `Coaching summary for ${label} (moduleKey=${page.moduleKey}; recordId=${page.recordId}).`,
+        'Write a clear summary first: situation, risk or stall, and what matters now.',
+        'Then add 2–4 next actions (send an email, or a concrete call ask).',
+        'Do NOT create events or ask for meeting start/end times.',
+        'Do NOT restate obvious fields (email, owner, organization, do-not-contact).',
+        'Do NOT replace the summary with an email body. Do NOT open Canvas unless I ask for it.',
+      ].join(' ');
+    }
+    // Vague record chips → ground intent on the open CRM row (parity with full-page named asks).
+    if (/\b(this|the)\s+record\b/i.test(q) || /\bnext best action here\b/i.test(q)) {
+      return `${q} (Current CRM record: ${label}; moduleKey=${page.moduleKey}; recordId=${page.recordId})`;
+    }
+    // Vague reach-out / follow-up chips → email draft (avoid looping the same CTA).
+    const reachOut = q.match(
+      /^(?:reach out to|follow up (?:on|with)|check in on|advance|email(?:\s+to)?(?:\s+advance)?|email check-in on)\s+(.+?)(?:\s+with one clear ask)?$/i,
+    );
+    if (reachOut) {
+      const who = String(reachOut[1] || label)
+        .replace(/\s+with one clear ask\s*$/i, '')
+        .replace(/\s*[.…]+\s*$/, '')
+        .trim() || label;
+      return [
+        `Draft a short follow-up email for ${who} with one clear ask.`,
+        `Current CRM record: ${label}; moduleKey=${page.moduleKey}; recordId=${page.recordId}.`,
+        'Put To/Subject/Body in a send_email action.',
+        `Do not suggest "Reach out to ${who}" again.`,
+      ].join(' ');
     }
     return q;
   }
@@ -1837,7 +1895,10 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     }
   }
 
-  async function askAssistant(question: string, options: { agentId?: string; llmModel?: string } = {}): Promise<void> {
+  async function askAssistant(
+    question: string,
+    options: { agentId?: string; llmModel?: string; recordTitle?: string } = {},
+  ): Promise<void> {
     const q = String(question || '').trim();
     if (!q || aiAsking.value) return;
 
@@ -1862,9 +1923,10 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
     try {
       await ensureAgentsLoaded(true);
       const page = resolvePageAiContext(route);
+      const mention = resolveClientAgentMention(q);
       // Sticky specialist: short follow-up answers stay with the last agent in-thread.
       let stickyAgentId = options.agentId || '';
-      if (!stickyAgentId) {
+      if (!stickyAgentId && !mention) {
         const lastAgentMsg = [...aiMessages.value].reverse().find((m) => (
           m.role === 'assistant' && m.source === 'agent' && m.meta?.agentId
         ));
@@ -1873,11 +1935,17 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
           stickyAgentId = String(lastAgentMsg.meta.agentId);
         }
       }
-      const agentId = resolveAgentIdByQuestion(q, stickyAgentId, page?.moduleKey || '');
-      const askText = expandAgentQuestion(q, agentId);
+      const agentId = mention?.agentId
+        || resolveAgentIdByQuestion(mention?.question || q, stickyAgentId, page?.moduleKey || '');
+      const mentionResolved = Boolean(mention?.agentId)
+        || (Boolean(options.agentId) && String(q).trim().startsWith('@'));
+      const baseAsk = expandAgentQuestion(mention?.question || q, agentId);
+      const askText = withRecordIntentContext(baseAsk, page, options.recordTitle || '');
       let earlyMessageId: string | null = null;
       const agentResult = await tryTenantAgent(askText, page, agentId, {
         llmModel: options.llmModel || '',
+        mentionResolved,
+        recordTitle: options.recordTitle || '',
         onPartialMessage: (msg) => {
           earlyMessageId = msg.id;
           aiMessages.value.push({ ...msg, createdAt: msg.createdAt || Date.now() });
@@ -1891,13 +1959,15 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
         lastAbilityKey.value = chosen.meta?.abilityKey || '';
         if (earlyMessageId) {
           const idx = aiMessages.value.findIndex((m) => m.id === earlyMessageId);
-          if (idx >= 0) {
-            aiMessages.value[idx] = {
+          const existing = idx >= 0 ? aiMessages.value[idx] : undefined;
+          if (existing) {
+            const updated: InAppAiMessage = {
               ...chosen,
               id: earlyMessageId,
-              createdAt: aiMessages.value[idx].createdAt || Date.now(),
+              createdAt: existing.createdAt || Date.now(),
             };
-            pushed = aiMessages.value[idx];
+            aiMessages.value[idx] = updated;
+            pushed = updated;
           } else {
             pushed = { ...chosen, createdAt: chosen.createdAt || Date.now() };
             aiMessages.value.push(pushed);
@@ -1944,11 +2014,26 @@ async function tryRecordGraph(question: string, page: PageAiContext): Promise<In
 
   async function sendAiFeedback(message: InAppAiMessage, rating: 'up' | 'down') {
     if (!message.meta?.abilityKey) return;
+    const firstAction = Array.isArray(message.structured?.actions)
+      ? message.structured.actions[0]
+      : null;
+    const actionFingerprint = firstAction
+      ? [
+        String(firstAction.kind || ''),
+        String(firstAction.moduleKey || ''),
+        String(firstAction.recordId || ''),
+        String(firstAction.label || '').slice(0, 48),
+      ].join(':')
+      : '';
     await submitAiFeedback({
       abilityKey: message.meta.abilityKey,
       rating,
       provider: message.meta.provider,
       model: message.meta.model,
+      actionFingerprint: rating === 'down' && actionFingerprint ? actionFingerprint : undefined,
+      comment: rating === 'down' && message.structured?.coached
+        ? 'summarize_quality'
+        : undefined,
     });
   }
 

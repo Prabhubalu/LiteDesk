@@ -5,9 +5,12 @@ const ALLOWED_RATINGS = new Set(['up', 'down']);
 const ALLOWED_ABILITIES = new Set([
   'ask',
   'summarize',
+  'summarize_people',
   'draft_reply',
   'embed',
   'echo',
+  'tenant_agent',
+  'work_graph_ask',
 ]);
 
 async function recordAiFeedback({
@@ -20,6 +23,7 @@ async function recordAiFeedback({
   keyMode = 'platform',
   contextRefs = [],
   comment = null,
+  actionFingerprint = null,
 }) {
   const normalizedRating = String(rating || '').trim().toLowerCase();
   const ability = String(targetAbilityKey || '').trim().toLowerCase();
@@ -44,8 +48,24 @@ async function recordAiFeedback({
       rating: normalizedRating,
       targetAbilityKey: ability,
       comment: comment ? String(comment).slice(0, 500) : null,
+      actionFingerprint: actionFingerprint ? String(actionFingerprint).slice(0, 200) : null,
     },
   });
+
+  // Astra Learn: close the loop into durable user memory.
+  try {
+    const { applyFeedbackLearning } = require('./aiUserMemoryService');
+    await applyFeedbackLearning({
+      organizationId,
+      userId,
+      rating: normalizedRating,
+      abilityKey: ability,
+      actionFingerprint: actionFingerprint || '',
+      comment: comment || '',
+    });
+  } catch (err) {
+    console.warn('[aiFeedback] applyFeedbackLearning failed:', err?.message || err);
+  }
 
   return {
     rating: normalizedRating,

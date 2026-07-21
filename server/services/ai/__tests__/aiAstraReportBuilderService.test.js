@@ -742,6 +742,29 @@ describe('aiAstraReportBuilderService', () => {
     assert.ok(tasksOpen.filterTree?.children?.some((c) => c.fieldKey === 'status' && c.operator === 'is_not'));
   });
 
+  it('events for tomorrow applies a single calendar-day window (timezone-aware)', () => {
+    const { detectFilters } = require('../aiAstraReportBuilderService');
+    const now = new Date('2026-06-30T12:00:00+05:30');
+    const { filterTree, filterNotes } = detectFilters(
+      'Give me the list of events for tomorrow',
+      'events',
+      { timeZone: 'Asia/Kolkata', now },
+    );
+    assert.ok((filterNotes || []).some((n) => /tomorrow/i.test(n)));
+    const gte = filterTree?.children?.find((c) => c.fieldKey === 'startDateTime' && c.operator === 'gte');
+    const lt = filterTree?.children?.find((c) => c.fieldKey === 'startDateTime' && c.operator === 'lt');
+    assert.ok(gte, 'expected startDateTime >= tomorrow start');
+    assert.ok(lt, 'expected startDateTime < day after tomorrow');
+    // 2026-07-01 00:00 IST = 2026-06-30T18:30:00.000Z
+    assert.equal(String(gte.value), '2026-06-30T18:30:00.000Z');
+    assert.equal(String(lt.value), '2026-07-01T18:30:00.000Z');
+
+    const today = detectFilters('events today', 'events', { timeZone: 'Asia/Kolkata', now });
+    assert.ok((today.filterNotes || []).some((n) => /today/i.test(n)));
+    const todayGte = today.filterTree?.children?.find((c) => c.fieldKey === 'startDateTime' && c.operator === 'gte');
+    assert.equal(String(todayGte.value), '2026-06-29T18:30:00.000Z');
+  });
+
   it('events within a week from today applies startDateTime window', () => {
     const { detectFilters, buildDraftSpec, wantsListOnlyAsk } = require('../aiAstraReportBuilderService');
     const q = 'give me the list of events within a week from today';

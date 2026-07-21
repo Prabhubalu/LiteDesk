@@ -677,6 +677,7 @@ async function submitAiFeedback(req, res) {
       keyMode: req.body?.keyMode,
       contextRefs: Array.isArray(req.body?.contextRefs) ? req.body.contextRefs : [],
       comment: req.body?.comment,
+      actionFingerprint: req.body?.actionFingerprint || req.body?.fingerprint || null,
     });
 
     return res.json({ success: true, ...result });
@@ -1009,9 +1010,9 @@ async function askTenantAgentAi(req, res) {
     const recordId = String(req.body?.recordId || '').trim();
     let agentId = String(req.body?.agentId || '').trim();
     let routeScore = null;
-    let mentionResolved = false;
+    let mentionResolved = Boolean(req.body?.mentionResolved);
 
-    if (!agentId) {
+    if (!agentId || !mentionResolved) {
       try {
         const { resolveAgentMention, isSuperAgentsEnabled } = require('../services/ai/astraSuperAgentService');
         if (isSuperAgentsEnabled()) {
@@ -1035,7 +1036,8 @@ async function askTenantAgentAi(req, res) {
     if (agentId && moduleKey && !mentionResolved) {
       const agents = await listTenantAgents(organizationId, { includeDisabled: false });
       const forced = agents.find((a) => String(a._id) === agentId);
-      if (!forced || !isAgentEligibleForPage(forced, moduleKey)) {
+      // Mentionable Super Agents are cross-module teammates (same as full-page @mentions).
+      if (!forced || (!forced.mentionable && !isAgentEligibleForPage(forced, moduleKey))) {
         agentId = '';
       }
     }
@@ -1051,7 +1053,21 @@ async function askTenantAgentAi(req, res) {
       if (routed?.agent?._id) {
         agentId = routed.agent._id;
         routeScore = routed.score;
-      } else {
+      } else if (recordId && moduleKey) {
+        // Record pages: never block on LLM agent synthesis — pick any eligible specialist.
+        const agents = await listTenantAgents(organizationId, { includeDisabled: false });
+        const eligible = agents.filter((a) => (
+          a?.mentionable || isAgentEligibleForPage(a, moduleKey)
+        ));
+        const preferred = eligible.find((a) => (
+          /record|coach|deal|sales|pipeline/i.test(String(a?.name || ''))
+        )) || eligible[0];
+        if (preferred?._id) {
+          agentId = String(preferred._id);
+          routeScore = 1;
+        }
+      }
+      if (!agentId) {
         if (wantsStream) sendSse('progress', { step: 'routing', detail: 'creating specialist' });
         const synthesized = await synthesizeAndCreateTenantAgent({
           organizationId,
@@ -1074,6 +1090,7 @@ async function askTenantAgentAi(req, res) {
       appKey,
       moduleKey,
       recordId,
+      recordTitle: String(req.body?.recordTitle || '').trim(),
       history: Array.isArray(req.body?.history) ? req.body.history : [],
       llmModel: String(req.body?.llmModel || req.body?.model || '').trim(),
       preferStream: wantsStream,

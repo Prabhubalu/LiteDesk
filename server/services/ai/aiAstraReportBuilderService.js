@@ -1298,11 +1298,19 @@ function isLostStageOrStatus(row = {}) {
     || /\bclosed\s+lost\b/.test(stage);
 }
 
-/** NL → filterTree children (AND). */
-function detectFilters(question = '', moduleKey = '') {
+/** NL → filterTree children (AND).
+ * @param {string} question
+ * @param {string} moduleKey
+ * @param {{ timeZone?: string, now?: Date }} [opts]
+ */
+function detectFilters(question = '', moduleKey = '', opts = {}) {
   const q = String(question || '').toLowerCase();
   const children = [];
   const notes = [];
+  const timeZone = String(opts.timeZone || 'UTC').trim() || 'UTC';
+  const now = opts.now instanceof Date && !Number.isNaN(opts.now.getTime())
+    ? opts.now
+    : new Date();
 
   const quotedName = extractQuotedRecordName(question);
   if (quotedName) {
@@ -1472,15 +1480,47 @@ function detectFilters(question = '', moduleKey = '') {
     }
   }
 
-  // Date: overdue / due this week / upcoming / relative windows / this month
-  const now = new Date();
-  const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  // Date: overdue / due this week / upcoming / relative windows / this month / today|tomorrow
+  // Day bounds are timezone-aware (org/user TZ) so "tomorrow" matches the staff calendar day.
+  let startOfToday;
+  let addDays;
+  try {
+    const { DateTime } = require('luxon');
+    const localNow = DateTime.fromJSDate(now, { zone: timeZone });
+    const todayStartLocal = localNow.startOf('day');
+    startOfToday = todayStartLocal.toUTC().toJSDate();
+    addDays = (base, days) => {
+      // Interpret `base` as a UTC instant that is a local-midnight anchor, then shift by local days.
+      const asLocal = DateTime.fromJSDate(base, { zone: 'utc' }).setZone(timeZone);
+      return asLocal.plus({ days }).toUTC().toJSDate();
+    };
+  } catch (_) {
+    startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    addDays = (base, days) => {
+      const d = new Date(base.getTime());
+      d.setUTCDate(d.getUTCDate() + days);
+      return d;
+    };
+  }
+
   const dateField = moduleDateField(moduleKey);
 
-  const addDays = (base, days) => {
-    const d = new Date(base.getTime());
-    d.setUTCDate(d.getUTCDate() + days);
-    return d;
+  /** Single calendar day: today / tomorrow / yesterday (not multi-day windows). */
+  const parseCalendarDayOffset = () => {
+    if (/\bday after tomorrow\b/.test(q)) return 2;
+    if (/\btomorrow\b/.test(q)) return 1;
+    if (/\byesterday\b/.test(q)) return -1;
+    if (/\bfor today\b|\btoday'?s\b|\bevents? today\b|\bmeetings? today\b|\bdue today\b|\bscheduled today\b/.test(q)) {
+      return 0;
+    }
+    // Bare "today/tonight" — skip when part of a forward/backward window phrase.
+    if (
+      /\b(today|tonight)\b/.test(q)
+      && !/\b(from today|within|in the next|next \d+|last \d+|past \d+|this week|this month|next week|next month)\b/.test(q)
+    ) {
+      return 0;
+    }
+    return null;
   };
 
   /** "within a week from today" / "in the next 7 days" / "next week" → day count */
@@ -1547,9 +1587,28 @@ function detectFilters(question = '', moduleKey = '') {
     notes.push(`at-risk open: no activity ${staleDays}d OR past expected close`);
   }
 
+  const calendarDayOffset = dateField ? parseCalendarDayOffset() : null;
   const forwardDays = dateField ? parseForwardWindowDays() : 0;
   const backwardDays = dateField ? parseBackwardWindowDays() : 0;
-  if (dateField && forwardDays > 0 && !children.some((c) => c.fieldKey === dateField)) {
+
+  // Prefer explicit calendar day (today/tomorrow) over vague windows when both could match.
+  if (
+    dateField
+    && calendarDayOffset !== null
+    && forwardDays <= 0
+    && !children.some((c) => c.fieldKey === dateField)
+  ) {
+    const dayStart = addDays(startOfToday, calendarDayOffset);
+    const dayEnd = addDays(startOfToday, calendarDayOffset + 1);
+    children.push(rule(dateField, 'gte', dayStart.toISOString()));
+    children.push(rule(dateField, 'lt', dayEnd.toISOString()));
+    const label = calendarDayOffset === 0
+      ? 'today'
+      : (calendarDayOffset === 1
+        ? 'tomorrow'
+        : (calendarDayOffset === -1 ? 'yesterday' : `day ${calendarDayOffset}`));
+    notes.push(`${label} (${dateField}, ${timeZone})`);
+  } else if (dateField && forwardDays > 0 && !children.some((c) => c.fieldKey === dateField)) {
     const end = addDays(startOfToday, forwardDays);
     children.push(rule(dateField, 'gte', startOfToday.toISOString()));
     children.push(rule(dateField, 'lt', end.toISOString()));
@@ -1557,6 +1616,7 @@ function detectFilters(question = '', moduleKey = '') {
   } else if (
     dateField
     && backwardDays > 0
+    && calendarDayOffset === null
     && !children.some((c) => c.fieldKey === dateField)
   ) {
     const start = addDays(startOfToday, -backwardDays);
@@ -1779,7 +1839,14 @@ function detectSchedule(question = '') {
   };
 }
 
-function buildDraftSpec({ question = '', moduleKey = '', groupField = '', pinSource = null, forceType = '' } = {}) {
+function buildDraftSpec({
+  question = '',
+  moduleKey = '',
+  groupField = '',
+  pinSource = null,
+  forceType = '',
+  timeZone = 'UTC',
+} = {}) {
   const mod = resolveReportModuleKey(question, moduleKey, pinSource);
   if (!mod) return null;
   const cfg = getAnalyticsModuleConfig(mod);
@@ -1823,7 +1890,7 @@ function buildDraftSpec({ question = '', moduleKey = '', groupField = '', pinSou
     });
   }
 
-  const { filterTree, filterNotes } = detectFilters(question, mod);
+  const { filterTree, filterNotes } = detectFilters(question, mod, { timeZone });
   // Ensure filter fields exist in selectedFields so Filters UI can resolve them
   if (filterTree?.children) {
     const pushFilterFields = (nodes) => {
@@ -1934,8 +2001,24 @@ async function createAstraReportDraft({
   appKey = '',
   orgContext = null,
   forceType = '',
+  timeZone = '',
 } = {}) {
-  const spec = buildDraftSpec({ question, moduleKey, pinSource, forceType });
+  let tz = String(timeZone || '').trim();
+  if (!tz) {
+    try {
+      const { resolveAstraTimeZone } = require('./aiWorkGraphContextService');
+      tz = await resolveAstraTimeZone(organizationId, userId);
+    } catch (_) {
+      tz = 'UTC';
+    }
+  }
+  const spec = buildDraftSpec({
+    question,
+    moduleKey,
+    pinSource,
+    forceType,
+    timeZone: tz || 'UTC',
+  });
   if (!spec) {
     const err = new Error('Could not resolve a CRM module for this report. Name a module (tasks, deals, cases, …).');
     err.statusCode = 400;
@@ -2492,6 +2575,9 @@ function queryPlanToDraftInput(plan, blendedQuestion = '') {
   for (const f of plan.filters || []) {
     if (f.fieldKey === 'amount' && ['gt', 'gte'].includes(f.operator)) {
       hints.push(`amount ${f.operator === 'gte' ? 'above' : 'greater than'} ${f.value}`);
+    } else if (['gte', 'gt', 'lte', 'lt'].includes(f.operator) && f.value != null) {
+      // Preserve date windows from the plan (today/tomorrow overlays).
+      hints.push(`${f.fieldKey} ${f.operator} ${f.value}`);
     } else if (f.operator === 'contains' && f.value != null && String(f.value).trim()) {
       // Keep named-record filters even if base NL lost its quotes.
       hints.push(`${f.fieldKey} contains "${String(f.value).trim()}"`);
@@ -3648,6 +3734,11 @@ async function runCrmDataAsk({
   redactOpts = {},
 } = {}) {
   const blended = blendDataAskWithHistory(question, history);
+  let timeZone = 'UTC';
+  try {
+    const { resolveAstraTimeZone } = require('./aiWorkGraphContextService');
+    timeZone = await resolveAstraTimeZone(organizationId, userId);
+  } catch (_) { /* non-fatal */ }
   let catalogText = '';
   try {
     const { fetchPlannerCatalogSlice } = require('./astra/planner/preciseIntentPlanner');
@@ -4025,12 +4116,14 @@ async function runCrmDataAsk({
     question: draftInput.question,
     moduleKey: hintModule,
     pinSource: draftInput.pinSource,
+    timeZone,
   });
   if (!spec && plan?.moduleKey) {
     spec = buildDraftSpec({
       question: draftInput.question,
       moduleKey: plan.moduleKey,
       pinSource: draftInput.pinSource,
+      timeZone,
     });
   }
   if (!spec) {

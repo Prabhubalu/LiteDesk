@@ -73,6 +73,15 @@ describe('aiAstraIntentCapabilities route intent', () => {
     const won = resolveDeterministicRouteIntent('Give me the listy of Won deals');
     assert.equal(won.route, 'crm_data');
     assert.ok(won.constraints.includes('won_outcome_filter'));
+
+    const summarize = resolveDeterministicRouteIntent('Summarize this record', { pageKind: 'record' });
+    assert.equal(summarize.skipLlm, true);
+    assert.equal(summarize.needsCrmData, false);
+    assert.equal(summarize.source, 'record_summarize');
+
+    const nba = resolveDeterministicRouteIntent('What should I do next?', { pageKind: 'record' });
+    assert.equal(nba.skipLlm, true);
+    assert.equal(nba.source, 'record_nba');
   });
 
   it('merge: deterministic wins over sticky LLM crm_data for howto', () => {

@@ -2874,5 +2874,25 @@
   "inAppAiTaskCompletedNext": {
     "message": "Next: clear remaining overdue Attention items.",
     "description": "Next hint after task complete"
+  },
+  "astraFullPageSuperAgents": {
+    "message": "Super Agents",
+    "description": "Heading for built-in Astra Super Agent chips"
+  },
+  "astraFullPageSuperAgentsHint": {
+    "message": "Mentionable specialists — same CRM spine, propose→confirm writes.",
+    "description": "Hint under Super Agents chips"
+  },
+  "astraFullPageModel": {
+    "message": "Model",
+    "description": "Aria label for Astra in-chat model picker"
+  },
+  "astraFullPageSkillsHint": {
+    "message": "Named CRM workflows — same ask spine and propose→confirm writes.",
+    "description": "Optional hint under Skills chips"
+  },
+  "inAppAiAskWithAgent": {
+    "message": "Ask @{name} in Astra",
+    "description": "Tooltip when clicking an @agent mention in Activity"
   }
 }

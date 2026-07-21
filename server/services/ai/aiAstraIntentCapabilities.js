@@ -138,10 +138,13 @@ function intentSuppressesCrmWrites(question = '') {
 /**
  * Deterministic route overrides — win over sticky LLM routing.
  * skipLlm=true → caller should not call proposeAstraRouteIntent.
+ * @param {string} question
+ * @param {{ pageKind?: string }} [opts]
  */
-function resolveDeterministicRouteIntent(question = '') {
+function resolveDeterministicRouteIntent(question = '', opts = {}) {
   const q = String(question || '').trim();
   if (!q) return null;
+  const pageKind = String(opts.pageKind || '').toLowerCase();
 
   if (isProductHowToAsk(q)) {
     return {
@@ -159,7 +162,40 @@ function resolveDeterministicRouteIntent(question = '') {
     };
   }
 
-  if (isAmbiguousCrmAsk(q)) {
+  // Record-page coaching asks: skip route LLM (subject is the open row).
+  if (pageKind === 'record') {
+    const summarize = /\bsummar(y|ize|ise)\b/i.test(q)
+      || /\bcoaching\s+(summary|brief)\b/i.test(q)
+      || /\brecap\b/i.test(q)
+      || /\boverview\b/i.test(q);
+    const nba = /\bnext best action\b/i.test(q)
+      || /\bwhat should i (do|perform)\b/i.test(q)
+      || /\bdo next\b/i.test(q);
+    const draftEmail = /\bdraft (a |an )?(short )?(follow-?up )?email\b/i.test(q)
+      || /\bput to\/subject\/body\b/i.test(q);
+    if (summarize || nba || draftEmail) {
+      return {
+        route: 'general',
+        needsCrmData: false,
+        needsWeb: false,
+        understanding: summarize
+          ? 'Coaching summary for the open CRM record'
+          : (nba
+            ? 'Next best actions for the open CRM record'
+            : 'Draft a follow-up email for the open CRM record'),
+        goal: summarize ? 'coaching brief + do-next' : (nba ? 'clickable do-next' : 'email draft'),
+        outputs: ['answer'],
+        constraints: ['record_page_context_only', 'no_route_llm'],
+        clarifyingQuestion: '',
+        deterministic: true,
+        skipLlm: true,
+        source: summarize ? 'record_summarize' : (nba ? 'record_nba' : 'record_email_draft'),
+      };
+    }
+  }
+
+  // On a record page the open CRM row is the subject — do not ask which module.
+  if (isAmbiguousCrmAsk(q) && pageKind !== 'record') {
     return {
       route: 'clarify',
       needsCrmData: false,
@@ -261,6 +297,9 @@ function mergeRouteIntentWithDeterministic(llmIntent = null, deterministic = nul
       ...(Array.isArray(llmIntent.constraints) ? llmIntent.constraints : []),
     ])].slice(0, 12),
     clarifyingQuestion: deterministic.clarifyingQuestion || llmIntent.clarifyingQuestion || '',
+    analysisPlan: (Array.isArray(llmIntent.analysisPlan) && llmIntent.analysisPlan.length)
+      ? llmIntent.analysisPlan
+      : (Array.isArray(deterministic.analysisPlan) ? deterministic.analysisPlan : []),
   });
 }
 
@@ -307,12 +346,16 @@ function validateAstraRouteIntent(raw = {}) {
     needsWeb: raw.needsWeb === true || route === 'web_research',
     outputs,
     clarifyingQuestion: String(raw.clarifyingQuestion || '').trim().slice(0, 200),
+    analysisPlan: Array.isArray(raw.analysisPlan)
+      ? raw.analysisPlan.map((s) => String(s || '').trim()).filter(Boolean).slice(0, 8)
+      : [],
   };
 }
 
 /**
  * LLM understand-step for ANY Astra ask — returns a route + plan.
  * Regex detectors remain fallback when this returns null.
+ * @param {{ fast?: boolean }} [opts] — fast=true: compact prompt + fewer tokens (record pages).
  */
 async function proposeAstraRouteIntent({
   question = '',
@@ -320,6 +363,7 @@ async function proposeAstraRouteIntent({
   pageContext = '',
   config = null,
   redactOpts = {},
+  fast = false,
 } = {}) {
   if (!config?.apiKey || !config?.provider || !config?.model) return null;
   try {
@@ -329,48 +373,70 @@ async function proposeAstraRouteIntent({
     const adapter = getLlmAdapter(config.provider);
     if (!adapter?.complete) return null;
 
+    const priorLimit = fast ? 3 : 6;
+    const priorSlice = fast ? 160 : 240;
     const prior = (Array.isArray(history) ? history : [])
       .filter((m) => m && (m.role === 'user' || m.role === 'assistant'))
-      .slice(-6)
-      .map((m) => `${m.role}: ${String(m.content || m.body || '').slice(0, 240)}`)
+      .slice(-priorLimit)
+      .map((m) => `${m.role}: ${String(m.content || m.body || '').slice(0, priorSlice)}`)
       .join('\n');
 
-    const system = [
-      'You are Astra\'s intent router for a CRM product (LiteDesk).',
-      'Read the customer ask carefully (any topic — not only charts/lists).',
-      'Return JSON only:',
-      '{"understanding":"what they want in 1-2 sentences",'
-      + '"goal":"success criteria",'
-      + '"route":"crm_data|report_builder|report_widget|web_research|email|meeting_prep|attention_work|calendar|canvas_crm|canvas_presentation|content_creation|general|clarify",'
-      + '"needsCrmData":true|false,"needsWeb":true|false,'
-      + '"outputs":["table","chart","email_draft","answer","canvas","actions"],'
-      + '"constraints":["preserve amount filters","do not invent stage group-by"],'
-      + '"clarifyingQuestion":""}',
-      'Route guide:',
-      '- crm_data: list/filter/count/chart of CRM records (deals, tasks, cases, …)',
-      '- report_builder: create/save/edit a real Analytics report',
-      '- web_research: company/website/public info outside CRM (CEO, founder, leadership, market)',
-      '- email: draft/compose/send email',
-      '- meeting_prep: prepare for a meeting / talking points',
-      '- attention_work / calendar: overdue work or schedule',
-      '- canvas_crm / canvas_presentation: open live canvas or slide deck',
-      '- content_creation: Content Studio / document content',
-      '- general: advice, how-to, product help, anything else',
-      '- clarify: only if blocked without one essential fact',
-      'Never invent CRM metrics. Prefer crm_data when they want live lists/charts.',
-      'CRITICAL: how-to / "how do I convert a deal to a quote" / required fields → route general (product help). NOT crm_data.',
-      'CRITICAL: vague "important ones" / "the key ones" without filters → route clarify.',
-      'CRITICAL: "Who is the CEO/founder?" → route web_research. Never name a CRM contact as CEO unless Job Title explicitly says so.',
-      'CRITICAL: "detail analysis of \'Vtiger CRM\' Organization" / named company overview → web_research. Do NOT route crm_data or chart all organizations by industry.',
-      'CRITICAL: "which deals in closure / why not closed / expedite closure" → crm_data with outputs table+answer (list late-stage deals + coaching). Do NOT return only a Pipeline by Stage chart.',
-      'For list+chart: "not by stage" / "by record" → chart individual records (never stage rollup).',
-      'For list+chart without "by stage", constraint: chart individual records.',
-    ].join('\n');
+    const onRecordPage = /\brecord\b/i.test(String(pageContext || ''))
+      || /\/record\b/i.test(String(pageContext || ''));
+
+    const system = fast
+      ? [
+        'Astra intent router (CRM). Return JSON only:',
+        '{"understanding":"1 sentence","goal":"success criteria",'
+        + '"route":"general|email|meeting_prep|web_research|crm_data|clarify",'
+        + '"needsCrmData":false,"needsWeb":false,"outputs":["answer","actions"],'
+        + '"constraints":[],"analysisPlan":["step1","step2","step3"],"clarifyingQuestion":""}',
+        'RECORD PAGE: staff is on one CRM row. Prefer route=general (email/meeting_prep/web_research when asked).',
+        'needsCrmData must be false (work-graph is loaded separately). Never clarify which record.',
+        'analysisPlan: 3-5 short steps over primary fields, activities, related records.',
+        'Do not invent CRM metrics.',
+      ].join('\n')
+      : [
+        'You are Astra\'s intent router for a CRM product (LiteDesk).',
+        'Read the customer ask carefully (any topic — not only charts/lists).',
+        'Return JSON only:',
+        '{"understanding":"what they want in 1-2 sentences",'
+        + '"goal":"success criteria",'
+        + '"route":"crm_data|report_builder|report_widget|web_research|email|meeting_prep|attention_work|calendar|canvas_crm|canvas_presentation|content_creation|general|clarify",'
+        + '"needsCrmData":true|false,"needsWeb":true|false,'
+        + '"outputs":["table","chart","email_draft","answer","canvas","actions"],'
+        + '"constraints":["preserve amount filters","do not invent stage group-by"],'
+        + '"analysisPlan":["step 1","step 2"],'
+        + '"clarifyingQuestion":""}',
+        'analysisPlan: 3-6 short steps describing how to answer from CRM context (primary record, activities, related records, related activities). Required when Page context is a single CRM record.',
+        'Route guide:',
+        '- crm_data: list/filter/count/chart of CRM records (deals, tasks, cases, …)',
+        '- report_builder: create/save/edit a real Analytics report',
+        '- web_research: company/website/public info outside CRM (CEO, founder, leadership, market)',
+        '- email: draft/compose/send email',
+        '- meeting_prep: prepare for a meeting / talking points',
+        '- attention_work / calendar: overdue work or schedule',
+        '- canvas_crm / canvas_presentation: open live canvas or slide deck',
+        '- content_creation: Content Studio / document content',
+        '- general: advice, how-to, product help, record coaching / next steps on the open record',
+        '- clarify: only if blocked without one essential fact',
+        'Never invent CRM metrics. Prefer crm_data when they want live lists/charts.',
+        'CRITICAL: how-to / "how do I convert a deal to a quote" / required fields → route general (product help). NOT crm_data.',
+        'CRITICAL: vague "important ones" / "the key ones" without filters → route clarify (unless Page context is already a single CRM record — then route general and analyze that record).',
+        'CRITICAL: "Who is the CEO/founder?" → route web_research. Never name a CRM contact as CEO unless Job Title explicitly says so.',
+        'CRITICAL: "detail analysis of \'Vtiger CRM\' Organization" / named company overview → web_research. Do NOT route crm_data or chart all organizations by industry.',
+        'CRITICAL: "which deals in closure / why not closed / expedite closure" → crm_data with outputs table+answer (list late-stage deals + coaching). Do NOT return only a Pipeline by Stage chart.',
+        'For list+chart: "not by stage" / "by record" → chart individual records (never stage rollup).',
+        'For list+chart without "by stage", constraint: chart individual records.',
+        onRecordPage
+          ? 'RECORD PAGE: Staff is viewing one CRM record. Ground understanding on that record. Prefer route general (or email/meeting_prep when asked). needsCrmData=false (record work-graph is loaded separately — do NOT set needsCrmData). Do NOT ask which module/record. Build analysisPlan covering fields, activities, related records, and related activities.'
+          : '',
+      ].filter(Boolean).join('\n');
 
     const userParts = [
-      pageContext ? `Page context: ${String(pageContext).slice(0, 200)}` : '',
+      pageContext ? `Page context: ${String(pageContext).slice(0, fast ? 220 : 400)}` : '',
       prior ? `Recent chat:\n${prior}` : '',
-      `Ask:\n${String(question || '').slice(0, 2000)}`,
+      `Ask:\n${String(question || '').slice(0, fast ? 800 : 2000)}`,
     ].filter(Boolean);
 
     const completion = await adapter.complete({
@@ -381,7 +447,7 @@ async function proposeAstraRouteIntent({
         { role: 'user', content: userParts.join('\n\n') },
       ], redactOpts),
       temperature: 0,
-      maxTokens: 700,
+      maxTokens: fast ? 420 : 900,
       providerOptions: config.providerOptions,
     });
     const text = String(completion?.text || completion?.content || '');
@@ -403,6 +469,9 @@ function formatRouteIntentPromptRules(routeIntent = null) {
   }
   if (routeIntent.outputs?.length) {
     rules.push(`Expected outputs: ${routeIntent.outputs.join(', ')}`);
+  }
+  if (Array.isArray(routeIntent.analysisPlan) && routeIntent.analysisPlan.length) {
+    rules.push(`Analysis plan (follow in order using CRM context): ${routeIntent.analysisPlan.join(' → ')}`);
   }
   if (routeIntent.route === 'crm_data') {
     rules.push('Do not invent stage/status groupings unless the user asked for that breakdown.');

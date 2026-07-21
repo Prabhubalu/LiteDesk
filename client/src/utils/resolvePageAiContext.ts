@@ -63,7 +63,11 @@ export function resolvePageAiContext(
     .toLowerCase();
   if (!moduleKey) return null;
 
-  const recordId = String(route.params?.id || '').trim();
+  const recordId = String(
+    route.params?.id
+    || route.params?.recordId
+    || '',
+  ).trim();
   const appKey = resolveAppKey(moduleKey, route);
 
   if (recordId && recordId !== 'new') {
