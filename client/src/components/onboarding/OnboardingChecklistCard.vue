@@ -3,6 +3,8 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { CheckCircleIcon } from '@heroicons/vue/24/solid';
+import { CheckCircleIcon as CheckCircleOutlineIcon } from '@heroicons/vue/24/outline';
+import { PLATFORM_HOME_CARD_HEADER_DIVIDER_CLASS } from '@/utils/platformHomeLayout';
 
 const props = defineProps({
   titleKey: {
@@ -43,32 +45,50 @@ const openStep = (step) => {
 <template>
   <section
     v-if="steps.length"
-    class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm"
+    class="rounded-2xl border border-neutral-900/[0.06] bg-white dark:border-white/[0.08] dark:bg-neutral-800/55"
   >
-    <div class="flex items-center justify-between gap-3 mb-4">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+    <div
+      :class="[
+        'flex items-center justify-between gap-3 px-4 py-2.5 sm:px-5',
+        PLATFORM_HOME_CARD_HEADER_DIVIDER_CLASS
+      ]"
+    >
+      <h2 class="text-sm font-semibold text-neutral-900 dark:text-white">
         {{ t(titleKey) }}
       </h2>
-      <span class="text-xs text-gray-500 dark:text-gray-400">{{ progressLabel }}</span>
+      <span class="text-xs text-neutral-500 dark:text-neutral-400">{{ progressLabel }}</span>
     </div>
-    <ul class="space-y-2">
+    <ul class="flex flex-col px-1.5 py-1.5">
       <li
         v-for="step in steps"
         :key="step.key"
       >
         <button
           type="button"
-          class="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-50"
+          class="group flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-left transition-colors hover:bg-neutral-50 disabled:opacity-50 dark:hover:bg-neutral-800/60"
           :disabled="loading || !step.route"
           @click="openStep(step)"
         >
-          <CheckCircleIcon
-            class="h-5 w-5 flex-shrink-0"
-            :class="isDone(step) ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'"
-          />
           <span
-            class="text-sm"
-            :class="isDone(step) ? 'text-gray-500 line-through dark:text-gray-400' : 'text-gray-900 dark:text-white'"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+            :class="isDone(step)
+              ? 'bg-success-50 text-success-600 dark:bg-success-900/40 dark:text-success-300'
+              : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'"
+          >
+            <CheckCircleIcon
+              v-if="isDone(step)"
+              class="h-4 w-4"
+            />
+            <CheckCircleOutlineIcon
+              v-else
+              class="h-4 w-4"
+            />
+          </span>
+          <span
+            class="min-w-0 flex-1 truncate text-sm font-medium"
+            :class="isDone(step)
+              ? 'text-neutral-500 dark:text-neutral-400'
+              : 'text-neutral-900 group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400'"
           >
             {{ t(step.labelKey) }}
           </span>

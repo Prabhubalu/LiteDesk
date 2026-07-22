@@ -16,7 +16,7 @@ provide(PLATFORM_HOME_WIDGET_CHROME_KEY, {
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 flex-col overflow-hidden">
+  <div class="flex min-h-0 flex-col overflow-hidden h-auto sm:h-full">
     <slot />
   </div>
 </template>

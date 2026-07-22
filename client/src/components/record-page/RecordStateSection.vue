@@ -12,7 +12,7 @@
       <div
         v-for="(columnFields, colIndex) in columnGroups"
         :key="colIndex"
-        :class="singleColumn ? 'space-y-0' : 'space-y-1'"
+        :class="singleColumn ? 'space-y-2' : 'space-y-1'"
       >
         <template v-for="field in columnFields" :key="field.key">
           <EditableLabeledValue
@@ -373,10 +373,10 @@ const getFieldHref = (field) => normalizeExternalUrl(getFieldValue(field));
   padding-bottom: 0.5rem;
 }
 
-/* Tighter spacing in quick preview / single-column (embed) layout */
+/* Single-column / mobile: keep readable vertical rhythm between key fields */
 .record-state-section--compact .record-state-section__row {
   min-height: 2.5rem;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
 }
 </style>

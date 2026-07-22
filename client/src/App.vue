@@ -259,14 +259,10 @@ const handleOpenAuditSyncDrawer = () => {
   auditSyncDrawerOpen.value = true;
 };
 
-// Sidebar collapsed state - Load from localStorage, default to false
-const sidebarCollapsed = ref(
-  localStorage.getItem('arivu-sidebar-collapsed') === 'true'
-);
+// Sidebar is always the icon rail (flyout for modules).
+const sidebarCollapsed = ref(true);
 
-// Save sidebar state to localStorage whenever it changes
-watch(sidebarCollapsed, (newValue) => {
-  localStorage.setItem('arivu-sidebar-collapsed', newValue.toString());
+watch(sidebarCollapsed, () => {
   queueContentOffsetUpdate();
 });
 

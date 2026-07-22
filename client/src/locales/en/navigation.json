@@ -123,6 +123,30 @@
     "message": "Core",
     "description": "Core modules section heading"
   },
+  "coreCategoryDirectory": {
+    "message": "Directory",
+    "description": "Core drawer category — People, Organizations"
+  },
+  "coreCategoryWork": {
+    "message": "Work",
+    "description": "Core drawer category — Tasks, Events"
+  },
+  "coreCategoryData": {
+    "message": "Data",
+    "description": "Core drawer category — Items, Forms, Responses, Documents, Templates"
+  },
+  "coreCategoryFinancials": {
+    "message": "Financials",
+    "description": "Core drawer category — Quotes, Orders, Invoices, Payments"
+  },
+  "coreCategoryAnalytics": {
+    "message": "Analytics",
+    "description": "Core drawer category — Reports"
+  },
+  "coreCategoryUtilities": {
+    "message": "Utilities",
+    "description": "Core drawer category — Import"
+  },
   "help": {
     "message": "Help",
     "description": "Sidebar help link"
@@ -530,6 +554,30 @@
   "moduleAudits": {
     "message": "Audits",
     "description": "Audits module navigation label"
+  },
+  "appCore": {
+    "message": "Core",
+    "description": "Core platform app name in sidebar"
+  },
+  "more": {
+    "message": "More",
+    "description": "Workspace overflow control in the sidebar rail"
+  },
+  "pinFlyout": {
+    "message": "Pin menu",
+    "description": "Pin app flyout open"
+  },
+  "unpinFlyout": {
+    "message": "Unpin menu",
+    "description": "Unpin app flyout"
+  },
+  "collapseDrawer": {
+    "message": "Collapse modules",
+    "description": "Collapse the docked app module drawer"
+  },
+  "flyoutEmpty": {
+    "message": "No modules available",
+    "description": "Empty state when an app flyout has no modules"
   },
   "appSales": {
     "message": "Sales",

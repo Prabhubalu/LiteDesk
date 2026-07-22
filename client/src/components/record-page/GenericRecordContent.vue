@@ -12,10 +12,12 @@
       <template v-if="record && !embed" #header>
         <RecordHeader
           :show-navigation="true"
+          :show-back="true"
           :can-previous="!!neighbors.previousId"
           :can-next="!!neighbors.nextId"
           :previous-label="recordNavPreviousLabel"
           :next-label="recordNavNextLabel"
+          @back="goBackToModuleList"
           @previous="goToPrevious"
           @next="goToNext"
         >
@@ -58,7 +60,7 @@
             <button
               v-if="supportsEmail"
               type="button"
-              class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              class="hidden lg:inline-flex p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               :aria-label="t('records.genericSendEmail')"
               :title="t('records.genericSendEmail')"
               @click="openEmailComposeModal()"
@@ -97,7 +99,7 @@
             </button>
             <button
               type="button"
-              class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              class="hidden lg:inline-flex p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               :aria-label="t('records.genericCopyUrl')"
               :title="t('records.genericCopyUrl')"
               @click="copyUrl"
@@ -141,6 +143,19 @@
                     >
                       <PrinterIcon class="w-4 h-4" />
                       <span>{{ t('actions.print') }}</span>
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2 lg:hidden',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="copyUrl"
+                    >
+                      <ClipboardDocumentIcon class="w-4 h-4" />
+                      <span>{{ t('records.genericCopyUrl') }}</span>
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -379,7 +394,7 @@
 
         <div
           v-if="genericStateFields.length && (!expandedLeftSection || expandedLeftSection === 'key-fields')"
-          :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-4']"
+          :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-2 lg:mt-4']"
         >
           <RecordStateSection
             :heading="t('records.genericKeyFields')"
@@ -828,24 +843,28 @@
           </template>
           <template #tab-related>
             <div class="flex flex-col h-full">
-              <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h2>
-                <div v-if="canLinkRecords" class="flex items-center gap-2">
+              <div class="record-context-panel__header flex items-center justify-between gap-2 px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
+                <h2 class="min-w-0 truncate text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h2>
+                <div v-if="canLinkRecords" class="flex shrink-0 items-center gap-1 sm:gap-1.5">
                   <button
                     type="button"
+                    class="inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-lg text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 lg:w-auto lg:px-2.5"
+                    :aria-label="t('records.genericAddRecord')"
+                    :title="t('records.genericAddRecord')"
                     @click="openAddRecordDrawer"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                   >
-                    <PlusIcon class="w-4 h-4" />
-                    {{ t('records.genericAddRecord') }}
+                    <PlusIcon class="h-4 w-4 shrink-0" />
+                    <span class="hidden lg:inline">{{ t('records.genericAddRecord') }}</span>
                   </button>
                   <button
                     type="button"
+                    class="inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-lg text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 lg:w-auto lg:px-2.5"
+                    :aria-label="t('records.genericLinkRecord')"
+                    :title="t('records.genericLinkRecord')"
                     @click="openLinkRecordDrawer"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                   >
-                    <LinkIcon class="w-4 h-4" />
-                    {{ t('records.genericLinkRecord') }}
+                    <LinkIcon class="h-4 w-4 shrink-0" />
+                    <span class="hidden lg:inline">{{ t('records.genericLinkRecord') }}</span>
                   </button>
                 </div>
               </div>
@@ -1123,6 +1142,7 @@ import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import RecordStateSection from '@/components/record-page/RecordStateSection.vue';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
+import { useRecordModuleBack } from '@/components/record-page/composables/useRecordModuleBack';
 import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import SectionStack from '@/components/record-page/sections/SectionStack.vue';
 import TemplateHtmlPreviewPanel from '@/modules/template/components/TemplateHtmlPreviewPanel.vue';
@@ -1285,6 +1305,7 @@ const {
 const notifications = useNotifications();
 const { guardAndOpenEmailCompose } = useOpenEmailCompose();
 const { openTab, activeTabId, findTabById, findTabByPath, switchToTab, updateTabTitle, replaceActiveTab } = useTabs();
+const { goBackToModuleList } = useRecordModuleBack();
 const recordLayoutIsMobile = inject('recordLayoutIsMobile', ref(false));
 const quickPreviewNav = inject('quickPreviewNav', null);
 

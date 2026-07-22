@@ -23,12 +23,14 @@
     <template v-if="!embed" #header>
       <RecordHeader
         :show-navigation="true"
+        :show-back="true"
         :can-previous="canNavigatePreviousTask"
         :can-next="canNavigateNextTask"
         :previous-label="taskNavPreviousLabel"
         :next-label="taskNavNextLabel"
         :shortcut-prev="navShortcutPrev"
         :shortcut-next="navShortcutNext"
+        @back="goBackToModuleList"
         @previous="goToPreviousTask"
         @next="goToNextTask"
       >
@@ -75,7 +77,7 @@
           <button
             type="button"
             @click="handleCopyUrl"
-            class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="hidden lg:inline-flex p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             :aria-label="t('records.genericCopyUrl')"
             :title="t('records.genericCopyUrl')"
           >
@@ -83,6 +85,7 @@
           </button>
           <RecordPrintButton
             v-if="task?._id"
+            hide-on-mobile
             module-key="tasks"
             :record-id="String(task._id)"
           />
@@ -90,7 +93,7 @@
             type="button"
             @click="handleToggleFollow"
             :class="[
-              'p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
+              'hidden lg:inline-flex p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
               isFollowing ? 'text-yellow-500 dark:text-yellow-400' : ''
             ]"
             :aria-label="taskStarAriaLabel"
@@ -98,15 +101,6 @@
           >
             <StarIcon v-if="!isFollowing" class="w-5 h-5" />
             <StarIconSolid v-else class="w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            @click="handleClose"
-            class="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-            :aria-label="t('actions.close')"
-            :title="t('actions.close')"
-          >
-            <XMarkIcon class="w-5 h-5" />
           </button>
           <Menu as="div" class="relative">
             <MenuButton
@@ -126,6 +120,19 @@
               <MenuItems
                 class="absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl py-1 bg-white dark:bg-gray-800 ring-1 ring-black/5 dark:ring-white/10 z-50"
               >
+                <MenuItem v-slot="{ active }">
+                  <button
+                    type="button"
+                    :class="[
+                      'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2 lg:hidden',
+                      active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                    ]"
+                    @click="handleCopyUrl"
+                  >
+                    <ClipboardDocumentIcon class="w-4 h-4" />
+                    <span>{{ t('records.genericCopyUrl') }}</span>
+                  </button>
+                </MenuItem>
                 <MenuItem v-slot="{ active }">
                   <button
                     @click="handleDuplicate"
@@ -327,7 +334,7 @@
       <!-- RecordStateSection - Core properties in two-column layout -->
       <div
         v-if="task && (!expandedLeftSection || expandedLeftSection === 'key-fields')"
-        :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-4']"
+        :class="['group/left-section', expandedLeftSection ? 'mt-8' : 'mt-2 lg:mt-4']"
       >
         <RecordStateSection
           :heading="t('records.genericKeyFields')"
@@ -962,24 +969,28 @@
         <template #tab-related>
           <div class="flex flex-col h-full">
             <!-- Related Records header with Link action -->
-            <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
-              <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h2>
-              <div v-if="canLinkRecords" class="flex items-center gap-2">
+            <div class="record-context-panel__header flex items-center justify-between gap-2 px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
+              <h2 class="min-w-0 truncate text-base font-semibold text-gray-900 dark:text-white">{{ t('records.relatedTitle') }}</h2>
+              <div v-if="canLinkRecords" class="flex shrink-0 items-center gap-1 sm:gap-1.5">
                 <button
                   type="button"
+                  class="inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-lg text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 lg:w-auto lg:px-2.5"
+                  :aria-label="t('records.genericAddRecord')"
+                  :title="t('records.genericAddRecord')"
                   @click="openAddRecordDrawer"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                 >
-                  <PlusIcon class="w-4 h-4" />
-                  {{ t('records.genericAddRecord') }}
+                  <PlusIcon class="h-4 w-4 shrink-0" />
+                  <span class="hidden lg:inline">{{ t('records.genericAddRecord') }}</span>
                 </button>
                 <button
                   type="button"
+                  class="inline-flex h-8 w-8 items-center justify-center gap-1.5 rounded-lg text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900/20 lg:w-auto lg:px-2.5"
+                  :aria-label="t('records.genericLinkRecord')"
+                  :title="t('records.genericLinkRecord')"
                   @click="openLinkRecordDrawer"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                 >
-                  <LinkIcon class="w-4 h-4" />
-                  {{ t('records.genericLinkRecord') }}
+                  <LinkIcon class="h-4 w-4 shrink-0" />
+                  <span class="hidden lg:inline">{{ t('records.genericLinkRecord') }}</span>
                 </button>
               </div>
             </div>
@@ -1655,6 +1666,7 @@ import RecordDetailsTabPanel from '@/components/record-page/RecordDetailsTabPane
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { useRecordLoading } from '@/components/record-page/composables/useRecordLoading';
 import { useRecordHeaderActions } from '@/components/record-page/composables/useRecordHeaderActions';
+import { useRecordModuleBack } from '@/components/record-page/composables/useRecordModuleBack';
 import { useRecordPageLifecycle } from '@/components/record-page/composables/useRecordPageLifecycle';
 import {
   extractRecordUpdatedAtMs,
@@ -5559,6 +5571,8 @@ const {
     router.push('/tasks');
   }
 });
+
+const { goBackToModuleList } = useRecordModuleBack();
 
 const taskStarAriaLabel = computed(() => (
   isFollowing.value ? t('records.taskUnstarAria') : t('records.taskStarAria')

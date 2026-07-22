@@ -686,5 +686,85 @@
   "arivuCanvas": {
     "message": "Arivu Canvas",
     "description": "Generative Arivu Canvas workspace navigation label"
+  },
+  "appCore": {
+    "message": "Core",
+    "description": "Core platform app name in sidebar"
+  },
+  "pinFlyout": {
+    "message": "Pin menu",
+    "description": "Pin app flyout open"
+  },
+  "unpinFlyout": {
+    "message": "Unpin menu",
+    "description": "Unpin app flyout"
+  },
+  "flyoutEmpty": {
+    "message": "No modules available",
+    "description": "Empty state when an app flyout has no modules"
+  },
+  "more": {
+    "message": "More",
+    "description": "Workspace overflow control in the sidebar rail"
+  },
+  "collapseDrawer": {
+    "message": "Collapse modules",
+    "description": "Collapse the docked app module drawer"
+  },
+  "drawerSubtitleCore": {
+    "message": "Platform modules",
+    "description": "Subtitle under Core in the docked module drawer"
+  },
+  "drawerSubtitleApp": {
+    "message": "App modules",
+    "description": "Subtitle under a commercial app in the docked module drawer"
+  },
+  "drawerGroupBusiness": {
+    "message": "Business",
+    "description": "Core drawer section for people and organizations"
+  },
+  "drawerGroupOperations": {
+    "message": "Operations",
+    "description": "Core drawer section for tasks, events, projects, and cases"
+  },
+  "drawerGroupCommerce": {
+    "message": "Commerce",
+    "description": "Core drawer section for items, invoices, and payments"
+  },
+  "drawerGroupContent": {
+    "message": "Content",
+    "description": "Core drawer section for forms, documents, and content studio"
+  },
+  "drawerGroupInsights": {
+    "message": "Insights",
+    "description": "Core drawer section for dashboard, import, and reports"
+  },
+  "drawerGroupMore": {
+    "message": "More",
+    "description": "Core drawer section for uncategorized modules"
+  },
+  "coreCategoryDirectory": {
+    "message": "Directory",
+    "description": "Core drawer category — People, Organizations"
+  },
+  "coreCategoryWork": {
+    "message": "Work",
+    "description": "Core drawer category — Tasks, Events"
+  },
+  "coreCategoryData": {
+    "message": "Data",
+    "description": "Core drawer category — Items, Forms, Responses, Documents, Templates"
+  },
+  "coreCategoryFinancials": {
+    "message": "Financials",
+    "description": "Core drawer category — Quotes, Orders, Invoices, Payments"
+  },
+  "coreCategoryAnalytics": {
+    "message": "Analytics",
+    "description": "Core drawer category — Reports"
+  },
+  "coreCategoryUtilities": {
+    "message": "Utilities",
+    "description": "Core drawer category — Import"
   }
 }

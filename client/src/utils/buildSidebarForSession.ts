@@ -70,6 +70,32 @@ function normalizeUserAppAccess(user: UserLike): NormalizedUserAppAccess {
   };
 }
 
+function syncApplicationsFromCoreModules(structure: SidebarStructure): void {
+  const coreApp = structure.applications?.find((app) => app.id === 'CORE');
+  if (coreApp) {
+    coreApp.items = structure.coreModules;
+  }
+  if (structure.coreModules.length === 0) {
+    structure.applications = (structure.applications || []).filter((app) => app.id !== 'CORE');
+  } else if (!coreApp && structure.applications) {
+    structure.applications = [
+      {
+        id: 'CORE',
+        name: 'Core',
+        nameKey: 'navigation.appCore',
+        icon: 'squares',
+        order: 0,
+        items: structure.coreModules,
+      },
+      ...structure.applications,
+    ].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+  }
+
+  if (structure.appNav?.appId === 'CORE') {
+    structure.appNav = { appId: 'CORE', modules: structure.coreModules };
+  }
+}
+
 function applyCoreModuleEntitlementFilters(
   structure: SidebarStructure,
   allowedAppKeys: Set<string>,
@@ -91,6 +117,7 @@ function applyCoreModuleEntitlementFilters(
     }
     return true;
   });
+  syncApplicationsFromCoreModules(structure);
 }
 
 function applyPortalOnlySidebarFilters(
@@ -103,6 +130,7 @@ function applyPortalOnlySidebarFilters(
   if (!profile.hasOnlyPortalAccess) return;
 
   structure.coreModules = [];
+  syncApplicationsFromCoreModules(structure);
   // Platform shell surfaces are not part of the customer portal experience.
   const portalHiddenShellIds = new Set(['home', 'inbox', 'astra', 'approvals', 'attention']);
   structure.shell = structure.shell.filter((item) => !portalHiddenShellIds.has(item.id));

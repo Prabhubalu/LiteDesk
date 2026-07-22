@@ -11,8 +11,8 @@ export const PLATFORM_HOME_WIDGET_MIN_H = 2;
 export const PLATFORM_HOME_WIDTH_MODES: PlatformHomeWidthMode[] = ['compact', 'wide'];
 
 export const PLATFORM_HOME_WIDTH_CLASS: Record<PlatformHomeWidthMode, string> = {
-  compact: 'max-w-4xl',
-  wide: 'max-w-7xl',
+  compact: 'max-w-5xl',
+  wide: 'max-w-[90rem]',
 };
 
 export const DEFAULT_PLATFORM_HOME_WIDTH_MODE: PlatformHomeWidthMode = 'wide';

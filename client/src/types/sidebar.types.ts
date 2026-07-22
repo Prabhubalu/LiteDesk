@@ -84,6 +84,23 @@ export type SidebarItem =
       icon?: string;
     } & SidebarLabelFields);
 
+/**
+ * Top-level application entry for the app-centric sidebar.
+ * Modules render in AppFlyout / AppModuleDrawer — never inline in the rail.
+ * `CORE` is a synthetic peer for platform modules (People, Tasks, …).
+ */
+export type AppFlyoutDefinition = {
+  id: string;
+  name: string;
+  nameKey?: string;
+  icon?: string;
+  /** Dashboard route when the app has one; omitted for Core. */
+  dashboardRoute?: string;
+  order?: number;
+  /** Flyout rows: optional dashboard + modules (registry-driven). */
+  items: SidebarItem[];
+};
+
 export interface SidebarStructure {
   /**
    * Shell surfaces — global, cross-app, task-oriented.
@@ -93,17 +110,20 @@ export interface SidebarStructure {
   shell: SidebarItem[];
 
   /**
-   * Core Modules — platform-owned modules sourced from Core Modules registry.
-   * Examples: People, Organizations, Tasks, Events, Forms, Items.
-   * Sourced strictly from GET /api/settings/core-modules.
-   * Filtered by permissions (hidden if user has zero access).
-   * Ordered as defined in Core Modules configuration.
+   * Core Modules — platform-owned modules (People, Organizations, …).
+   * Kept for command palette / builders; rail renders these via `applications` (CORE flyout).
    */
   coreModules: SidebarItem[];
 
   /**
-   * App lens selector — controls which app's navigation is active.
-   * Switching apps changes the meaning of navigation, not core modules.
+   * Top-level apps shown in the rail (Core + entitled commercial apps).
+   * Modules live in AppModuleDrawer (docked) / AppFlyout (hover peek), not in the rail.
+   */
+  applications: AppFlyoutDefinition[];
+
+  /**
+   * App lens selector — active app derived from route (session fallback).
+   * Used for route sync / command palette; rail no longer uses a dropdown.
    */
   appSwitcher: {
     activeAppId: string;
@@ -111,8 +131,7 @@ export interface SidebarStructure {
   };
 
   /**
-   * Navigation for the currently active app only.
-   * Never shows modules from multiple apps at once.
+   * Navigation for the currently active app only (lens cache for palette / sync).
    */
   appNav: {
     appId: string;
