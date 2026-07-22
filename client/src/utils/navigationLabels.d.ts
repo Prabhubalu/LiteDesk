@@ -13,6 +13,14 @@ export function resolveSidebarItemLabel(
   t: (key: string) => string
 ): string;
 
+export const CORE_DRAWER_CATEGORY_ORDER: string[];
+export const CORE_DRAWER_CATEGORY_LABEL_KEYS: Record<string, string>;
+
+export function groupCoreDrawerItems<T extends { id?: string; moduleKey?: string }>(
+  items: T[],
+  appId?: string
+): Array<{ id: string; labelKey?: string; items: T[] }>;
+
 export function getTabTitleMetaForPath(
   path: string,
   params?: Record<string, unknown>
@@ -21,6 +29,7 @@ export function getTabTitleMetaForPath(
 export function pathSegments(path: string): string[];
 export function isRecordIdSegment(segment: string): boolean;
 export function isRecordDetailTabPath(path: string): boolean;
+export function getRecordModuleListPath(path: string): string | null;
 export function isProcessDesignerTabPath(path: string): boolean;
 export function isGenericRecordTabTitleKey(titleKey: string | undefined): boolean;
 export function getPersistedRecordTabName(tab: {

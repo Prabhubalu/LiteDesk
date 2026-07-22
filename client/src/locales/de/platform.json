@@ -1094,5 +1094,9 @@
   "platformHomeSaveDefaultViewHint": {
     "message": "New users inherit this layout until they customize their own.",
     "description": "Hint for organization default platform home layout action"
+  },
+  "platformHomeEditMode": {
+    "message": "Edit mode",
+    "description": "Platform home toggle to enable widget drag and resize"
   }
 }

@@ -3,7 +3,7 @@
     :class="[
       PLATFORM_HOME_CARD_CLASS,
       PLATFORM_HOME_INTENT_GRADIENT_CLASS,
-      'flex h-full min-h-0 flex-col p-4 sm:p-5'
+      'flex min-h-0 flex-col p-4 sm:p-5 h-auto sm:h-full'
     ]"
   >
     <div class="platform-home-widget-header mb-3 flex items-stretch gap-2">

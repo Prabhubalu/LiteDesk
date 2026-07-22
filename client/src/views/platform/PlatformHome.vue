@@ -56,17 +56,20 @@ import OnboardingWelcomePanel from '@/components/onboarding/OnboardingWelcomePan
 import OnboardingChecklistCard from '@/components/onboarding/OnboardingChecklistCard.vue';
 import OnboardingTrialBanner from '@/components/onboarding/OnboardingTrialBanner.vue';
 import OnboardingSampleDataCard from '@/components/onboarding/OnboardingSampleDataCard.vue';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
 import { formatPlatformGreeting, getLocalTimeOfDay } from '@/utils/platformHomeGreeting';
 import { formatPlatformFocus } from '@/utils/platformHomeFocus';
 import {
   ArrowRightIcon,
   CheckCircleIcon,
+  EllipsisHorizontalIcon,
   ExclamationTriangleIcon,
   SparklesIcon,
   XCircleIcon,
   InformationCircleIcon,
   AdjustmentsHorizontalIcon
 } from '@heroicons/vue/24/outline';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -94,6 +97,7 @@ const {
   setWidthMode,
 } = usePlatformHomeLayout();
 
+const homeScrollRef = ref(null);
 const customizeAnchorRef = ref(null);
 const platformHomeGridRef = ref(null);
 const {
@@ -127,6 +131,7 @@ const orgSetupSteps = computed(() => (
 ));
 
 const pageLoading = ref(true);
+const layoutEditMode = ref(false);
 const analyticsExecuting = ref(false);
 const analyticsPayloadByInstance = ref(new Map());
 const analyticsWidgetMeta = ref(new Map());
@@ -680,13 +685,8 @@ const handleSampleDataDecline = async () => {
 
 const resetScroll = () => {
   nextTick(() => {
-    const scrollRoot = document.querySelector('[data-platform-scroll-root]');
-    if (scrollRoot) {
-      scrollRoot.scrollTop = 0;
-      scrollRoot.style.overflow = 'hidden';
-      void scrollRoot.offsetHeight;
-      scrollRoot.style.overflow = '';
-      scrollRoot.scrollTop = 0;
+    if (homeScrollRef.value) {
+      homeScrollRef.value.scrollTop = 0;
     }
     window.scrollTo(0, 0);
   });
@@ -715,33 +715,117 @@ onActivated(() => {
 </script>
 
 <template>
-  <div class="min-h-full w-full">
-    <div class="mx-auto w-full space-y-4 pb-2" :class="homeWidthClass">
-      <header ref="customizeAnchorRef" class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <h1 class="min-w-0 text-xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-2xl">
-          {{ greetingTitle }}
-        </h1>
-        <div v-if="!pageLoading && !customizeMode" class="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
-          <button
-            v-if="canSaveDefaultLayout"
-            type="button"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-white/10 dark:bg-neutral-800/55 dark:text-neutral-200 dark:hover:bg-neutral-800"
-            :disabled="savingDefaultLayout || layoutSaving"
-            @click="handleSaveDefaultLayout"
+  <div class="flex h-full min-h-0 flex-col overflow-hidden p-3 sm:p-4 lg:p-6">
+    <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-neutral-100/80 dark:bg-neutral-950/40">
+      <header
+        ref="customizeAnchorRef"
+        class="flex shrink-0 items-center border-b border-neutral-900/[0.04] px-3 py-3 sm:px-4 sm:py-3.5 lg:px-5 lg:py-4 dark:border-white/[0.06]"
+      >
+        <div
+          class="mx-auto flex w-full items-center justify-between gap-3"
+          :class="homeWidthClass"
+        >
+          <h1 class="min-w-0 truncate text-xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-2xl">
+            {{ greetingTitle }}
+          </h1>
+
+          <div
+            v-if="!pageLoading && !customizeMode"
+            class="hidden shrink-0 items-center gap-2 sm:flex"
           >
-            {{ savingDefaultLayout ? t('states.saving') : t('platform.platformHomeSaveDefaultView') }}
-          </button>
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-white/10 dark:bg-neutral-800/55 dark:text-neutral-200 dark:hover:bg-neutral-800"
-            @click="handleEnterCustomize"
+            <label class="inline-flex items-center gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-300">
+              <span>{{ t('platform.platformHomeEditMode') }}</span>
+              <HeadlessSwitch v-model="layoutEditMode" size="sm" />
+            </label>
+            <button
+              v-if="canSaveDefaultLayout"
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 dark:border-white/10 dark:bg-neutral-800/55 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              :disabled="savingDefaultLayout || layoutSaving"
+              @click="handleSaveDefaultLayout"
+            >
+              {{ savingDefaultLayout ? t('states.saving') : t('platform.platformHomeSaveDefaultView') }}
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 dark:border-white/10 dark:bg-neutral-800/55 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              @click="handleEnterCustomize"
+            >
+              <AdjustmentsHorizontalIcon class="h-4 w-4 shrink-0" />
+              {{ t('platform.platformHomeCustomizeHome') }}
+            </button>
+          </div>
+
+          <Menu
+            v-if="!pageLoading && !customizeMode"
+            as="div"
+            class="relative shrink-0 sm:hidden"
           >
-            <AdjustmentsHorizontalIcon class="h-4 w-4" />
-            {{ t('platform.platformHomeCustomizeHome') }}
-          </button>
+            <MenuButton
+              type="button"
+              class="inline-flex items-center justify-center rounded-lg border border-neutral-200/80 bg-white p-2 text-neutral-600 hover:bg-neutral-50 dark:border-white/10 dark:bg-neutral-800/55 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              :aria-label="t('navigation.more')"
+            >
+              <EllipsisHorizontalIcon class="h-5 w-5" />
+            </MenuButton>
+            <transition
+              enter-active-class="transition ease-out duration-100"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-75"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
+            >
+              <MenuItems
+                class="absolute right-0 z-30 mt-1.5 w-56 origin-top-right rounded-xl border border-neutral-200/80 bg-white py-1 shadow-lg focus:outline-none dark:border-white/10 dark:bg-neutral-900"
+              >
+                <div
+                  class="flex items-center justify-between gap-3 px-3 py-2.5"
+                  @click.stop
+                >
+                  <span class="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                    {{ t('platform.platformHomeEditMode') }}
+                  </span>
+                  <HeadlessSwitch v-model="layoutEditMode" size="sm" />
+                </div>
+                <div class="my-1 border-t border-neutral-100 dark:border-white/[0.08]" />
+                <MenuItem v-slot="{ active }">
+                  <button
+                    type="button"
+                    :class="[
+                      'flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-neutral-700 dark:text-neutral-200',
+                      active ? 'bg-neutral-50 dark:bg-neutral-800' : ''
+                    ]"
+                    @click="handleEnterCustomize"
+                  >
+                    <AdjustmentsHorizontalIcon class="h-4 w-4 shrink-0 text-neutral-400" />
+                    {{ t('platform.platformHomeCustomizeHome') }}
+                  </button>
+                </MenuItem>
+                <MenuItem v-if="canSaveDefaultLayout" v-slot="{ active }">
+                  <button
+                    type="button"
+                    :disabled="savingDefaultLayout || layoutSaving"
+                    :class="[
+                      'flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-neutral-700 disabled:opacity-50 dark:text-neutral-200',
+                      active ? 'bg-neutral-50 dark:bg-neutral-800' : ''
+                    ]"
+                    @click="handleSaveDefaultLayout"
+                  >
+                    {{ savingDefaultLayout ? t('states.saving') : t('platform.platformHomeSaveDefaultView') }}
+                  </button>
+                </MenuItem>
+              </MenuItems>
+            </transition>
+          </Menu>
         </div>
       </header>
 
+      <div
+        ref="homeScrollRef"
+        class="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
+      >
+        <div class="mx-auto w-full space-y-4 px-3 pb-4 pt-4 sm:px-4 lg:px-5" :class="homeWidthClass">
       <div v-if="!pageLoading && onboarding" class="space-y-3">
         <OnboardingTrialBanner :trial="onboarding.trial" />
         <OnboardingSampleDataCard
@@ -786,13 +870,14 @@ onActivated(() => {
         <PlatformHomeGrid
           ref="platformHomeGridRef"
           :items="layout.items"
+          :edit-mode="layoutEditMode"
           :customize-mode="customizeMode"
           @update:items="handleLayoutUpdate"
         >
           <template #cell="{ item }">
             <PlatformHomeWidgetShell
               :item="item"
-              :show-drag-handle="!customizeMode"
+              :show-drag-handle="layoutEditMode && !customizeMode"
             >
               <PlatformHomeIntentBar
                 v-if="item.type === 'intent-bar'"
@@ -807,13 +892,13 @@ onActivated(() => {
 
               <div
                 v-else-if="item.type === 'alerts'"
-                :class="['flex h-full flex-col overflow-hidden', PLATFORM_HOME_CARD_CLASS]"
+                :class="['flex flex-col overflow-hidden h-auto sm:h-full', PLATFORM_HOME_CARD_CLASS]"
               >
                 <PlatformHomeWidgetHeader
                   :title="t('platform.platformHomeWidgetAlerts')"
                   divider
                 />
-                <div class="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 sm:p-4">
+                <div class="min-h-0 space-y-3 overflow-visible p-3 sm:flex-1 sm:overflow-y-auto sm:p-4">
                 <div
                   v-for="(alert, index) in alerts"
                   :key="index"
@@ -846,7 +931,7 @@ onActivated(() => {
                 </div>
                 <p
                   v-if="alerts.length === 0"
-                  class="px-4 py-6 text-center text-xs text-neutral-500 dark:text-neutral-400"
+                  class="px-4 py-4 text-center text-xs text-neutral-500 dark:text-neutral-400 sm:py-6"
                 >
                   {{ t('platform.platformHomeWidgetAlertsEmpty') }}
                 </p>
@@ -886,7 +971,7 @@ onActivated(() => {
 
               <section
                 v-else-if="item.type === 'up-next'"
-                :class="['flex h-full flex-col overflow-hidden', PLATFORM_HOME_CARD_CLASS]"
+                :class="['flex flex-col overflow-hidden h-auto sm:h-full', PLATFORM_HOME_CARD_CLASS]"
               >
                 <PlatformHomeWidgetHeader
                   :title="t('platform.platformHomeUpNext')"
@@ -1024,7 +1109,7 @@ onActivated(() => {
 
               <section
                 v-else-if="item.type === 'recent-work'"
-                :class="['flex h-full flex-col overflow-hidden', PLATFORM_HOME_CARD_CLASS]"
+                :class="['flex flex-col overflow-hidden h-auto sm:h-full', PLATFORM_HOME_CARD_CLASS]"
               >
                 <PlatformHomeWidgetHeader
                   :title="t('platform.platformHomeRecentWork')"
@@ -1092,6 +1177,8 @@ onActivated(() => {
           </p>
         </div>
       </template>
+        </div>
+      </div>
     </div>
 
     <Teleport v-if="workspaceDrawerHostReady" :to="workspaceDrawerHost">

@@ -2,7 +2,7 @@
   <div
     ref="gridRef"
     class="platform-home-grid grid-stack min-h-[12rem]"
-    :class="{ 'platform-home-grid--locked': customizeMode }"
+    :class="{ 'platform-home-grid--locked': layoutLocked }"
   >
     <div
       v-for="item in visibleItems"
@@ -26,12 +26,18 @@ import { resolvePlatformHomeItemConstraints } from '@/utils/platformHomeWidgetRe
 
 const props = defineProps<{
   items: PlatformHomeLayoutItem[];
+  /** When false (default), drag/resize are disabled. */
+  editMode?: boolean;
   customizeMode?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:items', items: PlatformHomeLayoutItem[]): void;
 }>();
+
+const layoutLocked = computed(
+  () => !props.editMode || Boolean(props.customizeMode),
+);
 
 const gridRef = ref<HTMLElement | null>(null);
 let grid: GridStack | null = null;
@@ -140,9 +146,9 @@ function initGrid() {
       margin: GRID_MARGIN,
       float: true,
       animate: false,
-      staticGrid: false,
-      disableDrag: false,
-      disableResize: false,
+      staticGrid: true,
+      disableDrag: true,
+      disableResize: true,
       resizable: { handles: 'all' },
       draggable: {
         handle: '.platform-home-widget-drag-surface',
@@ -271,9 +277,9 @@ function destroyGrid() {
 }
 
 watch(
-  () => props.customizeMode,
-  async (customize) => {
-    setLayoutLocked(Boolean(customize));
+  layoutLocked,
+  async (locked) => {
+    setLayoutLocked(Boolean(locked));
     await nextTick();
     await syncGridToLayout();
   },
@@ -287,7 +293,7 @@ watch(gridLayoutSyncKey, async () => {
 onMounted(async () => {
   initGrid();
   await syncGridToLayout();
-  setLayoutLocked(Boolean(props.customizeMode));
+  setLayoutLocked(layoutLocked.value);
 });
 
 onBeforeUnmount(() => {
@@ -302,10 +308,15 @@ defineExpose({
 
 <style scoped>
 .platform-home-grid.grid-stack {
+  /* Outer pull-out cancels GridStack cell margins so cards align with
+     non-grid siblings (setup progress, etc.). Inter-widget gutters stay. */
   --gs-item-margin-top: 8px;
   --gs-item-margin-right: 8px;
   --gs-item-margin-bottom: 8px;
   --gs-item-margin-left: 8px;
+  margin-left: calc(-1 * var(--gs-item-margin-left));
+  margin-right: calc(-1 * var(--gs-item-margin-right));
+  width: calc(100% + var(--gs-item-margin-left) + var(--gs-item-margin-right));
 }
 
 /* Preserve GridStack margin insets — do not use inset:0 (it removes gutters) */
@@ -350,10 +361,15 @@ defineExpose({
   pointer-events: auto;
 }
 
-/* Mobile only: stack widgets full-width. Desktop keeps customized GridStack layout. */
+/* Mobile only: stack widgets full-width and hug content height.
+   Desktop keeps customized GridStack cell sizes.
+   Drop the desktop margin pull-out so L/R edges match non-grid siblings. */
 @media (max-width: 639px) {
   .platform-home-grid.grid-stack {
     height: auto !important;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
   }
 
   .platform-home-grid :deep(.grid-stack-item) {
@@ -361,7 +377,23 @@ defineExpose({
     left: 0 !important;
     top: auto !important;
     width: 100% !important;
+    height: auto !important;
     margin-bottom: 8px;
+  }
+
+  .platform-home-grid :deep(.grid-stack-item-content) {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .platform-home-grid :deep(.grid-stack-item-content > *) {
+    height: auto !important;
+    min-height: 0;
   }
 }
 </style>

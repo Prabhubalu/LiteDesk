@@ -54,9 +54,102 @@ export const MODULE_LABEL_KEYS = {
   blog: 'navigation.moduleBlog',
 };
 
+/** Core drawer section order (subtle categorization in AppModuleDrawer / AppFlyout). */
+export const CORE_DRAWER_CATEGORY_ORDER = [
+  'directory',
+  'work',
+  'data',
+  'financials',
+  'analytics',
+  'utilities',
+];
+
+/** @type {Record<string, string>} */
+export const CORE_DRAWER_CATEGORY_LABEL_KEYS = {
+  directory: 'navigation.coreCategoryDirectory',
+  work: 'navigation.coreCategoryWork',
+  data: 'navigation.coreCategoryData',
+  financials: 'navigation.coreCategoryFinancials',
+  analytics: 'navigation.coreCategoryAnalytics',
+  utilities: 'navigation.coreCategoryUtilities',
+};
+
+/** moduleKey → category id */
+const CORE_DRAWER_CATEGORY_BY_MODULE = {
+  people: 'directory',
+  organizations: 'directory',
+  tasks: 'work',
+  events: 'work',
+  items: 'data',
+  forms: 'data',
+  responses: 'data',
+  documents: 'data',
+  templates: 'data',
+  quotes: 'financials',
+  salesorders: 'financials',
+  sales_orders: 'financials',
+  orders: 'financials',
+  invoices: 'financials',
+  payments: 'financials',
+  reports: 'analytics',
+  analytics: 'analytics',
+  dashboards: 'analytics',
+  imports: 'utilities',
+  import: 'utilities',
+};
+
+/**
+ * Group Core modules into subtle drawer sections. Non-Core apps stay flat.
+ * Unknown moduleKeys append in an unlabeled trailing group (preserves order).
+ * @param {Array<{ id?: string, moduleKey?: string }>} items
+ * @param {string} [appId]
+ * @returns {Array<{ id: string, labelKey?: string, items: typeof items }>}
+ */
+export function groupCoreDrawerItems(items, appId) {
+  const list = Array.isArray(items) ? items : [];
+  if (String(appId || '').toUpperCase() !== 'CORE' || list.length === 0) {
+    return [{ id: 'all', items: list }];
+  }
+
+  /** @type {Map<string, typeof list>} */
+  const buckets = new Map();
+  for (const id of CORE_DRAWER_CATEGORY_ORDER) buckets.set(id, []);
+  const other = [];
+
+  for (const item of list) {
+    const raw = String(item?.moduleKey || item?.id || '')
+      .toLowerCase()
+      .replace(/-/g, '_');
+    const category =
+      CORE_DRAWER_CATEGORY_BY_MODULE[raw] ||
+      CORE_DRAWER_CATEGORY_BY_MODULE[raw.replace(/_/g, '')];
+    if (category && buckets.has(category)) {
+      buckets.get(category).push(item);
+    } else {
+      other.push(item);
+    }
+  }
+
+  const groups = [];
+  for (const id of CORE_DRAWER_CATEGORY_ORDER) {
+    const groupItems = buckets.get(id) || [];
+    if (groupItems.length === 0) continue;
+    groups.push({
+      id,
+      labelKey: CORE_DRAWER_CATEGORY_LABEL_KEYS[id],
+      items: groupItems,
+    });
+  }
+  if (other.length > 0) {
+    groups.push({ id: 'other', items: other });
+  }
+  return groups.length > 0 ? groups : [{ id: 'all', items: list }];
+}
+
 /** App registry appKey → navigation.* */
 /** @type {Record<string, string>} */
 export const APP_NAME_KEYS = {
+  CORE: 'navigation.appCore',
   SALES: 'navigation.appSales',
   AUDIT: 'navigation.appAudit',
   HELPDESK: 'navigation.appHelpdesk',
@@ -522,6 +615,23 @@ export function isRecordDetailTabPath(path) {
   }
 
   return false;
+}
+
+/** Module list path for a record detail URL (e.g. `/people/:id` → `/people`). */
+export function getRecordModuleListPath(path) {
+  const pathOnly = String(path || '').split('?')[0].split('#')[0];
+  if (!isRecordDetailTabPath(pathOnly)) return null;
+
+  const segments = pathSegments(pathOnly);
+
+  if (segments[0] === 'forms' && segments[2] === 'responses' && segments[3]) {
+    return `/forms/${segments[1]}/responses`;
+  }
+  if (pathOnly.startsWith('/helpdesk/cases/')) return '/helpdesk/cases';
+  if (pathOnly.startsWith('/helpdesk/articles/')) return '/helpdesk/articles';
+  if (pathOnly.startsWith('/marketing/blog/')) return '/marketing/blog';
+  if (segments.length >= 2) return `/${segments[0]}`;
+  return null;
 }
 
 export function isGenericRecordTabTitleKey(titleKey) {

@@ -999,6 +999,10 @@
     "message": "Customize home",
     "description": "Platform home layout customize entry button"
   },
+  "platformHomeEditMode": {
+    "message": "Edit mode",
+    "description": "Platform home toggle to enable widget drag and resize"
+  },
   "platformHomeCustomizeTitle": {
     "message": "Customize home",
     "description": "Platform home customize panel title"

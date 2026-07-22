@@ -1,15 +1,43 @@
 <template>
     <div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-      <div class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <div class="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
       <!-- Split-pane layout: floating rail + content (matches Inbox nested panel pattern) -->
       <div
         class="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-2 lg:p-2"
         :class="railFlyoutOpen ? 'lg:overflow-visible' : 'overflow-hidden'"
       >
+        <!-- Mobile: open settings sections without stacking the full rail in-flow -->
+        <div
+          class="flex shrink-0 items-center gap-2 border-b border-neutral-200 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900 lg:hidden"
+        >
+          <button
+            type="button"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            :aria-label="t('settings.expandSidebar')"
+            :title="t('settings.expandSidebar')"
+            @click="mobileNavOpen = true"
+          >
+            <Bars3Icon class="h-5 w-5" aria-hidden="true" />
+          </button>
+          <span class="min-w-0 flex-1 truncate text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+            {{ mobileSettingsTitle }}
+          </span>
+        </div>
+
+        <div
+          v-if="mobileNavOpen"
+          class="absolute inset-0 z-40 bg-black/40 lg:hidden"
+          aria-hidden="true"
+          @click="mobileNavOpen = false"
+        />
+
         <!-- Flex slot: collapsed reserves 3.5rem; hover flyout overlays without shifting content -->
         <div
-          class="relative shrink-0 self-stretch flex-none max-lg:w-full lg:transition-[width] lg:duration-200 lg:ease-in-out"
+          class="relative shrink-0 self-stretch flex-none lg:transition-[width] lg:duration-200 lg:ease-in-out"
           :class="[
+            mobileNavOpen
+              ? 'max-lg:absolute max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:w-64'
+              : 'max-lg:hidden',
             railSlotWidthClass,
             railFlyoutOpen ? 'lg:overflow-visible lg:z-30' : 'overflow-hidden',
           ]"
@@ -21,8 +49,8 @@
               'settings-rail flex min-h-0 flex-col overflow-hidden',
               'bg-white dark:bg-neutral-900',
               NESTED_PANEL_FLOATING_LG_CLASS,
-              'max-lg:relative max-lg:h-auto max-lg:w-full',
-              'max-lg:border-b max-lg:border-neutral-200 dark:max-lg:border-neutral-700',
+              'max-lg:h-full max-lg:w-64 max-lg:border-r max-lg:border-neutral-200 dark:max-lg:border-neutral-700',
+              'max-lg:shadow-xl',
               'lg:absolute lg:inset-y-0 lg:left-0 lg:z-20',
               'lg:transition-[width] lg:duration-200 lg:ease-in-out',
               railAsideWidthClass,
@@ -34,13 +62,12 @@
                 <div class="flex w-[3.5rem] shrink-0 justify-center py-2">
                   <button
                     type="button"
-                    @click="toggleSidebar"
-                    :title="isCollapsed ? t('settings.expandSidebar') : t('settings.collapseSidebar')"
+                    @click="onRailHeaderButtonClick"
+                    :title="railHeaderButtonTitle"
                     class="flex-shrink-0 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-200"
                   >
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path v-if="!isCollapsed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                      <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                 </div>
@@ -56,7 +83,7 @@
                 <ul class="space-y-0.5">
                   <li>
                     <button
-                      @click="activeTab = null; router.push('/settings')"
+                      @click="goToOverview"
                       :title="isCollapsed && !railShowsFullLabels ? t('settings.navOverview') : ''"
                       :class="settingsRailItemClass(!activeTab)"
                     >
@@ -173,6 +200,7 @@
 import { ref, computed, h, watch, onUnmounted, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import { Bars3Icon } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
 import { useAuthStore } from '@/stores/authRegistry';
@@ -265,15 +293,34 @@ const RAIL_WIDTH_TRANSITION_MS = 200;
 const isCollapsed = ref(localStorage.getItem('arivu-settings-collapsed') === 'true');
 const isHovering = ref(false);
 const isFlyoutClosing = ref(false);
+const mobileNavOpen = ref(false);
 let flyoutCloseTimer = null;
 
 const railFlyoutOpen = computed(() => isCollapsed.value && (isHovering.value || isFlyoutClosing.value));
-const railShowsFullLabels = computed(() => !isCollapsed.value || isHovering.value || isFlyoutClosing.value);
+const railShowsFullLabels = computed(() => (
+  mobileNavOpen.value
+  || !isCollapsed.value
+  || isHovering.value
+  || isFlyoutClosing.value
+));
 const railSlotWidthClass = computed(() => (isCollapsed.value ? 'lg:w-[3.5rem]' : 'lg:w-64'));
 const railAsideWidthClass = computed(() => {
   if (!isCollapsed.value || isHovering.value) return 'lg:w-64';
   return 'lg:w-[3.5rem]';
 });
+
+const mobileSettingsTitle = computed(() => {
+  if (!activeTab.value) return t('settings.navOverview');
+  const tab = tabs.value.find((item) => item.id === activeTab.value)
+    || internalTabs.value.find((item) => item.id === activeTab.value);
+  return tab?.nameKey ? t(tab.nameKey) : t('navigation.settings');
+});
+
+const railHeaderButtonTitle = computed(() => (
+  mobileNavOpen.value
+    ? t('actions.close')
+    : (isCollapsed.value ? t('settings.expandSidebar') : t('settings.collapseSidebar'))
+));
 
 function clearFlyoutCloseTimer() {
   if (flyoutCloseTimer) {
@@ -288,6 +335,21 @@ const toggleSidebar = () => {
   isHovering.value = false;
   isCollapsed.value = !isCollapsed.value;
 };
+
+const onRailHeaderButtonClick = () => {
+  if (mobileNavOpen.value) {
+    mobileNavOpen.value = false;
+    return;
+  }
+  toggleSidebar();
+};
+
+const goToOverview = () => {
+  activeTab.value = null;
+  mobileNavOpen.value = false;
+  router.push('/settings');
+};
+
 const handleMouseEnter = () => {
   if (!isCollapsed.value) return;
   clearFlyoutCloseTimer();
@@ -706,6 +768,7 @@ function handleTabClick(tab) {
   } else {
     activeTab.value = tab.id;
   }
+  mobileNavOpen.value = false;
 }
 
 const currentTabComponent = computed(() => {

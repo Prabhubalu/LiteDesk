@@ -2,8 +2,13 @@
   <div class="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
     <div class="w-full py-2 align-middle">
       <div
-        class="table-view-shell rounded-xl bg-white shadow-sm dark:bg-gray-900 overflow-hidden"
-        :class="showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]'"
+        class="table-view-shell"
+        :class="[
+          showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]',
+          isMobileCardLayout
+            ? 'overflow-x-hidden overflow-y-visible rounded-none !border-0 bg-transparent shadow-none'
+            : 'overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-900'
+        ]"
         :style="{ '--row-actions-gutter': rowActionsGutter || '7rem' }"
       >
         <div
@@ -24,8 +29,15 @@
         </div>
         <div
           ref="scrollContainerRef"
-          class="relative table-scroll-container rounded-xl"
-          :class="[scrollContainerClass, { 'invisible': showScrollRestoreOverlay }]"
+          class="relative table-scroll-container"
+          :class="[
+            scrollContainerClass,
+            {
+              'invisible': showScrollRestoreOverlay,
+              'table-mobile-card': isMobileCardLayout,
+              'rounded-xl': !isMobileCardLayout
+            }
+          ]"
           :style="{ ...scrollContainerStyles, width: '100%', maxWidth: '100%', isolation: 'auto' }"
           @scroll="handleScroll"
         >
@@ -59,7 +71,7 @@
             :style="{ width: '100%', minWidth: tableMinWidth, display: 'table', tableLayout: 'fixed' }"
           >
             <colgroup>
-              <col v-if="selectable" :style="{ width: selectionColumnWidthPx }" />
+              <col v-if="showSelectionColumn" :style="{ width: selectionColumnWidthPx }" />
               <col
                 v-for="column in displayColumns"
                 :key="`${columnKey(column)}-col`"
@@ -68,7 +80,7 @@
               <!-- Absorbs slack when table is wider than sum(columns); keeps data cols fixed-width, row lines full-width -->
               <col v-if="hasFlexFillColumn" style="min-width: 0; width: auto" />
             </colgroup>
-            <thead class="bg-white dark:bg-gray-900">
+            <thead v-if="!isMobileCardLayout" class="bg-white dark:bg-gray-900">
               <tr ref="labelHeaderRowRef">
                 <th
                   v-if="selectable"
@@ -98,24 +110,29 @@
                   v-for="(column, columnIndex) in displayColumns"
                   :key="columnKey(column)"
                   scope="col"
-                  :aria-sort="ariaSortForColumn(column)"
+                  :aria-sort="isMobileCardLayout ? undefined : ariaSortForColumn(column)"
                   :class="[
-                    'table-head-cell group sticky text-left text-xs font-semibold uppercase tracking-wide text-gray-900 dark:text-white relative',
-                    isColumnFilterHighlighted(column)
+                    'table-head-cell group text-left text-xs font-semibold uppercase tracking-wide text-gray-900 dark:text-white relative',
+                    isMobileCardLayout ? 'bg-white dark:bg-gray-900' : 'sticky',
+                    !isMobileCardLayout && isColumnFilterHighlighted(column)
                       ? 'bg-indigo-50 dark:bg-indigo-900/25 table-column-filter-active'
-                      : 'bg-white dark:bg-gray-900',
-                    columnIndex === 0 ? 'title-column-cell z-[40] sticky-column-border' : 'z-20',
+                      : isMobileCardLayout ? '' : 'bg-white dark:bg-gray-900',
+                    columnIndex === 0
+                      ? (isMobileCardLayout ? 'title-column-cell z-[40]' : 'title-column-cell z-[40] sticky-column-border')
+                      : 'z-20',
                     // Apply border-radius only to columns at visible edges
                     (selectable ? columnIndex + 1 : columnIndex) === leftEdgeColumnIndex ? 'rounded-tl-xl' : '',
                     (selectable ? columnIndex + 1 : columnIndex) === rightEdgeColumnIndex ? 'rounded-tr-xl' : '',
                     // Add hover effect for sticky columns
-                    isColumnFilterHighlighted(column) ? '' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
+                    isMobileCardLayout || isColumnFilterHighlighted(column) ? '' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
                     // Add shadow when scrolled
-                    columnIndex === 0 && isScrolledHorizontally ? 'sticky-column-scrolled' : ''
+                    !isMobileCardLayout && columnIndex === 0 && isScrolledHorizontally ? 'sticky-column-scrolled' : ''
                   ]"
                   :style="[{ top: headerTop }, columnHeaderStyle(column)]"
                 >
-                  <Menu v-if="isColumnSortable(column)" as="div" class="relative h-full w-full">
+                  <!-- Mobile card list: no column label chrome (select-all stays in selection th) -->
+                  <span v-if="isMobileCardLayout" class="sr-only">{{ columnLabel(column) }}</span>
+                  <Menu v-else-if="isColumnSortable(column)" as="div" class="relative h-full w-full">
                     <MenuButton
                       type="button"
                       class="group flex h-full min-h-full w-full items-center justify-between gap-2 px-5 py-3.5 text-left text-xs uppercase tracking-wide transition-colors focus:outline-none relative z-10"
@@ -231,7 +248,7 @@
                   :style="{ top: headerTop }"
                 />
               </tr>
-              <tr v-if="columnFiltersEnabled" ref="filterHeaderRowRef" class="column-filter-row">
+              <tr v-if="columnFiltersEnabled && !isMobileCardLayout" ref="filterHeaderRowRef" class="column-filter-row">
                 <th
                   v-if="selectable"
                   scope="col"
@@ -309,12 +326,20 @@
                   :key="item.key"
                   :class="[
                     'group cursor-pointer',
-                    item.selected ? 'bg-gray-50 dark:bg-indigo-950' : ''
+                    item.selected ? 'bg-gray-50 dark:bg-indigo-950 tv-card-selected' : ''
                   ]"
                   @click="handleRowClick(item.row, $event)"
+                  @touchstart.passive="onRowTouchStart(item, $event)"
+                  @touchend="onRowTouchEnd"
+                  @touchmove.passive="onRowTouchMove"
+                  @touchcancel="onRowTouchEnd"
+                  @mousedown="onRowMouseDown(item, $event)"
+                  @mouseup="onRowTouchEnd"
+                  @mouseleave="onRowTouchEnd"
+                  @contextmenu="onRowContextMenu($event)"
                 >
                   <td
-                    v-if="selectable"
+                    v-if="showSelectionColumn"
                     :class="[
                       'table-body-cell relative box-border sticky z-20 table-selection-cell',
                       selectionColumnVariant === 'numbered-hover'
@@ -359,10 +384,20 @@
                       'table-body-cell px-5 text-sm text-gray-700 align-middle dark:text-gray-200',
                       rowHeightClass,
                       columnIndex === 0 ? [
-                        'title-column-cell relative sticky z-20 sticky-column-border',
-                        item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
-                        item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800',
-                        isScrolledHorizontally ? 'sticky-column-scrolled' : ''
+                        isMobileCardLayout
+                          ? 'title-column-cell relative z-20 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700'
+                          : 'title-column-cell relative sticky z-20 sticky-column-border',
+                        isMobileCardLayout
+                          ? (item.selected
+                              ? 'bg-indigo-50 dark:bg-indigo-950/60'
+                              : 'bg-white dark:bg-gray-800')
+                          : (item.selected
+                              ? 'bg-gray-50 dark:bg-indigo-950'
+                              : 'bg-white dark:bg-gray-900'),
+                        !isMobileCardLayout && !item.selected
+                          ? 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
+                          : '',
+                        !isMobileCardLayout && isScrolledHorizontally ? 'sticky-column-scrolled' : ''
                       ].join(' ') : [
                         'whitespace-nowrap',
                         item.selected ? 'bg-gray-50 dark:bg-indigo-950' : 'bg-white dark:bg-gray-900',
@@ -374,7 +409,7 @@
                     <!-- First column: actions overlay on hover — overlay anchors to <td> so its
                          inset-y-0 spans the full cell height (incl. padding), keeping h-8 buttons
                          vertically centered without being clipped by the cell's overflow:hidden. -->
-                    <template v-if="columnIndex === 0 && hasActions">
+                    <template v-if="columnIndex === 0 && hasActions && !isMobileCardLayout">
                       <div class="flex items-center">
                         <div
                           class="min-w-0 flex-1 pr-0 transition-[padding-right] duration-150 ease-out group-hover:[padding-right:var(--row-actions-gutter,7rem)] group-focus-within:[padding-right:var(--row-actions-gutter,7rem)]"
@@ -384,8 +419,17 @@
                             :column="column"
                             :row="item.row"
                             :value="resolveValue(item.row, column)"
+                            :selected="item.selected"
+                            :selection-active="false"
                           >
-                            <slot name="cell" :column="column" :row="item.row" :value="resolveValue(item.row, column)">
+                            <slot
+                              name="cell"
+                              :column="column"
+                              :row="item.row"
+                              :value="resolveValue(item.row, column)"
+                              :selected="item.selected"
+                              :selection-active="false"
+                            >
                               {{ resolveValue(item.row, column) }}
                             </slot>
                           </slot>
@@ -400,14 +444,29 @@
                     </template>
                     <!-- Other columns: Normal rendering; first column content truncates -->
                     <template v-else>
-                      <div v-if="columnIndex === 0" class="min-w-0 truncate">
+                      <div
+                        v-if="columnIndex === 0"
+                        class="min-w-0"
+                        :class="isMobileCardLayout ? '' : 'truncate'"
+                      >
                         <slot
                           :name="`cell-${columnKey(column)}`"
                           :column="column"
                           :row="item.row"
                           :value="resolveValue(item.row, column)"
+                          :selected="item.selected"
+                          :selection-active="isMobileCardLayout && isMobileSelectMode"
+                          :on-toggle-select="() => toggleRowSelection(item.row)"
                         >
-                          <slot name="cell" :column="column" :row="item.row" :value="resolveValue(item.row, column)">
+                          <slot
+                            name="cell"
+                            :column="column"
+                            :row="item.row"
+                            :value="resolveValue(item.row, column)"
+                            :selected="item.selected"
+                            :selection-active="isMobileCardLayout && isMobileSelectMode"
+                            :on-toggle-select="() => toggleRowSelection(item.row)"
+                          >
                             {{ resolveValue(item.row, column) }}
                           </slot>
                         </slot>
@@ -491,7 +550,7 @@
                     class="border-0"
                   >
                     <td
-                      v-if="selectable"
+                      v-if="showSelectionColumn"
                       :class="[
                         'table-body-cell relative box-border bg-white align-middle dark:bg-gray-900',
                         rowHeightClass,
@@ -767,9 +826,103 @@ const showEmptyOverlay = computed(() => {
   return Array.isArray(displayRows.value) && displayRows.value.length === 0
 })
 
+/** ≤639px: card-row list (title column only, no label chrome / H-scroll). */
+const MOBILE_CARD_MQ = '(max-width: 639px)'
+const isMobileCardLayout = ref(false)
+let mobileCardMql: MediaQueryList | null = null
+
+function syncMobileCardLayout() {
+  isMobileCardLayout.value = Boolean(mobileCardMql?.matches)
+  if (!isMobileCardLayout.value) {
+    isMobileSelectMode.value = false
+  }
+}
+
+/** Desktop selection gutter; mobile uses long-press + avatar checkbox instead. */
+const showSelectionColumn = computed(
+  () => Boolean(props.selectable) && !isMobileCardLayout.value
+)
+
+const isMobileSelectMode = ref(false)
+const MOBILE_LONG_PRESS_MS = 450
+let longPressTimer: ReturnType<typeof setTimeout> | null = null
+let longPressTriggered = false
+let touchStartX = 0
+let touchStartY = 0
+
+function clearLongPressTimer() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+function onRowTouchStart(
+  item: { row: RowData; selected: boolean },
+  event: TouchEvent
+) {
+  if (!isMobileCardLayout.value || !props.selectable) return
+  longPressTriggered = false
+  const touch = event.touches[0]
+  if (!touch) return
+  touchStartX = touch.clientX
+  touchStartY = touch.clientY
+  clearLongPressTimer()
+  longPressTimer = setTimeout(() => {
+    longPressTriggered = true
+    isMobileSelectMode.value = true
+    if (!item.selected) {
+      toggleRowSelection(item.row)
+    }
+    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+      navigator.vibrate(10)
+    }
+  }, MOBILE_LONG_PRESS_MS)
+}
+
+/** DevTools / trackpad fallback when touch events are not synthesized. */
+function onRowMouseDown(
+  item: { row: RowData; selected: boolean },
+  event: MouseEvent
+) {
+  if (!isMobileCardLayout.value || !props.selectable) return
+  if (event.button !== 0) return
+  longPressTriggered = false
+  touchStartX = event.clientX
+  touchStartY = event.clientY
+  clearLongPressTimer()
+  longPressTimer = setTimeout(() => {
+    longPressTriggered = true
+    isMobileSelectMode.value = true
+    if (!item.selected) {
+      toggleRowSelection(item.row)
+    }
+  }, MOBILE_LONG_PRESS_MS)
+}
+
+function onRowTouchMove(event: TouchEvent) {
+  if (!longPressTimer) return
+  const touch = event.touches[0]
+  if (!touch) return
+  if (Math.abs(touch.clientX - touchStartX) > 10 || Math.abs(touch.clientY - touchStartY) > 10) {
+    clearLongPressTimer()
+  }
+}
+
+function onRowTouchEnd() {
+  clearLongPressTimer()
+}
+
+function onRowContextMenu(event: MouseEvent) {
+  if (isMobileCardLayout.value && props.selectable) {
+    event.preventDefault()
+  }
+}
+
 const scrollContainerClass = computed(() => ({
   'flex-1 min-h-0': showEmptyOverlay.value,
-  'overflow-x-auto': true,
+  'overflow-x-auto': !isMobileCardLayout.value,
+  'overflow-x-hidden': isMobileCardLayout.value,
   'overflow-y-auto': props.internalScroll && !showEmptyOverlay.value,
   'overflow-y-hidden': showEmptyOverlay.value
 }))
@@ -817,12 +970,15 @@ const providedRows = computed<RowData[]>(() => {
   return []
 })
 
-const displayColumns = computed(() => {
+const displayColumns = computed((): ColumnDef[] => {
   const columns = Array.isArray(props.columns) ? props.columns : []
   // When tableId exists, never use sampleColumns - wait for real columns so we don't
   // overwrite persisted widths with placeholder keys (id, name, email, status)
-  if (columns.length > 0) return columns
-  return props.tableId ? [] : sampleColumns
+  const base = columns.length > 0 ? columns : props.tableId ? [] : sampleColumns
+  if (isMobileCardLayout.value && base.length > 0) {
+    return base.slice(0, 1)
+  }
+  return base
 })
 
 const displayRows = computed(() => providedRows.value)
@@ -864,7 +1020,9 @@ const VIRTUAL_SCROLL_ROW_THRESHOLD = 30
 
 const rowHeightPx = computed((): number => {
   const h = ROW_HEIGHT_PX[props.rowHeight as keyof typeof ROW_HEIGHT_PX]
-  return h ?? DEFAULT_ROW_HEIGHT_PX
+  const base = h ?? DEFAULT_ROW_HEIGHT_PX
+  // Card rows (avatar + primary/secondary) need taller estimate for virtual scroll
+  return isMobileCardLayout.value ? Math.max(base, 64) : base
 })
 
 const useVirtualScroll = computed(
@@ -903,12 +1061,12 @@ const virtualPaddingBottom = computed(() => {
 })
 
 const tableMinWidth = computed(() => {
-  if (displayColumns.value.length === 0) {
+  if (isMobileCardLayout.value || displayColumns.value.length === 0) {
     return '100%'
   }
 
   // Table width = exact sum of column widths so only the resized column changes
-  let total = props.selectable
+  let total = showSelectionColumn.value
     ? props.selectionColumnVariant === 'numbered-hover'
       ? 44
       : 48
@@ -921,11 +1079,13 @@ const tableMinWidth = computed(() => {
 })
 
 /** Extra column so the table can stay width:100% while fixed-width cols stay left; slack lives here (full-width row dividers). */
-const hasFlexFillColumn = computed(() => displayColumns.value.length > 0)
+const hasFlexFillColumn = computed(
+  () => displayColumns.value.length > 0 && !isMobileCardLayout.value
+)
 
 const tableBodyColspan = computed(() => {
   let n = displayColumns.value.length
-  if (props.selectable) n += 1
+  if (showSelectionColumn.value) n += 1
   if (hasFlexFillColumn.value) n += 1
   return Math.max(1, n)
 })
@@ -1003,6 +1163,9 @@ const getColumnWidth = (column: ColumnDef) => {
 }
 
 const columnColStyle = (column: ColumnDef) => {
+  if (isMobileCardLayout.value) {
+    return { width: 'auto', minWidth: '0' }
+  }
   const width = getColumnWidth(column)
   const minWidth = getColumnMinWidth(column)
   const maxW = getColumnMaxWidth(column)
@@ -1012,6 +1175,9 @@ const columnColStyle = (column: ColumnDef) => {
 }
 
 const columnHeaderStyle = (column: ColumnDef) => {
+  if (isMobileCardLayout.value) {
+    return { width: 'auto', minWidth: '0' }
+  }
   const width = getColumnWidth(column)
   const isFirstCol = isFirstColumn(column)
   const checkboxWidth = props.selectionColumnVariant === 'numbered-hover' ? 44 : 48
@@ -1043,12 +1209,18 @@ const rowHeightClasses = {
   huge: 'py-8'
 }
 
-const rowHeightClass = computed(() => rowHeightClasses[props.rowHeight] || rowHeightClasses.small)
+const rowHeightClass = computed(() => {
+  if (isMobileCardLayout.value) return 'py-3 min-h-[56px]'
+  return rowHeightClasses[props.rowHeight] || rowHeightClasses.small
+})
 
 /** Skeleton rows while `isLoading` (no fake row indices; keeps first paint clean) */
 const loadingSkeletonRowCount = 10
 
 const columnCellStyle = (column: ColumnDef) => {
+  if (isMobileCardLayout.value) {
+    return { width: 'auto', minWidth: '0', overflow: 'hidden' }
+  }
   const width = getColumnWidth(column)
   const isFirstCol = isFirstColumn(column)
   const checkboxWidth = props.selectionColumnVariant === 'numbered-hover' ? 44 : 48
@@ -1081,6 +1253,7 @@ const columnCellStyle = (column: ColumnDef) => {
 }
 
 const isColumnResizable = (column: ColumnDef) => {
+  if (isMobileCardLayout.value) return false
   if (!props.resizableColumns) return false
   if (typeof column !== 'string' && column.resizable === false) return false
   return true
@@ -1231,6 +1404,11 @@ onMounted(() => {
   loadStoredWidths()
   ensureColumnWidths()
   window.addEventListener('beforeunload', handleBeforeUnload)
+  if (typeof window !== 'undefined') {
+    mobileCardMql = window.matchMedia(MOBILE_CARD_MQ)
+    syncMobileCardLayout()
+    mobileCardMql.addEventListener('change', syncMobileCardLayout)
+  }
   nextTick(() => {
     setupHeaderRowObserver()
   })
@@ -1261,6 +1439,25 @@ watch(
     nextTick(() => syncHeaderRowHeights())
   }
 )
+
+watch(isMobileCardLayout, (mobile) => {
+  nextTick(() => {
+    if (mobile) {
+      measuredLabelHeaderHeightPx.value = 0
+      measuredFilterHeaderHeightPx.value = 0
+    } else {
+      syncHeaderRowHeights()
+      setupHeaderRowObserver()
+    }
+    if (scrollContainerRef.value) {
+      scrollContainerRef.value.scrollLeft = 0
+      isScrolledHorizontally.value = false
+    }
+    if (useVirtualScroll.value) {
+      rowVirtualizer.value.measure()
+    }
+  })
+})
 
 watch(
   () => displayRows.value.length,
@@ -1816,6 +2013,7 @@ const startColumnResize = (column: ColumnDef, event: MouseEvent) => {
 }
 
 onBeforeUnmount(() => {
+  clearLongPressTimer()
   if (scrollSaveTimer) clearTimeout(scrollSaveTimer)
   saveScrollSession()
   teardownLoadMoreObserver()
@@ -1824,6 +2022,8 @@ onBeforeUnmount(() => {
   flushColumnWidths()
   window.removeEventListener('beforeunload', handleBeforeUnload)
   window.removeEventListener('resize', updateEdgeColumns)
+  mobileCardMql?.removeEventListener('change', syncMobileCardLayout)
+  mobileCardMql = null
 })
 
 const resolveValue = (row: RowData, column: ColumnDef) => {
@@ -1838,6 +2038,14 @@ const resolveValue = (row: RowData, column: ColumnDef) => {
 const handleRowClick = (row: RowData, event: MouseEvent) => {
   // Don't trigger row click if clicking on checkbox
   if ((event.target as HTMLElement)?.closest('[data-headless-checkbox="true"]')) {
+    return
+  }
+  if (longPressTriggered) {
+    longPressTriggered = false
+    return
+  }
+  if (isMobileCardLayout.value && isMobileSelectMode.value && props.selectable) {
+    toggleRowSelection(row)
     return
   }
   emit('row-click', row, event)
@@ -1940,6 +2148,12 @@ watch(
     }
   }
 )
+
+watch(hasAnySelection, (has) => {
+  if (!has && isMobileSelectMode.value) {
+    isMobileSelectMode.value = false
+  }
+})
 </script>
 
 <style scoped>
@@ -2090,6 +2304,46 @@ watch(
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Mobile card list: structure only — surfaces via Tailwind (bg-white dark:bg-gray-800) */
+.table-scroll-container.table-mobile-card tbody td.title-column-cell .flex > *:last-child,
+.table-scroll-container.table-mobile-card tbody td.title-column-cell > div:not(.flex) {
+  overflow: hidden;
+  text-overflow: unset;
+  white-space: normal;
+}
+
+.table-scroll-container.table-mobile-card {
+  /* Match ListView search row width (no extra horizontal inset); pb keeps last card radius/border visible */
+  padding: 0 0 20px;
+  background: transparent;
+  border-radius: 0;
+  box-sizing: border-box;
+  scrollbar-width: none; /* avoid right-side gutter shifting card width vs search */
+}
+
+.table-scroll-container.table-mobile-card::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.table-scroll-container.table-mobile-card .table-grid {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  width: 100%;
+}
+
+.table-scroll-container.table-mobile-card tbody td.table-body-cell {
+  /* Keep bottom edge; color from Tailwind / main.css (not `--tv-grid-border`) */
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+}
+
+.table-scroll-container.table-mobile-card tbody td.title-column-cell {
+  padding-left: 0.75rem;
+  padding-right: 1rem;
+  background-clip: padding-box;
 }
 
 /* Selection column: row numbers ↔ checkbox (Notion-style); fine pointer uses hover/focus */

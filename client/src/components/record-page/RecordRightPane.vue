@@ -332,9 +332,13 @@ const savePersistedTab = (tabId) => {
   }
 };
 
-const resolveActiveTab = () => loadPersistedTab() || props.defaultTab || null;
+const resolveActiveTab = () => {
+  // Mobile record open always lands on Summary (ignore desktop default/persistence).
+  if (layoutIsMobile.value) return 'summary';
+  return loadPersistedTab() || props.defaultTab || null;
+};
 
-// Initialize activeTab with priority: persisted > defaultTab prop > null
+// Initialize activeTab with priority: mobile→summary | persisted > defaultTab prop > null
 const activeTab = ref(resolveActiveTab());
 const paneRootRef = ref(null);
 const paneUserResized = ref(loadPaneUserResized());
@@ -541,11 +545,12 @@ watch(
   }
 );
 
-// When switching to mobile, auto-select Summary tab if no tab is selected
+// Mobile viewport: always land on Summary (desktop may have already applied activity default)
 watch(layoutIsMobile, (isMobile) => {
-  if (isMobile && !activeTab.value) {
-    // Auto-select Summary tab on mobile if nothing is selected
+  if (isMobile) {
     activeTab.value = 'summary';
+  } else {
+    activeTab.value = resolveActiveTab();
   }
 }, { immediate: true });
 

@@ -1,30 +1,47 @@
 <template>
   <Teleport to="body">
-    <transition name="notification-sheet">
+    <Transition
+      enter-active-class="transition-opacity duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <button
+        v-if="open"
+        type="button"
+        class="fixed inset-0 z-[9990] bg-black/40 dark:bg-black/55"
+        :aria-label="t('actions.close')"
+        @click="$emit('close')"
+      />
+    </Transition>
+
+    <Transition
+      enter-active-class="transition-transform duration-300 ease-out"
+      enter-from-class="translate-y-full"
+      enter-to-class="translate-y-0"
+      leave-active-class="transition-transform duration-250 ease-in"
+      leave-from-class="translate-y-0"
+      leave-to-class="translate-y-full"
+    >
       <div
         v-if="open"
-        class="fixed inset-0 z-[9990] flex flex-col justify-end"
+        class="fixed inset-x-0 bottom-0 top-auto z-[9991] flex h-[min(85dvh,780px)] max-h-[92dvh] flex-col"
         @keydown.esc.prevent="$emit('close')"
       >
-        <div
-          class="z-[1] min-h-0 flex-1 bg-black/60 transition-opacity duration-200"
-          @click="$emit('close')"
-          aria-hidden="true"
-        ></div>
-
         <section
-          class="relative z-[2] flex max-h-[90vh] min-h-[80vh] flex-col overflow-hidden rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl shadow-neutral-900/10 lg:rounded-t-none dark:bg-neutral-900 dark:shadow-black/20"
+          class="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-t-2xl border border-b-0 border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_32px_-8px_rgba(15,23,42,0.18)] dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-[0_-8px_32px_-8px_rgba(0,0,0,0.45)]"
           role="dialog"
           aria-modal="true"
           :aria-label="t('notifications.panelAria')"
         >
-          <!-- Handle bar -->
-          <div class="flex shrink-0 justify-center bg-white py-3 dark:bg-neutral-900">
-            <div class="w-12 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600"></div>
+          <div class="flex shrink-0 justify-center pb-1 pt-2" aria-hidden="true">
+            <span class="h-1 w-10 rounded-full bg-neutral-300 dark:bg-neutral-600" />
           </div>
 
           <!-- Header -->
-          <header class="flex shrink-0 items-center justify-between border-b border-neutral-200/60 bg-white px-4 pb-2 dark:border-neutral-700/60 dark:bg-neutral-900">
+          <header class="flex shrink-0 items-center justify-between gap-2 border-b border-neutral-200/60 px-4 py-2 dark:border-neutral-700/60">
             <h2 class="text-base font-semibold text-neutral-900 dark:text-white">
               {{ t('notifications.drawerHeading') }}
             </h2>
@@ -47,7 +64,7 @@
           </div>
 
           <!-- Body -->
-          <section class="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden bg-white px-2 py-2 dark:bg-neutral-900" :aria-busy="loading">
+          <section class="min-h-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-2 py-2" :aria-busy="loading">
             <!-- Loading skeleton -->
             <template v-if="loading && !items.length">
               <div class="space-y-4">
@@ -198,7 +215,7 @@
           </section>
         </section>
       </div>
-    </transition>
+    </Transition>
   </Teleport>
 </template>
 
@@ -431,21 +448,6 @@ watch(
 </script>
 
 <style>
-.notification-sheet-enter-active,
-.notification-sheet-leave-active {
-  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
-}
-
-.notification-sheet-enter-from,
-.notification-sheet-leave-to {
-  opacity: 0;
-}
-
-.notification-sheet-enter-from section,
-.notification-sheet-leave-to section {
-  transform: translateY(100%);
-}
-
 /* TransitionGroup: slide out + smooth move when dismissing */
 .notification-list-move,
 .notification-list-enter-active,
