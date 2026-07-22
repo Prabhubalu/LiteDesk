@@ -13,6 +13,7 @@ const {
   deleteRule,
   toggleRule
 } = require('../controllers/notificationRuleController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 // Auth + app context + org isolation for notification rules
 // Notification rules are user-level and app-scoped
@@ -22,6 +23,7 @@ router.use(requireAppEntitlement); // Check user's app entitlements
 router.use(lazySalesInitialization); // Lazy initialize Sales app if needed
 router.use(requireSalesApp); // Enforce Sales app access
 router.use(organizationIsolation);
+router.use(createSettingsAuditMiddleware({ surface: 'notifications', entityType: 'NotificationRule' }));
 
 router.get('/', listRules);
 router.post('/', createRule);

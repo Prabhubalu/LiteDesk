@@ -181,6 +181,12 @@ exports.upgradeSubscription = async (req, res) => {
         }
 
         // Update subscription
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({
+            tier: organization.subscription?.tier || null,
+            status: organization.subscription?.status || null
+        });
+
         organization.subscription.status = 'active';
         organization.subscription.tier = tier;
         organization.subscription.currentPeriodStart = new Date();
@@ -205,6 +211,16 @@ exports.upgradeSubscription = async (req, res) => {
         }
 
         // TODO: Integrate with Stripe for actual payment processing
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({
+                tier: organization.subscription.tier,
+                status: organization.subscription.status
+            }),
+            { keys: ['tier', 'status'] }
+        );
 
         res.json({
             success: true,
@@ -238,12 +254,23 @@ exports.cancelSubscription = async (req, res) => {
         }
 
         // Mark for cancellation at end of period
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({
+            autoRenew: organization.subscription?.autoRenew !== false
+        });
         organization.subscription.autoRenew = false;
         // organization.subscription.status = 'cancelled'; // Uncomment to cancel immediately
 
         await organization.save();
 
         // TODO: Cancel Stripe subscription
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({ autoRenew: false }),
+            { keys: ['autoRenew'] }
+        );
 
         res.json({
             success: true,
@@ -429,6 +456,14 @@ exports.enableApp = async (req, res) => {
                 error: bootstrapError.message
             });
         }
+
+        const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            { enabled: false, status: 'disabled' },
+            { enabled: true, status: 'ACTIVE' },
+            { keys: ['enabled', 'status'] }
+        );
 
         res.json({
             success: true,
@@ -674,6 +709,14 @@ exports.disableApp = async (req, res) => {
             console.error('⚠️  Error during app uninstall cleanup:', cleanupError);
             // Continue with response - app is disabled even if cleanup partially failed
         }
+
+        const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            { enabled: true, status: 'ACTIVE' },
+            { enabled: false, status: 'SUSPENDED' },
+            { keys: ['enabled', 'status'] }
+        );
 
         res.json({
             success: true,

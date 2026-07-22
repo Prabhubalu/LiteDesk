@@ -37,22 +37,36 @@ async function getMailroomSettings(req, res) {
 
 async function updateMailroomSettings(req, res) {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const beforeRow = await mailroomConfigService.getOrCreateConfig(req.user.organizationId);
+    const before = cloneForAudit({
+      enabled: beforeRow.enabled === true,
+      activeTemplateId: beforeRow.activeTemplateId,
+      policies: beforeRow.policies,
+      connectors: beforeRow.connectors,
+      security: beforeRow.security
+    });
+    const patch = req.body || {};
     const row = await mailroomConfigService.upsertConfig(
       req.user.organizationId,
       req.user._id,
-      req.body || {}
+      patch
     );
+    const after = {
+      enabled: row.enabled === true,
+      activeTemplateId: row.activeTemplateId,
+      policies: row.policies,
+      connectors: row.connectors,
+      security: row.security
+    };
+    attachSettingsAuditDiff(res, before, cloneForAudit(after), { body: patch });
 
     return res.json({
       success: true,
       data: {
         organizationId: row.organizationId,
-        enabled: row.enabled === true,
-        activeTemplateId: row.activeTemplateId,
+        ...after,
         schemaVersion: row.schemaVersion,
-        policies: row.policies,
-        connectors: row.connectors,
-        security: row.security,
         updatedAt: row.updatedAt
       },
       meta: {}

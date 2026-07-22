@@ -69,6 +69,7 @@ const {
   deleteAiConversation,
   listAiAuditLogsHandler,
 } = require('../controllers/aiController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 router.use(protect);
 router.use(resolveAppContext);
@@ -78,7 +79,12 @@ router.get('/status', requireAiAccess('view'), getAiStatus);
 router.get('/audit-log', requireAiAccess('view'), listAiAuditLogsHandler);
 router.get('/settings', requireAiAccess('view'), getAiSettings);
 router.get('/settings/models', requireAiAccess('view'), getAiModels);
-router.put('/settings', requireAiAccess('manage'), putAiSettings);
+router.put(
+  '/settings',
+  requireAiAccess('manage'),
+  createSettingsAuditMiddleware({ surface: 'ai' }),
+  putAiSettings
+);
 
 router.post('/echo', aiLimiter, requireAiAccess('use'), requireAiSuiteEntitlement(), echoAi);
 router.post('/echo/stream', aiLimiter, requireAiAccess('use'), requireAiSuiteEntitlement(), echoAiStream);

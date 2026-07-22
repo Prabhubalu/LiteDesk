@@ -12,10 +12,12 @@ const {
   updateSharingRule,
   deleteSharingRule
 } = require('../controllers/sharingController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 router.use(protect);
 router.use(organizationIsolation);
 router.use(checkTrialStatus);
+router.use(createSettingsAuditMiddleware({ surface: 'sharing' }));
 
 router.get('/defaults', canManageRoles(), listSharingDefaults);
 router.put('/defaults/:appKey/:moduleKey', canManageRoles(), updateSharingDefault);

@@ -1172,7 +1172,8 @@ async function load() {
 async function save() {
   saving.value = true;
   try {
-    const res = await apiClient.put('/settings/addons/blog/settings', {
+    const { pickDirtyFields } = await import('@/utils/pickDirtyFields');
+    const current = {
       urlPrefix: form.urlPrefix,
       rssEnabled: form.rssEnabled,
       commentsEnabled: form.commentsEnabled,
@@ -1181,7 +1182,15 @@ async function save() {
       embedWebsiteDomain: form.embedWebsiteDomain,
       publishWebhookUrl: form.publishWebhookUrl,
       staticSyncHostType: staticSyncHostType.value,
-    });
+    };
+    const baseline = snapshot ? JSON.parse(snapshot) : {};
+    const payload = pickDirtyFields(current, baseline);
+    if (Object.keys(payload).length === 0) {
+      saving.value = false;
+      return;
+    }
+
+    const res = await apiClient.put('/settings/addons/blog/settings', payload);
     if (!res?.success) throw new Error(res?.message || t('settings.addonsBlogSaveFailed'));
     applyPayload(res);
     notifications.success(t('settings.addonsBlogSaveSuccess'));

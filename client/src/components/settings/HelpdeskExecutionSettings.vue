@@ -418,8 +418,32 @@ async function saveSettings() {
 
   saving.value = true;
   try {
-    const payload = buildPayload();
-    const response = await apiClient('/settings/applications/helpdesk/execution-settings', { method: 'PUT', body: JSON.stringify(payload) });
+    const { pickDirtyFields } = await import('@/utils/pickDirtyFields');
+    const fullSettings = buildPayload().settings;
+    const baselineState = originalSnapshot.value ? JSON.parse(originalSnapshot.value) : null;
+    const baselineSettings = baselineState
+      ? {
+          caseTypes: baselineState.form?.caseTypes,
+          slaPriorityTargets: baselineState.form?.slaPriorityTargets,
+          businessHours: baselineState.form?.businessHours,
+          notifications: baselineState.form?.notifications,
+          defaultSlaPolicyKey: baselineState.form?.defaultSlaPolicyKey || null,
+          slaPolicies: baselineState.form?.slaPolicies,
+          escalationRules: baselineState.preservedRules?.escalationRules,
+          channelRules: baselineState.preservedRules?.channelRules,
+          cannedResponses: baselineState.form?.cannedResponses
+        }
+      : {};
+    const dirtySettings = pickDirtyFields(fullSettings, baselineSettings);
+    if (Object.keys(dirtySettings).length === 0) {
+      saving.value = false;
+      return;
+    }
+
+    const response = await apiClient('/settings/applications/helpdesk/execution-settings', {
+      method: 'PUT',
+      body: JSON.stringify({ settings: dirtySettings })
+    });
     if (!response?.success || !response?.settings) throw new Error(t('settings.helpdeskExecUnexpectedSaveResponse'));
     applySettingsToForm(response.settings);
     ensurePriorityTargets();

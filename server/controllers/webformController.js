@@ -394,7 +394,11 @@ exports.createWebform = async (req, res) => {
       .populate('createdBy', 'firstName lastName email')
       .populate('modifiedBy', 'firstName lastName email');
 
-    return res.status(201).json({ success: true, data: formatWebformForClient(populated) });
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const formatted = formatWebformForClient(populated);
+    attachSettingsAuditDiff(res, {}, cloneForAudit(formatted), { body: req.body || {} });
+
+    return res.status(201).json({ success: true, data: formatted });
   } catch (error) {
     console.error('[webformController.createWebform]', error);
     return res.status(400).json({
@@ -445,6 +449,9 @@ exports.updateWebform = async (req, res) => {
     if (!existing) {
       return res.status(404).json({ success: false, message: 'Webform not found.' });
     }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(formatWebformForClient(existing));
 
     const payload = await sanitizeWebformPayload(req.body, req.user.organizationId, req.user._id);
     delete payload.organizationId;
@@ -512,7 +519,10 @@ exports.updateWebform = async (req, res) => {
       .populate('createdBy', 'firstName lastName email')
       .populate('modifiedBy', 'firstName lastName email');
 
-    return res.json({ success: true, data: formatWebformForClient(populated) });
+    const formatted = formatWebformForClient(populated);
+    attachSettingsAuditDiff(res, before, cloneForAudit(formatted), { body: req.body || {} });
+
+    return res.json({ success: true, data: formatted });
   } catch (error) {
     console.error('[webformController.updateWebform]', error);
     return res.status(400).json({
@@ -533,6 +543,13 @@ exports.deleteWebform = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Webform not found.' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit({
+      name: deleted.name,
+      status: deleted.status,
+      targetModuleKey: deleted.targetModuleKey
+    });
+
     if (deleted.publicLink?.slug) {
       await removePublicRegistryEntry(deleted.publicLink.slug);
     }
@@ -542,9 +559,7 @@ exports.deleteWebform = async (req, res) => {
       organizationId: req.user.organizationId
     });
 
-    if (!deleted) {
-      return res.status(404).json({ success: false, message: 'Webform not found.' });
-    }
+    attachSettingsAuditDiff(res, before, {}, { keys: Object.keys(before || {}) });
 
     return res.json({ success: true, message: 'Webform deleted.' });
   } catch (error) {
@@ -593,7 +608,16 @@ exports.duplicateWebform = async (req, res) => {
       .populate('createdBy', 'firstName lastName email')
       .populate('modifiedBy', 'firstName lastName email');
 
-    return res.status(201).json({ success: true, data: formatWebformForClient(populated) });
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const formatted = formatWebformForClient(populated);
+    attachSettingsAuditDiff(
+      res,
+      {},
+      cloneForAudit({ name: formatted.name, status: formatted.status, sourceId: source._id }),
+      { keys: ['name', 'status', 'sourceId'] }
+    );
+
+    return res.status(201).json({ success: true, data: formatted });
   } catch (error) {
     console.error('[webformController.duplicateWebform]', error);
     return res.status(400).json({
@@ -648,6 +672,12 @@ exports.enablePublicLink = async (req, res) => {
     if (!webform) {
       return res.status(404).json({ success: false, message: 'Webform not found.' });
     }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit({
+      publicLinkEnabled: !!webform.publicLink?.enabled,
+      status: webform.status
+    });
 
     if (!String(webform.name || '').trim()) {
       return res.status(400).json({ success: false, message: 'Webform name is required before publishing.' });
@@ -717,6 +747,17 @@ exports.enablePublicLink = async (req, res) => {
     const populated = await Webform.findById(webform._id)
       .populate('createdBy', 'firstName lastName email')
       .populate('modifiedBy', 'firstName lastName email');
+
+    attachSettingsAuditDiff(
+      res,
+      before,
+      cloneForAudit({
+        publicLinkEnabled: true,
+        status: webform.status,
+        slug
+      }),
+      { keys: ['publicLinkEnabled', 'status', 'slug'] }
+    );
 
     return res.json({
       success: true,

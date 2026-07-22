@@ -556,14 +556,30 @@ const handleSubmit = async () => {
   updateIpBlacklist();
 
   try {
-    const data = await apiClient('/settings/security', {
-      method: 'PUT',
-      body: JSON.stringify({
+    const { pickDirtyFields } = await import('@/utils/pickDirtyFields');
+    const payload = pickDirtyFields(
+      {
         passwordPolicy: form.value.passwordPolicy,
         sessionRules: form.value.sessionRules,
         loginRestrictions: form.value.loginRestrictions,
         twoFactorAuth: form.value.twoFactorAuth
-      })
+      },
+      {
+        passwordPolicy: originalForm.value.passwordPolicy,
+        sessionRules: originalForm.value.sessionRules,
+        loginRestrictions: originalForm.value.loginRestrictions,
+        twoFactorAuth: originalForm.value.twoFactorAuth
+      }
+    );
+
+    if (Object.keys(payload).length === 0) {
+      saving.value = false;
+      return;
+    }
+
+    const data = await apiClient('/settings/security', {
+      method: 'PUT',
+      body: JSON.stringify(payload)
     });
 
     if (data && data.success) {

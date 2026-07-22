@@ -17050,5 +17050,169 @@
   "aiPiiCustomSaveFailed": {
     "message": "Could not save custom PII rules.",
     "description": "Custom PII save failure message"
+  },
+  "tabAuditLog": {
+    "message": "Audit log",
+    "description": "Settings audit log tab"
+  },
+  "tabAuditLogDesc": {
+    "message": "Review configuration changes made in Settings (Admin only)",
+    "description": "Settings audit log card description"
+  },
+  "auditLogTitle": {
+    "message": "Settings audit log",
+    "description": "Audit log page title"
+  },
+  "auditLogSubtitle": {
+    "message": "Track who changed organization settings and when. Visible to Admins only.",
+    "description": "Audit log page subtitle"
+  },
+  "auditLogFilterSurface": {
+    "message": "Surface",
+    "description": "Filter label for audit surface"
+  },
+  "auditLogFilterAction": {
+    "message": "Action",
+    "description": "Filter label for audit action"
+  },
+  "auditLogFilterAll": {
+    "message": "All",
+    "description": "All filter option"
+  },
+  "auditLogActionCreate": {
+    "message": "Create",
+    "description": "Create action filter"
+  },
+  "auditLogActionUpdate": {
+    "message": "Update",
+    "description": "Update action filter"
+  },
+  "auditLogActionDelete": {
+    "message": "Delete",
+    "description": "Delete action filter"
+  },
+  "auditLogActionInvoke": {
+    "message": "Invoke",
+    "description": "Invoke action filter"
+  },
+  "auditLogRefresh": {
+    "message": "Refresh",
+    "description": "Refresh audit log button"
+  },
+  "auditLogEmpty": {
+    "message": "No settings changes recorded yet.",
+    "description": "Empty audit log state"
+  },
+  "auditLogLoadError": {
+    "message": "Failed to load settings audit log",
+    "description": "Audit log load error"
+  },
+  "auditLogUnknownActor": {
+    "message": "Unknown user",
+    "description": "Fallback when actor is missing"
+  },
+  "auditLogBefore": {
+    "message": "Before",
+    "description": "Before payload label"
+  },
+  "auditLogAfter": {
+    "message": "After",
+    "description": "After payload label"
+  },
+  "auditLogNoData": {
+    "message": "—",
+    "description": "No before/after data"
+  },
+  "auditLogPrev": {
+    "message": "Previous",
+    "description": "Previous page"
+  },
+  "auditLogNext": {
+    "message": "Next",
+    "description": "Next page"
+  },
+  "auditLogPage": {
+    "message": "Page {page} of {total}",
+    "description": "Pagination label"
+  },
+  "auditLogFilterArea": {
+    "message": "Settings area",
+    "description": "Friendly filter label for audit surface"
+  },
+  "auditLogByline": {
+    "message": "By {actor} · {when}",
+    "description": "Actor and timestamp byline"
+  },
+  "auditLogMoreChanges": {
+    "message": "+{count} more — click to show all",
+    "description": "More changes teaser"
+  },
+  "auditLogAllChanges": {
+    "message": "All changes",
+    "description": "Expanded changes heading"
+  },
+  "auditLogChangedOne": {
+    "message": "Changed {field} from “{from}” to “{to}”",
+    "description": "Single field change title"
+  },
+  "auditLogSetOne": {
+    "message": "Set {field} to {to}",
+    "description": "Single field set title"
+  },
+  "auditLogChangedMany": {
+    "message": "Updated {area} ({count} changes)",
+    "description": "Multi field change title"
+  },
+  "auditLogFallbackTitle": {
+    "message": "Settings change",
+    "description": "Fallback audit entry title"
+  },
+  "auditLogColWhen": {
+    "message": "When",
+    "description": "Audit table column: when"
+  },
+  "auditLogColWho": {
+    "message": "Changed by",
+    "description": "Audit table column: who"
+  },
+  "auditLogColArea": {
+    "message": "Area",
+    "description": "Audit table column: settings area"
+  },
+  "auditLogColSetting": {
+    "message": "Setting",
+    "description": "Audit table column: setting name"
+  },
+  "auditLogColBefore": {
+    "message": "Previous value",
+    "description": "Audit table column: before"
+  },
+  "auditLogColAfter": {
+    "message": "New value",
+    "description": "Audit table column: after"
+  },
+  "auditLogColDevice": {
+    "message": "Device",
+    "description": "Audit table column: browser/OS device"
+  },
+  "auditLogColIp": {
+    "message": "IP address",
+    "description": "Audit table column: client IP"
+  },
+  "auditLogUnknownDevice": {
+    "message": "Unknown",
+    "description": "Fallback when user-agent is missing"
+  },
+  "auditLogUnknownIp": {
+    "message": "—",
+    "description": "Fallback when IP is missing"
+  },
+  "auditLogLocalhost": {
+    "message": "Localhost",
+    "description": "Display label for loopback IP addresses (::1 / 127.0.0.1)"
+  },
+  "auditLogColChanges": {
+    "message": "Changes",
+    "description": "Audit table column: change summary for a save"
   }
 }

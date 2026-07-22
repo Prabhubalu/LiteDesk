@@ -275,6 +275,9 @@ exports.createRole = async (req, res) => {
         await newRole.populate('parentRole', 'name');
         invalidateTenantPermissionCaches(req.user.organizationId);
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(res, {}, cloneForAudit(newRole.toObject()), { body: req.body });
+
         res.status(201).json({
             success: true,
             data: attachUIPermissionAliases(newRole.toObject()),
@@ -294,6 +297,7 @@ exports.createRole = async (req, res) => {
 // Update role
 exports.updateRole = async (req, res) => {
     try {
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
         const role = await Role.findOne({ 
             _id: req.params.id,
             organizationId: req.user.organizationId 
@@ -305,6 +309,8 @@ exports.updateRole = async (req, res) => {
                 message: 'Role not found' 
             });
         }
+
+        const before = cloneForAudit(role.toObject());
 
         // For system roles: block ONLY if attempting to change the name; ignore isSystemRole field from payload
         if (role.isSystemRole) {
@@ -407,6 +413,9 @@ exports.updateRole = async (req, res) => {
         await role.populate('parentRole', 'name');
         invalidateTenantPermissionCaches(req.user.organizationId);
 
+        const after = cloneForAudit(role.toObject());
+        attachSettingsAuditDiff(res, before, after, { body: req.body });
+
         res.json({
             success: true,
             data: attachUIPermissionAliases(role.toObject()),
@@ -479,6 +488,14 @@ exports.deleteRole = async (req, res) => {
         }
 
         await role.deleteOne();
+
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            cloneForAudit({ name: role.name, description: role.description }),
+            {},
+            { keys: ['name', 'description'] }
+        );
 
         res.json({
             success: true,

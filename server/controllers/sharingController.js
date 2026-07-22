@@ -137,6 +137,14 @@ exports.updateSharingDefault = async (req, res) => {
       });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const previous = await ModuleSharingDefault.findOne({
+      organizationId: req.user.organizationId,
+      appKey,
+      moduleKey
+    }).lean();
+    const before = cloneForAudit({ mode: previous?.mode || null });
+
     const row = await ModuleSharingDefault.findOneAndUpdate(
       {
         organizationId: req.user.organizationId,
@@ -149,6 +157,8 @@ exports.updateSharingDefault = async (req, res) => {
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     ).lean();
+
+    attachSettingsAuditDiff(res, before, cloneForAudit({ mode: row.mode }), { keys: ['mode'] });
 
     res.json({
       success: true,
@@ -237,6 +247,9 @@ exports.createSharingRule = async (req, res) => {
       updatedBy: req.user._id
     });
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(res, {}, cloneForAudit(rule.toObject()), { body: req.body || {} });
+
     res.status(201).json({
       success: true,
       data: rule.toObject(),
@@ -265,6 +278,9 @@ exports.updateSharingRule = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Sharing rule not found' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(rule.toObject());
+
     const payload = normalizeRulePayload({ ...rule.toObject(), ...req.body });
     const validationError = validateRulePayload(payload);
     if (validationError) {
@@ -279,6 +295,8 @@ exports.updateSharingRule = async (req, res) => {
     rule.target = payload.target;
     rule.updatedBy = req.user._id;
     await rule.save();
+
+    attachSettingsAuditDiff(res, before, cloneForAudit(rule.toObject()), { body: req.body || {} });
 
     res.json({
       success: true,
@@ -307,6 +325,9 @@ exports.deleteSharingRule = async (req, res) => {
     if (!rule) {
       return res.status(404).json({ success: false, message: 'Sharing rule not found' });
     }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(res, cloneForAudit(rule.toObject()), {}, { keys: ['name', 'enabled', 'privilege'] });
 
     res.json({ success: true, message: 'Sharing rule deleted' });
   } catch (error) {

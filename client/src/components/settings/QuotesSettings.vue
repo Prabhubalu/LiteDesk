@@ -232,7 +232,8 @@ function syncAuthOrgSettings(settings) {
 async function save() {
   saving.value = true;
   try {
-    const res = await apiClient.put('/settings/quotes', {
+    const { pickDirtyFields } = await import('@/utils/pickDirtyFields');
+    const current = {
       requireApprovalBeforeSend: form.value.requireApprovalBeforeSend === true,
       requireCustomerAgreement: form.value.requireCustomerAgreement === true,
       requireTypedSignature: form.value.requireTypedSignature === true,
@@ -241,7 +242,15 @@ async function save() {
       brandColor: String(form.value.brandColor || '').trim(),
       pdfFooterText: String(form.value.pdfFooterText || '').trim(),
       emailSignature: String(form.value.emailSignature || '').trim()
-    });
+    };
+    const baseline = savedSnapshot.value ? JSON.parse(savedSnapshot.value) : {};
+    const payload = pickDirtyFields(current, baseline);
+    if (Object.keys(payload).length === 0) {
+      saving.value = false;
+      return;
+    }
+
+    const res = await apiClient.put('/settings/quotes', payload);
     if (res?.success) {
       syncAuthOrgSettings(res.settings || form.value);
       savedSnapshot.value = serializeForm();

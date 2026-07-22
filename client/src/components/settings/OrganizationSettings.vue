@@ -840,18 +840,38 @@ const resetForm = () => {
 const handleSubmit = async () => {
   saving.value = true;
   try {
+    // Send only fields the user actually changed so audit log stays precise.
+    const payload = {};
+    const keys = [
+      'name',
+      'logoUrl',
+      'primaryColor',
+      'timeZone',
+      'currency',
+      'locale',
+      'language',
+      'defaultPhoneCountry'
+    ];
+    for (const key of keys) {
+      const nextVal = key === 'defaultPhoneCountry'
+        ? (form.value.defaultPhoneCountry || '')
+        : form.value[key];
+      const prevVal = key === 'defaultPhoneCountry'
+        ? (originalForm.value.defaultPhoneCountry || '')
+        : originalForm.value[key];
+      if (JSON.stringify(nextVal ?? null) !== JSON.stringify(prevVal ?? null)) {
+        payload[key] = nextVal;
+      }
+    }
+
+    if (Object.keys(payload).length === 0) {
+      saving.value = false;
+      return;
+    }
+
     const data = await apiClient('/settings/organization', {
       method: 'PUT',
-      body: JSON.stringify({
-        name: form.value.name,
-        logoUrl: form.value.logoUrl,
-        primaryColor: form.value.primaryColor,
-        timeZone: form.value.timeZone,
-        currency: form.value.currency,
-        locale: form.value.locale,
-        language: form.value.language,
-        defaultPhoneCountry: form.value.defaultPhoneCountry || ''
-      })
+      body: JSON.stringify(payload)
     });
 
     if (data && data.success) {

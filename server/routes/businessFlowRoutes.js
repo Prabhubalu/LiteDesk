@@ -28,8 +28,10 @@ const {
   getFlowMetrics,
   getFlowBottlenecks
 } = require('../controllers/businessFlowController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 router.use(protect);
+router.use(createSettingsAuditMiddleware({ surface: 'business-flows', entityType: 'BusinessFlow' }));
 
 // All routes require admin (check in controller if needed)
 router.get('/', getBusinessFlows);

@@ -1452,6 +1452,21 @@ exports.inviteUser = async (req, res) => {
             responseData.inviteUrl = buildInviteUrl(inviteCredentials.inviteTokenRaw);
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            {},
+            cloneForAudit({
+                email: responseData.email,
+                firstName: responseData.firstName,
+                lastName: responseData.lastName,
+                role: responseData.role,
+                roleId: responseData.roleId,
+                status: responseData.status
+            }),
+            { keys: ['email', 'firstName', 'lastName', 'role', 'roleId', 'status'] }
+        );
+
         res.status(201).json({
             success: true,
             data: responseData,
@@ -1500,6 +1515,16 @@ exports.updateUser = async (req, res) => {
             });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            roleId: user.roleId,
+            status: user.status
+        });
+
         if (req.body && Object.prototype.hasOwnProperty.call(req.body, 'permissions') && req.body.permissions !== undefined) {
             console.warn(
                 '[DEPRECATED] PUT /users/:id ignores body.permissions. Edit Roles or assign appAccess.',
@@ -1540,6 +1565,19 @@ exports.updateUser = async (req, res) => {
                     const ownership = await userRecordTransferService.getOwnershipSummary(
                         organization._id,
                         user._id
+                    );
+                    attachSettingsAuditDiff(
+                        res,
+                        before,
+                        cloneForAudit({
+                            email: user.email,
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            role: user.role,
+                            roleId: user.roleId,
+                            status: 'inactive'
+                        }),
+                        { keys: ['email', 'firstName', 'lastName', 'role', 'roleId', 'status'] }
                     );
                     return res.json({
                         success: true,
@@ -1740,6 +1778,19 @@ exports.updateUser = async (req, res) => {
         }
 
         const updated = sanitizeUserResponsePayload(user);
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({
+                email: updated.email,
+                firstName: updated.firstName,
+                lastName: updated.lastName,
+                role: updated.role,
+                roleId: updated.roleId,
+                status: updated.status
+            }),
+            { keys: ['email', 'firstName', 'lastName', 'role', 'roleId', 'status'] }
+        );
         res.json({
             success: true,
             data: {
@@ -1818,11 +1869,33 @@ exports.deactivateUser = async (req, res) => {
             });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            status: user.status
+        });
+
         await applyUserDeactivation(user, organization, ScopedUser);
 
         const ownership = await userRecordTransferService.getOwnershipSummary(
             organization._id,
             user._id
+        );
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                status: 'inactive'
+            }),
+            { keys: ['email', 'firstName', 'lastName', 'role', 'status'] }
         );
 
         res.json({
@@ -2018,6 +2091,15 @@ exports.deleteUser = async (req, res) => {
             await ScopedRole.findByIdAndUpdate(user.roleId, { $inc: { userCount: -1 } });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            status: user.status
+        });
+
         user.status = 'deleted';
         user.inviteTokenHash = null;
         user.inviteTokenExpiresAt = null;
@@ -2033,6 +2115,19 @@ exports.deleteUser = async (req, res) => {
           emailVerificationTokenHash: null,
           status: 'inactive'
         });
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                status: 'deleted'
+            }),
+            { keys: ['email', 'firstName', 'lastName', 'role', 'status'] }
+        );
 
         res.json({
             success: true,

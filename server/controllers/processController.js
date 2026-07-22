@@ -492,6 +492,15 @@ exports.createProcess = async (req, res) => {
       message: 'Process created successfully'
     };
     if (oneTimeSecret) response.webhookSecret = oneTimeSecret;
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(
+      res,
+      {},
+      cloneForAudit({ name: process.name, status: process.status, appKey: process.appKey }),
+      { keys: ['name', 'status', 'appKey'] }
+    );
+
     res.status(201).json(response);
   } catch (error) {
     log.error('create_process_error', { error: error.message });
@@ -533,6 +542,13 @@ exports.updateProcess = async (req, res) => {
       });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit({
+      name: process.name,
+      status: process.status,
+      description: process.description
+    });
+
     const normalizedBody = normalizeProcessGraph(
       { ...process.toObject(), ...req.body },
       { autoLayout: false }
@@ -564,6 +580,18 @@ exports.updateProcess = async (req, res) => {
       message: 'Process updated successfully'
     };
     if (oneTimeSecret) response.webhookSecret = oneTimeSecret;
+
+    attachSettingsAuditDiff(
+      res,
+      before,
+      cloneForAudit({
+        name: process.name,
+        status: process.status,
+        description: process.description
+      }),
+      { keys: ['name', 'status', 'description'] }
+    );
+
     res.json(response);
   } catch (error) {
     log.error('update_process_error', { error: error.message });
@@ -606,6 +634,9 @@ exports.updateProcessStatus = async (req, res) => {
         message: 'Process not found'
       });
     }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit({ status: process.status });
 
     // Validate before activating (graph + runnable active process)
     if (status === 'active') {
@@ -658,6 +689,13 @@ exports.updateProcessStatus = async (req, res) => {
         : status === 'archived'
         ? 'Process archived successfully'
         : 'Process saved as draft';
+
+    attachSettingsAuditDiff(
+      res,
+      before,
+      cloneForAudit({ status: process.status }),
+      { keys: ['status'] }
+    );
 
     res.json({
       success: true,
@@ -1065,6 +1103,14 @@ exports.deleteProcess = async (req, res) => {
       name: process.name,
       status: process.status
     });
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(
+      res,
+      cloneForAudit({ name: process.name, status: process.status }),
+      {},
+      { keys: ['name', 'status'] }
+    );
 
     res.json({
       success: true,

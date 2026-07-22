@@ -25,6 +25,7 @@ const {
   publicWebformSubmitLimiter
 } = require('../middleware/rateLimitMiddleware');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ const protectedRouter = express.Router();
 protectedRouter.use(protect);
 protectedRouter.use(organizationIsolation);
 protectedRouter.use(checkTrialStatus);
+protectedRouter.use(createSettingsAuditMiddleware({ surface: 'webforms', entityType: 'Webform' }));
 
 protectedRouter.route('/')
   .get(checkPermission('webforms', 'view'), getWebforms)

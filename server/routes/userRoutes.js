@@ -25,11 +25,14 @@ const {
     uploadAvatar,
     deleteAvatar
 } = require('../controllers/userController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 // Apply auth and organization middleware to all routes
 router.use(protect);
 router.use(organizationIsolation);
 router.use(checkTrialStatus);
+// Profile paths are skipped via SETTINGS_AUDIT_SKIP_PATH_SUBSTRINGS (/profile)
+router.use(createSettingsAuditMiddleware({ surface: 'users', entityType: 'User' }));
 
 // --- Profile Routes (any authenticated user, app-agnostic) ---
 // Profile routes should be accessible to all authenticated users regardless of app
