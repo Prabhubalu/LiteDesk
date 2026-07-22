@@ -46,7 +46,8 @@
     
     <!-- Teleport target for Summary tab content - when mobile and not in expanded full-screen view (e.g. version history) -->
     <Teleport v-if="isMobile && summaryTeleportReady && !leftExpanded" to="#record-summary-teleport-target">
-      <div class="record-page-layout__summary-content flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden px-4 pb-4 pt-3">
+      <!-- overflow-visible: overflow-hidden here breaks position:sticky on RecordPageTitleRow -->
+      <div class="record-page-layout__summary-content flex min-h-0 w-full flex-1 flex-col overflow-visible px-4 pb-4 pt-0">
         <slot name="left" :is-mobile="isMobile" />
       </div>
     </Teleport>

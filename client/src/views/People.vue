@@ -14,9 +14,34 @@
       @bulk-action="handleBulkAction"
     >
       <!-- Custom Name Cell -->
-      <template #cell-name="{ row }">
-        <div class="flex items-center gap-3">
+      <template #cell-name="{ row, selected, selectionActive, onToggleSelect }">
+        <div class="flex items-center gap-3 min-w-0">
+          <button
+            v-if="selectionActive"
+            type="button"
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            :class="selected
+              ? 'bg-indigo-600 text-white'
+              : 'border-2 border-gray-300 bg-transparent dark:border-gray-500'"
+            :aria-pressed="selected"
+            @click.stop="onToggleSelect?.()"
+          >
+            <svg
+              v-if="selected"
+              class="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
           <Avatar
+            v-else
             :user="{
               firstName: row.first_name,
               lastName: row.last_name,
@@ -25,12 +50,12 @@
             size="md"
           />
           <div class="min-w-0 flex-1">
-            <div class="font-semibold text-gray-900 dark:text-white truncate">
+            <div class="font-semibold text-[15px] leading-snug text-gray-900 dark:text-white truncate">
               {{ row.first_name }} {{ row.last_name }}
             </div>
             <div
               v-if="row.email"
-              class="text-sm text-gray-500 dark:text-gray-400 truncate"
+              class="text-[13px] leading-snug text-gray-500 dark:text-gray-400 truncate"
             >
               {{ row.email }}
             </div>

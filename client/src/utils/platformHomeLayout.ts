@@ -8,10 +8,10 @@
  */
 
 const SURFACE_BORDER =
-  'border border-neutral-200/50 dark:border-white/[0.12]';
+  'border border-neutral-900/[0.06] dark:border-white/[0.08]';
 
 const SURFACE_SHADOW =
-  'shadow-[0_1px_2px_rgba(15,23,42,0.03),0_4px_14px_-4px_rgba(15,23,42,0.06),inset_0_1px_0_0_rgba(255,255,255,0.75)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_8px_24px_-12px_rgba(0,0,0,0.32)]';
+  'shadow-[0_1px_2px_rgba(15,23,42,0.05),0_6px_16px_-4px_rgba(15,23,42,0.08),inset_0_1px_0_0_rgba(255,255,255,0.85)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_10px_28px_-12px_rgba(0,0,0,0.45)]';
 
 const SURFACE_ELEVATION = [SURFACE_BORDER, SURFACE_SHADOW].join(' ');
 
@@ -23,9 +23,9 @@ const INSET_SHADOW =
 
 /** Collapsible section wells (Today, Your apps). */
 export const PLATFORM_HOME_SECTION_CLASS = [
-  'overflow-hidden rounded-2xl bg-neutral-50/80',
+  'overflow-hidden rounded-2xl bg-white',
   SURFACE_ELEVATION,
-  'dark:bg-neutral-800/45'
+  'dark:bg-neutral-800/55'
 ].join(' ');
 
 export const PLATFORM_HOME_SECTION_DIVIDER_CLASS =
@@ -41,9 +41,8 @@ export const PLATFORM_HOME_CARD_CLASS = [
 export const PLATFORM_HOME_CARD_HEADER_DIVIDER_CLASS =
   'border-b border-neutral-100/90 dark:border-white/[0.07]';
 
-/** Intent bar gradient overlay (pairs with PLATFORM_HOME_CARD_CLASS). */
-export const PLATFORM_HOME_INTENT_GRADIENT_CLASS =
-  'bg-gradient-to-br from-primary-50/60 via-white to-secondary-50/25 dark:from-primary-900/20 dark:via-neutral-800/55 dark:to-neutral-800/40';
+/** Intent bar overlay (pairs with PLATFORM_HOME_CARD_CLASS) — solid white, no tint. */
+export const PLATFORM_HOME_INTENT_GRADIENT_CLASS = '';
 
 /** Loading placeholders — same elevation as content blocks. */
 export const PLATFORM_HOME_SKELETON_CLASS = [

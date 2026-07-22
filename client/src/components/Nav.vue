@@ -16,7 +16,8 @@ import { invalidateAddonNavigationCache } from '@/utils/addonNavigation';
 import { createPermissionSnapshot, hasPermission as hasSnapshotPermission } from '@/types/permission-snapshot.types';
 import { useColorMode } from '@/composables/useColorMode';
 import { useSidebarState } from '@/composables/useSidebarState';
-import { SIDEBAR_FLOATING_SURFACE_CLASS } from '@/utils/sidebarLayout';
+import { SHELL_FLOATING_SURFACE_CLASS, applySidebarChromeCssVar } from '@/utils/sidebarLayout';
+import { readDockedAppIdFromStorage } from '@/composables/useSidebarState';
 import { useUserStatus } from '@/composables/useUserStatus';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarSkeleton from '@/components/AppSidebarSkeleton.vue';
@@ -29,7 +30,6 @@ import {
   BellIcon, 
   XMarkIcon, 
   MagnifyingGlassIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   ChevronDownIcon,
   InformationCircleIcon,
@@ -61,39 +61,20 @@ const loadingSidebar = ref(false);
 
 const showDrawer = ref(false);
 const isCollapsed = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  get: () => true,
+  set: () => {
+    // Sidebar is always the icon rail — expand is unsupported.
+  }
 });
 
 const sidebarOpen = ref(false);
-const isHovering = ref(false);
-
-// Computed to determine if sidebar should show expanded
-const shouldShowExpanded = computed(() => {
-  return !isCollapsed.value || isHovering.value;
-});
 
 const toggleSidebar = () => {
-  isCollapsed.value = !isCollapsed.value;
-  
-  // Dispatch custom event so TabBar can react to sidebar state change
-  window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-    detail: { collapsed: isCollapsed.value } 
-  }));
+  // no-op: expand/collapse removed (app flyout only)
 };
 
 const toggleMobileMenu = () => {
   sidebarOpen.value = !sidebarOpen.value;
-};
-
-const handleMouseEnter = () => {
-  if (isCollapsed.value) {
-    isHovering.value = true;
-  }
-};
-
-const handleMouseLeave = () => {
-  isHovering.value = false;
 };
 
 const FORBIDDEN_APP_NAV_MODULE_KEYS = new Set(['people', 'tasks', 'events', 'forms', 'items', 'organizations']);
@@ -108,6 +89,25 @@ const detectAppFromRoute = (path) => {
   if (normalizedPath.startsWith('/helpdesk/')) return 'HELPDESK';
   if (normalizedPath.startsWith('/projects/')) return 'PROJECTS';
   if (normalizedPath.startsWith('/sales/')) return 'SALES';
+  if (normalizedPath.startsWith('/inventory/')) return 'INVENTORY';
+  if (normalizedPath.startsWith('/marketing/')) return 'MARKETING';
+
+  const corePrefixes = [
+    '/people',
+    '/organizations',
+    '/tasks',
+    '/events',
+    '/items',
+    '/forms',
+    '/responses',
+    '/documents',
+    '/templates',
+    '/analytics',
+    '/imports',
+  ];
+  if (corePrefixes.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(prefix + '/'))) {
+    return 'CORE';
+  }
   return null;
 };
 
@@ -132,8 +132,29 @@ const canAccessSidebarModule = (permission) => {
 
 const applyAppLensToSidebarStructure = (targetAppKey) => {
   const registry = appRegistry.value || {};
-  const app = registry[targetAppKey];
-  if (!app || !sidebarStructure.value) return false;
+  if (!sidebarStructure.value) return false;
+
+  const normalized = String(targetAppKey || '').toUpperCase();
+  if (normalized === 'CORE') {
+    sidebarStructure.value = {
+      ...sidebarStructure.value,
+      appSwitcher: {
+        ...sidebarStructure.value.appSwitcher,
+        activeAppId: 'CORE',
+      },
+      appNav: {
+        appId: 'CORE',
+        modules: sidebarStructure.value.coreModules || [],
+      },
+    };
+    lastActiveAppId.value = 'CORE';
+    return true;
+  }
+
+  const app = registry[targetAppKey] || Object.values(registry).find(
+    (candidate) => String(candidate?.appKey || '').toUpperCase() === normalized
+  );
+  if (!app) return false;
 
   const modules = (app.modules || [])
     .filter((m) => {
@@ -314,6 +335,9 @@ const handleNotificationClick = () => {
 };
 
 onMounted(() => {
+  emit('update:modelValue', true);
+  applySidebarChromeCssVar(Boolean(readDockedAppIdFromStorage()));
+  window.dispatchEvent(new CustomEvent('sidebar-toggle', { detail: { collapsed: true } }));
   window.addEventListener('arivu:core-modules-updated', onCoreModulesUpdated);
   window.addEventListener('arivu:addons-updated', onCoreModulesUpdated);
   window.addEventListener('arivu:open-notifications-panel', handleNotificationClick);
@@ -416,14 +440,12 @@ const logoSrc = computed(() => {
                   <AppSidebar
                     v-if="sidebarStructure"
                     :sidebar-structure="sidebarStructure"
-                    :collapsed="false"
-                    :on-toggle-collapse="toggleSidebar"
                     embedded
                   />
 
                   <AppSidebarSkeleton
                     v-else-if="loadingSidebar && !sidebarStructure"
-                    :collapsed="false"
+                    :collapsed="true"
                   />
 
                   <!-- Empty State -->
@@ -438,34 +460,34 @@ const logoSrc = computed(() => {
       </Dialog>
     </TransitionRoot>
 
-    <!-- Desktop Sidebar Container with expand/collapse functionality -->
+    <!-- Desktop Sidebar: icon rail + optional docked module drawer -->
     <div 
       data-onboarding-target="sidebar"
-      @mouseenter="handleMouseEnter"
-      @mouseleave="handleMouseLeave"
       :class="[
-        'fixed left-0 top-[var(--platform-banner-offset,0px)] h-[calc(100dvh-var(--platform-banner-offset,0px))] p-2 box-border transition-[width] duration-200 ease-out',
+        'fixed left-0 top-[var(--platform-banner-offset,0px)] h-[calc(100dvh-var(--platform-banner-offset,0px))] p-2 box-border',
         'bg-transparent border-0 flex flex-col',
         'hidden lg:flex',
-        shouldShowExpanded ? 'lg:w-[calc(13.75rem+1rem)]' : 'lg:w-[calc(3.5rem+1rem)]',
+        'lg:w-[var(--arivu-sidebar-chrome-width,calc(3.5rem+1rem))]',
+        'transition-[width] duration-200 ease-out',
         'z-50'
       ]"
     >
-      <!-- Floating card: detached from tab bar and main canvas -->
+      <!-- Floating card: light shell; brand lives only on the icon rail -->
       <div
-        :class="['flex-1 min-h-0 flex flex-col', SIDEBAR_FLOATING_SURFACE_CLASS]"
+        :class="[
+          'flex-1 min-h-0 flex flex-col bg-neutral-50 dark:bg-neutral-950',
+          SHELL_FLOATING_SURFACE_CLASS,
+        ]"
       >
         <AppSidebar
           v-if="sidebarStructure"
           :sidebar-structure="sidebarStructure"
-          :collapsed="!shouldShowExpanded"
-          :on-toggle-collapse="toggleSidebar"
           embedded
         />
 
         <AppSidebarSkeleton
           v-else-if="loadingSidebar && !sidebarStructure"
-          :collapsed="!shouldShowExpanded"
+          :collapsed="true"
         />
 
         <!-- Empty State -->
@@ -481,7 +503,7 @@ const logoSrc = computed(() => {
         <span class="sr-only">{{ t('navigation.openSidebar') }}</span>
         <Bars3Icon class="size-6 text-gray-900 dark:text-gray-400" aria-hidden="true" />
       </button>
-      <div class="flex-1 text-base font-semibold text-gray-900 dark:text-white">{{ mobileHeaderTitle }}</div>
+      <div class="flex-1 text-base font-semibold text-gray-900 dark:text-white truncate">{{ mobileHeaderTitle }}</div>
       <div
         v-if="authStore.user"
         class="flex h-full items-center gap-3 pl-2 sm:pl-3"

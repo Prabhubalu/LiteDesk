@@ -1,5 +1,5 @@
 <template>
-  <section :class="['flex h-full min-h-0 flex-col overflow-hidden', PLATFORM_HOME_CARD_CLASS]">
+  <section :class="['flex min-h-0 flex-col overflow-hidden h-auto sm:h-full', PLATFORM_HOME_CARD_CLASS]">
     <div :class="['platform-home-widget-header flex items-stretch gap-2 px-4 py-2.5 sm:px-5', PLATFORM_HOME_CARD_HEADER_DIVIDER_CLASS]">
       <h3 class="flex min-w-0 shrink items-center select-text truncate text-sm font-semibold text-neutral-900 dark:text-white">
         {{ t('platform.platformHomeInboxTitle') }}

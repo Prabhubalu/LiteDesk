@@ -1775,8 +1775,7 @@ const headerLeft = computed(() => {
   }
   
   // On desktop (≥ 1024px), position based on sidebar state
-  const sidebarCollapsed = localStorage.getItem('arivu-sidebar-collapsed') === 'true';
-  return sidebarCollapsed ? '64px' : '256px';
+  return 'var(--arivu-sidebar-chrome-width, calc(3.5rem + 1rem))';
 });
 
 

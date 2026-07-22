@@ -5,9 +5,12 @@
       :key="getSectionKey(section, index)"
       :class="getSectionClass(section)"
     >
-      <div v-if="!section.suppressTitleRow" class="pb-2 flex-shrink-0 flex items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-2 min-w-0">
-          <h3 :class="getSectionTitleClass()">{{ section.title }}</h3>
+      <div
+        v-if="!section.suppressTitleRow"
+        class="pb-2 flex-shrink-0 flex items-center justify-between gap-2 sm:gap-3"
+      >
+        <div class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+          <h3 :class="[getSectionTitleClass(), 'min-w-0 truncate']">{{ section.title }}</h3>
           <component
             v-if="section.titleSuffixComponent"
             :is="section.titleSuffixComponent"
@@ -17,7 +20,7 @@
         </div>
         <div
           v-if="section.headerActionsComponent || section.actions?.length"
-          class="inline-flex items-center gap-2 shrink-0 flex-wrap justify-end"
+          class="inline-flex shrink-0 items-center justify-end gap-1.5 sm:gap-2"
         >
           <component
             v-if="section.headerActionsComponent"
@@ -41,7 +44,10 @@
               :class="getActionIconClass(action)"
             />
             <span v-else-if="action.type !== 'expand'" class="text-xs font-semibold">{{ action.label || action.type }}</span>
-            <span v-if="action.type !== 'expand' && resolveActionIcon(action)" class="text-xs font-semibold">{{ action.label || action.type }}</span>
+            <span
+              v-if="action.type !== 'expand' && resolveActionIcon(action)"
+              class="hidden text-xs font-semibold sm:inline"
+            >{{ action.label || action.type }}</span>
           </button>
           </template>
         </div>

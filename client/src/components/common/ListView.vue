@@ -338,7 +338,7 @@
 
         <slot name="search-actions" />
 
-        <div class="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1">
+        <div class="ml-auto flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-2">
         <!-- Mobile & Tablet Filters Button -->
         <Popover v-if="resolvedShowFilterBuilder || resolvedToolbarFilterConfig.length > 0" class="relative shrink-0">
           <PopoverButton
@@ -371,8 +371,8 @@
           >
             <PopoverPanel
               :class="resolvedShowFilterBuilder
-                ? 'absolute left-0 z-[60] mt-2 w-[48rem] max-w-[min(48rem,calc(100vw-2rem))] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'
-                : 'absolute left-0 z-[60] mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'"
+                ? 'absolute right-0 z-[60] mt-2 w-[48rem] max-w-[min(48rem,calc(100vw-2rem))] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'
+                : 'absolute right-0 z-[60] mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-visible rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10'"
             >
               <FilterBuilderPanel
                 v-if="resolvedShowFilterBuilder"
@@ -429,9 +429,6 @@
           @remove="handleActiveFilterChipRemove"
           @clear-all="clearFilters"
         />
-        </div>
-
-        <div class="ml-auto flex shrink-0 items-center gap-2">
           <slot name="toolbar-trailing" />
         </div>
       </div>
@@ -3355,9 +3352,8 @@ const headerLeft = computed(() => {
     return '0px';
   }
   
-  // On desktop (≥ 1024px), position based on sidebar state
-  const sidebarCollapsed = localStorage.getItem('arivu-sidebar-collapsed') === 'true';
-  return sidebarCollapsed ? '64px' : '256px';
+  // On desktop (≥ 1024px), align with sidebar chrome (rail ± docked drawer)
+  return 'var(--arivu-sidebar-chrome-width, calc(3.5rem + 1rem))';
 });
 
 const columnFilterSources = computed(() =>

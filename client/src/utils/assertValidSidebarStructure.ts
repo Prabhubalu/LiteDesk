@@ -26,11 +26,13 @@ function invariant(condition: unknown, message: string): asserts condition {
  *
  * Validates:
  * - coreModules contains only coreModule items
+ * - applications peers include CORE (when core modules exist) + commercial apps
  * - appNav contains only one app lens
  * - no items use kinds outside surface | coreModule | app | platform
  */
 export function assertValidSidebarStructure(structure: SidebarStructure): void {
   invariant(structure !== null && typeof structure === 'object', 'SidebarStructure must be an object');
+  invariant(Array.isArray(structure.applications), 'applications must be an array');
 
   const allItems: SidebarItem[] = [
     ...structure.shell,
@@ -38,6 +40,7 @@ export function assertValidSidebarStructure(structure: SidebarStructure): void {
     ...(structure.appNav.dashboard ? [structure.appNav.dashboard] : []),
     ...structure.appNav.modules,
     ...structure.platform,
+    ...structure.applications.flatMap((app) => app.items),
   ];
 
   for (const item of allItems) {
@@ -56,14 +59,37 @@ export function assertValidSidebarStructure(structure: SidebarStructure): void {
     `appNav.appId must match appSwitcher.activeAppId (${structure.appNav.appId} vs ${structure.appSwitcher.activeAppId})`
   );
 
-  // AppNav must not leak raw entities.
-  for (const item of structure.appNav.modules) {
-    invariant(item.kind === 'app', 'appNav.modules must contain only app items');
-    if (typeof item.moduleKey === 'string') {
-      invariant(
-        !FORBIDDEN_RAW_ENTITY_MODULE_KEYS.has(item.moduleKey),
-        `Forbidden raw entity leaked into SidebarStructure: ${item.moduleKey}`
-      );
+  // Applications: Core modules stay under CORE flyout; commercial flyouts must not leak raw entities.
+  for (const app of structure.applications) {
+    invariant(typeof app.id === 'string' && app.id.length > 0, 'application id required');
+    invariant(Array.isArray(app.items), `application ${app.id} items must be an array`);
+    if (app.id === 'CORE') {
+      for (const item of app.items) {
+        invariant(item.kind === 'coreModule', 'CORE flyout must contain only coreModule items');
+      }
+      continue;
+    }
+    for (const item of app.items) {
+      invariant(item.kind === 'app', `application ${app.id} items must be kind app`);
+      if (typeof item.moduleKey === 'string') {
+        invariant(
+          !FORBIDDEN_RAW_ENTITY_MODULE_KEYS.has(item.moduleKey),
+          `Forbidden raw entity leaked into application ${app.id}: ${item.moduleKey}`
+        );
+      }
+    }
+  }
+
+  // AppNav must not leak raw entities (except CORE lens cache).
+  if (structure.appNav.appId !== 'CORE') {
+    for (const item of structure.appNav.modules) {
+      invariant(item.kind === 'app', 'appNav.modules must contain only app items');
+      if (typeof item.moduleKey === 'string') {
+        invariant(
+          !FORBIDDEN_RAW_ENTITY_MODULE_KEYS.has(item.moduleKey),
+          `Forbidden raw entity leaked into SidebarStructure: ${item.moduleKey}`
+        );
+      }
     }
   }
 }

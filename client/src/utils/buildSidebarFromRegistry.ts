@@ -11,16 +11,22 @@
  * entities, app-agnostic primitives, or infrastructure.”
  *
  * Enforcement:
- * - Shell: Home / Inbox (mail) / Approvals / **Attention** (`/platform/attention`) / Search
- * - Core Modules: registry PLATFORM modules (settings fallback) only
- * - App lens: exactly ONE active app at a time (route → lastActiveAppId fallback)
- * - App nav: dashboard + modules for active app only
+ * - Shell: Home / Inbox / Astra / Approvals / Attention / Search (+ addons)
+ * - Applications: Core + entitled apps as peers; modules only in AppFlyout
+ * - App lens cache: activeAppId from route (session lastActiveAppId fallback)
  * - Platform: governance only
  *
  * ============================================================================
  */
 
-import type { SidebarStructure, SidebarItem, AppSummary, AppRegistry, AppRegistryModule } from '@/types/sidebar.types';
+import type {
+  SidebarStructure,
+  SidebarItem,
+  AppSummary,
+  AppRegistry,
+  AppRegistryModule,
+  AppFlyoutDefinition,
+} from '@/types/sidebar.types';
 import type { PermissionSnapshot } from '@/types/permission-snapshot.types';
 import { hasPermission as checkPermission } from '@/types/permission-snapshot.types';
 import { memoizeBuilder } from '@/utils/builderCache';
@@ -100,10 +106,20 @@ function listApps(appRegistry: AppRegistry): Array<{ appKey: string; label: stri
   return Object.values(appRegistry).filter((a) => a.appKey !== 'PLATFORM' && a.appKey.toLowerCase() !== 'platform');
 }
 
+const CORE_APP_ID = 'CORE';
+
+function pathMatchesRoute(pathname: string, routePath: string): boolean {
+  const path = String(pathname || '');
+  const base = String(routePath || '').replace(/\/+$/, '');
+  if (!base) return false;
+  return path === base || path.startsWith(base + '/');
+}
+
 function resolveActiveAppId(
   appRegistry: AppRegistry,
   currentPath: string,
-  fallbackLastActiveAppId: string | null
+  fallbackLastActiveAppId: string | null,
+  coreModules: SidebarItem[] = []
 ): string {
   const apps = listApps(appRegistry);
   const normalizedPath = String(currentPath || '');
@@ -126,6 +142,8 @@ function resolveActiveAppId(
     ['/helpdesk/', 'HELPDESK'],
     ['/inventory/', 'INVENTORY'],
     ['/marketing/', 'MARKETING'],
+    ['/projects/', 'PROJECTS'],
+    ['/sales/', 'SALES'],
   ];
   for (const [prefix, appKey] of pathPrefixToAppKey) {
     if (!normalizedPath.startsWith(prefix)) continue;
@@ -146,15 +164,60 @@ function resolveActiveAppId(
     }
   }
 
+  // 1b) Core platform modules (People, Tasks, …) → synthetic CORE lens
+  for (const item of coreModules) {
+    if (item.kind !== 'coreModule') continue;
+    if (pathMatchesRoute(normalizedPath, item.route)) return CORE_APP_ID;
+  }
+
   // 2) Fallback to last active app lens
   if (fallbackLastActiveAppId) {
     const normalized = fallbackLastActiveAppId.toUpperCase();
+    if (normalized === CORE_APP_ID && coreModules.length > 0) return CORE_APP_ID;
     if (apps.some((a) => a.appKey.toUpperCase() === normalized)) return fallbackLastActiveAppId;
   }
 
-  // 3) Final fallback: first app by order
+  // 3) Final fallback: first commercial app by order (not CORE)
   const sorted = [...apps].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-  return sorted[0]?.appKey || '';
+  return sorted[0]?.appKey || (coreModules.length > 0 ? CORE_APP_ID : '');
+}
+
+function buildApplications(
+  appRegistry: AppRegistry,
+  snapshot: PermissionSnapshot,
+  coreModules: SidebarItem[],
+  apps: AppSummary[]
+): AppFlyoutDefinition[] {
+  const applications: AppFlyoutDefinition[] = [];
+
+  if (coreModules.length > 0) {
+    applications.push({
+      id: CORE_APP_ID,
+      name: 'Core',
+      nameKey: getAppNameKey(CORE_APP_ID) || 'navigation.appCore',
+      icon: 'squares',
+      order: 0,
+      items: coreModules,
+    });
+  }
+
+  for (const summary of apps) {
+    const nav = buildAppNav(appRegistry, summary.id, snapshot);
+    const items: SidebarItem[] = [];
+    if (nav.dashboard) items.push(nav.dashboard);
+    items.push(...nav.modules);
+    applications.push({
+      id: summary.id,
+      name: summary.name,
+      nameKey: summary.nameKey,
+      icon: summary.icon,
+      dashboardRoute: summary.dashboardRoute,
+      order: summary.order ?? 999,
+      items,
+    });
+  }
+
+  return applications.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 
 function sidebarLabel(labelKey: string | undefined, fallback: string): { label: string; labelKey?: string } {
@@ -532,26 +595,34 @@ export async function buildSidebarFromRegistry(
   const currentPath = getCurrentPathname();
   const lastActiveAppId = getLastActiveAppIdFromStorage();
 
-  const activeAppId = resolveActiveAppId(appRegistry, currentPath, lastActiveAppId);
-
   const registryCoreModules = buildCoreModulesFromRegistry(appRegistry, snapshot);
   const coreModules =
     registryCoreModules.length > 0 ? registryCoreModules : await fetchCoreModulesFromSettings(snapshot);
 
-  // Note: We can't use memoizeBuilder here because buildCoreModules is async
-  // and the memoization would need to handle async results differently.
-  // For now, we'll build the sidebar structure directly.
   const apps = buildAppSwitcherApps(appRegistry, snapshot);
-  const effectiveActiveAppId = activeAppId || apps[0]?.id || '';
+  const applications = buildApplications(appRegistry, snapshot, coreModules, apps);
+
+  const activeAppId = resolveActiveAppId(appRegistry, currentPath, lastActiveAppId, coreModules);
+  const effectiveActiveAppId =
+    activeAppId ||
+    applications[0]?.id ||
+    apps[0]?.id ||
+    '';
+
+  const appNav =
+    effectiveActiveAppId === CORE_APP_ID
+      ? { appId: CORE_APP_ID, modules: coreModules }
+      : buildAppNav(appRegistry, effectiveActiveAppId, snapshot);
 
   const sidebar: SidebarStructure = {
     shell: buildShell(snapshot, addonNav),
     coreModules,
+    applications,
     appSwitcher: {
       activeAppId: effectiveActiveAppId,
       apps,
     },
-    appNav: buildAppNav(appRegistry, effectiveActiveAppId, snapshot),
+    appNav,
     platform: buildPlatformGovernance(snapshot),
   };
 
@@ -616,6 +687,11 @@ if (import.meta.env.DEV) {
 
   const sidebar = await buildSidebarFromRegistry(registry, snapshot, false);
 
+  // Assert: applications includes CORE when core modules exist
+  if (!Array.isArray(sidebar.applications)) {
+    throw new Error('[SidebarInvariantViolation] applications must be an array');
+  }
+
   // Assert: Core Modules structure is valid (may be empty if API not available in dev self-test)
   // Note: In dev self-test, core modules may be empty if Pinia is not initialized
   // This is acceptable as the test is primarily for structure validation
@@ -625,8 +701,17 @@ if (import.meta.env.DEV) {
     }
   }
 
-  // Assert: Forbidden raw entities do not appear.
+  // Assert: Forbidden raw entities do not appear in commercial app flyouts.
   const forbidden = new Set(['people', 'items', 'forms', 'tasks', 'events', 'organizations']);
+  for (const app of sidebar.applications) {
+    if (app.id === 'CORE') continue;
+    for (const item of app.items) {
+      if (item.kind === 'app' && typeof item.moduleKey === 'string' && forbidden.has(item.moduleKey)) {
+        throw new Error(`[SidebarInvariantViolation] Forbidden module leaked into application ${app.id}: ${item.moduleKey}`);
+      }
+    }
+  }
+
   for (const item of sidebar.appNav.modules) {
     if (item.kind === 'app' && typeof item.moduleKey === 'string' && forbidden.has(item.moduleKey)) {
       throw new Error(`[SidebarInvariantViolation] Forbidden module leaked into sidebar: ${item.moduleKey}`);
