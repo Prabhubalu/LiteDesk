@@ -27,6 +27,9 @@ exports.create = async (req, res) => {
             .populate('roleIds', 'name description color icon level permissions')
             .populate('createdBy', 'firstName lastName email username');
         
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(res, {}, cloneForAudit(populatedGroup.toObject()), { body: req.body || {} });
+
         res.status(201).json({ success: true, data: populatedGroup });
     } catch (error) {
         console.error('Error creating group:', error);
@@ -149,7 +152,20 @@ exports.getById = async (req, res) => {
 // Update Group
 exports.update = async (req, res) => {
     try {
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
         const userName = await getUserName(req.user?._id);
+
+        const existing = await Group.findOne({
+            _id: req.params.id,
+            organizationId: req.user.organizationId
+        }).lean();
+        if (!existing) {
+            return res.status(404).json({
+                success: false,
+                message: 'Group not found'
+            });
+        }
+        const before = cloneForAudit(existing);
         
         const group = await Group.findOneAndUpdate(
             { _id: req.params.id, organizationId: req.user.organizationId },
@@ -176,6 +192,8 @@ exports.update = async (req, res) => {
             fields: Object.keys(req.body)
         });
         await group.save();
+
+        attachSettingsAuditDiff(res, before, cloneForAudit(group.toObject()), { body: req.body });
         
         res.json({ success: true, data: group });
     } catch (error) {
@@ -213,6 +231,14 @@ exports.remove = async (req, res) => {
                 message: 'Group not found'
             });
         }
+
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            cloneForAudit({ name: group.name, type: group.type, isActive: group.isActive }),
+            {},
+            { keys: ['name', 'type', 'isActive'] }
+        );
         
         res.json({ success: true, message: 'Group deleted successfully' });
     } catch (error) {

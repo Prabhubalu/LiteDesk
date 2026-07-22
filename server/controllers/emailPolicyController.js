@@ -69,6 +69,7 @@ exports.updateEmailPolicyLimits = async (req, res, next) => {
     const organizationId = req.user.organizationId;
     await ensureOrgEmailPolicy(organizationId);
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const OrgEmailPolicy = require('../models/org-email-policy');
     const allowedFields = [
       'dailySendLimit',
@@ -94,6 +95,9 @@ exports.updateEmailPolicyLimits = async (req, res, next) => {
       updates.burstRatePerMin = deriveBurstRatePerMin(Number(updates.maxHourlyRate));
     }
 
+    const beforeDoc = await getOrgEmailPolicy(organizationId);
+    const before = cloneForAudit(serializeOrgEmailPolicy(beforeDoc));
+
     const policy = await OrgEmailPolicy.findOneAndUpdate(
       { organizationId },
       { $set: updates },
@@ -103,6 +107,9 @@ exports.updateEmailPolicyLimits = async (req, res, next) => {
     if (isAmdsEnvConfigured()) {
       await syncOrgPolicyToAmds(organizationId);
     }
+
+    const after = cloneForAudit(serializeOrgEmailPolicy(policy));
+    attachSettingsAuditDiff(res, before, after, { body: updates });
 
     return res.json({
       success: true,
@@ -156,9 +163,15 @@ exports.allocateEmailCredits = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'amount must be a positive number' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const organizationId = req.user.organizationId;
+    const before = cloneForAudit(serializeOrgEmailPolicy(await getOrgEmailPolicy(organizationId)));
     await onCreditPackPurchased(organizationId, amount);
     const policy = await getOrgEmailPolicy(organizationId);
+    const after = cloneForAudit(serializeOrgEmailPolicy(policy));
+    attachSettingsAuditDiff(res, before, after, {
+      keys: ['creditsRemaining', 'monthlyCredits']
+    });
 
     return res.json({
       success: true,
@@ -176,9 +189,13 @@ exports.suspendEmailPolicy = async (req, res, next) => {
   try {
     if (!requireOrgAdmin(req, res)) return;
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const organizationId = req.user.organizationId;
+    const before = cloneForAudit(serializeOrgEmailPolicy(await getOrgEmailPolicy(organizationId)));
     await onOrgEmailSendingSuspended(organizationId);
     const policy = await getOrgEmailPolicy(organizationId);
+    const after = cloneForAudit(serializeOrgEmailPolicy(policy));
+    attachSettingsAuditDiff(res, before, after, { keys: ['status'] });
 
     return res.json({
       success: true,
@@ -196,9 +213,13 @@ exports.reactivateEmailPolicy = async (req, res, next) => {
   try {
     if (!requireOrgAdmin(req, res)) return;
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const organizationId = req.user.organizationId;
+    const before = cloneForAudit(serializeOrgEmailPolicy(await getOrgEmailPolicy(organizationId)));
     await onOrgEmailSendingReactivated(organizationId);
     const policy = await getOrgEmailPolicy(organizationId);
+    const after = cloneForAudit(serializeOrgEmailPolicy(policy));
+    attachSettingsAuditDiff(res, before, after, { keys: ['status'] });
 
     return res.json({
       success: true,

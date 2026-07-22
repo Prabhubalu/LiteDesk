@@ -356,12 +356,21 @@ exports.recalculateOpenCaseSlas = async (req, res) => {
 
 exports.updateHelpdeskExecutionSettings = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const rawBody = req.body?.settings || req.body || {};
     const cannedFromRequest = Array.isArray(rawBody.cannedResponses)
       ? sanitizeCannedResponsesForSave(rawBody.cannedResponses)
       : null;
 
-    const incoming = mergeWithDefaults(rawBody);
+    const existing = await TenantAppConfiguration.findOne({
+      organizationId: req.user.organizationId,
+      appKey: 'HELPDESK'
+    })
+      .select('settings.helpdeskExecution')
+      .lean();
+    const before = cloneForAudit(mergeWithDefaults(existing?.settings?.helpdeskExecution));
+
+    const incoming = mergeWithDefaults({ ...before, ...rawBody });
     if (cannedFromRequest != null) {
       incoming.cannedResponses = cannedFromRequest;
     }
@@ -410,11 +419,14 @@ exports.updateHelpdeskExecutionSettings = async (req, res) => {
     ).lean();
 
     const persisted = doc?.settings?.helpdeskExecution || helpdeskExecution;
+    const after = cloneForAudit(mergeWithDefaults(persisted));
+    attachSettingsAuditDiff(res, before, after, { body: rawBody });
+
     return res.json({
       success: true,
       appKey: 'HELPDESK',
       enabled: Boolean(doc?.enabled),
-      settings: mergeWithDefaults(persisted)
+      settings: after
     });
   } catch (error) {
     console.error('[helpdeskSettingsController] updateHelpdeskExecutionSettings error:', error);

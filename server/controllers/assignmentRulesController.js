@@ -269,9 +269,18 @@ async function getAssignmentRuleSet(req, res) {
 
 async function upsertAssignmentRuleSet(req, res) {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const appKey = String(req.body?.appKey || 'HELPDESK').toUpperCase();
     const moduleKey = String(req.body?.moduleKey || 'cases').toLowerCase();
     const rulesInput = Array.isArray(req.body?.rules) ? req.body.rules : [];
+
+    const before = cloneForAudit(
+      await AssignmentRuleSet.findOne({
+        organizationId: req.user.organizationId,
+        appKey,
+        moduleKey
+      }).lean()
+    );
 
     const rules = rulesInput.map((rule, index) => sanitizeRule(rule, index));
 
@@ -298,6 +307,15 @@ async function upsertAssignmentRuleSet(req, res) {
       },
       { new: true, upsert: true }
     ).lean();
+
+    attachSettingsAuditDiff(res, before || {}, cloneForAudit(row), {
+      body: {
+        enabled: update.enabled,
+        simulationOnly: update.simulationOnly,
+        applyStrategy: update.applyStrategy,
+        rules: update.rules
+      }
+    });
 
     return res.json({ success: true, data: row });
   } catch (error) {

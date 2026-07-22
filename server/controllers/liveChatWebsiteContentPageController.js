@@ -31,7 +31,9 @@ exports.getPage = async (req, res) => {
 
 exports.createPage = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const row = await createWebsiteContentPage(req.user.organizationId, req.body || {});
+    attachSettingsAuditDiff(res, {}, cloneForAudit(row), { body: req.body || {} });
     return res.status(201).json({ success: true, data: row });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -43,7 +45,10 @@ exports.createPage = async (req, res) => {
 
 exports.updatePage = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(await getWebsiteContentPageById(req.user.organizationId, req.params.pageId));
     const row = await updateWebsiteContentPage(req.user.organizationId, req.params.pageId, req.body || {});
+    attachSettingsAuditDiff(res, before || {}, cloneForAudit(row), { body: req.body || {} });
     return res.json({ success: true, data: row });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -55,7 +60,10 @@ exports.updatePage = async (req, res) => {
 
 exports.deletePage = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(await getWebsiteContentPageById(req.user.organizationId, req.params.pageId));
     await deleteWebsiteContentPage(req.user.organizationId, req.params.pageId);
+    attachSettingsAuditDiff(res, before || {}, {}, { keys: Object.keys(before || { title: null }) });
     return res.json({ success: true, message: 'Website content page deleted' });
   } catch (err) {
     const status = err.statusCode || 500;

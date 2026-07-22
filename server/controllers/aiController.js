@@ -163,12 +163,25 @@ async function putAiSettings(req, res) {
       });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const { getPublicAiSettings, updateAiSettings } = require('../services/ai/aiSettingsService');
+
     const organizationId = getOrganizationId(req);
+    let before = null;
+    try {
+      before = cloneForAudit(await getPublicAiSettings(organizationId));
+    } catch {
+      before = {};
+    }
+
+    const patch = req.body || {};
     const payload = await updateAiSettings({
       organizationId,
       userId: req.user._id,
-      patch: req.body || {},
+      patch,
     });
+
+    attachSettingsAuditDiff(res, before, cloneForAudit(payload?.settings || payload), { body: patch });
 
     return res.json({
       success: true,

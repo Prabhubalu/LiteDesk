@@ -1578,7 +1578,10 @@ exports.toggleAppParticipation = async (req, res) => {
         // This is stored at organization level to track which apps use which core modules
         // Format: organization.moduleOverrides[moduleKey][appKey] = enabled
         // For Mixed type fields, we need to create a new object to ensure Mongoose tracks changes
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
         const currentOverrides = organization.moduleOverrides || {};
+        const beforeEnabled = !!(currentOverrides[module.moduleKey]?.[appKeyUpper]);
+        const before = cloneForAudit({ enabled: beforeEnabled });
         const moduleOverrides = { ...currentOverrides };
         
         if (!moduleOverrides[module.moduleKey]) {
@@ -1613,6 +1616,13 @@ exports.toggleAppParticipation = async (req, res) => {
         } catch (_cacheErr) {
             console.warn('[toggleAppParticipation] cache invalidation failed:', _cacheErr.message);
         }
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({ enabled: enabled === true }),
+            { keys: ['enabled'] }
+        );
 
         res.json({
             success: true,
@@ -2409,6 +2419,21 @@ exports.updateOrganizationSettings = async (req, res) => {
             });
         }
 
+        // Snapshot raw stored values (no display defaults) for accurate change detection.
+        const snapshotOrganizationSettings = (org) => ({
+            name: org.name ?? null,
+            logoUrl: org.settings?.logoUrl ?? null,
+            primaryColor: org.settings?.primaryColor ?? null,
+            timeZone: org.settings?.timeZone ?? null,
+            currency: org.settings?.currency ?? null,
+            locale: org.settings?.locale ?? null,
+            language: org.settings?.language ?? null,
+            defaultPhoneCountry: org.settings?.defaultPhoneCountry ?? null
+        });
+
+        const beforeSnapshot = snapshotOrganizationSettings(organization);
+        res.locals.settingsAuditBefore = beforeSnapshot;
+
         const { name, logoUrl, primaryColor, timeZone, currency, locale, language, defaultPhoneCountry } = req.body;
         const { sanitizeBrandColor } = require('../services/quoteOrgSettingsService');
         const { isValidPhoneCountryIso2 } = require('../constants/phoneCountries');
@@ -2492,19 +2517,45 @@ exports.updateOrganizationSettings = async (req, res) => {
 
         await organization.save();
 
+        const afterSnapshot = snapshotOrganizationSettings(organization);
+        // Only audit fields the client actually sent (avoids false positives from full-form resubmits).
+        const sentKeys = [
+            'name',
+            'logoUrl',
+            'primaryColor',
+            'timeZone',
+            'currency',
+            'locale',
+            'language',
+            'defaultPhoneCountry'
+        ].filter((key) => Object.prototype.hasOwnProperty.call(req.body || {}, key));
+
+        const pickKeys = (source, keys) => {
+            const out = {};
+            for (const key of keys) out[key] = source[key] ?? null;
+            return out;
+        };
+
+        res.locals.settingsAuditBefore = pickKeys(beforeSnapshot, sentKeys);
+        res.locals.settingsAuditAfter = pickKeys(afterSnapshot, sentKeys);
+
+        const afterPayload = {
+            name: organization.name,
+            logoUrl: organization.settings?.logoUrl || null,
+            primaryColor: organization.settings?.primaryColor || '#3a1f8a',
+            timeZone: organization.settings?.timeZone || 'UTC',
+            currency: organization.settings?.currency || 'USD',
+            locale: organization.settings?.locale || 'en-US',
+            language: organization.settings?.language || 'en',
+            defaultPhoneCountry: organization.settings?.defaultPhoneCountry || ''
+        };
+
         // Return updated settings
         res.json({
             success: true,
             message: 'Organization settings updated successfully',
             data: {
-                name: organization.name,
-                logoUrl: organization.settings?.logoUrl || null,
-                primaryColor: organization.settings?.primaryColor || '#3a1f8a',
-                timeZone: organization.settings?.timeZone || 'UTC',
-                currency: organization.settings?.currency || 'USD',
-                locale: organization.settings?.locale || 'en-US',
-                language: organization.settings?.language || 'en',
-                defaultPhoneCountry: organization.settings?.defaultPhoneCountry || '',
+                ...afterPayload,
                 dataRegion: organization.dataRegion || 'us-east-1',
                 industry: organization.industry || null
             }
@@ -2560,6 +2611,9 @@ exports.uploadOrganizationLogo = async (req, res) => {
             });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({ logoUrl: organization.settings?.logoUrl || null });
+
         const { persistMulterUpload } = require('../middleware/uploadMiddleware');
         const uploadResult = await persistMulterUpload(req, 'logos');
 
@@ -2578,6 +2632,8 @@ exports.uploadOrganizationLogo = async (req, res) => {
         } catch (syncError) {
             console.warn('[settings] Company logo asset sync failed:', syncError.message);
         }
+
+        attachSettingsAuditDiff(res, before, cloneForAudit({ logoUrl: uploadResult.url }), { keys: ['logoUrl'] });
 
         return res.json({
             success: true,
@@ -2614,10 +2670,15 @@ exports.deleteOrganizationLogo = async (req, res) => {
             });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({ logoUrl: organization.settings?.logoUrl || null });
+
         if (organization.settings?.logoUrl) {
             organization.settings.logoUrl = null;
             await organization.save();
         }
+
+        attachSettingsAuditDiff(res, before, cloneForAudit({ logoUrl: null }), { keys: ['logoUrl'] });
 
         return res.json({
             success: true,
@@ -2706,6 +2767,22 @@ exports.updateSecuritySettings = async (req, res) => {
                 message: 'Organization not found'
             });
         }
+
+        const securitySnapshot = organization.security || {};
+        res.locals.settingsAuditBefore = {
+            passwordPolicy: { ...(securitySnapshot.passwordPolicy || {}) },
+            sessionRules: { ...(securitySnapshot.sessionRules || {}) },
+            loginRestrictions: {
+                ...(securitySnapshot.loginRestrictions || {}),
+                ipWhitelist: [...(securitySnapshot.loginRestrictions?.ipWhitelist || [])],
+                ipBlacklist: [...(securitySnapshot.loginRestrictions?.ipBlacklist || [])],
+                allowedRegions: [...(securitySnapshot.loginRestrictions?.allowedRegions || [])]
+            },
+            twoFactorAuth: {
+                ...(securitySnapshot.twoFactorAuth || {}),
+                methods: [...(securitySnapshot.twoFactorAuth?.methods || [])]
+            }
+        };
 
         const { passwordPolicy, sessionRules, loginRestrictions, twoFactorAuth } = req.body;
 
@@ -2872,6 +2949,19 @@ exports.updateSecuritySettings = async (req, res) => {
         }
 
         await organization.save();
+
+        const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            res.locals.settingsAuditBefore,
+            {
+                passwordPolicy: organization.security.passwordPolicy,
+                sessionRules: organization.security.sessionRules,
+                loginRestrictions: organization.security.loginRestrictions,
+                twoFactorAuth: organization.security.twoFactorAuth
+            },
+            { body: req.body }
+        );
 
         // Return updated settings
         res.json({
@@ -3357,6 +3447,14 @@ exports.updateIntegrationConfig = async (req, res) => {
             );
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            cloneForAudit(prevConfig),
+            cloneForAudit(nextConfig),
+            { body: req.body || {} }
+        );
+
         return res.json({
             success: true,
             message: 'Email provider settings saved successfully',
@@ -3395,9 +3493,14 @@ exports.enableIntegration = async (req, res) => {
             });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
         const current = organization.integrations || {};
         const state = current[key] || {};
         const now = new Date();
+        const before = cloneForAudit({
+            enabled: !!state.enabled,
+            status: state.status || 'disconnected'
+        });
 
         const nextState = {
             ...state,
@@ -3408,6 +3511,13 @@ exports.enableIntegration = async (req, res) => {
         };
 
         await persistOrganizationIntegrationUpdate(req.user.organizationId, key, nextState);
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({ enabled: true, status: 'connected' }),
+            { keys: ['enabled', 'status'] }
+        );
 
         res.json({
             success: true,
@@ -3513,9 +3623,14 @@ exports.disableIntegration = async (req, res) => {
             });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
         const current = organization.integrations || {};
         const state = current[key] || {};
         const now = new Date();
+        const before = cloneForAudit({
+            enabled: !!state.enabled,
+            status: state.status || 'disconnected'
+        });
 
         const nextState = {
             ...state,
@@ -3525,6 +3640,13 @@ exports.disableIntegration = async (req, res) => {
         };
 
         await persistOrganizationIntegrationUpdate(req.user.organizationId, key, nextState);
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({ enabled: false, status: 'disconnected' }),
+            { keys: ['enabled', 'status'] }
+        );
 
         res.json({
             success: true,
@@ -3690,6 +3812,8 @@ exports.updateOrganizationStatusTypes = async (req, res) => {
             if (tenantConfig) break;
         }
         
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+
         // If no config exists, create one with SALES as default appKey
         if (!tenantConfig) {
             tenantConfig = new TenantModuleConfiguration({
@@ -3699,6 +3823,11 @@ exports.updateOrganizationStatusTypes = async (req, res) => {
                 enabled: true
             });
         }
+
+        const before = cloneForAudit(tenantConfig.settings?.statusTypes || {
+            organizationTypes: [],
+            statusPicklists: {}
+        });
 
         if (!tenantConfig) {
             // Create new configuration
@@ -3762,6 +3891,16 @@ exports.updateOrganizationStatusTypes = async (req, res) => {
             organizationTypes,
             statusPicklists
         }, null, 2));
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({
+                organizationTypes: normalizedOrganizationTypes,
+                statusPicklists
+            }),
+            { body: req.body || {} }
+        );
 
         res.json({
             success: true,
@@ -3984,6 +4123,9 @@ exports.updatePeopleTypes = async (req, res) => {
             tenantConfig.settings.peopleTypes = {};
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit(tenantConfig.settings.peopleTypes[appKey] || null);
+
         tenantConfig.settings.peopleTypes[appKey] = {
             types: normalizedDefs,
             default: defaultCanonical
@@ -3991,6 +4133,14 @@ exports.updatePeopleTypes = async (req, res) => {
         tenantConfig.markModified('settings');
         tenantConfig.markModified('settings.peopleTypes');
         await tenantConfig.save();
+
+        const after = cloneForAudit({
+            types: normalizedDefs,
+            default: defaultCanonical
+        });
+        attachSettingsAuditDiff(res, before, after, {
+            keys: ['types', 'default']
+        });
 
         console.log(
             JSON.stringify({
@@ -4107,6 +4257,14 @@ exports.extendTrial = async (req, res) => {
         }
 
         const { extendOrganizationTrial } = require('../services/trialExtensionService');
+        const Organization = require('../models/Organization');
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const orgBefore = await Organization.findById(req.user.organizationId).select('subscription').lean();
+        const before = cloneForAudit({
+            trialEndDate: orgBefore?.subscription?.trialEndDate || null,
+            trialExtensionUsed: !!orgBefore?.subscription?.trialExtensionUsed
+        });
+
         const result = await extendOrganizationTrial({
             organizationId: req.user.organizationId,
             userId: req.user._id,
@@ -4126,6 +4284,16 @@ exports.extendTrial = async (req, res) => {
                 message: result.message
             });
         }
+
+        attachSettingsAuditDiff(
+            res,
+            before,
+            cloneForAudit({
+                trialEndDate: result.trialEndDate ?? null,
+                trialExtensionUsed: true
+            }),
+            { keys: ['trialEndDate', 'trialExtensionUsed'] }
+        );
 
         res.json({
             success: true,

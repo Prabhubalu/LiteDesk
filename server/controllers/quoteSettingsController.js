@@ -2,6 +2,7 @@ const {
   getQuoteOrgSettings,
   updateQuoteOrgSettings
 } = require('../services/quoteOrgSettingsService');
+const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
 
 function requireOrgAdmin(req, res) {
   if (req.user?.isOwner) return true;
@@ -29,22 +30,26 @@ exports.getQuoteSettings = async (req, res) => {
 
 /**
  * PUT /api/settings/quotes
- * Body: { requireApprovalBeforeSend?, requireCustomerAgreement?, customerAgreementText? }
+ * Body: partial quote settings patch
  */
 exports.updateQuoteSettings = async (req, res) => {
   try {
     if (!requireOrgAdmin(req, res)) return;
 
+    const before = cloneForAudit(await getQuoteOrgSettings(req.user.organizationId));
+    const patch = req.body || {};
     const settings = await updateQuoteOrgSettings(req.user.organizationId, {
-      requireApprovalBeforeSend: req.body?.requireApprovalBeforeSend,
-      requireCustomerAgreement: req.body?.requireCustomerAgreement,
-      requireTypedSignature: req.body?.requireTypedSignature,
-      customerAgreementText: req.body?.customerAgreementText,
-      pdfFooterText: req.body?.pdfFooterText,
-      emailSignature: req.body?.emailSignature,
-      brandColor: req.body?.brandColor,
-      documentTitle: req.body?.documentTitle
+      requireApprovalBeforeSend: patch.requireApprovalBeforeSend,
+      requireCustomerAgreement: patch.requireCustomerAgreement,
+      requireTypedSignature: patch.requireTypedSignature,
+      customerAgreementText: patch.customerAgreementText,
+      pdfFooterText: patch.pdfFooterText,
+      emailSignature: patch.emailSignature,
+      brandColor: patch.brandColor,
+      documentTitle: patch.documentTitle
     });
+
+    attachSettingsAuditDiff(res, before, cloneForAudit(settings), { body: patch });
 
     return res.json({ success: true, settings });
   } catch (error) {

@@ -11484,12 +11484,7 @@ async function onDrop(idx) {
   }
   
   moveField(from, to - from);
-  // Auto-save new order
-  try {
-    await saveModule();
-  } catch (e) {
-    console.error('Auto-save order failed', e);
-  }
+  // Order change is dirty until the user clicks Save (no auto-save).
 }
 
 // Row drag-reorder
@@ -12111,7 +12106,7 @@ function setPicklistEnabled(item, event) {
 
 const savingStatusTypes = ref(false);
 const statusTypesOriginalSnapshot = ref('');
-const isInitialLoad = ref(true); // Flag to prevent auto-save during initial load
+const isInitialLoad = ref(true); // Flag to skip dirty/snapshot work during initial load
 const lastSaveTimestamp = ref(0); // Track when we last saved to prevent refetching stale data
 
 // Tasks Status & Priority - edited in Field Configurations (status/priority fields)
@@ -13237,47 +13232,6 @@ watch(() => [selectedModule.value?.key, activeTopTab.value], async ([moduleKey, 
     }
   }, 100); // Small debounce to prevent rapid triggers
 }, { immediate: true });
-
-// Auto-save when status types change (debounced)
-let statusTypesSaveTimer = null;
-watch([organizationTypes, statusPicklists], () => {
-  // Skip auto-save during initial load or if already saving or fetching
-  if (isInitialLoad.value || savingStatusTypes.value || fetchingStatusTypes.value) {
-    console.log('[Status Types] Auto-save watch skipped:', {
-      isInitialLoad: isInitialLoad.value,
-      savingStatusTypes: savingStatusTypes.value,
-      fetchingStatusTypes: fetchingStatusTypes.value
-    });
-    return;
-  }
-  
-  // Only auto-save if we have data, it's dirty, and we have a snapshot (meaning data was loaded)
-  if (organizationTypes.value.length > 0 && 
-      statusTypesOriginalSnapshot.value && 
-      statusTypesDirty.value) {
-    // Clear existing timer
-    if (statusTypesSaveTimer) {
-      clearTimeout(statusTypesSaveTimer);
-    }
-    // Debounce save by 1000ms to avoid excessive saves
-    statusTypesSaveTimer = setTimeout(async () => {
-      console.log('[Status Types] Auto-saving changes...', {
-        organizationTypes: organizationTypes.value.length,
-        customerStatus: statusPicklists.value.customerStatus.length,
-        partnerStatus: statusPicklists.value.partnerStatus.length,
-        vendorStatus: statusPicklists.value.vendorStatus.length,
-        isDirty: statusTypesDirty.value
-      });
-      try {
-        await saveStatusTypes();
-        console.log('[Status Types] Auto-save completed successfully');
-      } catch (err) {
-        console.error('[Status Types] Auto-save failed:', err);
-      }
-    }, 1000);
-  }
-}, { deep: true });
-
 
 onMounted(async () => {
   await fetchModules();

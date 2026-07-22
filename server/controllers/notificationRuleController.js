@@ -188,20 +188,24 @@ exports.createRule = async (req, res) => {
       enabled: true
     });
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const data = {
+      id: String(rule._id),
+      appKey: rule.appKey,
+      moduleKey: rule.moduleKey,
+      entityType: rule.entityType, // Legacy field for backward compatibility
+      eventType: rule.eventType,
+      conditions: rule.conditions,
+      channels: rule.channels,
+      enabled: rule.enabled,
+      createdAt: rule.createdAt,
+      updatedAt: rule.updatedAt
+    };
+    attachSettingsAuditDiff(res, {}, cloneForAudit(data), { body: req.body || {} });
+
     return res.status(201).json({
       success: true,
-      data: {
-        id: String(rule._id),
-        appKey: rule.appKey,
-        moduleKey: rule.moduleKey,
-        entityType: rule.entityType, // Legacy field for backward compatibility
-        eventType: rule.eventType,
-        conditions: rule.conditions,
-        channels: rule.channels,
-        enabled: rule.enabled,
-        createdAt: rule.createdAt,
-        updatedAt: rule.updatedAt
-      }
+      data
     });
   } catch (err) {
     console.error('[notificationRuleController:createRule] Error:', err);
@@ -237,6 +241,13 @@ exports.updateRule = async (req, res) => {
     if (!rule) {
       return res.status(404).json({ success: false, message: 'Notification rule not found' });
     }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit({
+      conditions: rule.conditions,
+      channels: rule.channels,
+      enabled: rule.enabled
+    });
 
     // Validate channels if provided
     if (channels !== undefined) {
@@ -278,6 +289,13 @@ exports.updateRule = async (req, res) => {
 
     await rule.save();
 
+    const after = cloneForAudit({
+      conditions: rule.conditions,
+      channels: rule.channels,
+      enabled: rule.enabled
+    });
+    attachSettingsAuditDiff(res, before, after, { body: req.body || {} });
+
     return res.json({
       success: true,
       data: {
@@ -312,6 +330,14 @@ exports.deleteRule = async (req, res) => {
   }
 
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const existing = await NotificationRule.findOne({
+      _id: ruleId,
+      userId: req.user._id,
+      organizationId: req.user.organizationId,
+      appKey
+    }).lean();
+
     const rule = await NotificationRule.findOneAndDelete({
       _id: ruleId,
       userId: req.user._id,
@@ -323,6 +349,17 @@ exports.deleteRule = async (req, res) => {
       // Do not leak existence; treat as success
       return res.json({ success: true });
     }
+
+    attachSettingsAuditDiff(
+      res,
+      cloneForAudit({
+        moduleKey: existing?.moduleKey,
+        eventType: existing?.eventType,
+        enabled: existing?.enabled
+      }),
+      {},
+      { keys: ['moduleKey', 'eventType', 'enabled'] }
+    );
 
     return res.json({ success: true });
   } catch (err) {
@@ -355,8 +392,17 @@ exports.toggleRule = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Notification rule not found' });
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    const beforeEnabled = !!rule.enabled;
     rule.enabled = !rule.enabled;
     await rule.save();
+
+    attachSettingsAuditDiff(
+      res,
+      { enabled: beforeEnabled },
+      { enabled: rule.enabled },
+      { keys: ['enabled'] }
+    );
 
     return res.json({
       success: true,

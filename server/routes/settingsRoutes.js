@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
+const { requireAdmin } = require('../middleware/permissionMiddleware');
 const controller = require('../controllers/settingsController');
+const settingsAuditController = require('../controllers/settingsAuditController');
 const helpdeskSettingsController = require('../controllers/helpdeskSettingsController');
 const assignmentRulesController = require('../controllers/assignmentRulesController');
 const slaPolicyController = require('../controllers/slaPolicyController');
@@ -18,10 +20,22 @@ const {
     cacheJsonResponse,
     invalidateCacheOnSuccessfulMutation,
 } = require('../middleware/responseCacheMiddleware');
+const {
+    createSettingsAuditMiddleware,
+    resolveSettingsApiSurface,
+} = require('../middleware/settingsAuditMiddleware');
 
 // All routes require authentication and organization context
 router.use(protect);
 router.use(organizationIsolation);
+router.use(
+    createSettingsAuditMiddleware({
+        surfaceResolver: (req) => resolveSettingsApiSurface(req.originalUrl || req.path),
+    })
+);
+
+// Admin-only settings change history
+router.get('/audit-log', requireAdmin(), settingsAuditController.listSettingsAuditLogs);
 
 // Core Modules endpoints
 router.get('/core-modules', sessionBootstrapLimiter, controller.getCoreModules);

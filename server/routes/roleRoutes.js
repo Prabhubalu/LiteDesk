@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus } = require('../middleware/organizationMiddleware');
 const { canManageRoles } = require('../middleware/permissionMiddleware');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 const {
     getRoles,
     getRole,
@@ -24,6 +25,7 @@ const {
 router.use(protect);
 router.use(organizationIsolation);
 router.use(checkTrialStatus);
+router.use(createSettingsAuditMiddleware({ surface: 'roles', entityType: 'Role' }));
 
 // Public routes (any authenticated user can view roles)
 router.get('/modules', getPermissionModules);

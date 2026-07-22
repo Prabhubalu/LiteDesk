@@ -6,10 +6,12 @@ const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus } = require('../middleware/organizationMiddleware');
 const businessHoursController = require('../controllers/businessHoursController');
 const holidayCalendarController = require('../controllers/holidayCalendarController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 router.use(protect);
 router.use(organizationIsolation);
 router.use(checkTrialStatus);
+router.use(createSettingsAuditMiddleware({ surface: 'business-hours' }));
 
 router.get('/resolve', businessHoursController.resolve);
 router.get('/sets', businessHoursController.listSets);

@@ -9,6 +9,7 @@ const { lazySalesInitialization } = require('../middleware/lazySalesInitializati
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const controller = require('../controllers/moduleController');
 const { sessionBootstrapLimiter } = require('../middleware/rateLimitMiddleware');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 // Core entities that are platform-owned (don't require Sales app)
 const CORE_ENTITIES = ['people', 'organizations', 'events', 'forms', 'tasks', 'items', 'quotes', 'reports', 'documents'];
@@ -61,6 +62,7 @@ router.use((req, res, next) => {
 });
 
 router.use(organizationIsolation);
+router.use(createSettingsAuditMiddleware({ surface: 'modules', entityType: 'ModuleDefinition' }));
 
 // GET: authenticated tenant users. Field-level read filtering happens in controller
 // (filterFieldsByReadAccess). ModuleList and record surfaces need schema read access

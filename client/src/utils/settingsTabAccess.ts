@@ -86,6 +86,9 @@ export function canAccessSettingsTab(
       );
     case 'business-hours':
       return true;
+    case 'audit-log':
+      // Admins/owners already short-circuit above; non-privileged never see this tab.
+      return false;
     default:
       return false;
   }
@@ -107,6 +110,7 @@ const SETTINGS_TAB_IDS = [
   'integrations',
   'ai',
   'business-hours',
+  'audit-log',
 ] as const;
 
 /** True if the user should see the Settings entry or any settings section (not only Overview). */

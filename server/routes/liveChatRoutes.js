@@ -15,6 +15,9 @@ const liveChatWebsiteContentPageController = require('../controllers/liveChatWeb
 const liveChatSessionFieldController = require('../controllers/liveChatSessionFieldController');
 const liveChatInAppSupportController = require('../controllers/liveChatInAppSupportController');
 const { uploadSingle } = require('../middleware/uploadMiddleware');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
+
+const settingsAddonAudit = createSettingsAuditMiddleware({ surface: 'addons' });
 
 router.use(protect);
 router.use(organizationIsolation);
@@ -31,25 +34,25 @@ router.get(
   requireLiveChatPermission('admin'),
   liveChatBotController.getDeflectionMetrics
 );
-router.post('/bots', requireLiveChatPermission('admin'), liveChatBotController.createBot);
+router.post('/bots', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatBotController.createBot);
 router.get('/bots/:botId', requireLiveChatPermission('admin'), liveChatBotController.getBot);
-router.put('/bots/:botId', requireLiveChatPermission('admin'), liveChatBotController.updateBot);
-router.delete('/bots/:botId', requireLiveChatPermission('admin'), liveChatBotController.deleteBot);
+router.put('/bots/:botId', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatBotController.updateBot);
+router.delete('/bots/:botId', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatBotController.deleteBot);
 router.get('/website-content', requireLiveChatPermission('admin'), liveChatWebsiteContentPageController.listPages);
-router.post('/website-content', requireLiveChatPermission('admin'), liveChatWebsiteContentPageController.createPage);
+router.post('/website-content', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatWebsiteContentPageController.createPage);
 router.get('/website-content/:pageId', requireLiveChatPermission('admin'), liveChatWebsiteContentPageController.getPage);
-router.put('/website-content/:pageId', requireLiveChatPermission('admin'), liveChatWebsiteContentPageController.updatePage);
-router.delete('/website-content/:pageId', requireLiveChatPermission('admin'), liveChatWebsiteContentPageController.deletePage);
+router.put('/website-content/:pageId', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatWebsiteContentPageController.updatePage);
+router.delete('/website-content/:pageId', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatWebsiteContentPageController.deletePage);
 router.get('/outcomes', requireLiveChatPermission('view'), liveChatSessionController.listOutcomes);
 router.get('/presence/statuses', requireLiveChatPermission('view'), liveChatPresenceController.listPresenceStatuses);
 router.get('/presence/me', requireLiveChatPermission('view'), liveChatPresenceController.getMyPresence);
 router.put('/presence/me', requireLiveChatPermission('reply'), liveChatPresenceController.setMyPresence);
 router.get('/queues/distribution-modes', requireLiveChatPermission('admin'), liveChatQueueController.listDistributionModes);
 router.get('/queues', requireLiveChatPermission('admin'), liveChatQueueController.listQueues);
-router.post('/queues', requireLiveChatPermission('admin'), liveChatQueueController.createQueue);
+router.post('/queues', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatQueueController.createQueue);
 router.get('/queues/:queueId', requireLiveChatPermission('admin'), liveChatQueueController.getQueue);
-router.put('/queues/:queueId', requireLiveChatPermission('admin'), liveChatQueueController.updateQueue);
-router.delete('/queues/:queueId', requireLiveChatPermission('admin'), liveChatQueueController.deleteQueue);
+router.put('/queues/:queueId', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatQueueController.updateQueue);
+router.delete('/queues/:queueId', requireLiveChatPermission('admin'), settingsAddonAudit, liveChatQueueController.deleteQueue);
 router.get('/session-fields', requireLiveChatPermission('view'), liveChatSessionFieldController.getSessionFields);
 router.get('/sessions', requireLiveChatPermission('view'), liveChatSessionController.listSessions);
 router.get('/sessions/export', requireLiveChatPermission('admin'), liveChatSessionController.exportOrganizationTranscripts);

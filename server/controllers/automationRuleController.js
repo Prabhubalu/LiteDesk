@@ -261,6 +261,9 @@ exports.createRule = async (req, res) => {
     };
     
     const rule = await AutomationRule.create(ruleData);
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(res, {}, cloneForAudit(rule.toObject()), { body: req.body || {} });
     
     res.status(201).json({
       success: true,
@@ -297,6 +300,9 @@ exports.updateRule = async (req, res) => {
         message: 'Automation rule not found'
       });
     }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(rule.toObject());
     
     // Validate if trigger/action are being updated
     const updateData = { ...req.body };
@@ -335,6 +341,8 @@ exports.updateRule = async (req, res) => {
     }
     
     await rule.save();
+
+    attachSettingsAuditDiff(res, before, cloneForAudit(rule.toObject()), { body: req.body || {} });
     
     res.json({
       success: true,
@@ -373,8 +381,12 @@ exports.deleteRule = async (req, res) => {
     }
     
     // Soft delete: set enabled=false
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    const beforeEnabled = !!rule.enabled;
     rule.enabled = false;
     await rule.save();
+
+    attachSettingsAuditDiff(res, { enabled: beforeEnabled }, { enabled: false }, { keys: ['enabled'] });
     
     res.json({
       success: true,
@@ -412,8 +424,12 @@ exports.toggleRule = async (req, res) => {
       });
     }
     
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    const beforeEnabled = !!rule.enabled;
     rule.enabled = !rule.enabled;
     await rule.save();
+
+    attachSettingsAuditDiff(res, { enabled: beforeEnabled }, { enabled: rule.enabled }, { keys: ['enabled'] });
     
     res.json({
       success: true,
