@@ -32,7 +32,9 @@ exports.getQueue = async (req, res) => {
 
 exports.createQueue = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const row = await createQueue(req.user.organizationId, req.body || {});
+    attachSettingsAuditDiff(res, {}, cloneForAudit(row), { body: req.body || {} });
     return res.status(201).json({ success: true, data: row });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -44,7 +46,10 @@ exports.createQueue = async (req, res) => {
 
 exports.updateQueue = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(await getQueueById(req.user.organizationId, req.params.queueId));
     const row = await updateQueue(req.user.organizationId, req.params.queueId, req.body || {});
+    attachSettingsAuditDiff(res, before || {}, cloneForAudit(row), { body: req.body || {} });
     return res.json({ success: true, data: row });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -56,7 +61,10 @@ exports.updateQueue = async (req, res) => {
 
 exports.deleteQueue = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(await getQueueById(req.user.organizationId, req.params.queueId));
     await deleteQueue(req.user.organizationId, req.params.queueId);
+    attachSettingsAuditDiff(res, before || {}, {}, { keys: Object.keys(before || { name: null }) });
     return res.json({ success: true, message: 'Queue deleted' });
   } catch (err) {
     const status = err.statusCode || 500;

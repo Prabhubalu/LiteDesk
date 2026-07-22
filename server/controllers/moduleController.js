@@ -4061,6 +4061,17 @@ exports.createModule = async (req, res) => {
             pluralLabel,
             entityType: 'TRANSACTION'
         });
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        attachSettingsAuditDiff(
+            res,
+            {},
+            cloneForAudit({
+                key: doc.key,
+                name: doc.name,
+                fieldsCount: Array.isArray(doc.fields) ? doc.fields.length : 0
+            }),
+            { keys: ['key', 'name', 'fieldsCount'] }
+        );
         res.status(201).json({ success: true, data: doc });
     } catch (error) {
         if (error.code === 11000) {
@@ -4080,7 +4091,14 @@ exports.deleteModule = async (req, res) => {
         });
         if (!mod) return res.status(404).json({ success: false, message: 'Module not found' });
         if (mod.type === 'system') return res.status(403).json({ success: false, message: 'Cannot delete system module' });
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit({
+            key: mod.key,
+            name: mod.name,
+            fieldsCount: Array.isArray(mod.fields) ? mod.fields.length : 0
+        });
         await mod.deleteOne();
+        attachSettingsAuditDiff(res, before, {}, { keys: ['key', 'name', 'fieldsCount'] });
         res.json({ success: true, message: 'Module deleted' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error deleting module', error: error.message });
@@ -4096,6 +4114,18 @@ exports.updateModule = async (req, res) => {
             key: { $ne: 'groups' } // Exclude groups
         });
         if (!mod) return res.status(404).json({ success: false, message: 'Module not found' });
+
+        const { attachSettingsAuditDiff, buildModuleSettingsAuditPair, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const beforeDoc = cloneForAudit({
+            key: mod.key,
+            name: mod.name,
+            enabled: mod.enabled,
+            fields: mod.fields,
+            relationships: mod.relationships,
+            quickCreate: mod.quickCreate,
+            quickCreateLayout: mod.quickCreateLayout,
+            pipelineSettings: mod.pipelineSettings
+        });
 
         const { name, enabled, fields, relationships, quickCreate, quickCreateLayout, pipelineSettings } = req.body;
         const deprecatedEventAliasKeys = new Set(['relatedorg', 'relatedorgid', 'relatedorganization']);
@@ -4375,6 +4405,25 @@ exports.updateModule = async (req, res) => {
             savedQuickCreate: saved?.quickCreate,
             savedQuickCreateType: typeof saved?.quickCreate
         });
+
+        const afterDoc = cloneForAudit({
+            key: responseData.key || mod.key,
+            name: responseData.name,
+            enabled: responseData.enabled,
+            fields: responseData.fields,
+            relationships: responseData.relationships,
+            quickCreate: responseData.quickCreate,
+            quickCreateLayout: responseData.quickCreateLayout,
+            pipelineSettings: responseData.pipelineSettings
+        });
+        const auditPair = buildModuleSettingsAuditPair({
+            beforeDoc,
+            afterDoc,
+            body: req.body || {}
+        });
+        attachSettingsAuditDiff(res, auditPair.before, auditPair.after, {
+            keys: [...new Set([...Object.keys(auditPair.before || {}), ...Object.keys(auditPair.after || {})])]
+        });
         
         res.json({ 
             success: true, 
@@ -4509,6 +4558,7 @@ exports.updateSystemModule = async (req, res) => {
             'imports', 'reports'
         ]);
         if (!systemKeys.has(keyLower)) return res.status(400).json({ success: false, message: 'Invalid system module key' });
+        const { attachSettingsAuditDiff, buildModuleSettingsAuditPair, cloneForAudit } = require('../utils/settingsAuditSnapshot');
         const { fields, enabled, name, relationships, quickCreate, quickCreateLayout, pipelineSettings } = req.body;
         const deprecatedEventAliasKeys = new Set(['relatedorg', 'relatedorgid', 'relatedorganization']);
         
@@ -4529,6 +4579,17 @@ exports.updateSystemModule = async (req, res) => {
         const existingMod = await ModuleDefinition.findOne({
             ...orgFilterMongoose
         }).select('+quickCreate +quickCreateLayout +fields +relationships +pipelineSettings');
+
+        const beforeDoc = cloneForAudit({
+            key: keyLower,
+            name: existingMod?.name || null,
+            enabled: existingMod?.enabled,
+            fields: existingMod?.fields,
+            relationships: existingMod?.relationships,
+            quickCreate: existingMod?.quickCreate,
+            quickCreateLayout: existingMod?.quickCreateLayout,
+            pipelineSettings: existingMod?.pipelineSettings
+        });
         
         // When user "removes" platform/app fields from config, re-add them as hidden so save succeeds (no 403)
         let fieldsToSave = fields;
@@ -5172,6 +5233,25 @@ exports.updateSystemModule = async (req, res) => {
             createdAt: responseData.createdAt || doc.createdAt,
             updatedAt: responseData.updatedAt || doc.updatedAt
         };
+
+        const afterDoc = cloneForAudit({
+            key: finalResponse.key || keyLower,
+            name: finalResponse.name,
+            enabled: finalResponse.enabled,
+            fields: finalResponse.fields,
+            relationships: finalResponse.relationships,
+            quickCreate: finalResponse.quickCreate,
+            quickCreateLayout: finalResponse.quickCreateLayout,
+            pipelineSettings: finalResponse.pipelineSettings
+        });
+        const auditPair = buildModuleSettingsAuditPair({
+            beforeDoc,
+            afterDoc,
+            body: req.body || {}
+        });
+        attachSettingsAuditDiff(res, auditPair.before, auditPair.after, {
+            keys: [...new Set([...Object.keys(auditPair.before || {}), ...Object.keys(auditPair.after || {})])]
+        });
         
         res.json({ 
             success: true, 
@@ -5245,6 +5325,9 @@ exports.addModuleFieldPicklistOption = async (req, res) => {
             return res.json({ success: true, data: optionEntry, message: 'Option already exists' });
         }
 
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const optionsBefore = cloneForAudit(Array.isArray(field.options) ? field.options : []);
+
         fields[fieldIdx] = {
             ...field,
             options: [...(Array.isArray(field.options) ? field.options : []), optionEntry],
@@ -5271,6 +5354,19 @@ exports.addModuleFieldPicklistOption = async (req, res) => {
                 },
             },
             { upsert: true }
+        );
+
+        attachSettingsAuditDiff(
+            res,
+            { fields: { [field.key || fieldKey]: { options: optionsBefore } } },
+            {
+                fields: {
+                    [field.key || fieldKey]: {
+                        options: fields[fieldIdx].options
+                    }
+                }
+            },
+            { keys: ['fields'] }
         );
 
         return res.status(201).json({ success: true, data: optionEntry });

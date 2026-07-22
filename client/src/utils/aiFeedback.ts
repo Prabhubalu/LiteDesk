@@ -12,6 +12,9 @@ export type SubmitAiFeedbackInput = {
   found?: boolean | null
   sourceType?: string | null
   sourceId?: string | null
+  /** Astra Learn: dismiss this Do-next fingerprint on 👎 */
+  actionFingerprint?: string | null
+  comment?: string | null
 }
 
 export function trackAiAbilityUsed(input: {
@@ -51,6 +54,8 @@ export async function submitAiFeedback(input: SubmitAiFeedbackInput): Promise<vo
       model: input.model || 'unknown',
       keyMode: input.keyMode || 'platform',
       contextRefs,
+      actionFingerprint: input.actionFingerprint || undefined,
+      comment: input.comment || undefined,
     })
   } catch {
     /* feedback is best-effort */

@@ -18,10 +18,12 @@ const {
   rotateProcessWebhookSecret,
   deleteProcess
 } = require('../controllers/processController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 // Apply middleware to all routes
 router.use(protect);
 router.use(requireAdmin());
+router.use(createSettingsAuditMiddleware({ surface: 'processes', entityType: 'Process' }));
 
 // CRUD endpoints
 router.get('/', getAllProcesses);

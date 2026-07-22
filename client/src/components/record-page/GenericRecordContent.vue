@@ -4346,14 +4346,23 @@ async function loadCatalogCategoryLookup(isCurrentRun) {
 
 async function addComment(content, attachments, parentCommentId) {
   try {
+    const text = typeof content === 'string' ? content : (content?.content || '');
     const response = await apiClient.post(`/modules/${props.moduleKey}/records/${props.recordId}/comments`, {
-      content: typeof content === 'string' ? content : (content?.content || ''),
+      content: text,
       attachments: Array.isArray(attachments) && attachments.length > 0 ? attachments : undefined,
       parentCommentId: parentCommentId || null
     });
     const createdComment = response?.data?.data ?? response?.data ?? null;
     appendRawActivityEvent(buildRawActivityFromCreatedComment(createdComment));
     newCommentText.value = '';
+    // Super Agent mentions reply in Activity asynchronously — refresh to pick up replies.
+    if (/\(agent:[^)]+\)/.test(String(text))) {
+      const refresh = () => {
+        void loadActivityForRecord(() => true);
+      };
+      setTimeout(refresh, 1500);
+      setTimeout(refresh, 6000);
+    }
   } catch (e) {
     console.error('Add comment error:', e);
   }

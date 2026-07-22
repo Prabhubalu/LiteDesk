@@ -659,7 +659,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
@@ -724,7 +724,6 @@ const hasPublishWebhookSecret = ref(false);
 const publishWebhookSecretUnreadable = ref(false);
 const generatedWebhookSecret = ref('');
 const webhookSecretGenerating = ref(false);
-let autoSaveTimer = null;
 
 const defaultAppearance = {
   layoutPreset: 'classic',
@@ -1418,11 +1417,12 @@ function applySettings(res) {
   dirty.value = false;
 }
 
-async function save({ silent = false } = {}) {
+async function save() {
   if (saving.value) return;
   saving.value = true;
   try {
-    const res = await apiClient.put('/settings/addons/articles/settings', {
+    const { pickDirtyFields } = await import('@/utils/pickDirtyFields');
+    const current = {
       portalPublishing: form.portalPublishing,
       publishWebhookUrl: form.publishWebhookUrl,
       headlessApiEnabled: form.headlessApiEnabled,
@@ -1432,26 +1432,34 @@ async function save({ silent = false } = {}) {
       caseDeflectionEnabled: form.caseDeflectionEnabled,
       staleContentAlertDays: form.staleContentAlertDays,
       appearance: { ...form.appearance },
-    }, { cache: 'no-store' });
-    applySettings(res);
-    if (!silent) {
-      notifications.success(t('settings.addonsArticlesSettingsSaved'));
+    };
+    const snap = initialSnapshot.value ? JSON.parse(initialSnapshot.value) : {};
+    const baselineForm = snap.form && typeof snap.form === 'object' ? snap.form : {};
+    const baseline = {
+      portalPublishing: baselineForm.portalPublishing,
+      publishWebhookUrl: baselineForm.publishWebhookUrl,
+      headlessApiEnabled: baselineForm.headlessApiEnabled,
+      embedWebsiteDomain: baselineForm.embedWebsiteDomain,
+      staticSyncHostType: snap.staticSyncHostType,
+      defaultCollectionId: baselineForm.defaultCollectionId,
+      caseDeflectionEnabled: baselineForm.caseDeflectionEnabled,
+      staleContentAlertDays: baselineForm.staleContentAlertDays,
+      appearance: baselineForm.appearance ? { ...baselineForm.appearance } : {},
+    };
+    const payload = pickDirtyFields(current, baseline);
+    if (Object.keys(payload).length === 0) {
+      saving.value = false;
+      return;
     }
+
+    const res = await apiClient.put('/settings/addons/articles/settings', payload, { cache: 'no-store' });
+    applySettings(res);
+    notifications.success(t('settings.addonsArticlesSettingsSaved'));
   } catch (err) {
     notifications.error(err?.message || t('settings.addonsArticlesSettingsSaveFailed'));
   } finally {
     saving.value = false;
   }
-}
-
-function scheduleAutoSave() {
-  if (autoSaveTimer) clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(() => {
-    autoSaveTimer = null;
-    if (dirty.value && !saving.value && !loading.value) {
-      void save({ silent: true });
-    }
-  }, 800);
 }
 
 watch(
@@ -1472,15 +1480,6 @@ watch(
   },
   { deep: true },
 );
-
-watch(dirty, (isDirty) => {
-  if (!isDirty || loading.value || isInitialLoad.value) return;
-  scheduleAutoSave();
-});
-
-onBeforeUnmount(() => {
-  if (autoSaveTimer) clearTimeout(autoSaveTimer);
-});
 
 onMounted(() => {
   void load();

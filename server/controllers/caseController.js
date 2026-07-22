@@ -442,6 +442,15 @@ exports.createCase = async (req, res) => {
       actorId: req.user._id
     });
 
+    try {
+      const { onCaseCreated } = require('../services/ai/astraSuperAgentTriggers');
+      onCaseCreated({
+        organizationId: req.user.organizationId,
+        userId: req.user._id,
+        caseRecord: created,
+      }).catch((err) => console.error('[caseController] Super Agent case trigger:', err?.message || err));
+    } catch (_) { /* optional */ }
+
     return res.status(201).json({
       success: true,
       data: toSafeObject(created),

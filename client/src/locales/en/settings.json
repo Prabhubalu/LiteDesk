@@ -4163,6 +4163,170 @@
     "message": "Configure AI providers, credits, and bring-your-own-key settings",
     "description": "AI settings card description"
   },
+  "tabAuditLog": {
+    "message": "Audit log",
+    "description": "Settings audit log tab"
+  },
+  "tabAuditLogDesc": {
+    "message": "Review configuration changes made in Settings (Admin only)",
+    "description": "Settings audit log card description"
+  },
+  "auditLogTitle": {
+    "message": "Settings audit log",
+    "description": "Audit log page title"
+  },
+  "auditLogSubtitle": {
+    "message": "See who changed company settings and exactly what they changed.",
+    "description": "Audit log page subtitle"
+  },
+  "auditLogFilterSurface": {
+    "message": "Surface",
+    "description": "Filter label for audit surface"
+  },
+  "auditLogFilterArea": {
+    "message": "Settings area",
+    "description": "Friendly filter label for audit surface"
+  },
+  "auditLogFilterAction": {
+    "message": "Action",
+    "description": "Filter label for audit action"
+  },
+  "auditLogFilterAll": {
+    "message": "All",
+    "description": "All filter option"
+  },
+  "auditLogActionCreate": {
+    "message": "Create",
+    "description": "Create action filter"
+  },
+  "auditLogActionUpdate": {
+    "message": "Update",
+    "description": "Update action filter"
+  },
+  "auditLogActionDelete": {
+    "message": "Delete",
+    "description": "Delete action filter"
+  },
+  "auditLogActionInvoke": {
+    "message": "Invoke",
+    "description": "Invoke action filter"
+  },
+  "auditLogRefresh": {
+    "message": "Refresh",
+    "description": "Refresh audit log button"
+  },
+  "auditLogLoadError": {
+    "message": "Failed to load settings audit log",
+    "description": "Audit log load error"
+  },
+  "auditLogUnknownActor": {
+    "message": "Unknown user",
+    "description": "Fallback when actor is missing"
+  },
+  "auditLogByline": {
+    "message": "By {actor} · {when}",
+    "description": "Actor and timestamp byline"
+  },
+  "auditLogMoreChanges": {
+    "message": "+{count} more — click to show all",
+    "description": "More changes teaser"
+  },
+  "auditLogAllChanges": {
+    "message": "All changes",
+    "description": "Expanded changes heading"
+  },
+  "auditLogChangedOne": {
+    "message": "Changed {field} from “{from}” to “{to}”",
+    "description": "Single field change title"
+  },
+  "auditLogSetOne": {
+    "message": "Set {field} to {to}",
+    "description": "Single field set title"
+  },
+  "auditLogChangedMany": {
+    "message": "Updated {area} ({count} changes)",
+    "description": "Multi field change title"
+  },
+  "auditLogFallbackTitle": {
+    "message": "Settings change",
+    "description": "Fallback audit entry title"
+  },
+  "auditLogBefore": {
+    "message": "Before",
+    "description": "Before payload label"
+  },
+  "auditLogAfter": {
+    "message": "After",
+    "description": "After payload label"
+  },
+  "auditLogNoData": {
+    "message": "—",
+    "description": "No before/after data"
+  },
+  "auditLogColWhen": {
+    "message": "When",
+    "description": "Audit table column: when"
+  },
+  "auditLogColWho": {
+    "message": "Changed by",
+    "description": "Audit table column: who"
+  },
+  "auditLogColDevice": {
+    "message": "Device",
+    "description": "Audit table column: browser/OS device"
+  },
+  "auditLogColIp": {
+    "message": "IP address",
+    "description": "Audit table column: client IP"
+  },
+  "auditLogUnknownDevice": {
+    "message": "Unknown",
+    "description": "Fallback when user-agent is missing"
+  },
+  "auditLogUnknownIp": {
+    "message": "—",
+    "description": "Fallback when IP is missing"
+  },
+  "auditLogLocalhost": {
+    "message": "Localhost",
+    "description": "Display label for loopback IP addresses (::1 / 127.0.0.1)"
+  },
+  "auditLogColArea": {
+    "message": "Area",
+    "description": "Audit table column: settings area"
+  },
+  "auditLogColSetting": {
+    "message": "Setting",
+    "description": "Audit table column: setting name"
+  },
+  "auditLogColChanges": {
+    "message": "Changes",
+    "description": "Audit table column: change summary for a save"
+  },
+  "auditLogColBefore": {
+    "message": "Previous value",
+    "description": "Audit table column: before"
+  },
+  "auditLogColAfter": {
+    "message": "New value",
+    "description": "Audit table column: after"
+  },
+  "auditLogEmpty": {
+    "message": "No setting changes to show yet. Make a change in Settings, then refresh.",
+    "description": "Empty audit log state"
+  },
+  "auditLogPrev": {
+    "message": "Previous",
+    "description": "Previous page"
+  },
+  "auditLogNext": {
+    "message": "Next",
+    "description": "Next page"
+  },
+  "auditLogPage": {
+    "message": "Page {page} of {total}",
+    "description": "Pagination label"
+  },
   "aiTitle": {
     "message": "AI settings",
     "description": "AI settings page title"
@@ -4382,6 +4546,82 @@
   "aiTabUsage": {
     "message": "Usage log",
     "description": "AI settings usage audit tab"
+  },
+  "aiTabPii": {
+    "message": "PII",
+    "description": "AI settings PII redaction tab"
+  },
+  "aiPiiTitle": {
+    "message": "What is not sent to AI",
+    "description": "AI PII tab title"
+  },
+  "aiPiiHint": {
+    "message": "These values are scrubbed from prompts before they reach your LLM provider. Staff still see full CRM data in Arivu.",
+    "description": "AI PII tab hint"
+  },
+  "aiPiiSummaryFallback": {
+    "message": "Before Arivu calls an LLM provider, prompts are scanned and sensitive values are replaced with placeholders.",
+    "description": "Fallback summary when catalog is missing"
+  },
+  "aiPiiCustomTitle": {
+    "message": "Custom redaction rules",
+    "description": "Custom PII section title"
+  },
+  "aiPiiCustomHint": {
+    "message": "Add organization-specific values to scrub before prompts reach your LLM provider. Use plain text match for fixed strings, or regex for patterns.",
+    "description": "Custom PII section hint"
+  },
+  "aiPiiCustomAdd": {
+    "message": "Add rule",
+    "description": "Add custom PII rule button"
+  },
+  "aiPiiCustomEmpty": {
+    "message": "No custom rules yet. Add one to redact internal codes, account numbers, or other sensitive text.",
+    "description": "Empty custom PII rules state"
+  },
+  "aiPiiCustomEnabled": {
+    "message": "Enabled",
+    "description": "Custom PII rule enabled checkbox"
+  },
+  "aiPiiCustomLabel": {
+    "message": "Label",
+    "description": "Custom PII rule label field"
+  },
+  "aiPiiCustomLabelPlaceholder": {
+    "message": "Employee ID",
+    "description": "Custom PII rule label placeholder"
+  },
+  "aiPiiCustomMatchType": {
+    "message": "Match type",
+    "description": "Custom PII match type field"
+  },
+  "aiPiiCustomMatchLiteral": {
+    "message": "Contains text",
+    "description": "Literal match type option"
+  },
+  "aiPiiCustomMatchRegex": {
+    "message": "Regular expression",
+    "description": "Regex match type option"
+  },
+  "aiPiiCustomPattern": {
+    "message": "Match value",
+    "description": "Custom PII pattern field"
+  },
+  "aiPiiCustomReplacement": {
+    "message": "Replacement placeholder",
+    "description": "Custom PII replacement field"
+  },
+  "aiPiiCustomSave": {
+    "message": "Save custom rules",
+    "description": "Save custom PII rules button"
+  },
+  "aiPiiCustomSaveSuccess": {
+    "message": "Custom PII rules saved.",
+    "description": "Custom PII save success message"
+  },
+  "aiPiiCustomSaveFailed": {
+    "message": "Could not save custom PII rules.",
+    "description": "Custom PII save failure message"
   },
   "aiUsageTitle": {
     "message": "AI usage log",

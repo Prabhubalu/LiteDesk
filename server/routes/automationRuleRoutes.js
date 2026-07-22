@@ -13,10 +13,12 @@ const {
   getEventTypes,
   getActionTypes
 } = require('../controllers/automationRuleController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 // Apply middleware to all routes
 router.use(protect);
 router.use(requireAdmin());
+router.use(createSettingsAuditMiddleware({ surface: 'automation', entityType: 'AutomationRule' }));
 
 // Metadata endpoints
 router.get('/metadata/event-types', getEventTypes);

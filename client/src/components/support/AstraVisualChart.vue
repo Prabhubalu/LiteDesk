@@ -127,6 +127,7 @@ function buildOption() {
     };
   }
 
+  const isDonut = chartType === 'donut';
   return {
     color: PALETTE,
     tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
@@ -137,10 +138,10 @@ function buildOption() {
     },
     series: [{
       type: 'pie' as const,
-      radius: ['38%', '62%'],
+      radius: isDonut ? ['38%', '62%'] : '62%',
       center: ['50%', '42%'],
       avoidLabelOverlap: true,
-      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      itemStyle: { borderRadius: isDonut ? 4 : 2, borderColor: '#fff', borderWidth: 2 },
       label: { fontSize: 10, formatter: '{b}\n{d}%' },
       data: points.map((p, i) => ({
         name: p.label,

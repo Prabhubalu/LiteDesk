@@ -9,5 +9,6 @@ describe('aiFeedbackService constants', () => {
     assert.equal(ALLOWED_ABILITIES.has('draft_reply'), true);
     assert.equal(ALLOWED_ABILITIES.has('ask'), true);
     assert.equal(ALLOWED_ABILITIES.has('summarize'), true);
+    assert.equal(ALLOWED_ABILITIES.has('tenant_agent'), true);
   });
 });

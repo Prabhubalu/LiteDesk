@@ -237,6 +237,17 @@ const OrganizationSchema = new mongoose.Schema({
         platformHomeAiFocus: {
             type: Boolean,
             default: false
+        },
+        piiCustomRules: {
+            type: [{
+                id: { type: String, trim: true, maxlength: 64 },
+                label: { type: String, trim: true, maxlength: 80 },
+                pattern: { type: String, trim: true, maxlength: 200 },
+                replacement: { type: String, trim: true, maxlength: 40, default: '[CUSTOM]' },
+                matchType: { type: String, enum: ['regex', 'literal'], default: 'literal' },
+                enabled: { type: Boolean, default: true },
+            }],
+            default: []
         }
     },
     

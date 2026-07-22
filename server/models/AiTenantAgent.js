@@ -49,6 +49,49 @@ const AiTenantAgentSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    /**
+     * Super Agent (ASTRA_SUPER_AGENTS_V1): can be @mentioned in asks/comments.
+     */
+    mentionable: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    /**
+     * Optional cron (5-field). Non-empty = eligible for scheduled Super Agent scans.
+     * Writes always land as AstraProposal (propose→confirm).
+     */
+    scheduleCron: {
+      type: String,
+      trim: true,
+      maxlength: 64,
+      default: '',
+    },
+    /** Skills this Super Agent may invoke (ids from aiAstraSkillsRegistry). */
+    skillIds: {
+      type: [String],
+      default: [],
+    },
+    /** Narrower tool allowlist than capabilities (crm_data, nba, propose_write, …). */
+    toolAllowlist: {
+      type: [String],
+      default: [],
+    },
+    /** Knowledge scope: CRM modules + future Connected Search sources. */
+    knowledgeScope: {
+      modules: { type: [String], default: [] },
+      sources: { type: [String], default: [] },
+    },
+    /** User who receives scheduled proposals (defaults to createdBy on schedule tick). */
+    scheduleOwnerUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    lastScheduledAt: {
+      type: Date,
+      default: null,
+    },
     /** True when Astra auto-created this specialist from an unmatched question. */
     autoCreated: {
       type: Boolean,
@@ -86,5 +129,7 @@ AiTenantAgentSchema.index(
   { unique: true, collation: { locale: 'en', strength: 2 } },
 );
 AiTenantAgentSchema.index({ organizationId: 1, enabled: 1, updatedAt: -1 });
+AiTenantAgentSchema.index({ organizationId: 1, mentionable: 1, enabled: 1 });
+AiTenantAgentSchema.index({ organizationId: 1, scheduleCron: 1, enabled: 1 });
 
 module.exports = wrapTenantModel(mongoose.model('AiTenantAgent', AiTenantAgentSchema));

@@ -82,6 +82,14 @@ const ENABLE_MARKETING_AB_TEST_SCHEDULER =
   process.env.ENABLE_MARKETING_AB_TEST_SCHEDULER !== 'false';
 const ENABLE_AMDS_POLICY_SYNC_SCHEDULER =
   process.env.ENABLE_AMDS_POLICY_SYNC_SCHEDULER !== 'false';
+/** Astra Autopilot org scan — default OFF until ASTRA_AUTOPILOT_V1=true */
+const ENABLE_ASTRA_AUTOPILOT_SCHEDULER =
+  String(process.env.ASTRA_AUTOPILOT_V1 || '').toLowerCase() === 'true'
+  && process.env.ENABLE_ASTRA_AUTOPILOT_SCHEDULER !== 'false';
+/** Super Agent schedules — default ON with Super Agents; set ENABLE_…=false to keep APIs only */
+const ENABLE_ASTRA_SUPER_AGENT_SCHEDULER =
+  String(process.env.ASTRA_SUPER_AGENTS_V1 || '').toLowerCase() !== 'false'
+  && process.env.ENABLE_ASTRA_SUPER_AGENT_SCHEDULER !== 'false';
 
 let dailyDigestJob = null;
 let weeklyDigestJob = null;
@@ -115,6 +123,8 @@ let marketingSegmentRefreshJob = null;
 let marketingCampaignScheduleJob = null;
 let marketingAbTestJob = null;
 let amdsPolicySyncJob = null;
+let astraAutopilotJob = null;
+let astraSuperAgentJob = null;
 
 /**
  * Initialize and start scheduled jobs (node-cron).
@@ -729,6 +739,44 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Stalled invite scheduler disabled (ENABLE_STALLED_INVITE_SCHEDULER=false)');
   }
 
+  if (ENABLE_ASTRA_AUTOPILOT_SCHEDULER) {
+    const { tickAstraAutopilotScan } = require('./ai/astraAutopilotService');
+    astraAutopilotJob = cron.schedule('15 * * * *', async () => {
+      try {
+        const result = await tickAstraAutopilotScan();
+        if (!result.skipped) {
+          console.log(
+            `[scheduledJobs] Astra Autopilot: tenants=${result.tenantsProcessed} users=${result.usersScanned} created=${result.created} errors=${result.errors}`
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Astra Autopilot tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Astra Autopilot scan: hourly at :15');
+  } else {
+    console.log('[scheduledJobs] Astra Autopilot scheduler disabled (set ASTRA_AUTOPILOT_V1=true)');
+  }
+
+  if (ENABLE_ASTRA_SUPER_AGENT_SCHEDULER) {
+    const { tickSuperAgentSchedules } = require('./ai/astraSuperAgentService');
+    astraSuperAgentJob = cron.schedule('25 * * * *', async () => {
+      try {
+        const result = await tickSuperAgentSchedules();
+        if (!result.skipped) {
+          console.log(
+            `[scheduledJobs] Astra Super Agents: tenants=${result.tenants} agents=${result.agentsProcessed} created=${result.created} errors=${result.errors}`
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Astra Super Agents tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Astra Super Agents: hourly at :25');
+  } else {
+    console.log('[scheduledJobs] Astra Super Agents scheduler disabled');
+  }
+
   if (ENABLE_TRIAL_NUDGE_SCHEDULER) {
     const { tickTrialOnboardingNudges } = require('./onboardingTrialNudgeSchedulerService');
     trialNudgeJob = cron.schedule('0 10 * * *', async () => {
@@ -957,6 +1005,18 @@ function stopScheduledJobs() {
     stalledInviteJob.stop();
     stalledInviteJob = null;
     console.log('[scheduledJobs] Stalled invite job stopped');
+  }
+
+  if (astraAutopilotJob) {
+    astraAutopilotJob.stop();
+    astraAutopilotJob = null;
+    console.log('[scheduledJobs] Astra Autopilot job stopped');
+  }
+
+  if (astraSuperAgentJob) {
+    astraSuperAgentJob.stop();
+    astraSuperAgentJob = null;
+    console.log('[scheduledJobs] Astra Super Agents job stopped');
   }
 
   if (trialNudgeJob) {

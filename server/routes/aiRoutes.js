@@ -49,6 +49,18 @@ const {
   deleteTenantAgentAi,
   askTenantAgentAi,
   applyAstraMutationAi,
+  verifyAstraMutationAi,
+  getAstraUserMemoryAi,
+  putAstraUserMemoryAi,
+  listAstraSkillsAi,
+  runAstraSkillAi,
+  listAstraChatModelsAi,
+  listAstraSuperAgentsAi,
+  getAstraNextBestActionsAi,
+  listAstraAutopilotProposalsAi,
+  acceptAstraAutopilotProposalAi,
+  dismissAstraAutopilotProposalAi,
+  refreshAstraAutopilotAi,
   suggestTenantAgentTriggersAi,
   listAiConversations,
   getAiConversation,
@@ -57,6 +69,7 @@ const {
   deleteAiConversation,
   listAiAuditLogsHandler,
 } = require('../controllers/aiController');
+const { createSettingsAuditMiddleware } = require('../middleware/settingsAuditMiddleware');
 
 router.use(protect);
 router.use(resolveAppContext);
@@ -66,7 +79,12 @@ router.get('/status', requireAiAccess('view'), getAiStatus);
 router.get('/audit-log', requireAiAccess('view'), listAiAuditLogsHandler);
 router.get('/settings', requireAiAccess('view'), getAiSettings);
 router.get('/settings/models', requireAiAccess('view'), getAiModels);
-router.put('/settings', requireAiAccess('manage'), putAiSettings);
+router.put(
+  '/settings',
+  requireAiAccess('manage'),
+  createSettingsAuditMiddleware({ surface: 'ai' }),
+  putAiSettings
+);
 
 router.post('/echo', aiLimiter, requireAiAccess('use'), requireAiSuiteEntitlement(), echoAi);
 router.post('/echo/stream', aiLimiter, requireAiAccess('use'), requireAiSuiteEntitlement(), echoAiStream);
@@ -107,6 +125,82 @@ router.post(
   requireAiAccess('use'),
   requireAiSuiteEntitlement(),
   applyAstraMutationAi
+);
+router.post(
+  '/astra/mutations/verify',
+  aiLimiter,
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  verifyAstraMutationAi
+);
+router.get(
+  '/astra/memory',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  getAstraUserMemoryAi
+);
+router.put(
+  '/astra/memory',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  putAstraUserMemoryAi
+);
+router.get(
+  '/astra/skills',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  listAstraSkillsAi
+);
+router.get(
+  '/astra/skills/:skillId',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  runAstraSkillAi
+);
+router.get(
+  '/astra/chat-models',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  listAstraChatModelsAi
+);
+router.get(
+  '/astra/super-agents',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  listAstraSuperAgentsAi
+);
+router.get(
+  '/astra/next-best-actions',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  getAstraNextBestActionsAi
+);
+router.get(
+  '/astra/autopilot/proposals',
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  listAstraAutopilotProposalsAi
+);
+router.post(
+  '/astra/autopilot/refresh',
+  aiLimiter,
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  refreshAstraAutopilotAi
+);
+router.post(
+  '/astra/autopilot/proposals/:proposalId/accept',
+  aiLimiter,
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  acceptAstraAutopilotProposalAi
+);
+router.post(
+  '/astra/autopilot/proposals/:proposalId/dismiss',
+  aiLimiter,
+  requireAiAccess('use'),
+  requireAiSuiteEntitlement(),
+  dismissAstraAutopilotProposalAi
 );
 router.post(
   '/tenant-agents/suggest-triggers',

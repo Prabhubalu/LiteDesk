@@ -3,6 +3,7 @@ const { encryptTenantSecret, decryptTenantSecret } = require('../../utils/tenant
 const { AI_DEFAULTS, AI_KEY_MODES, AI_PROVIDERS, AI_PROVIDER_MODEL_DEFAULTS, AI_PROVIDER_LLM_MODELS } = require('../../constants/aiProviders');
 const { AiConfigurationError } = require('./errors');
 const { listSupportedProviders } = require('./providerRegistry');
+const { getPiiRedactionCatalog, sanitizeCustomPiiRulesForStorage, normalizeCustomPiiRulesForDisplay } = require('./piiRedaction');
 
 const LLM_PROVIDERS = new Set(Object.values(AI_PROVIDERS));
 const EMBEDDING_PROVIDERS = new Set([
@@ -169,6 +170,7 @@ function toPublicAiSettings(aiSettings) {
       acceptedAt: aiSettings.dataUseConsent?.acceptedAt || null,
     },
     platformHomeAiFocus: Boolean(aiSettings.platformHomeAiFocus),
+    piiCustomRules: normalizeCustomPiiRulesForDisplay(aiSettings.piiCustomRules),
   };
 }
 
@@ -177,8 +179,10 @@ async function getPublicAiSettings(organizationId) {
   if (!organization) {
     throw new AiConfigurationError('Organization not found', 'ORGANIZATION_NOT_FOUND');
   }
+  const piiCustomRules = normalizeCustomPiiRulesForDisplay(organization.aiSettings?.piiCustomRules);
   return {
     settings: toPublicAiSettings(organization.aiSettings || {}),
+    piiRedaction: getPiiRedactionCatalog(piiCustomRules),
     supported: {
       ...listSupportedProviders(),
       llmModelsByProvider: AI_PROVIDER_LLM_MODELS,
@@ -302,6 +306,17 @@ async function updateAiSettings({ organizationId, userId, patch }) {
     settings.platformHomeAiFocus = Boolean(patch.platformHomeAiFocus);
   }
 
+  if (patch.piiCustomRules !== undefined) {
+    try {
+      settings.piiCustomRules = sanitizeCustomPiiRulesForStorage(patch.piiCustomRules);
+    } catch (err) {
+      throw new AiConfigurationError(
+        err.message || 'Invalid custom PII rules',
+        'AI_PII_RULES_INVALID',
+      );
+    }
+  }
+
   if (patch.creditsBalance !== undefined) {
     const balance = Number(patch.creditsBalance);
     if (!Number.isFinite(balance) || balance < 0) {
@@ -318,8 +333,11 @@ async function updateAiSettings({ organizationId, userId, patch }) {
   organization.markModified('aiSettings');
   await organization.save();
 
+  const piiCustomRules = normalizeCustomPiiRulesForDisplay(organization.aiSettings?.piiCustomRules);
+
   return {
     settings: toPublicAiSettings(organization.aiSettings),
+    piiRedaction: getPiiRedactionCatalog(piiCustomRules),
     supported: listSupportedProviders(),
   };
 }

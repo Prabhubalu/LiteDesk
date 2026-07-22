@@ -426,6 +426,163 @@
       </div>
       </template>
 
+      <template v-if="activeTab === 'pii'">
+        <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiPiiTitle') }}</h3>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            {{ t('settings.aiPiiHint') }}
+          </p>
+          <p class="mt-3 text-sm text-gray-700 dark:text-gray-300">
+            {{ piiCatalog?.summary || t('settings.aiPiiSummaryFallback') }}
+          </p>
+
+          <ul class="mt-6 divide-y divide-gray-100 dark:divide-gray-700">
+            <li
+              v-for="item in builtInPiiItems"
+              :key="item.id"
+              class="py-4 first:pt-0 last:pb-0"
+            >
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+                  {{ item.label }}
+                </h4>
+                <code class="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-medium text-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                  {{ item.placeholder }}
+                </code>
+              </div>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                {{ item.description }}
+              </p>
+              <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-500">
+                {{ item.example }}
+              </p>
+              <p
+                v-if="item.note"
+                class="mt-2 text-xs text-amber-700 dark:text-amber-300"
+              >
+                {{ item.note }}
+              </p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiPiiCustomTitle') }}</h3>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiPiiCustomHint') }}</p>
+            </div>
+            <button
+              type="button"
+              class="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-800 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200"
+              :disabled="customPiiRules.length >= maxCustomPiiRules"
+              @click="addCustomPiiRule"
+            >
+              {{ t('settings.aiPiiCustomAdd') }}
+            </button>
+          </div>
+
+          <p
+            v-if="piiSaveError"
+            class="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+          >
+            {{ piiSaveError }}
+          </p>
+          <p
+            v-if="piiSaveMessage"
+            class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300"
+          >
+            {{ piiSaveMessage }}
+          </p>
+
+          <div
+            v-if="!customPiiRules.length"
+            class="mt-4 rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400"
+          >
+            {{ t('settings.aiPiiCustomEmpty') }}
+          </div>
+
+          <ul v-else class="mt-4 space-y-4">
+            <li
+              v-for="(rule, index) in customPiiRules"
+              :key="rule.id"
+              class="rounded-lg border border-gray-200 p-4 dark:border-gray-600"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <label class="flex items-center gap-2 text-sm">
+                  <input
+                    v-model="rule.enabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                  />
+                  <span class="font-medium text-gray-900 dark:text-white">{{ t('settings.aiPiiCustomEnabled') }}</span>
+                </label>
+                <button
+                  type="button"
+                  class="text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400"
+                  @click="removeCustomPiiRule(index)"
+                >
+                  {{ t('actions.delete') }}
+                </button>
+              </div>
+              <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                <label class="block text-sm sm:col-span-2">
+                  <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiPiiCustomLabel') }}</span>
+                  <input
+                    v-model="rule.label"
+                    type="text"
+                    maxlength="80"
+                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                    :placeholder="t('settings.aiPiiCustomLabelPlaceholder')"
+                  />
+                </label>
+                <label class="block text-sm">
+                  <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiPiiCustomMatchType') }}</span>
+                  <select
+                    v-model="rule.matchType"
+                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                  >
+                    <option value="literal">{{ t('settings.aiPiiCustomMatchLiteral') }}</option>
+                    <option value="regex">{{ t('settings.aiPiiCustomMatchRegex') }}</option>
+                  </select>
+                </label>
+                <label class="block text-sm">
+                  <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiPiiCustomReplacement') }}</span>
+                  <input
+                    v-model="rule.replacement"
+                    type="text"
+                    maxlength="40"
+                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-mono dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                    placeholder="[CUSTOM]"
+                  />
+                </label>
+                <label class="block text-sm sm:col-span-2">
+                  <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiPiiCustomPattern') }}</span>
+                  <input
+                    v-model="rule.pattern"
+                    type="text"
+                    maxlength="200"
+                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-mono dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                    :placeholder="rule.matchType === 'regex' ? '\\bSSN-\\d{3}-\\d{2}-\\d{4}\\b' : 'ACME-CONFIDENTIAL'"
+                  />
+                </label>
+              </div>
+            </li>
+          </ul>
+
+          <div class="mt-6 flex justify-end">
+            <button
+              type="button"
+              class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+              :disabled="piiSaving"
+              @click="savePiiRules"
+            >
+              {{ piiSaving ? t('states.saving') : t('settings.aiPiiCustomSave') }}
+            </button>
+          </div>
+        </section>
+      </template>
+
       <template v-if="activeTab === 'usage'">
         <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiUsageTitle') }}</h3>
@@ -750,6 +907,7 @@ const { t } = useI18n();
 const aiTabs = [
   { id: 'general', labelKey: 'settings.aiTabGeneral' },
   { id: 'agents', labelKey: 'settings.aiTabAgents' },
+  { id: 'pii', labelKey: 'settings.aiTabPii' },
   { id: 'usage', labelKey: 'settings.aiTabUsage' },
 ];
 const activeTab = ref('general');
@@ -759,7 +917,71 @@ const saving = ref(false);
 const error = ref('');
 const saveMessage = ref('');
 const settings = ref(null);
+const piiCatalog = ref(null);
+const customPiiRules = ref([]);
+const maxCustomPiiRules = ref(20);
+const piiSaving = ref(false);
+const piiSaveError = ref('');
+const piiSaveMessage = ref('');
 const clearKey = ref(false);
+
+function cloneCustomPiiRules(rules) {
+  if (!Array.isArray(rules)) return [];
+  return rules.map((row, index) => ({
+    id: String(row?.id || `custom_${index + 1}_${Date.now()}`),
+    label: String(row?.label || ''),
+    pattern: String(row?.pattern || ''),
+    replacement: String(row?.replacement || '[CUSTOM]'),
+    matchType: row?.matchType === 'regex' ? 'regex' : 'literal',
+    enabled: row?.enabled !== false,
+  }));
+}
+
+function addCustomPiiRule() {
+  if (customPiiRules.value.length >= maxCustomPiiRules.value) return;
+  customPiiRules.value.push({
+    id: `custom_${Date.now().toString(36)}`,
+    label: '',
+    pattern: '',
+    replacement: '[CUSTOM]',
+    matchType: 'literal',
+    enabled: true,
+  });
+}
+
+function removeCustomPiiRule(index) {
+  customPiiRules.value.splice(index, 1);
+}
+
+async function savePiiRules() {
+  piiSaving.value = true;
+  piiSaveError.value = '';
+  piiSaveMessage.value = '';
+  try {
+    const payload = {
+      piiCustomRules: customPiiRules.value.map((rule) => ({
+        id: rule.id,
+        label: rule.label.trim(),
+        pattern: rule.pattern.trim(),
+        replacement: (rule.replacement.trim() || '[CUSTOM]').toUpperCase(),
+        matchType: rule.matchType,
+        enabled: Boolean(rule.enabled),
+      })),
+    };
+    const data = await apiClient.put('/ai/settings', payload);
+    settings.value = data.settings || settings.value;
+    piiCatalog.value = data.piiRedaction || piiCatalog.value;
+    customPiiRules.value = cloneCustomPiiRules(settings.value?.piiCustomRules);
+    if (data.piiRedaction?.maxCustomRules) {
+      maxCustomPiiRules.value = Number(data.piiRedaction.maxCustomRules);
+    }
+    piiSaveMessage.value = t('settings.aiPiiCustomSaveSuccess');
+  } catch (err) {
+    piiSaveError.value = err?.message || t('settings.aiPiiCustomSaveFailed');
+  } finally {
+    piiSaving.value = false;
+  }
+}
 const llmProviderOptions = ref(['openai', 'azure_openai', 'anthropic', 'gemini']);
 const llmModelsByProvider = ref({});
 const modelsLoading = ref(false);
@@ -826,6 +1048,12 @@ const usageAbilityOptions = computed(() => {
   const fromRows = usageItems.value.map((row) => row.abilityKey).filter(Boolean);
   return [...new Set([...fromSummary, ...fromRows])].sort();
 });
+
+const piiItems = computed(() => (
+  Array.isArray(piiCatalog.value?.items) ? piiCatalog.value.items : []
+));
+
+const builtInPiiItems = computed(() => piiItems.value.filter((item) => !item.custom));
 
 const usagePaginationRange = computed(() => {
   const { page, limit, total } = usagePagination.value;
@@ -1023,6 +1251,11 @@ async function load() {
   try {
     const data = await apiClient.get('/ai/settings');
     settings.value = data.settings || {};
+    piiCatalog.value = data.piiRedaction || null;
+    customPiiRules.value = cloneCustomPiiRules(settings.value?.piiCustomRules);
+    if (data.piiRedaction?.maxCustomRules) {
+      maxCustomPiiRules.value = Number(data.piiRedaction.maxCustomRules);
+    }
     form.enabled = Boolean(settings.value.enabled);
     form.acceptDataUseConsent = Boolean(settings.value.dataUseConsent?.accepted);
     form.platformHomeAiFocus = Boolean(settings.value.platformHomeAiFocus);

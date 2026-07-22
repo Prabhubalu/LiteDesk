@@ -18,9 +18,16 @@ describe('aiSettingsResolver.resolveModel', () => {
 
   it('uses org llmModel for user-facing abilities when set', () => {
     assert.equal(resolveModel(openaiSettings, 'work_graph_ask'), 'gpt-4o');
-    assert.equal(resolveModel(openaiSettings, 'tenant_agent'), 'gpt-4o');
     assert.equal(resolveModel(openaiSettings, 'summarize'), 'gpt-4o');
     assert.equal(resolveModel(openaiSettings, 'ask'), 'gpt-4o');
+  });
+
+  it('defaults tenant_agent to classify/mini even when llmModel is set', () => {
+    assert.equal(resolveModel(openaiSettings, 'tenant_agent'), 'gpt-4o-mini');
+    assert.equal(
+      resolveModel({ ...openaiSettings, modelOverrides: { tenant_agent: 'gpt-4o' } }, 'tenant_agent'),
+      'gpt-4o',
+    );
   });
 
   it('uses classify tier for background abilities even when llmModel is set', () => {
@@ -34,13 +41,14 @@ describe('aiSettingsResolver.resolveModel', () => {
     assert.equal(resolveModel(settings, 'work_graph_ask'), 'gpt-4o-mini');
   });
 
-  it('honours Anthropic BYOK org model for tenant_agent', () => {
+  it('honours Anthropic BYOK org model for tenant abilities (not Astra ask)', () => {
     const settings = {
       llmProvider: AI_PROVIDERS.ANTHROPIC,
       llmModel: 'claude-fable-5',
       modelOverrides: {},
     };
-    assert.equal(resolveModel(settings, 'tenant_agent'), 'claude-fable-5');
+    assert.equal(resolveModel(settings, 'work_graph_ask'), 'claude-fable-5');
+    assert.equal(resolveModel(settings, 'tenant_agent'), 'claude-haiku-4-5-20251001');
     assert.equal(resolveModel(settings, 'classify'), 'claude-haiku-4-5-20251001');
   });
 
@@ -58,7 +66,7 @@ describe('aiSettingsResolver.resolveModel', () => {
   });
 
   it('exposes ability tier sets', () => {
-    assert.ok(TENANT_MODEL_ABILITIES.has('tenant_agent'));
+    assert.ok(!TENANT_MODEL_ABILITIES.has('tenant_agent'));
     assert.ok(CLASSIFY_TIER_ABILITIES.has('classify'));
   });
 });

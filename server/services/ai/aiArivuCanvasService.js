@@ -37,16 +37,26 @@ function isCanvasCrmQuestion(question = '') {
   if (isContentCreationQuestion(q)) return false;
   // "Give me brief report on tasks / pie chart" is analytics — not meeting prep canvas.
   if (isExplicitReportOrChartQuestion(q)) return false;
+  // Record summarize / coaching brief chips must NOT open Canvas (that hijacks the answer).
+  if (
+    /\bsummar(y|ize|ise)\b/.test(q)
+    && !/\b(meeting|deck|slides?|canvas|talking\s+points?)\b/.test(q)
+  ) {
+    return false;
+  }
+  if (/\bcoaching\s+brief\b/.test(q) || /\bcoaching\s+summary\b/.test(q) || /\bwhat should i do next\b/.test(q)) {
+    return false;
+  }
   return (
     /\b(arivu\s*canvas|generative\s*canvas|open\s*canvas|show\s*canvas)\b/.test(q)
     || /\b(prepare|prep)\s+(me\s+)?for\b/.test(q)
-    || /\bbrief\s+(me\s+)?for\b/.test(q)
+    || /\bbrief\s+me\s+for\b/.test(q)
     || /\b(meeting\s+prep|account\s+overview|elevator\s+pitch|conversation\s+starters?|talking\s+points?)\b/.test(q)
     || /\b(prep(?:are)?)\b.+\b(talking\s+points?|related\s+context|agenda)\b/.test(q)
     || /\b(analy[sz]e|analysis|insights?)\b.+\b(account|deal|pipeline|meeting|case|quote|contact)\b/.test(q)
     || /\b(show|give)\s+me\s+(an?\s+)?(overview|analysis|dashboard)\b/.test(q)
     || /\b(show|give)\s+me\s+(a\s+)?brief\s+(on|for|about)\s+(the\s+)?(meeting|account|deal|contact|opportunity)\b/.test(q)
-    || /\bsummarize\b.+\b(meeting|quote|deal|contact|context)\b/.test(q)
+    || /\bsummarize\b.+\b(meeting|quote|deal)\b/.test(q)
   );
 }
 

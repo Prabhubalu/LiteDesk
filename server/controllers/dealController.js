@@ -1092,6 +1092,16 @@ exports.updateDeal = async (req, res) => {
             } catch (playbookErr) {
                 console.error('[dealController] playbook on update failed:', playbookErr?.message || playbookErr);
             }
+            try {
+                const { onDealStageChanged } = require('../services/ai/astraSuperAgentTriggers');
+                onDealStageChanged({
+                    organizationId: req.user.organizationId,
+                    userId: req.user._id,
+                    deal: updatedDeal,
+                    fromStage: existingDealForChanges?.stage || '',
+                    toStage: updatedDeal.stage || '',
+                }).catch((err) => console.error('[dealController] Super Agent stage trigger:', err?.message || err));
+            } catch (_) { /* optional */ }
         } else if (updatedDeal.playbookState?.actions?.length) {
             try {
                 const { reconcilePlaybookForDeal } = require('../services/playbookExecutionService');
@@ -2653,6 +2663,19 @@ exports.updateStage = async (req, res) => {
             console.error('Update stage: emitDealEvents failed (stage was saved):', emitErr);
         }
 
+        if (stageChanged && req.user?._id) {
+            try {
+                const { onDealStageChanged } = require('../services/ai/astraSuperAgentTriggers');
+                onDealStageChanged({
+                    organizationId: req.user.organizationId,
+                    userId: req.user._id,
+                    deal,
+                    fromStage: previousSnapshot?.stage || '',
+                    toStage: stage,
+                }).catch((err) => console.error('[dealController] Super Agent stage trigger:', err?.message || err));
+            } catch (_) { /* optional */ }
+        }
+
         const updatedDeal = await Deal.findById(deal._id)
             .populate('contactId', 'first_name last_name email')
             .populate('assignedTo', 'firstName lastName email')
@@ -2983,6 +3006,22 @@ exports.createDealComment = async (req, res) => {
       authorId: String(req.user._id),
       authorName
     }).catch((err) => console.error('Deal comment mention notifications error:', err));
+
+    try {
+      const { processSuperAgentCommentMentions } = require('../services/ai/astraSuperAgentTriggers');
+      processSuperAgentCommentMentions({
+        organizationId: String(req.user.organizationId),
+        authorId: String(req.user._id),
+        authorName,
+        appKey: req.appKey || 'SALES',
+        moduleKey: 'deals',
+        recordId: String(req.params.id),
+        recordTitle: deal.name || 'Deal',
+        commentId: String(comment._id),
+        commentContent: content.trim(),
+        entityType: 'Deal',
+      }).catch((err) => console.error('Deal Super Agent mention error:', err));
+    } catch (_) { /* optional */ }
 
     const engagedAt = new Date();
     if (!Array.isArray(deal.activityLogs)) deal.activityLogs = [];

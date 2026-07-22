@@ -25,6 +25,7 @@ const {
 } = require('../middleware/businessHoursAccess');
 const BusinessHoursDailyKpi = require('../models/BusinessHoursDailyKpi');
 const { aggregateBusinessHoursKpiForDay } = require('../services/businessHoursKpiAggregatorService');
+const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
 
 function handleError(res, error, fallbackMessage) {
   console.error(fallbackMessage, error);
@@ -32,6 +33,27 @@ function handleError(res, error, fallbackMessage) {
     return res.status(400).json({ success: false, message: error.message });
   }
   return res.status(500).json({ success: false, message: fallbackMessage, error: error.message });
+}
+
+function snapshotBusinessHourSet(doc) {
+  const o = doc && typeof doc.toObject === 'function' ? doc.toObject() : doc || {};
+  return cloneForAudit({
+    name: o.name ?? null,
+    timezone: o.timezone ?? null,
+    week: o.week ?? null,
+    holidayCalendarId: o.holidayCalendarId ? String(o.holidayCalendarId) : null,
+    overtimeAllowed: o.overtimeAllowed === true,
+    status: o.status ?? null,
+    isDefault: o.isDefault === true,
+    effectiveFrom: o.effectiveFrom ?? null,
+    effectiveTo: o.effectiveTo ?? null,
+    linkedTo: o.linkedTo
+      ? {
+          type: o.linkedTo.type ?? null,
+          id: o.linkedTo.id ? String(o.linkedTo.id) : null
+        }
+      : null
+  });
 }
 
 async function populateHolidayName(doc) {
@@ -162,6 +184,7 @@ exports.createSet = async (req, res) => {
       );
     }
 
+    attachSettingsAuditDiff(res, {}, snapshotBusinessHourSet(doc), { body: req.body || {} });
     res.status(201).json({ success: true, data: await populateHolidayName(doc.toObject()) });
   } catch (error) {
     if (error.code === 11000) {
@@ -194,6 +217,8 @@ exports.updateSet = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not allowed to update this schedule' });
     }
 
+    const before = snapshotBusinessHourSet(existing);
+
     if (body.name != null) existing.name = body.name.trim();
     if (body.timezone != null) existing.timezone = body.timezone;
     if (body.week != null) existing.week = body.week;
@@ -218,6 +243,9 @@ exports.updateSet = async (req, res) => {
 
     existing.modifiedBy = req.user._id;
     await existing.save();
+
+    const after = snapshotBusinessHourSet(existing);
+    attachSettingsAuditDiff(res, before, after, { body: req.body || {} });
 
     res.json({ success: true, data: await populateHolidayName(existing.toObject()) });
   } catch (error) {
@@ -247,7 +275,9 @@ exports.deleteSet = async (req, res) => {
       });
     }
 
+    const before = snapshotBusinessHourSet(existing);
     await existing.deleteOne();
+    attachSettingsAuditDiff(res, before, {}, { keys: Object.keys(before || {}) });
     res.json({ success: true, message: 'Schedule deleted' });
   } catch (error) {
     return handleError(res, error, 'Error deleting schedule');

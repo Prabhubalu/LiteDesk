@@ -45,7 +45,9 @@ exports.getBot = async (req, res) => {
 
 exports.createBot = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const row = await createBot(req.user.organizationId, req.body || {});
+    attachSettingsAuditDiff(res, {}, cloneForAudit(row), { body: req.body || {} });
     return res.status(201).json({ success: true, data: row });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -57,7 +59,10 @@ exports.createBot = async (req, res) => {
 
 exports.updateBot = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(await getBotById(req.user.organizationId, req.params.botId));
     const row = await updateBot(req.user.organizationId, req.params.botId, req.body || {});
+    attachSettingsAuditDiff(res, before || {}, cloneForAudit(row), { body: req.body || {} });
     return res.json({ success: true, data: row });
   } catch (err) {
     const status = err.statusCode || 500;
@@ -69,7 +74,10 @@ exports.updateBot = async (req, res) => {
 
 exports.deleteBot = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(await getBotById(req.user.organizationId, req.params.botId));
     await deleteBot(req.user.organizationId, req.params.botId);
+    attachSettingsAuditDiff(res, before || {}, {}, { keys: Object.keys(before || { name: null }) });
     return res.json({ success: true, message: 'Bot deleted' });
   } catch (err) {
     const status = err.statusCode || 500;

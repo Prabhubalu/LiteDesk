@@ -134,6 +134,9 @@ exports.createBusinessFlow = async (req, res) => {
       .populate('createdBy', 'firstName lastName email')
       .lean();
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(res, {}, cloneForAudit(populated), { body: req.body || {} });
+
     res.status(201).json({
       success: true,
       data: populated
@@ -173,6 +176,14 @@ exports.updateBusinessFlow = async (req, res) => {
       });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit({
+      name: flow.name,
+      description: flow.description,
+      appKey: flow.appKey,
+      processIds: flow.processIds
+    });
+
     // Validate processes if provided
     if (processIds && Array.isArray(processIds) && processIds.length > 0) {
       const processes = await Process.find({
@@ -200,6 +211,8 @@ exports.updateBusinessFlow = async (req, res) => {
       .populate('processIds', 'name trigger status')
       .populate('createdBy', 'firstName lastName email')
       .lean();
+
+    attachSettingsAuditDiff(res, before, cloneForAudit(populated), { body: req.body || {} });
 
     res.json({
       success: true,
@@ -238,7 +251,12 @@ exports.deleteBusinessFlow = async (req, res) => {
       });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit({ name: flow.name, appKey: flow.appKey });
+
     await BusinessFlow.deleteOne({ _id: flow._id });
+
+    attachSettingsAuditDiff(res, before, {}, { keys: ['name', 'appKey'] });
 
     res.json({
       success: true,

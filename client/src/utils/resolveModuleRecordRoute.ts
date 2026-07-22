@@ -18,5 +18,6 @@ export function resolveModuleRecordRoute(moduleKey: string, recordId: string): {
   const name = byName[key];
   if (name) return { name, params: { id } };
 
-  return { path: `/${key}/${encodeURIComponent(id)}` };
+  // Do not invent `/${unknownModule}/${id}` paths (e.g. analytics_reports → empty page).
+  return null;
 }

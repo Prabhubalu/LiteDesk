@@ -4,10 +4,20 @@ const HolidayCalendar = require('../models/HolidayCalendar');
 const BusinessHourSet = require('../models/BusinessHourSet');
 const { validateHolidayCalendarInput } = require('../utils/businessHoursValidation');
 const { canManageBusinessHourSets } = require('../middleware/businessHoursAccess');
+const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
 
 function handleError(res, error, fallbackMessage) {
   console.error(fallbackMessage, error);
   return res.status(500).json({ success: false, message: fallbackMessage, error: error.message });
+}
+
+function snapshotHolidayCalendar(doc) {
+  const o = doc && typeof doc.toObject === 'function' ? doc.toObject() : doc || {};
+  return cloneForAudit({
+    name: o.name ?? null,
+    region: o.region ?? null,
+    dates: o.dates ?? []
+  });
 }
 
 exports.list = async (req, res) => {
@@ -59,6 +69,7 @@ exports.create = async (req, res) => {
       modifiedBy: req.user._id
     });
 
+    attachSettingsAuditDiff(res, {}, snapshotHolidayCalendar(doc), { body: req.body || {} });
     res.status(201).json({ success: true, data: doc });
   } catch (error) {
     return handleError(res, error, 'Error creating holiday calendar');
@@ -86,6 +97,8 @@ exports.update = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Holiday calendar not found' });
     }
 
+    const before = snapshotHolidayCalendar(doc);
+
     if (req.body.name != null) doc.name = req.body.name.trim();
     if (req.body.region != null) doc.region = req.body.region;
     if (req.body.dates != null) {
@@ -96,6 +109,7 @@ exports.update = async (req, res) => {
     doc.modifiedBy = req.user._id;
     await doc.save();
 
+    attachSettingsAuditDiff(res, before, snapshotHolidayCalendar(doc), { body: req.body || {} });
     res.json({ success: true, data: doc });
   } catch (error) {
     return handleError(res, error, 'Error updating holiday calendar');
@@ -120,6 +134,15 @@ exports.remove = async (req, res) => {
       });
     }
 
+    const existing = await HolidayCalendar.findOne({
+      _id: req.params.id,
+      organizationId: req.user.organizationId
+    });
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Holiday calendar not found' });
+    }
+
+    const before = snapshotHolidayCalendar(existing);
     const result = await HolidayCalendar.deleteOne({
       _id: req.params.id,
       organizationId: req.user.organizationId
@@ -129,6 +152,7 @@ exports.remove = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Holiday calendar not found' });
     }
 
+    attachSettingsAuditDiff(res, before, {}, { keys: Object.keys(before || {}) });
     res.json({ success: true, message: 'Holiday calendar deleted' });
   } catch (error) {
     return handleError(res, error, 'Error deleting holiday calendar');
@@ -173,6 +197,17 @@ exports.importCsv = async (req, res) => {
       createdBy: req.user._id,
       modifiedBy: req.user._id
     });
+
+    attachSettingsAuditDiff(
+      res,
+      {},
+      cloneForAudit({
+        name: doc.name,
+        region: doc.region,
+        importedCount: dates.length
+      }),
+      { keys: ['name', 'region', 'importedCount'] }
+    );
 
     res.status(201).json({ success: true, data: doc });
   } catch (error) {

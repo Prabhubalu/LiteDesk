@@ -85,6 +85,7 @@ exports.updatePreferences = async (req, res) => {
   });
 
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     let pref = await ensureDefaultPreferences(req.user._id, appKey);
     if (!pref) {
       pref = await NotificationPreference.findOne({ userId: req.user._id, appKey });
@@ -98,6 +99,12 @@ exports.updatePreferences = async (req, res) => {
         events: buildDefaultMap(appKey)
       });
     }
+
+    const beforeEvents = {};
+    pref.events.forEach((value, key) => {
+      beforeEvents[key] = value && value._doc ? { ...value._doc } : (value ? { ...value } : value);
+    });
+    const before = cloneForAudit({ events: beforeEvents });
 
     Object.entries(updates).forEach(([eventType, value]) => {
       // Get existing event from Map - handle Mongoose document structure
@@ -151,7 +158,14 @@ exports.updatePreferences = async (req, res) => {
 
     console.log(`[notificationPreferenceController] Returning response, DIGEST_DAILY:`, JSON.stringify(eventsObj['DIGEST_DAILY']));
 
-    return res.json({ appKey, events: eventsObj });
+    attachSettingsAuditDiff(
+      res,
+      before,
+      cloneForAudit({ events: eventsObj }),
+      { keys: ['events'] }
+    );
+
+    return res.json({ success: true, appKey, events: eventsObj });
   } catch (err) {
     console.error('[notificationPreferenceController:updatePreferences] Error:', err);
     return res.status(500).json({ success: false, message: 'Failed to update preferences' });

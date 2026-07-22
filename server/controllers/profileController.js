@@ -123,6 +123,9 @@ exports.createProfile = async (req, res) => {
     const profile = await Profile.create(payload);
     invalidateTenantPermissionCaches(req.user.organizationId);
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(res, {}, cloneForAudit(profile.toObject()), { body: req.body || {} });
+
     res.status(201).json({
       success: true,
       data: profile.toObject(),
@@ -150,6 +153,9 @@ exports.updateProfile = async (req, res) => {
     if (!profile) {
       return res.status(404).json({ success: false, message: 'Profile not found' });
     }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(profile.toObject());
 
     if (profile.isSystemProfile && req.body.name && req.body.name !== profile.name) {
       return res.status(403).json({
@@ -189,6 +195,8 @@ exports.updateProfile = async (req, res) => {
     );
 
     invalidateTenantPermissionCaches(req.user.organizationId);
+
+    attachSettingsAuditDiff(res, before, cloneForAudit(profile.toObject()), { body: req.body || {} });
 
     res.json({
       success: true,
@@ -241,6 +249,14 @@ exports.deleteProfile = async (req, res) => {
     await profile.deleteOne();
     invalidateTenantPermissionCaches(req.user.organizationId);
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(
+      res,
+      cloneForAudit({ name: profile.name, description: profile.description }),
+      {},
+      { keys: ['name', 'description'] }
+    );
+
     res.json({ success: true, message: 'Profile deleted successfully' });
   } catch (error) {
     console.error('Delete profile error:', error);
@@ -285,6 +301,14 @@ exports.cloneProfile = async (req, res) => {
       createdBy: req.user._id,
       updatedBy: req.user._id
     });
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(
+      res,
+      {},
+      cloneForAudit({ name: clone.name, copiedFromProfileId: source._id }),
+      { keys: ['name', 'copiedFromProfileId'] }
+    );
 
     res.status(201).json({
       success: true,

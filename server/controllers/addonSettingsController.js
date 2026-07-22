@@ -276,6 +276,9 @@ exports.installAddon = async (req, res) => {
       await ensureOrgEmailPolicy(organizationId);
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    attachSettingsAuditDiff(res, { status: 'not_installed' }, { status: 'installed' }, { keys: ['status'] });
+
     return res.status(201).json({
       success: true,
       message: 'Addon installed',
@@ -304,6 +307,9 @@ exports.disableAddon = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Addon is not installed', code: 'NOT_INSTALLED' });
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    const before = { enabled: !!config.enabled, status: config.enabled ? 'enabled' : 'disabled' };
+
     config.enabled = false;
     config.disabledAt = new Date();
     await config.save();
@@ -314,6 +320,8 @@ exports.disableAddon = async (req, res) => {
         { $set: { 'embed.chat.enabled': false } },
       );
     }
+
+    attachSettingsAuditDiff(res, before, { enabled: false, status: 'disabled' }, { keys: ['enabled', 'status'] });
 
     return res.json({ success: true, message: 'Addon disabled' });
   } catch (error) {
@@ -338,6 +346,9 @@ exports.enableAddon = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Addon is not installed', code: 'NOT_INSTALLED' });
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    const before = { enabled: !!config.enabled, status: config.enabled ? 'enabled' : 'disabled' };
+
     config.enabled = true;
     config.disabledAt = null;
     await config.save();
@@ -349,6 +360,8 @@ exports.enableAddon = async (req, res) => {
         { $set: { 'embed.chat.enabled': true } },
       );
     }
+
+    attachSettingsAuditDiff(res, before, { enabled: true, status: 'enabled' }, { keys: ['enabled', 'status'] });
 
     return res.json({ success: true, message: 'Addon enabled' });
   } catch (error) {
@@ -371,6 +384,9 @@ exports.archiveAddon = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Addon is not installed', code: 'NOT_INSTALLED' });
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    const before = { enabled: !!config.enabled, status: config.archivedAt ? 'archived' : (config.enabled ? 'enabled' : 'disabled') };
+
     config.enabled = false;
     config.archivedAt = new Date();
     config.disabledAt = new Date();
@@ -389,6 +405,8 @@ exports.archiveAddon = async (req, res) => {
       entry.status = 'ARCHIVED';
       await subscription.save();
     }
+
+    attachSettingsAuditDiff(res, before, { enabled: false, status: 'archived' }, { keys: ['enabled', 'status'] });
 
     return res.json({ success: true, message: 'Addon archived' });
   } catch (error) {
@@ -415,6 +433,9 @@ exports.uninstallAddon = async (req, res) => {
       await assertLiveChatUninstallAllowed(organizationId);
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
+    const before = { enabled: !!config.enabled, status: 'installed' };
+
     await TenantAddonConfiguration.deleteOne({ _id: config._id });
 
     const subscription = await OrganizationSubscription.findOne({ organizationId });
@@ -431,6 +452,8 @@ exports.uninstallAddon = async (req, res) => {
         { $set: { 'embed.chat.enabled': false } },
       );
     }
+
+    attachSettingsAuditDiff(res, before, { enabled: false, status: 'uninstalled' }, { keys: ['enabled', 'status'] });
 
     return res.json({ success: true, message: 'Addon uninstalled' });
   } catch (error) {
@@ -468,7 +491,12 @@ exports.updateLiveChatWidgetSettings = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
     }
 
-    const widget = await updateWidgetSettings(req.user.organizationId, req.body || {});
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const { getWidgetSettings, updateWidgetSettings } = require('../services/liveChatWidgetService');
+    const before = cloneForAudit(await getWidgetSettings(req.user.organizationId));
+    const patch = req.body || {};
+    const widget = await updateWidgetSettings(req.user.organizationId, patch);
+    attachSettingsAuditDiff(res, before, cloneForAudit(widget), { body: patch });
     return res.json({ success: true, widget });
   } catch (error) {
     const status = error.statusCode || 500;
@@ -504,8 +532,16 @@ exports.updateLiveChatOutcomeSettings = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const beforeOutcomes = cloneForAudit(await listOutcomesForOrganization(req.user.organizationId));
     const customOutcomes = Array.isArray(req.body?.customOutcomes) ? req.body.customOutcomes : [];
     const outcomes = await updateCustomOutcomes(req.user.organizationId, customOutcomes);
+    attachSettingsAuditDiff(
+      res,
+      { customOutcomes: beforeOutcomes },
+      { customOutcomes: cloneForAudit(outcomes) },
+      { keys: ['customOutcomes'] }
+    );
     return res.json({ success: true, outcomes });
   } catch (error) {
     const status = error.statusCode || 500;
@@ -544,7 +580,13 @@ exports.updateLiveChatSessionFieldSettings = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const before = cloneForAudit(await getSessionFieldConfigForViewer({
+      organizationId: req.user.organizationId,
+      isAdmin: true,
+    }));
     const data = await updateSessionFieldSettings(req.user.organizationId, req.body || {});
+    attachSettingsAuditDiff(res, before, cloneForAudit(data), { body: req.body || {} });
     return res.json({ success: true, data });
   } catch (error) {
     const status = error.statusCode || 500;
@@ -571,11 +613,24 @@ exports.purchaseEmailCreditPack = async (req, res) => {
       return res.status(400).json({ success: false, message: 'packKey is required', code: 'INVALID_PACK' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const result = await purchaseEmailCreditPack({
       organizationId: req.user.organizationId,
       packKey,
       initiatedByUserId: req.user._id
     });
+
+    attachSettingsAuditDiff(
+      res,
+      { packKey: null, operation: null },
+      cloneForAudit({
+        packKey,
+        operation: 'purchase',
+        creditsAdded: result?.creditsAdded ?? result?.credits ?? null,
+        balance: result?.balance ?? result?.remainingCredits ?? null
+      }),
+      { keys: ['packKey', 'operation', 'creditsAdded', 'balance'] }
+    );
 
     return res.status(201).json({
       success: true,
@@ -618,13 +673,21 @@ exports.updateArticlesAddonSettings = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const {
       updateArticlesAddonSettings,
+      getArticlesAddonSettings,
       resolveRequestPublicOrigin,
     } = require('../services/contentStudio/articlesAddonSettingsService');
-    const data = await updateArticlesAddonSettings(req.user.organizationId, req.body || {}, {
+    const beforeWrap = await getArticlesAddonSettings(req.user.organizationId, {
       requestOrigin: resolveRequestPublicOrigin(req),
     });
+    const before = cloneForAudit(beforeWrap?.settings || beforeWrap);
+    const patch = req.body || {};
+    const data = await updateArticlesAddonSettings(req.user.organizationId, patch, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    attachSettingsAuditDiff(res, before, cloneForAudit(data?.settings || data), { body: patch });
     return res.json({ success: true, ...data });
   } catch (error) {
     if (error?.code === 'ADDON_NOT_INSTALLED') {
@@ -666,6 +729,7 @@ exports.generateArticlesPublishWebhookSecret = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
     const {
       generateArticlesPublishWebhookSecret,
       resolveRequestPublicOrigin,
@@ -673,6 +737,12 @@ exports.generateArticlesPublishWebhookSecret = async (req, res) => {
     const data = await generateArticlesPublishWebhookSecret(req.user.organizationId, {
       requestOrigin: resolveRequestPublicOrigin(req),
     });
+    attachSettingsAuditDiff(
+      res,
+      { credentialRotated: false },
+      { credentialRotated: true },
+      { keys: ['credentialRotated'] }
+    );
     return res.json({
       success: true,
       publishWebhookSecret: data.publishWebhookSecret || '',
@@ -710,13 +780,21 @@ exports.updateBlogAddonSettings = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
     }
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const {
       updateBlogAddonSettings,
+      getBlogAddonSettings,
       resolveRequestPublicOrigin,
     } = require('../services/contentStudio/blogAddonSettingsService');
-    const data = await updateBlogAddonSettings(req.user.organizationId, req.body || {}, {
+    const beforeWrap = await getBlogAddonSettings(req.user.organizationId, {
       requestOrigin: resolveRequestPublicOrigin(req),
     });
+    const before = cloneForAudit(beforeWrap?.settings || beforeWrap);
+    const patch = req.body || {};
+    const data = await updateBlogAddonSettings(req.user.organizationId, patch, {
+      requestOrigin: resolveRequestPublicOrigin(req),
+    });
+    attachSettingsAuditDiff(res, before, cloneForAudit(data?.settings || data), { body: patch });
     return res.json({ success: true, ...data });
   } catch (error) {
     if (error?.code === 'ADDON_NOT_INSTALLED') {
@@ -733,6 +811,7 @@ exports.generateBlogPublishWebhookSecret = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
     }
 
+    const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
     const {
       generateBlogPublishWebhookSecret,
       resolveRequestPublicOrigin,
@@ -740,6 +819,12 @@ exports.generateBlogPublishWebhookSecret = async (req, res) => {
     const data = await generateBlogPublishWebhookSecret(req.user.organizationId, {
       requestOrigin: resolveRequestPublicOrigin(req),
     });
+    attachSettingsAuditDiff(
+      res,
+      { credentialRotated: false },
+      { credentialRotated: true },
+      { keys: ['credentialRotated'] }
+    );
     return res.json({
       success: true,
       publishWebhookSecret: data.publishWebhookSecret || '',

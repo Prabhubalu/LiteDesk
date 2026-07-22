@@ -208,7 +208,10 @@ exports.upsertSlaPolicy = async (req, res) => {
       deletedAt: null
     });
 
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+
     if (existing) {
+      const before = cloneForAudit(existing.toObject());
       Object.assign(existing, sanitized);
       existing.version = (existing.version || 1) + 1;
       await existing.save();
@@ -218,6 +221,7 @@ exports.upsertSlaPolicy = async (req, res) => {
       if (existing.isDefault) {
         await setDefaultSlaPolicy(req.user.organizationId, existing.policyKey, existing.scope?.moduleKey);
       }
+      attachSettingsAuditDiff(res, before, cloneForAudit(existing.toObject()), { body: req.body || {} });
       return res.json({ success: true, policy: existing.toObject(), created: false });
     }
 
@@ -228,6 +232,7 @@ exports.upsertSlaPolicy = async (req, res) => {
     if (created.isDefault) {
       await setDefaultSlaPolicy(req.user.organizationId, created.policyKey, created.scope?.moduleKey);
     }
+    attachSettingsAuditDiff(res, {}, cloneForAudit(created.toObject()), { body: req.body || {} });
     return res.status(201).json({ success: true, policy: created.toObject(), created: true });
   } catch (error) {
     console.error('[slaPolicyController] upsertSlaPolicy', error);
@@ -240,6 +245,17 @@ exports.deleteSlaPolicy = async (req, res) => {
     if (req.params.policyKey === DEFAULT_SLA_POLICY_KEY) {
       return res.status(400).json({ success: false, message: 'Default SLA policy cannot be deleted' });
     }
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const existing = await SlaPolicy.findOne({
+      organizationId: req.user.organizationId,
+      policyKey: req.params.policyKey,
+      deletedAt: null
+    }).lean();
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'SLA policy not found' });
+    }
+    const before = cloneForAudit(existing);
+
     const result = await SlaPolicy.updateOne(
       {
         organizationId: req.user.organizationId,
@@ -252,6 +268,7 @@ exports.deleteSlaPolicy = async (req, res) => {
     if (!result.matchedCount) {
       return res.status(404).json({ success: false, message: 'SLA policy not found' });
     }
+    attachSettingsAuditDiff(res, before, {}, { keys: Object.keys(before || {}) });
     return res.json({ success: true });
   } catch (error) {
     console.error('[slaPolicyController] deleteSlaPolicy', error);
@@ -291,7 +308,19 @@ exports.migrateHelpdeskSlaPolicies = async (req, res) => {
 
 exports.setDefaultSlaPolicy = async (req, res) => {
   try {
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
     const moduleKey = String(req.body?.moduleKey || req.query?.moduleKey || 'cases').toLowerCase();
+    const previousDefault = await SlaPolicy.findOne({
+      organizationId: req.user.organizationId,
+      'scope.moduleKey': moduleKey,
+      isDefault: true,
+      deletedAt: null
+    }).select('policyKey isDefault').lean();
+    const before = cloneForAudit({
+      defaultPolicyKey: previousDefault?.policyKey || null,
+      isDefault: true
+    });
+
     const policy = await setDefaultSlaPolicy(
       req.user.organizationId,
       req.params.policyKey,
@@ -300,6 +329,12 @@ exports.setDefaultSlaPolicy = async (req, res) => {
     if (!policy) {
       return res.status(404).json({ success: false, message: 'SLA policy not found' });
     }
+    attachSettingsAuditDiff(
+      res,
+      before,
+      cloneForAudit({ defaultPolicyKey: policy.policyKey, isDefault: true }),
+      { keys: ['defaultPolicyKey', 'isDefault'] }
+    );
     return res.json({ success: true, policy });
   } catch (error) {
     console.error('[slaPolicyController] setDefaultSlaPolicy', error);

@@ -1,9 +1,19 @@
 <template>
   <span class="comment-content break-words">
     <template v-for="(part, i) in parsedParts" :key="i">
+      <button
+        v-if="part.type === 'mention' && part.entityType === 'agent'"
+        type="button"
+        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap
+          bg-violet-100 text-violet-800 hover:bg-violet-200 dark:bg-violet-900/40 dark:text-violet-200 dark:hover:bg-violet-900/60"
+        :title="t('liveChat.inAppAiAskWithAgent', { name: part.name })"
+        @click="onAgentMentionClick(part)"
+      >
+        @{{ part.name }}
+      </button>
       <span
-        v-if="part.type === 'mention'"
-        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200"
+        v-else-if="part.type === 'mention'"
+        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200"
       >
         @{{ part.name }}
       </span>
@@ -19,7 +29,7 @@ import { computed } from 'vue';
 
 /**
  * Parses comment content that may contain @mentions in format: @[Name](type:id)
- * Renders plain text and styled mention spans.
+ * Renders plain text and styled mention spans. Agent mentions open Astra.
  */
 const props = defineProps({
   content: {
@@ -34,7 +44,7 @@ const parsedParts = computed(() => {
   if (!props.content) return [];
   const normalizedContent = String(props.content).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const parts = [];
-  const mentionRegex = /@\[([^\]]+)\]\((user|group):([^)]+)\)/g;
+  const mentionRegex = /@\[([^\]]+)\]\((user|group|agent):([^)]+)\)/g;
   let lastIndex = 0;
   let match;
 
@@ -52,7 +62,6 @@ const parsedParts = computed(() => {
   };
 
   while ((match = mentionRegex.exec(normalizedContent)) !== null) {
-    // Add text before this match
     if (match.index > lastIndex) {
       pushTextWithNewlines(normalizedContent.slice(lastIndex, match.index));
     }
@@ -65,11 +74,22 @@ const parsedParts = computed(() => {
     lastIndex = mentionRegex.lastIndex;
   }
 
-  // Add remaining text
   if (lastIndex < normalizedContent.length) {
     pushTextWithNewlines(normalizedContent.slice(lastIndex));
   }
 
   return parts;
 });
+
+function onAgentMentionClick(part) {
+  const name = String(part?.name || '').trim();
+  if (!name) return;
+  window.dispatchEvent(new CustomEvent('arivu:open-assistant', {
+    detail: {
+      prompt: `@${name}`,
+      agentId: String(part?.id || '').trim() || undefined,
+      autoAsk: true,
+    },
+  }));
+}
 </script>

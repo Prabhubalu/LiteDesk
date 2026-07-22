@@ -1795,6 +1795,22 @@
     "message": "Skills",
     "description": "Full-page Astra skills chip label"
   },
+  "astraFullPageSuperAgents": {
+    "message": "Super Agents",
+    "description": "Heading for built-in Astra Super Agent chips"
+  },
+  "astraFullPageSuperAgentsHint": {
+    "message": "Mentionable specialists — same CRM spine, propose→confirm writes.",
+    "description": "Hint under Super Agents chips"
+  },
+  "astraFullPageModel": {
+    "message": "Model",
+    "description": "Aria label for Astra in-chat model picker"
+  },
+  "astraFullPageSkillsHint": {
+    "message": "Named CRM workflows — same ask spine and propose→confirm writes.",
+    "description": "Optional hint under Skills chips"
+  },
   "astraCardSummarizeTitle": {
     "message": "Pipeline summary",
     "description": "Suggestion card title"
@@ -2143,6 +2159,10 @@
     "message": "Risks",
     "description": "Short chip label for risks suggestion"
   },
+  "inAppAiAskWithAgent": {
+    "message": "Ask @{name} in Astra",
+    "description": "Tooltip when clicking an @agent mention in Activity"
+  },
   "inAppAiSuggestShortCount": {
     "message": "Count",
     "description": "Short chip label for list count suggestion"
@@ -2223,6 +2243,94 @@
     "message": "Astra is almost there…",
     "description": "Astra loading synonym"
   },
+  "inAppAiStatusRouting": {
+    "message": "Finding the right specialist…",
+    "description": "Astra live progress: routing"
+  },
+  "inAppAiStatusResolvingConfig": {
+    "message": "Getting ready…",
+    "description": "Astra live progress: config"
+  },
+  "inAppAiStatusCheckingCache": {
+    "message": "Checking recent answers…",
+    "description": "Astra live progress: cache"
+  },
+  "inAppAiStatusCacheHit": {
+    "message": "Found a matching answer…",
+    "description": "Astra live progress: cache hit"
+  },
+  "inAppAiStatusGatheringContext": {
+    "message": "Pulling the right CRM details…",
+    "description": "Astra live progress: context"
+  },
+  "inAppAiStatusSearchingWorkspace": {
+    "message": "Searching across your workspace…",
+    "description": "Astra live progress: search"
+  },
+  "inAppAiStatusExpandingRecords": {
+    "message": "Reading matching records…",
+    "description": "Astra live progress: expand"
+  },
+  "inAppAiStatusLoadingModuleData": {
+    "message": "Loading live totals…",
+    "description": "Astra live progress: modules"
+  },
+  "inAppAiStatusLoadingAttention": {
+    "message": "Checking what’s due…",
+    "description": "Astra live progress: attention"
+  },
+  "inAppAiStatusLoadingCalendar": {
+    "message": "Checking your calendar…",
+    "description": "Astra live progress: calendar"
+  },
+  "inAppAiStatusWebResearch": {
+    "message": "Looking up outside references…",
+    "description": "Astra live progress: web"
+  },
+  "inAppAiStatusCallingModel": {
+    "message": "Thinking through your request…",
+    "description": "Astra live progress: thinking (was calling model)"
+  },
+  "inAppAiStatusThinking": {
+    "message": "Thinking through your request…",
+    "description": "Astra live progress: thinking"
+  },
+  "inAppAiStatusReviewingAsk": {
+    "message": "Reviewing what you asked…",
+    "description": "Astra live progress: reviewing ask"
+  },
+  "inAppAiStatusConnecting": {
+    "message": "Connecting the dots…",
+    "description": "Astra live progress: connecting"
+  },
+  "inAppAiStatusDrafting": {
+    "message": "Writing your answer…",
+    "description": "Astra live progress: drafting"
+  },
+  "inAppAiStatusShaping": {
+    "message": "Shaping the reply…",
+    "description": "Astra live progress: shaping"
+  },
+  "inAppAiStatusPolishing": {
+    "message": "Polishing the details…",
+    "description": "Astra live progress: polishing"
+  },
+  "inAppAiStatusStructuring": {
+    "message": "Organizing the response…",
+    "description": "Astra live progress: structuring"
+  },
+  "inAppAiStatusEnriching": {
+    "message": "Adding CRM next steps…",
+    "description": "Astra live progress: enrich"
+  },
+  "inAppAiStatusPreparingVisuals": {
+    "message": "Preparing visuals…",
+    "description": "Astra live progress: visuals"
+  },
+  "inAppAiStatusAlmostDone": {
+    "message": "Almost ready…",
+    "description": "Astra live progress: almost done"
+  },
   "inAppAiNoAnswer": {
     "message": "I could not find an answer from this page or your knowledge base. Try rephrasing, or Talk to Agent.",
     "description": "In-product assistant empty AI answer"
@@ -2279,9 +2387,25 @@
     "message": "Subject",
     "description": "Label for drafted email subject in assistant card"
   },
+  "inAppAiEmailSent": {
+    "message": "Email sent.",
+    "description": "Confirmation after Astra compose send succeeds"
+  },
+  "inAppAiEmailSendFailed": {
+    "message": "Could not send the email. Try again.",
+    "description": "Error when Astra compose send fails"
+  },
   "inAppAiOpenCompose": {
     "message": "Open compose to send",
     "description": "Hint on email draft action card"
+  },
+  "inAppAiActionNavigateFailed": {
+    "message": "Could not open that record. Trying another way…",
+    "description": "Shown when Astra cannot route to a CRM record from a suggested action"
+  },
+  "inAppAiActionUnavailable": {
+    "message": "That action is not available right now.",
+    "description": "Shown when a suggested action has no workable target"
   },
   "inAppAiSummaryHeadline": {
     "message": "Record summary",
@@ -2670,5 +2794,61 @@
   "inAppAiIntroSkip": {
     "message": "Not now",
     "description": "Skip link on first-open Astra intro overlay"
+  },
+  "inAppAiSuggestedNext": {
+    "message": "Suggested next",
+    "description": "Heading for contextual follow-up suggestion chips after an Astra CRM answer"
+  },
+  "inAppAiSuggestedNextHint": {
+    "message": "Tap a suggestion to ask Astra.",
+    "description": "Hint under suggested next-ask chips"
+  },
+  "inAppAiDoNext": {
+    "message": "Do next",
+    "description": "Heading for proactive Next Best Action buttons in Astra"
+  },
+  "inAppAiDoNextHint": {
+    "message": "Grounded on your Attention queue, pipeline, and recent work.",
+    "description": "Hint under Next Best Action buttons on Astra empty state"
+  },
+  "inAppAiAutopilot": {
+    "message": "Autopilot",
+    "description": "Heading for Astra Autopilot proposal tray"
+  },
+  "inAppAiAutopilotRefresh": {
+    "message": "Refresh",
+    "description": "Refresh Autopilot proposals"
+  },
+  "inAppAiAutopilotAccept": {
+    "message": "Do this",
+    "description": "Accept Autopilot proposal"
+  },
+  "inAppAiAutopilotDismiss": {
+    "message": "Dismiss",
+    "description": "Dismiss Autopilot proposal"
+  },
+  "inAppAiAutopilotHint": {
+    "message": "Grounded proposals from your Attention queue and pipeline — confirm before anything is written.",
+    "description": "Hint under Autopilot tray"
+  },
+  "inAppAiAutopilotAcceptFailed": {
+    "message": "Could not accept Autopilot proposal.",
+    "description": "Error when accept fails"
+  },
+  "inAppAiOutcomeVerified": {
+    "message": "Done — verified",
+    "description": "Headline when CRM mutation verified"
+  },
+  "inAppAiOutcomePartial": {
+    "message": "Done — needs review",
+    "description": "Headline when verify found mismatches"
+  },
+  "inAppAiTaskCompletedVerify": {
+    "message": "Completed task {id}",
+    "description": "Verify note after completing a task via Astra"
+  },
+  "inAppAiTaskCompletedNext": {
+    "message": "Next: clear remaining overdue Attention items.",
+    "description": "Next hint after task complete"
   }
 }

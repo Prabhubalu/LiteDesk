@@ -143,12 +143,59 @@ function sanitizeFields(raw = {}) {
         }
         if (Object.keys(cf).length) out.customFields = cf;
       }
+      // relatedTo: { type, id } for tasks
+      if (k === 'relatedTo' && value.type && value.id) {
+        out.relatedTo = {
+          type: String(value.type).slice(0, 40),
+          id: String(value.id).slice(0, 40),
+        };
+      }
       continue;
     }
     if (typeof value === 'string') out[k] = value.slice(0, 4000);
     else out[k] = value;
   }
   return out;
+}
+
+function escapeRegex(s = '') {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Resolve a staff name/email/username to a User ObjectId within the tenant.
+ * @returns {Promise<string|null>}
+ */
+async function resolveOrgUserByName(organizationId, nameHint = '') {
+  const hint = String(nameHint || '').trim();
+  if (!organizationId || !hint) return null;
+  if (mongoose.Types.ObjectId.isValid(hint) && String(new mongoose.Types.ObjectId(hint)) === hint) {
+    return hint;
+  }
+  const User = require('../../models/User');
+  const orgOid = new mongoose.Types.ObjectId(organizationId);
+  const parts = hint.split(/\s+/).filter(Boolean);
+  const or = [
+    { email: new RegExp(`^${escapeRegex(hint)}$`, 'i') },
+    { username: new RegExp(`^${escapeRegex(hint)}$`, 'i') },
+    { firstName: new RegExp(`^${escapeRegex(parts[0])}$`, 'i') },
+  ];
+  if (parts.length >= 2) {
+    or.push({
+      firstName: new RegExp(`^${escapeRegex(parts[0])}$`, 'i'),
+      lastName: new RegExp(`^${escapeRegex(parts.slice(1).join(' '))}$`, 'i'),
+    });
+  }
+  // Full display name match via concat is expensive — try last token as lastName
+  if (parts.length === 1) {
+    or.push({ lastName: new RegExp(`^${escapeRegex(parts[0])}$`, 'i') });
+  }
+  const user = await User.findOne({
+    organizationId: orgOid,
+    $or: or,
+    $and: [{ $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] }],
+  }).select('_id firstName lastName email').lean();
+  return user?._id ? String(user._id) : null;
 }
 
 function assertUserCanMutate(user, moduleKey, action, appKey = 'SALES') {
@@ -199,6 +246,19 @@ async function applyAstraMutation({
 
   const linkPeopleId = extractLinkPeopleId(fields, pageModuleKey, pageRecordId, mod);
   const clean = sanitizeFields(fields);
+
+  // Resolve assignee display names → User ObjectId (propose→confirm assign).
+  if (clean.assignedTo && typeof clean.assignedTo === 'string'
+    && !mongoose.Types.ObjectId.isValid(clean.assignedTo)) {
+    const resolved = await resolveOrgUserByName(organizationId, clean.assignedTo);
+    if (resolved) clean.assignedTo = resolved;
+    else {
+      throw new AiConfigurationError(
+        `Could not resolve assignee "${clean.assignedTo}" in this organization`,
+        'AI_ASTRA_ASSIGNEE_UNRESOLVED',
+      );
+    }
+  }
 
   // Event.relatedToId is Organization only — never persist a People id there
   if (mod === 'events' && clean.relatedToId && linkPeopleId
@@ -455,6 +515,23 @@ async function applyAstraMutation({
       }
     }
 
+    try {
+      const { verifyMutationOutcome } = require('./aiAstraMutationVerifyService');
+      result.verify = await verifyMutationOutcome({
+        organizationId,
+        op: result.op,
+        moduleKey: result.moduleKey,
+        recordId: result.recordId,
+        expectedFields: clean,
+      });
+      result.outcomeNote = [
+        result.verify?.summary,
+        result.verify?.nextHint,
+      ].filter(Boolean).join(' ');
+    } catch (_) {
+      result.verify = { verified: false, mismatches: ['verify_error'], summary: 'Post-mutation verify failed.' };
+    }
+
     await writeAiAuditLog({
       organizationId,
       userId,
@@ -465,7 +542,11 @@ async function applyAstraMutation({
       status: 'success',
       promptVersion: 'astra_mutation_v1',
       latencyMs: Date.now() - startedAt,
-      metadata: result,
+      metadata: {
+        ...result,
+        outcomeVerified: Boolean(result.verify?.verified),
+        verifyMismatches: result.verify?.mismatches || [],
+      },
     });
 
     return result;
@@ -490,6 +571,7 @@ async function applyAstraMutation({
 module.exports = {
   applyAstraMutation,
   sanitizeFields,
+  resolveOrgUserByName,
   resolveRecordLabel,
   ensurePeopleEventsLink,
   ALLOWED_MODULES,
