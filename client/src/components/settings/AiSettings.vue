@@ -39,7 +39,7 @@
     <div
       v-else
       class="space-y-6"
-      :class="activeTab === 'agents' || activeTab === 'usage' ? 'w-full' : 'max-w-3xl'"
+      :class="(activeTab === 'usage' || activeTab === 'agents') ? 'w-full' : 'max-w-3xl'"
     >
       <template v-if="activeTab === 'general'">
       <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
@@ -53,11 +53,6 @@
           <input v-model="form.acceptDataUseConsent" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600" />
           <span class="text-sm text-gray-900 dark:text-gray-100">{{ t('settings.aiConsentLabel') }}</span>
         </label>
-        <label class="mt-3 flex items-center gap-3">
-          <input v-model="form.platformHomeAiFocus" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600" />
-          <span class="text-sm text-gray-900 dark:text-gray-100">{{ t('settings.aiPlatformHomeFocusLabel') }}</span>
-        </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiPlatformHomeFocusHint') }}</p>
         <p v-if="settings?.dataUseConsent?.accepted" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
           {{ t('settings.aiConsentAccepted') }}
         </p>
@@ -180,250 +175,146 @@
       </template>
 
       <template v-if="activeTab === 'agents'">
-      <div class="w-full">
-        <p v-if="agentsError" class="mb-3 text-sm text-red-600 dark:text-red-400">{{ agentsError }}</p>
-
-        <div class="flex flex-col lg:flex-row gap-4 min-h-[28rem]">
-          <!-- Agent list -->
-          <aside class="w-full lg:w-80 flex-none rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 overflow-hidden flex flex-col">
-            <div class="flex items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 dark:border-gray-700">
-              <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.aiCustomAgentsTitle') }}</h3>
-              <button
-                type="button"
-                class="rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                :disabled="agentSaving"
-                @click="startNewAgent"
-              >
-                {{ t('settings.aiCustomAgentCreate') }}
-              </button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto">
-              <button
-                type="button"
-                class="w-full border-l-2 px-3 py-2.5 text-left transition-colors"
-                :class="selectedAgentId === BUILTIN_AGENT_ID
-                  ? 'border-l-indigo-500 bg-indigo-50/80 dark:bg-indigo-900/25'
-                  : 'border-l-transparent hover:bg-gray-50 dark:hover:bg-white/5'"
-                @click="selectBuiltinAgent"
-              >
-                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ t('settings.aiAssistantAgentTitle') }}</p>
-                <p class="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.aiAssistantAgentReadOnlyBadge') }}</p>
-              </button>
-
-              <button
-                v-for="agent in tenantAgents"
-                :key="agent._id"
-                type="button"
-                class="w-full border-l-2 px-3 py-2.5 text-left transition-colors"
-                :class="selectedAgentId === String(agent._id)
-                  ? 'border-l-indigo-500 bg-indigo-50/80 dark:bg-indigo-900/25'
-                  : 'border-l-transparent hover:bg-gray-50 dark:hover:bg-white/5'"
-                @click="selectAgent(agent)"
-              >
-                <div class="flex items-center gap-2 min-w-0">
-                  <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ agent.name }}</p>
-                  <span
-                    class="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
-                    :class="agent.enabled
-                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                      : 'bg-gray-100 text-gray-500 dark:bg-gray-900 dark:text-gray-400'"
-                  >
-                    {{ agent.enabled ? t('settings.aiCustomAgentEnabled') : t('settings.aiCustomAgentDisabled') }}
-                  </span>
-                </div>
-                <p v-if="agent.description" class="mt-0.5 truncate text-[11px] text-gray-500 dark:text-gray-400">
-                  {{ agent.description }}
-                </p>
-              </button>
-
-              <button
-                v-if="selectedAgentId === NEW_AGENT_ID"
-                type="button"
-                class="w-full border-l-2 border-l-indigo-500 bg-indigo-50/80 px-3 py-2.5 text-left dark:bg-indigo-900/25"
-              >
-                <p class="text-sm font-medium text-indigo-800 dark:text-indigo-200">{{ t('settings.aiCustomAgentNewDraft') }}</p>
-              </button>
-
-              <p
-                v-if="!agentsLoading && !tenantAgents.length && selectedAgentId !== NEW_AGENT_ID"
-                class="px-3 py-4 text-xs text-gray-500 dark:text-gray-400"
-              >
-                {{ t('settings.aiCustomAgentsEmpty') }}
+        <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiAgentsTitle') }}</h3>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-2xl">{{ t('settings.aiAgentsHint') }}</p>
+              <p v-if="agentsMeta" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('settings.aiAgentsOotbNote', {
+                  agentCount: agentsMeta.agentCount,
+                  toolCount: agentsMeta.toolCount,
+                }) }}
               </p>
             </div>
-          </aside>
+            <label class="block w-full sm:w-72 text-sm">
+              <span class="sr-only">{{ t('settings.aiAgentsSearchPlaceholder') }}</span>
+              <input
+                v-model="agentsQuery"
+                type="search"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                :placeholder="t('settings.aiAgentsSearchPlaceholder')"
+              />
+            </label>
+          </div>
 
-          <!-- Agent detail -->
-          <section class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-            <!-- Built-in Astra transparency -->
-            <div v-if="selectedAgentId === BUILTIN_AGENT_ID" class="space-y-4">
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiAssistantAgentTitle') }}</h3>
-                  <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiAssistantAgentHint') }}</p>
-                </div>
-                <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
-                  {{ t('settings.aiAssistantAgentReadOnlyBadge') }}
+          <div v-if="agentsLoading" class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+          </div>
+          <div v-else-if="agentsError" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+            {{ agentsError }}
+          </div>
+          <div v-else-if="!filteredAgents.length" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            {{ t('settings.aiAgentsEmpty') }}
+          </div>
+          <ul v-else class="mt-4 space-y-3">
+            <li
+              v-for="agent in filteredAgents"
+              :key="agent.name"
+              class="rounded-xl border border-gray-100 dark:border-gray-700/80 overflow-hidden"
+            >
+              <button
+                type="button"
+                class="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-900/40"
+                @click="toggleAgentExpanded(agent.name)"
+              >
+                <span class="mt-0.5 text-gray-400" aria-hidden="true">{{ expandedAgents[agent.name] ? '▾' : '▸' }}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ agent.title || agent.name }}</span>
+                    <span class="rounded-full bg-gray-100 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:bg-gray-900 dark:text-gray-300">{{ agent.name }}</span>
+                    <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
+                      {{ t('settings.aiAgentsAutonomy', { level: agent.autonomy || 'assist' }) }}
+                    </span>
+                    <span class="text-[11px] text-gray-500 dark:text-gray-400">
+                      {{ t('settings.aiAgentsToolCount', { count: (agent.tools || []).length }) }}
+                    </span>
+                  </span>
+                  <span v-if="agent.description" class="mt-1 block text-sm text-gray-600 dark:text-gray-400">{{ agent.description }}</span>
                 </span>
-              </div>
-
-              <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900">
-                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  {{ t('settings.aiAssistantAgentPromptLabel') }}
+              </button>
+              <div v-if="expandedAgents[agent.name]" class="border-t border-gray-100 bg-gray-50/80 px-4 py-3 dark:border-gray-700/80 dark:bg-gray-900/30">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{{ t('settings.aiAgentsToolsHeading') }}</p>
+                <p v-if="!(agent.toolDetails || []).length" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  {{ t('settings.aiAgentsNoTools') }}
                 </p>
-                <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-800 dark:text-gray-100">
-                  {{ t('settings.aiAssistantAgentPromptSummary') }}
-                </p>
-              </div>
-
-              <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.aiAssistantAgentContextTitle') }}</h4>
-                  <ul class="mt-2 space-y-1.5 text-sm text-gray-600 dark:text-gray-400">
-                    <li v-for="item in assistantContextItems" :key="item" class="flex gap-2">
-                      <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" aria-hidden="true" />
-                      <span>{{ t(item) }}</span>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.aiAssistantAgentActionsTitle') }}</h4>
-                  <ul class="mt-2 space-y-1.5 text-sm text-gray-600 dark:text-gray-400">
-                    <li v-for="item in assistantActionItems" :key="item" class="flex gap-2">
-                      <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
-                      <span>{{ t(item) }}</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/60 dark:bg-amber-950/30">
-                <h4 class="text-sm font-semibold text-amber-900 dark:text-amber-100">{{ t('settings.aiAssistantAgentGuardrailsTitle') }}</h4>
-                <ul class="mt-2 space-y-1.5 text-sm text-amber-800 dark:text-amber-200">
-                  <li v-for="item in assistantGuardrailItems" :key="item" class="flex gap-2">
-                    <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" aria-hidden="true" />
-                    <span>{{ t(item) }}</span>
+                <ul v-else class="mt-2 space-y-2">
+                  <li
+                    v-for="tool in agent.toolDetails"
+                    :key="`${agent.name}-${tool.name}`"
+                    class="rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="font-mono text-xs font-medium text-gray-900 dark:text-gray-100">{{ tool.name }}</span>
+                      <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-gray-600 dark:bg-gray-900 dark:text-gray-300">{{ tool.family }}</span>
+                      <span
+                        class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
+                        :class="toolRiskClass(tool.risk)"
+                      >{{ toolRiskLabel(tool.risk) }}</span>
+                    </div>
+                    <p v-if="tool.description" class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ tool.description }}</p>
                   </li>
                 </ul>
               </div>
-            </div>
+            </li>
+          </ul>
+        </section>
 
-            <!-- Custom agent editor -->
-            <div v-else-if="selectedAgentId === NEW_AGENT_ID || editingAgentId" class="space-y-3">
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h3 class="text-base font-semibold text-gray-900 dark:text-white">
-                    {{ editingAgentId ? agentForm.name || t('settings.aiCustomAgentEdit') : t('settings.aiCustomAgentCreate') }}
-                  </h3>
-                  <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiCustomAgentsHint') }}</p>
-                </div>
-                <button
-                  v-if="editingAgentId"
-                  type="button"
-                  class="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
-                  :disabled="agentSaving"
-                  @click="removeSelectedAgent"
+        <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiAgentsAllToolsTitle') }}</h3>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="rounded-full px-3 py-1 text-xs font-medium border"
+              :class="toolsFamilyFilter === ''
+                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200'
+                : 'border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300'"
+              @click="toolsFamilyFilter = ''"
+            >
+              {{ t('settings.aiAgentsFilterAll') }}
+            </button>
+            <button
+              v-for="family in toolFamilies"
+              :key="family"
+              type="button"
+              class="rounded-full px-3 py-1 text-xs font-medium border"
+              :class="toolsFamilyFilter === family
+                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200'
+                : 'border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300'"
+              @click="toolsFamilyFilter = family"
+            >
+              {{ family }}
+            </button>
+          </div>
+          <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
+                <tr>
+                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColTool') }}</th>
+                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColFamily') }}</th>
+                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColRisk') }}</th>
+                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColDescription') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
+                <tr
+                  v-for="tool in filteredToolsCatalog"
+                  :key="tool.name"
+                  class="text-gray-800 dark:text-gray-200"
                 >
-                  {{ t('settings.aiCustomAgentDelete') }}
-                </button>
-              </div>
-
-              <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiCustomAgentName') }}</span>
-                <input
-                  v-model="agentForm.name"
-                  type="text"
-                  class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                  :placeholder="t('settings.aiCustomAgentNamePlaceholder')"
-                  @blur="maybeAutoSuggestTriggers"
-                />
-              </label>
-              <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiCustomAgentDescription') }}</span>
-                <input
-                  v-model="agentForm.description"
-                  type="text"
-                  class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                  @blur="maybeAutoSuggestTriggers"
-                />
-              </label>
-              <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiCustomAgentPrompt') }}</span>
-                <textarea
-                  v-model="agentForm.systemPrompt"
-                  rows="8"
-                  class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                  :placeholder="t('settings.aiCustomAgentPromptPlaceholder')"
-                  @blur="maybeAutoSuggestTriggers"
-                />
-              </label>
-              <div class="block text-sm">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiCustomAgentTriggers') }}</span>
-                  <button
-                    type="button"
-                    class="text-xs font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50 dark:text-indigo-400"
-                    :disabled="triggerSuggesting || !canSuggestTriggers"
-                    @click="suggestTriggers()"
-                  >
-                    {{ triggerSuggesting ? t('states.loading') : t('settings.aiCustomAgentTriggersGenerate') }}
-                  </button>
-                </div>
-                <input
-                  v-model="agentForm.triggerPhrasesText"
-                  type="text"
-                  class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                />
-                <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiCustomAgentTriggersHint') }}</span>
-              </div>
-              <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiCustomAgentModules') }}</span>
-                <input
-                  v-model="agentForm.moduleKeysText"
-                  type="text"
-                  class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                />
-                <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiCustomAgentModulesHint') }}</span>
-              </label>
-              <label class="flex items-start gap-2 text-sm">
-                <input v-model="agentForm.webResearch" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600" />
-                <span>
-                  <span class="block text-gray-900 dark:text-gray-100">{{ t('settings.aiCustomAgentWebResearch') }}</span>
-                  <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiCustomAgentWebResearchHint') }}</span>
-                </span>
-              </label>
-              <label class="flex items-center gap-2 text-sm">
-                <input v-model="agentForm.enabled" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600" />
-                <span class="text-gray-900 dark:text-gray-100">{{ t('settings.aiCustomAgentEnabled') }}</span>
-              </label>
-              <div class="flex flex-wrap gap-2 pt-1">
-                <button
-                  type="button"
-                  class="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                  :disabled="agentSaving || !agentForm.name.trim() || !agentForm.systemPrompt.trim()"
-                  @click="saveAgent"
-                >
-                  {{ agentSaving ? t('states.loading') : t('settings.aiCustomAgentSave') }}
-                </button>
-                <button
-                  v-if="selectedAgentId === NEW_AGENT_ID"
-                  type="button"
-                  class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
-                  :disabled="agentSaving"
-                  @click="cancelAgentEdit"
-                >
-                  {{ t('settings.aiCustomAgentCancel') }}
-                </button>
-              </div>
-            </div>
-
-            <div v-else class="flex h-full min-h-[16rem] items-center justify-center">
-              <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.aiCustomAgentSelectHint') }}</p>
-            </div>
-          </section>
-        </div>
-      </div>
+                  <td class="px-3 py-2 font-mono text-xs whitespace-nowrap">{{ tool.name }}</td>
+                  <td class="px-3 py-2 text-xs">{{ tool.family }}</td>
+                  <td class="px-3 py-2 text-xs">
+                    <span class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase" :class="toolRiskClass(tool.risk)">
+                      {{ toolRiskLabel(tool.risk) }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2 text-xs text-gray-600 dark:text-gray-400">{{ tool.description }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </template>
 
       <template v-if="activeTab === 'pii'">
@@ -762,134 +653,6 @@
         </section>
       </template>
 
-      <template v-if="activeTab === 'general'">
-      <AiAskPanel />
-
-      <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.aiAskGraph') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiAskGraphHint') }}</p>
-        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiAskGraphRecordHint') }}</p>
-      </section>
-
-      <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiInboxTriageTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiInboxTriageHint') }}</p>
-        <textarea
-          v-model="triageText"
-          rows="3"
-          class="mt-3 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-          :placeholder="t('settings.aiInboxTriagePlaceholder')"
-        />
-        <button
-          type="button"
-          class="mt-3 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-sm font-medium text-violet-800 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-200"
-          :disabled="triageLoading || !triageText.trim()"
-          @click="runInboxTriage"
-        >
-          {{ triageLoading ? t('states.loading') : t('settings.aiInboxTriageSubmit') }}
-        </button>
-        <p v-if="triageError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ triageError }}</p>
-        <div v-if="triageSummary || triageProposals.length" class="mt-3 space-y-2">
-          <p v-if="triageSummary" class="text-sm text-gray-900 dark:text-gray-100">{{ triageSummary }}</p>
-          <ul class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-            <li v-for="(p, idx) in triageProposals" :key="`${p.action}-${idx}`">
-              • {{ p.label || p.action }} — {{ p.rationale }}
-            </li>
-          </ul>
-          <p class="text-xs text-amber-700 dark:text-amber-300">{{ t('settings.aiInboxTriageConfirmHint') }}</p>
-        </div>
-      </section>
-
-      <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.aiOverdueBrief') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiOverdueBriefHint') }}</p>
-        <button
-          type="button"
-          class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
-          :disabled="overdueBriefLoading"
-          @click="runOverdueBrief"
-        >
-          {{ overdueBriefLoading ? t('states.loading') : t('records.aiOverdueBrief') }}
-        </button>
-        <button
-          type="button"
-          class="mt-3 ml-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
-          :disabled="collectionAgentLoading"
-          @click="runCollectionAgent"
-        >
-          {{ collectionAgentLoading ? t('states.loading') : t('settings.aiCollectionAgentSubmit') }}
-        </button>
-        <p v-if="overdueBriefError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ overdueBriefError }}</p>
-        <pre
-          v-if="overdueBriefText"
-          class="mt-3 whitespace-pre-wrap rounded-lg bg-gray-50 p-3 font-sans text-sm text-gray-900 dark:bg-gray-900 dark:text-gray-100"
-        >{{ overdueBriefText }}</pre>
-        <p v-if="overdueBriefInvoiceIds.length" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          {{ t('settings.aiOverdueBriefPaymentHint') }}
-        </p>
-        <div v-if="collectionSummary || collectionProposals.length" class="mt-3 space-y-2">
-          <p v-if="collectionSummary" class="text-sm text-gray-900 dark:text-gray-100">{{ collectionSummary }}</p>
-          <ul class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-            <li v-for="(p, idx) in collectionProposals" :key="`${p.action}-${idx}`">
-              • {{ p.label || p.action }} — {{ p.rationale }}
-            </li>
-          </ul>
-          <p class="text-xs text-amber-700 dark:text-amber-300">{{ t('settings.aiCollectionAgentConfirmHint') }}</p>
-        </div>
-        <p v-if="collectionError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ collectionError }}</p>
-      </section>
-
-      <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiDigestPreviewTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiDigestPreviewHint') }}</p>
-        <div class="mt-3 grid gap-3 sm:grid-cols-2">
-          <label class="block text-sm">
-            <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiDigestPreviewApp') }}</span>
-            <select
-              v-model="digestAppKey"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            >
-              <option value="SALES">Sales</option>
-              <option value="AUDIT">Audit</option>
-              <option value="PORTAL">Portal</option>
-            </select>
-          </label>
-          <label class="block text-sm">
-            <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiDigestPreviewWindow') }}</span>
-            <select
-              v-model="digestWindow"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            >
-              <option value="daily">{{ t('settings.aiDigestPreviewDaily') }}</option>
-              <option value="weekly">{{ t('settings.aiDigestPreviewWeekly') }}</option>
-            </select>
-          </label>
-        </div>
-        <button
-          type="button"
-          class="mt-3 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-sm font-medium text-violet-800 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-200"
-          :disabled="digestLoading"
-          @click="runDigestPreview"
-        >
-          {{ digestLoading ? t('states.loading') : t('settings.aiDigestPreviewSubmit') }}
-        </button>
-        <p v-if="digestError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ digestError }}</p>
-        <div v-if="digestSubject || digestSummary || digestPriorities.length || digestActions.length" class="mt-3 space-y-2">
-          <p v-if="digestSubject" class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ digestSubject }}</p>
-          <pre
-            v-if="digestSummary"
-            class="whitespace-pre-wrap rounded-lg bg-gray-50 p-3 font-sans text-sm text-gray-900 dark:bg-gray-900 dark:text-gray-100"
-          >{{ digestSummary }}</pre>
-          <ul v-if="digestPriorities.length" class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-            <li v-for="(p, idx) in digestPriorities" :key="`priority-${idx}`">• {{ p }}</li>
-          </ul>
-          <ul v-if="digestActions.length" class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-            <li v-for="(a, idx) in digestActions" :key="`action-${idx}`">-&gt; {{ a }}</li>
-          </ul>
-          <p class="text-xs text-amber-700 dark:text-amber-300">{{ t('settings.aiDigestPreviewConfirmHint') }}</p>
-        </div>
-      </section>
-      </template>
     </div>
   </SettingsScrollPanel>
 </template>
@@ -898,9 +661,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
-import AiAskPanel from '@/components/ai/AiAskPanel.vue';
 import apiClient from '@/utils/apiClient';
-import { trackAiAbilityUsed } from '@/utils/aiFeedback';
 
 const { t } = useI18n();
 
@@ -911,6 +672,97 @@ const aiTabs = [
   { id: 'usage', labelKey: 'settings.aiTabUsage' },
 ];
 const activeTab = ref('general');
+
+const agentsLoading = ref(false);
+const agentsError = ref('');
+const agentsList = ref([]);
+const toolsCatalog = ref([]);
+const agentsMeta = ref(null);
+const agentsQuery = ref('');
+const toolsFamilyFilter = ref('');
+const expandedAgents = reactive({});
+
+const filteredAgents = computed(() => {
+  const q = agentsQuery.value.trim().toLowerCase();
+  if (!q) return agentsList.value;
+  return agentsList.value.filter((agent) => {
+    const hay = [
+      agent.name,
+      agent.title,
+      agent.description,
+      ...(agent.tools || []),
+      ...(agent.toolDetails || []).map((tool) => `${tool.name} ${tool.description || ''}`),
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+});
+
+const toolFamilies = computed(() => {
+  const set = new Set(toolsCatalog.value.map((tool) => tool.family).filter(Boolean));
+  return Array.from(set).sort();
+});
+
+const filteredToolsCatalog = computed(() => {
+  const q = agentsQuery.value.trim().toLowerCase();
+  return toolsCatalog.value.filter((tool) => {
+    if (toolsFamilyFilter.value && tool.family !== toolsFamilyFilter.value) return false;
+    if (!q) return true;
+    return `${tool.name} ${tool.family} ${tool.description || ''}`.toLowerCase().includes(q);
+  });
+});
+
+function toggleAgentExpanded(name) {
+  expandedAgents[name] = !expandedAgents[name];
+}
+
+function toolRiskLabel(risk) {
+  const r = String(risk || 'read').toLowerCase();
+  if (r === 'write') return t('settings.aiAgentsRiskWrite');
+  if (r === 'destructive') return t('settings.aiAgentsRiskDestructive');
+  return t('settings.aiAgentsRiskRead');
+}
+
+function toolRiskClass(risk) {
+  const r = String(risk || 'read').toLowerCase();
+  if (r === 'write') {
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200';
+  }
+  if (r === 'destructive') {
+    return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200';
+  }
+  return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200';
+}
+
+async function loadAgentsCatalog() {
+  agentsLoading.value = true;
+  agentsError.value = '';
+  try {
+    const data = await apiClient.get('/ai/v2/agents');
+    agentsList.value = Array.isArray(data?.agents) ? data.agents : [];
+    toolsCatalog.value = Array.isArray(data?.tools) ? data.tools : [];
+    agentsMeta.value = data?.meta || {
+      agentCount: agentsList.value.length,
+      toolCount: toolsCatalog.value.length,
+    };
+    if (!toolsCatalog.value.length) {
+      const toolsData = await apiClient.get('/ai/v2/tools');
+      toolsCatalog.value = Array.isArray(toolsData?.tools) ? toolsData.tools : [];
+      if (agentsMeta.value) {
+        agentsMeta.value = {
+          ...agentsMeta.value,
+          toolCount: toolsCatalog.value.length,
+        };
+      }
+    }
+  } catch (err) {
+    agentsError.value = err?.message || t('settings.aiAgentsLoadFailed');
+    agentsList.value = [];
+    toolsCatalog.value = [];
+    agentsMeta.value = null;
+  } finally {
+    agentsLoading.value = false;
+  }
+}
 
 const loading = ref(true);
 const saving = ref(false);
@@ -987,45 +839,6 @@ const llmModelsByProvider = ref({});
 const modelsLoading = ref(false);
 const modelsError = ref('');
 let modelRequestId = 0;
-const overdueBriefLoading = ref(false);
-const overdueBriefText = ref('');
-const overdueBriefError = ref('');
-const overdueBriefInvoiceIds = ref([]);
-const collectionAgentLoading = ref(false);
-const collectionError = ref('');
-const collectionSummary = ref('');
-const collectionProposals = ref([]);
-const triageText = ref('');
-const triageLoading = ref(false);
-const triageError = ref('');
-const triageSummary = ref('');
-const triageProposals = ref([]);
-const digestAppKey = ref('SALES');
-const digestWindow = ref('daily');
-const digestLoading = ref(false);
-const digestError = ref('');
-const digestSubject = ref('');
-const digestSummary = ref('');
-const digestPriorities = ref([]);
-const digestActions = ref([]);
-const tenantAgents = ref([]);
-const agentsLoading = ref(false);
-const agentsError = ref('');
-const agentSaving = ref(false);
-const triggerSuggesting = ref(false);
-const BUILTIN_AGENT_ID = '__builtin__';
-const NEW_AGENT_ID = '__new__';
-const selectedAgentId = ref(BUILTIN_AGENT_ID);
-const editingAgentId = ref('');
-const agentForm = reactive({
-  name: '',
-  description: '',
-  systemPrompt: '',
-  triggerPhrasesText: '',
-  moduleKeysText: '',
-  webResearch: false,
-  enabled: true,
-});
 
 const usageLoading = ref(false);
 const usageError = ref('');
@@ -1140,36 +953,9 @@ function changeUsagePage(page) {
   void loadUsageLog();
 }
 
-const canSuggestTriggers = computed(() => Boolean(
-  agentForm.name.trim() || agentForm.systemPrompt.trim() || agentForm.description.trim(),
-));
-
-const assistantContextItems = [
-  'settings.aiAssistantAgentContextRecord',
-  'settings.aiAssistantAgentContextRelated',
-  'settings.aiAssistantAgentContextActivities',
-  'settings.aiAssistantAgentContextKnowledge',
-];
-
-const assistantActionItems = [
-  'settings.aiAssistantAgentActionEmail',
-  'settings.aiAssistantAgentActionTask',
-  'settings.aiAssistantAgentActionReview',
-  'settings.aiAssistantAgentActionStatus',
-  'settings.aiAssistantAgentActionAgent',
-];
-
-const assistantGuardrailItems = [
-  'settings.aiAssistantAgentGuardrailProposeOnly',
-  'settings.aiAssistantAgentGuardrailNoInvent',
-  'settings.aiAssistantAgentGuardrailValidatedActions',
-  'settings.aiAssistantAgentGuardrailSensitiveData',
-];
-
 const form = reactive({
   enabled: false,
   acceptDataUseConsent: false,
-  platformHomeAiFocus: false,
   llmProvider: 'openai',
   llmModel: 'gpt-4o',
   keyMode: 'platform',
@@ -1194,6 +980,9 @@ watch(
   (tab) => {
     if (tab === 'usage') {
       void loadUsageLog();
+    }
+    if (tab === 'agents' && !agentsList.value.length && !agentsLoading.value) {
+      void loadAgentsCatalog();
     }
   },
 );
@@ -1258,7 +1047,6 @@ async function load() {
     }
     form.enabled = Boolean(settings.value.enabled);
     form.acceptDataUseConsent = Boolean(settings.value.dataUseConsent?.accepted);
-    form.platformHomeAiFocus = Boolean(settings.value.platformHomeAiFocus);
     form.llmProvider = settings.value.llmProvider || 'openai';
     form.llmModel = settings.value.autoModel ? AUTO_MODEL : (settings.value.llmModel || AUTO_MODEL);
     form.keyMode = settings.value.keyMode || 'platform';
@@ -1287,182 +1075,10 @@ async function load() {
     };
 
     await loadProviderModels({ preserveModel: savedModel });
-    await loadAgents();
   } catch (err) {
     error.value = err?.message || t('settings.aiLoadFailed');
   } finally {
     loading.value = false;
-  }
-}
-
-function splitCsv(text) {
-  return String(text || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-function resetAgentForm() {
-  editingAgentId.value = '';
-  agentForm.name = '';
-  agentForm.description = '';
-  agentForm.systemPrompt = '';
-  agentForm.triggerPhrasesText = '';
-  agentForm.moduleKeysText = '';
-  agentForm.webResearch = false;
-  agentForm.enabled = true;
-}
-
-function selectBuiltinAgent() {
-  resetAgentForm();
-  selectedAgentId.value = BUILTIN_AGENT_ID;
-  agentsError.value = '';
-}
-
-function selectAgent(agent) {
-  if (!agent?._id) return;
-  editingAgentId.value = String(agent._id);
-  selectedAgentId.value = String(agent._id);
-  agentForm.name = agent.name || '';
-  agentForm.description = agent.description || '';
-  agentForm.systemPrompt = agent.systemPrompt || '';
-  agentForm.triggerPhrasesText = Array.isArray(agent.triggerPhrases) ? agent.triggerPhrases.join(', ') : '';
-  agentForm.moduleKeysText = Array.isArray(agent.moduleKeys) ? agent.moduleKeys.join(', ') : '';
-  agentForm.webResearch = Array.isArray(agent.capabilities)
-    && agent.capabilities.map((c) => String(c).toLowerCase()).includes('web_research');
-  agentForm.enabled = agent.enabled !== false;
-  agentsError.value = '';
-}
-
-function startNewAgent() {
-  resetAgentForm();
-  selectedAgentId.value = NEW_AGENT_ID;
-  agentsError.value = '';
-}
-
-function cancelAgentEdit() {
-  if (tenantAgents.value.length) {
-    selectAgent(tenantAgents.value[0]);
-  } else {
-    selectBuiltinAgent();
-  }
-}
-
-async function loadAgents() {
-  agentsLoading.value = true;
-  agentsError.value = '';
-  try {
-    const data = await apiClient.get('/ai/tenant-agents');
-    tenantAgents.value = Array.isArray(data?.agents) ? data.agents : [];
-    const current = selectedAgentId.value;
-    if (current === NEW_AGENT_ID) {
-      // keep draft selection
-    } else if (current && current !== BUILTIN_AGENT_ID) {
-      const match = tenantAgents.value.find((a) => String(a._id) === current);
-      if (match) selectAgent(match);
-      else if (tenantAgents.value.length) selectAgent(tenantAgents.value[0]);
-      else selectBuiltinAgent();
-    } else if (!current) {
-      selectBuiltinAgent();
-    }
-  } catch (err) {
-    agentsError.value = err?.message || t('settings.aiCustomAgentLoadFailed');
-    tenantAgents.value = [];
-  } finally {
-    agentsLoading.value = false;
-  }
-}
-
-async function suggestTriggers({ force = true } = {}) {
-  if (triggerSuggesting.value || !canSuggestTriggers.value) return;
-  if (!force && agentForm.triggerPhrasesText.trim()) return;
-
-  triggerSuggesting.value = true;
-  agentsError.value = '';
-  try {
-    const data = await apiClient.post('/ai/tenant-agents/suggest-triggers', {
-      name: agentForm.name.trim(),
-      description: agentForm.description.trim(),
-      systemPrompt: agentForm.systemPrompt.trim(),
-      moduleKeysText: agentForm.moduleKeysText.trim(),
-    });
-    const phrases = Array.isArray(data?.triggerPhrases) ? data.triggerPhrases : [];
-    if (phrases.length) {
-      agentForm.triggerPhrasesText = phrases.join(', ');
-    } else {
-      agentsError.value = t('settings.aiCustomAgentTriggersGenerateEmpty');
-    }
-    trackAiAbilityUsed({
-      abilityKey: 'tenant_agent_triggers',
-      provider: data?.provider,
-      model: data?.model,
-      keyMode: data?.keyMode,
-      tokens: data?.usage?.totalTokens,
-    });
-  } catch (err) {
-    agentsError.value = err?.message || t('settings.aiCustomAgentTriggersGenerateFailed');
-  } finally {
-    triggerSuggesting.value = false;
-  }
-}
-
-function maybeAutoSuggestTriggers() {
-  if (!agentForm.triggerPhrasesText.trim() && canSuggestTriggers.value) {
-    suggestTriggers({ force: false });
-  }
-}
-
-async function saveAgent() {
-  if (agentSaving.value) return;
-  agentSaving.value = true;
-  agentsError.value = '';
-  try {
-    if (!agentForm.triggerPhrasesText.trim() && canSuggestTriggers.value) {
-      await suggestTriggers({ force: false });
-    }
-    const payload = {
-      name: agentForm.name.trim(),
-      description: agentForm.description.trim(),
-      systemPrompt: agentForm.systemPrompt.trim(),
-      triggerPhrases: splitCsv(agentForm.triggerPhrasesText),
-      moduleKeys: splitCsv(agentForm.moduleKeysText),
-      capabilities: agentForm.webResearch ? ['web_research'] : [],
-      enabled: Boolean(agentForm.enabled),
-    };
-    let savedId = editingAgentId.value;
-    if (editingAgentId.value) {
-      const data = await apiClient.put(`/ai/tenant-agents/${encodeURIComponent(editingAgentId.value)}`, payload);
-      savedId = String(data?.agent?._id || editingAgentId.value);
-    } else {
-      const data = await apiClient.post('/ai/tenant-agents', payload);
-      savedId = String(data?.agent?._id || '');
-    }
-    selectedAgentId.value = savedId || BUILTIN_AGENT_ID;
-    await loadAgents();
-  } catch (err) {
-    agentsError.value = err?.message || t('settings.aiCustomAgentSaveFailed');
-  } finally {
-    agentSaving.value = false;
-  }
-}
-
-async function removeSelectedAgent() {
-  if (!editingAgentId.value) return;
-  const agent = tenantAgents.value.find((a) => String(a._id) === editingAgentId.value);
-  if (!agent) return;
-  await removeAgent(agent);
-}
-
-async function removeAgent(agent) {
-  if (!agent?._id) return;
-  if (!window.confirm(t('settings.aiCustomAgentDeleteConfirm'))) return;
-  agentsError.value = '';
-  try {
-    await apiClient.delete(`/ai/tenant-agents/${encodeURIComponent(agent._id)}`);
-    selectBuiltinAgent();
-    await loadAgents();
-  } catch (err) {
-    agentsError.value = err?.message || t('settings.aiCustomAgentDeleteFailed');
   }
 }
 
@@ -1477,7 +1093,6 @@ async function save() {
       // Auto = clear override; server routes best model per ability tier.
       llmModel: form.llmModel === AUTO_MODEL ? null : form.llmModel,
       keyMode: form.keyMode,
-      platformHomeAiFocus: form.platformHomeAiFocus,
     };
 
     if (form.llmProvider === 'azure_openai') {
@@ -1526,119 +1141,6 @@ async function save() {
     error.value = err?.message || t('settings.aiSaveFailed');
   } finally {
     saving.value = false;
-  }
-}
-
-async function runOverdueBrief() {
-  overdueBriefLoading.value = true;
-  overdueBriefError.value = '';
-  overdueBriefText.value = '';
-  overdueBriefInvoiceIds.value = [];
-  try {
-    const data = await apiClient.post('/ai/invoices/overdue-brief', { limit: 25 });
-    overdueBriefText.value = String(data?.text || '').trim();
-    overdueBriefInvoiceIds.value = Array.isArray(data?.proposedPaymentLinkInvoiceIds)
-      ? data.proposedPaymentLinkInvoiceIds
-      : [];
-    trackAiAbilityUsed({
-      abilityKey: 'invoice_collection_brief',
-      provider: data?.provider,
-      model: data?.model,
-      keyMode: data?.keyMode,
-    });
-    if (!overdueBriefText.value) {
-      overdueBriefError.value = t('settings.aiOverdueBriefEmpty');
-    }
-  } catch (err) {
-    overdueBriefError.value = err?.message || t('settings.aiOverdueBriefFailed');
-  } finally {
-    overdueBriefLoading.value = false;
-  }
-}
-
-async function runCollectionAgent() {
-  if (collectionAgentLoading.value) return;
-  collectionAgentLoading.value = true;
-  collectionError.value = '';
-  collectionSummary.value = '';
-  collectionProposals.value = [];
-  try {
-    const data = await apiClient.post('/ai/agents/collection', { limit: 25 });
-    collectionSummary.value = String(data?.summary || '').trim();
-    collectionProposals.value = Array.isArray(data?.proposals) ? data.proposals : [];
-    trackAiAbilityUsed({
-      abilityKey: 'collection_agent',
-      provider: data?.provider,
-      model: data?.model,
-      keyMode: data?.keyMode,
-    });
-    if (!collectionSummary.value && !collectionProposals.value.length) {
-      collectionError.value = t('settings.aiCollectionAgentEmpty');
-    }
-  } catch (err) {
-    collectionError.value = err?.message || t('settings.aiCollectionAgentFailed');
-  } finally {
-    collectionAgentLoading.value = false;
-  }
-}
-
-async function runInboxTriage() {
-  const text = triageText.value.trim();
-  if (!text || triageLoading.value) return;
-  triageLoading.value = true;
-  triageError.value = '';
-  triageSummary.value = '';
-  triageProposals.value = [];
-  try {
-    const data = await apiClient.post('/ai/agents/inbox-triage', { text });
-    triageSummary.value = String(data?.summary || '').trim();
-    triageProposals.value = Array.isArray(data?.proposals) ? data.proposals : [];
-    trackAiAbilityUsed({
-      abilityKey: 'inbox_triage',
-      provider: data?.provider,
-      model: data?.model,
-      keyMode: data?.keyMode,
-    });
-    if (!triageSummary.value && !triageProposals.value.length) {
-      triageError.value = t('settings.aiInboxTriageEmpty');
-    }
-  } catch (err) {
-    triageError.value = err?.message || t('settings.aiInboxTriageFailed');
-  } finally {
-    triageLoading.value = false;
-  }
-}
-
-async function runDigestPreview() {
-  if (digestLoading.value) return;
-  digestLoading.value = true;
-  digestError.value = '';
-  digestSubject.value = '';
-  digestSummary.value = '';
-  digestPriorities.value = [];
-  digestActions.value = [];
-  try {
-    const data = await apiClient.post('/ai/digests/brief-preview', {
-      appKey: digestAppKey.value,
-      window: digestWindow.value,
-    });
-    digestSubject.value = String(data?.subject || '').trim();
-    digestSummary.value = String(data?.summary || '').trim();
-    digestPriorities.value = Array.isArray(data?.priorities) ? data.priorities : [];
-    digestActions.value = Array.isArray(data?.suggestedActions) ? data.suggestedActions : [];
-    trackAiAbilityUsed({
-      abilityKey: 'scheduled_digest',
-      provider: data?.provider,
-      model: data?.model,
-      keyMode: data?.keyMode,
-    });
-    if (!digestSubject.value && !digestSummary.value && !digestPriorities.value.length && !digestActions.value.length) {
-      digestError.value = data?.empty ? t('settings.aiDigestPreviewEmpty') : t('settings.aiDigestPreviewFailed');
-    }
-  } catch (err) {
-    digestError.value = err?.message || t('settings.aiDigestPreviewFailed');
-  } finally {
-    digestLoading.value = false;
   }
 }
 

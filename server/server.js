@@ -273,6 +273,7 @@ const helpdeskArticlesRoutes = require('./routes/helpdeskArticlesRoutes');
 const contentStudioRoutes = require('./routes/contentStudioRoutes');
 const publicMarketingRoutes = require('./routes/publicMarketingRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const astraV2Routes = require('./routes/astraV2Routes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -309,6 +310,7 @@ app.use('/api/notification-rules', notificationRuleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/ai', aiRoutes);
+app.use('/api/ai/v2', astraV2Routes);
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/helpdesk/articles', helpdeskArticlesRoutes);
 app.use('/api/marketing/campaigns', marketingCampaignRoutes);

@@ -20,12 +20,14 @@ async function tryAiFaqAssist({ organizationId, session, bot, visitorText, deps 
     const entitled = await isEntitledFn(organizationId);
     if (!entitled) return null;
 
-    const answerLiveChatFaq = deps.answerLiveChatFaq
-      || require('./ai/aiLiveChatBotService').answerLiveChatFaq;
-    const answerLiveChatFaqFromExcerpts = deps.answerLiveChatFaqFromExcerpts
-      || require('./ai/aiLiveChatBotService').answerLiveChatFaqFromExcerpts;
-    const formatBotReplyBody = deps.formatBotReplyBody
-      || require('./ai/aiLiveChatBotService').formatBotReplyBody;
+    // Legacy AI FAQ service (aiLiveChatBotService) removed with Astra v2 cutover.
+    // Disable AI FAQ gracefully unless test doubles are injected.
+    const answerLiveChatFaq = deps.answerLiveChatFaq;
+    const answerLiveChatFaqFromExcerpts = deps.answerLiveChatFaqFromExcerpts;
+    const formatBotReplyBody = deps.formatBotReplyBody;
+    if (!answerLiveChatFaq || !answerLiveChatFaqFromExcerpts || !formatBotReplyBody) {
+      return null;
+    }
     const findBest = deps.findBestBotAnswer || findBestBotAnswer;
 
     const { match } = await findBest({

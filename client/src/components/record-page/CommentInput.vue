@@ -177,12 +177,6 @@
               {{ getInitials(item) }}
             </span>
             <span
-              v-else-if="item.type === 'agent'"
-              class="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-white text-[10px] font-semibold flex-shrink-0"
-            >
-              AI
-            </span>
-            <span
               v-else
               class="w-6 h-6 rounded-full bg-gray-400 dark:bg-gray-600 flex items-center justify-center text-white text-xs flex-shrink-0"
             >
@@ -191,9 +185,6 @@
             <span class="min-w-0 flex-1 truncate">{{ item.name }}</span>
             <span v-if="item.type === 'group'" class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
               {{ t('records.commentMentionGroup') }}
-            </span>
-            <span v-else-if="item.type === 'agent'" class="text-xs text-violet-500 dark:text-violet-300 flex-shrink-0">
-              Agent
             </span>
           </button>
         </template>
@@ -293,7 +284,6 @@ const mentionHighlightIndex = ref(0);
 const mentionLoading = ref(false);
 const users = ref([]);
 const groups = ref([]);
-const superAgents = ref([]);
 const dropdownPosition = ref({ top: 0, left: 0 });
 const activityMaxEditorHeight = ref(240);
 let activityContainerResizeObserver = null;
@@ -307,10 +297,8 @@ const toMentionString = (item) => `@[${item.name}](${item.type}:${item.id})`;
 // Create mention chip HTML element
 const createMentionChip = (item) => {
   const span = document.createElement('span');
-  const agentTone = item.type === 'agent'
-    ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200'
-    : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200';
-  span.className = `mention-chip inline-flex items-center px-1.5 py-0.5 mx-px rounded text-xs font-medium ${agentTone} whitespace-nowrap`;
+  const mentionTone = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200';
+  span.className = `mention-chip inline-flex items-center px-1.5 py-0.5 mx-px rounded text-xs font-medium ${mentionTone} whitespace-nowrap`;
   span.contentEditable = 'false';
   span.dataset.type = item.type;
   span.dataset.id = String(item.id);
@@ -333,14 +321,6 @@ const mentionOptions = computed(() => {
       type: 'group',
       id: g._id,
       name: g.name || 'Unnamed Group'
-    });
-  });
-  superAgents.value.forEach((a) => {
-    result.push({
-      type: 'agent',
-      id: a._id,
-      name: a.name || 'Super Agent',
-      description: a.description || '',
     });
   });
   return result;
@@ -505,22 +485,15 @@ const getInitials = (item) => {
 const fetchMentions = async () => {
   mentionLoading.value = true;
   try {
-    const [usersRes, groupsRes, agentsRes] = await Promise.all([
+    const [usersRes, groupsRes] = await Promise.all([
       apiClient.get('/users/list'),
       apiClient.get('/groups', { params: { limit: 100 } }),
-      apiClient.get('/ai/astra/super-agents').catch(() => null),
     ]);
     users.value = usersRes?.success && Array.isArray(usersRes.data) ? usersRes.data : [];
     groups.value = groupsRes?.success && Array.isArray(groupsRes.data) ? groupsRes.data : [];
-    const agentsPayload = agentsRes && typeof agentsRes === 'object' ? agentsRes : null;
-    const agents = Array.isArray(agentsPayload?.agents)
-      ? agentsPayload.agents
-      : (Array.isArray(agentsPayload?.data?.agents) ? agentsPayload.data.agents : []);
-    superAgents.value = agents.filter((a) => a?._id && a?.name);
   } catch {
     users.value = [];
     groups.value = [];
-    superAgents.value = [];
   } finally {
     mentionLoading.value = false;
     nextTick(() => {

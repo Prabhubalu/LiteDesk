@@ -42,20 +42,7 @@ function dispatchRecordActivityCommentMentions({
     authorName: getCommentAuthorName(author)
   }).catch((err) => console.error('[moduleRecordController] comment mention notifications error:', err));
 
-  try {
-    const { processSuperAgentCommentMentions } = require('../services/ai/astraSuperAgentTriggers');
-    processSuperAgentCommentMentions({
-      organizationId: String(req.user.organizationId),
-      authorId: String(req.user._id),
-      authorName: getCommentAuthorName(author),
-      appKey: req.appKey || 'SALES',
-      moduleKey,
-      recordId: String(recordId),
-      commentId: String(commentId),
-      commentContent,
-      entityType: moduleKey,
-    }).catch((err) => console.error('[moduleRecordController] Super Agent mention error:', err));
-  } catch (_) { /* optional */ }
+  // Legacy Astra Super Agent comment-mention trigger removed with Astra v2 cutover.
 }
 
 function isMasterOrganizationRequest(req) {

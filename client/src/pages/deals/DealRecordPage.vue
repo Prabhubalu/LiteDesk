@@ -156,62 +156,6 @@
                       {{ t('records.dealEmailContact') }}
                     </button>
                   </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiSummaryPanelRef?.summarizing"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-indigo-700 dark:text-indigo-300',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealAiSummary"
-                    >
-                      {{ t('records.aiSummarize') }}
-                    </button>
-                  </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiQuoteDraftPanelRef?.loading"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-amber-800 dark:text-amber-200',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealQuoteDraft"
-                    >
-                      {{ t('records.aiQuoteDraft') }}
-                    </button>
-                  </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiCommercialAgentPanelRef?.loading"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-amber-800 dark:text-amber-200',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealCommercialAgent"
-                    >
-                      {{ t('records.aiCommercialAgent') }}
-                    </button>
-                  </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiResearchPanelRef?.loading"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-sky-800 dark:text-sky-200',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealAiResearch"
-                    >
-                      {{ t('records.aiResearch') }}
-                    </button>
-                  </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
                   <MenuItem v-slot="{ active }">
                     <button
@@ -232,28 +176,10 @@
       </template>
 
       <template v-if="deal" #left>
-        <AiRecordSummaryPanel
+        <RecordAiPanel
           v-if="deal?._id"
-          ref="aiSummaryPanelRef"
-          source-type="deal"
-          :record-id="String(deal._id)"
-        />
-        <AiDealQuoteDraftPanel
-          v-if="deal?._id"
-          ref="aiQuoteDraftPanelRef"
-          :deal-id="String(deal._id)"
-        />
-        <AiCommercialProposePanel
-          v-if="deal?._id"
-          ref="aiCommercialAgentPanelRef"
-          mode="commercial"
-          :deal-id="String(deal._id)"
-        />
-        <AiRecordResearchPanel
-          v-if="deal?._id"
-          ref="aiResearchPanelRef"
-          app-key="SALES"
           module-key="deals"
+          source-type="deal"
           :record-id="String(deal._id)"
         />
         <div
@@ -986,62 +912,6 @@
                       {{ t('records.dealEmailContact') }}
                     </button>
                   </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiSummaryPanelRef?.summarizing"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-indigo-700 dark:text-indigo-300',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealAiSummary"
-                    >
-                      {{ t('records.aiSummarize') }}
-                    </button>
-                  </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiQuoteDraftPanelRef?.loading"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-amber-800 dark:text-amber-200',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealQuoteDraft"
-                    >
-                      {{ t('records.aiQuoteDraft') }}
-                    </button>
-                  </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiCommercialAgentPanelRef?.loading"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-amber-800 dark:text-amber-200',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealCommercialAgent"
-                    >
-                      {{ t('records.aiCommercialAgent') }}
-                    </button>
-                  </MenuItem>
-                  <MenuItem v-slot="{ active }">
-                    <button
-                      type="button"
-                      :disabled="aiResearchPanelRef?.loading"
-                      :class="[
-                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150',
-                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-sky-800 dark:text-sky-200',
-                        'disabled:opacity-50'
-                      ]"
-                      @click="runDealAiResearch"
-                    >
-                      {{ t('records.aiResearch') }}
-                    </button>
-                  </MenuItem>
                   <hr class="my-1 border-gray-200 dark:border-gray-700" />
                   <MenuItem v-slot="{ active }">
                     <button
@@ -1358,10 +1228,7 @@ import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import { useRecordTags } from '@/components/record-page/composables/useRecordTags';
 import EditableTitle from '@/components/record-page/EditableTitle.vue';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
-import AiRecordSummaryPanel from '@/components/record-page/AiRecordSummaryPanel.vue';
-import AiDealQuoteDraftPanel from '@/components/ai/AiDealQuoteDraftPanel.vue';
-import AiCommercialProposePanel from '@/components/ai/AiCommercialProposePanel.vue';
-import AiRecordResearchPanel from '@/components/ai/AiRecordResearchPanel.vue';
+import RecordAiPanel from '@/astra/surfaces/RecordAiPanel.vue';
 import { useRecordPresence } from '@/composables/useRecordPresence';
 import { createActivityTimelineRefSetter } from '@/components/activity/useRecordActivityAdapter';
 import { createDealActivityUi } from '@/components/activity/adapters/dealActivityUiAdapter';
@@ -1452,26 +1319,6 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const deal = ref(null);
-const aiSummaryPanelRef = ref(null);
-const aiQuoteDraftPanelRef = ref(null);
-const aiCommercialAgentPanelRef = ref(null);
-const aiResearchPanelRef = ref(null);
-
-function runDealAiSummary() {
-  aiSummaryPanelRef.value?.summarize?.();
-}
-
-function runDealQuoteDraft() {
-  aiQuoteDraftPanelRef.value?.runQuoteDraft?.();
-}
-
-function runDealCommercialAgent() {
-  aiCommercialAgentPanelRef.value?.run?.();
-}
-
-function runDealAiResearch() {
-  aiResearchPanelRef.value?.runResearch?.();
-}
 const expandedLeftSection = ref('');
 const effectiveDealId = computed(() => props.embed && props.dealId ? props.dealId : route.params.id);
 

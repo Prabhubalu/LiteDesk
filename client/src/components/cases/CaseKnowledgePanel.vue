@@ -6,28 +6,6 @@
 
     <div class="min-h-0 flex-1 overflow-y-auto">
       <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-        <AiAskPanel
-          :initial-question="askSeed"
-          :show-title="true"
-          embedded
-          mode="graph"
-          app-key="HELPDESK"
-          module-key="cases"
-          :record-id="caseRecordId"
-        />
-        <div class="mt-4 border-t border-gray-200 pt-3 dark:border-gray-700">
-          <p class="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-            {{ t('settings.aiAskTitle') }}
-          </p>
-          <AiAskPanel
-            :show-title="false"
-            embedded
-            mode="knowledge"
-          />
-        </div>
-      </div>
-
-      <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
         <p class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {{ t('cases.recordKnowledgeArticlesHeading') }}
         </p>
@@ -63,10 +41,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import AiAskPanel from '@/components/ai/AiAskPanel.vue';
 import { searchArticlesForAgent } from '@/modules/contentStudio/services/contentStudioApi';
 import { captureCaseKnowledgeSuggestionOpened } from '@/config/posthogArticles';
 
@@ -83,12 +60,6 @@ const search = ref('');
 const loading = ref(false);
 const articles = ref([]);
 let timer = null;
-
-const askSeed = computed(() => {
-  const title = String(props.caseTitle || '').trim();
-  if (!title) return '';
-  return t('cases.recordAiAskSeed', { title });
-});
 
 function buildDefaultQuery() {
   return [props.caseTitle, props.caseDescription].filter(Boolean).join(' ').trim();

@@ -31,15 +31,13 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
-
-const emit = defineEmits(['toggle']);
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
-const active = ref(false);
 const invitePulse = ref(false);
 
 const visible = computed(() => {
@@ -49,6 +47,8 @@ const visible = computed(() => {
   if (path.startsWith('/live-chat') || path.startsWith('/portal')) return false;
   return true;
 });
+
+const active = computed(() => route.name === 'astra');
 
 function introStorageKey() {
   const userId = authStore.user?._id ? String(authStore.user._id) : '';
@@ -72,14 +72,6 @@ function syncInvitePulse() {
   }
 }
 
-function syncActive(event) {
-  if (event?.detail && typeof event.detail.open === 'boolean') {
-    active.value = event.detail.open;
-    return;
-  }
-  active.value = document.body.classList.contains('arivu-assistant-rail-open');
-}
-
 function onIntroEvent(event) {
   if (event?.detail?.seen) {
     invitePulse.value = false;
@@ -89,19 +81,15 @@ function onIntroEvent(event) {
 }
 
 function onClick() {
-  emit('toggle');
-  window.dispatchEvent(new CustomEvent('arivu:open-assistant'));
+  void router.push({ name: 'astra' });
 }
 
 onMounted(() => {
-  syncActive();
   syncInvitePulse();
-  window.addEventListener('arivu:assistant-rail', syncActive);
   window.addEventListener('arivu:astra-intro', onIntroEvent);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('arivu:assistant-rail', syncActive);
   window.removeEventListener('arivu:astra-intro', onIntroEvent);
 });
 </script>

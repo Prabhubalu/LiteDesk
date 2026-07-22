@@ -1,0 +1,254 @@
+{
+  "brandName": {
+    "message": "Astra",
+    "description": "Astra conversational CRM assistant brand"
+  },
+  "tagline": {
+    "message": "Your conversational CRM copilot",
+    "description": "Astra tagline shown on the copilot landing"
+  },
+  "askPrompt": {
+    "message": "Ask Astra anything about your CRM…",
+    "description": "Placeholder for the Astra chat composer"
+  },
+  "send": {
+    "message": "Send",
+    "description": "Send the current Astra message"
+  },
+  "thinking": {
+    "message": "Astra is thinking…",
+    "description": "Shown while Astra is generating a response"
+  },
+  "proposalsHeading": {
+    "message": "Proposed actions",
+    "description": "Heading above Astra action proposals"
+  },
+  "confirmAction": {
+    "message": "Confirm",
+    "description": "Confirm an Astra proposed action"
+  },
+  "overrideAction": {
+    "message": "Override",
+    "description": "Override schedule conflict and create anyway"
+  },
+  "dismissAction": {
+    "message": "Dismiss",
+    "description": "Dismiss an Astra proposed action"
+  },
+  "cancelAction": {
+    "message": "Cancel",
+    "description": "Cancel create and keep existing schedule"
+  },
+  "actionCompleted": {
+    "message": "Completed",
+    "description": "Shown when an Astra proposed action has been confirmed"
+  },
+  "viewRecord": {
+    "message": "Open record",
+    "description": "Navigate to the record created by an Astra action"
+  },
+  "viewEvent": {
+    "message": "View event",
+    "description": "Navigate to a newly created calendar event"
+  },
+  "sidebarHeading": {
+    "message": "Context",
+    "description": "Heading for the Astra context sidebar"
+  },
+  "nbaHeading": {
+    "message": "Next best actions",
+    "description": "Heading for Astra next best actions"
+  },
+  "recordSummary": {
+    "message": "Astra summary",
+    "description": "Heading for the Astra record AI panel"
+  },
+  "commandPaletteHeading": {
+    "message": "Ask Astra",
+    "description": "Heading for the Astra command palette"
+  },
+  "commandPaletteHelp": {
+    "message": "Type a request and press Enter to ask Astra.",
+    "description": "Helper copy in the Astra command palette"
+  },
+  "emptyFirstTime": {
+    "message": "Hey — ask me about your deals, cases, or people. I’ll look them up in Arivu and talk through what matters next.",
+    "description": "First-time empty state for Astra copilot"
+  },
+  "startersHeading": {
+    "message": "Try one of these",
+    "description": "Heading above Astra conversation starter chips"
+  },
+  "starterOpenDeals": {
+    "message": "Give me the list of deals which are open",
+    "description": "Astra starter: open deals"
+  },
+  "starterOpenCases": {
+    "message": "Show my open cases",
+    "description": "Astra starter: open cases"
+  },
+  "starterFindContact": {
+    "message": "Find a contact by name",
+    "description": "Astra starter: find contact"
+  },
+  "starterPipelinePulse": {
+    "message": "How many open deals do I have?",
+    "description": "Astra starter: pipeline count"
+  },
+  "failGeneric": {
+    "message": "Astra could not complete that request. Please try again.",
+    "description": "Generic Astra failure feedback"
+  },
+  "agentHeading": {
+    "message": "Astra agent",
+    "description": "Heading for the Astra agent surface"
+  },
+  "toolsHeading": {
+    "message": "Assistants",
+    "description": "Heading for Astra tools and assistants"
+  },
+  "emailAssist": {
+    "message": "Draft an email",
+    "description": "Astra email assistant entry"
+  },
+  "meetingAssist": {
+    "message": "Prepare for a meeting",
+    "description": "Astra meeting assistant entry"
+  },
+  "openCopilot": {
+    "message": "Open Astra",
+    "description": "Open the Astra copilot"
+  },
+  "suggestionsHeading": {
+    "message": "What next?",
+    "description": "Heading above Astra suggestion chips"
+  },
+  "chartTitle": {
+    "message": "Breakdown",
+    "description": "Default title for Astra chart blocks"
+  },
+  "listTitle": {
+    "message": "Records",
+    "description": "Default title for Astra record list blocks"
+  },
+  "emptyBlockTitle": {
+    "message": "Nothing matched",
+    "description": "Default title for Astra empty result blocks"
+  },
+  "newChat": {
+    "message": "New chat",
+    "description": "Start a fresh Astra conversation"
+  },
+  "composerFootnote": {
+    "message": "Astra uses your CRM data. Writes still need your confirmation.",
+    "description": "Footnote under the Astra composer"
+  },
+  "askPromptNamed": {
+    "message": "What can I help you with, {name}?",
+    "description": "Personalized Astra composer placeholder"
+  },
+  "greetingMorning": {
+    "message": "Good morning",
+    "description": "Astra morning greeting without name"
+  },
+  "greetingMorningNamed": {
+    "message": "Good morning, {name}",
+    "description": "Astra morning greeting with first name"
+  },
+  "greetingAfternoon": {
+    "message": "Good afternoon",
+    "description": "Astra afternoon greeting without name"
+  },
+  "greetingAfternoonNamed": {
+    "message": "Good afternoon, {name}",
+    "description": "Astra afternoon greeting with first name"
+  },
+  "greetingEvening": {
+    "message": "Good evening",
+    "description": "Astra evening greeting without name"
+  },
+  "greetingEveningNamed": {
+    "message": "Good evening, {name}",
+    "description": "Astra evening greeting with first name"
+  },
+  "heroDealsTitle": {
+    "message": "Open deals",
+    "description": "Astra hero card title for open deals"
+  },
+  "heroDealsSubtitle": {
+    "message": "See what’s currently in your pipeline",
+    "description": "Astra hero card subtitle for open deals"
+  },
+  "heroPulseTitle": {
+    "message": "Pipeline pulse",
+    "description": "Astra hero card title for deal count"
+  },
+  "heroPulseSubtitle": {
+    "message": "Quick count of open opportunities",
+    "description": "Astra hero card subtitle for deal count"
+  },
+  "heroCasesTitle": {
+    "message": "Open cases",
+    "description": "Astra hero card title for cases"
+  },
+  "heroCasesSubtitle": {
+    "message": "Review helpdesk work that needs attention",
+    "description": "Astra hero card subtitle for cases"
+  },
+  "heroPeopleTitle": {
+    "message": "Find a contact",
+    "description": "Astra hero card title for people search"
+  },
+  "heroPeopleSubtitle": {
+    "message": "Look someone up by name or email",
+    "description": "Astra hero card subtitle for people search"
+  },
+  "heroPersonalizedSubtitle": {
+    "message": "Suggested for you",
+    "description": "Subtitle for personalized Astra suggestion cards"
+  },
+  "historyHeading": {
+    "message": "Chats",
+    "description": "Astra conversation history sidebar heading"
+  },
+  "historyEmpty": {
+    "message": "No previous chats yet",
+    "description": "Empty state in Astra conversation history"
+  },
+  "historyLoading": {
+    "message": "Loading chats…",
+    "description": "Loading state for Astra conversation history"
+  },
+  "historyUntitled": {
+    "message": "New conversation",
+    "description": "Fallback title for untitled Astra chats"
+  },
+  "historyDelete": {
+    "message": "Delete chat",
+    "description": "Delete Astra conversation action"
+  },
+  "historyClearOlder": {
+    "message": "Clear older chats",
+    "description": "Delete Astra chats from before today"
+  },
+  "historyGroupToday": {
+    "message": "Today",
+    "description": "Astra chat history group: today"
+  },
+  "historyGroupYesterday": {
+    "message": "Yesterday",
+    "description": "Astra chat history group: yesterday"
+  },
+  "historyGroupWeek": {
+    "message": "Previous 7 days",
+    "description": "Astra chat history group: last 7 days"
+  },
+  "historyGroupMonth": {
+    "message": "Previous 30 days",
+    "description": "Astra chat history group: last 30 days"
+  },
+  "historyGroupOlder": {
+    "message": "Older",
+    "description": "Astra chat history group: older than 30 days"
+  }
+}

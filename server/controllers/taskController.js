@@ -1690,21 +1690,7 @@ const createTaskComment = async (req, res) => {
       authorName
     }).catch((err) => console.error('Comment mention notifications error:', err));
 
-    try {
-      const { processSuperAgentCommentMentions } = require('../services/ai/astraSuperAgentTriggers');
-      processSuperAgentCommentMentions({
-        organizationId: String(req.user.organizationId),
-        authorId: String(req.user._id),
-        authorName,
-        appKey: req.appKey || 'SALES',
-        moduleKey: 'tasks',
-        recordId: String(req.params.id),
-        recordTitle: task.title || 'Task',
-        commentId: String(comment._id),
-        commentContent: content.trim(),
-        entityType: 'Task',
-      }).catch((err) => console.error('Task Super Agent mention error:', err));
-    } catch (_) { /* optional */ }
+    // Legacy Astra Super Agent comment-mention trigger removed with Astra v2 cutover.
 
     res.status(201).json({
       success: true,

@@ -44,6 +44,7 @@ export const SHARED_NAMESPACES = [
   'onboarding',
   'releaseNotes',
   'announcements',
+  'astra',
 ];
 
 export const SUPPORTED_LANGUAGES = [

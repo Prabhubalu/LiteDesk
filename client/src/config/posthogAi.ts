@@ -107,3 +107,68 @@ export function captureAiDraftAccepted(props: {
     via: props.via || 'send',
   })
 }
+
+export type AstraSurface =
+  | 'copilot'
+  | 'command_palette'
+  | 'context_sidebar'
+  | 'record_panel'
+  | 'email_meeting_assist'
+
+export function captureAstraAskInvoked(props: {
+  surface: AstraSurface
+  moduleKey?: string | null
+  recordId?: string | null
+  promptLength?: number | null
+}) {
+  capture('astra_ask_invoked', {
+    surface: props.surface,
+    module_key: props.moduleKey || undefined,
+    record_id: props.recordId || undefined,
+    prompt_length: props.promptLength ?? undefined,
+  })
+}
+
+export function captureAstraActionCompleted(props: {
+  surface: AstraSurface
+  actionKind?: string | null
+  actionId?: string | null
+  moduleKey?: string | null
+  recordId?: string | null
+}) {
+  capture('astra_action_completed', {
+    surface: props.surface,
+    action_kind: props.actionKind || undefined,
+    action_id: props.actionId || undefined,
+    module_key: props.moduleKey || undefined,
+    record_id: props.recordId || undefined,
+  })
+}
+
+export function captureAstraActionRejected(props: {
+  surface: AstraSurface
+  actionKind?: string | null
+  actionId?: string | null
+  reason?: string | null
+}) {
+  capture('astra_action_rejected', {
+    surface: props.surface,
+    action_kind: props.actionKind || undefined,
+    action_id: props.actionId || undefined,
+    reason: props.reason || undefined,
+  })
+}
+
+export function captureAstraAutomationCreated(props: {
+  surface: AstraSurface
+  automationKind?: string | null
+  automationId?: string | null
+  moduleKey?: string | null
+}) {
+  capture('astra_automation_created', {
+    surface: props.surface,
+    automation_kind: props.automationKind || undefined,
+    automation_id: props.automationId || undefined,
+    module_key: props.moduleKey || undefined,
+  })
+}

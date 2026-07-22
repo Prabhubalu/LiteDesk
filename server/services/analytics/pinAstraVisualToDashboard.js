@@ -12,6 +12,12 @@ const AnalyticsWidget = require('../../models/AnalyticsWidget');
 const AnalyticsDashboard = require('../../models/AnalyticsDashboard');
 const { getAnalyticsModuleConfig } = require('./analyticsModuleRegistry');
 
+// Legacy NL filter inference (aiAstraReportBuilderService.detectFilters) removed with Astra v2.
+// Pins now fall back to no NL-derived filter tree; explicit filterTree still honored.
+function detectFilters() {
+  return { filterTree: null };
+}
+
 const PINNABLE = new Set(['chart', 'progress_list', 'data_table', 'kpi_strip']);
 
 const DEFAULT_GROUP_BY = Object.freeze({
@@ -192,8 +198,6 @@ function buildTabularReportPreset({ moduleKey, name, question = '', filterTree =
   const filterQuestion = String(question || name || '').trim();
   let tree = filterTree?.children?.length ? filterTree : null;
   if (!tree) {
-    // Lazy require — avoid circular init with aiAstraReportBuilderService.
-    const { detectFilters } = require('../ai/aiAstraReportBuilderService');
     tree = detectFilters(filterQuestion, moduleKey).filterTree;
   }
   if (tree?.children) {
@@ -228,7 +232,6 @@ function buildRecordLevelChartPreset({
 
   let tree = filterTree?.children?.length ? filterTree : null;
   if (!tree) {
-    const { detectFilters } = require('../ai/aiAstraReportBuilderService');
     tree = detectFilters(String(question || name || '').trim(), moduleKey).filterTree;
   }
   if (tree?.children) {
@@ -405,7 +408,6 @@ async function pinAstraVisualToDashboard({
     });
     // Apply NL filters (e.g. amount ≥ $50K) onto summary pins too.
     if (!reportPreset.filterTree) {
-      const { detectFilters } = require('../ai/aiAstraReportBuilderService');
       reportPreset.filterTree = detectFilters(filterQuestion, inferred.moduleKey).filterTree;
     }
   }
