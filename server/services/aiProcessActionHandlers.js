@@ -7,10 +7,23 @@
  */
 
 const { buildScope, resolveExpression } = require('../utils/processFieldValueResolver');
-const { classifyText } = require('./ai/aiClassifyService');
-const { extractFields } = require('./ai/aiExtractService');
 const { isAiSuiteEntitledForOrg } = require('../utils/addonAccessUtils');
 const { AiConfigurationError } = require('./ai/errors');
+
+// Legacy AI classify/extract services removed with Astra v2 cutover.
+// Default handlers now soft-fail with a clear error; callers may inject test doubles via deps.
+function classifyText() {
+  throw new AiConfigurationError(
+    'AI classify capability has been removed',
+    'AI_CAPABILITY_REMOVED'
+  );
+}
+function extractFields() {
+  throw new AiConfigurationError(
+    'AI extract capability has been removed',
+    'AI_CAPABILITY_REMOVED'
+  );
+}
 
 function ensureDataBag(ctx) {
   if (!ctx.dataBag || typeof ctx.dataBag !== 'object') {

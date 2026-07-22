@@ -13,6 +13,16 @@ function validateEnv() {
   if (!['atlas', 'mongo', 'memory', 'qdrant'].includes(vectorStore)) {
     console.warn(`⚠️  Unknown AI_VECTOR_STORE=${vectorStore}. Valid values: atlas, mongo, memory, qdrant.`);
   }
+
+  // Astra v2 platform flags (see docs/ASTRA_V2_ARCHITECTURE.md).
+  const astraV2 = String(process.env.ASTRA_V2 ?? 'true').toLowerCase();
+  const astraV2Shadow = String(process.env.ASTRA_V2_SHADOW ?? 'false').toLowerCase();
+  if (['0', 'false', 'no', 'off'].includes(astraV2)) {
+    console.warn('⚠️  ASTRA_V2 is disabled. AI traffic falls back to legacy server/services/ai until re-enabled.');
+  }
+  if (['1', 'true', 'yes', 'on'].includes(astraV2Shadow)) {
+    console.warn('⚠️  ASTRA_V2_SHADOW is on. Astra v2 runs for comparison but its answers are NOT surfaced to users.');
+  }
   if (vectorStore === 'atlas' && process.env.AI_ATLAS_VECTOR_INDEX === '') {
     console.warn('⚠️  AI_ATLAS_VECTOR_INDEX is empty. Atlas vector search will use the default index name.');
   }

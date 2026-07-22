@@ -141,7 +141,6 @@ const routerViewKey = computed(() => {
 const isInboxRoute = computed(() => route.name === 'inbox');
 const isAstraRoute = computed(
   () => route.name === 'astra'
-    || route.name === 'arivu-canvas'
     || String(route.path || '').startsWith('/astra')
 );
 const isLiveChatRoute = computed(() => String(route.path || '').startsWith('/live-chat/'));

@@ -3,8 +3,6 @@
 const portalKnowledgeService = require('../services/portalKnowledgeService');
 const documentService = require('../services/documentService');
 const { buildDownloadUrl } = require('../services/fileStorageService');
-const { askPortalKnowledge } = require('../services/ai/aiKnowledgeService');
-const { AiConfigurationError, AiProviderError } = require('../services/ai/errors');
 
 function shapePortalSharedDocumentSummary(doc) {
   return {
@@ -217,40 +215,13 @@ async function listPortalKnowledgeCollections(req, res) {
 }
 
 async function askPortalKnowledgeHandler(req, res) {
-  try {
-    const organizationId = req.user?.organizationId;
-    if (!organizationId) {
-      return res.status(400).json({ success: false, message: 'Organization context missing' });
-    }
-    const question = String(req.body?.question || '').trim();
-    if (!question) {
-      return res.status(400).json({
-        success: false,
-        code: 'AI_QUESTION_REQUIRED',
-        message: 'question is required',
-      });
-    }
-
-    const result = await askPortalKnowledge({
-      organizationId,
-      userId: req.user?._id,
-      question,
-      topK: req.body?.topK,
-    });
-
-    return res.json({ success: true, ...result });
-  } catch (error) {
-    console.error('[portalDocumentController] askPortalKnowledge', error);
-    const isConfig = error instanceof AiConfigurationError;
-    const isProvider = error instanceof AiProviderError;
-    const status = isConfig ? 403 : isProvider ? 502 : 500;
-    return res.status(status).json({
-      success: false,
-      code: error.code || 'AI_PORTAL_ASK_FAILED',
-      message: error.message || 'Portal Ask failed',
-      notConfigured: isConfig,
-    });
-  }
+  // Legacy portal AI knowledge (aiKnowledgeService.askPortalKnowledge) removed with Astra v2 cutover.
+  return res.status(403).json({
+    success: false,
+    code: 'AI_NOT_CONFIGURED',
+    message: 'Portal Ask is not available',
+    notConfigured: true,
+  });
 }
 
 module.exports = {

@@ -131,56 +131,6 @@
           </div>
         </div>
 
-        <section class="mb-6 rounded-xl border border-violet-200 bg-violet-50/50 p-4 dark:border-violet-900/40 dark:bg-violet-950/20">
-          <h2 class="text-sm font-semibold text-violet-900 dark:text-violet-100">
-            {{ t('analytics.homeAiAskTitle') }}
-          </h2>
-          <p class="mt-1 text-xs text-violet-800/80 dark:text-violet-200/80">
-            {{ t('analytics.homeAiAskHint') }}
-          </p>
-          <div class="mt-3 flex flex-col gap-2 sm:flex-row">
-            <input
-              v-model="aiQuestion"
-              type="search"
-              class="w-full flex-1 rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm dark:border-violet-800 dark:bg-neutral-900 dark:text-white"
-              :placeholder="t('analytics.homeAiAskPlaceholder')"
-              @keyup.enter="runAiIntent"
-            />
-            <button
-              type="button"
-              class="shrink-0 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-50"
-              :disabled="aiLoading || !aiQuestion.trim()"
-              @click="runAiIntent"
-            >
-              {{ aiLoading ? t('analytics.homeAiAskRunning') : t('analytics.homeAiAskSubmit') }}
-            </button>
-          </div>
-          <p v-if="aiError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ aiError }}</p>
-          <div v-else-if="aiInterpretation || aiMatches.length" class="mt-3 space-y-2">
-            <p v-if="aiInterpretation" class="text-xs text-violet-900/80 dark:text-violet-100/80">
-              {{ aiInterpretation }}
-            </p>
-            <ul v-if="aiMatches.length" class="space-y-1">
-              <li v-for="m in aiMatches" :key="m.reportId">
-                <button
-                  type="button"
-                  class="flex w-full items-center justify-between gap-3 rounded-lg border border-violet-200 bg-white px-3 py-2 text-left text-sm hover:border-violet-400 dark:border-violet-800 dark:bg-neutral-900"
-                  @click="openAiMatch(m)"
-                >
-                  <span class="min-w-0">
-                    <span class="block truncate font-medium text-neutral-900 dark:text-white">{{ m.name }}</span>
-                    <span v-if="m.rationale" class="block truncate text-xs text-neutral-500">{{ m.rationale }}</span>
-                  </span>
-                  <span class="shrink-0 text-xs text-neutral-500">
-                    {{ Math.round((m.confidence || 0) * 100) }}%
-                  </span>
-                </button>
-              </li>
-            </ul>
-            <p v-else class="text-sm text-neutral-500">{{ t('analytics.homeAiAskEmpty') }}</p>
-          </div>
-        </section>
-
         <div class="mb-6 flex flex-wrap gap-2">
           <button
             type="button"
@@ -354,8 +304,6 @@ import {
   captureAnalyticsFavoriteToggled,
 } from '@/config/posthogAnalytics';
 import { captureFirstTimeEmptyStateSeen } from '@/config/posthogOnboarding';
-import apiClient from '@/utils/apiClient';
-import { trackAiAbilityUsed } from '@/utils/aiFeedback';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -366,12 +314,6 @@ const { home, searchResults, loading, searching, fetchHome, searchAssets, clearS
 const search = ref('');
 const isFirstVisit = ref(false);
 let searchTimer = null;
-
-const aiQuestion = ref('');
-const aiLoading = ref(false);
-const aiError = ref('');
-const aiInterpretation = ref('');
-const aiMatches = ref([]);
 
 const canView = computed(() => authStore.can('reports', 'view'));
 const canCreate = computed(() => authStore.can('reports', 'create'));
@@ -416,34 +358,6 @@ function debouncedSearch() {
       captureAnalyticsSearch({ query_length: q.length, result_count: searchResults.value.length });
     }
   }, 300);
-}
-
-async function runAiIntent() {
-  const question = aiQuestion.value.trim();
-  if (!question || aiLoading.value) return;
-  aiLoading.value = true;
-  aiError.value = '';
-  aiInterpretation.value = '';
-  aiMatches.value = [];
-  try {
-    const data = await apiClient.post('/ai/analytics/intent-suggest', { question });
-    aiInterpretation.value = String(data?.interpretation || '').trim();
-    aiMatches.value = Array.isArray(data?.matches) ? data.matches : [];
-    trackAiAbilityUsed({
-      abilityKey: 'analytics_intent',
-      provider: data?.provider,
-      model: data?.model,
-      keyMode: data?.keyMode,
-    });
-  } catch (err) {
-    aiError.value = err?.message || t('analytics.homeAiAskFailed');
-  } finally {
-    aiLoading.value = false;
-  }
-}
-
-function openAiMatch(m) {
-  router.push({ name: 'analytics-report-detail', params: { id: m.reportId } });
 }
 
 function routeForAsset(assetType, id) {

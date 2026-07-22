@@ -16507,6 +16507,82 @@
     "message": "Agents",
     "description": "AI settings agents tab"
   },
+  "aiAgentsTitle": {
+    "message": "Built-in AI workforce",
+    "description": "Agents catalog section title"
+  },
+  "aiAgentsHint": {
+    "message": "Astra ships these agents and tools out of the box. You do not create agents or tools — every enabled app is covered by this catalog.",
+    "description": "Agents catalog section hint"
+  },
+  "aiAgentsOotbNote": {
+    "message": "{agentCount} agents · {toolCount} tools (read-only catalog)",
+    "description": "Agents catalog summary counts"
+  },
+  "aiAgentsSearchPlaceholder": {
+    "message": "Search agents or tools…",
+    "description": "Agents catalog search placeholder"
+  },
+  "aiAgentsEmpty": {
+    "message": "No agents match your search.",
+    "description": "Agents catalog empty filter state"
+  },
+  "aiAgentsLoadFailed": {
+    "message": "Could not load the agent catalog.",
+    "description": "Agents catalog load error"
+  },
+  "aiAgentsToolsHeading": {
+    "message": "Tools",
+    "description": "Per-agent tools heading"
+  },
+  "aiAgentsNoTools": {
+    "message": "No tools (clarifier / control seat).",
+    "description": "Agent with empty tool allow-list"
+  },
+  "aiAgentsAutonomy": {
+    "message": "Autonomy: {level}",
+    "description": "Agent autonomy badge"
+  },
+  "aiAgentsToolCount": {
+    "message": "{count} tools",
+    "description": "Agent tool count badge"
+  },
+  "aiAgentsAllToolsTitle": {
+    "message": "All tools by family",
+    "description": "Full tools catalog section title"
+  },
+  "aiAgentsRiskRead": {
+    "message": "read",
+    "description": "Tool risk label read"
+  },
+  "aiAgentsRiskWrite": {
+    "message": "write",
+    "description": "Tool risk label write"
+  },
+  "aiAgentsRiskDestructive": {
+    "message": "destructive",
+    "description": "Tool risk label destructive"
+  },
+  "aiAgentsFilterAll": {
+    "message": "All",
+    "description": "Agents filter show all"
+  },
+  "aiAgentsColTool": {
+    "message": "Tool",
+    "description": "Tools table column tool name"
+  },
+  "aiAgentsColFamily": {
+    "message": "Family",
+    "description": "Tools table column family"
+  },
+  "aiAgentsColRisk": {
+    "message": "Risk",
+    "description": "Tools table column risk"
+  },
+  "aiAgentsColDescription": {
+    "message": "Description",
+    "description": "Tools table column description"
+  },
   "aiCustomAgentDisabled": {
     "message": "Off",
     "description": "Custom agent disabled badge"

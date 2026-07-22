@@ -6,8 +6,15 @@
  * Attaches suggestions onto classification evaluation for human/agent review.
  */
 
-const { classifyText } = require('../../../services/ai/aiClassifyService');
 const { isAiSuiteEntitledForOrg } = require('../../../utils/addonAccessUtils');
+
+// Legacy AI classify service removed with Astra v2 cutover. Default soft-fails;
+// callers may inject a test double via deps.classifyText.
+function classifyText() {
+  const err = new Error('AI classify capability has been removed');
+  err.code = 'AI_CAPABILITY_REMOVED';
+  throw err;
+}
 
 const DEFAULT_ROUTE_LABELS = [
   'billing',

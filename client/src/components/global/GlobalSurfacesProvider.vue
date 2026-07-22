@@ -11,7 +11,7 @@
     that are available across the entire application.
     
     Responsibilities:
-    - Owns global UI surfaces (GlobalSearch, CommandPalette, InProductSupportHub)
+    - Owns global UI surfaces (GlobalSearch, CommandPalette, AstraCommandPalette)
     - Owns their visibility state
     - Owns global keyboard shortcuts (Cmd/Ctrl+K, Cmd/Ctrl+/)
     - Owns global custom-event listeners
@@ -55,7 +55,7 @@
       :releases="unseenReleases"
     />
     <ReleaseNotesCenter v-model="centerOpen" />
-    <InProductSupportHub />
+    <AstraCommandPalette />
 
     <Teleport
       v-if="announcementBanner"
@@ -78,7 +78,7 @@ const { t } = useI18n();
  * Owns all global, cross-app UI surfaces:
  * - GlobalSearch
  * - CommandPalette
- * - InProductSupportHub
+ * - AstraCommandPalette
  *
  * Rules:
  * - Must be mounted exactly once
@@ -108,8 +108,8 @@ const WhatsNewDrawer = defineAsyncComponent(() =>
 const ReleaseNotesCenter = defineAsyncComponent(() =>
   import('@/components/release-notes/ReleaseNotesCenter.vue')
 );
-const InProductSupportHub = defineAsyncComponent(() =>
-  import('@/components/support/InProductSupportHub.vue')
+const AstraCommandPalette = defineAsyncComponent(() =>
+  import('@/astra/surfaces/AstraCommandPalette.vue')
 );
 const AnnouncementBannerHost = defineAsyncComponent(() =>
   import('@/components/announcements/AnnouncementBannerHost.vue')

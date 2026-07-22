@@ -509,24 +509,8 @@ async function getPlatformHomeSnapshot(req) {
   };
 
   const focus = buildFocus({ attention, shell, appPulses });
-  let focusAi = null;
-  if (organization?.aiSettings?.enabled && organization?.aiSettings?.platformHomeAiFocus === true) {
-    try {
-      const { enrichPlatformHomeFocus } = require('./ai/aiAgentService');
-      const { isAiSuiteEntitledForOrg } = require('../utils/addonAccessUtils');
-      const entitled = await isAiSuiteEntitledForOrg(organizationId);
-      if (entitled) {
-        focusAi = await enrichPlatformHomeFocus({
-          organizationId,
-          userId,
-          focus,
-          attentionSummary: summary,
-        });
-      }
-    } catch {
-      focusAi = null;
-    }
-  }
+  // Legacy Platform Home AI focus (aiAgentService.enrichPlatformHomeFocus) removed with Astra v2 cutover.
+  const focusAi = null;
 
   return {
     greeting: buildGreetingPayload(req.user),

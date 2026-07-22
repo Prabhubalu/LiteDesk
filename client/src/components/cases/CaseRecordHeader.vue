@@ -161,46 +161,6 @@
                     {{ t('records.genericCopyUrl') }}
                   </button>
                 </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <button
-                    type="button"
-                    :disabled="summarizingAi"
-                    :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', 'block w-full px-3 py-2 text-left text-sm text-indigo-700 disabled:opacity-50 dark:text-indigo-300']"
-                    @click="summarizeWithAi"
-                  >
-                    {{ summarizingAi ? t('cases.recordAiSummarizing') : t('cases.recordAiSummarize') }}
-                  </button>
-                </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <button
-                    type="button"
-                    :disabled="researchingAi"
-                    :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', 'block w-full px-3 py-2 text-left text-sm text-sky-800 disabled:opacity-50 dark:text-sky-200']"
-                    @click="researchWithAi"
-                  >
-                    {{ researchingAi ? t('records.aiResearching') : t('records.aiResearch') }}
-                  </button>
-                </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <button
-                    type="button"
-                    :disabled="aiPolicyPanelRef?.loading"
-                    :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', 'block w-full px-3 py-2 text-left text-sm text-violet-800 disabled:opacity-50 dark:text-violet-200']"
-                    @click="runPolicySuggest"
-                  >
-                    {{ t('cases.recordAiPolicySuggest') }}
-                  </button>
-                </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <button
-                    type="button"
-                    :disabled="aiResolutionPanelRef?.loading"
-                    :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', 'block w-full px-3 py-2 text-left text-sm text-violet-800 disabled:opacity-50 dark:text-violet-200']"
-                    @click="runResolutionPropose"
-                  >
-                    {{ t('cases.recordAiResolutionPropose') }}
-                  </button>
-                </MenuItem>
                 <MenuItem v-if="canDelete" v-slot="{ active }">
                   <button
                     type="button"
@@ -217,90 +177,13 @@
       </div>
     </div>
 
-    <div
-      v-if="aiSummary || aiSummaryError || summarizingAi"
-      class="border-t border-indigo-100 bg-indigo-50/70 px-4 py-2 sm:px-5 dark:border-indigo-900/40 dark:bg-indigo-950/30"
-    >
-      <div class="mb-1 flex items-center justify-between gap-2">
-        <span class="text-xs font-semibold text-indigo-800 dark:text-indigo-200">
-          {{ t('cases.recordAiSummaryTitle') }}
-        </span>
-        <div class="flex items-center gap-2">
-          <div v-if="aiSummary && !aiSummaryError" class="inline-flex items-center gap-1">
-            <button
-              type="button"
-              class="rounded px-1.5 py-0.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 dark:text-indigo-200 dark:hover:bg-indigo-900/50"
-              :disabled="aiFeedbackSent"
-              @click="sendAiSummaryFeedback('up')"
-            >
-              {{ t('cases.recordAiFeedbackUp') }}
-            </button>
-            <button
-              type="button"
-              class="rounded px-1.5 py-0.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 dark:text-indigo-200 dark:hover:bg-indigo-900/50"
-              :disabled="aiFeedbackSent"
-              @click="sendAiSummaryFeedback('down')"
-            >
-              {{ t('cases.recordAiFeedbackDown') }}
-            </button>
-          </div>
-          <button
-            type="button"
-            class="text-xs font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-300 dark:hover:text-indigo-100"
-            @click="clearAiSummary"
-          >
-            {{ t('actions.close') }}
-          </button>
-        </div>
-      </div>
-      <p v-if="summarizingAi" class="text-xs text-indigo-700 dark:text-indigo-300">
-        {{ t('cases.recordAiSummarizing') }}
-      </p>
-      <p v-else-if="aiSummaryError" class="text-xs text-red-600 dark:text-red-400">{{ aiSummaryError }}</p>
-      <template v-else>
-        <p v-if="aiSummaryCached" class="mb-1 text-[11px] font-medium text-indigo-600/80 dark:text-indigo-300/80">
-          {{ t('cases.recordAiSummaryCached') }}
-        </p>
-        <pre class="whitespace-pre-wrap font-sans text-xs leading-relaxed text-indigo-950 dark:text-indigo-100">{{ aiSummary }}</pre>
-      </template>
+    <div v-if="caseRecord?._id" class="border-t border-gray-100 px-4 py-2 sm:px-5 dark:border-gray-800">
+      <RecordAiPanel
+        module-key="cases"
+        source-type="case"
+        :record-id="String(caseRecord._id)"
+      />
     </div>
-
-    <div
-      v-if="aiResearch || aiResearchError || researchingAi"
-      class="border-t border-sky-100 bg-sky-50/70 px-4 py-2 sm:px-5 dark:border-sky-900/40 dark:bg-sky-950/30"
-    >
-      <div class="mb-1 flex items-center justify-between gap-2">
-        <span class="text-xs font-semibold text-sky-900 dark:text-sky-100">
-          {{ t('records.aiResearchTitle') }}
-        </span>
-        <button
-          type="button"
-          class="text-xs font-medium text-sky-700 hover:text-sky-900 dark:text-sky-300"
-          @click="clearAiResearch"
-        >
-          {{ t('actions.close') }}
-        </button>
-      </div>
-      <p v-if="researchingAi" class="text-xs text-sky-800 dark:text-sky-200">{{ t('records.aiResearching') }}</p>
-      <p v-else-if="aiResearchError" class="text-xs text-red-600 dark:text-red-400">{{ aiResearchError }}</p>
-      <template v-else>
-        <pre class="whitespace-pre-wrap font-sans text-xs leading-relaxed text-sky-950 dark:text-sky-50">{{ aiResearch }}</pre>
-        <p class="mt-2 text-[11px] text-sky-800/80 dark:text-sky-200/80">{{ t('records.aiResearchReadOnlyHint') }}</p>
-      </template>
-    </div>
-
-    <AiCaseProposePanel
-      v-if="caseRecord?._id"
-      ref="aiPolicyPanelRef"
-      mode="policy"
-      :case-id="String(caseRecord._id)"
-    />
-    <AiCaseProposePanel
-      v-if="caseRecord?._id"
-      ref="aiResolutionPanelRef"
-      mode="resolution"
-      :case-id="String(caseRecord._id)"
-    />
 
     <!-- Secondary: case meta, assignee, SLA -->
     <div
@@ -373,7 +256,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import {
@@ -388,12 +271,10 @@ import {
 import Avatar from '@/components/common/Avatar.vue';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
 import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
-import AiCaseProposePanel from '@/components/ai/AiCaseProposePanel.vue';
+import RecordAiPanel from '@/astra/surfaces/RecordAiPanel.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import CaseSlaBadge from '@/components/cases/CaseSlaBadge.vue';
 import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
-import apiClient from '@/utils/apiClient';
-import { submitAiFeedback, trackAiAbilityUsed } from '@/utils/aiFeedback';
 import {
   caseChipSurfaceStyle,
   casePriorityColor,
@@ -429,124 +310,6 @@ const emit = defineEmits([
 ]);
 
 const { t } = useI18n();
-
-const summarizingAi = ref(false);
-const aiSummary = ref('');
-const aiSummaryError = ref('');
-const aiSummaryCached = ref(false);
-const aiFeedbackSent = ref(false);
-const lastAiSummaryMeta = ref({ provider: '', model: '', keyMode: '' });
-const researchingAi = ref(false);
-const aiResearch = ref('');
-const aiResearchError = ref('');
-const aiPolicyPanelRef = ref(null);
-const aiResolutionPanelRef = ref(null);
-
-function clearAiSummary() {
-  aiSummary.value = '';
-  aiSummaryError.value = '';
-  aiSummaryCached.value = false;
-  aiFeedbackSent.value = false;
-}
-
-function clearAiResearch() {
-  aiResearch.value = '';
-  aiResearchError.value = '';
-}
-
-async function researchWithAi() {
-  const caseId = props.caseRecord?._id;
-  if (!caseId || researchingAi.value) return;
-  researchingAi.value = true;
-  aiResearchError.value = '';
-  aiResearch.value = '';
-  try {
-    const data = await apiClient.post('/ai/research', {
-      appKey: 'HELPDESK',
-      moduleKey: 'cases',
-      recordId: String(caseId),
-    });
-    const text = String(data?.text || '').trim();
-    if (!text) {
-      aiResearchError.value = t('records.aiResearchEmpty');
-      return;
-    }
-    aiResearch.value = text;
-    trackAiAbilityUsed({
-      abilityKey: 'record_research',
-      provider: data?.provider,
-      model: data?.model,
-      keyMode: data?.keyMode,
-    });
-  } catch (err) {
-    aiResearchError.value = err?.message || t('records.aiResearchFailed');
-  } finally {
-    researchingAi.value = false;
-  }
-}
-
-function runPolicySuggest() {
-  aiPolicyPanelRef.value?.run?.();
-}
-
-function runResolutionPropose() {
-  aiResolutionPanelRef.value?.run?.();
-}
-
-async function summarizeWithAi() {
-  const caseId = props.caseRecord?._id;
-  if (!caseId || summarizingAi.value) return;
-  summarizingAi.value = true;
-  aiSummaryError.value = '';
-  aiSummary.value = '';
-  aiSummaryCached.value = false;
-  aiFeedbackSent.value = false;
-  try {
-    const data = await apiClient.post(`/ai/cases/${caseId}/summarize`, {});
-    const text = String(data?.text || '').trim();
-    if (!text) {
-      aiSummaryError.value = t('cases.recordAiSummaryEmpty');
-      return;
-    }
-    aiSummary.value = text;
-    aiSummaryCached.value = Boolean(data?.cached);
-    lastAiSummaryMeta.value = {
-      provider: data?.provider || '',
-      model: data?.model || '',
-      keyMode: data?.keyMode || '',
-    };
-    trackAiAbilityUsed({
-      abilityKey: 'summarize',
-      provider: data?.provider,
-      model: data?.model,
-    });
-  } catch (err) {
-    aiSummaryError.value = err?.message || t('cases.recordAiSummarizeFailed');
-  } finally {
-    summarizingAi.value = false;
-  }
-}
-
-async function sendAiSummaryFeedback(rating) {
-  if (aiFeedbackSent.value) return;
-  aiFeedbackSent.value = true;
-  await submitAiFeedback({
-    rating,
-    abilityKey: 'summarize',
-    provider: lastAiSummaryMeta.value.provider,
-    model: lastAiSummaryMeta.value.model,
-    keyMode: lastAiSummaryMeta.value.keyMode,
-    sourceType: 'case',
-    sourceId: props.caseRecord?._id,
-  });
-}
-
-watch(
-  () => props.caseRecord?._id,
-  () => {
-    clearAiSummary();
-  }
-);
 
 const caseModuleLabel = computed(() => t('navigation.moduleCases'));
 

@@ -436,13 +436,7 @@ const routes = [
   {
     path: '/astra',
     name: 'astra',
-    component: () => import('@/views/astra/AstraFullPage.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/astra/canvas',
-    name: 'arivu-canvas',
-    component: () => import('@/views/astra/ArivuCanvasPage.vue'),
+    component: () => import('@/astra/surfaces/GlobalCopilot.vue'),
     meta: { requiresAuth: true }
   },
   {

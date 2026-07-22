@@ -669,14 +669,28 @@ Emit via `server/constants/domainEvents.js` / `domainEventHelpers`; `notificatio
 
 ### AI / Semantic (current)
 
+**Astra v2 is the active AI platform.** Source of truth: `docs/ASTRA_V2_ARCHITECTURE.md`
+(Context → Orchestrator → Agents → Tools → Models, with cross-cutting Governance
++ Memory). Product = **Arivu**, Platform = **Astra**. Mounted at `/api/ai/v2`
+(`server/services/astra/`, `astraV2Routes`), flags `ASTRA_V2` (default on) /
+`ASTRA_V2_SHADOW`.
+
+> **Legacy cutover:** the older AI implementation under `server/services/ai/`
+> remains mounted at `/api/ai` and is **deprecated / in cutover** — it will be
+> removed once every surface is migrated to v2. Shared primitives it owns
+> (`providerRegistry`, `aiSettingsResolver`, `piiRedaction`, `aiCreditService`,
+> `aiAuditLogService`, `vector/*`) are **reused** by v2 and must survive
+> deletion. See `server/services/astra/compat/{legacyMap,deprecationMap,cutover}.js`.
+
 | Capability | Status |
 |------------|--------|
+| Astra v2 platform | **Active** — `docs/ASTRA_V2_ARCHITECTURE.md`, `/api/ai/v2` |
+| Legacy AI spine (`server/services/ai/`) | **Deprecated — cutover in progress**, still at `/api/ai` |
 | Document OCR index | Shipped (`documentOcrIndexService`) |
-| Document semantic search | Shipped — **in-app hash embeddings** on `Document.searchEmbedding`; external vector / LLM provider **not** platformized |
+| Document semantic search | Shipped — **in-app hash embeddings** on `Document.searchEmbedding` |
 | Platform Home focus | Rule-based (`platformHomeFocusService`) — **no LLM** |
-| AI spine (Phase 4 abilities shipped) | Phase 3 + marketing subject/body/summary assist; import column mapping suggest (fieldKey allow-list); NL → analytics intent (saved-report matching via `aiAnalyticsIntentService`, suggest-only, never ad-hoc queries); live-chat AI FAQ assist (`aiLiveChatBotService`, opt-in, soft-fail, deflection metrics); audit narrative + remediation propose (`aiAuditNarrativeService`, failed-question allow-list, suggest-only); scheduled digest previews (`aiDigestBriefService`, deterministic digest input, preview-only); commercial + collection agents (`aiCommercialAgentService`, propose-only, coverage/invoice allow-lists) |
 
-**AI plan (source of truth):** `docs/AI_PLATFORM_ARCHITECTURE_AND_ROADMAP.md` — architecture spine, ports/adapters, Atlas vector strategy, abilities catalog, bounded agents, governance, Phases 0–4.
+**Legacy AI roadmap (historical):** `docs/AI_PLATFORM_ARCHITECTURE_AND_ROADMAP.md` — superseded as source of truth by `docs/ASTRA_V2_ARCHITECTURE.md`.
 
 ### When Adding Features (Checklist)
 

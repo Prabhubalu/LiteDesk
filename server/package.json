@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:role-permissions": "node --test utils/__tests__/rolePermissionProjection.test.js",
-    "test:astra-intent": "node --test services/ai/__tests__/astraPreciseIntent.test.js services/ai/__tests__/astraVerifyReplan.test.js services/ai/__tests__/astraPipeline.test.js services/ai/__tests__/astraGoldenInvariants.test.js services/ai/__tests__/aiAstraIntentCapabilities.test.js",
+    "test:astra-intent": "node --test services/astra/eval/__tests__/astraV2.test.js",
     "test:rbac": "node --test utils/__tests__/rbacV2Foundation.test.js utils/__tests__/rbacV2MigrationService.test.js utils/__tests__/sharingResolver.test.js utils/__tests__/sharingRuleService.test.js utils/__tests__/sharingSeedService.test.js utils/__tests__/roleProfileResolver.test.js utils/__tests__/fieldPermissionResolver.test.js utils/__tests__/recordAssignmentService.test.js utils/__tests__/roleHierarchyService.test.js utils/__tests__/rolePermissionProjection.test.js utils/__tests__/rolePermissionCatalogService.test.js",
     "test:people": "node --test utils/__tests__/peopleFieldRegistry.test.js utils/__tests__/warnDeprecatedPeopleTypeAlias.test.js utils/__tests__/normalizePeopleModuleConfig.test.js utils/__tests__/peopleTypeDefsFields.test.js utils/__tests__/collectAllowedPeopleParticipationFieldKeys.test.js",
     "test:communications-threads": "node --test --test-force-exit tests/communicationsThreadActions.controller.test.js tests/communicationsMarkThreadAndReplay.controller.test.js",
