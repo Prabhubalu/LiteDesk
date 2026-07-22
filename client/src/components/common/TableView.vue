@@ -970,13 +970,13 @@ const providedRows = computed<RowData[]>(() => {
   return []
 })
 
-const displayColumns = computed(() => {
+const displayColumns = computed((): ColumnDef[] => {
   const columns = Array.isArray(props.columns) ? props.columns : []
   // When tableId exists, never use sampleColumns - wait for real columns so we don't
   // overwrite persisted widths with placeholder keys (id, name, email, status)
   const base = columns.length > 0 ? columns : props.tableId ? [] : sampleColumns
   if (isMobileCardLayout.value && base.length > 0) {
-    return [base[0]]
+    return base.slice(0, 1)
   }
   return base
 })
