@@ -26,11 +26,15 @@
  * @returns {ContextPacket}
  */
 function buildContextPacket(input = {}) {
-  const focus = input.focus && (input.focus.moduleKey || input.focus.recordId)
+  const rawFocus = input.focus && typeof input.focus === 'object' ? input.focus : null;
+  const moduleKey = String(rawFocus?.moduleKey || rawFocus?.kind || '').trim();
+  const recordId = String(rawFocus?.recordId || rawFocus?.id || '').trim();
+  const title = String(rawFocus?.title || rawFocus?.name || '').trim();
+  const focus = rawFocus && (moduleKey || recordId)
     ? {
-        moduleKey: String(input.focus.moduleKey || ''),
-        recordId: String(input.focus.recordId || ''),
-        title: String(input.focus.title || ''),
+        moduleKey,
+        recordId,
+        title,
       }
     : null;
 

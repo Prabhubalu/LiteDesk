@@ -1,7 +1,8 @@
 const AddonPricingDefinition = require('../models/AddonPricingDefinition');
 const addonPricingRegistry = require('../constants/addonPricingRegistry');
-const { normalizeAddonKey } = require('../constants/addonKeys');
+const { normalizeAddonKey, ADDON_KEYS } = require('../constants/addonKeys');
 const { normalizeCreditPacks } = require('../constants/emailCreditPackConstants');
+const { normalizeAiTokenPacks } = require('../constants/aiCreditPackConstants');
 
 function mergePlan(defaultPlan = {}, overridePlan = {}) {
   return {
@@ -10,6 +11,14 @@ function mergePlan(defaultPlan = {}, overridePlan = {}) {
     flatPriceCents: overridePlan.flatPriceCents ?? defaultPlan.flatPriceCents ?? null,
     currency: overridePlan.currency || defaultPlan.currency || 'USD',
   };
+}
+
+function normalizePacksForAddon(addonKey, packs) {
+  const normalized = normalizeAddonKey(addonKey);
+  if (normalized === ADDON_KEYS.AI_CREDITS) {
+    return normalizeAiTokenPacks(packs);
+  }
+  return normalizeCreditPacks(packs);
 }
 
 function normalizePricingShape(raw, addonKey) {
@@ -28,7 +37,7 @@ function normalizePricingShape(raw, addonKey) {
     defaultPlan,
     trialDays,
     plans,
-    creditPacks: normalizeCreditPacks(raw?.creditPacks ?? fallback.creditPacks),
+    creditPacks: normalizePacksForAddon(addonKey, raw?.creditPacks ?? fallback.creditPacks),
     enabled: raw?.enabled !== false,
     source: raw?.source || 'registry',
   };
@@ -77,4 +86,5 @@ module.exports = {
   listAddonPricing,
   getAgentLimitForPlan,
   normalizePricingShape,
+  normalizePacksForAddon,
 };

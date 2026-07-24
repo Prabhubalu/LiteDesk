@@ -177,5 +177,11 @@ export async function buildSidebarStructureForSession(
 
   applyPortalOnlySidebarFilters(structure, userType, allowedAppKeys);
 
+  // Hide Astra shell nav when Arivu AI addon is disabled / not entitled.
+  const { isAiSuiteEntitled } = await import('@/utils/aiSuiteEntitlement');
+  if (!isAiSuiteEntitled(user)) {
+    structure.shell = (structure.shell || []).filter((item) => item?.id !== 'astra');
+  }
+
   return { structure, entitlementScopedRegistry };
 }

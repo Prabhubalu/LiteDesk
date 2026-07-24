@@ -40,6 +40,11 @@ const OrganizationSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    /** Human-readable Record ID for CRM organizations (isTenant: false). */
+    organizationNumber: {
+        type: String,
+        trim: true,
+    },
     slug: { 
         type: String, 
         unique: true,
@@ -179,8 +184,8 @@ const OrganizationSchema = new mongoose.Schema({
         },
         llmProvider: {
             type: String,
-            enum: ['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'nvidia', 'bedrock'],
-            default: 'openai'
+            enum: ['arivu', 'openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'nvidia', 'bedrock'],
+            default: 'arivu'
         },
         llmModel: {
             type: String,
@@ -226,8 +231,16 @@ const OrganizationSchema = new mongoose.Schema({
             default: {}
         },
         credits: {
+            /** Available token balance (platform metering). */
             balance: { type: Number, default: 0, min: 0 },
-            softLimitNotifiedAt: { type: Date, default: null }
+            /** Lifetime tokens granted (starter + purchases). consumed = grantedTotal - balance. */
+            grantedTotal: { type: Number, default: 0, min: 0 },
+            /** 'tokens' after migrateAiCreditsBalanceToTokens; absent/credits = pre-migration. */
+            ledgerUnit: { type: String, enum: ['tokens', 'credits'], default: 'tokens' },
+            softLimitNotifiedAt: { type: Date, default: null },
+            /** Set once when fresh-tenant 1M token starter grant is applied. */
+            starterGrantAt: { type: Date, default: null },
+            starterGrantTokens: { type: Number, default: null, min: 0 },
         },
         dataUseConsent: {
             accepted: { type: Boolean, default: false },
@@ -685,6 +698,7 @@ OrganizationSchema.index({ customerStatus: 1 });
 OrganizationSchema.index({ partnerStatus: 1 });
 OrganizationSchema.index({ vendorStatus: 1 });
 OrganizationSchema.index({ isTenant: 1 });
+OrganizationSchema.index({ organizationNumber: 1 }, { unique: true, sparse: true });
 OrganizationSchema.index({ legacyOrganizationId: 1 }, { unique: true, sparse: true });
 
 // Prevent createdBy from being modified after creation (for CRM organizations)
@@ -695,6 +709,28 @@ OrganizationSchema.pre('findOneAndUpdate', function() {
     }
     if (update && update.$set && update.$set.createdBy !== undefined) {
         delete update.$set.createdBy;
+    }
+});
+
+OrganizationSchema.pre('validate', async function assignOrganizationNumber(next) {
+    if (this.isTenant || this.organizationNumber || !this.isNew) return next();
+    try {
+        let tenantOrgId = this._tenantOrganizationId || null;
+        if (!tenantOrgId && this.createdBy) {
+            const User = require('./User');
+            const user = await User.findById(this.createdBy).select('organizationId').lean();
+            tenantOrgId = user?.organizationId || null;
+        }
+        if (!tenantOrgId) return next();
+        const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+        await assignModuleRecordNumber(this, {
+            moduleKey: 'organizations',
+            fieldKey: 'organizationNumber',
+            organizationId: tenantOrgId,
+        });
+        return next();
+    } catch (err) {
+        return next(err);
     }
 });
 

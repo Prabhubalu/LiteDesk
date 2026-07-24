@@ -412,6 +412,7 @@ app.use('/api/announcements', announcementRoutes);
 app.use('/api/platform', require('./routes/platformHomeRoutes'));
 app.use('/api/onboarding', require('./routes/onboardingRoutes'));
 app.use('/api/platform/inbound-parser', require('./routes/platformInboundParserRoutes'));
+app.use('/api/platform/ai-settings', require('./routes/platformAiSettingsRoutes'));
 app.use('/api/platform/amds', require('./routes/platformAmdsRoutes'));
 app.use('/api/platform/release-notes', require('./routes/platformReleaseNoteRoutes'));
 app.use('/api/platform/announcements', require('./routes/platformAnnouncementRoutes'));

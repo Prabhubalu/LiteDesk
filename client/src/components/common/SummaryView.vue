@@ -1,10 +1,18 @@
 <template>
   <div class="min-h-screen bg-gray-100/50 dark:bg-gray-900">
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <div class="w-16 h-16 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400 font-medium">{{ t('common.summaryLoadingRecord', { type: recordType }) }}</p>
+    <div
+      v-if="loading"
+      class="flex min-h-screen items-center justify-center"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <div class="flex flex-col items-center text-center">
+        <ArivuShimmerLogo size="lg" />
+        <p class="mt-4 font-medium text-gray-600 dark:text-gray-400">
+          {{ t('common.summaryLoadingRecord', { type: recordType }) }}
+        </p>
       </div>
     </div>
 
@@ -1636,6 +1644,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch, createApp, h, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ArivuShimmerLogo from '@/components/common/ArivuShimmerLogo.vue';
 import { Menu, MenuButton, MenuItem, MenuItems, Listbox, ListboxButton, ListboxOptions, ListboxOption, Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot, Switch } from '@headlessui/vue';
 import { GridStack } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';

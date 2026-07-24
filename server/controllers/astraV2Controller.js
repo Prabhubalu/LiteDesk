@@ -12,7 +12,22 @@ const autonomousService = require('../services/astra/autonomous/autonomousServic
 const personalMemoryService = require('../services/astra/memory/personalMemoryService');
 const orgMemoryService = require('../services/astra/memory/orgMemoryService');
 const conversationStore = require('../services/astra/memory/conversationStore');
+const sessionMemory = require('../services/astra/memory/sessionMemory');
+const { normalizeFocus } = require('../services/astra/context/normalizeFocus');
 const { openStream, sendDelta, closeStream, failStream } = require('../services/astra/experience/sse');
+const tenantCatalog = require('../services/astra/agents/tenantCatalogService');
+const { writeSettingsAuditFromRequest } = require('../services/settingsAuditService');
+
+async function auditAiCatalog(req, overrides) {
+  try {
+    await writeSettingsAuditFromRequest(req, {
+      surface: 'ai',
+      ...overrides,
+    });
+  } catch {
+    /* soft-fail */
+  }
+}
 
 function orgId(req) {
   return req.user?.organizationId || req.organizationId || null;
@@ -50,7 +65,11 @@ async function ask(req, res) {
   try {
     const organizationId = orgId(req);
     const uid = userId(req);
-    const focus = req.body?.focus || null;
+    const focus = normalizeFocus(req.body?.focus, {
+      moduleKey: req.body?.moduleKey,
+      recordId: req.body?.recordId,
+      name: req.body?.recordName || req.body?.focus?.name || null,
+    });
     const moduleKey = req.body?.moduleKey || focus?.moduleKey || null;
     const query = req.body?.query || req.body?.prompt || '';
 
@@ -64,25 +83,43 @@ async function ask(req, res) {
     });
     const conversationId = String(thread._id);
 
+    // Always prefer the request's page focus for this turn (side panel / record page).
+    if (organizationId && conversationId && focus?.kind) {
+      sessionMemory.setFocus(organizationId, conversationId, focus);
+    }
+
     const clientHistory = Array.isArray(req.body?.history) ? req.body.history : [];
     const history = clientHistory.length
       ? clientHistory
       : conversationStore.toLlmHistory(thread);
 
-    const result = await runOrchestrator({
-      organizationId,
-      userId: uid,
-      query,
-      surface: req.body?.surface || 'chat',
-      agent: req.body?.agent || 'coworker',
-      entity: req.body?.entity || moduleKey || undefined,
-      limit: req.body?.limit,
-      history,
-      conversationId,
-      focus,
-      steps: req.body?.steps,
-      workflow: req.body?.workflow,
-    });
+    const agentRegistry = await tenantCatalog.resolveAgentRegistryForOrg(organizationId);
+    const result = await runOrchestrator(
+      {
+        organizationId,
+        userId: uid,
+        query,
+        surface: req.body?.surface || 'chat',
+        agent: req.body?.agent || undefined,
+        entity: req.body?.entity || moduleKey || undefined,
+        limit: req.body?.limit,
+        history,
+        conversationId,
+        focus,
+        steps: req.body?.steps,
+        workflow: req.body?.workflow,
+      },
+      {
+        agentRegistry,
+        vectorStore: (() => {
+          try {
+            return require('../services/ai/vector/vectorStoreRegistry').getVectorStore();
+          } catch {
+            return null;
+          }
+        })(),
+      },
+    );
 
     const summary = await conversationStore.appendTurn({
       organizationId,
@@ -114,13 +151,28 @@ async function ask(req, res) {
 async function askStream(req, res) {
   try {
     openStream(res);
-    const result = await runOrchestrator({
-      organizationId: orgId(req),
-      userId: userId(req),
-      query: req.query?.query || req.body?.query || '',
-      surface: req.query?.surface || 'chat',
-      history: [],
-    });
+    const organizationId = orgId(req);
+    const agentRegistry = await tenantCatalog.resolveAgentRegistryForOrg(organizationId);
+    const result = await runOrchestrator(
+      {
+        organizationId,
+        userId: userId(req),
+        query: req.query?.query || req.body?.query || '',
+        surface: req.query?.surface || 'chat',
+        agent: req.query?.agent || req.body?.agent || undefined,
+        history: [],
+      },
+      {
+        agentRegistry,
+        vectorStore: (() => {
+          try {
+            return require('../services/ai/vector/vectorStoreRegistry').getVectorStore();
+          } catch {
+            return null;
+          }
+        })(),
+      },
+    );
     // Non-token streaming: emit the final grounded answer as one delta + done.
     sendDelta(res, result.answer);
     return closeStream(res, {
@@ -134,42 +186,278 @@ async function askStream(req, res) {
 }
 
 async function listTools(req, res) {
-  astra.ensureBootstrapped();
-  return res.json({ success: true, tools: astra.toolRegistry.listTools() });
+  try {
+    const organizationId = orgId(req);
+    if (!organizationId) {
+      astra.ensureBootstrapped();
+      return res.json({ success: true, tools: astra.toolRegistry.listTools() });
+    }
+    const tools = await tenantCatalog.listToolsForOrg(organizationId);
+    return res.json({ success: true, tools });
+  } catch (error) {
+    return handleError(res, error);
+  }
 }
 
 async function listAgents(req, res) {
-  astra.ensureBootstrapped();
-  const tools = astra.toolRegistry.listTools();
-  const toolsByName = new Map(tools.map((t) => [t.name, t]));
-  const agents = astra.agentRegistry.listAgents().map((agent) => ({
-    name: agent.name,
-    title: agent.title,
-    description: agent.description,
-    autonomy: agent.autonomy,
-    systemHint: agent.systemHint,
-    tools: Array.isArray(agent.tools) ? agent.tools : [],
-    toolDetails: (Array.isArray(agent.tools) ? agent.tools : []).map((toolName) => {
-      const tool = toolsByName.get(toolName);
-      return tool || {
-        name: toolName,
-        family: 'unknown',
-        risk: 'read',
-        description: '',
-        missing: true,
-      };
-    }),
-  }));
-  return res.json({
-    success: true,
-    agents,
-    tools,
-    meta: {
-      agentCount: agents.length,
-      toolCount: tools.length,
-      ootb: true,
-    },
-  });
+  try {
+    const organizationId = orgId(req);
+    if (!organizationId) {
+      astra.ensureBootstrapped();
+      const tools = astra.toolRegistry.listTools();
+      const toolsByName = new Map(tools.map((t) => [t.name, t]));
+      const agents = astra.agentRegistry.listAgents().map((agent) => ({
+        name: agent.name,
+        title: agent.title,
+        description: agent.description,
+        autonomy: agent.autonomy,
+        systemHint: agent.systemHint,
+        tools: Array.isArray(agent.tools) ? agent.tools : [],
+        toolDetails: (Array.isArray(agent.tools) ? agent.tools : []).map((toolName) => {
+          const tool = toolsByName.get(toolName);
+          return tool || {
+            name: toolName,
+            family: 'unknown',
+            risk: 'read',
+            description: '',
+            missing: true,
+          };
+        }),
+        enabled: true,
+        isCustomized: false,
+        canRevert: true,
+        defaultKey: agent.name,
+      }));
+      return res.json({
+        success: true,
+        agents,
+        tools,
+        meta: { agentCount: agents.length, toolCount: tools.length, tenantOwned: false },
+      });
+    }
+
+    const [agents, tools] = await Promise.all([
+      tenantCatalog.listAgentsForOrg(organizationId),
+      tenantCatalog.listToolsForOrg(organizationId),
+    ]);
+    return res.json({
+      success: true,
+      agents,
+      tools,
+      meta: {
+        agentCount: agents.length,
+        toolCount: tools.length,
+        tenantOwned: true,
+        customizedAgents: agents.filter((a) => a.isCustomized).length,
+        customizedTools: tools.filter((t) => t.isCustomized).length,
+      },
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function getAgent(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const key = req.params.key;
+    const agent = await tenantCatalog.getAgentForOrg(organizationId, key);
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: `Agent not found: ${key}`,
+        code: 'ASTRA_AGENT_NOT_FOUND',
+      });
+    }
+    return res.json({ success: true, agent });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function createAgent(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const agent = await tenantCatalog.createAgentForOrg(organizationId, req.body || {}, userId(req));
+    await auditAiCatalog(req, {
+      action: 'create',
+      entityType: 'astra_agent',
+      summary: `Created agent ${agent.key}`,
+      after: { key: agent.key, title: agent.title, tools: agent.tools },
+    });
+    return res.status(201).json({ success: true, agent });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function updateAgent(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const { before, agent } = await tenantCatalog.updateAgentForOrg(
+      organizationId,
+      req.params.key,
+      req.body || {},
+      userId(req),
+    );
+    await auditAiCatalog(req, {
+      action: 'update',
+      entityType: 'astra_agent',
+      summary: `Updated agent ${agent.key}`,
+      before: {
+        title: before.title,
+        description: before.description,
+        systemHint: before.systemHint,
+        autonomy: before.autonomy,
+        tools: before.toolAllowlist,
+        enabled: before.enabled,
+      },
+      after: {
+        title: agent.title,
+        description: agent.description,
+        systemHint: agent.systemHint,
+        autonomy: agent.autonomy,
+        tools: agent.tools,
+        enabled: agent.enabled,
+      },
+    });
+    return res.json({ success: true, agent });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function revertAgent(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const { before, agent } = await tenantCatalog.revertAgentForOrg(
+      organizationId,
+      req.params.key,
+      userId(req),
+    );
+    await auditAiCatalog(req, {
+      action: 'update',
+      entityType: 'astra_agent',
+      summary: `Reverted agent ${agent.key} to default`,
+      before: { title: before.title, tools: before.toolAllowlist, isCustomized: before.isCustomized },
+      after: { title: agent.title, tools: agent.tools, isCustomized: agent.isCustomized },
+    });
+    return res.json({ success: true, agent });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function deleteAgent(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const before = await tenantCatalog.deleteAgentForOrg(organizationId, req.params.key);
+    await auditAiCatalog(req, {
+      action: 'delete',
+      entityType: 'astra_agent',
+      summary: `Deleted agent ${before.key}`,
+      before: { key: before.key, title: before.title },
+    });
+    return res.json({ success: true, deleted: true, key: before.key });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function tryAgent(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const uid = userId(req);
+    const key = String(req.params.key || '').trim();
+    const query = String(req.body?.query || req.body?.prompt || '').trim();
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: 'query is required',
+        code: 'ASTRA_TRY_QUERY_REQUIRED',
+      });
+    }
+    const agent = await tenantCatalog.getAgentForOrg(organizationId, key);
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: `Agent not found: ${key}`,
+        code: 'ASTRA_AGENT_NOT_FOUND',
+      });
+    }
+    const agentRegistry = await tenantCatalog.resolveAgentRegistryForOrg(organizationId);
+    const result = await runOrchestrator(
+      {
+        organizationId,
+        userId: uid,
+        query,
+        surface: req.body?.surface || 'settings',
+        agent: key,
+        history: [],
+      },
+      { agentRegistry },
+    );
+    return res.json({
+      success: true,
+      agentKey: key,
+      answer: result.answer,
+      intent: result.intent,
+      meta: result.meta || null,
+    });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function updateTool(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const { before, tool } = await tenantCatalog.updateToolForOrg(
+      organizationId,
+      req.params.name,
+      req.body || {},
+      userId(req),
+    );
+    await auditAiCatalog(req, {
+      action: 'update',
+      entityType: 'astra_tool',
+      summary: `Updated tool ${tool.name}`,
+      before: {
+        title: before.title,
+        description: before.description,
+        enabled: before.enabled,
+      },
+      after: {
+        title: tool.title,
+        description: tool.description,
+        enabled: tool.enabled,
+      },
+    });
+    return res.json({ success: true, tool });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function revertTool(req, res) {
+  try {
+    const organizationId = orgId(req);
+    const { before, tool } = await tenantCatalog.revertToolForOrg(
+      organizationId,
+      req.params.name,
+      userId(req),
+    );
+    await auditAiCatalog(req, {
+      action: 'update',
+      entityType: 'astra_tool',
+      summary: `Reverted tool ${tool.name} to default`,
+      before: { title: before.title, description: before.description, enabled: before.enabled },
+      after: { title: tool.title, description: tool.description, enabled: tool.enabled },
+    });
+    return res.json({ success: true, tool });
+  } catch (error) {
+    return handleError(res, error);
+  }
 }
 
 async function confirmAction(req, res) {
@@ -178,6 +466,14 @@ async function confirmAction(req, res) {
     const toolName = String(req.body?.toolName || req.body?.kind || '').trim();
     if (!toolName) {
       return res.status(400).json({ success: false, message: 'toolName is required', code: 'ASTRA_CONFIRM_TOOL_REQUIRED' });
+    }
+    const organizationId = orgId(req);
+    if (organizationId && !(await tenantCatalog.isToolEnabledForOrg(organizationId, toolName))) {
+      return res.status(403).json({
+        success: false,
+        message: `Tool disabled for this organization: ${toolName}`,
+        code: 'ASTRA_TOOL_DISABLED',
+      });
     }
     const tool = astra.toolRegistry.getTool(toolName);
     if (!tool) {
@@ -190,7 +486,6 @@ async function confirmAction(req, res) {
       || {};
     const conversationId = String(req.body?.conversationId || '').trim();
     const proposalId = String(req.body?.proposalId || '').trim();
-    const organizationId = orgId(req);
     const uid = userId(req);
 
     const result = await tool.run(
@@ -211,6 +506,20 @@ async function confirmAction(req, res) {
         code: result?.error || 'ASTRA_CONFIRM_FAILED',
         result,
       });
+    }
+
+    try {
+      const { applyLearnedProfileUpdate } = require('../services/astra/agents/learnedProfileService');
+      const agentKey = String(req.body?.agent || 'coworker').trim() || 'coworker';
+      await applyLearnedProfileUpdate({
+        organizationId,
+        agentKey,
+        signal: 'accept',
+        phrase: String(req.body?.summary || toolName).slice(0, 120),
+        toolChain: [toolName],
+      });
+    } catch {
+      /* soft */
     }
 
     const { recordPathFor } = require('../services/astra/tools/moduleCatalog');
@@ -314,6 +623,9 @@ async function getNextBestActions(req, res) {
       organizationId: orgId(req),
       userId: userId(req),
       surface: req.query?.surface || 'home',
+      moduleKey: req.query?.moduleKey || null,
+      recordId: req.query?.recordId || null,
+      recordName: req.query?.recordName || null,
     });
     return res.json({ success: true, ...nba });
   } catch (error) {
@@ -396,12 +708,18 @@ async function putMemory(req, res) {
 
 async function listConversations(req, res) {
   try {
-    const conversations = await conversationStore.listConversations({
+    const result = await conversationStore.listConversations({
       organizationId: orgId(req),
       userId: userId(req),
       limit: req.query?.limit,
+      cursor: req.query?.cursor,
     });
-    return res.json({ success: true, conversations });
+    return res.json({
+      success: true,
+      conversations: result.conversations,
+      nextCursor: result.nextCursor,
+      hasMore: result.hasMore,
+    });
   } catch (error) {
     return handleError(res, error);
   }
@@ -478,6 +796,122 @@ async function renameConversation(req, res) {
   }
 }
 
+async function getCapIndex(req, res) {
+  try {
+    const { buildCapIndex } = require('../services/astra/tools/capIndex');
+    const { loadOrgKnowledgeSources } = require('../services/astra/retrieval/groundedRetriever');
+    const organizationId = orgId(req);
+    const knowledgeSources = await loadOrgKnowledgeSources(organizationId);
+    const capIndex = await buildCapIndex(organizationId, { knowledgeSources });
+    return res.json({ success: true, capIndex });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function masterPropose(req, res) {
+  try {
+    const master = require('../services/astra/agents/masterAgentService');
+    const { loadOrgKnowledgeSources } = require('../services/astra/retrieval/groundedRetriever');
+    const organizationId = orgId(req);
+    const knowledgeSources = await loadOrgKnowledgeSources(organizationId);
+    const proposal = await master.proposeAgent({
+      organizationId,
+      instruction: req.body?.instruction || req.body?.prompt || '',
+      knowledgeSources,
+    });
+    await auditAiCatalog(req, {
+      action: 'ai.master.propose',
+      resourceType: 'astra_agent',
+      after: { action: proposal.action, key: proposal.candidateKey || proposal.existingKey },
+    });
+    return res.json({ success: true, proposal });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function masterCreate(req, res) {
+  try {
+    const master = require('../services/astra/agents/masterAgentService');
+    const organizationId = orgId(req);
+    const uid = userId(req);
+    let proposal = req.body?.proposal || null;
+    if (!proposal && (req.body?.instruction || req.body?.prompt)) {
+      proposal = await master.proposeAgent({
+        organizationId,
+        instruction: req.body.instruction || req.body.prompt,
+      });
+    }
+    const result = await master.createAgentFromProposal({
+      organizationId,
+      userId: uid,
+      proposal,
+      key: req.body?.key || null,
+    });
+    await auditAiCatalog(req, {
+      action: 'ai.master.create',
+      resourceType: 'astra_agent',
+      resourceId: result.key,
+      after: result,
+    });
+    return res.status(result.created ? 201 : 200).json({ success: true, ...result });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function getKnowledgeSources(req, res) {
+  try {
+    const svc = require('../services/astra/knowledge/knowledgeSourcesService');
+    const data = await svc.getKnowledgeSources(orgId(req));
+    return res.json({ success: true, ...data });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function putKnowledgeSources(req, res) {
+  try {
+    const svc = require('../services/astra/knowledge/knowledgeSourcesService');
+    const data = await svc.updateKnowledgeSources(orgId(req), req.body || {}, userId(req));
+    await auditAiCatalog(req, {
+      action: 'ai.knowledge_sources.update',
+      resourceType: 'astra_knowledge_sources',
+      after: data.sources,
+    });
+    return res.json({ success: true, ...data });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function addKnowledgeWebsitePage(req, res) {
+  try {
+    const svc = require('../services/astra/knowledge/knowledgeSourcesService');
+    const page = await svc.addWebsitePage(orgId(req), req.body || {}, userId(req));
+    await auditAiCatalog(req, {
+      action: 'ai.knowledge_sources.website_add',
+      resourceType: 'website_page',
+      resourceId: page?.id,
+      after: page,
+    });
+    return res.status(201).json({ success: true, page });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+async function deleteKnowledgeWebsitePage(req, res) {
+  try {
+    const svc = require('../services/astra/knowledge/knowledgeSourcesService');
+    await svc.deleteWebsitePage(orgId(req), req.params.pageId);
+    return res.json({ success: true });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
 module.exports = {
   getStatus,
   ask,
@@ -485,15 +919,30 @@ module.exports = {
   confirmAction,
   listTools,
   listAgents,
+  getAgent,
+  createAgent,
+  updateAgent,
+  revertAgent,
+  deleteAgent,
+  tryAgent,
+  updateTool,
+  revertTool,
   getNextBestActions,
+  getMemory,
+  putMemory,
   listGoals,
   createGoal,
   updateGoal,
-  getMemory,
-  putMemory,
   listConversations,
   getConversation,
   deleteConversation,
   deleteAllConversations,
   renameConversation,
+  getCapIndex,
+  masterPropose,
+  masterCreate,
+  getKnowledgeSources,
+  putKnowledgeSources,
+  addKnowledgeWebsitePage,
+  deleteKnowledgeWebsitePage,
 };

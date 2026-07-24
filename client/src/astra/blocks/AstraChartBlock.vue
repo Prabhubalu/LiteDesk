@@ -16,11 +16,13 @@
         {{ total }}
       </span>
     </div>
-    <div class="h-44 px-2 py-2 sm:px-3">
-      <VChart v-if="series.length" class="h-full w-full" :option="option" autoresize />
-      <p v-else class="flex h-full items-center justify-center text-xs text-neutral-400">
-        {{ t('astra.chartTitle') }}
-      </p>
+    <div class="h-52 px-2 py-2 sm:px-3">
+      <AnalyticsChartView
+        :result="chartResult"
+        :config="chartConfig"
+        :theme-mode="themeMode"
+        fill-height
+      />
     </div>
   </section>
 </template>
@@ -28,80 +30,63 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { use } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import { BarChart, PieChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
-import VChart from 'vue-echarts';
+import AnalyticsChartView from '@/components/analytics/AnalyticsChartView.vue';
+import { useColorMode } from '@/composables/useColorMode';
+import type { AnalyticsExecuteResult } from '@/types/analytics.types';
+import type { WidgetChartConfig } from '@/platform/analytics/echarts/buildChartOption';
 import {
   PLATFORM_HOME_CARD_CLASS,
   PLATFORM_HOME_CARD_HEADER_DIVIDER_CLASS,
 } from '@/utils/platformHomeLayout';
 import type { AstraChartPoint } from '@/astra/blocks/types';
 
-use([CanvasRenderer, BarChart, PieChart, GridComponent, TooltipComponent, LegendComponent]);
-
 const props = withDefaults(
   defineProps<{
     title?: string;
-    chartType?: 'bar' | 'donut';
+    chartType?: 'bar' | 'donut' | 'pie' | 'line';
     series: AstraChartPoint[];
   }>(),
   { chartType: 'bar', series: () => [] },
 );
 
 const { t } = useI18n();
+const { effectiveDark } = useColorMode();
+
+const themeMode = computed(() => (effectiveDark.value ? 'dark' : 'light'));
 
 const total = computed(() =>
   props.series.reduce((sum, point) => sum + (Number(point.value) || 0), 0),
 );
 
-const option = computed(() => {
-  const labels = props.series.map((p) => p.name);
-  const values = props.series.map((p) => Number(p.value) || 0);
-  const colors = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#64748b'];
-
-  if (props.chartType === 'donut') {
-    return {
-      color: colors,
-      tooltip: { trigger: 'item' },
-      series: [
-        {
-          type: 'pie',
-          radius: ['48%', '72%'],
-          avoidLabelOverlap: true,
-          itemStyle: { borderRadius: 6, borderColor: 'transparent', borderWidth: 2 },
-          label: { show: false },
-          data: props.series.map((p) => ({ name: p.name, value: p.value })),
-        },
-      ],
-    };
-  }
-
+const chartResult = computed<AnalyticsExecuteResult>(() => {
+  const rows = props.series.map((point) => ({
+    name: point.name,
+    value: Number(point.value) || 0,
+  }));
   return {
-    color: colors,
-    grid: { left: 8, right: 8, top: 16, bottom: 28, containLabel: true },
-    tooltip: { trigger: 'axis' },
-    xAxis: {
-      type: 'category',
-      data: labels,
-      axisLabel: { color: '#737373', fontSize: 10, hideOverlap: true },
-      axisTick: { show: false },
-      axisLine: { lineStyle: { color: 'rgba(163,163,163,0.35)' } },
-    },
-    yAxis: {
-      type: 'value',
-      splitLine: { lineStyle: { color: 'rgba(163,163,163,0.18)' } },
-      axisLabel: { color: '#a3a3a3', fontSize: 10 },
-    },
-    series: [
-      {
-        type: 'bar',
-        data: values,
-        barMaxWidth: 28,
-        itemStyle: { borderRadius: [6, 6, 0, 0] },
-      },
+    columns: [
+      { key: 'name', label: 'Name', type: 'string' },
+      { key: 'value', label: 'Value', type: 'number' },
     ],
+    rows,
+    meta: {
+      totalRows: rows.length,
+      truncated: false,
+      executionMs: 0,
+      reportId: 'astra-inline',
+      reportVersion: 1,
+    },
+  };
+});
+
+const chartConfig = computed<WidgetChartConfig>(() => {
+  const chartType = props.chartType === 'donut' || props.chartType === 'pie' || props.chartType === 'line'
+    ? props.chartType
+    : 'bar';
+  return {
+    chartType,
+    columnMapping: { dimension: 'name', metric: 'value' },
+    showLegend: chartType === 'pie' || chartType === 'donut',
   };
 });
 </script>

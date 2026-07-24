@@ -13,6 +13,10 @@ const LiveChatWebsiteContentPageSchema = new mongoose.Schema({
   enabled: { type: Boolean, default: true, index: true },
   order: { type: Number, default: 0, index: true },
 
+  /** Public (customer bot) vs internal (support Astra). */
+  audience: { type: String, enum: ['public', 'internal'], default: 'public', index: true },
+  sourceUrl: { type: String, trim: true, default: '' },
+
   createdAt: { type: Date, default: Date.now, index: true },
   updatedAt: { type: Date, default: Date.now },
 });

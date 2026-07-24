@@ -15,7 +15,10 @@ const AddonPlanSchema = new mongoose.Schema({
 const CreditPackSchema = new mongoose.Schema({
   packKey: { type: String, required: true, trim: true },
   name: { type: String, required: true, trim: true },
-  credits: { type: Number, required: true, min: 1 },
+  /** Email packs (and legacy AI packs before token migration). */
+  credits: { type: Number, min: 1, required: false },
+  /** AI token packs (preferred). */
+  tokens: { type: Number, min: 1, required: false },
   priceCents: { type: Number, required: true, min: 0 },
   currency: { type: String, trim: true, default: 'USD' },
 }, { _id: false });

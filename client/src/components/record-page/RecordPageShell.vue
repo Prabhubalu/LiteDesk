@@ -1,10 +1,17 @@
 <template>
   <div :class="containerClass">
     <slot v-if="shouldShowLoading" name="loading">
-      <div class="flex items-center justify-center min-h-[200px] flex-1">
-        <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          <p class="text-gray-600 dark:text-gray-400 mt-4">{{ resolvedLoadingMessage }}</p>
+      <div
+        class="flex flex-1 items-center justify-center min-h-[200px]"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div class="flex flex-col items-center text-center">
+          <ArivuShimmerLogo size="lg" />
+          <p class="mt-4 text-sm font-medium text-gray-600 dark:text-gray-400">
+            {{ resolvedLoadingMessage }}
+          </p>
         </div>
       </div>
     </slot>
@@ -45,6 +52,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import ArivuShimmerLogo from '@/components/common/ArivuShimmerLogo.vue';
 import RecordPageLayout from './RecordPageLayout.vue';
 
 const { t } = useI18n();

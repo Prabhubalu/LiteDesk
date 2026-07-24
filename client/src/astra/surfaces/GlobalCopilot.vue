@@ -1,136 +1,85 @@
 <template>
-  <div class="astra-copilot grid h-full min-h-0 w-full grid-cols-1 overflow-hidden bg-neutral-50 dark:bg-neutral-950 md:grid-cols-[17.5rem_minmax(0,1fr)]">
-    <!-- History column -->
-    <aside class="hidden min-h-0 flex-col border-r border-neutral-200/70 bg-white/90 dark:border-white/[0.08] dark:bg-neutral-950/80 md:flex">
-      <div class="flex shrink-0 items-center justify-between gap-2 px-3 py-3">
-        <p class="text-[11px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
-          {{ t('astra.historyHeading') }}
-        </p>
-        <button
-          type="button"
-          class="inline-flex items-center gap-1 rounded-full bg-neutral-900 px-2.5 py-1 text-[11px] font-semibold text-white dark:bg-white dark:text-neutral-900"
-          @click="onNewChat"
-        >
-          <PlusIcon class="h-3.5 w-3.5" />
-          {{ t('astra.newChat') }}
-        </button>
-      </div>
-      <div class="arivu-scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-        <p v-if="historyLoading" class="px-2 py-3 text-xs text-neutral-400">{{ t('astra.historyLoading') }}</p>
-        <p v-else-if="!conversations.length" class="px-2 py-3 text-xs text-neutral-400">{{ t('astra.historyEmpty') }}</p>
-        <div v-else class="space-y-4">
-          <section v-for="group in conversationGroups" :key="group.id">
-            <p class="px-2 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
-              {{ group.label }}
-            </p>
-            <ul class="space-y-0.5">
-              <li v-for="item in group.items" :key="item.id">
-                <div
-                  class="group flex items-center gap-1 rounded-xl px-2 py-2"
-                  :class="item.id === conversationId ? 'bg-primary-50 dark:bg-primary-950/40' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900/70'"
-                >
-                  <button type="button" class="min-w-0 flex-1 truncate text-left text-sm font-medium text-neutral-800 dark:text-neutral-100" @click="onSelectConversation(item.id)">
-                    {{ item.title || t('astra.historyUntitled') }}
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-lg p-1 text-neutral-300 opacity-0 hover:text-red-600 group-hover:opacity-100"
-                    :aria-label="t('astra.historyDelete')"
-                    @click.stop="onDeleteConversation(item.id)"
-                  >
-                    <TrashIcon class="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </li>
-            </ul>
-          </section>
-        </div>
-      </div>
-      <div v-if="hasOlderHistory" class="shrink-0 border-t border-neutral-200/70 px-3 py-2 dark:border-white/[0.08]">
-        <button
-          type="button"
-          class="w-full rounded-lg px-2 py-1.5 text-left text-[11px] font-medium text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
-          @click="onClearOlder"
-        >
-          {{ t('astra.historyClearOlder') }}
-        </button>
-      </div>
-    </aside>
-
-    <!-- Chat column -->
-    <section class="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
-      <div
-        class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(79,70,229,0.07),_transparent_55%)]"
-        aria-hidden="true"
+  <div class="astra-copilot flex h-full min-h-0 w-full flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+    <div
+      class="grid min-h-0 flex-1 grid-cols-1 overflow-hidden"
+      :class="showHistorySidebar ? 'md:grid-cols-[17.5rem_minmax(0,1fr)]' : ''"
+    >
+      <AstraConversationSidebar
+        v-if="showHistorySidebar"
+        :items="conversations"
+        :active-id="conversationId"
+        :loading="historyLoading"
+        :loading-more="historyLoadingMore"
+        :has-more="historyHasMore"
+        :mobile-open="mobileHistoryOpen"
+        @select="onSelectConversation"
+        @delete="onDeleteConversation"
+        @new-chat="onNewChat"
+        @close-mobile="mobileHistoryOpen = false"
+        @clear-older="onClearOlder"
+        @load-more="onLoadMoreHistory"
       />
 
-      <header class="relative z-10 flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200/60 px-4 py-3 dark:border-white/[0.08] sm:px-6">
-        <div class="flex min-w-0 items-center gap-2.5">
-          <button
-            type="button"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-neutral-200/60 md:hidden dark:bg-neutral-900 dark:ring-white/10"
-            :aria-label="t('astra.historyHeading')"
-            @click="mobileHistoryOpen = true"
-          >
-            <Bars3Icon class="h-4 w-4" />
-          </button>
-          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-neutral-200/60 dark:bg-neutral-900 dark:ring-white/10">
-            <AstraLogo size="sm" />
-          </span>
-          <div class="min-w-0">
-            <p class="truncate text-sm font-semibold text-neutral-900 dark:text-white">
-              {{ conversationTitle || t('astra.brandName') }}
-            </p>
-            <p class="truncate text-[11px] text-neutral-500">{{ t('astra.tagline') }}</p>
-          </div>
-        </div>
+      <!-- Chat column -->
+      <section class="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+      <header
+        v-if="showHistorySidebar"
+        class="relative z-10 flex shrink-0 items-center border-b border-neutral-200/60 px-4 py-2 dark:border-white/[0.08] md:hidden"
+      >
         <button
           type="button"
-          class="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-200"
-          @click="onNewChat"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-neutral-200/60 dark:bg-neutral-900 dark:ring-white/10"
+          :aria-label="t('astra.historyHeading')"
+          @click="mobileHistoryOpen = true"
         >
-          <PlusIcon class="h-3.5 w-3.5" />
-          {{ t('astra.newChat') }}
+          <Bars3Icon class="h-4 w-4" />
         </button>
       </header>
 
-      <div ref="messagesEl" class="arivu-scrollbar relative z-10 min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
-        <div class="mx-auto w-full max-w-3xl">
-          <!-- Empty -->
-          <div
-            v-if="!messages.length && !asking"
-            class="flex flex-col items-center px-2 py-10 text-center"
-          >
-            <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-white shadow-md ring-1 ring-neutral-200/70 dark:bg-neutral-900 dark:ring-white/10">
-              <AstraLogo size="hero" />
-            </div>
-            <h1 class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-3xl">
-              {{ greeting }}
-            </h1>
-            <p class="mt-2 max-w-md text-sm text-neutral-500">{{ t('astra.emptyFirstTime') }}</p>
-            <div class="mt-8 grid w-full max-w-2xl grid-cols-1 gap-2.5 sm:grid-cols-2">
-              <button
-                v-for="card in heroSuggestions"
-                :key="card.id"
-                type="button"
-                class="rounded-2xl border border-neutral-200/70 bg-white px-4 py-3.5 text-left shadow-sm transition hover:border-primary-300 dark:border-white/10 dark:bg-neutral-900"
-                @click="onSuggestion(card.prompt)"
-              >
-                <span class="flex items-start gap-3">
-                  <span class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-950/50 dark:text-primary-300">
-                    <component :is="card.icon" class="h-4 w-4" />
-                  </span>
-                  <span class="min-w-0">
-                    <span class="block text-sm font-medium text-neutral-900 dark:text-white">{{ card.title }}</span>
-                    <span class="mt-0.5 block text-xs text-neutral-500">{{ card.subtitle }}</span>
-                  </span>
-                </span>
-              </button>
-            </div>
+      <div
+        class="relative z-10 flex min-h-0 flex-1 flex-col"
+        :class="isEmptyLanding ? 'justify-center overflow-y-auto px-4 pb-28 pt-4 sm:px-6 sm:pb-36 sm:pt-6' : ''"
+      >
+        <!-- Empty landing: hero + composer as one centered stack -->
+        <div
+          v-if="isEmptyLanding"
+          class="mx-auto flex w-full max-w-3xl shrink-0 flex-col items-center px-2 text-center"
+        >
+          <div class="astra-hero-logo mb-2 flex items-center justify-center">
+            <AstraLogo size="hero" />
           </div>
+          <h1 class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-3xl">
+            {{ greeting }}
+          </h1>
+          <p class="mt-1 max-w-md text-sm text-neutral-500">{{ t('astra.tagline') }}</p>
+          <div class="mt-6 grid w-full max-w-2xl grid-cols-1 gap-2.5 text-left sm:grid-cols-2">
+            <button
+              v-for="card in heroSuggestions"
+              :key="card.id"
+              type="button"
+              class="rounded-2xl border border-neutral-200/70 bg-white px-4 py-3.5 text-left shadow-sm transition hover:border-primary-300 dark:border-white/10 dark:bg-neutral-900"
+              @click="onSuggestion(card)"
+            >
+              <span class="flex items-start gap-3">
+                <span class="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-950/50 dark:text-primary-300">
+                  <component :is="card.icon" class="h-4 w-4" />
+                </span>
+                <span class="min-w-0">
+                  <span class="block text-sm font-medium text-neutral-900 dark:text-white">{{ card.title }}</span>
+                  <span class="mt-0.5 block text-xs text-neutral-500">{{ card.subtitle }}</span>
+                </span>
+              </span>
+            </button>
+          </div>
+        </div>
 
-          <!-- Thread -->
-          <div v-else class="space-y-6">
+        <!-- Thread -->
+        <div
+          v-else
+          ref="messagesEl"
+          class="arivu-scrollbar min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6"
+        >
+          <div class="mx-auto w-full max-w-3xl space-y-6">
             <div
               v-for="msg in messages"
               :key="msg.id"
@@ -145,21 +94,22 @@
               </div>
               <div
                 v-if="msg.role === 'user'"
-                class="max-w-[85%] rounded-3xl rounded-br-lg bg-neutral-900 px-4 py-2.5 text-sm text-white dark:bg-white dark:text-neutral-900"
+                class="max-w-[85%] rounded-3xl rounded-br-lg bg-sky-50 px-4 py-2.5 text-sm text-sky-950 dark:bg-sky-950/40 dark:text-sky-100"
               >
                 <p class="whitespace-pre-wrap break-words">{{ msg.body }}</p>
               </div>
               <div v-else class="min-w-0 max-w-[min(100%,42rem)] flex-1 space-y-3">
                 <p
-                  v-if="msg.body"
-                  class="whitespace-pre-wrap text-[15px] leading-7 text-neutral-800 dark:text-neutral-100"
+                  v-if="msg.agentName"
+                  class="text-[11px] font-medium uppercase tracking-wide text-neutral-400 dark:text-neutral-500"
                 >
-                  {{ msg.body }}
+                  {{ t('astra.responseFromAgent', { name: msg.agentName }) }}
                 </p>
+                <AstraAnswerBody v-if="msg.body" :body="msg.body" />
                 <div v-if="msg.href" class="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    class="rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-neutral-900"
+                    class="rounded-full bg-primary-500 px-3 py-1 text-xs font-medium text-white hover:bg-primary-600 dark:bg-primary-500 dark:hover:bg-primary-600"
                     @click="onNavigateProposal(msg.href)"
                   >
                     {{ msg.navigateLabel || t('astra.viewRecord') }}
@@ -198,7 +148,7 @@
                         <button
                           v-if="proposal.href"
                           type="button"
-                          class="rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-neutral-900"
+                          class="rounded-full bg-primary-500 px-3 py-1 text-xs font-medium text-white hover:bg-primary-600 dark:bg-primary-500 dark:hover:bg-primary-600"
                           @click="onNavigateProposal(proposal.href)"
                         >
                           {{ proposal.navigateLabel || t('astra.viewRecord') }}
@@ -210,7 +160,7 @@
                       <template v-else>
                         <button
                           type="button"
-                          class="rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white disabled:opacity-40 dark:bg-white dark:text-neutral-900"
+                          class="rounded-full bg-primary-500 px-3 py-1 text-xs font-medium text-white hover:bg-primary-600 disabled:opacity-40 dark:bg-primary-500 dark:hover:bg-primary-600"
                           :disabled="confirming"
                           @click="onConfirmProposal(msg.id, proposal)"
                         >
@@ -233,10 +183,10 @@
                     v-for="(suggestion, idx) in msg.suggestions"
                     :key="`${msg.id}-s-${idx}`"
                     type="button"
-                    class="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs text-neutral-700 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-200"
+                    class="rounded-full border border-neutral-200/80 bg-white px-3.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm transition hover:border-primary-300 hover:bg-primary-50/60 hover:text-primary-800 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-primary-500/40 dark:hover:bg-primary-950/40 dark:hover:text-primary-200"
                     @click="onSuggestion(suggestion)"
                   >
-                    {{ suggestion }}
+                    {{ suggestionLabel(suggestion) }}
                   </button>
                 </div>
               </div>
@@ -246,11 +196,16 @@
               <span class="flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-neutral-200/70 dark:bg-neutral-900 dark:ring-white/10">
                 <AstraLogo size="sm" />
               </span>
-              <span class="inline-flex gap-1">
-                <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-500" />
-                <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-500 [animation-delay:150ms]" />
-                <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-500 [animation-delay:300ms]" />
-              </span>
+              <div class="astra-status-stage min-h-[1.25rem] min-w-0 flex-1 overflow-hidden">
+                <Transition name="astra-status" mode="out-in">
+                  <p
+                    :key="statusLine"
+                    class="truncate text-sm text-neutral-500 dark:text-neutral-400"
+                  >
+                    {{ statusLine }}
+                  </p>
+                </Transition>
+              </div>
             </div>
 
             <p
@@ -261,129 +216,43 @@
             </p>
           </div>
         </div>
-      </div>
 
-      <!-- Composer -->
-      <div class="relative z-10 shrink-0 border-t border-neutral-200/60 bg-neutral-50/95 px-3 py-3 backdrop-blur dark:border-white/[0.08] dark:bg-neutral-950/95 sm:px-6 sm:py-4">
-        <div class="mx-auto w-full max-w-3xl">
-          <div
-            v-if="composerChips.length && !asking"
-            class="mb-2 flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            <button
-              v-for="chip in composerChips"
-              :key="chip"
-              type="button"
-              class="shrink-0 rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs text-neutral-600 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-300"
-              @click="onChip(chip)"
+        <!-- Composer: grouped under hero when empty; docked when in a thread -->
+        <div
+          :class="isEmptyLanding
+            ? 'mx-auto mt-8 w-full max-w-3xl shrink-0'
+            : 'shrink-0 border-t border-neutral-200/60 bg-neutral-50/95 px-3 py-3 backdrop-blur dark:border-white/[0.08] dark:bg-neutral-950/95 sm:px-6 sm:py-4'"
+        >
+          <div :class="isEmptyLanding ? '' : 'mx-auto w-full max-w-3xl'">
+            <form
+              class="flex items-end gap-2 rounded-[1.5rem] border border-neutral-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-neutral-900"
+              @submit.prevent="onSend"
             >
-              {{ chip }}
-            </button>
+              <textarea
+                ref="inputEl"
+                v-model="draft"
+                rows="1"
+                class="max-h-40 min-h-[2.75rem] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100"
+                :placeholder="composerPlaceholder"
+                :disabled="asking"
+                @keydown.enter.exact.prevent="onSend"
+                @input="autoGrow"
+              />
+              <button
+                type="submit"
+                class="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-35 dark:bg-primary-500 dark:hover:bg-primary-600 dark:text-white"
+                :disabled="asking || !draft.trim()"
+                :aria-label="t('astra.send')"
+              >
+                <PaperAirplaneIcon class="h-4 w-4 -rotate-45 translate-x-px" />
+              </button>
+            </form>
+            <p class="mt-2 text-center text-[10px] text-neutral-400">{{ t('astra.composerFootnote') }}</p>
           </div>
-          <form
-            class="flex items-end gap-2 rounded-[1.5rem] border border-neutral-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-neutral-900"
-            @submit.prevent="onSend"
-          >
-            <textarea
-              ref="inputEl"
-              v-model="draft"
-              rows="1"
-              class="max-h-40 min-h-[2.75rem] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100"
-              :placeholder="composerPlaceholder"
-              :disabled="asking"
-              @keydown.enter.exact.prevent="onSend"
-              @input="autoGrow"
-            />
-            <button
-              type="submit"
-              class="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-white disabled:opacity-35 dark:bg-white dark:text-neutral-900"
-              :disabled="asking || !draft.trim()"
-              :aria-label="t('astra.send')"
-            >
-              <PaperAirplaneIcon class="h-4 w-4 -rotate-45 translate-x-px" />
-            </button>
-          </form>
-          <p class="mt-2 text-center text-[10px] text-neutral-400">{{ t('astra.composerFootnote') }}</p>
         </div>
       </div>
-    </section>
-
-    <!-- Mobile history drawer -->
-    <Teleport to="body">
-      <TransitionRoot :show="mobileHistoryOpen" as="template">
-        <Dialog class="relative z-[80] md:hidden" @close="mobileHistoryOpen = false">
-          <TransitionChild
-            as="template"
-            enter="ease-out duration-200"
-            enter-from="opacity-0"
-            enter-to="opacity-100"
-            leave="ease-in duration-150"
-            leave-from="opacity-100"
-            leave-to="opacity-0"
-          >
-            <div class="fixed inset-0 bg-neutral-950/40" />
-          </TransitionChild>
-          <div class="fixed inset-0 flex">
-            <TransitionChild
-              as="template"
-              enter="transform transition ease-out duration-200"
-              enter-from="-translate-x-full"
-              enter-to="translate-x-0"
-              leave="transform transition ease-in duration-150"
-              leave-from="translate-x-0"
-              leave-to="-translate-x-full"
-            >
-              <DialogPanel class="flex h-full w-[18rem] max-w-[85vw] flex-col bg-white dark:bg-neutral-950">
-                <div class="flex items-center justify-between border-b border-neutral-200 px-3 py-3 dark:border-white/10">
-                  <DialogTitle class="text-sm font-semibold">{{ t('astra.historyHeading') }}</DialogTitle>
-                  <button type="button" class="rounded-lg p-1.5" @click="mobileHistoryOpen = false">
-                    <XMarkIcon class="h-4 w-4" />
-                  </button>
-                </div>
-                <div class="p-3">
-                  <button
-                    type="button"
-                    class="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-neutral-900 px-3 py-2 text-xs font-semibold text-white dark:bg-white dark:text-neutral-900"
-                    @click="onNewChat(); mobileHistoryOpen = false"
-                  >
-                    <PlusIcon class="h-3.5 w-3.5" />
-                    {{ t('astra.newChat') }}
-                  </button>
-                </div>
-                <div class="arivu-scrollbar min-h-0 flex-1 overflow-y-auto px-2 pb-4">
-                  <div class="space-y-4">
-                    <section v-for="group in conversationGroups" :key="`m-${group.id}`">
-                      <p class="px-2 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-                        {{ group.label }}
-                      </p>
-                      <button
-                        v-for="item in group.items"
-                        :key="`m-${item.id}`"
-                        type="button"
-                        class="mb-0.5 block w-full truncate rounded-xl px-2.5 py-2 text-left text-sm font-medium"
-                        :class="item.id === conversationId ? 'bg-primary-50 dark:bg-primary-950/40' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'"
-                        @click="onSelectConversation(item.id); mobileHistoryOpen = false"
-                      >
-                        {{ item.title || t('astra.historyUntitled') }}
-                      </button>
-                    </section>
-                  </div>
-                </div>
-                <div v-if="hasOlderHistory" class="border-t border-neutral-200 px-3 py-2 dark:border-white/10">
-                  <button
-                    type="button"
-                    class="w-full rounded-lg px-2 py-1.5 text-left text-[11px] font-medium text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
-                    @click="onClearOlder"
-                  >
-                    {{ t('astra.historyClearOlder') }}
-                  </button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </Dialog>
-      </TransitionRoot>
-    </Teleport>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -392,30 +261,24 @@ import { computed, nextTick, onErrorCaptured, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  TransitionChild,
-  TransitionRoot,
-} from '@headlessui/vue';
-import {
   Bars3Icon,
   BriefcaseIcon,
   ChartBarIcon,
-  MagnifyingGlassIcon,
   PaperAirplaneIcon,
-  PlusIcon,
   TicketIcon,
-  TrashIcon,
   UserIcon,
-  XMarkIcon,
 } from '@heroicons/vue/24/outline';
+import type { Component } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
-import { useAstraAsk, type AstraProposal } from '@/astra/composables/useAstraAsk';
-import { useAstraConversations, type AstraConversationSummary } from '@/astra/composables/useAstraConversations';
+import { useAstraAsk, type AstraProposal, type AstraSuggestion } from '@/astra/composables/useAstraAsk';
+import { useAstraConversations } from '@/astra/composables/useAstraConversations';
+import { useAstraStatusLine } from '@/astra/composables/useAstraStatusLine';
 import AstraMessageBlocks from '@/astra/blocks/AstraMessageBlocks.vue';
+import AstraAnswerBody from '@/astra/components/AstraAnswerBody.vue';
+import AstraConversationSidebar from '@/astra/components/AstraConversationSidebar.vue';
 import AstraLogo from '@/astra/components/AstraLogo.vue';
 import type { AstraUiBlock } from '@/astra/blocks/types';
+import { resolveAstraNbaIcon } from '@/astra/utils/resolveAstraNbaIcon';
 
 interface CopilotMessage {
   id: string;
@@ -423,7 +286,9 @@ interface CopilotMessage {
   body: string;
   blocks?: AstraUiBlock[];
   proposals?: AstraProposal[];
-  suggestions?: string[];
+  suggestions?: AstraSuggestion[];
+  agentKey?: string;
+  agentName?: string;
   href?: string;
   navigateLabel?: string;
 }
@@ -433,17 +298,24 @@ interface HeroSuggestion {
   title: string;
   subtitle: string;
   prompt: string;
-  icon: typeof BriefcaseIcon;
+  moduleKey?: string;
+  recordId?: string;
+  recordName?: string;
+  icon: Component;
 }
 
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const { asking, confirming, error, askSync, confirmProposal, fetchNba } = useAstraAsk('copilot');
+const { statusLine } = useAstraStatusLine(asking);
 const {
   conversations,
   loading: historyLoading,
+  loadingMore: historyLoadingMore,
+  hasMore: historyHasMore,
   refresh: refreshHistory,
+  loadMore: loadMoreHistory,
   loadOne,
   remove: removeConversation,
   clearAll: clearConversations,
@@ -457,7 +329,23 @@ const conversationTitle = ref('');
 const mobileHistoryOpen = ref(false);
 const messagesEl = ref<HTMLElement | null>(null);
 const inputEl = ref<HTMLTextAreaElement | null>(null);
-const nbaPrompts = ref<string[]>([]);
+
+/** Always mount the history rail so the grid does not jump after conversations hydrate. */
+const showHistorySidebar = computed(() => true);
+
+const isEmptyLanding = computed(
+  () => !messages.value.length && !asking.value,
+);
+const nbaCards = ref<Array<{
+  id: string;
+  title: string;
+  subtitle: string;
+  prompt: string;
+  moduleKey?: string;
+  recordId?: string;
+  recordName?: string;
+  iconKey?: string;
+}>>([]);
 
 onErrorCaptured((err) => {
   console.error('[Astra] render error:', err);
@@ -495,47 +383,26 @@ const defaultHero = computed<HeroSuggestion[]>(() => [
 ]);
 
 const heroSuggestions = computed(() => {
-  if (!nbaPrompts.value.length) return defaultHero.value;
-  const fromNba = nbaPrompts.value.slice(0, 4).map((prompt, index) => ({
-    id: `nba-${index}`,
-    title: prompt,
-    subtitle: t('astra.heroPersonalizedSubtitle'),
-    prompt,
-    icon: index % 2 === 0 ? ChartBarIcon : MagnifyingGlassIcon,
+  if (!nbaCards.value.length) return defaultHero.value;
+  // Never pad with static placeholders once we have live workload cards.
+  return nbaCards.value.slice(0, 4).map((card, index) => ({
+    id: card.id || `nba-${index}`,
+    title: card.title,
+    subtitle: card.subtitle || t('astra.heroPersonalizedSubtitle'),
+    prompt: card.prompt,
+    moduleKey: card.moduleKey,
+    recordId: card.recordId,
+    recordName: card.recordName || card.title,
+    icon: resolveAstraNbaIcon({
+      iconKey: card.iconKey,
+      moduleKey: card.moduleKey,
+      title: card.title,
+      label: card.title,
+    }),
   }));
-  const merged = [...fromNba];
-  for (const card of defaultHero.value) {
-    if (merged.length >= 4) break;
-    if (!merged.some((m) => m.prompt.toLowerCase() === card.prompt.toLowerCase())) merged.push(card);
-  }
-  return merged.slice(0, 4);
-});
-
-const composerChips = computed(() => {
-  const pool = [
-    ...nbaPrompts.value,
-    t('astra.starterOpenDeals'),
-    t('astra.starterPipelinePulse'),
-    t('astra.starterOpenCases'),
-    t('astra.starterFindContact'),
-  ];
-  const unique: string[] = [];
-  for (const item of pool) {
-    const text = String(item || '').trim();
-    if (!text || unique.some((u) => u.toLowerCase() === text.toLowerCase())) continue;
-    unique.push(text);
-    if (unique.length >= 4) break;
-  }
-  return unique;
 });
 
 type ConversationGroupId = 'today' | 'yesterday' | 'week' | 'month' | 'older';
-
-type ConversationGroup = {
-  id: ConversationGroupId;
-  label: string;
-  items: AstraConversationSummary[];
-};
 
 function startOfLocalDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
@@ -555,33 +422,6 @@ function groupIdForDate(value?: string | null): ConversationGroupId {
   return 'older';
 }
 
-const conversationGroups = computed<ConversationGroup[]>(() => {
-  const buckets: Record<ConversationGroupId, AstraConversationSummary[]> = {
-    today: [],
-    yesterday: [],
-    week: [],
-    month: [],
-    older: [],
-  };
-  for (const item of conversations.value) {
-    buckets[groupIdForDate(item.updatedAt || item.createdAt)].push(item);
-  }
-  const order: Array<{ id: ConversationGroupId; label: string }> = [
-    { id: 'today', label: t('astra.historyGroupToday') },
-    { id: 'yesterday', label: t('astra.historyGroupYesterday') },
-    { id: 'week', label: t('astra.historyGroupWeek') },
-    { id: 'month', label: t('astra.historyGroupMonth') },
-    { id: 'older', label: t('astra.historyGroupOlder') },
-  ];
-  return order
-    .map((entry) => ({ ...entry, items: buckets[entry.id] }))
-    .filter((group) => group.items.length > 0);
-});
-
-const hasOlderHistory = computed(() =>
-  conversationGroups.value.some((g) => g.id !== 'today' && g.items.length > 0),
-);
-
 function historyForAsk() {
   return messages.value.slice(-8).map((m) => ({ role: m.role, content: m.body }));
 }
@@ -598,7 +438,11 @@ function autoGrow() {
   el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
 }
 
-async function ask(text: string) {
+async function ask(text: string, focus: {
+  moduleKey?: string;
+  recordId?: string;
+  recordName?: string;
+} = {}) {
   const prompt = text.trim();
   if (!prompt || asking.value) return;
   messages.value.push({ id: `u-${Date.now()}`, role: 'user', body: prompt });
@@ -606,6 +450,9 @@ async function ask(text: string) {
   const result = await askSync(prompt, {
     conversationId: conversationId.value,
     history: historyForAsk().slice(0, -1),
+    moduleKey: focus.moduleKey,
+    recordId: focus.recordId,
+    recordName: focus.recordName,
   });
   if (!result) {
     await scrollToEnd();
@@ -630,6 +477,8 @@ async function ask(text: string) {
     blocks: result.blocks,
     proposals: result.proposals,
     suggestions: result.suggestions,
+    agentKey: result.agentKey,
+    agentName: result.agentName,
   });
   await scrollToEnd();
   await nextTick();
@@ -644,8 +493,60 @@ async function onSend() {
   await ask(text);
 }
 
-async function onSuggestion(suggestion: string) {
-  await ask(suggestion);
+async function onSuggestion(suggestion: string | AstraSuggestion | {
+  prompt?: string;
+  moduleKey?: string;
+  recordId?: string;
+  recordName?: string;
+  title?: string;
+  label?: string;
+}) {
+  if (typeof suggestion === 'string') {
+    const parsed = tryParseSuggestionJson(suggestion);
+    if (parsed) {
+      await ask(parsed.prompt, {});
+      return;
+    }
+    await ask(suggestion);
+    return;
+  }
+  const row = suggestion as {
+    prompt?: string;
+    label?: string;
+    title?: string;
+    moduleKey?: string;
+    recordId?: string;
+    recordName?: string;
+  };
+  const prompt = String(row.prompt || row.label || row.title || '').trim();
+  if (!prompt) return;
+  await ask(prompt, {
+    moduleKey: row.moduleKey,
+    recordId: row.recordId,
+    recordName: row.recordName || row.title || row.label,
+  });
+}
+
+function suggestionLabel(suggestion: AstraSuggestion): string {
+  if (typeof suggestion === 'string') {
+    const parsed = tryParseSuggestionJson(suggestion);
+    return parsed?.label || suggestion;
+  }
+  return suggestion.label || suggestion.prompt;
+}
+
+function tryParseSuggestionJson(raw: string): { label: string; prompt: string } | null {
+  const text = String(raw || '').trim();
+  if (!text.startsWith('{')) return null;
+  try {
+    const obj = JSON.parse(text) as { label?: unknown; prompt?: unknown };
+    const label = String(obj.label || '').trim();
+    const prompt = String(obj.prompt || obj.label || '').trim();
+    if (!label && !prompt) return null;
+    return { label: label || prompt, prompt: prompt || label };
+  } catch {
+    return null;
+  }
 }
 
 function isOverrideProposal(proposal: { label?: string } | null | undefined): boolean {
@@ -701,14 +602,6 @@ function onDismissProposal(messageId: string, proposalId: string) {
   });
 }
 
-function onChip(chip: string) {
-  draft.value = chip;
-  void nextTick(() => {
-    autoGrow();
-    inputEl.value?.focus();
-  });
-}
-
 function onNewChat() {
   messages.value = [];
   conversationId.value = undefined;
@@ -740,7 +633,7 @@ async function onSelectConversation(id: string) {
           status: p.status === 'completed' ? 'completed' : 'pending',
         }))
         : [],
-      suggestions: Array.isArray(m.suggestions) ? m.suggestions.map(String) : [],
+      suggestions: Array.isArray(m.suggestions) ? (m.suggestions as AstraSuggestion[]) : [],
       href: m.navigate?.href,
       navigateLabel: m.navigate?.label,
     }));
@@ -756,6 +649,10 @@ async function onDeleteConversation(id: string) {
   const ok = await removeConversation(id);
   if (!ok) return;
   if (conversationId.value === id) onNewChat();
+}
+
+function onLoadMoreHistory() {
+  void loadMoreHistory();
 }
 
 async function onClearOlder() {
@@ -791,7 +688,36 @@ onMounted(async () => {
       }
     }),
     fetchNba({ surface: 'home' }).then((nba) => {
-      nbaPrompts.value = nba.map((item) => String(item.label || '').trim()).filter(Boolean).slice(0, 6);
+      type NbaCard = {
+        id: string;
+        title: string;
+        subtitle: string;
+        prompt: string;
+        moduleKey?: string;
+        recordId?: string;
+        recordName?: string;
+        iconKey?: string;
+      };
+      const cards: NbaCard[] = [];
+      for (let index = 0; index < nba.length; index += 1) {
+        const item = nba[index];
+        if (!item) continue;
+        const title = String(item.label || item.prompt || '').trim();
+        const prompt = String(item.prompt || item.label || '').trim();
+        if (!title || !prompt) continue;
+        cards.push({
+          id: item.id || `nba-${index}`,
+          title,
+          subtitle: String(item.rationale || '').trim() || t('astra.heroPersonalizedSubtitle'),
+          prompt,
+          moduleKey: item.moduleKey || undefined,
+          recordId: item.recordId || undefined,
+          recordName: title,
+          iconKey: item.iconKey || undefined,
+        });
+        if (cards.length >= 6) break;
+      }
+      nbaCards.value = cards;
     }),
   ]);
   inputEl.value?.focus();
@@ -801,3 +727,102 @@ watch(draft, () => {
   void nextTick(autoGrow);
 });
 </script>
+
+<style scoped>
+.astra-hero-logo {
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+}
+
+.astra-hero-logo :deep(img) {
+  position: relative;
+  z-index: 0;
+  display: block;
+  filter: drop-shadow(0 8px 20px rgb(15 23 42 / 0.12));
+}
+
+.astra-hero-logo::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.12) 40%,
+    rgb(255 255 255 / 0.85) 50%,
+    rgb(255 255 255 / 0.12) 60%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: astra-hero-logo-shimmer 2.8s linear infinite;
+  pointer-events: none;
+  /* Clip shine to logo silhouette only */
+  -webkit-mask-image: url('/assets/logo/Ai%20Logo.svg');
+  mask-image: url('/assets/logo/Ai%20Logo.svg');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  will-change: background-position;
+}
+
+html.dark .astra-hero-logo::after {
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.1) 40%,
+    rgb(255 255 255 / 0.7) 50%,
+    rgb(255 255 255 / 0.1) 60%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+}
+
+@keyframes astra-hero-logo-shimmer {
+  0% {
+    background-position: 140% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .astra-hero-logo::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+.astra-status-enter-active,
+.astra-status-leave-active {
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.astra-status-enter-from {
+  opacity: 0;
+  transform: translateY(0.45rem);
+}
+
+.astra-status-leave-to {
+  opacity: 0;
+  transform: translateY(-0.45rem);
+}
+
+.astra-status-enter-to,
+.astra-status-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .astra-status-enter-active,
+  .astra-status-leave-active {
+    transition: none;
+  }
+}
+</style>

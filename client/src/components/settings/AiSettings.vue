@@ -1,9 +1,20 @@
 <template>
-  <SettingsScrollPanel>
+  <SettingsScrollPanel
+    :embed="activeTab === 'agents'"
+    :dense="activeTab === 'agents'"
+  >
     <template #header>
       <div>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.aiTitle') }}</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
+        <h2
+          class="font-bold text-gray-900 dark:text-white"
+          :class="activeTab === 'agents' ? 'text-xl' : 'text-2xl'"
+        >
+          {{ t('settings.aiTitle') }}
+        </h2>
+        <p
+          v-if="activeTab !== 'agents'"
+          class="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-2xl"
+        >
           {{ t('settings.aiSubtitle') }}
         </p>
       </div>
@@ -16,10 +27,13 @@
             v-for="tab in aiTabs"
             :key="tab.id"
             type="button"
-            class="whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors"
-            :class="activeTab === tab.id
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
+            class="whitespace-nowrap text-sm font-medium border-b-2 transition-colors"
+            :class="[
+              activeTab === 'agents' ? 'px-3 py-2' : 'px-4 py-3',
+              activeTab === tab.id
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
+            ]"
             @click="activeTab = tab.id"
           >
             {{ t(tab.labelKey) }}
@@ -38,8 +52,10 @@
 
     <div
       v-else
-      class="space-y-6"
-      :class="(activeTab === 'usage' || activeTab === 'agents') ? 'w-full' : 'max-w-3xl'"
+      :class="[
+        activeTab === 'agents' ? 'flex min-h-0 flex-1 flex-col space-y-0' : 'space-y-6',
+        (activeTab === 'usage' || activeTab === 'agents') ? 'w-full' : 'max-w-3xl',
+      ]"
     >
       <template v-if="activeTab === 'general'">
       <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
@@ -60,48 +76,45 @@
 
       <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiProviderTitle') }}</h3>
-        <div class="mt-4 grid gap-4 sm:grid-cols-3">
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
           <label class="block text-sm">
             <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiLlmProvider') }}</span>
-            <select
+            <HeadlessSelect
               v-model="form.llmProvider"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            >
-              <option v-for="provider in llmProviderOptions" :key="provider" :value="provider">
-                {{ provider }}
-              </option>
-            </select>
+              wrapper-class="mt-1"
+              :options="llmProviderSelectOptions"
+              :placeholder="t('settings.aiLlmProvider')"
+              teleport
+              searchable
+              @update:model-value="onProviderChange"
+            />
+            <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+              {{ form.llmProvider === 'arivu' ? t('settings.aiProviderModePlatformHint') : t('settings.aiProviderModeByokHint') }}
+            </span>
           </label>
           <label class="block text-sm">
             <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiLlmModel') }}</span>
-            <select
+            <HeadlessSelect
               v-model="form.llmModel"
-              :disabled="modelsLoading || !llmModelOptions.length"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            >
-              <option v-for="model in llmModelOptions" :key="model" :value="model">
-                {{ model === AUTO_MODEL ? t('settings.aiModelAuto') : model }}
-              </option>
-            </select>
+              wrapper-class="mt-1"
+              :options="llmModelSelectOptions"
+              :disabled="modelsLoading || form.llmProvider === 'arivu'"
+              :placeholder="t('settings.aiLlmModel')"
+              teleport
+              searchable
+            />
             <span v-if="modelsLoading" class="mt-1 block text-xs text-gray-500 dark:text-gray-400">
               {{ t('states.loading') }}
             </span>
             <span v-else-if="modelsError" class="mt-1 block text-xs text-amber-600 dark:text-amber-400">
               {{ modelsError }}
             </span>
+            <span v-else-if="form.llmProvider === 'arivu'" class="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+              {{ t('settings.aiArivuModelHint') }}
+            </span>
             <span v-else-if="form.llmModel === AUTO_MODEL" class="mt-1 block text-xs text-gray-500 dark:text-gray-400">
               {{ t('settings.aiModelAutoHint') }}
             </span>
-          </label>
-          <label class="block text-sm">
-            <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiKeyMode') }}</span>
-            <select
-              v-model="form.keyMode"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            >
-              <option value="platform">{{ t('settings.aiKeyModePlatform') }}</option>
-              <option value="byok">{{ t('settings.aiKeyModeByok') }}</option>
-            </select>
           </label>
         </div>
 
@@ -147,17 +160,34 @@
           </button>
         </div>
 
-        <div v-else class="mt-4">
-          <label class="block text-sm">
-            <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiCreditsBalance') }}</span>
-            <input
-              v-model.number="form.creditsBalance"
-              type="number"
-              min="0"
-              class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            />
-          </label>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiCreditsHint') }}</p>
+        <div v-else class="mt-4 space-y-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ t('settings.aiTokensAvailable') }}
+              </p>
+              <p class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">
+                {{ formatNumber(settings?.tokensAvailable ?? settings?.tokensBalance ?? 0) }}
+              </p>
+            </div>
+            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
+              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ t('settings.aiTokensConsumed') }}
+              </p>
+              <p class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">
+                {{ formatNumber(settings?.tokensConsumed ?? 0) }}
+              </p>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.aiCreditsHint') }}</p>
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            :disabled="resettingTokens"
+            @click="resetTokenPool"
+          >
+            {{ resettingTokens ? t('states.loading') : t('settings.aiTokensReset') }}
+          </button>
         </div>
       </section>
 
@@ -175,146 +205,11 @@
       </template>
 
       <template v-if="activeTab === 'agents'">
-        <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiAgentsTitle') }}</h3>
-              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-2xl">{{ t('settings.aiAgentsHint') }}</p>
-              <p v-if="agentsMeta" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                {{ t('settings.aiAgentsOotbNote', {
-                  agentCount: agentsMeta.agentCount,
-                  toolCount: agentsMeta.toolCount,
-                }) }}
-              </p>
-            </div>
-            <label class="block w-full sm:w-72 text-sm">
-              <span class="sr-only">{{ t('settings.aiAgentsSearchPlaceholder') }}</span>
-              <input
-                v-model="agentsQuery"
-                type="search"
-                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                :placeholder="t('settings.aiAgentsSearchPlaceholder')"
-              />
-            </label>
-          </div>
+        <AiAgentsWorkspace class="min-h-0 flex-1" />
+      </template>
 
-          <div v-if="agentsLoading" class="flex items-center justify-center py-12">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-          </div>
-          <div v-else-if="agentsError" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-            {{ agentsError }}
-          </div>
-          <div v-else-if="!filteredAgents.length" class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-            {{ t('settings.aiAgentsEmpty') }}
-          </div>
-          <ul v-else class="mt-4 space-y-3">
-            <li
-              v-for="agent in filteredAgents"
-              :key="agent.name"
-              class="rounded-xl border border-gray-100 dark:border-gray-700/80 overflow-hidden"
-            >
-              <button
-                type="button"
-                class="flex w-full items-start gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-900/40"
-                @click="toggleAgentExpanded(agent.name)"
-              >
-                <span class="mt-0.5 text-gray-400" aria-hidden="true">{{ expandedAgents[agent.name] ? '▾' : '▸' }}</span>
-                <span class="min-w-0 flex-1">
-                  <span class="flex flex-wrap items-center gap-2">
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ agent.title || agent.name }}</span>
-                    <span class="rounded-full bg-gray-100 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:bg-gray-900 dark:text-gray-300">{{ agent.name }}</span>
-                    <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
-                      {{ t('settings.aiAgentsAutonomy', { level: agent.autonomy || 'assist' }) }}
-                    </span>
-                    <span class="text-[11px] text-gray-500 dark:text-gray-400">
-                      {{ t('settings.aiAgentsToolCount', { count: (agent.tools || []).length }) }}
-                    </span>
-                  </span>
-                  <span v-if="agent.description" class="mt-1 block text-sm text-gray-600 dark:text-gray-400">{{ agent.description }}</span>
-                </span>
-              </button>
-              <div v-if="expandedAgents[agent.name]" class="border-t border-gray-100 bg-gray-50/80 px-4 py-3 dark:border-gray-700/80 dark:bg-gray-900/30">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{{ t('settings.aiAgentsToolsHeading') }}</p>
-                <p v-if="!(agent.toolDetails || []).length" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  {{ t('settings.aiAgentsNoTools') }}
-                </p>
-                <ul v-else class="mt-2 space-y-2">
-                  <li
-                    v-for="tool in agent.toolDetails"
-                    :key="`${agent.name}-${tool.name}`"
-                    class="rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <div class="flex flex-wrap items-center gap-2">
-                      <span class="font-mono text-xs font-medium text-gray-900 dark:text-gray-100">{{ tool.name }}</span>
-                      <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-gray-600 dark:bg-gray-900 dark:text-gray-300">{{ tool.family }}</span>
-                      <span
-                        class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
-                        :class="toolRiskClass(tool.risk)"
-                      >{{ toolRiskLabel(tool.risk) }}</span>
-                    </div>
-                    <p v-if="tool.description" class="mt-1 text-xs text-gray-600 dark:text-gray-400">{{ tool.description }}</p>
-                  </li>
-                </ul>
-              </div>
-            </li>
-          </ul>
-        </section>
-
-        <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-          <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiAgentsAllToolsTitle') }}</h3>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              class="rounded-full px-3 py-1 text-xs font-medium border"
-              :class="toolsFamilyFilter === ''
-                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200'
-                : 'border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300'"
-              @click="toolsFamilyFilter = ''"
-            >
-              {{ t('settings.aiAgentsFilterAll') }}
-            </button>
-            <button
-              v-for="family in toolFamilies"
-              :key="family"
-              type="button"
-              class="rounded-full px-3 py-1 text-xs font-medium border"
-              :class="toolsFamilyFilter === family
-                ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200'
-                : 'border-gray-200 text-gray-600 dark:border-gray-600 dark:text-gray-300'"
-              @click="toolsFamilyFilter = family"
-            >
-              {{ family }}
-            </button>
-          </div>
-          <div class="mt-4 overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
-                <tr>
-                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColTool') }}</th>
-                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColFamily') }}</th>
-                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColRisk') }}</th>
-                  <th class="px-3 py-2 font-medium">{{ t('settings.aiAgentsColDescription') }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
-                <tr
-                  v-for="tool in filteredToolsCatalog"
-                  :key="tool.name"
-                  class="text-gray-800 dark:text-gray-200"
-                >
-                  <td class="px-3 py-2 font-mono text-xs whitespace-nowrap">{{ tool.name }}</td>
-                  <td class="px-3 py-2 text-xs">{{ tool.family }}</td>
-                  <td class="px-3 py-2 text-xs">
-                    <span class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase" :class="toolRiskClass(tool.risk)">
-                      {{ toolRiskLabel(tool.risk) }}
-                    </span>
-                  </td>
-                  <td class="px-3 py-2 text-xs text-gray-600 dark:text-gray-400">{{ tool.description }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <template v-if="activeTab === 'knowledge'">
+        <AiKnowledgeSourcesSettings class="min-h-0 flex-1" />
       </template>
 
       <template v-if="activeTab === 'pii'">
@@ -479,64 +374,47 @@
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.aiUsageTitle') }}</h3>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.aiUsageHint') }}</p>
 
-          <div class="mt-4 flex flex-wrap items-end gap-3">
-            <label class="block text-sm">
-              <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiUsageDays') }}</span>
-              <select
-                v-model.number="usageDays"
-                class="mt-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                @change="reloadUsageLog"
-              >
-                <option :value="7">{{ t('settings.aiUsageDays7') }}</option>
-                <option :value="30">{{ t('settings.aiUsageDays30') }}</option>
-                <option :value="90">{{ t('settings.aiUsageDays90') }}</option>
-              </select>
-            </label>
-            <label class="block text-sm">
-              <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiUsageAbilityFilter') }}</span>
-              <select
-                v-model="usageAbilityFilter"
-                class="mt-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                @change="reloadUsageLog"
-              >
-                <option value="">{{ t('settings.aiUsageAbilityAll') }}</option>
-                <option
-                  v-for="ability in usageAbilityOptions"
-                  :key="ability"
-                  :value="ability"
-                >
-                  {{ ability }}
-                </option>
-              </select>
-            </label>
-            <label class="block text-sm">
-              <span class="text-gray-700 dark:text-gray-300">{{ t('settings.aiUsageStatusFilter') }}</span>
-              <select
-                v-model="usageStatusFilter"
-                class="mt-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                @change="reloadUsageLog"
-              >
-                <option value="">{{ t('settings.aiUsageStatusAll') }}</option>
-                <option value="success">success</option>
-                <option value="failed">failed</option>
-                <option value="not_configured">not_configured</option>
-              </select>
-            </label>
+          <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-4 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+              <p class="text-xs font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+                {{ t('settings.aiTokensAvailable') }}
+              </p>
+              <p class="mt-1 text-2xl font-semibold tabular-nums text-emerald-900 dark:text-emerald-100">
+                {{ formatNumber(tokenPool.available) }}
+              </p>
+              <p class="mt-1 text-[11px] text-emerald-800/80 dark:text-emerald-200/70">
+                {{ t('settings.aiTokensConsumedLifetime', { count: formatNumber(tokenPool.consumed) }) }}
+              </p>
+            </div>
+            <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 dark:border-amber-900/50 dark:bg-amber-950/30">
+              <p class="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                {{ t('settings.aiUsageSummaryCredits') }}
+              </p>
+              <p class="mt-1 text-2xl font-semibold tabular-nums text-amber-900 dark:text-amber-100">
+                {{ formatNumber(usageSummary?.totalTokensBilled ?? usageSummary?.totalCreditsDebited ?? 0) }}
+              </p>
+              <p class="mt-1 text-[11px] text-amber-800/80 dark:text-amber-200/70">
+                {{ t('settings.aiUsagePeriodHint') }}
+              </p>
+            </div>
+            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 dark:border-gray-700 dark:bg-gray-900/40">
+              <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {{ t('settings.aiUsageSummaryCalls') }}
+              </p>
+              <p class="mt-1 text-2xl font-semibold tabular-nums text-gray-900 dark:text-white">
+                {{ formatNumber(usageSummary?.totalCalls || 0) }}
+              </p>
+              <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                {{ t('settings.aiUsagePeriodHint') }}
+              </p>
+            </div>
           </div>
 
-          <div v-if="usageSummary" class="mt-4 grid gap-3 sm:grid-cols-3">
-            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
-              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('settings.aiUsageSummaryCalls') }}</p>
-              <p class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ formatNumber(usageSummary.totalCalls) }}</p>
-            </div>
-            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
-              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('settings.aiUsageSummaryTokens') }}</p>
-              <p class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ formatNumber(usageSummary.totalTokens) }}</p>
-            </div>
-            <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
-              <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ t('settings.aiUsageSummaryCredits') }}</p>
-              <p class="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{{ formatNumber(usageSummary.totalCreditsDebited) }}</p>
-            </div>
+          <div class="mt-5">
+            <DashboardDateRangeBar
+              v-model="usageDateRange"
+              @update:model-value="onUsageDateRangeChange"
+            />
           </div>
 
           <div v-if="usageSummary?.byAbility?.length" class="mt-4">
@@ -661,111 +539,29 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import AiAgentsWorkspace from '@/components/settings/AiAgentsWorkspace.vue';
+import AiKnowledgeSourcesSettings from '@/components/settings/AiKnowledgeSourcesSettings.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import DashboardDateRangeBar from '@/components/analytics/DashboardDateRangeBar.vue';
 import apiClient from '@/utils/apiClient';
+import {
+  resolveDateRange,
+} from '@/utils/analyticsDateRange';
 
 const { t } = useI18n();
 
 const aiTabs = [
   { id: 'general', labelKey: 'settings.aiTabGeneral' },
   { id: 'agents', labelKey: 'settings.aiTabAgents' },
+  { id: 'knowledge', labelKey: 'settings.aiTabKnowledge' },
   { id: 'pii', labelKey: 'settings.aiTabPii' },
   { id: 'usage', labelKey: 'settings.aiTabUsage' },
 ];
 const activeTab = ref('general');
 
-const agentsLoading = ref(false);
-const agentsError = ref('');
-const agentsList = ref([]);
-const toolsCatalog = ref([]);
-const agentsMeta = ref(null);
-const agentsQuery = ref('');
-const toolsFamilyFilter = ref('');
-const expandedAgents = reactive({});
-
-const filteredAgents = computed(() => {
-  const q = agentsQuery.value.trim().toLowerCase();
-  if (!q) return agentsList.value;
-  return agentsList.value.filter((agent) => {
-    const hay = [
-      agent.name,
-      agent.title,
-      agent.description,
-      ...(agent.tools || []),
-      ...(agent.toolDetails || []).map((tool) => `${tool.name} ${tool.description || ''}`),
-    ].join(' ').toLowerCase();
-    return hay.includes(q);
-  });
-});
-
-const toolFamilies = computed(() => {
-  const set = new Set(toolsCatalog.value.map((tool) => tool.family).filter(Boolean));
-  return Array.from(set).sort();
-});
-
-const filteredToolsCatalog = computed(() => {
-  const q = agentsQuery.value.trim().toLowerCase();
-  return toolsCatalog.value.filter((tool) => {
-    if (toolsFamilyFilter.value && tool.family !== toolsFamilyFilter.value) return false;
-    if (!q) return true;
-    return `${tool.name} ${tool.family} ${tool.description || ''}`.toLowerCase().includes(q);
-  });
-});
-
-function toggleAgentExpanded(name) {
-  expandedAgents[name] = !expandedAgents[name];
-}
-
-function toolRiskLabel(risk) {
-  const r = String(risk || 'read').toLowerCase();
-  if (r === 'write') return t('settings.aiAgentsRiskWrite');
-  if (r === 'destructive') return t('settings.aiAgentsRiskDestructive');
-  return t('settings.aiAgentsRiskRead');
-}
-
-function toolRiskClass(risk) {
-  const r = String(risk || 'read').toLowerCase();
-  if (r === 'write') {
-    return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200';
-  }
-  if (r === 'destructive') {
-    return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200';
-  }
-  return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200';
-}
-
-async function loadAgentsCatalog() {
-  agentsLoading.value = true;
-  agentsError.value = '';
-  try {
-    const data = await apiClient.get('/ai/v2/agents');
-    agentsList.value = Array.isArray(data?.agents) ? data.agents : [];
-    toolsCatalog.value = Array.isArray(data?.tools) ? data.tools : [];
-    agentsMeta.value = data?.meta || {
-      agentCount: agentsList.value.length,
-      toolCount: toolsCatalog.value.length,
-    };
-    if (!toolsCatalog.value.length) {
-      const toolsData = await apiClient.get('/ai/v2/tools');
-      toolsCatalog.value = Array.isArray(toolsData?.tools) ? toolsData.tools : [];
-      if (agentsMeta.value) {
-        agentsMeta.value = {
-          ...agentsMeta.value,
-          toolCount: toolsCatalog.value.length,
-        };
-      }
-    }
-  } catch (err) {
-    agentsError.value = err?.message || t('settings.aiAgentsLoadFailed');
-    agentsList.value = [];
-    toolsCatalog.value = [];
-    agentsMeta.value = null;
-  } finally {
-    agentsLoading.value = false;
-  }
-}
-
 const loading = ref(true);
 const saving = ref(false);
+const resettingTokens = ref(false);
 const error = ref('');
 const saveMessage = ref('');
 const settings = ref(null);
@@ -834,7 +630,7 @@ async function savePiiRules() {
     piiSaving.value = false;
   }
 }
-const llmProviderOptions = ref(['openai', 'azure_openai', 'anthropic', 'gemini']);
+const llmProviderOptions = ref(['arivu', 'openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'nvidia']);
 const llmModelsByProvider = ref({});
 const modelsLoading = ref(false);
 const modelsError = ref('');
@@ -844,9 +640,7 @@ const usageLoading = ref(false);
 const usageError = ref('');
 const usageItems = ref([]);
 const usageSummary = ref(null);
-const usageDays = ref(30);
-const usageAbilityFilter = ref('');
-const usageStatusFilter = ref('');
+const usageDateRange = ref({ preset: 'last30days' });
 const usagePagination = ref({
   page: 1,
   limit: 25,
@@ -854,12 +648,14 @@ const usagePagination = ref({
   totalPages: 1,
 });
 
-const usageAbilityOptions = computed(() => {
-  const fromSummary = (usageSummary.value?.byAbility || [])
-    .map((row) => row.abilityKey)
-    .filter(Boolean);
-  const fromRows = usageItems.value.map((row) => row.abilityKey).filter(Boolean);
-  return [...new Set([...fromSummary, ...fromRows])].sort();
+const tokenPool = computed(() => {
+  const s = settings.value || {};
+  const available = Number(s.tokensAvailable ?? s.tokensBalance ?? s.creditsBalance ?? 0);
+  const consumed = Number(s.tokensConsumed ?? 0);
+  return {
+    available: Number.isFinite(available) ? available : 0,
+    consumed: Number.isFinite(consumed) ? consumed : 0,
+  };
 });
 
 const piiItems = computed(() => (
@@ -884,6 +680,8 @@ function formatNumber(value) {
   return new Intl.NumberFormat().format(Number(value || 0));
 }
 
+/** Ledger and usage debit amounts are tokens. */
+
 function formatUsageTime(value) {
   if (!value) return '—';
   return new Date(value).toLocaleString();
@@ -892,7 +690,7 @@ function formatUsageTime(value) {
 /** Specialist that executed the turn (audit metadata); empty for non-agent abilities. */
 function usageAgentLabel(row) {
   const meta = row?.metadata && typeof row.metadata === 'object' ? row.metadata : {};
-  const name = String(meta.agentName || meta.name || '').trim();
+  const name = String(meta.agentName || meta.name || meta.agentKey || '').trim();
   return name || '—';
 }
 
@@ -917,14 +715,26 @@ async function loadUsageLog() {
   usageLoading.value = true;
   usageError.value = '';
   try {
+    // Keep Available / Consumed in sync with the live token pool.
+    try {
+      const settingsPayload = await apiClient.get('/ai/settings');
+      if (settingsPayload?.settings) {
+        settings.value = {
+          ...(settings.value || {}),
+          ...settingsPayload.settings,
+        };
+      }
+    } catch {
+      // Non-blocking — usage table can still load.
+    }
+
+    const resolved = resolveDateRange(usageDateRange.value);
     const params = new URLSearchParams({
       page: String(usagePagination.value.page),
       limit: String(usagePagination.value.limit),
-      days: String(usageDays.value),
-      summaryDays: String(usageDays.value),
     });
-    if (usageAbilityFilter.value) params.set('abilityKey', usageAbilityFilter.value);
-    if (usageStatusFilter.value) params.set('status', usageStatusFilter.value);
+    if (resolved.from) params.set('from', resolved.from);
+    if (resolved.to) params.set('to', resolved.to);
     const data = await apiClient.get(`/ai/audit-log?${params.toString()}`);
     usageItems.value = Array.isArray(data?.items) ? data.items : [];
     usageSummary.value = data?.summary || null;
@@ -948,6 +758,14 @@ function reloadUsageLog() {
   void loadUsageLog();
 }
 
+function onUsageDateRangeChange(value) {
+  usageDateRange.value = value;
+  // Presets apply immediately; custom waits until both dates are set.
+  if (value.preset !== 'custom' || (value.from && value.to)) {
+    reloadUsageLog();
+  }
+}
+
 function changeUsagePage(page) {
   usagePagination.value.page = page;
   void loadUsageLog();
@@ -956,11 +774,12 @@ function changeUsagePage(page) {
 const form = reactive({
   enabled: false,
   acceptDataUseConsent: false,
-  llmProvider: 'openai',
-  llmModel: 'gpt-4o',
+  llmProvider: 'arivu',
+  llmModel: '__auto__',
   keyMode: 'platform',
   apiKey: '',
   creditsBalance: 0,
+  tokensBalance: 0,
   azureResourceName: '',
   azureDeploymentName: '',
 });
@@ -968,6 +787,9 @@ const form = reactive({
 const AUTO_MODEL = '__auto__';
 
 const llmModelOptions = computed(() => {
+  if (form.llmProvider === 'arivu') {
+    return [AUTO_MODEL];
+  }
   const models = llmModelsByProvider.value?.[form.llmProvider];
   const base = Array.isArray(models) && models.length
     ? [...models]
@@ -975,14 +797,39 @@ const llmModelOptions = computed(() => {
   return [AUTO_MODEL, ...base.filter((m) => m !== AUTO_MODEL)];
 });
 
+const llmProviderSelectOptions = computed(() => {
+  const raw = [...llmProviderOptions.value];
+  const withArivu = raw.includes('arivu') ? raw : ['arivu', ...raw];
+  return withArivu.map((provider) => ({
+    value: provider,
+    label: provider === 'arivu' ? t('settings.aiProviderArivu') : provider,
+  }));
+});
+
+const llmModelSelectOptions = computed(() =>
+  llmModelOptions.value.map((model) => ({
+    value: model,
+    label: model === AUTO_MODEL ? t('settings.aiModelAuto') : model,
+  }))
+);
+
+/** Arivu = platform keys; every other provider is BYOK. */
+function syncKeyModeFromProvider(provider) {
+  form.keyMode = provider === 'arivu' ? 'platform' : 'byok';
+  if (provider === 'arivu') {
+    form.llmModel = AUTO_MODEL;
+  }
+}
+
+function onProviderChange(provider) {
+  syncKeyModeFromProvider(provider);
+}
+
 watch(
   () => activeTab.value,
   (tab) => {
     if (tab === 'usage') {
       void loadUsageLog();
-    }
-    if (tab === 'agents' && !agentsList.value.length && !agentsLoading.value) {
-      void loadAgentsCatalog();
     }
   },
 );
@@ -1002,7 +849,11 @@ watch(
 
 async function loadProviderModels({ preserveModel = null } = {}) {
   const provider = form.llmProvider;
-  if (!provider) return;
+  if (!provider || provider === 'arivu') {
+    modelsLoading.value = false;
+    modelsError.value = '';
+    return;
+  }
   const requestId = ++modelRequestId;
   modelsLoading.value = true;
   modelsError.value = '';
@@ -1047,10 +898,13 @@ async function load() {
     }
     form.enabled = Boolean(settings.value.enabled);
     form.acceptDataUseConsent = Boolean(settings.value.dataUseConsent?.accepted);
-    form.llmProvider = settings.value.llmProvider || 'openai';
-    form.llmModel = settings.value.autoModel ? AUTO_MODEL : (settings.value.llmModel || AUTO_MODEL);
-    form.keyMode = settings.value.keyMode || 'platform';
-    form.creditsBalance = Number(settings.value.creditsBalance || 0);
+    form.llmProvider = settings.value.llmProvider || 'arivu';
+    form.llmModel = settings.value.autoModel || form.llmProvider === 'arivu'
+      ? AUTO_MODEL
+      : (settings.value.llmModel || AUTO_MODEL);
+    syncKeyModeFromProvider(form.llmProvider);
+    form.creditsBalance = Number(settings.value.tokensBalance ?? settings.value.creditsBalance ?? 0);
+    form.tokensBalance = Number(settings.value.tokensBalance ?? settings.value.creditsBalance ?? 0);
     form.azureResourceName = settings.value.azureResourceName || '';
     form.azureDeploymentName = settings.value.azureDeploymentName || '';
     form.apiKey = '';
@@ -1058,7 +912,7 @@ async function load() {
 
     const supported = data.supported?.llmProviders || [];
     const planned = data.supported?.plannedLlmProviders || [];
-    llmProviderOptions.value = [...new Set([...supported, ...planned, 'openai'])];
+    llmProviderOptions.value = [...new Set(['arivu', ...supported, ...planned, 'openai'])];
 
     // Seed catalog from static list, but always keep the saved model visible.
     const staticByProvider = data.supported?.llmModelsByProvider || {};
@@ -1091,8 +945,8 @@ async function save() {
       enabled: form.enabled,
       llmProvider: form.llmProvider,
       // Auto = clear override; server routes best model per ability tier.
-      llmModel: form.llmModel === AUTO_MODEL ? null : form.llmModel,
-      keyMode: form.keyMode,
+      llmModel: (form.llmModel === AUTO_MODEL || form.llmProvider === 'arivu') ? null : form.llmModel,
+      keyMode: form.llmProvider === 'arivu' ? 'platform' : 'byok',
     };
 
     if (form.llmProvider === 'azure_openai') {
@@ -1102,10 +956,6 @@ async function save() {
 
     if (form.acceptDataUseConsent) {
       patch.acceptDataUseConsent = true;
-    }
-
-    if (form.keyMode === 'platform') {
-      patch.creditsBalance = Number(form.creditsBalance || 0);
     }
 
     if (form.keyMode === 'byok' && form.apiKey.trim()) {
@@ -1120,7 +970,8 @@ async function save() {
     settings.value = data.settings || {};
     form.apiKey = '';
     clearKey.value = false;
-    form.creditsBalance = Number(settings.value.creditsBalance || 0);
+    form.creditsBalance = Number(settings.value.tokensBalance ?? settings.value.creditsBalance ?? 0);
+    form.tokensBalance = Number(settings.value.tokensBalance ?? settings.value.creditsBalance ?? 0);
     form.llmProvider = settings.value.llmProvider || form.llmProvider;
     form.llmModel = settings.value.autoModel ? AUTO_MODEL : (settings.value.llmModel || form.llmModel);
     // Keep the just-saved model in the dropdown even if provider catalog is stale.
@@ -1141,6 +992,25 @@ async function save() {
     error.value = err?.message || t('settings.aiSaveFailed');
   } finally {
     saving.value = false;
+  }
+}
+
+async function resetTokenPool() {
+  resettingTokens.value = true;
+  error.value = '';
+  try {
+    const data = await apiClient.post('/ai/settings/reset-token-pool', {});
+    settings.value = data.settings || settings.value;
+    form.creditsBalance = Number(settings.value.tokensAvailable ?? settings.value.tokensBalance ?? 0);
+    form.tokensBalance = form.creditsBalance;
+    saveMessage.value = t('settings.aiTokensResetSuccess');
+    if (activeTab.value === 'usage') {
+      await loadUsageLog();
+    }
+  } catch (err) {
+    error.value = err?.message || t('settings.aiTokensResetFailed');
+  } finally {
+    resettingTokens.value = false;
   }
 }
 

@@ -2160,7 +2160,7 @@
     "description": "Short chip label for risks suggestion"
   },
   "inAppAiAskWithAgent": {
-    "message": "Ask @{name} in Astra",
+    "message": "Ask {'@'}{name} in Astra",
     "description": "Tooltip when clicking an @agent mention in Activity"
   },
   "inAppAiSuggestShortCount": {

@@ -2892,7 +2892,7 @@
     "description": "Optional hint under Skills chips"
   },
   "inAppAiAskWithAgent": {
-    "message": "Ask @{name} in Astra",
+    "message": "Ask {'@'}{name} in Astra",
     "description": "Tooltip when clicking an @agent mention in Activity"
   }
 }

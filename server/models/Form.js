@@ -237,6 +237,11 @@ const FormSchema = new Schema({
         unique: true,
         trim: true
     },
+    formNumber: {
+        type: String,
+        trim: true,
+        index: true,
+    },
     name: {
         type: String,
         required: true,
@@ -486,40 +491,27 @@ FormSchema.index({ organizationId: 1, formType: 1 });
 FormSchema.index({ organizationId: 1, assignedTo: 1 });
 FormSchema.index({ 'publicLink.slug': 1 }, { unique: true, sparse: true });
 
-// Pre-save middleware to auto-generate formId
-async function generateNextFormId(FormModel) {
-    const docs = await FormModel.find({ formId: { $regex: /^FRM-\d+$/i } })
-        .select('formId')
-        .lean();
+FormSchema.index({ organizationId: 1, formNumber: 1 }, { unique: true, sparse: true });
 
-    let max = 0;
-    for (const doc of docs) {
-        const match = typeof doc.formId === 'string' ? doc.formId.match(/^FRM-(\d+)$/i) : null;
-        if (match) {
-            max = Math.max(max, parseInt(match[1], 10));
-        }
-    }
-
-    return `FRM-${String(max + 1).padStart(3, '0')}`;
-}
-
+// Pre-save middleware to auto-generate formId / formNumber
 FormSchema.pre('save', async function(next) {
-    if (!this.formId) {
-        const FormModel = mongoose.model('Form');
-        let assigned = false;
-
-        for (let attempt = 0; attempt < 10; attempt += 1) {
-            const candidate = await generateNextFormId(FormModel);
-            const exists = await FormModel.exists({ formId: candidate });
-            if (!exists) {
-                this.formId = candidate;
-                assigned = true;
-                break;
+    if (!this.formId || !this.formNumber) {
+        try {
+            if (!this.formNumber) {
+                const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+                await assignModuleRecordNumber(this, { moduleKey: 'forms', fieldKey: 'formNumber' });
             }
-        }
-
-        if (!assigned) {
-            return next(new Error('Unable to generate unique formId'));
+            if (!this.formId && this.formNumber) {
+                this.formId = this.formNumber;
+            }
+            if (!this.formId) {
+                const FormModel = mongoose.model('Form');
+                const count = await FormModel.countDocuments({ organizationId: this.organizationId });
+                this.formId = `FRM-${String(count + 1).padStart(3, '0')}`;
+                if (!this.formNumber) this.formNumber = this.formId;
+            }
+        } catch (err) {
+            return next(err);
         }
     }
     

@@ -15,6 +15,11 @@ const ImportHistorySchema = new Schema({
     required: true
     // index: true removed - using compound indexes below instead
   },
+  importNumber: {
+    type: String,
+    trim: true,
+    index: true,
+  },
   fileName: {
     type: String,
     required: true
@@ -93,6 +98,18 @@ ImportHistorySchema.index({ organizationId: 1, module: 1 });
 ImportHistorySchema.index({ organizationId: 1, importedBy: 1 });
 ImportHistorySchema.index({ organizationId: 1, status: 1 });
 ImportHistorySchema.index({ createdAt: -1 });
+ImportHistorySchema.index({ organizationId: 1, importNumber: 1 }, { unique: true, sparse: true });
+
+ImportHistorySchema.pre('validate', async function assignImportNumber(next) {
+  if (this.importNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'imports', fieldKey: 'importNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 // Virtual for success rate
 ImportHistorySchema.virtual('successRate').get(function() {

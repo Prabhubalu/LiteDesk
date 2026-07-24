@@ -115,6 +115,16 @@ async function onCaseCreated({ caseRecord, actorId }) {
       actorId,
       changedFields: []
     });
+
+    try {
+      const { enqueueCaseDraftJob } = require('./astra/knowledge/caseDraftJob');
+      enqueueCaseDraftJob({
+        caseRecord,
+        organizationId: caseRecord?.organizationId,
+      });
+    } catch (draftErr) {
+      console.warn('[caseExecutionService] case draft enqueue skipped:', draftErr.message);
+    }
   } catch (error) {
     console.error('[caseExecutionService] onCaseCreated failed:', error.message);
   }

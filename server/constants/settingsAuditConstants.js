@@ -12,6 +12,7 @@ const SETTINGS_AUDIT_SURFACES = Object.freeze([
   'addons',
   'applications',
   'automation',
+  'numbering',
   'business-hours',
   'roles',
   'sharing',

@@ -53,6 +53,11 @@
   <MailroomSettings v-else-if="currentView === 'mailroom'" class="flex min-h-0 flex-1 flex-col overflow-hidden" />
   <CatalogSettingsHub v-else-if="currentView === 'catalog'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
   <QuotesSettings v-else-if="currentView === 'quotes'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
+  <ModuleNumberingSettings
+    v-else-if="currentView === 'module-numbering'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    @back="navigateToOverview"
+  />
 </template>
 
 <script setup>
@@ -68,6 +73,7 @@ const { t } = useI18n();
 import MailroomSettings from '@/components/settings/MailroomSettings.vue';
 import CatalogSettingsHub from '@/components/settings/CatalogSettingsHub.vue';
 import QuotesSettings from '@/components/settings/QuotesSettings.vue';
+import ModuleNumberingSettings from '@/components/settings/ModuleNumberingSettings.vue';
 import { getModuleIconComponent } from '@/utils/moduleIcons';
 
 const route = useRoute();
@@ -159,6 +165,20 @@ const BusinessFlowsIcon = () => h('svg', {
 
 const QuotesIcon = getModuleIconComponent('quotes');
 
+const ModuleNumberingIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M7 20l4-16m2 16l4-16M6 9h14M4 15h14',
+  }),
+]);
+
 const CatalogIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -223,6 +243,14 @@ const automationOptions = [
     inShell: true,
   },
   {
+    id: 'module-numbering',
+    nameKey: 'settings.automationModuleNumbering',
+    descriptionKey: 'settings.automationModuleNumberingDesc',
+    icon: ModuleNumberingIcon,
+    iconBg: 'bg-gradient-to-br from-slate-500 to-slate-700',
+    inShell: true,
+  },
+  {
     id: 'automation-rules',
     nameKey: 'settings.automationRules',
     descriptionKey: 'settings.automationRulesDesc',
@@ -256,6 +284,7 @@ const currentView = computed(() => {
   if (view === 'mailroom') return 'mailroom';
   if (view === 'catalog') return 'catalog';
   if (view === 'quotes') return 'quotes';
+  if (view === 'module-numbering') return 'module-numbering';
   if (route.query.assignmentApp) return 'assignment-rules';
   return 'overview';
 });

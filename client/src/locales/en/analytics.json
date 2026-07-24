@@ -1495,6 +1495,18 @@
     "message": "Last 30 days",
     "description": "Date preset last 30 days"
   },
+  "datePresetToday": {
+    "message": "Today",
+    "description": "Date preset today"
+  },
+  "datePresetYesterday": {
+    "message": "Yesterday",
+    "description": "Date preset yesterday"
+  },
+  "datePresetThisWeek": {
+    "message": "This week",
+    "description": "Date preset this week"
+  },
   "datePresetThisMonth": {
     "message": "This month",
     "description": "Date preset this month"

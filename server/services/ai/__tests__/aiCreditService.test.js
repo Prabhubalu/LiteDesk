@@ -7,28 +7,30 @@ const {
   assertCreditsAvailable,
   debitCredits,
   estimateCreditsFromUsage,
+  estimateTokensFromUsage,
   getCreditsSoftWarn,
 } = require('../aiCreditService');
 const { AiConfigurationError } = require('../errors');
 
-describe('aiCreditService', () => {
-  it('estimateCreditsFromUsage floors to 1 credit per 1k tokens', () => {
-    assert.equal(estimateCreditsFromUsage({ totalTokens: 0 }), 0);
-    assert.equal(estimateCreditsFromUsage({ totalTokens: 1 }), 1);
-    assert.equal(estimateCreditsFromUsage({ totalTokens: 1000 }), 1);
-    assert.equal(estimateCreditsFromUsage({ totalTokens: 1001 }), 2);
+describe('aiCreditService (token ledger)', () => {
+  it('estimateTokensFromUsage bills exact token counts', () => {
+    assert.equal(estimateTokensFromUsage({ totalTokens: 0 }), 0);
+    assert.equal(estimateTokensFromUsage({ totalTokens: 1 }), 1);
+    assert.equal(estimateTokensFromUsage({ totalTokens: 1000 }), 1000);
+    assert.equal(estimateTokensFromUsage({ totalTokens: 1001 }), 1001);
+    assert.equal(estimateCreditsFromUsage({ totalTokens: 500 }), 500);
   });
 
-  it('BYOK skips credit assertion even at zero balance', () => {
+  it('BYOK skips token assertion even at zero balance', () => {
     assert.doesNotThrow(() =>
       assertCreditsAvailable({ keyMode: AI_KEY_MODES.BYOK, creditsBalance: 0 })
     );
   });
 
-  it('platform mode hard-blocks at zero credits', () => {
+  it('platform mode hard-blocks at zero tokens', () => {
     assert.throws(
       () => assertCreditsAvailable({ keyMode: AI_KEY_MODES.PLATFORM, creditsBalance: 0 }),
-      (err) => err instanceof AiConfigurationError && err.code === 'AI_CREDITS_EXHAUSTED'
+      (err) => err instanceof AiConfigurationError && err.code === 'AI_TOKENS_EXHAUSTED'
     );
   });
 
@@ -55,7 +57,7 @@ describe('aiCreditService', () => {
       creditsBalance: 20,
       creditsSoftLimit: 100,
     });
-    assert.equal(warn.code, 'AI_CREDITS_LOW');
+    assert.equal(warn.code, 'AI_TOKENS_LOW');
     assert.equal(
       getCreditsSoftWarn({ keyMode: AI_KEY_MODES.BYOK, creditsBalance: 0, creditsSoftLimit: 100 }),
       null

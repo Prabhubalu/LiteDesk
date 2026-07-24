@@ -232,12 +232,6 @@
       </template>
 
       <template v-if="record" #left>
-        <RecordAiPanel
-          v-if="supportsAiSummary && record?._id"
-          module-key="people"
-          source-type="people"
-          :record-id="String(record._id)"
-        />
         <div
           :class="
             expandedLeftSection === 'lines' || isTemplatesModule
@@ -371,13 +365,6 @@
           :event="record"
           :event-id="eventExecutionRouteId"
           @updated="fetchRecord"
-        />
-
-        <LiveChatLinkedSessionCard
-          v-if="isPeopleModule && record?.liveChat?.sessionId && !expandedLeftSection"
-          :fetch-path="peopleLiveChatSessionPath"
-          :session-ref="record.liveChat"
-          class="mt-4"
         />
 
         <PeopleExternalAccessPanel
@@ -909,7 +896,12 @@
               <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
                 <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericIntegrations') }}</h2>
               </div>
-              <div class="p-4 overflow-y-auto flex-1 min-h-0">
+              <div class="p-4 overflow-y-auto flex-1 min-h-0 space-y-4">
+                <LiveChatLinkedSessionCard
+                  v-if="isPeopleModule && record?.liveChat?.sessionId && peopleLiveChatSessionPath"
+                  :fetch-path="peopleLiveChatSessionPath"
+                  :session-ref="record.liveChat"
+                />
                 <AutomationContext
                   v-if="record?._id"
                   :entity-type="moduleKey"
@@ -1253,7 +1245,6 @@ import {
   isDescriptionActivityFieldChange
 } from '@/utils/contentVersionHistory';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
-import RecordAiPanel from '@/astra/surfaces/RecordAiPanel.vue';
 import { useRecordPresence } from '@/composables/useRecordPresence';
 import { isRecordPresenceSupported } from '@/utils/recordPresence';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
@@ -1621,7 +1612,6 @@ async function updateRecordFields(payload) {
   return apiClient.put(path, payload);
 }
 const isPeopleModule = computed(() => moduleKeyLower.value === 'people');
-const supportsAiSummary = computed(() => isPeopleModule.value);
 
 const peopleLiveChatSessionPath = computed(() => {
   if (!isPeopleModule.value || !record.value?._id) return '';

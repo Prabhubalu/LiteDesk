@@ -27,13 +27,17 @@ export interface AstraProposal {
   navigateLabel?: string;
 }
 
+export type AstraSuggestion = string | { label: string; prompt: string };
+
 export interface AstraAskResult {
   answer: string;
   blocks: import('@/astra/blocks/types').AstraUiBlock[];
   proposals: AstraProposal[];
-  suggestions: string[];
+  suggestions: AstraSuggestion[];
   conversationId?: string;
   conversationTitle?: string;
+  agentKey?: string;
+  agentName?: string;
   provider?: string;
   model?: string;
   raw?: Record<string, unknown>;
@@ -44,13 +48,16 @@ export interface AstraNbaItem {
   kind: string;
   label: string;
   rationale?: string;
+  prompt?: string;
   moduleKey?: string;
   recordId?: string;
+  iconKey?: string;
 }
 
 export interface AstraAskContext {
   moduleKey?: string;
   recordId?: string;
+  recordName?: string;
   conversationId?: string;
   history?: Array<{ role: string; content: string }>;
   surface?: string;
@@ -172,13 +179,28 @@ function proposalsFromAskPayload(data: Record<string, unknown>): AstraProposal[]
   return [];
 }
 
-function suggestionsFromAskPayload(data: Record<string, unknown>): string[] {
+function suggestionsFromAskPayload(data: Record<string, unknown>): AstraSuggestion[] {
   return normalizeSuggestions(data?.suggestions);
 }
 
-function normalizeSuggestions(source: unknown): string[] {
+function normalizeSuggestions(source: unknown): AstraSuggestion[] {
   if (!Array.isArray(source)) return [];
-  return source.map((s) => toStringSafe(s).trim()).filter(Boolean);
+  return source
+    .map((s): AstraSuggestion | null => {
+      if (typeof s === 'string') {
+        const text = s.trim();
+        return text || null;
+      }
+      if (s && typeof s === 'object') {
+        const row = s as Record<string, unknown>;
+        const prompt = toStringSafe(row.prompt || row.label || row.title).trim();
+        const label = toStringSafe(row.label || row.title || row.prompt).trim();
+        if (!prompt) return null;
+        return label && label !== prompt ? { label, prompt } : prompt;
+      }
+      return null;
+    })
+    .filter((s): s is AstraSuggestion => s != null);
 }
 
 function normalizeNba(source: unknown): AstraNbaItem[] {
@@ -189,13 +211,19 @@ function normalizeNba(source: unknown): AstraNbaItem[] {
       const item = raw as Record<string, unknown>;
       const label = toStringSafe(item.label || item.title).trim();
       if (!label) return null;
+      const input = item.input && typeof item.input === 'object'
+        ? (item.input as Record<string, unknown>)
+        : undefined;
+      const prompt = toStringSafe(item.prompt || input?.query || label).trim() || label;
       return {
         id: toStringSafe(item.id) || `nba-${index}`,
         kind: toStringSafe(item.kind || item.tool) || 'generic',
         label,
         rationale: toStringSafe(item.rationale) || undefined,
+        prompt,
         moduleKey: toStringSafe(item.moduleKey) || undefined,
         recordId: toStringSafe(item.recordId) || undefined,
+        iconKey: toStringSafe(item.iconKey || item.icon) || undefined,
       };
     })
     .filter((n): n is AstraNbaItem => n !== null);
@@ -225,19 +253,19 @@ export function useAstraAsk(surface: AstraSurface = 'copilot') {
         surface,
         moduleKey: context.moduleKey,
         recordId: context.recordId,
+        recordName: context.recordName,
         conversationId: context.conversationId,
         history: Array.isArray(context.history) ? context.history : undefined,
-        entity: context.moduleKey
-          ? context.moduleKey === 'deals'
-            ? 'deals'
-            : context.moduleKey === 'cases'
-              ? 'cases'
-              : context.moduleKey === 'people'
-                ? 'people'
-                : undefined
-          : undefined,
-        focus: context.recordId
-          ? { moduleKey: context.moduleKey, recordId: context.recordId }
+        // Do not force page module as search entity — "open deals" on a person
+        // must search deals, not dump the people list.
+        focus: context.recordId || context.moduleKey
+          ? {
+              kind: context.moduleKey,
+              moduleKey: context.moduleKey,
+              id: context.recordId,
+              recordId: context.recordId,
+              name: context.recordName || undefined,
+            }
           : undefined,
       })) as Record<string, unknown>;
       return {
@@ -247,6 +275,8 @@ export function useAstraAsk(surface: AstraSurface = 'copilot') {
         suggestions: suggestionsFromAskPayload(data),
         conversationId: toStringSafe(data?.conversationId) || context.conversationId,
         conversationTitle: toStringSafe(data?.conversationTitle) || undefined,
+        agentKey: toStringSafe(data?.agentKey) || undefined,
+        agentName: toStringSafe(data?.agentName) || undefined,
         provider: toStringSafe(data?.provider) || undefined,
         model: toStringSafe(data?.model) || undefined,
         raw: data,
@@ -316,6 +346,7 @@ export function useAstraAsk(surface: AstraSurface = 'copilot') {
         params: {
           moduleKey: context.moduleKey,
           recordId: context.recordId,
+          recordName: context.recordName,
           surface: context.surface || 'home',
         },
       })) as Record<string, unknown>;

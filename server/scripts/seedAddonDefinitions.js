@@ -127,7 +127,8 @@ const AI_ADDON = {
 const AI_CREDITS_ADDON = {
   addonKey: ADDON_KEYS.AI_CREDITS,
   name: 'AI Credit Packs',
-  description: 'Purchase AI credits for platform-key usage (BYOK does not consume credits).',
+  description:
+    'Purchase AI tokens for platform-key usage (Bring Your Own Key does not consume tokens).',
   icon: 'cpu-chip',
   category: 'INTEGRATION',
   enabled: true,
@@ -137,7 +138,7 @@ const AI_CREDITS_ADDON = {
     category: 'AI',
     comingSoon: false,
     beta: true,
-    shortDescription: 'Top up AI credits when using Arivu platform keys.',
+    shortDescription: 'Top up AI tokens when using Arivu platform keys.',
     docsUrl: '',
   },
 };

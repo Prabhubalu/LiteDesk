@@ -11,6 +11,17 @@ const Item = require('../models/Item');
 const Quote = require('../models/Quote');
 const Invoice = require('../models/Invoice');
 const SalesOrder = require('../models/SalesOrder');
+const Payment = require('../models/Payment');
+const Refund = require('../models/Refund');
+const Campaign = require('../models/Campaign');
+const Document = require('../models/Document');
+const FormResponse = require('../models/FormResponse');
+const ContentAsset = require('../models/ContentAsset');
+const ContentDocument = require('../models/ContentDocument');
+const ContentTemplate = require('../models/ContentTemplate');
+const ImportHistory = require('../models/ImportHistory');
+const MarketingAudience = require('../models/MarketingAudience');
+const MarketingSegment = require('../models/MarketingSegment');
 
 function getModelForModuleKey(moduleKey) {
   const key = String(moduleKey || '').toLowerCase();
@@ -47,6 +58,39 @@ function getModelForModuleKey(moduleKey) {
     case 'sales_orders':
     case 'sales_order':
       return SalesOrder;
+    case 'payments':
+    case 'payment':
+      return Payment;
+    case 'refunds':
+    case 'refund':
+      return Refund;
+    case 'campaigns':
+    case 'campaign':
+      return Campaign;
+    case 'documents':
+    case 'document':
+      return Document;
+    case 'articles':
+    case 'article':
+      return ContentDocument;
+    case 'responses':
+    case 'response':
+      return FormResponse;
+    case 'assets':
+    case 'asset':
+      return ContentAsset;
+    case 'templates':
+    case 'template':
+      return ContentTemplate;
+    case 'imports':
+    case 'import':
+      return ImportHistory;
+    case 'audiences':
+    case 'audience':
+      return MarketingAudience;
+    case 'segments':
+    case 'segment':
+      return MarketingSegment;
     default:
       return null;
   }

@@ -240,6 +240,15 @@ function inferFileType(fileName, mimeType) {
 }
 
 async function generateDocumentNumber(organizationId) {
+  const { allocate } = require('./moduleNumberingService');
+  const result = await allocate({
+    organizationId,
+    moduleKey: 'documents',
+  });
+  if (result?.recordId) {
+    return result.recordId;
+  }
+
   const prefix = 'DOC-';
   // Include soft-deleted rows: documentNumber unique index spans trash, numbers are never reused.
   const latest = await Document.findOne({

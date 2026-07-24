@@ -40,62 +40,141 @@
           <span class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ row.billingType }}</span>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <label class="block text-sm">
-            <span class="mb-1 block text-gray-600 dark:text-gray-400">{{ t('settings.addonsPricingTrialDays') }}</span>
-            <input
-              v-model.number="draft[row.addonKey].trialDays"
-              type="number"
-              min="0"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-900"
-            />
-          </label>
-          <label class="block text-sm md:col-span-2">
-            <span class="mb-1 block text-gray-600 dark:text-gray-400">{{ t('settings.addonsPricingDefaultPlan') }}</span>
-            <select
-              v-model="draft[row.addonKey].defaultPlan"
-              class="w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-900"
-            >
-              <option value="BASIC">BASIC</option>
-              <option value="PRO">PRO</option>
-              <option value="ENTERPRISE">ENTERPRISE</option>
-            </select>
-          </label>
-        </div>
+        <template v-if="row.billingType === 'USAGE'">
+          <p class="mb-3 text-sm text-gray-600 dark:text-gray-400">
+            {{ row.addonKey === 'ai_credits'
+              ? t('settings.addonsPricingAiPacksHint')
+              : t('settings.addonsPricingUsagePacksHint') }}
+          </p>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-200 text-left text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  <th class="py-2 pr-4">{{ t('settings.addonsPricingPackKey') }}</th>
+                  <th class="py-2 pr-4">{{ t('settings.addonsPricingPackName') }}</th>
+                  <th class="py-2 pr-4">
+                    {{ row.addonKey === 'ai_credits'
+                      ? t('settings.addonsPricingPackTokens')
+                      : t('settings.addonsPricingPackCredits') }}
+                  </th>
+                  <th class="py-2 pr-4">{{ t('settings.addonsPricingPackPriceCents') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(pack, idx) in draft[row.addonKey].creditPacks"
+                  :key="`${row.addonKey}-${pack.packKey || idx}`"
+                  class="border-b border-gray-100 dark:border-gray-800"
+                >
+                  <td class="py-2 pr-4">
+                    <input
+                      v-model="pack.packKey"
+                      type="text"
+                      class="w-full min-w-[8rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                    />
+                  </td>
+                  <td class="py-2 pr-4">
+                    <input
+                      v-model="pack.name"
+                      type="text"
+                      class="w-full min-w-[10rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                    />
+                  </td>
+                  <td class="py-2 pr-4">
+                    <input
+                      v-if="row.addonKey === 'ai_credits'"
+                      v-model.number="pack.tokens"
+                      type="number"
+                      min="1"
+                      class="w-full max-w-[10rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                    />
+                    <input
+                      v-else
+                      v-model.number="pack.credits"
+                      type="number"
+                      min="1"
+                      class="w-full max-w-[8rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                    />
+                  </td>
+                  <td class="py-2 pr-4">
+                    <input
+                      v-model.number="pack.priceCents"
+                      type="number"
+                      min="0"
+                      class="w-full max-w-[8rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button
+            type="button"
+            class="mt-3 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            @click="addPackRow(row.addonKey)"
+          >
+            {{ t('settings.addonsPricingAddPack') }}
+          </button>
+        </template>
 
-        <div class="mt-4 overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="border-b border-gray-200 text-left text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                <th class="py-2 pr-4">{{ t('settings.addonsPricingPlan') }}</th>
-                <th class="py-2 pr-4">{{ t('settings.addonsPricingAgentLimit') }}</th>
-                <th class="py-2 pr-4">{{ t('settings.addonsPricingPerAgentCents') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="planKey in planKeys" :key="planKey" class="border-b border-gray-100 dark:border-gray-800">
-                <td class="py-2 pr-4 font-medium text-gray-900 dark:text-white">{{ planKey }}</td>
-                <td class="py-2 pr-4">
-                  <input
-                    v-model="draft[row.addonKey].plans[planKey].agentLimit"
-                    type="number"
-                    min="0"
-                    :placeholder="t('settings.addonsUnlimited')"
-                    class="w-full max-w-[8rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
-                  />
-                </td>
-                <td class="py-2 pr-4">
-                  <input
-                    v-model.number="draft[row.addonKey].plans[planKey].pricePerAgentCents"
-                    type="number"
-                    min="0"
-                    class="w-full max-w-[10rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <template v-else>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <label class="block text-sm">
+              <span class="mb-1 block text-gray-600 dark:text-gray-400">{{ t('settings.addonsPricingTrialDays') }}</span>
+              <input
+                v-model.number="draft[row.addonKey].trialDays"
+                type="number"
+                min="0"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-900"
+              />
+            </label>
+            <label class="block text-sm md:col-span-2">
+              <span class="mb-1 block text-gray-600 dark:text-gray-400">{{ t('settings.addonsPricingDefaultPlan') }}</span>
+              <select
+                v-model="draft[row.addonKey].defaultPlan"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-900"
+              >
+                <option value="BASIC">BASIC</option>
+                <option value="PRO">PRO</option>
+                <option value="ENTERPRISE">ENTERPRISE</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-200 text-left text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  <th class="py-2 pr-4">{{ t('settings.addonsPricingPlan') }}</th>
+                  <th class="py-2 pr-4">{{ t('settings.addonsPricingAgentLimit') }}</th>
+                  <th class="py-2 pr-4">{{ t('settings.addonsPricingPerAgentCents') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="planKey in planKeys" :key="planKey" class="border-b border-gray-100 dark:border-gray-800">
+                  <td class="py-2 pr-4 font-medium text-gray-900 dark:text-white">{{ planKey }}</td>
+                  <td class="py-2 pr-4">
+                    <input
+                      v-model="draft[row.addonKey].plans[planKey].agentLimit"
+                      type="number"
+                      min="0"
+                      :placeholder="t('settings.addonsUnlimited')"
+                      class="w-full max-w-[8rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                    />
+                  </td>
+                  <td class="py-2 pr-4">
+                    <input
+                      v-model.number="draft[row.addonKey].plans[planKey].pricePerAgentCents"
+                      type="number"
+                      min="0"
+                      class="w-full max-w-[10rem] rounded-lg border border-gray-300 px-2 py-1 dark:border-gray-600 dark:bg-gray-900"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
 
         <div class="mt-4 flex justify-end">
           <button
@@ -133,10 +212,12 @@ const planKeys = ['BASIC', 'PRO', 'ENTERPRISE'];
 function addonTitle(addonKey) {
   if (addonKey === 'live_chat') return t('settings.addonsLiveChatName');
   if (addonKey === 'email_credits') return t('settings.addonsEmailCreditsTitle');
+  if (addonKey === 'ai_credits') return t('settings.addonsAiCreditsTitle');
   return addonKey;
 }
 
 function initDraft(row) {
+  const isAi = row.addonKey === 'ai_credits';
   draft[row.addonKey] = {
     billingType: row.billingType,
     defaultPlan: row.defaultPlan,
@@ -146,7 +227,52 @@ function initDraft(row) {
       PRO: { ...row.plans?.PRO },
       ENTERPRISE: { ...row.plans?.ENTERPRISE },
     },
+    creditPacks: Array.isArray(row.creditPacks)
+      ? row.creditPacks.map((pack) => ({
+          packKey: pack.packKey || '',
+          name: pack.name || '',
+          credits: Number(pack.credits) || 0,
+          tokens: Number(pack.tokens) || 0,
+          priceCents: Number(pack.priceCents) || 0,
+          currency: pack.currency || 'USD',
+        }))
+      : [],
   };
+  if (isAi) {
+    // Ensure tokens populated from legacy credit packs if needed.
+    draft[row.addonKey].creditPacks = draft[row.addonKey].creditPacks.map((pack) => ({
+      ...pack,
+      tokens: pack.tokens > 0
+        ? pack.tokens
+        : (pack.credits >= 100_000 ? pack.credits : pack.credits * 1000),
+    }));
+  }
+}
+
+function addPackRow(addonKey) {
+  if (!draft[addonKey]) return;
+  if (!Array.isArray(draft[addonKey].creditPacks)) {
+    draft[addonKey].creditPacks = [];
+  }
+  if (addonKey === 'ai_credits') {
+    draft[addonKey].creditPacks.push({
+      packKey: `ai_tokens_${Date.now()}`,
+      name: '',
+      tokens: 1_000_000,
+      credits: 0,
+      priceCents: 1000,
+      currency: 'USD',
+    });
+    return;
+  }
+  draft[addonKey].creditPacks.push({
+    packKey: `email_credits_custom_${Date.now()}`,
+    name: '',
+    credits: 1000,
+    tokens: 0,
+    priceCents: 1000,
+    currency: 'USD',
+  });
 }
 
 async function loadPricing() {
@@ -178,16 +304,42 @@ async function savePricing(addonKey) {
       currency: plan.currency || 'USD',
     });
 
-    await apiClient.put(`/admin/addon-pricing/${addonKey}`, {
-        billingType: payload.billingType,
-        defaultPlan: payload.defaultPlan,
-        trialDays: payload.trialDays,
-        plans: {
-          BASIC: normalizePlan(payload.plans.BASIC),
-          PRO: normalizePlan(payload.plans.PRO),
-          ENTERPRISE: normalizePlan(payload.plans.ENTERPRISE),
-        },
-    });
+    const body = {
+      billingType: payload.billingType,
+      defaultPlan: payload.defaultPlan,
+      trialDays: payload.trialDays,
+      plans: {
+        BASIC: normalizePlan(payload.plans.BASIC),
+        PRO: normalizePlan(payload.plans.PRO),
+        ENTERPRISE: normalizePlan(payload.plans.ENTERPRISE),
+      },
+    };
+
+    if (payload.billingType === 'USAGE') {
+      if (addonKey === 'ai_credits') {
+        body.creditPacks = (payload.creditPacks || [])
+          .filter((pack) => String(pack.packKey || '').trim() && Number(pack.tokens) > 0)
+          .map((pack) => ({
+            packKey: String(pack.packKey).trim(),
+            name: String(pack.name || '').trim() || String(pack.packKey).trim(),
+            tokens: Math.max(1, Math.floor(Number(pack.tokens) || 0)),
+            priceCents: Math.max(0, Math.floor(Number(pack.priceCents) || 0)),
+            currency: String(pack.currency || 'USD').toUpperCase(),
+          }));
+      } else {
+        body.creditPacks = (payload.creditPacks || [])
+          .filter((pack) => String(pack.packKey || '').trim() && Number(pack.credits) > 0)
+          .map((pack) => ({
+            packKey: String(pack.packKey).trim(),
+            name: String(pack.name || '').trim() || String(pack.packKey).trim(),
+            credits: Math.max(1, Math.floor(Number(pack.credits) || 0)),
+            priceCents: Math.max(0, Math.floor(Number(pack.priceCents) || 0)),
+            currency: String(pack.currency || 'USD').toUpperCase(),
+          }));
+      }
+    }
+
+    await apiClient.put(`/admin/addon-pricing/${addonKey}`, body);
     notifications.success(t('settings.addonsPricingSaveSuccess'));
     await loadPricing();
   } catch (err) {

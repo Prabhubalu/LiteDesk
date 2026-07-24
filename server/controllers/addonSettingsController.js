@@ -21,8 +21,9 @@ const {
   listOutcomesForOrganization,
   updateCustomOutcomes,
 } = require('../services/liveChatOutcomeService');
-const { ADDON_KEYS } = require('../constants/addonKeys');
+const { ADDON_KEYS, isAiSuiteAddonKey } = require('../constants/addonKeys');
 const { purchaseEmailCreditPack } = require('../services/emailCreditPackService');
+const { purchaseAiCreditPack } = require('../services/aiCreditPackService');
 const {
   getOrgEmailPolicy,
   serializeOrgEmailPolicy,
@@ -42,7 +43,30 @@ function canManageAddons(req) {
   return Boolean(settings.edit || settings.manageBilling);
 }
 
-function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy, installEligibility) {
+function serializeAiTokenBalance(creditsOrBalance) {
+  if (creditsOrBalance != null && typeof creditsOrBalance === 'object') {
+    const available = Math.max(0, Math.floor(Number(creditsOrBalance.balance) || 0));
+    const grantedRaw = Number(creditsOrBalance.grantedTotal);
+    const granted = Number.isFinite(grantedRaw) && grantedRaw >= 0
+      ? Math.max(available, Math.floor(grantedRaw))
+      : available;
+    return {
+      tokensBalance: available,
+      tokensAvailable: available,
+      tokensGranted: granted,
+      tokensConsumed: Math.max(0, granted - available),
+    };
+  }
+  const tokens = Math.max(0, Math.floor(Number(creditsOrBalance) || 0));
+  return {
+    tokensBalance: tokens,
+    tokensAvailable: tokens,
+    tokensGranted: tokens,
+    tokensConsumed: 0,
+  };
+}
+
+function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, emailPolicy, installEligibility, aiCredits = null) {
   const normalized = normalizeAddonKey(definition.addonKey);
   const installed = !!tenantConfig;
   let status = 'AVAILABLE';
@@ -91,6 +115,10 @@ function mapCatalogItem(definition, tenantConfig, subscriptionEntry, pricing, em
       normalized === ADDON_KEYS.EMAIL_CREDITS && emailPolicy
         ? serializeOrgEmailPolicy(emailPolicy)
         : null,
+    aiCredits:
+      normalized === ADDON_KEYS.AI_CREDITS && aiCredits
+        ? aiCredits
+        : null,
   };
 }
 
@@ -131,6 +159,14 @@ exports.listAddons = async (req, res) => {
     const tenantConfigs = await TenantAddonConfiguration.find({ organizationId }).lean();
     const configByKey = new Map(tenantConfigs.map((row) => [normalizeAddonKey(row.addonKey), row]));
     let emailPolicy = null;
+    let aiCredits = null;
+    const needsAiBalance = definitions.some((row) => normalizeAddonKey(row.addonKey) === ADDON_KEYS.AI_CREDITS);
+    if (needsAiBalance) {
+      const { ensureTokenLedger } = require('../services/ai/aiCreditService');
+      await ensureTokenLedger(organizationId);
+      const org = await Organization.findById(organizationId).select('aiSettings.credits').lean();
+      aiCredits = serializeAiTokenBalance(org?.aiSettings?.credits);
+    }
 
     const addons = [];
     for (const definition of definitions) {
@@ -150,6 +186,7 @@ exports.listAddons = async (req, res) => {
           pricing,
           emailPolicy,
           installEligibility,
+          aiCredits,
         ),
       );
     }
@@ -191,8 +228,15 @@ exports.getAddon = async (req, res) => {
     const subscriptionEntry = findAddonSubscriptionEntry(subscription, addonKey);
     const pricing = await getAddonPricing(addonKey);
     let emailPolicy = null;
+    let aiCredits = null;
     if (addonKey === ADDON_KEYS.EMAIL_CREDITS) {
       emailPolicy = await getOrgEmailPolicy(organizationId);
+    }
+    if (addonKey === ADDON_KEYS.AI_CREDITS) {
+      const { ensureTokenLedger } = require('../services/ai/aiCreditService');
+      await ensureTokenLedger(organizationId);
+      const org = await Organization.findById(organizationId).select('aiSettings.credits').lean();
+      aiCredits = serializeAiTokenBalance(org?.aiSettings?.credits);
     }
     const installEligibility = await resolveInstallEligibility(organizationId, definition);
 
@@ -205,6 +249,7 @@ exports.getAddon = async (req, res) => {
         pricing,
         emailPolicy,
         installEligibility,
+        aiCredits,
       ),
       configuration: tenantConfig,
     });
@@ -276,6 +321,13 @@ exports.installAddon = async (req, res) => {
       await ensureOrgEmailPolicy(organizationId);
     }
 
+    if (addonKey === ADDON_KEYS.AI || isAiSuiteAddonKey(addonKey)) {
+      await Organization.updateOne(
+        { _id: organizationId },
+        { $set: { 'aiSettings.enabled': true } },
+      );
+    }
+
     const { attachSettingsAuditDiff } = require('../utils/settingsAuditSnapshot');
     attachSettingsAuditDiff(res, { status: 'not_installed' }, { status: 'installed' }, { keys: ['status'] });
 
@@ -321,6 +373,13 @@ exports.disableAddon = async (req, res) => {
       );
     }
 
+    if (addonKey === ADDON_KEYS.AI || isAiSuiteAddonKey(addonKey)) {
+      await Organization.updateOne(
+        { _id: req.user.organizationId },
+        { $set: { 'aiSettings.enabled': false } },
+      );
+    }
+
     attachSettingsAuditDiff(res, before, { enabled: false, status: 'disabled' }, { keys: ['enabled', 'status'] });
 
     return res.json({ success: true, message: 'Addon disabled' });
@@ -358,6 +417,13 @@ exports.enableAddon = async (req, res) => {
       await Organization.updateOne(
         { _id: req.user.organizationId },
         { $set: { 'embed.chat.enabled': true } },
+      );
+    }
+
+    if (addonKey === ADDON_KEYS.AI || isAiSuiteAddonKey(addonKey)) {
+      await Organization.updateOne(
+        { _id: req.user.organizationId },
+        { $set: { 'aiSettings.enabled': true } },
       );
     }
 
@@ -647,6 +713,54 @@ exports.purchaseEmailCreditPack = async (req, res) => {
     }
     console.error('[addonSettingsController] purchaseEmailCreditPack', error);
     return res.status(500).json({ success: false, message: 'Failed to purchase credit pack' });
+  }
+};
+
+exports.purchaseAiCreditPack = async (req, res) => {
+  try {
+    if (!canManageAddons(req)) {
+      return res.status(403).json({ success: false, message: 'Insufficient permissions', code: 'FORBIDDEN' });
+    }
+
+    const packKey = String(req.body?.packKey || '').trim();
+    if (!packKey) {
+      return res.status(400).json({ success: false, message: 'packKey is required', code: 'INVALID_PACK' });
+    }
+
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+    const result = await purchaseAiCreditPack({
+      organizationId: req.user.organizationId,
+      packKey,
+      initiatedByUserId: req.user._id,
+    });
+
+    attachSettingsAuditDiff(
+      res,
+      { packKey: null, operation: null },
+      cloneForAudit({
+        packKey,
+        operation: 'purchase_ai_tokens',
+        tokensAdded: result?.tokensAdded ?? null,
+        tokensBalance: result?.tokensBalance ?? null,
+      }),
+      { keys: ['packKey', 'operation', 'tokensAdded', 'tokensBalance'] }
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'AI token pack purchased',
+      data: result,
+    });
+  } catch (error) {
+    const code = error?.code;
+    if (code === 'ADDON_NOT_INSTALLED' || code === 'ORGANIZATION_NOT_FOUND') {
+      return res.status(404).json({ success: false, message: error.message, code });
+    }
+    if (code === 'INVALID_PACK' || code === 'PRICING_NOT_FOUND') {
+      return res.status(400).json({ success: false, message: error.message, code });
+    }
+    console.error('[addonSettingsController] purchaseAiCreditPack', error);
+    return res.status(500).json({ success: false, message: 'Failed to purchase AI token pack' });
   }
 };
 

@@ -366,7 +366,17 @@ exports.createCase = async (req, res) => {
 
     const { customFieldsSet } = extractCustomFields(req.body, Case);
     const now = new Date();
-    const caseId = `CAS-${now.getUTCFullYear()}-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    let caseId = req.body?.caseId ? String(req.body.caseId).trim() : '';
+    if (!caseId) {
+      const { allocate } = require('../services/moduleNumberingService');
+      const result = await allocate({
+        organizationId: req.user.organizationId,
+        moduleKey: 'cases',
+        at: now,
+      });
+      caseId = result?.recordId
+        || `CAS-${now.getUTCFullYear()}-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    }
     const actorName = getActorDisplayName(req.user);
 
     const payload = {

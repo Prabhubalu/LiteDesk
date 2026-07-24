@@ -17,13 +17,12 @@ const { runWorkflowAgent } = require('../agents/workflowAgent');
 const { recordTurn } = require('../governance/audit');
 const { ensureBootstrapped } = require('../bootstrap');
 const sessionMemory = require('../memory/sessionMemory');
-const { buildUiBlocks } = require('../experience/buildUiBlocks');
+const { buildUiBlocks, wantsChartAsk } = require('../experience/buildUiBlocks');
 const { wantsRecordBrief, buildRecordStatusBrief } = require('../experience/buildRecordStatusBrief');
 const { synthesizePipelineNarrative } = require('../experience/coworkerSynthesis');
 const {
   classifyIntent,
   classifyIntentDetailed,
-  resolveAgentKey,
   extractTaskTitle,
   extractEventTitle,
   extractEventSchedule,
@@ -35,16 +34,54 @@ const {
   scheduleFromLlmSlots,
   resolveEventTitle,
 } = require('./intentLlmClassify');
+const { pickAgentWithLlm } = require('./pickAgentWithLlm');
 const { resolveEventCreateSlots, isGarbageTitle } = require('./extractEventSlots');
+const { runAgentToolLoop } = require('./agentLoop');
 const {
   refersToSameFocus,
   resolveTurnFocus,
 } = require('../context/resolveTurnFocus');
 
 const { buildEmailDraftTurn } = require('../experience/buildEmailDraftTurn');
+const { buildSituationContext } = require('../context/situationContext');
 const { runThinPlaybook } = require('./runThinPlaybook');
 const { extractSearchTerm } = require('../tools/families');
 const { buildProposalDetails } = require('../utils/findModuleCreateIssues');
+
+const FOCUS_BRIEF_ENTITIES = Object.freeze([
+  'organizations', 'deals', 'people', 'cases', 'quotes', 'tasks',
+]);
+
+/**
+ * When the user names a quote number (QT-0003) but the client omitted focus,
+ * resolve the record so we still ground the turn.
+ */
+async function resolveQuoteFocusFromQuery(query, organizationId, deps = {}) {
+  const match = String(query || '').match(/\b(QT[-\s]?\d{3,})\b/i);
+  if (!match || !organizationId) return null;
+  const raw = match[1].replace(/\s+/g, '').toUpperCase();
+  const normalized = raw.includes('-') ? raw : raw.replace(/^QT/, 'QT-');
+  try {
+    const Quote = deps.models?.Quote || require('../../../models/Quote');
+    const row = await Quote.findOne({
+      organizationId,
+      deletedAt: null,
+      quoteNumber: new RegExp(`^${normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+    })
+      .select('_id quoteNumber quoteTitle status')
+      .lean();
+    if (!row) return null;
+    return {
+      kind: 'quotes',
+      moduleKey: 'quotes',
+      id: String(row._id),
+      recordId: String(row._id),
+      name: row.quoteTitle || row.quoteNumber || normalized,
+    };
+  } catch {
+    return null;
+  }
+}
 
 function buildChitchatAnswer(query) {
   const q = String(query || '').toLowerCase();
@@ -143,8 +180,27 @@ function proposalsFromCreateToolResult(toolResult, toolName, title) {
   return { proposal, warning, conflictHits };
 }
 
+/** User asked for an inventory/list (not a pipeline coaching essay). */
+function wantsListAnswer(query) {
+  const q = String(query || '');
+  if (/\b(summarize|summary|overview|priorit|what needs attention|where (should|do) i focus|coach)\b/i.test(q)
+    && !/\b(list|show(\s+me)?|give(\s+me)?|display|enumerate)\b/i.test(q)) {
+    return false;
+  }
+  return /\b(list|show(\s+me)?|give(\s+me)?|display|enumerate|which (are|ones?)|what are (the|my))\b/i.test(q)
+    || /\b(open deals|deals which are open|deals that are open)\b/i.test(q);
+}
+
+/** Explicit pipeline coaching / summary ask. */
+function wantsPipelineCoach(query) {
+  const q = String(query || '');
+  if (wantsListAnswer(q) && !/\b(summarize|summary|overview|priorit)\b/i.test(q)) return false;
+  return /\b(summarize|summary|overview|priorit|what needs attention|pipeline health|where (should|do) i focus|coach)\b/i.test(q)
+    || /\bpipeline\b/i.test(q) && !/\b(list|show|give)\b/i.test(q);
+}
+
 /** Serialize a tool result to a compact, fact-only block for the prompt. */
-function serializeToolResult(intent, toolResult) {
+function serializeToolResult(intent, toolResult, { list = false } = {}) {
   if (!toolResult) return '(none)';
   if (intent === 'crm_search' || intent === 'knowledge') {
     const hits = toolResult.hits || [];
@@ -164,7 +220,9 @@ function serializeToolResult(intent, toolResult) {
         : 'matching';
     const header = toolResult.brief
       ? `Status brief for ${entity} (${count} focus record)`
-      : `${count} ${scope} ${entity} (facts for narration — do not dump as a numbered inventory)`;
+      : list
+        ? `${count} ${scope} ${entity} (present as a clear bullet list — user asked for a list)`
+        : `${count} ${scope} ${entity} (facts for narration — do not dump as a numbered inventory)`;
 
     const related = toolResult.related;
     const relatedLines = [];
@@ -215,8 +273,14 @@ function buildContextualLead(intent, query, toolResult, baseLead) {
   if (!hits.length) return baseLead || "I couldn't find a match for that yet.";
 
   const qualifier = overdueOnly ? 'overdue ' : (openOnly ? 'open ' : '');
-  const names = hits.slice(0, 3).map((h) => h.title).filter(Boolean);
   const wantsCount = /\b(how many|count|number of)\b/i.test(String(query || ''));
+
+  // List asks: short count only — UI record_list shows the rows (avoid double inventory).
+  if (wantsListAnswer(query) || toolResult?.listIntent) {
+    return `You have ${total} ${qualifier}${entity}.`;
+  }
+
+  const names = hits.slice(0, 3).map((h) => h.title).filter(Boolean);
 
   if (wantsCount) {
     return `You have ${total} ${qualifier}${entity}.${names[0] ? ` Top of the list: ${names[0]}.` : ''} Want me to dig into any of them?`;
@@ -232,19 +296,82 @@ function buildContextualLead(intent, query, toolResult, baseLead) {
   return baseLead || `Here's what I found across your ${entity}.`;
 }
 
-function looksLikeDbDump(text) {
+function looksLikeDbDump(text, { allowList = false } = {}) {
   const t = String(text || '').trim();
   if (!t) return true;
-  if (/^(found \d+|here are \d+|showing \d+|results?:|entity=|total=|openOnly=)/im.test(t)) return true;
+  if (/^(found \d+|results?:|entity=|total=|openOnly=)/im.test(t)) return true;
   if (/\bentity=\w+|openOnly=true|count=\d+/i.test(t)) return true;
+  if (allowList) return false;
+  // Raw dump: many bare numbered titles with almost no prose verbs
   const numbered = t.match(/^\s*\d+\.\s+/gm) || [];
-  if (numbered.length >= 4) return true;
+  if (numbered.length >= 5) {
+    const hasProse = /\b(here|looking|across|pipeline|worth|focus|recommend|priority|next|risk|healthy)\b/i.test(t);
+    if (!hasProse && t.length < 400) return true;
+  }
   return false;
+}
+
+/**
+ * When the user asks about deals/cases/tasks while focused on another module
+ * (e.g. person), return the related module — never list the focus module itself.
+ * @param {string} query
+ * @param {string} focusEntity
+ * @returns {string|null}
+ */
+function detectRelatedModuleAsk(query, focusEntity) {
+  const q = String(query || '').toLowerCase();
+  const focus = String(focusEntity || '').toLowerCase();
+  /** @type {Array<[RegExp, string]>} */
+  const checks = [
+    [/\b(open\s+)?deals?\b|\bpipeline\b|\bopportunit/i, 'deals'],
+    [/\b(open\s+)?cases?\b|\btickets?\b/i, 'cases'],
+    [/\b(open\s+)?tasks?\b|\btodos?\b|\bto-?dos?\b/i, 'tasks'],
+    [/\bevents?\b|\bmeetings?\b|\bcalls?\b/i, 'events'],
+    [/\borganizations?\b|\baccounts?\b|\bcompanies\b/i, 'organizations'],
+    [/\bpeople\b|\bcontacts?\b|\bpersons?\b/i, 'people'],
+  ];
+  for (const [re, mod] of checks) {
+    if (re.test(q) && mod !== focus) return mod;
+  }
+  return null;
+}
+
+function relatedHitsToToolResult(relatedModule, relatedRows, query) {
+  const openOnly = /\bopen\b/i.test(String(query || ''));
+  const hits = (relatedRows || [])
+    .filter((r) => String(r.moduleKey || '').toLowerCase() === relatedModule)
+    .map((r) => ({
+      id: String(r.id || r.recordId || ''),
+      title: String(r.title || r.name || '').trim() || 'Untitled',
+      subtitle: r.relationshipKey || '',
+      status: r.status || null,
+      amount: r.amount ?? null,
+      href: r.href || null,
+    }))
+    .filter((h) => h.id);
+  return {
+    entity: relatedModule,
+    hits,
+    counts: { total: hits.length, returned: hits.length },
+    listIntent: true,
+    openOnly,
+    searchTerm: null,
+    guidance: hits.length
+      ? `Related ${relatedModule} for focused record.`
+      : `No related ${relatedModule} for this record.`,
+    relatedAsk: true,
+  };
 }
 
 /** Deterministic lead text + claims. Visual facts go in UI blocks, not Markdown. */
 function buildGroundedAnswer(intent, query, toolResult) {
-  const { lead, blocks } = buildUiBlocks(intent, toolResult);
+  const listIntent = wantsListAnswer(query) || toolResult?.listIntent === true;
+  if (toolResult && listIntent) toolResult.listIntent = true;
+
+  const { lead, blocks } = buildUiBlocks(intent, toolResult, {
+    listIntent,
+    query,
+  });
 
   if (intent === 'crm_search' || intent === 'knowledge') {
     const hits = toolResult?.hits || [];
@@ -254,6 +381,26 @@ function buildGroundedAnswer(intent, query, toolResult) {
       ? [{ type: 'count', entity, value: total }]
         .concat(hits.slice(0, 5).map((h) => ({ type: 'record', id: h.id, title: h.title })))
       : [];
+
+    if (listIntent) {
+      const chartAsk = wantsChartAsk(query);
+      return {
+        draft: [
+          lead,
+          '',
+          chartAsk
+            ? 'User asked for a list and a chart. Reply with ONE short sentence confirming the count and that the chart is below.'
+            : 'User asked for a list. Reply with ONE short sentence confirming the count.',
+          'Do NOT reprint every deal as bullets — the UI record list already shows them.',
+          chartAsk
+            ? 'Do NOT invent a markdown table or ASCII chart — the UI chart block already shows the breakdown.'
+            : 'Do NOT add a chart, metrics essay, or pipeline coaching.',
+        ].join('\n'),
+        lead,
+        blocks,
+        claims,
+      };
+    }
 
     const contextual = buildContextualLead(intent, query, toolResult, lead);
     const draftFacts = hits.length
@@ -358,43 +505,58 @@ async function polishCoworkerAnswer({
   claims = [],
   brief = false,
   write = false,
+  list = false,
   toolResult = null,
   intent = null,
+  situationText = '',
+  agentSystemHint = '',
 }) {
+  const listMode = Boolean(list) || wantsListAnswer(query);
   const safeLead = (!write && toolResult && (intent === 'crm_search' || intent === 'knowledge'))
     ? buildContextualLead(intent, query, toolResult, lead)
     : lead;
+
+  const groundedTools = situationText
+    ? `${String(toolResults || '(none)')}\n\nSITUATION CONTEXT:\n${situationText}`
+    : toolResults;
 
   try {
     const messages = buildAnswerMessages({
       query,
       groundedDraft: draft || safeLead,
-      toolResults,
+      toolResults: groundedTools,
       history,
-      brief,
+      brief: listMode ? false : brief,
       write,
+      list: listMode,
+      agentSystemHint,
     });
     const completion = await llm(messages, {
       ...request,
-      temperature: write ? 0.35 : (brief ? 0.5 : 0.4),
+      temperature: write ? 0.35 : (listMode ? 0.2 : (brief ? 0.5 : 0.4)),
       maxTokens: 1800,
     });
     const polished = String(completion?.text || '').replace(/\*\*/g, '').trim();
-    if (!polished || looksLikeDbDump(polished)) {
-      return { answer: safeLead, polishedUsed: false, usage: completion?.usage || {} };
+    const usage = completion?.usage || {};
+    const creditsDebited = Number(completion?.creditsDebited || 0);
+    if (!polished || looksLikeDbDump(polished, { allowList: listMode })) {
+      return { answer: safeLead, polishedUsed: false, usage, creditsDebited };
     }
     const hitsExist = (claims || []).length > 0;
     const keepsFacts = !hitsExist || mentionsAnyClaim(polished, claims);
     if (!keepsFacts) {
-      return { answer: safeLead, polishedUsed: false, usage: completion?.usage || {} };
+      return { answer: safeLead, polishedUsed: false, usage, creditsDebited };
     }
     return {
       answer: polished,
       polishedUsed: true,
-      usage: completion.usage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      usage: usage.totalTokens
+        ? usage
+        : { promptTokens: 0, completionTokens: 0, totalTokens: 0, ...usage },
+      creditsDebited,
     };
   } catch (error) {
-    return { answer: safeLead, polishedUsed: false, usage: {}, error };
+    return { answer: safeLead, polishedUsed: false, usage: {}, creditsDebited: 0, error };
   }
 }
 
@@ -412,8 +574,33 @@ function resolveLlm(deps) {
       temperature: Number.isFinite(request.temperature) ? request.temperature : 0.45,
       maxTokens: request.maxTokens || 1800,
       modelOverride: request.modelOverride,
+      // One rolled-up audit row is written in finish() via createMeteredLlm.
+      skipAudit: true,
     },
   );
+}
+
+/**
+ * Sum every LLM hop in one ask (intent classify, polish, retries, slots, etc.)
+ * so audit Tokens / Tokens billed match ledger Consumed.
+ */
+function createMeteredLlm(baseLlm) {
+  const meter = {
+    promptTokens: 0,
+    completionTokens: 0,
+    totalTokens: 0,
+    creditsDebited: 0,
+  };
+  const llm = async (messages, request) => {
+    const result = await baseLlm(messages, request);
+    const usage = result?.usage || {};
+    meter.promptTokens += Math.max(0, Number(usage.promptTokens || usage.prompt_tokens || 0) || 0);
+    meter.completionTokens += Math.max(0, Number(usage.completionTokens || usage.completion_tokens || 0) || 0);
+    meter.totalTokens += Math.max(0, Number(usage.totalTokens || usage.total_tokens || 0) || 0);
+    meter.creditsDebited += Math.max(0, Number(result?.creditsDebited || 0) || 0);
+    return result;
+  };
+  return { llm, meter };
 }
 
 function resolveConversationId(request) {
@@ -424,7 +611,33 @@ function resolveConversationId(request) {
 
 function agentAllowsTool(agent, toolName) {
   if (!agent || !Array.isArray(agent.tools) || agent.tools.length === 0) return true;
-  return agent.tools.includes(toolName);
+  if (agent.tools.includes(toolName)) return true;
+  // Fabric aliases: CapIndex module.* covers legacy search.crm / crm.record.get
+  if (toolName === 'search.crm' && agent.tools.includes('module.search')) return true;
+  if (toolName === 'crm.record.get' && agent.tools.includes('module.get')) return true;
+  if (toolName === 'module.search' && agent.tools.includes('search.crm')) return true;
+  if (toolName === 'module.get' && agent.tools.includes('crm.record.get')) return true;
+  return false;
+}
+
+/**
+ * Prefer CapIndex fabric tools when the seat allow-lists them.
+ */
+function pickInitialToolName(agent, intent, query) {
+  const q = String(query || '');
+  if (intent === 'knowledge') {
+    if (agentAllowsTool(agent, 'knowledge.search')) return 'knowledge.search';
+    if (agentAllowsTool(agent, 'module.search')) return 'module.search';
+    return 'knowledge.search';
+  }
+  const commercial = /\b(invoice|payment|refund)s?\b/i.test(q);
+  const candidates = commercial
+    ? ['module.search', 'search.crm']
+    : ['module.search', 'search.crm', 'crm.deals', 'crm.cases'];
+  for (const name of candidates) {
+    if (agentAllowsTool(agent, name)) return name;
+  }
+  return candidates[0];
 }
 
 function updateFocusFromToolResult(memory, organizationId, conversationId, toolResult) {
@@ -454,16 +667,46 @@ async function runOrchestrator(request = {}, deps = {}) {
   const started = Number.isFinite(deps.now) ? deps.now : Date.now();
 
   const query = String(request.query || '').trim();
-  const llm = resolveLlm(deps);
+  const { llm, meter: llmMeter } = createMeteredLlm(resolveLlm(deps));
   const conversationId = resolveConversationId(request);
   const priorHistory = Array.isArray(request.history) && request.history.length
     ? request.history
     : (request.organizationId ? memory.history(request.organizationId, conversationId) : []);
-  const focus = (request.organizationId
-    ? memory.getFocus(request.organizationId, conversationId)
-    : null)
-    || request.focus
+  let focus = request.focus
+    || (request.organizationId
+      ? memory.getFocus(request.organizationId, conversationId)
+      : null)
     || null;
+
+  // Quote-number fallback when home/history asks omit recordId.
+  if ((!focus?.id && !focus?.recordId) && request.organizationId && deps.skipQuoteResolve !== true) {
+    const fromQuote = await resolveQuoteFocusFromQuery(query, request.organizationId, deps);
+    if (fromQuote) focus = fromQuote;
+  }
+
+  // Hydrate related records + activity + emails for focused page context (best-effort).
+  let situation = null;
+  const situationModule = String(focus?.moduleKey || focus?.kind || '').trim();
+  const situationId = String(focus?.id || focus?.recordId || '').trim();
+  if (request.organizationId && situationModule && situationId && deps.skipSituation !== true) {
+    try {
+      situation = await buildSituationContext({
+        organizationId: request.organizationId,
+        moduleKey: situationModule,
+        recordId: situationId,
+        name: focus?.name || '',
+        deps: { models: deps.models || {} },
+      });
+      if (situation?.ok && situation.focus?.title && focus && !focus.name) {
+        focus.name = situation.focus.title;
+      }
+    } catch (error) {
+      if (deps.debug) {
+        console.error('[astra.orchestrator] situation context failed:', error.message);
+      }
+      situation = null;
+    }
+  }
 
   // LLM for every query (history + focus for anaphora). Heuristic = fallback only.
   // Tests may set llmIntent:false to stay offline.
@@ -475,9 +718,45 @@ async function runOrchestrator(request = {}, deps = {}) {
     focus,
   });
 
-  const intent = classification.intent;
-  const agentKey = resolveAgentKey(classification, request, agents);
-  const agent = agents.getAgent(agentKey);
+  // Never "clarify" away from a focused CRM record — that invents "I don't have details".
+  let intent = classification.intent;
+  const focusEntityEarly = String(focus?.moduleKey || focus?.kind || '').trim().toLowerCase();
+  const focusIdEarly = String(focus?.id || focus?.recordId || '').trim();
+  if (
+    (intent === 'clarify' || intent === 'chitchat')
+    && focusIdEarly
+    && FOCUS_BRIEF_ENTITIES.includes(focusEntityEarly)
+  ) {
+    intent = 'crm_search';
+  }
+  let agentPick = await pickAgentWithLlm({
+    query,
+    request,
+    classification,
+    agents,
+    focus,
+    llm,
+    llmIntent: deps.llmIntent,
+    organizationId: request.organizationId,
+  });
+  let agentKey = agentPick.agentKey;
+  let agent = agents.getAgent(agentKey);
+
+  // Email drafts need email.draft — don't let a CRM specialist steal the seat without that tool.
+  if (
+    intent === 'email_draft'
+    && !agentAllowsTool(agent, 'email.draft')
+    && agents.hasAgent?.('coworker')
+  ) {
+    agentKey = 'coworker';
+    agent = agents.getAgent('coworker');
+    agentPick = { ...agentPick, agentKey: 'coworker', reason: 'email_draft_tool_guard' };
+  }
+
+  const polishWithAgent = (opts) => polishCoworkerAnswer({
+    ...opts,
+    agentSystemHint: opts.agentSystemHint ?? agent?.systemHint ?? '',
+  });
   const expectedTool = classification.tool || INTENT_TOOL_ROUTE[intent] || null;
 
   const ctx = {
@@ -486,6 +765,7 @@ async function runOrchestrator(request = {}, deps = {}) {
     surface: request.surface || 'chat',
     agentKey,
     focus,
+    situation,
     deps: {
       models: deps.models || {},
       vectorStore: deps.vectorStore || null,
@@ -496,10 +776,13 @@ async function runOrchestrator(request = {}, deps = {}) {
   const baseMeta = {
     intent,
     agentKey,
+    agentName: agent?.title || agentKey,
     confidence: classification.confidence,
     conversationId,
     intentReason: classification.reason || null,
     intentSource: classification.intentSource || null,
+    agentPickSource: agentPick.source || null,
+    agentPickReason: agentPick.reason || null,
     expectedTool,
   };
 
@@ -510,6 +793,17 @@ async function runOrchestrator(request = {}, deps = {}) {
       memory.append(request.organizationId, conversationId, { role: 'assistant', content: answer });
     }
 
+    const usage = llmMeter.totalTokens > 0
+      ? {
+        promptTokens: llmMeter.promptTokens,
+        completionTokens: llmMeter.completionTokens,
+        totalTokens: llmMeter.totalTokens,
+      }
+      : (partial.usage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 });
+    const creditsDebited = llmMeter.creditsDebited > 0
+      ? llmMeter.creditsDebited
+      : Number(partial.creditsDebited || 0);
+
     if (deps.audit !== false && request.organizationId) {
       await recordTurn({
         organizationId: request.organizationId,
@@ -518,7 +812,8 @@ async function runOrchestrator(request = {}, deps = {}) {
         status: 'success',
         model: partial.polishedUsed ? 'llm+grounded' : 'grounded',
         promptVersion: PROMPT_VERSION,
-        usage: partial.usage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        usage,
+        creditsDebited,
         latencyMs: Date.now() - started,
         metadata: {
           ...baseMeta,
@@ -526,6 +821,7 @@ async function runOrchestrator(request = {}, deps = {}) {
           claims: (partial.claims || []).length,
           polishedUsed: Boolean(partial.polishedUsed),
           reason: classification.reason,
+          llmHopsMetered: llmMeter.totalTokens > 0,
         },
       });
     }
@@ -533,6 +829,7 @@ async function runOrchestrator(request = {}, deps = {}) {
     return {
       intent,
       agentKey,
+      agentName: agent?.title || agentKey,
       confidence: classification.confidence,
       intentReason: classification.reason || null,
       intentSource: classification.intentSource || null,
@@ -540,8 +837,11 @@ async function runOrchestrator(request = {}, deps = {}) {
       conversationId,
       focus: memory.getFocus?.(request.organizationId, conversationId) || focus,
       grounded: partial.grounded !== false,
-      usage: partial.usage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
       ...partial,
+      agentKey,
+      agentName: agent?.title || agentKey,
+      usage,
+      creditsDebited,
     };
   }
 
@@ -565,7 +865,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       ctx: { ...ctx, conversationId },
       memory,
       conversationId,
-      llm: resolveLlm(deps),
+      llm,
       history: priorHistory,
     });
     return finish({
@@ -585,22 +885,49 @@ async function runOrchestrator(request = {}, deps = {}) {
 
   if (intent === 'clarify') {
     const turn = buildClarifyTurn(query);
+    const polish = await polishWithAgent({
+      llm,
+      request,
+      query,
+      draft: turn.answer,
+      lead: turn.answer,
+      toolResults: '(none)',
+      history: priorHistory,
+      claims: [],
+    });
     return finish({
-      answer: turn.answer,
+      answer: polish.answer,
       blocks: turn.blocks,
       suggestions: turn.suggestions,
       claims: [],
       tool: null,
+      polishedUsed: polish.polishedUsed,
+      usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
     });
   }
 
   if (intent === 'chitchat') {
+    const lead = buildChitchatAnswer(query);
+    const polish = await polishWithAgent({
+      llm,
+      request,
+      query,
+      draft: lead,
+      lead,
+      toolResults: '(none)',
+      history: priorHistory,
+      claims: [],
+    });
     return finish({
-      answer: buildChitchatAnswer(query),
+      answer: polish.answer,
       blocks: [],
       suggestions: buildSuggestions(intent, query, null),
       claims: [],
       tool: null,
+      polishedUsed: polish.polishedUsed,
+      usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
     });
   }
 
@@ -630,7 +957,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       { type: 'record', id: 'draft-case', title },
       ...conflictHits.slice(0, 3).map((h) => ({ type: 'record', id: h.id, title: h.title })),
     ];
-    const polish = await polishCoworkerAnswer({
+    const polish = await polishWithAgent({
       llm,
       request,
       query,
@@ -654,6 +981,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       toolResult,
       polishedUsed: polish.polishedUsed,
       usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
       createWarning: warning,
     });
   }
@@ -671,17 +999,32 @@ async function runOrchestrator(request = {}, deps = {}) {
     };
     const toolResult = tool ? await tool.run(patch, ctx) : null;
     const proposal = confirmationToProposal(toolResult, 'crm.deals.update');
+    const lead = dealId
+      ? `I can update deal "${focus.name || dealId}". Confirm to apply the change.`
+      : 'I can update a deal — set focus on a deal first (or name it), then confirm.';
+    const polish = await polishWithAgent({
+      llm,
+      request,
+      query,
+      draft: lead,
+      lead,
+      toolResults: JSON.stringify({ patch, dealId }),
+      history: priorHistory,
+      claims: dealId ? [{ type: 'record', id: dealId, title: focus?.name || dealId }] : [],
+      write: true,
+    });
     return finish({
-      answer: dealId
-        ? `I can update deal "${focus.name || dealId}". Confirm to apply the change.`
-        : 'I can update a deal — set focus on a deal first (or name it), then confirm.',
+      answer: polish.answer,
       blocks: [],
       proposals: proposal ? [proposal] : [],
       actions: proposal ? [proposal] : [],
       suggestions: ['List my open deals', 'Create a follow-up task'],
-      claims: [],
+      claims: dealId ? [{ type: 'record', id: dealId, title: focus?.name || dealId }] : [],
       tool: toolName,
       toolResult,
+      polishedUsed: polish.polishedUsed,
+      usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
     });
   }
 
@@ -695,60 +1038,183 @@ async function runOrchestrator(request = {}, deps = {}) {
       }, ctx)
       : null;
     const proposal = confirmationToProposal(toolResult, 'quotes.draft');
+    const lead = `I can draft a quote${focus?.name ? ` for ${focus.name}` : ''}. Confirm to continue.`;
+    const polish = await polishWithAgent({
+      llm,
+      request,
+      query,
+      draft: lead,
+      lead,
+      toolResults: JSON.stringify({ dealId: focus?.id || null, dealName: focus?.name || null }),
+      history: priorHistory,
+      claims: focus?.id ? [{ type: 'record', id: focus.id, title: focus.name || focus.id }] : [],
+      write: true,
+    });
     return finish({
-      answer: `I can draft a quote${focus?.name ? ` for ${focus.name}` : ''}. Confirm to continue.`,
+      answer: polish.answer,
       blocks: [],
       proposals: proposal ? [proposal] : [],
       actions: proposal ? [proposal] : [],
       suggestions: ['List my quotes', 'List open deals'],
-      claims: [],
+      claims: focus?.id ? [{ type: 'record', id: focus.id, title: focus.name || focus.id }] : [],
       tool: toolName,
       toolResult,
+      polishedUsed: polish.polishedUsed,
+      usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
     });
   }
 
   if (intent === 'research') {
     const term = extractSearchTerm(query) || focus?.name;
-    if (focus?.id) {
-      const relTool = registry.getTool('relationships.context');
-      const toolResult = relTool
-        ? await relTool.run({ moduleKey: focus.moduleKey || focus.kind, recordId: focus.id }, ctx)
-        : null;
-      const related = toolResult?.related || [];
-      const answer = related.length
-        ? `Here's what I found around ${focus.name}: ${related.slice(0, 5).map((r) => r.title).join(', ')}.`
-        : `I checked ${focus.name} — no linked records showed up yet.`;
+    const focusEntity = String(focus?.moduleKey || focus?.kind || '').trim().toLowerCase();
+    const focusId = String(focus?.id || focus?.recordId || '').trim();
+
+    if (focusId && FOCUS_BRIEF_ENTITIES.includes(focusEntity)) {
+      const getTool = registry.getTool('crm.record.get');
+      let subjectHit = {
+        id: focusId,
+        title: situation?.focus?.title || focus?.name || 'this record',
+        subtitle: situation?.focus?.subtitle || '',
+        status: null,
+      };
+      if (getTool) {
+        const got = await getTool.run({ moduleKey: focusEntity, recordId: focusId }, ctx);
+        if (got?.ok && got.record) {
+          subjectHit = {
+            id: String(got.record.id || focusId),
+            title: got.record.title || subjectHit.title,
+            subtitle: got.record.subtitle || subjectHit.subtitle || '',
+            status: got.record.status || null,
+            href: got.record.href || null,
+          };
+        }
+      }
+      const brief = await buildRecordStatusBrief({
+        entity: focusEntity,
+        hit: subjectHit,
+        organizationId: request.organizationId,
+        deps: ctx.deps,
+      });
+      const related = situation?.related?.length
+        ? situation.related
+        : [];
+      const lead = [
+        brief?.lead || `${subjectHit.title}.`,
+        situation?.signals?.expiredQuotes?.[0]
+          ? `Expired quote in play: ${situation.signals.expiredQuotes[0].title}.`
+          : '',
+        situation?.signals?.openDeals?.[0]
+          ? `Open deal: ${situation.signals.openDeals[0].title}.`
+          : '',
+      ].filter(Boolean).join(' ');
+      const draft = [
+        brief?.draft || lead,
+        situation?.llmText || '',
+        'Write a concise research brief: current situation, risks, and 2–3 practical next steps. Do not dump inventories.',
+      ].filter(Boolean).join('\n\n');
+      const claims = [
+        ...(brief?.claims || []),
+        ...(focus?.name ? [{ type: 'record', id: focusId, title: focus.name }] : []),
+        ...related.slice(0, 4).map((r) => ({
+          type: 'record',
+          id: r.id || r.recordId,
+          title: r.title || r.name,
+        })).filter((c) => c.id && c.title),
+      ];
+      const polish = await polishWithAgent({
+        llm,
+        request,
+        query,
+        draft,
+        lead,
+        toolResults: situation?.llmText || JSON.stringify({ focus: subjectHit, related: related.slice(0, 10) }),
+        history: priorHistory,
+        claims,
+        brief: true,
+        toolResult: brief ? { entity: focusEntity, hits: [subjectHit], related: brief.related } : null,
+        intent: 'research',
+        situationText: situation?.llmText || '',
+      });
       return finish({
-        answer,
+        answer: polish.answer,
         blocks: [],
-        suggestions: [`Draft an email about ${focus.name}`, 'Create a follow-up task'],
-        claims: focus.name ? [{ type: 'record', id: focus.id, title: focus.name }] : [],
+        suggestions: (situation?.suggestionCards?.length
+          ? situation.suggestionCards.map((c) => ({ label: c.title, prompt: c.prompt }))
+          : (situation?.suggestions || [
+            `Draft an email about ${subjectHit.title}`,
+            'Create a follow-up task',
+            `What is the next best action for ${subjectHit.title}?`,
+          ])).slice(0, 4),
+        claims,
         tool: 'relationships.context',
-        toolResult,
+        toolResult: { situation: Boolean(situation?.ok), relatedCount: related.length },
+        polishedUsed: polish.polishedUsed,
+        usage: polish.usage,
+        creditsDebited: Number(polish.creditsDebited || 0),
       });
     }
+
     if (term) {
       const searchTool = registry.getTool('search.crm');
       const toolResult = searchTool
         ? await searchTool.run({ query: `status of ${term}`, limit: 5 }, ctx)
         : null;
+      const hit = toolResult?.hits?.[0];
+      const lead = hit
+        ? `Research hit: ${hit.title}. Dig into relationships and status next.`
+        : `I couldn't find "${term}" to research yet.`;
+      const claims = (toolResult?.hits || []).slice(0, 3).map((h) => ({
+        type: 'record',
+        id: h.id,
+        title: h.title,
+      }));
+      const polish = await polishWithAgent({
+        llm,
+        request,
+        query,
+        draft: lead,
+        lead,
+        toolResults: serializeToolResult('crm_search', toolResult),
+        history: priorHistory,
+        claims,
+        brief: true,
+        toolResult,
+        intent: 'research',
+      });
       return finish({
-        answer: toolResult?.hits?.length
-          ? `Research hit: ${toolResult.hits[0].title}. Ask me to dig into relationships next.`
-          : `I couldn't find "${term}" to research yet.`,
+        answer: polish.answer,
         blocks: [],
         suggestions: ['Qualify this lead', 'List organizations'],
-        claims: (toolResult?.hits || []).slice(0, 3).map((h) => ({ type: 'record', id: h.id, title: h.title })),
+        claims,
         tool: 'search.crm',
         toolResult,
+        polishedUsed: polish.polishedUsed,
+        usage: polish.usage,
+        creditsDebited: Number(polish.creditsDebited || 0),
       });
     }
+
+    const lead = 'Who should I research? Name a company or person, or open a record first.';
+    const polish = await polishWithAgent({
+      llm,
+      request,
+      query,
+      draft: lead,
+      lead,
+      toolResults: '(none)',
+      history: priorHistory,
+      claims: [],
+    });
     return finish({
-      answer: 'Who should I research? Name a company or person, or open a record first.',
+      answer: polish.answer,
       blocks: [],
       suggestions: ['List organizations', 'Show me people'],
       claims: [],
       tool: null,
+      polishedUsed: polish.polishedUsed,
+      usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
     });
   }
 
@@ -871,7 +1337,7 @@ async function runOrchestrator(request = {}, deps = {}) {
     if (focus?.name && focus.kind !== 'events') suggestions.push(`Research ${focus.name}`);
 
     const claims = hits.slice(0, 5).map((h) => ({ type: 'record', id: h.id, title: h.title }));
-    const polish = await polishCoworkerAnswer({
+    const polish = await polishWithAgent({
       llm,
       request,
       query,
@@ -895,6 +1361,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       toolResult,
       polishedUsed: polish.polishedUsed,
       usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
     });
   }
 
@@ -933,7 +1400,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       { type: 'record', id: 'draft-task', title },
       ...conflictHits.slice(0, 3).map((h) => ({ type: 'record', id: h.id, title: h.title })),
     ];
-    const polish = await polishCoworkerAnswer({
+    const polish = await polishWithAgent({
       llm,
       request,
       query,
@@ -962,6 +1429,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       toolResult,
       polishedUsed: polish.polishedUsed,
       usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
       createWarning: warning,
     });
   }
@@ -1146,7 +1614,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       { type: 'record', id: 'draft-event', title },
       ...conflictHits.slice(0, 3).map((h) => ({ type: 'record', id: h.id, title: h.title })),
     ];
-    const polish = await polishCoworkerAnswer({
+    const polish = await polishWithAgent({
       llm,
       request,
       query,
@@ -1190,6 +1658,7 @@ async function runOrchestrator(request = {}, deps = {}) {
       intentSource: classification.intentSource || null,
       polishedUsed: polish.polishedUsed,
       usage: polish.usage,
+      creditsDebited: Number(polish.creditsDebited || 0),
       scheduleWarning,
       createWarning: scheduleWarning,
       slotSource: slots.source,
@@ -1226,44 +1695,46 @@ async function runOrchestrator(request = {}, deps = {}) {
       llm,
       organizationId: request.organizationId,
       focus,
+      toolRegistry: registry,
+      deps: ctx.deps,
+      situation,
     });
     return finish({
       answer: emailTurn.answer,
       blocks: emailTurn.blocks,
       proposals: emailTurn.proposals,
       actions: emailTurn.proposals,
-      suggestions: emailTurn.suggestions,
-      claims: emailTurn.focus?.name
-        ? [{ type: 'record', id: 'focus', title: emailTurn.focus.name }]
-        : [],
+        suggestions: (situation?.suggestionCards?.length
+          ? situation.suggestionCards.map((c) => ({ label: c.title, prompt: c.prompt }))
+          : (emailTurn.suggestions?.length
+            ? emailTurn.suggestions
+            : (situation?.suggestions || []))).slice(0, 4),
+      claims: [
+        ...(emailTurn.focus?.name
+          ? [{ type: 'record', id: emailTurn.focus.id || 'focus', title: emailTurn.focus.name }]
+          : []),
+        ...(emailTurn.topic?.title
+          ? [{ type: 'record', id: emailTurn.topic.id || 'topic', title: emailTurn.topic.title }]
+          : []),
+      ],
       polishedUsed: true,
       tool: 'email.draft',
       toolResult: emailTurn.confirmation,
     });
   }
 
-  const toolName = intent === 'knowledge' ? 'knowledge.search' : 'search.crm';
+  const toolName = pickInitialToolName(agent, intent, query);
   if (!agentAllowsTool(agent, toolName)) {
+    const allowed = Array.isArray(agent?.tools) ? agent.tools.filter(Boolean).slice(0, 6) : [];
     return finish({
-      answer: `The ${agent?.title || agentKey} seat cannot run ${toolName}. Try a different ask or agent.`,
+      answer: allowed.length
+        ? `The ${agent?.title || agentKey} seat is limited to: ${allowed.join(', ')}. Ask something that fits those tools, or add module.search / search.crm in Settings → AI → Agents → Tools.`
+        : `The ${agent?.title || agentKey} seat cannot run ${toolName}. Try a different ask or agent.`,
       blocks: [],
       suggestions: buildSuggestions('clarify', query, null),
       claims: [],
       tool: toolName,
     });
-  }
-
-  const tool = registry.getTool(toolName);
-  let toolResult = null;
-  if (tool) {
-    toolResult = await tool.run(
-      {
-        query,
-        entity: request.entity || classification.entityHint || null,
-        limit: request.limit,
-      },
-      ctx,
-    );
   }
 
   let briefMode = false;
@@ -1273,14 +1744,205 @@ async function runOrchestrator(request = {}, deps = {}) {
   let blocks;
   let claims;
   let actionSuggestions = null;
+  let toolResult = null;
+
+  // Page / side-panel focus wins for summarize/status asks — never fan out to pipeline lists.
+  const focusEntity = String(focus?.moduleKey || focus?.kind || '').trim().toLowerCase();
+  const focusId = String(focus?.id || focus?.recordId || '').trim();
+  const focusBriefEntities = FOCUS_BRIEF_ENTITIES;
+  if (
+    intent === 'crm_search'
+    && focusId
+    && focusBriefEntities.includes(focusEntity)
+    && (wantsRecordBrief(query) || situation?.ok)
+  ) {
+    const getTool = registry.getTool('crm.record.get');
+    let subjectHit = {
+      id: focusId,
+      title: focus?.name || 'this record',
+      subtitle: '',
+      status: null,
+    };
+    if (getTool) {
+      const got = await getTool.run({ moduleKey: focusEntity, recordId: focusId }, ctx);
+      if (got?.ok && got.record) {
+        subjectHit = {
+          id: String(got.record.id || focusId),
+          title: focus?.name
+            || situation?.focus?.title
+            || got.record.title
+            || 'this record',
+          subtitle: got.record.subtitle || situation?.focus?.subtitle || '',
+          status: got.record.status || null,
+          href: got.record.href || null,
+        };
+      }
+    }
+    const brief = await buildRecordStatusBrief({
+      entity: focusEntity,
+      hit: subjectHit,
+      organizationId: request.organizationId,
+      deps: ctx.deps,
+    });
+    if (brief || situation?.ok) {
+      briefMode = true;
+      const sitLead = situation?.ok
+        ? [
+          `${situation.focus?.title || subjectHit.title} is on file.`,
+          situation.signals?.expiredQuotes?.[0]
+            ? `Expired quote: ${situation.signals.expiredQuotes[0].title}.`
+            : '',
+          situation.signals?.openDeals?.[0]
+            ? `Open deal: ${situation.signals.openDeals[0].title}.`
+            : '',
+          situation.communications?.[0]
+            ? `Recent email: ${situation.communications[0].subject}.`
+            : '',
+          situation.activities?.[0]
+            ? `Latest activity: ${situation.activities[0].message || situation.activities[0].action}.`
+            : '',
+        ].filter(Boolean).join(' ')
+        : null;
+      lead = sitLead || brief?.lead || `${subjectHit.title}.`;
+      draft = [
+        brief?.draft || lead,
+        situation?.llmText || '',
+        'Write a practical situation brief for the user. Use RELATED RECORDS / EMAILS / ACTIVITY above. Never say the record is missing if FOCUS is present. End with one best next action.',
+      ].filter(Boolean).join('\n\n');
+      blocks = [];
+      claims = [
+        ...(brief?.claims || []),
+        { type: 'record', id: focusId, title: subjectHit.title },
+        ...(situation?.related || []).slice(0, 4).map((r) => ({
+          type: 'record',
+          id: r.id,
+          title: r.title,
+        })),
+      ].filter((c) => c.id && c.title);
+      actionSuggestions = situation?.suggestionCards?.length
+        ? situation.suggestionCards.slice(0, 4).map((c) => ({ label: c.title, prompt: c.prompt }))
+        : (brief?.suggestions || null);
+      toolResult = {
+        entity: focusEntity,
+        brief: true,
+        related: situation?.related || brief?.related || [],
+        hits: [subjectHit],
+        counts: { total: 1, returned: 1 },
+        searchTerm: focus?.name || subjectHit.title,
+        listIntent: false,
+        openOnly: false,
+        guidance: `Focused ${focusEntity} situation brief.`,
+        situation: situation?.ok
+          ? {
+            relatedCount: situation.related?.length || 0,
+            activityCount: situation.activities?.length || 0,
+            emailCount: situation.communications?.length || 0,
+          }
+          : null,
+      };
+      updateFocusFromToolResult(memory, request.organizationId, conversationId, toolResult);
+    }
+  }
+
+  const tool = registry.getTool(toolName);
+  if (!briefMode && tool) {
+    const relatedModule = focusId
+      ? detectRelatedModuleAsk(query, focusEntity)
+      : null;
+
+    if (relatedModule) {
+      const relTool = registry.getTool('relationships.context');
+      const relResult = relTool
+        ? await relTool.run({ moduleKey: focusEntity, recordId: focusId }, ctx)
+        : null;
+      toolResult = relatedHitsToToolResult(relatedModule, relResult?.related || [], query);
+      if (!toolResult.hits.length) {
+        const name = focus?.name || 'this record';
+        lead = relatedModule === 'deals'
+          ? `There aren't any open deals tied to ${name} right now.`
+          : `I couldn't find related ${relatedModule} for ${name}.`;
+        draft = [
+          lead,
+          `Stay on ${name} — suggest a concrete next step (follow-up, research, or create a ${relatedModule.replace(/s$/, '')}).`,
+        ].join(' ');
+        blocks = [];
+        claims = focus?.name
+          ? [{ type: 'record', id: focusId, title: focus.name }]
+          : [];
+        actionSuggestions = [
+          `Research ${name}`,
+          `Draft a follow-up email to ${name}`,
+          `What is the next best action for ${name}?`,
+        ];
+        briefMode = true;
+      }
+    } else {
+      // Prefer query/classifier entity over page module — page focus is for grounding, not listing.
+      const entityHint = classification.entityHint
+        || (focusId ? null : request.entity)
+        || null;
+      const focusedQuery = focusId && focus?.name && wantsRecordBrief(query)
+        ? String(focus.name)
+        : query;
+
+      const loop = await runAgentToolLoop({
+        registry,
+        ctx,
+        agent,
+        intent,
+        query: focusedQuery,
+        initialToolName: toolName,
+        agentAllowsTool,
+      });
+      toolResult = loop.toolResult;
+      if (toolResult && !toolResult.entity && toolResult.moduleKey) {
+        toolResult.entity = toolResult.moduleKey;
+      }
+      if (toolResult && !toolResult.entity) {
+        const fromQuery = /\bpipeline\b|\bdeals?\b/i.test(focusedQuery)
+          ? 'deals'
+          : (entityHint || null);
+        if (fromQuery) toolResult.entity = fromQuery;
+      }
+      if (toolResult && entityHint && !toolResult.entity) {
+        toolResult.entity = entityHint;
+      }
+      // Attach loop meta for audit/debug
+      if (toolResult && loop.steps?.length) {
+        toolResult.agentLoopSteps = loop.steps;
+      }
+      if (!toolResult) {
+        const fallbackTool = registry.getTool(toolName);
+        toolResult = fallbackTool
+          ? await fallbackTool.run(
+            {
+              query: focusedQuery,
+              entity: entityHint,
+              moduleKey: entityHint,
+              limit: request.limit,
+              focus: focusId
+                ? { moduleKey: focusEntity, recordId: focusId, name: focus?.name || null }
+                : null,
+            },
+            ctx,
+          )
+          : null;
+      }
+    }
+  }
 
   const hitCount = toolResult?.hits?.length || 0;
   const subjectHit = hitCount === 1
     ? toolResult.hits[0]
     : (toolResult?.searchTerm && hitCount > 0 ? toolResult.hits[0] : null);
 
+  if (toolResult && wantsListAnswer(query)) {
+    toolResult.listIntent = true;
+  }
+
   if (
-    intent === 'crm_search'
+    !briefMode
+    && intent === 'crm_search'
     && wantsRecordBrief(query)
     && subjectHit
     && ['organizations', 'deals', 'people'].includes(toolResult.entity)
@@ -1312,6 +1974,8 @@ async function runOrchestrator(request = {}, deps = {}) {
   if (
     !briefMode
     && intent === 'crm_search'
+    && wantsPipelineCoach(query)
+    && !wantsListAnswer(query)
     && toolResult?.entity === 'deals'
     && Array.isArray(toolResult.hits)
     && toolResult.hits.length > 0
@@ -1347,28 +2011,74 @@ async function runOrchestrator(request = {}, deps = {}) {
   let answer = lead;
   let usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
   let polishedUsed = false;
+  const listMode = wantsListAnswer(query);
 
-  const polish = await polishCoworkerAnswer({
+  const polish = await polishWithAgent({
     llm,
     request,
     query,
-    draft,
+    draft: briefMode && situation?.llmText
+      ? `${draft || lead}\n\n${situation.llmText}\n\nRespond with practical judgment for this situation — not a data dump.`
+      : (coachMode
+        ? `${draft || lead}\n\nWrite a concise coworker summary of this pipeline — priorities and risks, not a numbered database dump.`
+        : draft),
     lead,
-    toolResults: serializeToolResult(intent, toolResult),
+    toolResults: serializeToolResult(intent, toolResult, { list: listMode }),
     history: priorHistory,
     claims,
-    brief: briefMode || coachMode,
+    brief: listMode ? false : (briefMode || coachMode || Boolean(situation?.ok && focusId)),
+    list: listMode,
     toolResult,
     intent,
+    situationText: situation?.llmText || '',
   });
   answer = polish.answer;
   polishedUsed = polish.polishedUsed;
   usage = polish.usage || usage;
-  if (polish.error && deps.debug) {
-    console.error('[astra.orchestrator] llm polish failed:', polish.error.message);
+  if (polish.error) {
+    console.warn('[astra.orchestrator] llm polish failed:', polish.error?.message || polish.error);
   }
 
-  if (polishedUsed && looksLikeDbDump(answer) && lead) {
+  // If polish was skipped/failed, retry once with a short coworker prompt (still grounded).
+  if (!polishedUsed && (intent === 'crm_search' || intent === 'knowledge') && (toolResult?.hits?.length || 0) > 0) {
+    const retry = await polishCoworkerAnswer({
+      llm,
+      request,
+      query,
+      draft: listMode
+        ? [
+          lead || draft || '',
+          '',
+          'One short sentence with the count. Do not reprint rows — UI list shows them.',
+        ].join('\n')
+        : [
+          lead || draft || '',
+          '',
+          'Facts (UI will show cards — do not dump as a numbered list):',
+          ...(toolResult.hits || []).slice(0, 8).map((h) => `- ${h.title}${h.subtitle ? ` (${h.subtitle})` : ''}${h.amount != null ? ` · ${h.amount}` : ''}`),
+          '',
+          'Write 2–4 short sentences: overall picture, what needs attention, one next step.',
+        ].join('\n'),
+      lead,
+      toolResults: serializeToolResult(intent, toolResult, { list: listMode }),
+      history: priorHistory.slice(-4),
+      claims,
+      brief: !listMode,
+      list: listMode,
+      toolResult,
+      intent,
+      agentSystemHint: agent?.systemHint || '',
+    });
+    if (retry.polishedUsed) {
+      answer = retry.answer;
+      polishedUsed = true;
+      usage = retry.usage || usage;
+    } else if (retry.error) {
+      console.warn('[astra.orchestrator] llm polish retry failed:', retry.error?.message || retry.error);
+    }
+  }
+
+  if (polishedUsed && looksLikeDbDump(answer, { allowList: listMode }) && lead) {
     answer = lead;
     polishedUsed = false;
   } else if (polishedUsed && /open deals:\s*0|total organizations|found \d+ (organization|deal)/i.test(answer) && lead) {
@@ -1378,17 +2088,23 @@ async function runOrchestrator(request = {}, deps = {}) {
 
   const suggestions = Array.isArray(actionSuggestions) && actionSuggestions.length
     ? actionSuggestions.slice(0, 4)
-    : buildSuggestions(intent, query, toolResult);
+    : (situation?.suggestionCards?.length
+      ? situation.suggestionCards.slice(0, 4).map((c) => ({ label: c.title, prompt: c.prompt }))
+      : (situation?.suggestions?.length
+        ? situation.suggestions.slice(0, 4)
+        : buildSuggestions(intent, query, toolResult)));
 
   return finish({
     answer,
-    blocks,
+    // Avoid dumping large unrelated lists when we answered from focused situation.
+    blocks: briefMode && situation?.ok ? [] : blocks,
     suggestions,
     toolResult,
     claims,
     grounded: !polishedUsed || claims.length > 0,
     polishedUsed,
     usage,
+    creditsDebited: Number(polish.creditsDebited || 0),
     tool: toolName,
   });
 }

@@ -238,8 +238,14 @@
       <!-- Table Container with Horizontal Scroll -->
       <div class="overflow-x-auto">
       <!-- Loading State -->
-      <div v-if="loading" class="flex flex-col items-center justify-center py-16">
-        <div class="animate-spin rounded-full h-14 w-14 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 dark:border-t-indigo-500"></div>
+      <div
+        v-if="loading"
+        class="flex flex-col items-center justify-center py-16"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <ArivuShimmerLogo size="lg" />
         <p class="mt-5 text-base font-medium text-gray-600 dark:text-gray-400">{{ loadingText }}</p>
       </div>
 
@@ -489,6 +495,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+import ArivuShimmerLogo from '@/components/common/ArivuShimmerLogo.vue';
 import { XMarkIcon, TrashIcon, PencilSquareIcon, ArrowUpTrayIcon, ArchiveBoxIcon, ChevronLeftIcon, ChevronRightIcon, ArrowsUpDownIcon, EyeIcon, MagnifyingGlassIcon, Cog6ToothIcon, BookmarkIcon, ArchiveBoxXMarkIcon, ChevronUpIcon, ChevronDownIcon, CheckCircleIcon, NoSymbolIcon, DocumentDuplicateIcon, ArrowPathIcon, ArrowRightIcon, RectangleStackIcon, StarIcon, PuzzlePieceIcon } from '@heroicons/vue/24/outline';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';

@@ -314,6 +314,20 @@ exports.registerUser = async (req, res) => {
         } catch (policyErr) {
             console.warn('[authController] OrgEmailPolicy seed failed:', policyErr?.message || policyErr);
         }
+        try {
+            const { provisionFreshTenantAstra } = require('../services/ai/astraDefaultEntitlementService');
+            const astraGrant = await provisionFreshTenantAstra({
+                organizationId: organization._id,
+                initiatedByUserId: null,
+            });
+            if (astraGrant?.granted) {
+                console.log(`✅ Astra starter tokens granted: ${astraGrant.tokens}`);
+            } else if (astraGrant?.reason) {
+                console.warn('[authController] Astra starter grant skipped:', astraGrant.reason);
+            }
+        } catch (astraErr) {
+            console.warn('[authController] Astra starter grant failed:', astraErr?.message || astraErr);
+        }
         console.log('✅ ✅ ✅ ORGANIZATION CREATED SUCCESSFULLY! ✅ ✅ ✅');
         console.log('   ID:', organization._id);
         console.log('   Name:', organization.name);

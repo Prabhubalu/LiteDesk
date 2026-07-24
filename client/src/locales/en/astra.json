@@ -3,8 +3,12 @@
     "message": "Astra",
     "description": "Astra conversational CRM assistant brand"
   },
+  "responseFromAgent": {
+    "message": "{name}",
+    "description": "Label above an Astra reply naming which agent answered"
+  },
   "tagline": {
-    "message": "Your conversational CRM copilot",
+    "message": "The intelligence behind your work.",
     "description": "Astra tagline shown on the copilot landing"
   },
   "askPrompt": {
@@ -250,5 +254,21 @@
   "historyGroupOlder": {
     "message": "Older",
     "description": "Astra chat history group: older than 30 days"
+  },
+  "answerNextSteps": {
+    "message": "Next steps",
+    "description": "Heading above structured next-step list in Astra answers"
+  },
+  "answerDraft": {
+    "message": "Follow-up draft",
+    "description": "Heading for email/follow-up draft card in Astra answers"
+  },
+  "copyDraft": {
+    "message": "Copy",
+    "description": "Copy Astra draft text to clipboard"
+  },
+  "draftCopied": {
+    "message": "Copied",
+    "description": "Confirm Astra draft was copied"
   }
 }

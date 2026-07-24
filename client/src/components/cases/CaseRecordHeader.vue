@@ -177,7 +177,7 @@
       </div>
     </div>
 
-    <div v-if="caseRecord?._id" class="border-t border-gray-100 px-4 py-2 sm:px-5 dark:border-gray-800">
+    <div v-if="caseRecord?._id && aiSuiteEntitled" class="border-t border-gray-100 px-4 py-2 sm:px-5 dark:border-gray-800">
       <RecordAiPanel
         module-key="cases"
         source-type="case"
@@ -275,6 +275,8 @@ import RecordAiPanel from '@/astra/surfaces/RecordAiPanel.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import CaseSlaBadge from '@/components/cases/CaseSlaBadge.vue';
 import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
+import { useAuthStore } from '@/stores/authRegistry';
+import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
 import {
   caseChipSurfaceStyle,
   casePriorityColor,
@@ -310,6 +312,8 @@ const emit = defineEmits([
 ]);
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const aiSuiteEntitled = computed(() => isAiSuiteEntitled(authStore.user));
 
 const caseModuleLabel = computed(() => t('navigation.moduleCases'));
 

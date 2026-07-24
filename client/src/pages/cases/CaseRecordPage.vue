@@ -174,6 +174,7 @@
               :case-title="caseRecord?.title || ''"
               :case-description="caseRecord?.description || ''"
               :case-record-id="caseRecord?._id ? String(caseRecord._id) : ''"
+              :suggested-reply="caseRecord?.aiAssist?.suggestedReply || null"
             />
           </template>
         </RecordRightPane>
@@ -310,6 +311,7 @@
               :case-title="caseRecord?.title || ''"
               :case-description="caseRecord?.description || ''"
               :case-record-id="caseRecord?._id ? String(caseRecord._id) : ''"
+              :suggested-reply="caseRecord?.aiAssist?.suggestedReply || null"
             />
             </template>
           </RecordRightPane>

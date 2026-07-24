@@ -134,7 +134,7 @@ Every invoice line sourced from a sales order MUST retain: `sourceSalesOrderLine
 
 ### 5.1 `Invoice` (header)
 
-First-class MongoDB document. Auto-number per org: `INV-{seq}` (configurable prefix).
+First-class MongoDB document. Auto-number per org via Module Numbering (`Settings → Automation → Module Numbering`): default `INV-{SEQ}` (credit notes use separate `CN-{SEQ}` sequence).
 
 ```javascript
 // server/models/Invoice.js (planned)

@@ -114,6 +114,7 @@ export type AstraSurface =
   | 'context_sidebar'
   | 'record_panel'
   | 'email_meeting_assist'
+  | 'side_panel'
 
 export function captureAstraAskInvoked(props: {
   surface: AstraSurface

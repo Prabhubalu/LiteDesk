@@ -41,10 +41,11 @@ function previewFromMessages(messages = []) {
 function summarize(doc) {
   if (!doc) return null;
   const messages = Array.isArray(doc.messages) ? doc.messages : [];
+  const preview = String(doc.preview || '').trim() || previewFromMessages(messages);
   return {
     id: String(doc._id),
     title: doc.title || 'New conversation',
-    preview: previewFromMessages(messages),
+    preview,
     messageCount: Number(doc.messageCount || messages.length || 0),
     updatedAt: doc.updatedAt || doc.createdAt || null,
     createdAt: doc.createdAt || null,
@@ -88,14 +89,69 @@ function toLlmHistory(doc, limit = 8) {
     .map((m) => ({ role: m.role, content: String(m.body || '') }));
 }
 
-async function listConversations({ organizationId, userId, limit = 40 } = {}) {
-  if (!organizationId || !userId) return [];
-  const rows = await AiConversation.find({ organizationId, userId })
-    .sort({ updatedAt: -1 })
-    .limit(Math.min(Math.max(Number(limit) || 40, 1), 100))
-    .select('title messages messageCount createdAt updatedAt')
+function encodeListCursor(updatedAt, id) {
+  if (!updatedAt || !id) return null;
+  const ts = updatedAt instanceof Date ? updatedAt.toISOString() : new Date(updatedAt).toISOString();
+  if (Number.isNaN(Date.parse(ts))) return null;
+  return Buffer.from(JSON.stringify({ u: ts, i: String(id) }), 'utf8').toString('base64url');
+}
+
+function decodeListCursor(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
+    const updatedAt = new Date(parsed?.u);
+    const id = String(parsed?.i || '');
+    if (Number.isNaN(updatedAt.getTime()) || !isObjectId(id)) return null;
+    return { updatedAt, id };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Cursor-paginated conversation summaries (newest first).
+ * No total cap — clients load more via `nextCursor`.
+ */
+async function listConversations({
+  organizationId,
+  userId,
+  limit = 40,
+  cursor = null,
+} = {}) {
+  if (!organizationId || !userId) {
+    return { conversations: [], nextCursor: null, hasMore: false };
+  }
+
+  const pageSize = Math.min(Math.max(Number(limit) || 40, 1), 50);
+  const filter = { organizationId, userId };
+  const decoded = decodeListCursor(cursor);
+  if (decoded) {
+    const cursorId = new mongoose.Types.ObjectId(decoded.id);
+    filter.$or = [
+      { updatedAt: { $lt: decoded.updatedAt } },
+      { updatedAt: decoded.updatedAt, _id: { $lt: cursorId } },
+    ];
+  }
+
+  const rows = await AiConversation.find(filter)
+    .sort({ updatedAt: -1, _id: -1 })
+    .limit(pageSize + 1)
+    .select('title preview messageCount createdAt updatedAt')
     .lean();
-  return rows.map(summarize);
+
+  const hasMore = rows.length > pageSize;
+  const page = hasMore ? rows.slice(0, pageSize) : rows;
+  const last = page[page.length - 1];
+  const nextCursor = hasMore && last
+    ? encodeListCursor(last.updatedAt, last._id)
+    : null;
+
+  return {
+    conversations: page.map(summarize),
+    nextCursor,
+    hasMore,
+  };
 }
 
 async function getConversation({ organizationId, userId, conversationId } = {}) {
@@ -192,6 +248,7 @@ async function appendTurn({
   }
 
   doc.messageCount = doc.messages.length;
+  doc.preview = previewFromMessages(doc.messages);
   if ((!doc.title || doc.title === 'New conversation') && userBody) {
     doc.title = titleFromQuery(userBody);
   }

@@ -35,6 +35,12 @@ const eventSchema = new Schema({
     unique: true,
     default: () => uuidv4()
   },
+
+  eventNumber: {
+    type: String,
+    trim: true,
+    index: true,
+  },
   
   // Basic Information
   eventName: { 
@@ -501,6 +507,7 @@ eventSchema.index({ geoRequired: 1, 'checkIn.timestamp': 1 });
 eventSchema.index({ executionStartTime: 1 });
 eventSchema.index({ organizationId: 1, deletedAt: 1 });
 eventSchema.index({ organizationId: 1, 'appointment.isAppointment': 1, startDateTime: 1 });
+eventSchema.index({ organizationId: 1, eventNumber: 1 }, { unique: true, sparse: true });
 // eventId is already indexed via unique: true, no need for explicit index
 
 // Virtual for duration
@@ -656,6 +663,18 @@ eventSchema.pre('save', function(next) {
 // Enforce:
 // - If reviewerId === auditor (assignedTo), allowSelfReview MUST be true
 // - If allowSelfReview = false, reviewerId MUST be different from auditor (assignedTo)
+eventSchema.pre('validate', async function assignEventNumber(next) {
+  if (!this.eventNumber && this.isNew) {
+    try {
+      const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+      await assignModuleRecordNumber(this, { moduleKey: 'events', fieldKey: 'eventNumber' });
+    } catch (err) {
+      return next(err);
+    }
+  }
+  return next();
+});
+
 eventSchema.pre('validate', function (next) {
   try {
     // Canonicalize legacy eventType label before enum validation.

@@ -437,7 +437,7 @@ const routes = [
     path: '/astra',
     name: 'astra',
     component: () => import('@/astra/surfaces/GlobalCopilot.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresAiSuite: true }
   },
   {
     path: '/live-chat/sessions',
@@ -686,6 +686,15 @@ const routes = [
     path: '/control/inbound-parser',
     name: 'control-inbound-parser',
     component: () => import('@/views/ControlPlaneInboundParser.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPlatformAdmin: true
+    }
+  },
+  {
+    path: '/control/ai',
+    name: 'control-ai',
+    component: () => import('@/views/ControlPlaneAiSettings.vue'),
     meta: {
       requiresAuth: true,
       requiresPlatformAdmin: true
@@ -1970,6 +1979,15 @@ router.beforeEach(async (to, from, next) => {
     alert('This feature is only available to platform administrators.')
     next(getDefaultRoute(authStore))
     return
+  }
+
+  if (to.meta.requiresAiSuite) {
+    const { isAiSuiteEntitled } = await import('@/utils/aiSuiteEntitlement')
+    if (!isAiSuiteEntitled(authStore.user)) {
+      logNavDebug('Blocked: Arivu AI suite not entitled')
+      next(getDefaultRoute(authStore))
+      return
+    }
   }
   
   // Check if route requires admin (Phase 15)

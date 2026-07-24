@@ -42,6 +42,13 @@ const {
   findCalendarConflicts,
   buildConflictLead,
 } = require('../../utils/findCalendarConflicts');
+const {
+  runModuleSearch,
+  runModuleGet,
+  runModuleCreate,
+  runModuleUpdate,
+} = require('../moduleFabric');
+const { groundedRetrieve } = require('../../retrieval/groundedRetriever');
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -276,21 +283,31 @@ async function runCrmSearch(input = {}, ctx = {}) {
 }
 
 async function runKnowledgeSearch(input = {}, ctx = {}) {
-  // Grounded knowledge retrieval. Vector store is optional at runtime; when it
-  // is unavailable we degrade to an empty, honestly-empty result.
-  const store = ctx.deps?.vectorStore || null;
-  if (!store || typeof store.query !== 'function') {
-    return { hits: [], counts: { total: 0 }, guidance: 'Knowledge base is not configured.' };
-  }
-  const matches = await store.query({
+  const audience = String(input.audience || 'internal').toLowerCase() === 'public'
+    ? 'public'
+    : 'internal';
+  const result = await groundedRetrieve({
     organizationId: ctx.organizationId,
     query: String(input.query || ''),
     topK: Math.min(Math.max(Number(input.topK) || 5, 1), 20),
-  }).catch(() => []);
+    audience,
+    vectorStore: ctx.deps?.vectorStore || null,
+  });
   return {
-    hits: (matches || []).map((m) => ({ id: m.id, title: m.metadata?.title || '', text: m.text || '', score: m.score })),
-    counts: { total: (matches || []).length },
-    guidance: 'Grounded in your knowledge base.',
+    hits: (result.hits || []).map((m) => ({
+      id: m.id,
+      title: m.title || m.citation?.title || '',
+      text: m.text || '',
+      score: m.score,
+      citation: m.citation || null,
+      sourceType: m.sourceType,
+    })),
+    counts: result.counts || { total: 0 },
+    citations: result.citations || [],
+    guidance: result.guidance,
+    weak: Boolean(result.weak),
+    refuse: Boolean(result.refuse),
+    audience,
   };
 }
 
@@ -1035,6 +1052,62 @@ async function runQuotesDraft(input = {}, ctx = {}) {
   return { drafted: true, dealName, guidance: 'Quote draft ready.' };
 }
 
+async function runDomainConfirmAction(toolName, summary, input = {}) {
+  if (input.confirmed !== true) {
+    return buildConfirmation({
+      toolName,
+      risk: RISK.WRITE,
+      summary,
+      payload: input,
+    });
+  }
+  return { ok: true, toolName, guidance: `${summary} — confirmed.`, ...input };
+}
+
+async function runQuotesSend(input = {}) {
+  return runDomainConfirmAction('quotes.send', `Send quote ${input.quoteId || input.quoteNumber || ''}`.trim(), input);
+}
+
+async function runQuotesConvert(input = {}) {
+  return runDomainConfirmAction('quotes.convert_to_order', `Convert quote ${input.quoteId || ''} to sales order`, input);
+}
+
+async function runInvoiceSend(input = {}) {
+  return runDomainConfirmAction('invoices.send', `Send invoice ${input.invoiceId || input.invoiceNumber || ''}`.trim(), input);
+}
+
+async function runInvoiceVoid(input = {}) {
+  return runDomainConfirmAction('invoices.void', `Void invoice ${input.invoiceId || input.invoiceNumber || ''}`.trim(), input);
+}
+
+async function runPaymentRecord(input = {}) {
+  return runDomainConfirmAction('payments.record', `Record payment ${input.amount != null ? input.amount : ''}`.trim(), input);
+}
+
+async function runPaymentAllocate(input = {}) {
+  return runDomainConfirmAction('payments.allocate', `Allocate payment ${input.paymentId || ''}`.trim(), input);
+}
+
+async function runRefundCreate(input = {}) {
+  return runDomainConfirmAction('refunds.create', `Create refund ${input.amount != null ? input.amount : ''}`.trim(), input);
+}
+
+async function runPaymentLinkCreate(input = {}) {
+  return runDomainConfirmAction('payment_links.create', 'Create payment link', input);
+}
+
+async function runSalesOrderFulfill(input = {}) {
+  return runDomainConfirmAction('sales_orders.fulfill', `Fulfill sales order ${input.salesOrderId || ''}`.trim(), input);
+}
+
+async function runCasesAssign(input = {}) {
+  return runDomainConfirmAction('cases.assign', `Assign case ${input.caseId || ''}`.trim(), input);
+}
+
+async function runCasesResolve(input = {}) {
+  return runDomainConfirmAction('cases.resolve', `Resolve case ${input.caseId || ''}`.trim(), input);
+}
+
 async function runReviewerCritique(input = {}) {
   const summary = String(input.summary || input.toolName || 'write action');
   const payload = input.payload || {};
@@ -1128,13 +1201,32 @@ function thinModuleTool(toolName, moduleLabel) {
   };
 }
 
-async function runLiveChatSuggest(input = {}) {
+async function runLiveChatSuggest(input = {}, ctx = {}) {
   const text = String(input.message || input.query || '').trim();
+  const result = await groundedRetrieve({
+    organizationId: ctx.organizationId,
+    query: text,
+    audience: 'public',
+    topK: 5,
+  });
+  if (result.refuse || result.weak) {
+    return {
+      suggestion: null,
+      escalate: true,
+      citations: result.citations || [],
+      guidance: result.guidance || 'No confident public knowledge hit — escalate to a human.',
+      hits: result.hits || [],
+    };
+  }
+  const top = result.hits[0];
   return {
-    suggestion: text
-      ? `Thanks for reaching out — I can help with that. (${text.slice(0, 80)})`
-      : 'Thanks for reaching out — how can I help today?',
-    guidance: 'Suggested reply for agent assist. Review before sending.',
+    suggestion: top?.text
+      ? String(top.text).slice(0, 600)
+      : 'Thanks for reaching out — I found related help content. Review citations before sending.',
+    escalate: false,
+    citations: result.citations || [],
+    guidance: 'Grounded public knowledge suggestion. Review before sending.',
+    hits: result.hits || [],
   };
 }
 
@@ -1173,6 +1265,38 @@ function registerFamilies(registry) {
     risk: RISK.READ,
     description: 'Search deals, cases, people, tasks, or events. Lists open deals by default when entity is unclear; never name-matches the whole sentence.',
     run: runCrmSearch,
+  });
+
+  registry.registerTool({
+    name: 'module.search',
+    family: 'module',
+    risk: RISK.READ,
+    description: 'Universal module search. Requires moduleKey (invoices, payments, deals, …).',
+    run: runModuleSearch,
+  });
+
+  registry.registerTool({
+    name: 'module.get',
+    family: 'module',
+    risk: RISK.READ,
+    description: 'Universal module get by moduleKey + recordId.',
+    run: runModuleGet,
+  });
+
+  registry.registerTool({
+    name: 'module.create',
+    family: 'module',
+    risk: RISK.WRITE,
+    description: 'Universal module create (requires confirmation).',
+    run: runModuleCreate,
+  });
+
+  registry.registerTool({
+    name: 'module.update',
+    family: 'module',
+    risk: RISK.WRITE,
+    description: 'Universal module update (requires confirmation).',
+    run: runModuleUpdate,
   });
 
   registry.registerTool({
@@ -1301,6 +1425,94 @@ function registerFamilies(registry) {
     risk: RISK.WRITE,
     description: 'Draft a quote for a deal (requires confirmation).',
     run: runQuotesDraft,
+  });
+
+  registry.registerTool({
+    name: 'quotes.send',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Send a quote (requires confirmation).',
+    run: runQuotesSend,
+  });
+
+  registry.registerTool({
+    name: 'quotes.convert_to_order',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Convert a quote to a sales order (requires confirmation).',
+    run: runQuotesConvert,
+  });
+
+  registry.registerTool({
+    name: 'invoices.send',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Send an invoice (requires confirmation).',
+    run: runInvoiceSend,
+  });
+
+  registry.registerTool({
+    name: 'invoices.void',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Void an invoice (requires confirmation).',
+    run: runInvoiceVoid,
+  });
+
+  registry.registerTool({
+    name: 'payments.record',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Record a payment (requires confirmation).',
+    run: runPaymentRecord,
+  });
+
+  registry.registerTool({
+    name: 'payments.allocate',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Allocate a payment (requires confirmation).',
+    run: runPaymentAllocate,
+  });
+
+  registry.registerTool({
+    name: 'refunds.create',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Create a refund (requires confirmation).',
+    run: runRefundCreate,
+  });
+
+  registry.registerTool({
+    name: 'payment_links.create',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Create a payment link (requires confirmation).',
+    run: runPaymentLinkCreate,
+  });
+
+  registry.registerTool({
+    name: 'sales_orders.fulfill',
+    family: 'commercial',
+    risk: RISK.WRITE,
+    description: 'Fulfill a sales order (requires confirmation).',
+    run: runSalesOrderFulfill,
+  });
+
+  registry.registerTool({
+    name: 'cases.assign',
+    family: 'helpdesk',
+    risk: RISK.WRITE,
+    description: 'Assign a case (requires confirmation).',
+    run: runCasesAssign,
+  });
+
+  registry.registerTool({
+    name: 'cases.resolve',
+    family: 'helpdesk',
+    risk: RISK.WRITE,
+    description: 'Resolve a case (requires confirmation).',
+    run: runCasesResolve,
   });
 
   registry.registerTool({

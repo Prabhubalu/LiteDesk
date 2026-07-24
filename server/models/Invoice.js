@@ -144,8 +144,17 @@ InvoiceSchema.pre('validate', async function assignInvoiceIds(next) {
     }
     if (this.invoiceNumber) return next();
 
-    const InvoiceModel = this.constructor;
     const invoiceType = String(this.invoiceType || INVOICE_TYPE_DEFAULT);
+    const { allocate, resolveInvoiceModuleKey } = require('../services/moduleNumberingService');
+    const result = await allocate({
+      organizationId: this.organizationId,
+      moduleKey: resolveInvoiceModuleKey(invoiceType),
+    });
+    if (result?.recordId) {
+      this.invoiceNumber = result.recordId;
+      return next();
+    }
+    const InvoiceModel = this.constructor;
     const prefix = invoiceType === 'credit_note' ? 'CN' : 'INV';
     const count = await InvoiceModel.countDocuments({
       organizationId: this.organizationId,

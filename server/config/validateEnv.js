@@ -1,13 +1,18 @@
 /**
  * Environment validation for production. Keep failures loud and early.
+ *
+ * Platform LLM keys/defaults: prefer Control Plane → Platform AI (DB).
+ * Env keys remain a fallback. Legacy ASTRA_* v1 flags are ignored by Astra v2.
  */
 function validateEnv() {
   const isProd = process.env.NODE_ENV === 'production';
-  const defaultProvider = String(process.env.AI_DEFAULT_LLM_PROVIDER || 'openai').toLowerCase();
+  const defaultProvider = String(
+    process.env.AI_DEFAULT_LLM_PROVIDER || 'anthropic'
+  ).toLowerCase();
   const vectorStore = String(process.env.AI_VECTOR_STORE || 'atlas').toLowerCase();
 
   if (!['openai', 'azure_openai', 'anthropic', 'gemini', 'openrouter', 'nvidia', 'bedrock'].includes(defaultProvider)) {
-    console.warn(`⚠️  Unknown AI_DEFAULT_LLM_PROVIDER=${defaultProvider}. AI requests will return NOT_CONFIGURED until a supported provider is selected.`);
+    console.warn(`⚠️  Unknown AI_DEFAULT_LLM_PROVIDER=${defaultProvider}. Prefer Control Plane → Platform AI defaults; env is fallback only.`);
   }
 
   if (!['atlas', 'mongo', 'memory', 'qdrant'].includes(vectorStore)) {
@@ -23,6 +28,23 @@ function validateEnv() {
   if (['1', 'true', 'yes', 'on'].includes(astraV2Shadow)) {
     console.warn('⚠️  ASTRA_V2_SHADOW is on. Astra v2 runs for comparison but its answers are NOT surfaced to users.');
   }
+
+  // Legacy flags — safe to remove from .env when on Astra v2.
+  const legacyAstraFlags = [
+    'ASTRA_PIPELINE_V2',
+    'ASTRA_AUTOPILOT_V1',
+    'ASTRA_SUPER_AGENTS_V1',
+    'ENABLE_ASTRA_SUPER_AGENT_SCHEDULER',
+    'ASTRA_COACH_V1',
+    'ASTRA_COACH_LLM',
+  ];
+  const presentLegacy = legacyAstraFlags.filter((key) => process.env[key] !== undefined && process.env[key] !== '');
+  if (presentLegacy.length) {
+    console.warn(
+      `⚠️  Legacy Astra env vars present (${presentLegacy.join(', ')}). Astra v2 uses ASTRA_V2 / ASTRA_V2_SHADOW; these can be removed.`
+    );
+  }
+
   if (vectorStore === 'atlas' && process.env.AI_ATLAS_VECTOR_INDEX === '') {
     console.warn('⚠️  AI_ATLAS_VECTOR_INDEX is empty. Atlas vector search will use the default index name.');
   }
@@ -47,13 +69,16 @@ function validateEnv() {
       );
     }
     if (defaultProvider === 'openai' && !process.env.OPENAI_API_KEY && !process.env.AI_OPENAI_API_KEY) {
-      console.warn('⚠️  OpenAI is the default AI provider but OPENAI_API_KEY / AI_OPENAI_API_KEY is not set. Platform-key AI will return NOT_CONFIGURED.');
+      console.warn('⚠️  OpenAI is the env default AI provider but OPENAI_API_KEY is not set. Configure Control Plane → Platform AI or set the env key.');
+    }
+    if (defaultProvider === 'anthropic' && !process.env.ANTHROPIC_API_KEY) {
+      console.warn('⚠️  Anthropic is the env default AI provider but ANTHROPIC_API_KEY is not set. Configure Control Plane → Platform AI or set the env key.');
     }
     if (defaultProvider === 'openrouter' && !process.env.OPENROUTER_API_KEY && !process.env.AI_OPENROUTER_API_KEY) {
-      console.warn('⚠️  OpenRouter is the default AI provider but OPENROUTER_API_KEY / AI_OPENROUTER_API_KEY is not set. Platform-key AI will return NOT_CONFIGURED.');
+      console.warn('⚠️  OpenRouter is the env default AI provider but OPENROUTER_API_KEY is not set. Configure Control Plane → Platform AI or set the env key.');
     }
     if (defaultProvider === 'nvidia' && !process.env.NVIDIA_API_KEY && !process.env.AI_NVIDIA_API_KEY) {
-      console.warn('⚠️  NVIDIA is the default AI provider but NVIDIA_API_KEY / AI_NVIDIA_API_KEY is not set. Platform-key AI will return NOT_CONFIGURED.');
+      console.warn('⚠️  NVIDIA is the env default AI provider but NVIDIA_API_KEY is not set. Configure Control Plane → Platform AI or set the env key.');
     }
     if (vectorStore === 'atlas' && !process.env.AI_ATLAS_VECTOR_INDEX) {
       console.warn('⚠️  AI_VECTOR_STORE=atlas uses Atlas Vector Search index ai_vector_chunks_embedding by default. Set AI_ATLAS_VECTOR_INDEX if your index uses another name.');

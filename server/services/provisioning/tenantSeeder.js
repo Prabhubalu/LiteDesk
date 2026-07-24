@@ -419,6 +419,15 @@ async function seedTenantDatabase(orgConnection, organization, options = {}) {
     summary.tenantModuleConfigurations = await seedTenantModuleConfigurations(orgConnection, organization);
     log(`  ✅ TenantModuleConfiguration: ${summary.tenantModuleConfigurations.created} created, ${summary.tenantModuleConfigurations.skipped} skipped`);
 
+    try {
+        const moduleNumberingService = require('../moduleNumberingService');
+        summary.moduleNumbering = await moduleNumberingService.seedDefaultsForOrg(organization._id);
+        log(`  ✅ ModuleNumbering: ${summary.moduleNumbering.created} created, ${summary.moduleNumbering.skipped} skipped`);
+    } catch (err) {
+        log(`  ⚠️ ModuleNumbering seed skipped: ${err.message}`);
+        summary.moduleNumbering = { created: 0, skipped: 0, error: err.message };
+    }
+
     log(`✅ Tenant DB seed complete: ${dbName}\n`);
     return summary;
 }

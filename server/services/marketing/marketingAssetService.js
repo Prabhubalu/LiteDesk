@@ -42,7 +42,14 @@ function withAssetUrls(asset) {
   };
 }
 
-function generateAssetId() {
+async function generateAssetId(organizationId) {
+  try {
+    const { allocate } = require('../moduleNumberingService');
+    const result = await allocate({ organizationId, moduleKey: 'assets' });
+    if (result?.recordId) return result.recordId;
+  } catch (err) {
+    console.warn('[marketingAssetService] numbering allocate failed:', err?.message || err);
+  }
   if (typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
@@ -194,7 +201,7 @@ async function uploadAsset(params) {
 
   const asset = await MarketingAsset.create({
     organizationId,
-    assetId: generateAssetId(),
+    assetId: await generateAssetId(organizationId),
     type: assetType,
     mimeType: uploadResult.mimeType || file.mimetype,
     filename: uploadResult.fileName || file.originalname,

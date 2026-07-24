@@ -16508,16 +16508,16 @@
     "description": "AI settings agents tab"
   },
   "aiAgentsTitle": {
-    "message": "Built-in AI workforce",
+    "message": "AI workforce agents",
     "description": "Agents catalog section title"
   },
   "aiAgentsHint": {
-    "message": "Astra ships these agents and tools out of the box. You do not create agents or tools — every enabled app is covered by this catalog.",
+    "message": "Every agent is yours for this workspace. We seed Arivu defaults the first time you open this page; edit prompts and tools freely, and revert any seeded agent back to the platform default anytime.",
     "description": "Agents catalog section hint"
   },
   "aiAgentsOotbNote": {
-    "message": "{agentCount} agents · {toolCount} tools (read-only catalog)",
-    "description": "Agents catalog summary counts"
+    "message": "{agentCount} agents · {toolCount} tools",
+    "description": "Agents catalog summary counts (legacy)"
   },
   "aiAgentsSearchPlaceholder": {
     "message": "Search agents or tools…",
@@ -17290,5 +17290,577 @@
   "auditLogColChanges": {
     "message": "Changes",
     "description": "Audit table column: change summary for a save"
+  },
+  "automationModuleNumbering": {
+    "message": "Module Numbering",
+    "description": "Automation hub module numbering option"
+  },
+  "automationModuleNumberingDesc": {
+    "message": "Configure unique Record ID formats for every module.",
+    "description": "Module numbering option description"
+  },
+  "moduleNumberingEditDesc": {
+    "message": "Changes apply only to newly created records. Existing Record IDs never change.",
+    "description": "Module numbering edit page description"
+  },
+  "moduleNumberingColModule": {
+    "message": "Module",
+    "description": "Module numbering list column"
+  },
+  "moduleNumberingColFormat": {
+    "message": "Current Format",
+    "description": "Module numbering list column"
+  },
+  "moduleNumberingColSequence": {
+    "message": "Current Sequence",
+    "description": "Module numbering list column"
+  },
+  "moduleNumberingColAuto": {
+    "message": "Auto Numbering",
+    "description": "Module numbering list column"
+  },
+  "moduleNumberingColUpdated": {
+    "message": "Last Updated",
+    "description": "Module numbering list column"
+  },
+  "moduleNumberingModule": {
+    "message": "Module",
+    "description": "Module numbering field label"
+  },
+  "moduleNumberingAuto": {
+    "message": "Auto Numbering",
+    "description": "Module numbering toggle label"
+  },
+  "moduleNumberingAutoHint": {
+    "message": "When disabled, the platform uses internal Record ID generation.",
+    "description": "Module numbering toggle hint"
+  },
+  "moduleNumberingFormat": {
+    "message": "Format",
+    "description": "Module numbering format label"
+  },
+  "moduleNumberingFormatHint": {
+    "message": "Use '{PREFIX}', '{YYYY}', '{YY}', '{MM}', '{DD}', '{SEQ}', '{SUFFIX}'. Exactly one '{SEQ}' required.",
+    "description": "Module numbering format hint"
+  },
+  "moduleNumberingPreview": {
+    "message": "Preview",
+    "description": "Module numbering preview label"
+  },
+  "moduleNumberingPrefix": {
+    "message": "Prefix",
+    "description": "Module numbering prefix label"
+  },
+  "moduleNumberingSuffix": {
+    "message": "Suffix",
+    "description": "Module numbering suffix label"
+  },
+  "moduleNumberingSeqLength": {
+    "message": "Sequence Length",
+    "description": "Module numbering sequence length label"
+  },
+  "moduleNumberingStarting": {
+    "message": "Starting Sequence",
+    "description": "Module numbering starting sequence label"
+  },
+  "moduleNumberingCurrent": {
+    "message": "Current Sequence",
+    "description": "Module numbering current sequence label"
+  },
+  "moduleNumberingReset": {
+    "message": "Sequence Reset",
+    "description": "Module numbering reset rule label"
+  },
+  "moduleNumberingResetNever": {
+    "message": "Never",
+    "description": "Reset rule option"
+  },
+  "moduleNumberingResetDaily": {
+    "message": "Daily",
+    "description": "Reset rule option"
+  },
+  "moduleNumberingResetMonthly": {
+    "message": "Monthly",
+    "description": "Reset rule option"
+  },
+  "moduleNumberingResetYearly": {
+    "message": "Yearly",
+    "description": "Reset rule option"
+  },
+  "moduleNumberingManual": {
+    "message": "Allow Manual Record ID",
+    "description": "Manual edit toggle"
+  },
+  "moduleNumberingManualHint": {
+    "message": "When enabled, users with permission can edit Record IDs (uniqueness validated).",
+    "description": "Manual edit hint"
+  },
+  "moduleNumberingResync": {
+    "message": "Update Missing Record Sequence",
+    "description": "Resync sequence action"
+  },
+  "moduleNumberingLoadFailed": {
+    "message": "Failed to load module numbering",
+    "description": "Error toast"
+  },
+  "moduleNumberingSaveFailed": {
+    "message": "Failed to save module numbering",
+    "description": "Error toast"
+  },
+  "moduleNumberingResyncFailed": {
+    "message": "Failed to resync sequence",
+    "description": "Error toast"
+  },
+  "moduleNumberingEnabled": {
+    "message": "Enabled",
+    "description": "Auto numbering enabled badge"
+  },
+  "moduleNumberingDisabled": {
+    "message": "Disabled",
+    "description": "Auto numbering disabled badge"
+  },
+  "moduleNumberingColSequenceHint": {
+    "message": "Last {SEQ} used for new Record IDs. Not the total number of records.",
+    "description": "Tooltip/help for sequence column"
+  },
+  "moduleNumberingPatternTitle": {
+    "message": "ID pattern",
+    "description": "Format builder section title"
+  },
+  "moduleNumberingPatternHelp": {
+    "message": "Pick a pattern, then set your prefix. Preview updates instantly.",
+    "description": "Format builder help"
+  },
+  "moduleNumberingPresetSimple": {
+    "message": "Prefix + number",
+    "description": "Simple numbering preset"
+  },
+  "moduleNumberingPresetYear": {
+    "message": "Include year",
+    "description": "Year numbering preset"
+  },
+  "moduleNumberingPresetYearMonth": {
+    "message": "Include year and month",
+    "description": "Year-month numbering preset"
+  },
+  "moduleNumberingPresetYearMonthDay": {
+    "message": "Include full date",
+    "description": "Full date numbering preset"
+  },
+  "moduleNumberingPrefixPh": {
+    "message": "e.g. ITM",
+    "description": "Prefix placeholder"
+  },
+  "moduleNumberingSuffixPh": {
+    "message": "Optional",
+    "description": "Suffix placeholder"
+  },
+  "moduleNumberingSeparator": {
+    "message": "Separator",
+    "description": "Separator between ID parts"
+  },
+  "moduleNumberingSepDash": {
+    "message": "Dash (-)",
+    "description": "Dash separator option"
+  },
+  "moduleNumberingSepSlash": {
+    "message": "Slash (/)",
+    "description": "Slash separator option"
+  },
+  "moduleNumberingShowCustom": {
+    "message": "Advanced: edit format manually",
+    "description": "Show custom format editor"
+  },
+  "moduleNumberingHideCustom": {
+    "message": "Hide advanced format",
+    "description": "Hide custom format editor"
+  },
+  "moduleNumberingCustomHelp": {
+    "message": "Click a token to insert it. The format must include Sequence once.",
+    "description": "Custom format help"
+  },
+  "moduleNumberingFormatLabel": {
+    "message": "Format",
+    "description": "Read-only format label"
+  },
+  "moduleNumberingSeqLengthHint": {
+    "message": "How many digits to pad (e.g. 6 → 000001)",
+    "description": "Sequence length hint"
+  },
+  "moduleNumberingFormatNeedsSeq": {
+    "message": "Format must include the sequence number once.",
+    "description": "Validation when SEQ missing"
+  },
+  "moduleNumberingTokenPrefix": {
+    "message": "Your prefix text",
+    "description": "Token tooltip"
+  },
+  "moduleNumberingTokenYyyy": {
+    "message": "Full year (2026)",
+    "description": "Token tooltip"
+  },
+  "moduleNumberingTokenYy": {
+    "message": "Two-digit year (26)",
+    "description": "Token tooltip"
+  },
+  "moduleNumberingTokenMm": {
+    "message": "Month (01–12)",
+    "description": "Token tooltip"
+  },
+  "moduleNumberingTokenDd": {
+    "message": "Day (01–31)",
+    "description": "Token tooltip"
+  },
+  "moduleNumberingTokenSeq": {
+    "message": "Running sequence number (required)",
+    "description": "Token tooltip"
+  },
+  "moduleNumberingTokenSuffix": {
+    "message": "Your suffix text",
+    "description": "Token tooltip"
+  },
+  "moduleNumberingResyncSaveFirst": {
+    "message": "Save your changes before updating the sequence.",
+    "description": "Tooltip when resync disabled due to dirty form"
+  },
+  "moduleNumberingColField": {
+    "message": "Field name",
+    "description": "Column for the module record ID field key"
+  },
+  "moduleNumberingSearchPh": {
+    "message": "Search modules…",
+    "description": "Module numbering list search placeholder"
+  },
+  "moduleNumberingEmptyTitle": {
+    "message": "No module numbering configs",
+    "description": "Empty state title"
+  },
+  "moduleNumberingEmptyBody": {
+    "message": "Numbering configs will appear here once modules are available.",
+    "description": "Empty state body"
+  },
+  "aiProviderArivu": {
+    "message": "Arivu (default)",
+    "description": "Platform default AI provider option"
+  },
+  "aiArivuModelHint": {
+    "message": "Uses the platform default provider and model from Control Plane → Platform AI.",
+    "description": "Hint when Arivu default provider is selected"
+  },
+  "aiProviderModePlatformHint": {
+    "message": "Uses Arivu platform keys and your token pool.",
+    "description": "Hint when Arivu provider selected"
+  },
+  "aiProviderModeByokHint": {
+    "message": "Bring your own key — Arivu does not debit tokens for this provider.",
+    "description": "Hint when a BYOK provider is selected"
+  },
+  "addonsAiCreditsTitle": {
+    "message": "AI token packs",
+    "description": "AI credits addon settings title"
+  },
+  "addonsAiCreditsDesc": {
+    "message": "Purchase additional AI tokens for Arivu (platform) metering. Tokens apply immediately to your organization balance.",
+    "description": "AI credits addon settings description"
+  },
+  "addonsAiCreditsBalanceTitle": {
+    "message": "Current balance",
+    "description": "AI tokens balance section title"
+  },
+  "addonsAiCreditsTokensRemaining": {
+    "message": "Tokens remaining",
+    "description": "AI tokens remaining label"
+  },
+  "addonsAiCreditsPacksTitle": {
+    "message": "Available packs",
+    "description": "AI token packs list title"
+  },
+  "addonsAiCreditsPackTokens": {
+    "message": "{count} tokens",
+    "description": "AI token pack size label"
+  },
+  "addonsAiCreditsPurchase": {
+    "message": "Purchase",
+    "description": "Purchase AI token pack button"
+  },
+  "addonsAiCreditsPurchaseSuccess": {
+    "message": "Token pack applied to your account",
+    "description": "AI token pack purchase success toast"
+  },
+  "addonsAiCreditsPurchaseFailed": {
+    "message": "Failed to purchase token pack",
+    "description": "AI token pack purchase failure toast"
+  },
+  "addonsAiCreditsNotInstalled": {
+    "message": "Install the AI Credit Packs addon from the marketplace first.",
+    "description": "AI credits settings when addon not installed"
+  },
+  "addonsAiCreditsBuy": {
+    "message": "Buy tokens",
+    "description": "Open AI token packs purchase panel"
+  },
+  "addonsAiCreditsBalanceShort": {
+    "message": "{count} tokens remaining",
+    "description": "Installed addon AI tokens summary"
+  },
+  "addonsAiCreditsBillingNote": {
+    "message": "Purchases are applied immediately. Tokens are consumed only when using Arivu (platform) AI. BYOK usage is not billed against this balance. Stripe checkout can be wired later.",
+    "description": "AI token packs billing disclaimer"
+  },
+  "addonsPricingAiPacksHint": {
+    "message": "Set pack size in internal credits (1 credit = 1,000 tokens). Example: 1,000 credits = 1,000,000 tokens. priceCents is the tenant purchase price (e.g. 1000 = $10.00).",
+    "description": "Platform pricing hint for AI token packs"
+  },
+  "addonsPricingUsagePacksHint": {
+    "message": "Configure purchasable credit packs (credits and price in cents).",
+    "description": "Platform pricing hint for usage credit packs"
+  },
+  "addonsPricingPackKey": {
+    "message": "Pack key",
+    "description": "Credit pack key column"
+  },
+  "addonsPricingPackName": {
+    "message": "Display name",
+    "description": "Credit pack name column"
+  },
+  "addonsPricingPackCredits": {
+    "message": "Credits",
+    "description": "Credit pack credits column"
+  },
+  "addonsPricingPackCreditsAi": {
+    "message": "Credits (×1k tokens)",
+    "description": "AI pack internal credits column"
+  },
+  "addonsPricingPackTokens": {
+    "message": "Tokens",
+    "description": "AI pack tokens preview column"
+  },
+  "addonsPricingPackPriceCents": {
+    "message": "Price (cents)",
+    "description": "Credit pack price cents column"
+  },
+  "addonsPricingAddPack": {
+    "message": "Add pack",
+    "description": "Add credit pack row button"
+  },
+  "aiTokensAvailable": {
+    "message": "Available tokens",
+    "description": "AI available token balance label"
+  },
+  "aiTokensConsumed": {
+    "message": "Consumed tokens",
+    "description": "AI consumed token balance label"
+  },
+  "aiTokensReset": {
+    "message": "Reset to 1,000,000 tokens",
+    "description": "Reset AI token pool button"
+  },
+  "aiTokensResetSuccess": {
+    "message": "Token pool reset to 1,000,000 available tokens",
+    "description": "AI token pool reset success"
+  },
+  "aiTokensResetFailed": {
+    "message": "Failed to reset token pool",
+    "description": "AI token pool reset failure"
+  },
+  "aiUsageDateFrom": {
+    "message": "From",
+    "description": "AI usage custom date range start"
+  },
+  "aiUsageDateTo": {
+    "message": "To",
+    "description": "AI usage custom date range end"
+  },
+  "aiUsageApplyRange": {
+    "message": "Apply",
+    "description": "Apply AI usage date range filter"
+  },
+  "aiAgentsCatalogNote": {
+    "message": "{agentCount} agents · {toolCount} tools · {customized} customized",
+    "description": "Tenant agents catalog summary"
+  },
+  "aiAgentsToolsHint": {
+    "message": "Choose which tools this agent may use. Disabled tools are grayed out. Edit a tool to change its label, description, or availability for the whole workspace.",
+    "description": "Agent tools tab hint"
+  },
+  "aiAgentsFilterModified": {
+    "message": "Modified",
+    "description": "Filter customized agents"
+  },
+  "aiAgentsFilterDisabled": {
+    "message": "Disabled",
+    "description": "Filter disabled agents"
+  },
+  "aiAgentsModifiedBadge": {
+    "message": "Modified",
+    "description": "Badge when agent/tool differs from default"
+  },
+  "aiAgentsDisabledBadge": {
+    "message": "Off",
+    "description": "Badge when agent disabled"
+  },
+  "aiAgentsNew": {
+    "message": "New agent",
+    "description": "Create agent button"
+  },
+  "aiAgentsTabDetails": {
+    "message": "Details",
+    "description": "Agent detail tab"
+  },
+  "aiAgentsTabTools": {
+    "message": "Tools",
+    "description": "Agent tools tab"
+  },
+  "aiAgentsFieldTitle": {
+    "message": "Name",
+    "description": "Agent title field"
+  },
+  "aiAgentsFieldDescription": {
+    "message": "What it does",
+    "description": "Agent description field"
+  },
+  "aiAgentsFieldPrompt": {
+    "message": "Instructions",
+    "description": "Agent systemHint field"
+  },
+  "aiAgentsFieldAutonomy": {
+    "message": "Autonomy",
+    "description": "Agent autonomy field"
+  },
+  "aiAgentsFieldEnabled": {
+    "message": "Enabled",
+    "description": "Enabled checkbox"
+  },
+  "aiAgentsSave": {
+    "message": "Save",
+    "description": "Save agent"
+  },
+  "aiAgentsSaving": {
+    "message": "Saving…",
+    "description": "Saving in progress"
+  },
+  "aiAgentsSaved": {
+    "message": "Saved.",
+    "description": "Save success"
+  },
+  "aiAgentsSaveFailed": {
+    "message": "Could not save changes.",
+    "description": "Save error"
+  },
+  "aiAgentsRevert": {
+    "message": "Revert to default",
+    "description": "Revert seeded agent/tool"
+  },
+  "aiAgentsRevertConfirm": {
+    "message": "Revert “{name}” to the Arivu default? Your customizations for this agent will be lost.",
+    "description": "Confirm revert agent"
+  },
+  "aiAgentsReverted": {
+    "message": "Reverted to default.",
+    "description": "Revert success"
+  },
+  "aiAgentsDelete": {
+    "message": "Delete",
+    "description": "Delete custom agent"
+  },
+  "aiAgentsDeleteConfirm": {
+    "message": "Delete custom agent “{name}”? This cannot be undone.",
+    "description": "Confirm delete"
+  },
+  "aiAgentsDeleted": {
+    "message": "Agent deleted.",
+    "description": "Delete success"
+  },
+  "aiAgentsTry": {
+    "message": "Try",
+    "description": "Try agent button"
+  },
+  "aiAgentsTryLabel": {
+    "message": "Ask this agent",
+    "description": "Try panel label"
+  },
+  "aiAgentsTryPlaceholder": {
+    "message": "e.g. Summarize my open deals",
+    "description": "Try query placeholder"
+  },
+  "aiAgentsTryRun": {
+    "message": "Run",
+    "description": "Run try"
+  },
+  "aiAgentsTrying": {
+    "message": "Running…",
+    "description": "Try in progress"
+  },
+  "aiAgentsTryClose": {
+    "message": "Close",
+    "description": "Close try panel"
+  },
+  "aiAgentsTryEmpty": {
+    "message": "(No answer returned)",
+    "description": "Empty try answer"
+  },
+  "aiAgentsTryFailed": {
+    "message": "Try failed.",
+    "description": "Try error"
+  },
+  "aiAgentsSelectPrompt": {
+    "message": "Select an agent to view and edit details.",
+    "description": "Empty detail pane"
+  },
+  "aiAgentsSelectAllTools": {
+    "message": "Select all",
+    "description": "Select all tools"
+  },
+  "aiAgentsClearTools": {
+    "message": "Clear",
+    "description": "Clear tool selection"
+  },
+  "aiAgentsEditTool": {
+    "message": "Edit",
+    "description": "Edit tool config"
+  },
+  "aiAgentsWizardTitle": {
+    "message": "New agent",
+    "description": "Create wizard title"
+  },
+  "aiAgentsWizardHint": {
+    "message": "Start from a template or blank. Your agent is saved to this workspace only.",
+    "description": "Create wizard hint"
+  },
+  "aiAgentsWizardTemplate": {
+    "message": "Start from",
+    "description": "Template picker"
+  },
+  "aiAgentsWizardBlank": {
+    "message": "Blank agent",
+    "description": "Blank template option"
+  },
+  "aiAgentsCreate": {
+    "message": "Create",
+    "description": "Create agent submit"
+  },
+  "aiAgentsCreated": {
+    "message": "Agent created.",
+    "description": "Create success"
+  },
+  "aiAgentsCancel": {
+    "message": "Cancel",
+    "description": "Cancel button"
+  },
+  "aiAgentsToolEditorTitle": {
+    "message": "Edit tool",
+    "description": "Tool editor modal title"
+  },
+  "aiAgentsToolSaved": {
+    "message": "Tool saved.",
+    "description": "Tool save success"
+  },
+  "aiAgentsToolRevertConfirm": {
+    "message": "Revert tool “{name}” to the platform default?",
+    "description": "Confirm tool revert"
+  },
+  "aiAgentsToolReverted": {
+    "message": "Tool reverted.",
+    "description": "Tool revert success"
   }
 }

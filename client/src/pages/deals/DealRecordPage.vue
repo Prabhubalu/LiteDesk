@@ -192,7 +192,7 @@
 
       <template v-if="deal" #left>
         <RecordAiPanel
-          v-if="deal?._id"
+          v-if="deal?._id && aiSuiteEntitled"
           module-key="deals"
           source-type="deal"
           :record-id="String(deal._id)"
@@ -1298,6 +1298,7 @@ import Avatar from '@/components/common/Avatar.vue';
 import { useTabs } from '@/composables/useTabs';
 import { useRecordModuleBack } from '@/components/record-page/composables/useRecordModuleBack';
 import { useAuthStore } from '@/stores/authRegistry';
+import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import {
@@ -1328,6 +1329,7 @@ const router = useRouter();
 const { openTab, replaceActiveTab, activeTabId, updateTabTitle, findTabById } = useTabs();
 const { goBackToModuleList } = useRecordModuleBack();
 const authStore = useAuthStore();
+const aiSuiteEntitled = computed(() => isAiSuiteEntitled(authStore.user));
 const notifications = useNotifications();
 const recordLayoutIsMobile = inject('recordLayoutIsMobile', ref(false));
 const quickPreviewNav = inject('quickPreviewNav', null);

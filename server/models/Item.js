@@ -302,9 +302,23 @@ ItemSchema.pre('save', async function(next) {
         // modifiedBy should be set by controller
     }
     
-    // Auto-generate item_code if not provided (use item_id as fallback)
-    if (!this.item_code && this.item_id) {
-        this.item_code = this.item_id;
+    // Auto-generate item_code if not provided (module numbering, then item_id fallback)
+    if (!this.item_code) {
+        try {
+            const { allocate } = require('../services/moduleNumberingService');
+            const result = await allocate({
+                organizationId: this.organizationId,
+                moduleKey: 'items',
+            });
+            if (result?.recordId) {
+                this.item_code = result.recordId;
+            } else if (this.item_id) {
+                this.item_code = this.item_id;
+            }
+        } catch (err) {
+            if (this.item_id) this.item_code = this.item_id;
+            else return next(err);
+        }
     }
     
     next();

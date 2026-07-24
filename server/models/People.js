@@ -50,6 +50,11 @@ const PeopleSchema = new Schema({
     trim: true,
   },
   first_name: { type: String, trim: true, required: true }, // Default: required (can be configured by admin)
+  personNumber: {
+    type: String,
+    trim: true,
+    index: true,
+  },
   last_name: {
     type: String,
     trim: true,
@@ -171,6 +176,7 @@ PeopleSchema.index({ organizationId: 1, [PEOPLE_SALES_CONTACT_STATUS_PATH]: 1 })
 PeopleSchema.index({ organizationId: 1, legacyContactId: 1 }, { unique: false, sparse: true });
 PeopleSchema.index({ organizationId: 1, deletedAt: 1 });
 PeopleSchema.index({ organizationId: 1, importHistoryId: 1 });
+PeopleSchema.index({ organizationId: 1, personNumber: 1 }, { unique: true, sparse: true });
 
 // Prevent createdBy from being modified after creation
 PeopleSchema.pre('findOneAndUpdate', function() {
@@ -182,6 +188,17 @@ PeopleSchema.pre('findOneAndUpdate', function() {
   // Also handle $set operations
   if (update && update.$set && update.$set.createdBy !== undefined) {
     delete update.$set.createdBy;
+  }
+});
+
+PeopleSchema.pre('validate', async function assignPersonNumber(next) {
+  if (this.personNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'people', fieldKey: 'personNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
   }
 });
 

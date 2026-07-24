@@ -10,6 +10,7 @@ const assignmentRulesController = require('../controllers/assignmentRulesControl
 const slaPolicyController = require('../controllers/slaPolicyController');
 const mailroomSettingsController = require('../controllers/mailroomSettingsController');
 const quoteSettingsController = require('../controllers/quoteSettingsController');
+const moduleNumberingController = require('../controllers/moduleNumberingController');
 const webformController = require('../controllers/webformController');
 const addonSettingsController = require('../controllers/addonSettingsController');
 const amdsDomainsController = require('../controllers/amdsDomainsController');
@@ -58,6 +59,16 @@ router.put('/applications/helpdesk/execution-settings', helpdeskSettingsControll
 router.post('/applications/helpdesk/recalculate-slas', helpdeskSettingsController.recalculateOpenCaseSlas);
 router.get('/quotes', quoteSettingsController.getQuoteSettings);
 router.put('/quotes', quoteSettingsController.updateQuoteSettings);
+
+// Module Numbering (Settings → Automation → Module Numbering)
+router.get('/module-numbering', moduleNumberingController.listModuleNumbering);
+router.get('/module-numbering/:moduleKey', moduleNumberingController.getModuleNumbering);
+router.put('/module-numbering/:moduleKey', moduleNumberingController.updateModuleNumbering);
+router.post('/module-numbering/:moduleKey/preview', moduleNumberingController.previewModuleNumbering);
+router.post(
+  '/module-numbering/:moduleKey/resync-sequence',
+  moduleNumberingController.resyncModuleNumbering
+);
 router.get('/applications/:appKey', controller.getApplication);
 
 // Addons (tenant-scoped installable capabilities)
@@ -77,6 +88,7 @@ router.put('/addons/live_chat/outcomes', addonSettingsController.updateLiveChatO
 router.get('/addons/live_chat/session-fields', addonSettingsController.getLiveChatSessionFieldSettings);
 router.put('/addons/live_chat/session-fields', addonSettingsController.updateLiveChatSessionFieldSettings);
 router.post('/addons/email_credits/purchase', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.purchaseEmailCreditPack);
+router.post('/addons/ai_credits/purchase', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.purchaseAiCreditPack);
 router.get('/addons/:addonKey', addonSettingsController.getAddon);
 router.post('/addons/:addonKey/install', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.installAddon);
 router.post('/addons/:addonKey/enable', invalidateCacheOnSuccessfulMutation({ namespace: 'settings:subscriptions:v2' }), addonSettingsController.enableAddon);

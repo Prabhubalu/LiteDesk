@@ -915,6 +915,19 @@ function getBaseFieldsForKey(key) {
             'playbookState',
             // Import job linkage - set by import pipeline only
             'importHistoryId',
+            // Auto-number fields (system-generated Record IDs)
+            'personNumber',
+            'organizationNumber',
+            'dealNumber',
+            'taskNumber',
+            'eventNumber',
+            'formNumber',
+            'responseNumber',
+            'recordNumber',
+            'articleNumber',
+            'blogNumber',
+            'segmentNumber',
+            'templateNumber',
             // People portal access — system-managed
             'portalAccess',
             // Form-specific nested objects that shouldn't be fields
@@ -4048,12 +4061,26 @@ exports.createModule = async (req, res) => {
         const nameStr = String(name).trim();
         const label = nameStr || keyStr.charAt(0).toUpperCase() + keyStr.slice(1);
         const pluralLabel = label + (label.endsWith('s') ? '' : 's');
+        const fieldsArr = Array.isArray(fields) ? [...fields] : [];
+        const hasRecordNumber = fieldsArr.some(
+            (f) => String(f?.key || f?.name || '').toLowerCase() === 'recordnumber'
+        );
+        if (!hasRecordNumber) {
+            fieldsArr.unshift({
+                key: 'recordNumber',
+                label: 'Record Number',
+                type: 'Auto-Number',
+                system: true,
+                readonly: true,
+            });
+        }
+
         const doc = await ModuleDefinition.create({
             organizationId: req.user.organizationId,
             key: keyStr,
             name: nameStr,
             type: 'custom',
-            fields: Array.isArray(fields) ? fields : [],
+            fields: fieldsArr,
             // Required schema fields (tenant docs still need these for Mongoose validation)
             moduleKey: keyStr,
             appKey: 'platform',
@@ -4061,6 +4088,18 @@ exports.createModule = async (req, res) => {
             pluralLabel,
             entityType: 'TRANSACTION'
         });
+
+        try {
+            const moduleNumberingService = require('../services/moduleNumberingService');
+            await moduleNumberingService.seedDefaultForModule(
+                req.user.organizationId,
+                keyStr,
+                { label, updatedBy: req.user._id }
+            );
+        } catch (seedErr) {
+            console.error('[createModule] module numbering seed failed:', seedErr?.message || seedErr);
+        }
+
         const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
         attachSettingsAuditDiff(
             res,

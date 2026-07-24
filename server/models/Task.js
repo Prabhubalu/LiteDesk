@@ -17,6 +17,11 @@ const TaskSchema = new Schema({
     required: true,
     trim: true
   },
+  taskNumber: {
+    type: String,
+    trim: true,
+    index: true,
+  },
   description: {
     type: String,
     trim: true
@@ -183,6 +188,7 @@ TaskSchema.index({ organizationId: 1, priority: 1, status: 1 });
 TaskSchema.index({ organizationId: 1, projectId: 1 });
 TaskSchema.index({ organizationId: 1, deletedAt: 1 });
 TaskSchema.index({ organizationId: 1, importHistoryId: 1 });
+TaskSchema.index({ organizationId: 1, taskNumber: 1 }, { unique: true, sparse: true });
 TaskSchema.index(
   { organizationId: 1, assignedTo: 1, deletedAt: 1, dueDate: 1, status: 1 },
   { name: 'task_home_summary_idx' }
@@ -233,5 +239,16 @@ TaskSchema.methods.markIncomplete = function() {
 // Ensure virtuals are included in JSON
 TaskSchema.set('toJSON', { virtuals: true });
 TaskSchema.set('toObject', { virtuals: true });
+
+TaskSchema.pre('validate', async function assignTaskNumber(next) {
+  if (this.taskNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'tasks', fieldKey: 'taskNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 module.exports = wrapTenantModel(mongoose.model('Task', TaskSchema));

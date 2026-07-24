@@ -122,6 +122,10 @@ const CaseSchema = new Schema(
     severity: { type: String, default: null, trim: true },
     impact: { type: String, default: null, trim: true },
     tags: { type: [String], default: [] },
+    aiAssist: {
+      type: Schema.Types.Mixed,
+      default: null,
+    },
     contactId: {
       type: Schema.Types.ObjectId,
       ref: 'People',

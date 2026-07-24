@@ -38,7 +38,7 @@ module.exports = {
     'server/services/aiProcessActionHandlers.js (soft-fail stubs for process ai_classify/ai_extract)',
   ],
   primary: {
-    ui: '/astra → client/src/astra/surfaces/GlobalCopilot.vue',
+    ui: '/astra → GlobalCopilot; in-product rail → AstraSidePanel (route context via resolvePageAiContext)',
     api: '/api/ai/v2 → server/services/astra',
   },
 };
