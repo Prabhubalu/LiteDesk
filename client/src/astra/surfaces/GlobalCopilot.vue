@@ -510,14 +510,20 @@ async function onSuggestion(suggestion: string | AstraSuggestion | {
     await ask(suggestion);
     return;
   }
-  const prompt = String(
-    suggestion.prompt || suggestion.label || suggestion.title || '',
-  ).trim();
+  const row = suggestion as {
+    prompt?: string;
+    label?: string;
+    title?: string;
+    moduleKey?: string;
+    recordId?: string;
+    recordName?: string;
+  };
+  const prompt = String(row.prompt || row.label || row.title || '').trim();
   if (!prompt) return;
   await ask(prompt, {
-    moduleKey: suggestion.moduleKey,
-    recordId: suggestion.recordId,
-    recordName: suggestion.recordName || suggestion.title || suggestion.label,
+    moduleKey: row.moduleKey,
+    recordId: row.recordId,
+    recordName: row.recordName || row.title || row.label,
   });
 }
 
@@ -682,33 +688,36 @@ onMounted(async () => {
       }
     }),
     fetchNba({ surface: 'home' }).then((nba) => {
-      nbaCards.value = nba
-        .map((item, index) => {
-          const title = String(item.label || item.prompt || '').trim();
-          const prompt = String(item.prompt || item.label || '').trim();
-          if (!title || !prompt) return null;
-          return {
-            id: item.id || `nba-${index}`,
-            title,
-            subtitle: String(item.rationale || '').trim() || t('astra.heroPersonalizedSubtitle'),
-            prompt,
-            moduleKey: item.moduleKey || undefined,
-            recordId: item.recordId || undefined,
-            recordName: title,
-            iconKey: item.iconKey || undefined,
-          };
-        })
-        .filter((c): c is {
-          id: string;
-          title: string;
-          subtitle: string;
-          prompt: string;
-          moduleKey?: string;
-          recordId?: string;
-          recordName?: string;
-          iconKey?: string;
-        } => c != null)
-        .slice(0, 6);
+      type NbaCard = {
+        id: string;
+        title: string;
+        subtitle: string;
+        prompt: string;
+        moduleKey?: string;
+        recordId?: string;
+        recordName?: string;
+        iconKey?: string;
+      };
+      const cards: NbaCard[] = [];
+      for (let index = 0; index < nba.length; index += 1) {
+        const item = nba[index];
+        if (!item) continue;
+        const title = String(item.label || item.prompt || '').trim();
+        const prompt = String(item.prompt || item.label || '').trim();
+        if (!title || !prompt) continue;
+        cards.push({
+          id: item.id || `nba-${index}`,
+          title,
+          subtitle: String(item.rationale || '').trim() || t('astra.heroPersonalizedSubtitle'),
+          prompt,
+          moduleKey: item.moduleKey || undefined,
+          recordId: item.recordId || undefined,
+          recordName: title,
+          iconKey: item.iconKey || undefined,
+        });
+        if (cards.length >= 6) break;
+      }
+      nbaCards.value = cards;
     }),
   ]);
   inputEl.value?.focus();

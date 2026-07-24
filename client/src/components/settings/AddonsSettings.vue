@@ -72,7 +72,7 @@
               </p>
               <p v-if="addon.aiCredits">
                 {{ t('settings.addonsAiCreditsBalanceShort', {
-                  available: Number(addon.aiCredits.tokensAvailable ?? addon.aiCredits.tokensBalance || 0).toLocaleString(),
+                  available: Number((addon.aiCredits.tokensAvailable ?? addon.aiCredits.tokensBalance) || 0).toLocaleString(),
                   consumed: Number(addon.aiCredits.tokensConsumed || 0).toLocaleString(),
                 }) }}
               </p>

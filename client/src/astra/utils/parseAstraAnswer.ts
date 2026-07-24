@@ -84,7 +84,7 @@ function scrubStepsHeadingFromProse(buf: string[]) {
       buf.pop();
       continue;
     }
-    if (isStepsHeadingOnly(last)) {
+    if (isStepsHeadingOnly(String(last || ''))) {
       buf.pop();
       continue;
     }
@@ -181,7 +181,7 @@ export function parseAstraAnswer(raw: string): AstraAnswerSection[] {
   let pendingDraftTitle = '';
 
   while (i < lines.length) {
-    const line = lines[i];
+    const line = lines[i] ?? '';
     const trimmed = line.trim();
 
     // Fenced code → draft
@@ -190,8 +190,8 @@ export function parseAstraAnswer(raw: string): AstraAnswerSection[] {
       flushProse(proseBuf, sections);
       i += 1;
       const bodyLines: string[] = [];
-      while (i < lines.length && !FENCE_CLOSE.test(lines[i].trim())) {
-        bodyLines.push(lines[i]);
+      while (i < lines.length && !FENCE_CLOSE.test((lines[i] ?? '').trim())) {
+        bodyLines.push(lines[i] ?? '');
         i += 1;
       }
       if (i < lines.length) i += 1;
@@ -213,17 +213,18 @@ export function parseAstraAnswer(raw: string): AstraAnswerSection[] {
       flushProse(proseBuf, sections);
       pendingDraftTitle = draftTitleFrom(trimmed);
       i += 1;
-      if (i < lines.length && FENCE_OPEN.test(lines[i].trim())) continue;
+      if (i < lines.length && FENCE_OPEN.test((lines[i] ?? '').trim())) continue;
 
       const bodyLines: string[] = [];
       while (i < lines.length) {
-        const t = lines[i].trim();
+        const current = lines[i] ?? '';
+        const t = current.trim();
         if (FENCE_OPEN.test(t)) break;
         if (isDraftHeading(t) && bodyLines.some((b) => b.trim())) break;
-        if (NUMBERED.test(lines[i]) && bodyLines.some((b) => EMAIL_START.test(b.trim()) || b.trim().length > 40)) {
+        if (NUMBERED.test(current) && bodyLines.some((b) => EMAIL_START.test(b.trim()) || b.trim().length > 40)) {
           break;
         }
-        bodyLines.push(lines[i]);
+        bodyLines.push(current);
         i += 1;
       }
       const body = bodyLines.join('\n').trim();
@@ -239,7 +240,8 @@ export function parseAstraAnswer(raw: string): AstraAnswerSection[] {
     if (numbered || bullet) {
       scrubStepsHeadingFromProse(proseBuf);
       flushProse(proseBuf, sections);
-      stepItems.push((numbered ? numbered[2] : bullet![1]).trim());
+      const itemText = numbered?.[2] ?? bullet?.[1] ?? '';
+      stepItems.push(itemText.trim());
       i += 1;
       continue;
     }
