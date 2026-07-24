@@ -118,6 +118,7 @@
                 <AstraMessageBlocks
                   v-if="msg.blocks?.length"
                   :blocks="msg.blocks"
+                  @action="onSuggestion"
                 />
                 <div v-if="msg.proposals?.length" class="space-y-2 rounded-2xl border border-neutral-200 bg-white p-3 dark:border-white/10 dark:bg-neutral-900">
                   <p class="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
@@ -164,7 +165,13 @@
                           :disabled="confirming"
                           @click="onConfirmProposal(msg.id, proposal)"
                         >
-                          {{ isOverrideProposal(proposal) ? t('astra.overrideAction') : t('astra.confirmAction') }}
+                          {{
+                            isEmailSendProposal(proposal)
+                              ? t('astra.reviewAndSend')
+                              : isOverrideProposal(proposal)
+                                ? t('astra.overrideAction')
+                                : t('astra.confirmAction')
+                          }}
                         </button>
                         <button
                           type="button"
@@ -178,17 +185,12 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="msg.suggestions?.length" class="flex flex-wrap gap-1.5">
-                  <button
-                    v-for="(suggestion, idx) in msg.suggestions"
-                    :key="`${msg.id}-s-${idx}`"
-                    type="button"
-                    class="rounded-full border border-neutral-200/80 bg-white px-3.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm transition hover:border-primary-300 hover:bg-primary-50/60 hover:text-primary-800 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-primary-500/40 dark:hover:bg-primary-950/40 dark:hover:text-primary-200"
-                    @click="onSuggestion(suggestion)"
-                  >
-                    {{ suggestionLabel(suggestion) }}
-                  </button>
-                </div>
+                <AstraFollowUps
+                  v-if="msg.suggestions?.length"
+                  :suggestions="msg.suggestions"
+                  :key-prefix="msg.id"
+                  @select="onSuggestion"
+                />
               </div>
             </div>
 
@@ -253,11 +255,21 @@
       </div>
       </section>
     </div>
+
+    <EmailComposeDrawer
+      :is-open="showEmailModal"
+      :standalone-mode="!emailRelatedTo"
+      :related-to="emailRelatedTo"
+      :initial-to="emailComposeDraft?.to || ''"
+      :initial-draft="emailComposeDraft"
+      @close="closeEmailCompose"
+      @submit="handleEmailSubmit"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onErrorCaptured, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onErrorCaptured, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
@@ -270,15 +282,27 @@ import {
 } from '@heroicons/vue/24/outline';
 import type { Component } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useNotifications } from '@/composables/useNotifications';
+import apiClient from '@/utils/apiClient';
 import { useAstraAsk, type AstraProposal, type AstraSuggestion } from '@/astra/composables/useAstraAsk';
 import { useAstraConversations } from '@/astra/composables/useAstraConversations';
 import { useAstraStatusLine } from '@/astra/composables/useAstraStatusLine';
 import AstraMessageBlocks from '@/astra/blocks/AstraMessageBlocks.vue';
 import AstraAnswerBody from '@/astra/components/AstraAnswerBody.vue';
 import AstraConversationSidebar from '@/astra/components/AstraConversationSidebar.vue';
+import AstraFollowUps from '@/astra/components/AstraFollowUps.vue';
 import AstraLogo from '@/astra/components/AstraLogo.vue';
+import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import type { AstraUiBlock } from '@/astra/blocks/types';
 import { resolveAstraNbaIcon } from '@/astra/utils/resolveAstraNbaIcon';
+import {
+  ARIVU_OPEN_EMAIL_COMPOSE,
+  isEmailSendProposal,
+  openEmailComposeFromAstra,
+  type EmailComposeDraft,
+  type EmailComposeRelatedTo,
+  type OpenEmailComposeDetail,
+} from '@/astra/utils/openEmailCompose';
 
 interface CopilotMessage {
   id: string;
@@ -329,6 +353,11 @@ const conversationTitle = ref('');
 const mobileHistoryOpen = ref(false);
 const messagesEl = ref<HTMLElement | null>(null);
 const inputEl = ref<HTMLTextAreaElement | null>(null);
+const showEmailModal = ref(false);
+const emailComposeDraft = ref<EmailComposeDraft | null>(null);
+const emailRelatedTo = ref<EmailComposeRelatedTo | null>(null);
+const lastAskFocus = ref<{ moduleKey?: string; recordId?: string } | null>(null);
+const notifications = useNotifications();
 
 /** Always mount the history rail so the grid does not jump after conversations hydrate. */
 const showHistorySidebar = computed(() => true);
@@ -445,6 +474,9 @@ async function ask(text: string, focus: {
 } = {}) {
   const prompt = text.trim();
   if (!prompt || asking.value) return;
+  if (focus.moduleKey || focus.recordId) {
+    lastAskFocus.value = { moduleKey: focus.moduleKey, recordId: focus.recordId };
+  }
   messages.value.push({ id: `u-${Date.now()}`, role: 'user', body: prompt });
   await scrollToEnd();
   const result = await askSync(prompt, {
@@ -527,14 +559,6 @@ async function onSuggestion(suggestion: string | AstraSuggestion | {
   });
 }
 
-function suggestionLabel(suggestion: AstraSuggestion): string {
-  if (typeof suggestion === 'string') {
-    const parsed = tryParseSuggestionJson(suggestion);
-    return parsed?.label || suggestion;
-  }
-  return suggestion.label || suggestion.prompt;
-}
-
 function tryParseSuggestionJson(raw: string): { label: string; prompt: string } | null {
   const text = String(raw || '').trim();
   if (!text.startsWith('{')) return null;
@@ -553,7 +577,74 @@ function isOverrideProposal(proposal: { label?: string } | null | undefined): bo
   return /override/i.test(String(proposal?.label || ''));
 }
 
+function openComposeDrawer(detail: OpenEmailComposeDetail) {
+  emailComposeDraft.value = {
+    to: detail.to || '',
+    subject: detail.subject || '',
+    body: detail.body || '',
+    ...(detail.cc ? { cc: detail.cc } : {}),
+    ...(detail.bcc ? { bcc: detail.bcc } : {}),
+  };
+  emailRelatedTo.value = detail.relatedTo || null;
+  showEmailModal.value = true;
+}
+
+function closeEmailCompose() {
+  showEmailModal.value = false;
+  emailComposeDraft.value = null;
+  emailRelatedTo.value = null;
+}
+
+async function handleEmailSubmit(payload: Record<string, unknown>) {
+  closeEmailCompose();
+  try {
+    const res = await apiClient.post('/communications/email', payload);
+    if (res?.success) {
+      notifications.success(t('records.genericEmailSent'));
+      messages.value.push({
+        id: `a-email-${Date.now()}`,
+        role: 'assistant',
+        body: t('records.genericEmailSent'),
+      });
+      await scrollToEnd();
+    } else {
+      notifications.error(res?.message || t('records.genericEmailSendFailed'));
+    }
+  } catch (err: unknown) {
+    const e = err as { response?: { data?: { error?: string; message?: string } }; message?: string };
+    const msg = e?.response?.data?.error || e?.response?.data?.message || e?.message;
+    notifications.error(msg || t('records.genericEmailSendFailed'));
+  }
+}
+
+function onOpenEmailComposeEvent(event: Event) {
+  const detail = (event as CustomEvent<OpenEmailComposeDetail>).detail;
+  if (!detail || typeof detail !== 'object') return;
+  openComposeDrawer(detail);
+}
+
 async function onConfirmProposal(messageId: string, proposal: AstraProposal) {
+  if (isEmailSendProposal(proposal)) {
+    const detail = openEmailComposeFromAstra(proposal, { relatedTo: lastAskFocus.value });
+    openComposeDrawer(detail);
+    messages.value = messages.value.map((m) => {
+      if (m.id !== messageId) return m;
+      return {
+        ...m,
+        proposals: (m.proposals || []).map((p) => {
+          if (p.id !== proposal.id) return p;
+          return { ...p, status: 'completed', rationale: t('astra.emailOpenedInCompose') };
+        }),
+      };
+    });
+    messages.value.push({
+      id: `a-confirm-${Date.now()}`,
+      role: 'assistant',
+      body: t('astra.emailOpenedInCompose'),
+    });
+    await scrollToEnd();
+    return;
+  }
   const result = await confirmProposal(
     proposal,
     { conversationId: conversationId.value },
@@ -609,6 +700,7 @@ function onNewChat() {
   error.value = '';
   draft.value = '';
   mobileHistoryOpen.value = false;
+  lastAskFocus.value = null;
   void nextTick(() => {
     autoGrow();
     inputEl.value?.focus();
@@ -666,6 +758,7 @@ async function onClearOlder() {
 }
 
 onMounted(async () => {
+  window.addEventListener(ARIVU_OPEN_EMAIL_COMPOSE, onOpenEmailComposeEvent as EventListener);
   await Promise.all([
     refreshHistory().then(async () => {
       // Retry wipe until older threads are gone (v1 flag could stick after a failed bulk delete).
@@ -721,6 +814,10 @@ onMounted(async () => {
     }),
   ]);
   inputEl.value?.focus();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener(ARIVU_OPEN_EMAIL_COMPOSE, onOpenEmailComposeEvent as EventListener);
 });
 
 watch(draft, () => {

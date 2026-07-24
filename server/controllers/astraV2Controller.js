@@ -499,7 +499,7 @@ async function confirmAction(req, res) {
       },
     );
 
-    if (result?.created === false || result?.error) {
+    if (result?.created === false || result?.error || result?.ok === false || result?.sent === false) {
       return res.status(400).json({
         success: false,
         message: result?.guidance || 'Action failed',

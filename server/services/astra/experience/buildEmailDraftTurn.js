@@ -236,19 +236,47 @@ async function loadFocusRecipient(focus, organizationId, deps = {}) {
   const id = String(focus?.id || focus?.recordId || '').trim();
   if (!id || !organizationId) return { email: null, title: focus?.name || null };
 
-  if (moduleKey === 'people') {
-    try {
-      const People = deps?.models?.People || require('../../../models/People');
-      const row = await People.findOne({ _id: id, organizationId, deletedAt: null })
-        .select('email first_name last_name')
-        .lean();
-      if (row) {
-        const title = [row.first_name, row.last_name].filter(Boolean).join(' ').trim() || focus?.name;
-        return { email: row.email || null, title };
-      }
-    } catch {
-      /* ignore */
+  // people|person|contact|lead — also try People when moduleKey is generic "record"
+  const isPerson = /^(people|person|contacts?|leads?|record)$/.test(moduleKey) || !moduleKey;
+  if (!isPerson) return { email: null, title: focus?.name || null };
+
+  const pickEmail = (row) => {
+    if (!row) return null;
+    const candidates = [
+      row.email,
+      row.Email,
+      row.workEmail,
+      row.primaryEmail,
+      row.customFields?.email,
+      row.customFields?.Email,
+      row.customFields?.work_email,
+    ];
+    for (const c of candidates) {
+      const s = String(c || '').trim();
+      if (s.includes('@')) return s.toLowerCase();
     }
+    return null;
+  };
+
+  try {
+    const People = deps?.models?.People || require('../../../models/People');
+    const mongoose = require('mongoose');
+    const orgFilter = mongoose.Types.ObjectId.isValid(String(organizationId))
+      ? { organizationId: new mongoose.Types.ObjectId(String(organizationId)) }
+      : { organizationId };
+    const idFilter = mongoose.Types.ObjectId.isValid(id)
+      ? { _id: new mongoose.Types.ObjectId(id) }
+      : { _id: id };
+
+    const row = await People.findOne({ ...idFilter, ...orgFilter, deletedAt: null })
+      .select('email first_name last_name customFields')
+      .lean();
+    if (row) {
+      const title = [row.first_name, row.last_name].filter(Boolean).join(' ').trim() || focus?.name;
+      return { email: pickEmail(row), title };
+    }
+  } catch {
+    /* ignore */
   }
   return { email: null, title: focus?.name || null };
 }
@@ -343,10 +371,10 @@ async function buildEmailDraftTurn({
       deps,
     });
 
-  // Always try recipient email from focus person.
-  if (!grounding.recipientEmail && focus?.id) {
+  // Always resolve recipient from the focused person (even when situation context exists).
+  if (focus?.id) {
     const recipient = await loadFocusRecipient(focus, organizationId, deps);
-    grounding.recipientEmail = recipient.email;
+    if (recipient.email) grounding.recipientEmail = recipient.email;
     if (recipient.title) grounding.focusName = recipient.title;
   }
 
@@ -432,7 +460,8 @@ async function buildEmailDraftTurn({
     }
   }
 
-  if (!draft.to && toHint && String(toHint).includes('@')) {
+  // Prefer resolved Platform email over LLM empty/placeholder To.
+  if (toHint && String(toHint).includes('@') && !String(draft.to || '').includes('@')) {
     draft.to = String(toHint).trim();
   }
 
@@ -450,20 +479,34 @@ async function buildEmailDraftTurn({
     '',
     draft.body,
     '',
-    'Review it, tweak if needed, then confirm to send. Astra won’t send without your OK.',
+    'Review it, tweak if needed, then open compose to send. Astra won’t send without your OK.',
   ].join('\n');
 
   const proposal = {
     id: `email-${crypto.randomUUID()}`,
     kind: 'email.send',
     toolName: 'email.send',
-    label: draft.to ? `Send email to ${draft.to}` : 'Send this email (add recipient first)',
-    summary: draft.to ? `Send email to ${draft.to}` : 'Send this email (add recipient first)',
+    label: draft.to ? `Review & send to ${draft.to}` : 'Review & send (add recipient in compose)',
+    summary: draft.to ? `Review & send to ${draft.to}` : 'Review & send (add recipient in compose)',
     rationale: groundedOn
-      ? `Grounded on ${groundedOn} and related CRM situation`
+      ? `Grounded on ${groundedOn} and related Platform situation`
       : 'Drafted from your ask',
-    fields: { ...draft, confirmed: false },
-    payload: { ...draft, confirmed: false },
+    moduleKey: focus?.moduleKey || focus?.kind || undefined,
+    recordId: focus?.id || undefined,
+    fields: {
+      ...draft,
+      confirmed: false,
+      ...(focus?.id && (focus?.moduleKey || focus?.kind)
+        ? { relatedTo: { moduleKey: focus.moduleKey || focus.kind, recordId: focus.id } }
+        : {}),
+    },
+    payload: {
+      ...draft,
+      confirmed: false,
+      ...(focus?.id && (focus?.moduleKey || focus?.kind)
+        ? { relatedTo: { moduleKey: focus.moduleKey || focus.kind, recordId: focus.id } }
+        : {}),
+    },
   };
 
   const confirmation = buildConfirmation({

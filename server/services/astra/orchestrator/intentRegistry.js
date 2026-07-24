@@ -36,23 +36,23 @@ const RESEARCH = /\b(research|enrich|look\s*up)\b[\s\S]{0,40}\b(company|organiza
 /** Prep for meeting/call/event — not "prepare a quote" (handled by QUOTE_DRAFT). */
 const MEETING_PREP = /\b((prep|prepare|preparation)\b[\s\S]{0,40}\b(meeting|meetings|call|event|events)\b|\bmeeting prep\b|\bhelp me (prep|prepare)\b)/i;
 
-/** Intent → default seat (agentKey). */
+/** Intent → default seat (agentKey). Mission Control is the Ask entry; these are specialist hints. */
 const INTENT_AGENT = {
-  workflow: 'workflow',
-  playbook: 'workflow',
-  email_draft: 'outreach',
-  task_create: 'coworker',
-  calendar_create: 'meeting-prep',
-  activity_log: 'coworker',
-  case_create: 'case-triage',
-  deal_update: 'pipeline-closer',
-  quote_draft: 'proposal',
-  research: 'research',
-  meeting_prep: 'meeting-prep',
-  chitchat: 'coworker',
-  knowledge: 'knowledge',
-  crm_search: 'coworker',
-  clarify: 'clarifier',
+  workflow: 'process-intelligence',
+  playbook: 'process-intelligence',
+  email_draft: 'email',
+  task_create: 'task-activity',
+  calendar_create: 'task-activity',
+  activity_log: 'task-activity',
+  case_create: 'case-intelligence',
+  deal_update: 'deal-intelligence',
+  quote_draft: 'deal-intelligence',
+  research: 'customer-360',
+  meeting_prep: 'meeting-intelligence',
+  chitchat: 'mission-control',
+  knowledge: 'knowledge-intelligence',
+  crm_search: 'mission-control',
+  clarify: 'mission-control',
 };
 
 /**
@@ -200,8 +200,8 @@ function phraseOverlapTokens(a, b) {
 }
 
 /**
- * Prefer explicit request.agent, then best-matching tenant specialist,
- * then intent classification seat, then coworker.
+ * Prefer explicit request.agent, then Mission Control (Ask entry).
+ * Lexical specialist scoring retained for admin/debug when MC is absent.
  */
 function resolveAgentKey(classification, request = {}, agentRegistry = null) {
   const requested = String(request.agent || '').trim();
@@ -211,31 +211,24 @@ function resolveAgentKey(classification, request = {}, agentRegistry = null) {
     }
   }
 
-  const query = String(request.query || classification.query || '').trim();
-  const GENERIC_SEATS = new Set(['coworker', 'clarifier', '']);
+  if (agentRegistry?.hasAgent?.('mission-control')) return 'mission-control';
+  if (agentRegistry?.hasAgent?.('coworker')) return 'coworker';
 
-  // Specialists first — Master-created agents must beat default coworker when they match.
+  const query = String(request.query || classification.query || '').trim();
+  const GENERIC_SEATS = new Set(['coworker', 'clarifier', 'mission-control', '']);
+
   if (agentRegistry && typeof agentRegistry.listAgents === 'function' && query) {
     let best = null;
     let bestScore = 0;
-    let coworkerScore = 0;
     for (const ag of agentRegistry.listAgents()) {
-      if (!ag?.name || ag.name === 'clarifier') continue;
+      if (!ag?.name || GENERIC_SEATS.has(ag.name)) continue;
       const score = scoreAgentAgainstQuery(ag, query);
-      if (ag.name === 'coworker') coworkerScore = score;
       if (score > bestScore) {
         bestScore = score;
         best = ag.name;
       }
     }
-    if (best && best !== 'coworker' && bestScore >= 0.22) {
-      return best;
-    }
-    // Prefer specialist whenever it edges coworker
-    if (best && best !== 'coworker' && bestScore >= coworkerScore && bestScore >= 0.18) {
-      return best;
-    }
-    if (best && bestScore >= 0.4) {
+    if (best && bestScore >= 0.22) {
       return best;
     }
   }
@@ -247,13 +240,8 @@ function resolveAgentKey(classification, request = {}, agentRegistry = null) {
     }
   }
 
-  if (classified === 'coworker' && agentRegistry?.hasAgent?.('coworker')) {
-    return 'coworker';
-  }
-
-  if (agentRegistry?.hasAgent?.('coworker')) return 'coworker';
   const first = agentRegistry?.listAgents?.()?.find((a) => a.name !== 'clarifier');
-  return first?.name || classified || 'coworker';
+  return first?.name || classified || 'mission-control';
 }
 
 function extractTaskTitle(query) {

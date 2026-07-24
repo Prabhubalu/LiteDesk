@@ -49,6 +49,23 @@ declare module '@/composables/useTabs' {
   export function useTabs(): any;
 }
 
+declare module '@/composables/useNotifications' {
+  // JS notifications composable (no TS declarations yet)
+  export function useNotifications(): {
+    notifications: import('vue').Ref<unknown[]>;
+    show: (message: string | object, typeOrOptions?: string | object, duration?: number) => string;
+    remove: (id: string) => void;
+    success: (message: string, durationOrOptions?: number | object) => string;
+    error: (message: string, durationOrOptions?: number | object) => string;
+    warning: (message: string, durationOrOptions?: number | object) => string;
+    info: (message: string, durationOrOptions?: number | object) => string;
+  };
+  export function setGlobalNotificationFn(fn: ((presentation: object) => void) | null): void;
+  export function showGlobalNotification(message: string, options?: number | object): string | undefined;
+  export function removeToast(id: string): void;
+  export function pushToast(presentation: object): string;
+}
+
 declare module '@/composables/useOnboarding' {
   // JS onboarding composable (no TS declarations yet)
   export function useOnboarding(): any;

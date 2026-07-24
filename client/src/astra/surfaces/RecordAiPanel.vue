@@ -64,7 +64,7 @@
                 :disabled="confirming"
                 @click="onConfirm(proposal)"
               >
-                {{ t('astra.confirmAction') }}
+                {{ isEmailSendProposal(proposal) ? t('astra.reviewAndSend') : t('astra.confirmAction') }}
               </button>
               <button
                 type="button"
@@ -88,6 +88,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAstraAsk, type AstraProposal } from '@/astra/composables/useAstraAsk';
+import { isEmailSendProposal, openEmailComposeFromAstra } from '@/astra/utils/openEmailCompose';
 import { captureAstraActionRejected } from '@/config/posthogAi';
 
 const props = defineProps<{
@@ -113,6 +114,15 @@ async function onAsk(prompt: string) {
 }
 
 async function onConfirm(proposal: AstraProposal) {
+  if (isEmailSendProposal(proposal)) {
+    openEmailComposeFromAstra(proposal);
+    proposals.value = proposals.value.map((p) => {
+      if (p.id !== proposal.id) return p;
+      return { ...p, status: 'completed', rationale: t('astra.emailOpenedInCompose') };
+    });
+    answer.value = t('astra.emailOpenedInCompose');
+    return;
+  }
   const result = await confirmProposal(proposal);
   if (!result.ok) return;
   proposals.value = proposals.value.map((p) => {

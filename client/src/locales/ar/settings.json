@@ -17862,5 +17862,197 @@
   "aiAgentsToolReverted": {
     "message": "Tool reverted.",
     "description": "Tool revert success"
+  },
+  "aiTokensConsumedLifetime": {
+    "message": "Lifetime used: {count}",
+    "description": "Lifetime consumed tokens under available balance on usage log"
+  },
+  "aiUsagePeriodHint": {
+    "message": "Selected date range",
+    "description": "Hint that usage summary cards follow the date filter"
+  },
+  "aiTabKnowledge": {
+    "message": "Knowledge",
+    "description": "AI settings knowledge sources tab"
+  },
+  "aiMasterTitle": {
+    "message": "Astra — create an agent",
+    "description": "Astra agent composer title"
+  },
+  "aiMasterHint": {
+    "message": "Describe the job in plain English. Astra uses AI to design the specialist and pick the right tools for your workspace.",
+    "description": "Astra agent composer hint"
+  },
+  "aiMasterInstruction": {
+    "message": "What should this agent do?",
+    "description": "Astra instruction label"
+  },
+  "aiMasterInstructionPlaceholder": {
+    "message": "e.g. Triage new support cases using articles and draft a reply I can confirm before sending",
+    "description": "Astra instruction placeholder"
+  },
+  "aiMasterInstructionHelp": {
+    "message": "Include the goal, data sources, and whether writes need your confirmation.",
+    "description": "Help text under agent instruction field"
+  },
+  "aiMasterExamplesLabel": {
+    "message": "Try an example",
+    "description": "Example chips heading in create-agent modal"
+  },
+  "aiMasterExampleSupportLabel": {
+    "message": "Case triage",
+    "description": "Example chip label for support"
+  },
+  "aiMasterExampleSupportText": {
+    "message": "Triage new support cases using articles and draft a reply I can confirm before sending",
+    "description": "Example instruction for support agent"
+  },
+  "aiMasterExampleSalesLabel": {
+    "message": "Pipeline coach",
+    "description": "Example chip label for sales"
+  },
+  "aiMasterExampleSalesText": {
+    "message": "Review open deals, flag risk, and suggest the next follow-up task I confirm before creating",
+    "description": "Example instruction for sales agent"
+  },
+  "aiMasterExampleFaqLabel": {
+    "message": "FAQ helper",
+    "description": "Example chip label for FAQ"
+  },
+  "aiMasterExampleFaqText": {
+    "message": "Answer product FAQ from public articles and website pages, and escalate when unsure",
+    "description": "Example instruction for FAQ agent"
+  },
+  "aiMasterToolsLabel": {
+    "message": "Tools Astra will use",
+    "description": "Preview tools list label"
+  },
+  "aiMasterPreviewFallback": {
+    "message": "Proposed specialist",
+    "description": "Fallback title when proposal has no title"
+  },
+  "aiMasterActionCreate": {
+    "message": "New",
+    "description": "Proposal action badge for create"
+  },
+  "aiMasterActionReuse": {
+    "message": "Reuse",
+    "description": "Proposal action badge for reuse/merge"
+  },
+  "aiMasterAuthoredByAi": {
+    "message": "AI designed",
+    "description": "Badge when agent proposal was authored by LLM"
+  },
+  "aiMasterPropose": {
+    "message": "Preview",
+    "description": "Astra propose button"
+  },
+  "aiMasterCreate": {
+    "message": "Create agent",
+    "description": "Astra create button"
+  },
+  "aiMasterReused": {
+    "message": "Reused an existing specialist for this job",
+    "description": "Astra reused existing agent message"
+  },
+  "aiKnowledgeTitle": {
+    "message": "Knowledge sources",
+    "description": "Knowledge sources section title"
+  },
+  "aiKnowledgeHint": {
+    "message": "Choose what Astra, case drafts, and the customer bot may use. Nothing from the open web unless you add it here.",
+    "description": "Knowledge sources section hint"
+  },
+  "aiKnowledgeArticles": {
+    "message": "Helpdesk articles (Content Studio)",
+    "description": "Toggle articles corpus"
+  },
+  "aiKnowledgeDocuments": {
+    "message": "Documents / internal KB",
+    "description": "Toggle documents corpus"
+  },
+  "aiKnowledgeWebsite": {
+    "message": "Company website pages",
+    "description": "Toggle website corpus"
+  },
+  "aiKnowledgeSave": {
+    "message": "Save sources",
+    "description": "Save knowledge sources button"
+  },
+  "aiKnowledgeSaved": {
+    "message": "Knowledge sources saved",
+    "description": "Knowledge sources saved toast"
+  },
+  "aiKnowledgeSaveFailed": {
+    "message": "Could not save knowledge sources",
+    "description": "Knowledge sources save error"
+  },
+  "aiKnowledgeLoadFailed": {
+    "message": "Could not load knowledge sources",
+    "description": "Knowledge sources load error"
+  },
+  "aiKnowledgeWebsiteTitle": {
+    "message": "Company website pages",
+    "description": "Website pages section title"
+  },
+  "aiKnowledgeWebsiteHint": {
+    "message": "Add a URL to fetch one page, or paste content. Tag public for the customer bot or internal for support only.",
+    "description": "Website pages section hint"
+  },
+  "aiKnowledgeUrl": {
+    "message": "Page URL",
+    "description": "Website page URL label"
+  },
+  "aiKnowledgePageTitle": {
+    "message": "Title",
+    "description": "Website page title label"
+  },
+  "aiKnowledgeAudience": {
+    "message": "Audience",
+    "description": "Website page audience label"
+  },
+  "aiKnowledgeAudiencePublic": {
+    "message": "Public (customer bot)",
+    "description": "Public audience option"
+  },
+  "aiKnowledgeAudienceInternal": {
+    "message": "Internal (support / sales)",
+    "description": "Internal audience option"
+  },
+  "aiKnowledgePasteBody": {
+    "message": "Paste content (optional if URL fetch works)",
+    "description": "Website page body paste label"
+  },
+  "aiKnowledgeAddPage": {
+    "message": "Add page",
+    "description": "Add website page button"
+  },
+  "aiKnowledgeRemove": {
+    "message": "Remove",
+    "description": "Remove website page button"
+  },
+  "aiKnowledgeNoPages": {
+    "message": "No website pages yet.",
+    "description": "Empty website pages list"
+  },
+  "aiAgentsPlatformBadge": {
+    "message": "Platform",
+    "description": "Badge for seeded Platform default agent"
+  },
+  "aiAgentsSelectFabricTools": {
+    "message": "Use fabric tools",
+    "description": "Select CapIndex fabric tool set"
+  },
+  "aiAgentsShowAllTools": {
+    "message": "Show all tools",
+    "description": "Toggle full platform tool list"
+  },
+  "aiAgentsFabricToolsHeading": {
+    "message": "Fabric + selected",
+    "description": "Heading above filtered tools list"
+  },
+  "aiAgentsFabricBadge": {
+    "message": "Fabric",
+    "description": "Badge on generic module.* tools"
   }
 }

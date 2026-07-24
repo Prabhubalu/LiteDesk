@@ -17,6 +17,7 @@
         :entity="block.entity"
         :total="block.total"
         :items="block.items || []"
+        @action="onAction"
       />
       <AstraEmptyBlock
         v-else-if="block.type === 'empty'"
@@ -40,7 +41,15 @@ const props = defineProps<{
   blocks?: AstraUiBlock[];
 }>();
 
+const emit = defineEmits<{
+  action: [prompt: string];
+}>();
+
 const safeBlocks = computed(() =>
   Array.isArray(props.blocks) ? props.blocks.filter((b) => b && typeof b === 'object' && 'type' in b) : [],
 );
+
+function onAction(prompt: string) {
+  emit('action', prompt);
+}
 </script>

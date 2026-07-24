@@ -10,6 +10,12 @@ export type AstraChartPoint = {
   value: number;
 };
 
+export type AstraRecordAction = {
+  id?: string;
+  label: string;
+  prompt: string;
+};
+
 export type AstraRecordListItem = {
   id: string;
   title: string;
@@ -17,6 +23,7 @@ export type AstraRecordListItem = {
   status?: string | null;
   amount?: number | null;
   href?: string | null;
+  actions?: AstraRecordAction[];
 };
 
 export type AstraUiBlock =

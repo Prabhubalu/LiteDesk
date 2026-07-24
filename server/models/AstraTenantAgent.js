@@ -43,7 +43,7 @@ const AstraTenantAgentSchema = new mongoose.Schema(
     systemHint: {
       type: String,
       trim: true,
-      maxlength: 8000,
+      maxlength: 32000,
       default: '',
     },
     autonomy: {

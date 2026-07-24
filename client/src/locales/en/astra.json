@@ -12,7 +12,7 @@
     "description": "Astra tagline shown on the copilot landing"
   },
   "askPrompt": {
-    "message": "Ask Astra anything about your CRM…",
+    "message": "Ask Astra anything about your Platform…",
     "description": "Placeholder for the Astra chat composer"
   },
   "send": {
@@ -31,6 +31,15 @@
     "message": "Confirm",
     "description": "Confirm an Astra proposed action"
   },
+  "reviewAndSend": {
+    "message": "Review & send",
+    "description": "Open compose drawer to verify and send an Astra email draft"
+  },
+  "emailOpenedInCompose": {
+    "message": "Opened in compose — review the To, subject, and body, then send when ready.",
+    "description": "Assistant message after Astra opens the email compose drawer"
+  },
+
   "overrideAction": {
     "message": "Override",
     "description": "Override schedule conflict and create anyway"
@@ -124,8 +133,8 @@
     "description": "Open the Astra copilot"
   },
   "suggestionsHeading": {
-    "message": "What next?",
-    "description": "Heading above Astra suggestion chips"
+    "message": "Follow ups",
+    "description": "Heading above Astra follow-up suggested actions"
   },
   "chartTitle": {
     "message": "Breakdown",
@@ -144,8 +153,12 @@
     "description": "Start a fresh Astra conversation"
   },
   "composerFootnote": {
-    "message": "Astra uses your CRM data. Writes still need your confirmation.",
+    "message": "Astra uses your Platform data. Writes still need your confirmation.",
     "description": "Footnote under the Astra composer"
+  },
+  "emailNeedsRecipient": {
+    "message": "Add a recipient email before sending.",
+    "description": "Shown when Confirm is blocked because email To is empty"
   },
   "askPromptNamed": {
     "message": "What can I help you with, {name}?",

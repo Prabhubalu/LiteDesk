@@ -67,7 +67,7 @@
                       :disabled="confirming"
                       @click="onConfirm(proposal)"
                     >
-                      {{ t('astra.confirmAction') }}
+                      {{ isEmailSendProposal(proposal) ? t('astra.reviewAndSend') : t('astra.confirmAction') }}
                     </button>
                   </div>
                 </div>
@@ -106,6 +106,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAstraAsk, type AstraProposal } from '@/astra/composables/useAstraAsk';
+import { isEmailSendProposal, openEmailComposeFromAstra } from '@/astra/utils/openEmailCompose';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -146,6 +147,12 @@ async function onSubmit() {
 }
 
 async function onConfirm(proposal: AstraProposal) {
+  if (isEmailSendProposal(proposal)) {
+    openEmailComposeFromAstra(proposal);
+    proposals.value = proposals.value.filter((p) => p.id !== proposal.id);
+    answer.value = t('astra.emailOpenedInCompose');
+    return;
+  }
   const result = await confirmProposal(proposal);
   if (result.ok) {
     proposals.value = proposals.value.filter((p) => p.id !== proposal.id);
