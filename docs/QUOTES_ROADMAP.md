@@ -581,7 +581,7 @@ C0–C5 Catalog ✅  →  Q0–Q2 Core quotes  →  Q3 UI
 | 3 | Tax engine MVP | `tax_snapshot` JSON + manual rates; full tax service later |
 | 4 | FX source | Org setting snapshot at quote create; no live FX on old quotes |
 | 5 | Deal required? | No — optional `dealId`; Quotes usable without Sales |
-| 6 | Auto-number format | `QT-{0000}` per org configurable prefix |
+| 6 | Auto-number format | Tenant Module Numbering (`QT-{SEQ}` default; Settings → Automation → Module Numbering) |
 
 ---
 

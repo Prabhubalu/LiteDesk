@@ -3,8 +3,8 @@
 /**
  * buildUiBlocks — deterministic visual contract for Astra chat replies.
  *
- * The LLM may narrate a short lead-in; structured CRM facts are always rendered
- * as product UI (metrics / lists / charts), never as Markdown inventories.
+ * List asks → one record list (no chart/metrics spam).
+ * Charts only when the user asks for a breakdown.
  */
 
 const { getModule, recordPathFor } = require('../tools/moduleCatalog');
@@ -39,16 +39,51 @@ function stageFromSubtitle(subtitle) {
   return String(part || '').trim() || null;
 }
 
+function wantsChartAsk(query) {
+  return /\b(chart|graph|breakdown|by stage|by status|group\s+by|distribution|visuali[sz]e)\b/i.test(String(query || ''));
+}
+
+/** Prefer pie/donut/bar from the user ask; default bar. */
+function resolveChartType(query) {
+  const q = String(query || '');
+  if (/\bdonut\b/i.test(q)) return 'donut';
+  if (/\bpie\b/i.test(q)) return 'pie';
+  if (/\bline\b/i.test(q)) return 'line';
+  return 'bar';
+}
+
+function buildChartBlock(entity, hits, query) {
+  const chartPoints = entity === 'deals'
+    ? aggregateByField(
+      hits.map((h) => ({ stage: stageFromSubtitle(h.subtitle) || h.status || 'Unknown' })),
+      'stage',
+    )
+    : (entity === 'cases' || entity === 'tasks' || entity === 'events')
+      ? aggregateByField(hits.map((h) => ({ status: h.status || stageFromSubtitle(h.subtitle) || 'Unknown' })), 'status')
+      : [];
+
+  if (chartPoints.length < 2) return null;
+  return {
+    type: 'chart',
+    chartType: resolveChartType(query),
+    title: entity === 'deals' ? 'By stage' : 'By status',
+    series: chartPoints.slice(0, 8),
+  };
+}
+
 /**
  * @returns {{ lead: string, blocks: object[] }}
  */
-function buildUiBlocks(intent, toolResult) {
+function buildUiBlocks(intent, toolResult, options = {}) {
   const blocks = [];
   const hits = toolResult?.hits || [];
   const total = toolResult?.counts?.total ?? hits.length;
   const entity = toolResult?.entity || (intent === 'knowledge' ? 'articles' : 'records');
   const openOnly = Boolean(toolResult?.openOnly);
   const overdueOnly = Boolean(toolResult?.overdueOnly);
+  const listIntent = toolResult?.listIntent === true || options.listIntent === true;
+  const query = options.query || toolResult?.query || '';
+  const chartAsk = wantsChartAsk(query);
   const label = entityLabel(entity);
 
   if (intent === 'chitchat') {
@@ -93,7 +128,9 @@ function buildUiBlocks(intent, toolResult) {
   const firstName = hits[0]?.title || null;
   const secondName = hits[1]?.title || null;
   let lead;
-  if (total === 1 && firstName) {
+  if (listIntent) {
+    lead = `You have ${total}${qualifier} ${label}.`;
+  } else if (total === 1 && firstName) {
     const detail = hits[0]?.subtitle ? ` — ${hits[0].subtitle}` : '';
     lead = `${firstName}${detail}. Details are on the cards below; tell me what to do next.`;
   } else if (firstName && secondName && total >= 2) {
@@ -102,6 +139,41 @@ function buildUiBlocks(intent, toolResult) {
     lead = `Here are your ${total}${qualifier} ${label}, starting with ${firstName}.`;
   } else {
     lead = `I found ${total}${qualifier} ${label} — cards below have the details.`;
+  }
+
+  const maxList = listIntent
+    ? Math.min(50, Math.max(hits.length, 1))
+    : 8;
+
+  const listTitle = overdueOnly
+    ? 'Overdue tasks'
+    : openOnly && entity === 'deals'
+      ? 'Open deals'
+      : label.charAt(0).toUpperCase() + label.slice(1);
+
+  const listItems = hits.slice(0, maxList).map((h) => ({
+    id: h.id,
+    title: h.title,
+    subtitle: h.subtitle || '',
+    status: h.status || null,
+    amount: h.amount ?? null,
+    href: recordPath(entity, h.id),
+  })).filter((item) => item.id && item.title);
+
+  // List ask: clickable list; still attach a chart when the user asked for one.
+  if (listIntent) {
+    if (chartAsk) {
+      const chartBlock = buildChartBlock(entity, hits, query);
+      if (chartBlock) blocks.push(chartBlock);
+    }
+    blocks.push({
+      type: 'record_list',
+      entity,
+      title: listTitle,
+      total,
+      items: listItems,
+    });
+    return { lead, blocks };
   }
 
   const totalLabel = overdueOnly
@@ -124,49 +196,17 @@ function buildUiBlocks(intent, toolResult) {
       {
         id: 'shown',
         label: 'Shown here',
-        value: Math.min(hits.length, 8),
+        value: listItems.length,
         tone: 'neutral',
       },
     ],
   });
 
-  // Stage / status chart when we have enough variety
-  const chartPoints = entity === 'deals'
-    ? aggregateByField(
-      hits.map((h) => ({ stage: stageFromSubtitle(h.subtitle) || h.status || 'Unknown' })),
-      'stage',
-    )
-    : (entity === 'cases' || entity === 'tasks' || entity === 'events')
-      ? aggregateByField(hits.map((h) => ({ status: h.status || stageFromSubtitle(h.subtitle) || 'Unknown' })), 'status')
-      : [];
-
-  if (chartPoints.length >= 2) {
-    blocks.push({
-      type: 'chart',
-      chartType: 'bar',
-      title: entity === 'deals' ? 'By stage' : 'By status',
-      series: chartPoints.slice(0, 8),
-    });
+  // Chart only when the user asked for a breakdown / chart.
+  if (chartAsk) {
+    const chartBlock = buildChartBlock(entity, hits, query);
+    if (chartBlock) blocks.push(chartBlock);
   }
-
-  const listTitle = overdueOnly
-    ? 'Overdue tasks'
-    : openOnly && entity === 'deals'
-      ? 'Open deals'
-      : label.charAt(0).toUpperCase() + label.slice(1);
-
-  const listItems = hits.slice(0, 8).map((h) => ({
-    id: h.id,
-    title: h.title,
-    subtitle: h.subtitle || '',
-    status: h.status || null,
-    amount: h.amount ?? null,
-    href: recordPath(entity, h.id),
-  })).filter((item) => item.id && item.title);
-
-  // Keep metrics in sync with what the list actually renders
-  const shownMetric = blocks[0]?.items?.find((i) => i.id === 'shown');
-  if (shownMetric) shownMetric.value = listItems.length;
 
   blocks.push({
     type: 'record_list',
@@ -183,4 +223,6 @@ module.exports = {
   buildUiBlocks,
   aggregateByField,
   recordPath,
+  wantsChartAsk,
+  resolveChartType,
 };

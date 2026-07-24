@@ -21,7 +21,7 @@ export type AstraRecordListItem = {
 
 export type AstraUiBlock =
   | { type: 'metrics'; items: AstraMetricItem[] }
-  | { type: 'chart'; title?: string; chartType?: 'bar' | 'donut'; series: AstraChartPoint[] }
+  | { type: 'chart'; title?: string; chartType?: 'bar' | 'donut' | 'pie' | 'line'; series: AstraChartPoint[] }
   | {
       type: 'record_list';
       entity?: string;

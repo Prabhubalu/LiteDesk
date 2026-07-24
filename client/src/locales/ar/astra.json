@@ -4,7 +4,7 @@
     "description": "Astra conversational CRM assistant brand"
   },
   "tagline": {
-    "message": "Your conversational CRM copilot",
+    "message": "The intelligence behind your work.",
     "description": "Astra tagline shown on the copilot landing"
   },
   "askPrompt": {
@@ -230,5 +230,41 @@
   "historyGroupOlder": {
     "message": "Older",
     "description": "Astra chat history group: older than 30 days"
+  },
+  "overrideAction": {
+    "message": "Override",
+    "description": "Override schedule conflict and create anyway"
+  },
+  "cancelAction": {
+    "message": "Cancel",
+    "description": "Cancel create and keep existing schedule"
+  },
+  "actionCompleted": {
+    "message": "Completed",
+    "description": "Shown when an Astra proposed action has been confirmed"
+  },
+  "viewRecord": {
+    "message": "Open record",
+    "description": "Navigate to the record created by an Astra action"
+  },
+  "viewEvent": {
+    "message": "View event",
+    "description": "Navigate to a newly created calendar event"
+  },
+  "answerNextSteps": {
+    "message": "Next steps",
+    "description": "Heading above structured next-step list in Astra answers"
+  },
+  "answerDraft": {
+    "message": "Follow-up draft",
+    "description": "Heading for email/follow-up draft card in Astra answers"
+  },
+  "copyDraft": {
+    "message": "Copy",
+    "description": "Copy Astra draft text to clipboard"
+  },
+  "draftCopied": {
+    "message": "Copied",
+    "description": "Confirm Astra draft was copied"
   }
 }

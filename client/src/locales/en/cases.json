@@ -183,6 +183,14 @@
     "message": "Articles",
     "description": "Knowledge panel article list heading under Ask"
   },
+  "recordKnowledgeSuggestedReply": {
+    "message": "Suggested reply",
+    "description": "Case knowledge panel AI draft heading"
+  },
+  "recordKnowledgeSuggestedReplyHint": {
+    "message": "Review and edit before sending. Never auto-sent.",
+    "description": "Case knowledge panel AI draft hint"
+  },
   "recordAiAskSeed": {
     "message": "What do we know about resolving: {title}?",
     "description": "Prefill Ask question from case title"

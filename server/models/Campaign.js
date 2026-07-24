@@ -70,6 +70,7 @@ const CampaignSchema = new Schema(
       index: true
     },
     name: { type: String, required: true, trim: true, maxlength: 255 },
+    campaignNumber: { type: String, trim: true, index: true },
     subject: { type: String, trim: true, default: '' },
     bodyHtml: { type: String, default: '' },
     bodyText: { type: String, default: '' },
@@ -242,5 +243,17 @@ const CampaignSchema = new Schema(
 );
 
 CampaignSchema.index({ organizationId: 1, status: 1, updatedAt: -1 });
+CampaignSchema.index({ organizationId: 1, campaignNumber: 1 }, { unique: true, sparse: true });
+
+CampaignSchema.pre('validate', async function assignCampaignNumber(next) {
+  if (this.campaignNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'campaigns', fieldKey: 'campaignNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 module.exports = wrapTenantModel(mongoose.model('Campaign', CampaignSchema));

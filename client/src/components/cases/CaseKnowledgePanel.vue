@@ -5,6 +5,26 @@
     </div>
 
     <div class="min-h-0 flex-1 overflow-y-auto">
+      <div
+        v-if="suggestedReply?.draft"
+        class="border-b border-indigo-100 bg-indigo-50/60 px-4 py-3 dark:border-indigo-900 dark:bg-indigo-950/30"
+      >
+        <p class="mb-1 text-xs font-medium uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+          {{ t('cases.recordKnowledgeSuggestedReply') }}
+        </p>
+        <p class="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200">{{ suggestedReply.draft }}</p>
+        <ul v-if="suggestedReply.citations?.length" class="mt-2 space-y-1">
+          <li
+            v-for="(c, idx) in suggestedReply.citations"
+            :key="`${c.id || idx}`"
+            class="text-xs text-gray-500"
+          >
+            [{{ idx + 1 }}] {{ c.title || c.sourceType }}
+          </li>
+        </ul>
+        <p class="mt-2 text-[11px] text-gray-500">{{ t('cases.recordKnowledgeSuggestedReplyHint') }}</p>
+      </div>
+
       <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
         <p class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
           {{ t('cases.recordKnowledgeArticlesHeading') }}
@@ -51,6 +71,7 @@ const props = defineProps({
   caseTitle: { type: String, default: '' },
   caseDescription: { type: String, default: '' },
   caseRecordId: { type: String, default: '' },
+  suggestedReply: { type: Object, default: null },
 });
 
 const { t } = useI18n();

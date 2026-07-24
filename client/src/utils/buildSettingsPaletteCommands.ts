@@ -5,6 +5,7 @@ export type SettingsAccessContext = {
   isOwner: boolean;
   role: string | null | undefined;
   permissions: Record<string, unknown> | null | undefined;
+  entitledAddons?: { ai?: boolean } | null;
 };
 
 type SettingsPaletteTab = {

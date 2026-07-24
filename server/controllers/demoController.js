@@ -412,6 +412,15 @@ exports.convertToOrganization = async (req, res) => {
                 types: []
             });
             console.log('✅ Tenant workspace organization created:', tenantOrganization.name);
+            try {
+                const { provisionFreshTenantAstra } = require('../services/ai/astraDefaultEntitlementService');
+                await provisionFreshTenantAstra({
+                    organizationId: tenantOrganization._id,
+                    initiatedByUserId: req.user?._id || null,
+                });
+            } catch (astraErr) {
+                console.warn('[demoController] Astra starter grant failed:', astraErr?.message || astraErr);
+            }
         } else {
             console.log('✅ Tenant workspace organization found:', tenantOrganization.name);
         }

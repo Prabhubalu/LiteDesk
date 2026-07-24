@@ -15,6 +15,8 @@
 const { getLlmAdapter, getEmbeddingAdapter } = require('../../ai/providerRegistry');
 const { resolveAiRequestConfig } = require('../../ai/aiSettingsResolver');
 const { getVectorStore } = require('../../ai/vector/vectorStoreRegistry');
+const { assertCreditsAvailable, debitCredits } = require('../../ai/aiCreditService');
+const { AI_KEY_MODES } = require('../../../constants/aiProviders');
 
 /**
  * Resolve provider/model/key config for an org + ability.
@@ -32,11 +34,19 @@ async function resolveConfig({ organizationId, abilityKey, modelOverride = '' })
  * @returns {Promise<import('./ports/llmPort').LlmCompletion & { config: object }>}
  */
 async function complete(organizationId, abilityKey, params = {}) {
+  const started = Date.now();
   const config = await resolveConfig({
     organizationId,
     abilityKey,
     modelOverride: params.modelOverride || '',
   });
+
+  // Platform key: gate + debit. BYOK: no token debit.
+  assertCreditsAvailable({
+    keyMode: config.keyMode,
+    creditsBalance: config.creditsBalance,
+  });
+
   const adapter = getLlmAdapter(config.provider);
   const result = await adapter.complete({
     apiKey: config.apiKey,
@@ -46,10 +56,41 @@ async function complete(organizationId, abilityKey, params = {}) {
     maxTokens: params.maxTokens ?? 800,
     providerOptions: config.providerOptions,
   });
+  const usage = result.usage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+  const creditsDebited = await debitCredits({
+    organizationId,
+    keyMode: config.keyMode || AI_KEY_MODES.PLATFORM,
+    usage,
+  });
+
+  // Ask orchestrator sets skipAudit and writes one rolled-up row per turn.
+  if (params.skipAudit !== true && organizationId) {
+    try {
+      const { writeAiAuditLog } = require('../../ai/aiAuditLogService');
+      await writeAiAuditLog({
+        organizationId,
+        userId: params.userId || null,
+        abilityKey: abilityKey || 'astra_v2_ask',
+        provider: config.provider || 'unknown',
+        model: config.model || abilityKey,
+        keyMode: config.keyMode || AI_KEY_MODES.PLATFORM,
+        promptVersion: params.promptVersion || 'astra-v2',
+        status: 'success',
+        usage,
+        creditsDebited,
+        latencyMs: Date.now() - started,
+        metadata: params.auditMetadata || null,
+      });
+    } catch (err) {
+      console.warn('[modelRouter] audit write failed:', err?.message || err);
+    }
+  }
+
   return {
     text: result.text || '',
-    usage: result.usage || { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+    usage,
     raw: result.raw,
+    creditsDebited,
     config,
   };
 }

@@ -11,7 +11,7 @@
  */
 
 const { DEFAULT_EMAIL_CREDIT_PACKS } = require('./emailCreditPackConstants');
-const { DEFAULT_AI_CREDIT_PACKS } = require('./aiCreditPackConstants');
+const { DEFAULT_AI_TOKEN_PACKS } = require('./aiCreditPackConstants');
 
 module.exports = {
   live_chat: {
@@ -96,6 +96,6 @@ module.exports = {
       PRO: { flatPriceCents: null, currency: 'USD' },
       ENTERPRISE: { flatPriceCents: null, currency: 'USD' },
     },
-    creditPacks: DEFAULT_AI_CREDIT_PACKS,
+    creditPacks: DEFAULT_AI_TOKEN_PACKS,
   },
 };

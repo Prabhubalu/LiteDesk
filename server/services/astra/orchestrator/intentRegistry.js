@@ -151,12 +151,109 @@ function classifyIntent(query, request = {}) {
   return classifyIntentDetailed(query, request).intent;
 }
 
+function scoreAgentAgainstQuery(agent, query) {
+  const q = String(query || '').toLowerCase().trim();
+  if (!q) return 0;
+  const tokens = q.split(/\W+/).filter((t) => t.length > 2);
+  if (!tokens.length) return 0;
+
+  const title = String(agent.title || '').toLowerCase();
+  const description = String(agent.description || '').toLowerCase();
+  const phrases = (agent.triggerPhrases || []).map((p) => String(p || '').toLowerCase().trim()).filter(Boolean);
+  const hint = String(agent.systemHint || '').toLowerCase();
+  const hay = `${title} ${description} ${phrases.join(' ')} ${hint}`;
+
+  let hits = 0;
+  for (const t of tokens) {
+    if (hay.includes(t)) hits += 1;
+  }
+  let score = hits / tokens.length;
+
+  // Exact / near-exact trigger phrase match → strong specialist preference
+  let phraseBoost = 0;
+  for (const p of phrases) {
+    if (!p) continue;
+    if (q === p || q.includes(p) || p.includes(q)) {
+      phraseBoost = Math.max(phraseBoost, 0.55);
+    } else {
+      const overlap = phraseOverlapTokens(q, p);
+      if (overlap >= 0.6) phraseBoost = Math.max(phraseBoost, 0.35);
+    }
+  }
+  score += phraseBoost;
+
+  // Title keyword hit (e.g. "pipeline" agent vs pipeline ask)
+  const titleTokens = title.split(/\W+/).filter((t) => t.length > 3);
+  if (titleTokens.some((t) => q.includes(t))) score += 0.15;
+
+  const specialistBonus = agent.name === 'coworker' || agent.name === 'clarifier' ? 0 : 0.18;
+  return Math.min(1, score + specialistBonus);
+}
+
+function phraseOverlapTokens(a, b) {
+  const ta = new Set(String(a || '').toLowerCase().split(/\W+/).filter((t) => t.length > 2));
+  const tb = new Set(String(b || '').toLowerCase().split(/\W+/).filter((t) => t.length > 2));
+  if (!ta.size || !tb.size) return 0;
+  let inter = 0;
+  for (const x of ta) if (tb.has(x)) inter += 1;
+  return inter / Math.max(ta.size, tb.size);
+}
+
+/**
+ * Prefer explicit request.agent, then best-matching tenant specialist,
+ * then intent classification seat, then coworker.
+ */
 function resolveAgentKey(classification, request = {}, agentRegistry = null) {
   const requested = String(request.agent || '').trim();
-  if (requested && (!agentRegistry || agentRegistry.hasAgent(requested))) {
-    return requested;
+  if (requested && requested !== 'auto') {
+    if (!agentRegistry || agentRegistry.hasAgent(requested)) {
+      return requested;
+    }
   }
-  return classification.agentKey || 'coworker';
+
+  const query = String(request.query || classification.query || '').trim();
+  const GENERIC_SEATS = new Set(['coworker', 'clarifier', '']);
+
+  // Specialists first — Master-created agents must beat default coworker when they match.
+  if (agentRegistry && typeof agentRegistry.listAgents === 'function' && query) {
+    let best = null;
+    let bestScore = 0;
+    let coworkerScore = 0;
+    for (const ag of agentRegistry.listAgents()) {
+      if (!ag?.name || ag.name === 'clarifier') continue;
+      const score = scoreAgentAgainstQuery(ag, query);
+      if (ag.name === 'coworker') coworkerScore = score;
+      if (score > bestScore) {
+        bestScore = score;
+        best = ag.name;
+      }
+    }
+    if (best && best !== 'coworker' && bestScore >= 0.22) {
+      return best;
+    }
+    // Prefer specialist whenever it edges coworker
+    if (best && best !== 'coworker' && bestScore >= coworkerScore && bestScore >= 0.18) {
+      return best;
+    }
+    if (best && bestScore >= 0.4) {
+      return best;
+    }
+  }
+
+  const classified = classification.agentKey || null;
+  if (classified && !GENERIC_SEATS.has(classified)) {
+    if (!agentRegistry || agentRegistry.hasAgent(classified)) {
+      return classified;
+    }
+  }
+
+  if (classified === 'coworker' && agentRegistry?.hasAgent?.('coworker')) {
+    return 'coworker';
+  }
+
+  if (agentRegistry?.hasAgent?.('coworker')) return 'coworker';
+  const first = agentRegistry?.listAgents?.()?.find((a) => a.name !== 'clarifier');
+  return first?.name || classified || 'coworker';
 }
 
 function extractTaskTitle(query) {

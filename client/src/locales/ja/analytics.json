@@ -2078,5 +2078,17 @@
   "homeAiAskFailed": {
     "message": "Could not suggest reports right now.",
     "description": "Analytics home AI intent error"
+  },
+  "datePresetToday": {
+    "message": "Today",
+    "description": "Date preset today"
+  },
+  "datePresetYesterday": {
+    "message": "Yesterday",
+    "description": "Date preset yesterday"
+  },
+  "datePresetThisWeek": {
+    "message": "This week",
+    "description": "Date preset this week"
   }
 }

@@ -71,7 +71,7 @@ function shouldSkipPath(path) {
 function resolveAction(method, path) {
   const p = String(path || '').toLowerCase();
   if (
-    /\/(enable|disable|install|uninstall|archive|test|toggle|migrate|recalculate|extend|purchase|replay|rotate|run-now|duplicate|suspend|reactivate|allocate|verify|register)/.test(
+    /\/(enable|disable|install|uninstall|archive|test|toggle|migrate|recalculate|resync|extend|purchase|replay|rotate|run-now|duplicate|suspend|reactivate|allocate|verify|register)/.test(
       p
     )
   ) {
@@ -92,6 +92,7 @@ function resolveSettingsApiSurface(path) {
   if (p.includes('/integrations')) return 'integrations';
   if (p.includes('/addons')) return 'addons';
   if (p.includes('/applications') || p.includes('/quotes')) return 'applications';
+  if (p.includes('/module-numbering')) return 'numbering';
   if (p.includes('/automation')) return 'automation';
   if (p.includes('/core-modules')) return 'modules';
   if (p.includes('/email-policy') || p.includes('/email/')) return 'email-policy';
@@ -179,6 +180,22 @@ function createSettingsAuditMiddleware(options = {}) {
             after = requestBody;
           }
 
+          // Numbering (and similar) keep moduleKey on snapshots for area labels even when
+          // the client body is a partial field patch without moduleKey.
+          const paramModuleKey =
+            (typeof req.params?.moduleKey === 'string' && req.params.moduleKey) ||
+            (typeof req.params?.key === 'string' && req.params.key) ||
+            null;
+          if (paramModuleKey) {
+            const key = String(paramModuleKey);
+            if (before && typeof before === 'object' && !Array.isArray(before) && before.moduleKey == null) {
+              before = { ...before, moduleKey: key };
+            }
+            if (after && typeof after === 'object' && !Array.isArray(after) && after.moduleKey == null) {
+              after = { ...after, moduleKey: key };
+            }
+          }
+
           let changes = buildChangeList(before, after, { surface });
 
           // Creates with no before snapshot: treat as null → new values for sent fields.
@@ -238,6 +255,7 @@ function createSettingsAuditMiddleware(options = {}) {
           const moduleKey =
             (before && typeof before === 'object' && (before.moduleKey || before.key)) ||
             (after && typeof after === 'object' && (after.moduleKey || after.key)) ||
+            (typeof req.params?.moduleKey === 'string' ? req.params.moduleKey : null) ||
             (typeof req.params?.key === 'string' ? req.params.key : null) ||
             null;
 

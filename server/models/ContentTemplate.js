@@ -21,6 +21,7 @@ const ContentTemplateSchema = new Schema(
       index: true
     },
     name: { type: String, trim: true, required: true, index: true },
+    templateNumber: { type: String, trim: true },
     description: { type: String, trim: true, default: '' },
     purpose: { type: String, trim: true, default: '', index: true },
     category: { type: String, trim: true, default: '', index: true },
@@ -110,9 +111,21 @@ const ContentTemplateSchema = new Schema(
 
 ContentTemplateSchema.index({ organizationId: 1, name: 1 });
 ContentTemplateSchema.index({ organizationId: 1, status: 1, updatedAt: -1 });
+ContentTemplateSchema.index({ organizationId: 1, templateNumber: 1 }, { unique: true, sparse: true });
 ContentTemplateSchema.index(
   { organizationId: 1, moduleScope: 1, purpose: 1, isDefault: 1 },
   { partialFilterExpression: { isDefault: true, deletedAt: null } }
 );
+
+ContentTemplateSchema.pre('validate', async function assignTemplateNumber(next) {
+  if (this.templateNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'templates', fieldKey: 'templateNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 module.exports = wrapTenantModel(mongoose.model('ContentTemplate', ContentTemplateSchema));

@@ -2,12 +2,13 @@
   <div class="settings-scroll-panel flex min-h-0 flex-1 flex-col overflow-hidden">
     <div
       v-if="$slots.header || $slots.tabs"
-      class="settings-scroll-panel__sticky-header sticky top-0 z-10 shrink-0 border-b border-neutral-200/80 bg-white/95 pb-4 backdrop-blur dark:border-neutral-700/80 dark:bg-neutral-900/95"
+      class="settings-scroll-panel__sticky-header sticky top-0 z-10 shrink-0 border-b border-neutral-200/80 bg-white/95 backdrop-blur dark:border-neutral-700/80 dark:bg-neutral-900/95"
+      :class="dense ? 'pb-2' : 'pb-4'"
     >
       <div v-if="$slots.header" class="settings-scroll-panel__header">
         <slot name="header" />
       </div>
-      <div v-if="$slots.tabs" :class="$slots.header ? 'mt-4' : ''">
+      <div v-if="$slots.tabs" :class="$slots.header ? (dense ? 'mt-2' : 'mt-4') : ''">
         <slot name="tabs" />
       </div>
     </div>
@@ -18,7 +19,9 @@
         embed
           ? 'flex flex-col overflow-hidden'
           : 'overflow-y-auto overscroll-contain',
-        $slots.header || $slots.tabs ? SETTINGS_HEADER_CONTENT_GAP_CLASS : '',
+        $slots.header || $slots.tabs
+          ? (dense ? 'pt-3' : SETTINGS_HEADER_CONTENT_GAP_CLASS)
+          : '',
         contentClass,
         saveBarVisible ? SETTINGS_SAVE_BAR_CONTENT_CLASS : ''
       ]"
@@ -42,6 +45,11 @@ defineProps({
   },
   /** When true, body does not scroll; nested children manage their own scroll regions. */
   embed: {
+    type: Boolean,
+    default: false
+  },
+  /** Tighter sticky header + content gap (e.g. Agents workspace). */
+  dense: {
     type: Boolean,
     default: false
   },

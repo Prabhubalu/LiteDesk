@@ -30,8 +30,15 @@
       // Restore AI dock rail before first paint so App Shell doesn't slide in after Vue mounts.
       (function() {
         try {
-          var ui = JSON.parse(localStorage.getItem('litedesk_arivu_support_panel_ui_v1') || 'null');
-          if (!ui || !ui.open) return;
+          var openFlag = localStorage.getItem('litedesk_astra_side_panel_open_v1');
+          var legacy = null;
+          try {
+            legacy = JSON.parse(localStorage.getItem('litedesk_arivu_support_panel_ui_v1') || 'null');
+          } catch (e2) {
+            legacy = null;
+          }
+          var isOpen = openFlag === '1' || (legacy && legacy.open === true);
+          if (!isOpen) return;
           var rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
           if (!Number.isFinite(rem) || rem <= 0) rem = 16;
           var inset = 0.5 * rem;
@@ -43,7 +50,6 @@
           var total = Math.round(w + gap + inset);
           document.documentElement.style.setProperty('--arivu-assistant-rail', total + 'px');
           document.documentElement.style.setProperty('--arivu-work-panel-pad-right', '0px');
-          document.body.style.paddingRight = total + 'px';
           document.body.classList.add('arivu-assistant-rail-open');
         } catch (e) {
           /* ignore */

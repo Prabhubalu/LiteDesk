@@ -207,6 +207,51 @@ async function findBestBotAnswer({ organizationId, bot, queryText, pageUrl = '' 
     return { match: null, score: 0 };
   }
 
+  // Prefer grounded public retrieval when AI assist is enabled on the bot
+  if (bot.aiAssistEnabled !== false) {
+    try {
+      const { groundedRetrieve } = require('./astra/retrieval/groundedRetriever');
+      const retrieval = await groundedRetrieve({
+        organizationId,
+        query: trimmed,
+        audience: 'public',
+        topK: 5,
+      });
+      if (!retrieval.refuse && !retrieval.weak && retrieval.hits?.length) {
+        const top = retrieval.hits[0];
+        return {
+          match: {
+            sourceType: top.sourceType || 'knowledge',
+            sourceId: top.sourceId || top.id,
+            title: top.title || top.citation?.title || 'Help article',
+            body: String(top.text || '').slice(0, 1200),
+            fullText: top.text || '',
+            citations: retrieval.citations || [],
+            grounded: true,
+          },
+          score: Math.max(Number(top.score) || 0, 2),
+          escalate: false,
+        };
+      }
+      if (retrieval.refuse || retrieval.weak) {
+        // Fall through to keyword; mark escalate hint
+        const keyword = await findBestBotAnswerKeyword({ organizationId, bot, queryText: trimmed, pageUrl });
+        if (!keyword.match) {
+          return { match: null, score: 0, escalate: true, guidance: retrieval.guidance };
+        }
+        return keyword;
+      }
+    } catch {
+      /* keyword fallback */
+    }
+  }
+
+  return findBestBotAnswerKeyword({ organizationId, bot, queryText: trimmed, pageUrl });
+}
+
+async function findBestBotAnswerKeyword({ organizationId, bot, queryText, pageUrl = '' }) {
+  const trimmed = String(queryText || '').trim();
+
   const [kbEntries, websiteEntries] = await Promise.all([
     loadKnowledgeBaseEntries({ organizationId, bot, queryText: trimmed }),
     loadWebsiteContentEntries({ organizationId, bot, queryText: trimmed, pageUrl }),
@@ -221,7 +266,7 @@ async function findBestBotAnswer({ organizationId, bot, queryText, pageUrl = '' 
   const effectiveMinScore = Number.isFinite(minScore) && minScore > 0 ? minScore : 2;
 
   if (!best || best.score < effectiveMinScore) {
-    return { match: null, score: best?.score || 0 };
+    return { match: null, score: best?.score || 0, escalate: true };
   }
 
   return {
@@ -233,6 +278,7 @@ async function findBestBotAnswer({ organizationId, bot, queryText, pageUrl = '' 
       fullText: best.fullText || best.snippet,
     },
     score: best.score,
+    escalate: false,
   };
 }
 

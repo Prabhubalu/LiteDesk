@@ -7,6 +7,34 @@ function parsePositiveInt(value, fallback, max = 100) {
   return Math.min(parsed, max);
 }
 
+/**
+ * Historical rows stored creditsDebited in credit units (1 ≈ 1k tokens).
+ * New rows store raw tokens. Detect legacy when debit ≪ usage tokens.
+ */
+function toTokensBilled(creditsDebited, usageTotalTokens) {
+  const debited = Math.max(0, Number(creditsDebited) || 0);
+  if (debited <= 0) return 0;
+  const total = Math.max(0, Number(usageTotalTokens) || 0);
+  if (total > 0 && debited * 500 < total) {
+    return Math.floor(debited * 1000);
+  }
+  return Math.floor(debited);
+}
+
+const tokensBilledExpr = {
+  $cond: [
+    {
+      $and: [
+        { $gt: ['$creditsDebited', 0] },
+        { $gt: ['$usage.totalTokens', 0] },
+        { $lt: [{ $multiply: ['$creditsDebited', 500] }, '$usage.totalTokens'] },
+      ],
+    },
+    { $multiply: ['$creditsDebited', 1000] },
+    '$creditsDebited',
+  ],
+};
+
 function buildListFilter({
   organizationId,
   abilityKey = null,
@@ -32,6 +60,7 @@ function buildListFilter({
 function serializeAuditLogRow(doc) {
   const row = doc?.toObject ? doc.toObject() : doc;
   const user = row.userId && typeof row.userId === 'object' ? row.userId : null;
+  const tokensBilled = toTokensBilled(row.creditsDebited, row.usage?.totalTokens);
   return {
     id: String(row._id),
     abilityKey: row.abilityKey,
@@ -42,7 +71,8 @@ function serializeAuditLogRow(doc) {
     status: row.status,
     contextRefs: row.contextRefs || [],
     usage: row.usage || {},
-    creditsDebited: Number(row.creditsDebited || 0),
+    creditsDebited: tokensBilled,
+    tokensBilled,
     latencyMs: Number(row.latencyMs || 0),
     errorCode: row.errorCode || null,
     errorMessage: row.errorMessage || null,
@@ -63,21 +93,27 @@ function serializeAuditLogRow(doc) {
 async function getAiUsageSummary({
   organizationId,
   days = 30,
+  from = null,
+  to = null,
   abilityKey = null,
   status = null,
 }) {
-  const safeDays = Math.min(Math.max(Number(days) || 30, 1), 365);
-  const since = new Date(Date.now() - safeDays * 86400000);
-  const match = {
-    organizationId,
-    createdAt: { $gte: since },
-  };
+  const match = { organizationId };
+  if (from || to) {
+    match.createdAt = {};
+    if (from) match.createdAt.$gte = new Date(from);
+    if (to) match.createdAt.$lte = new Date(to);
+  } else {
+    const safeDays = Math.min(Math.max(Number(days) || 30, 1), 3650);
+    match.createdAt = { $gte: new Date(Date.now() - safeDays * 86400000) };
+  }
   if (abilityKey) match.abilityKey = String(abilityKey).trim();
   if (status) match.status = String(status).trim();
 
   const [totalsAgg, byAbilityAgg] = await Promise.all([
     AiAuditLog.aggregate([
       { $match: match },
+      { $addFields: { tokensBilled: tokensBilledExpr } },
       {
         $group: {
           _id: null,
@@ -85,18 +121,19 @@ async function getAiUsageSummary({
           totalPromptTokens: { $sum: '$usage.promptTokens' },
           totalCompletionTokens: { $sum: '$usage.completionTokens' },
           totalTokens: { $sum: '$usage.totalTokens' },
-          totalCreditsDebited: { $sum: '$creditsDebited' },
+          totalCreditsDebited: { $sum: '$tokensBilled' },
         },
       },
     ]),
     AiAuditLog.aggregate([
       { $match: match },
+      { $addFields: { tokensBilled: tokensBilledExpr } },
       {
         $group: {
           _id: '$abilityKey',
           calls: { $sum: 1 },
           totalTokens: { $sum: '$usage.totalTokens' },
-          creditsDebited: { $sum: '$creditsDebited' },
+          creditsDebited: { $sum: '$tokensBilled' },
         },
       },
       { $sort: { totalTokens: -1 } },
@@ -106,17 +143,20 @@ async function getAiUsageSummary({
 
   const totals = totalsAgg[0] || {};
   return {
-    days: safeDays,
+    from: from || null,
+    to: to || null,
     totalCalls: totals.totalCalls || 0,
     totalPromptTokens: totals.totalPromptTokens || 0,
     totalCompletionTokens: totals.totalCompletionTokens || 0,
     totalTokens: totals.totalTokens || 0,
     totalCreditsDebited: totals.totalCreditsDebited || 0,
+    totalTokensBilled: totals.totalCreditsDebited || 0,
     byAbility: byAbilityAgg.map((row) => ({
       abilityKey: row._id,
       calls: row.calls,
       totalTokens: row.totalTokens,
       creditsDebited: row.creditsDebited,
+      tokensBilled: row.creditsDebited,
     })),
   };
 }
@@ -160,6 +200,8 @@ async function listAiAuditLogs({
     summary = await getAiUsageSummary({
       organizationId,
       days: summaryDays,
+      from,
+      to,
       abilityKey,
       status,
     });
@@ -195,6 +237,7 @@ async function writeAiAuditLog({
   metadata = null,
 }) {
   try {
+    // creditsDebited field stores tokens billed (platform metering).
     await AiAuditLog.create({
       organizationId,
       userId: userId || null,
@@ -210,7 +253,7 @@ async function writeAiAuditLog({
         completionTokens: usage.completionTokens || 0,
         totalTokens: usage.totalTokens || 0,
       },
-      creditsDebited,
+      creditsDebited: Math.max(0, Math.floor(Number(creditsDebited) || 0)),
       latencyMs,
       errorCode,
       errorMessage,
@@ -227,4 +270,5 @@ module.exports = {
   getAiUsageSummary,
   listAiAuditLogs,
   writeAiAuditLog,
+  toTokensBilled,
 };

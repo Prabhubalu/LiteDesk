@@ -29,6 +29,7 @@ const MarketingAudienceSchema = new Schema(
       index: true
     },
     name: { type: String, required: true, trim: true, maxlength: 255 },
+    audienceNumber: { type: String, trim: true, index: true },
     description: { type: String, trim: true, default: '' },
     type: {
       type: String,
@@ -54,5 +55,17 @@ const MarketingAudienceSchema = new Schema(
 
 MarketingAudienceSchema.index({ organizationId: 1, updatedAt: -1 });
 MarketingAudienceSchema.index({ organizationId: 1, name: 1 });
+MarketingAudienceSchema.index({ organizationId: 1, audienceNumber: 1 }, { unique: true, sparse: true });
+
+MarketingAudienceSchema.pre('validate', async function assignAudienceNumber(next) {
+  if (this.audienceNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'audiences', fieldKey: 'audienceNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 module.exports = wrapTenantModel(mongoose.model('MarketingAudience', MarketingAudienceSchema));

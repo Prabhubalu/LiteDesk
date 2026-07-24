@@ -15,6 +15,18 @@ const GLOBAL_SYSTEM_FIELD_KEYS = new Set([
   'portalaccess',
   'portalreadreceipts',
   'portalcsat',
+  'personnumber',
+  'organizationnumber',
+  'dealnumber',
+  'tasknumber',
+  'eventnumber',
+  'formnumber',
+  'responsenumber',
+  'recordnumber',
+  'articlenumber',
+  'blognumber',
+  'segmentnumber',
+  'templatenumber',
 ]);
 
 /** @internal Used by fieldCapabilityEngine with pre-normalized keys. */

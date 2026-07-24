@@ -16,6 +16,7 @@ const modelRouter = require('./models/modelRouter');
 const { runOrchestrator } = require('./orchestrator/runOrchestrator');
 const toolRegistry = require('./tools/toolRegistry');
 const agentRegistry = require('./agents/agentRegistry');
+const tenantCatalogService = require('./agents/tenantCatalogService');
 const { planCrmSearch } = require('./tools/families');
 const autonomousService = require('./autonomous/autonomousService');
 const personalMemoryService = require('./memory/personalMemoryService');
@@ -34,6 +35,7 @@ module.exports = {
   runOrchestrator,
   toolRegistry,
   agentRegistry,
+  tenantCatalogService,
   planCrmSearch,
   autonomousService,
   personalMemoryService,

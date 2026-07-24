@@ -31,6 +31,10 @@ const BUILTIN_AGENTS = [
     description: 'General-purpose CRM coworker: answers questions grounded in your data.',
     tools: [
       ...READ_CORE,
+      'module.search',
+      'module.get',
+      'module.create',
+      'module.update',
       'crm.tasks.create',
       'crm.notes.create',
       'crm.activity.log',
@@ -45,7 +49,14 @@ const BUILTIN_AGENTS = [
       'calendar.createEvent',
       'playbook.run',
     ],
-    systemHint: 'Be a helpful teammate. Ground every CRM claim in tool results.',
+    systemHint: [
+      'Role: Astra coworker',
+      'Goal: Answer CRM and knowledge asks grounded in tools',
+      'Tools: module.search, module.get, knowledge.search, search.crm',
+      'Constraints: Never invent CRM or knowledge facts. Cite sources. Confirm writes.',
+      'Success: Ask answered with tool-grounded facts',
+      'Output: Premium coworker prose with clear next steps',
+    ].join('\n'),
     autonomy: 'assist',
   },
   {
@@ -418,7 +429,10 @@ function registerBuiltinAgents(registry) {
   return registry.listAgents();
 }
 
+const SEED_BUILTIN_AGENTS = BUILTIN_AGENTS.filter((a) => a.name === 'coworker');
+
 module.exports = {
   BUILTIN_AGENTS,
+  SEED_BUILTIN_AGENTS,
   registerBuiltinAgents,
 };

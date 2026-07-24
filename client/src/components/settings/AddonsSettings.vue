@@ -70,6 +70,12 @@
                   count: Number(addon.emailPolicy.creditsRemaining || 0).toLocaleString(),
                 }) }}
               </p>
+              <p v-if="addon.aiCredits">
+                {{ t('settings.addonsAiCreditsBalanceShort', {
+                  available: Number(addon.aiCredits.tokensAvailable ?? addon.aiCredits.tokensBalance || 0).toLocaleString(),
+                  consumed: Number(addon.aiCredits.tokensConsumed || 0).toLocaleString(),
+                }) }}
+              </p>
               <p v-if="addon.subscription.trialEndsAt && addon.subscription.status === 'TRIAL'">
                 {{ t('settings.addonsTrialEnds', { date: formatDate(addon.subscription.trialEndsAt) }) }}
               </p>
@@ -82,6 +88,14 @@
                 @click="openEmailCreditsSettings"
               >
                 {{ t('settings.addonsEmailCreditsBuy') }}
+              </button>
+              <button
+                v-if="addon.addonKey === 'ai_credits'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openAiCreditsSettings"
+              >
+                {{ t('settings.addonsAiCreditsBuy') }}
               </button>
               <button
                 v-if="addon.addonKey === 'live_chat'"
@@ -222,6 +236,12 @@
     @back="navigateToOverview"
   />
 
+  <AiCreditsAddonSettings
+    v-else-if="currentView === 'ai-credits-settings'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    @back="navigateToOverview"
+  />
+
   <LiveChatAddonSettings
     v-else-if="currentView === 'live-chat-settings'"
     class="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -273,6 +293,7 @@ import LiveChatAddonSettings from '@/components/settings/LiveChatAddonSettings.v
 import ArticlesAddonSettings from '@/components/settings/ArticlesAddonSettings.vue';
 import BlogAddonSettings from '@/components/settings/BlogAddonSettings.vue';
 import EmailCreditsAddonSettings from '@/components/settings/EmailCreditsAddonSettings.vue';
+import AiCreditsAddonSettings from '@/components/settings/AiCreditsAddonSettings.vue';
 import LiveChatQueuesSettings from '@/components/settings/LiveChatQueuesSettings.vue';
 import LiveChatBotsSettings from '@/components/settings/LiveChatBotsSettings.vue';
 import LiveChatWebsiteContentSettings from '@/components/settings/LiveChatWebsiteContentSettings.vue';
@@ -283,6 +304,12 @@ import { invalidateAddonNavigationCache } from '@/utils/addonNavigation';
 import { captureArticlesAddonInstalled } from '@/config/posthogArticles';
 import { captureBlogAddonInstalled } from '@/config/posthogBlog';
 
+const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const notifications = useNotifications();
+
 function notifyAddonsUpdated() {
   invalidateAddonNavigationCache();
   try {
@@ -290,13 +317,9 @@ function notifyAddonsUpdated() {
   } catch {
     // ignore
   }
+  // Refresh entitledAddons.ai so Settings → AI / Astra nav hide immediately.
+  void authStore.refreshUser({ force: true });
 }
-
-const { t } = useI18n();
-const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore();
-const notifications = useNotifications();
 
 const loading = ref(true);
 const error = ref('');
@@ -386,6 +409,7 @@ const currentView = computed(() => {
   if (view === 'articles') return 'articles-settings';
   if (view === 'blog') return 'blog-settings';
   if (view === 'email-credits') return 'email-credits-settings';
+  if (view === 'ai-credits') return 'ai-credits-settings';
   return 'overview';
 });
 
@@ -404,6 +428,13 @@ function openEmailCreditsSettings() {
   router.push({
     path: '/settings',
     query: { tab: 'addons', addonView: 'email-credits' },
+  });
+}
+
+function openAiCreditsSettings() {
+  router.push({
+    path: '/settings',
+    query: { tab: 'addons', addonView: 'ai-credits' },
   });
 }
 

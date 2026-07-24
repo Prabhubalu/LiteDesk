@@ -1,4 +1,6 @@
 const AI_PROVIDERS = {
+  /** Sentinel: tenant uses Control Plane default provider + platform keys. */
+  ARIVU: 'arivu',
   OPENAI: 'openai',
   AZURE_OPENAI: 'azure_openai',
   ANTHROPIC: 'anthropic',
@@ -14,10 +16,10 @@ const AI_KEY_MODES = {
 };
 
 const AI_DEFAULTS = {
-  llmProvider: AI_PROVIDERS.OPENAI,
+  llmProvider: AI_PROVIDERS.ANTHROPIC,
   embeddingProvider: AI_PROVIDERS.OPENAI,
-  classifyModel: 'gpt-4o-mini',
-  generateModel: 'gpt-4o',
+  classifyModel: 'claude-haiku-4-5-20251001',
+  generateModel: 'claude-sonnet-4-6',
   embeddingModel: 'text-embedding-3-small',
 };
 

@@ -22,7 +22,21 @@ router.use(requireAstraV2Enabled);
 // Read surface
 router.get('/status', requireAstraV2Access('view'), controller.getStatus);
 router.get('/tools', requireAstraV2Access('view'), controller.listTools);
+router.put('/tools/:name', requireAstraV2Access('manage'), controller.updateTool);
+router.post('/tools/:name/revert', requireAstraV2Access('manage'), controller.revertTool);
 router.get('/agents', requireAstraV2Access('view'), controller.listAgents);
+router.get('/agents/:key', requireAstraV2Access('view'), controller.getAgent);
+router.post('/agents', requireAstraV2Access('manage'), controller.createAgent);
+router.put('/agents/:key', requireAstraV2Access('manage'), controller.updateAgent);
+router.post('/agents/:key/revert', requireAstraV2Access('manage'), controller.revertAgent);
+router.delete('/agents/:key', requireAstraV2Access('manage'), controller.deleteAgent);
+router.post(
+  '/agents/:key/try',
+  aiLimiter,
+  requireAstraV2Access('use'),
+  requireAiSuiteEntitlement(),
+  controller.tryAgent,
+);
 router.get('/next-best-actions', requireAstraV2Access('use'), controller.getNextBestActions);
 router.get('/memory', requireAstraV2Access('use'), controller.getMemory);
 router.put('/memory', requireAstraV2Access('use'), controller.putMemory);
@@ -59,5 +73,13 @@ router.get(
   requireAiSuiteEntitlement(),
   controller.askStream,
 );
+
+router.get('/cap-index', requireAstraV2Access('view'), controller.getCapIndex);
+router.post('/master/propose', requireAstraV2Access('manage'), controller.masterPropose);
+router.post('/master/create', requireAstraV2Access('manage'), controller.masterCreate);
+router.get('/knowledge-sources', requireAstraV2Access('view'), controller.getKnowledgeSources);
+router.put('/knowledge-sources', requireAstraV2Access('manage'), controller.putKnowledgeSources);
+router.post('/knowledge-sources/website', requireAstraV2Access('manage'), controller.addKnowledgeWebsitePage);
+router.delete('/knowledge-sources/website/:pageId', requireAstraV2Access('manage'), controller.deleteKnowledgeWebsitePage);
 
 module.exports = router;

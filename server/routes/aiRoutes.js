@@ -11,6 +11,7 @@ const {
   getAiSettings,
   getAiModels,
   putAiSettings,
+  resetAiTokenPool,
   echoAi,
   echoAiStream,
   enqueueDocumentEmbedJob,
@@ -32,6 +33,12 @@ router.put(
   requireAiAccess('manage'),
   createSettingsAuditMiddleware({ surface: 'ai' }),
   putAiSettings
+);
+router.post(
+  '/settings/reset-token-pool',
+  requireAiAccess('manage'),
+  createSettingsAuditMiddleware({ surface: 'ai' }),
+  resetAiTokenPool
 );
 
 router.post('/echo', aiLimiter, requireAiAccess('use'), requireAiSuiteEntitlement(), echoAi);

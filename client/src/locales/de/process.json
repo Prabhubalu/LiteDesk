@@ -3626,5 +3626,145 @@
   "setupAstraStatusDrafting": {
     "message": "Filling every step for your review…",
     "description": "Astra working status line"
+  },
+  "controlPlaneAiTitle": {
+    "message": "Platform AI",
+    "description": "Control plane AI settings title"
+  },
+  "controlPlaneAiCardDesc": {
+    "message": "Set Arivu platform LLM keys and the default provider/model for tenant Arivu (default) mode.",
+    "description": "Control plane AI card description"
+  },
+  "controlPlaneAiConfigure": {
+    "message": "Configure",
+    "description": "Control plane AI configure link"
+  },
+  "controlPlaneAiSubtitle": {
+    "message": "These keys power platform mode for all tenants. Env vars remain a fallback when a key is not saved here.",
+    "description": "Control plane AI settings subtitle"
+  },
+  "controlPlaneAiDefaultsHeading": {
+    "message": "Default provider and model",
+    "description": "Control plane AI defaults section"
+  },
+  "controlPlaneAiDefaultsHint": {
+    "message": "Used when a tenant selects Arivu (default) or has no provider override.",
+    "description": "Control plane AI defaults hint"
+  },
+  "controlPlaneAiDefaultProvider": {
+    "message": "Default LLM provider",
+    "description": "Control plane default provider label"
+  },
+  "controlPlaneAiDefaultModel": {
+    "message": "Default LLM model",
+    "description": "Control plane default model label"
+  },
+  "controlPlaneAiSelectProvider": {
+    "message": "Select provider",
+    "description": "Control plane provider placeholder"
+  },
+  "controlPlaneAiSelectModel": {
+    "message": "Select model",
+    "description": "Control plane model placeholder"
+  },
+  "controlPlaneAiModelAuto": {
+    "message": "Auto (best for each task)",
+    "description": "Control plane auto model option"
+  },
+  "controlPlaneAiModelHint": {
+    "message": "Auto lets Astra pick classify vs generate models per ability.",
+    "description": "Control plane model hint"
+  },
+  "controlPlaneAiKeysHeading": {
+    "message": "Platform API keys",
+    "description": "Control plane AI keys section"
+  },
+  "controlPlaneAiKeysHint": {
+    "message": "Paste a new key to replace. Leave blank to keep the current key. Clear removes the saved DB key (env fallback still applies).",
+    "description": "Control plane AI keys hint"
+  },
+  "controlPlaneAiKeySaved": {
+    "message": "Saved · ends in {last4}",
+    "description": "Control plane AI key saved status"
+  },
+  "controlPlaneAiKeyPresent": {
+    "message": "Key available",
+    "description": "Control plane AI key present via env"
+  },
+  "controlPlaneAiKeyMissing": {
+    "message": "No key",
+    "description": "Control plane AI key missing"
+  },
+  "controlPlaneAiKeySource": {
+    "message": "source: {source}",
+    "description": "Control plane AI key source label"
+  },
+  "controlPlaneAiClearKey": {
+    "message": "Clear saved key",
+    "description": "Control plane clear AI key"
+  },
+  "controlPlaneAiKeyPlaceholder": {
+    "message": "Paste key to set or replace",
+    "description": "Control plane AI key input placeholder"
+  },
+  "controlPlaneAiSave": {
+    "message": "Save configuration",
+    "description": "Control plane AI save button"
+  },
+  "controlPlaneAiSaving": {
+    "message": "Saving…",
+    "description": "Control plane AI saving button"
+  },
+  "controlPlaneAiSaveSuccess": {
+    "message": "Platform AI settings saved",
+    "description": "Control plane AI save success"
+  },
+  "controlPlaneAiSaveFailed": {
+    "message": "Failed to save platform AI settings",
+    "description": "Control plane AI save error"
+  },
+  "controlPlaneAiLoadFailed": {
+    "message": "Failed to load platform AI settings",
+    "description": "Control plane AI load error"
+  },
+  "controlPlaneAiPricingHeading": {
+    "message": "Token pack pricing",
+    "description": "Control plane AI token pack pricing section"
+  },
+  "controlPlaneAiPricingHint": {
+    "message": "Prices tenants pay when buying AI tokens (Addons → AI Credit Packs). 1 credit = 1,000 tokens. Example: 1,000 credits = 1,000,000 tokens; priceCents 1000 = $10.00.",
+    "description": "Control plane AI token pack pricing hint"
+  },
+  "controlPlaneAiPricingPackKey": {
+    "message": "Pack key",
+    "description": "Token pack key column"
+  },
+  "controlPlaneAiPricingPackName": {
+    "message": "Display name",
+    "description": "Token pack name column"
+  },
+  "controlPlaneAiPricingCredits": {
+    "message": "Credits",
+    "description": "Token pack internal credits column"
+  },
+  "controlPlaneAiPricingTokens": {
+    "message": "Tokens",
+    "description": "Token pack tokens preview column"
+  },
+  "controlPlaneAiPricingPriceCents": {
+    "message": "Price (cents)",
+    "description": "Token pack price cents column"
+  },
+  "controlPlaneAiPricingPricePreview": {
+    "message": "Price",
+    "description": "Token pack formatted price column"
+  },
+  "controlPlaneAiPricingAddPack": {
+    "message": "Add pack",
+    "description": "Add AI token pack row"
+  },
+  "controlPlaneAiPricingRemove": {
+    "message": "Remove",
+    "description": "Remove AI token pack row"
   }
 }

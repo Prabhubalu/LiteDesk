@@ -2,6 +2,7 @@ type SettingsAccessCtx = {
   isOwner: boolean;
   role: string | null | undefined;
   permissions: Record<string, any> | null | undefined;
+  entitledAddons?: { ai?: boolean } | null;
 };
 
 function isPrivilegedSettingsRole(role: string | null | undefined): boolean {
@@ -46,6 +47,11 @@ export function canAccessSettingsTab(
   // Personal profile is always accessible to authenticated users; do not require
   // owner/admin or any settings.* flag to manage your own identity.
   if (tabId === 'profile') return true;
+
+  // AI settings only when Arivu AI addon is entitled (not disabled/uninstalled).
+  if (tabId === 'ai' && ctx.entitledAddons != null && ctx.entitledAddons.ai !== true) {
+    return false;
+  }
 
   if (ctx.isOwner) return true;
   if (isPrivilegedSettingsRole(ctx.role)) return true;

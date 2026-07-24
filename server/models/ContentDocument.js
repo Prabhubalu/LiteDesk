@@ -72,6 +72,10 @@ const ContentDocumentSchema = new Schema(
       index: true,
     },
     title: { type: String, trim: true, required: true, index: true },
+    /** Module Numbering Record ID for articles addon */
+    articleNumber: { type: String, trim: true },
+    /** Module Numbering Record ID for blog addon */
+    blogNumber: { type: String, trim: true },
     subtitle: { type: String, trim: true, default: '' },
     slug: { type: String, trim: true, required: true, index: true },
     summary: { type: String, trim: true, default: '' },
@@ -156,5 +160,35 @@ ContentDocumentSchema.index(
 );
 ContentDocumentSchema.index({ organizationId: 1, status: 1, contentType: 1 });
 ContentDocumentSchema.index({ organizationId: 1, addonKey: 1, updatedAt: -1 });
+ContentDocumentSchema.index(
+  { organizationId: 1, articleNumber: 1 },
+  { unique: true, sparse: true }
+);
+ContentDocumentSchema.index(
+  { organizationId: 1, blogNumber: 1 },
+  { unique: true, sparse: true }
+);
+
+ContentDocumentSchema.pre('validate', async function assignContentRecordNumber(next) {
+  if (!this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    const addon = String(this.addonKey || '').toLowerCase();
+    if (addon === 'articles' && !this.articleNumber) {
+      await assignModuleRecordNumber(this, {
+        moduleKey: 'articles',
+        fieldKey: 'articleNumber',
+      });
+    } else if (addon === 'blog' && !this.blogNumber) {
+      await assignModuleRecordNumber(this, {
+        moduleKey: 'blog',
+        fieldKey: 'blogNumber',
+      });
+    }
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 module.exports = wrapTenantModel(mongoose.model('ContentDocument', ContentDocumentSchema));

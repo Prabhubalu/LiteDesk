@@ -26,12 +26,22 @@ const CampaignModel = require('../../../models/Campaign');
 const ContentAssetModel = require('../../../models/ContentAsset');
 const FormResponseModel = require('../../../models/FormResponse');
 const ImportHistoryModel = require('../../../models/ImportHistory');
+const InvoiceModel = require('../../../models/Invoice');
+const PaymentModel = require('../../../models/Payment');
+const RefundModel = require('../../../models/Refund');
+const MarketingAudienceModel = require('../../../models/MarketingAudience');
+const MarketingSegmentModel = require('../../../models/MarketingSegment');
+const ContentTemplateModel = require('../../../models/ContentTemplate');
+const ContentDocumentModel = require('../../../models/ContentDocument');
 const { DEAL_STATUS } = require('../../../constants/dealStatus');
 
 const CASE_OPEN = ['New', 'Assigned', 'In Progress', 'On Hold', 'Waiting for Customer'];
 const TASK_DONE = ['completed', 'cancelled', 'done'];
 
 /** @typedef {'ready'|'unsupported'} ModuleSupport */
+
+/**
+/** @typedef {'read'|'write'|'read_only'} ModuleMutability */
 
 /**
  * @type {Array<{
@@ -45,6 +55,8 @@ const TASK_DONE = ['completed', 'cancelled', 'done'];
  *   subtitleFields?: string[],
  *   routeBase: string|null,
  *   amountField?: string|null,
+ *   mutability?: ModuleMutability,
+ *   unavailableReason?: string|null,
  * }>}
  */
 const MODULES = [
@@ -89,7 +101,7 @@ const MODULES = [
     synonyms: ['quote', 'quotes', 'quotation', 'quotations'],
     support: 'ready',
     model: QuoteModel,
-    titleFields: ['quoteNumber', 'quoteTitle'],
+    titleFields: ['quoteTitle', 'name', 'title', 'quoteNumber'],
     subtitleFields: ['status'],
     routeBase: '/quotes',
   },
@@ -164,9 +176,51 @@ const MODULES = [
     appKey: 'platform',
     label: 'templates',
     synonyms: ['template', 'templates'],
-    support: 'unsupported',
-    titleFields: [],
-    routeBase: null,
+    support: 'ready',
+    model: ContentTemplateModel,
+    titleFields: ['name', 'title'],
+    subtitleFields: ['status', 'channel'],
+    routeBase: '/templates',
+    mutability: 'read_only',
+  },
+  {
+    moduleKey: 'invoices',
+    appKey: 'platform',
+    label: 'invoices',
+    synonyms: ['invoice', 'invoices', 'bill', 'bills'],
+    support: 'ready',
+    model: InvoiceModel,
+    titleFields: ['invoiceTitle', 'invoiceNumber', 'invoiceId'],
+    subtitleFields: ['status'],
+    routeBase: '/invoices',
+    amountField: 'total',
+    mutability: 'write',
+  },
+  {
+    moduleKey: 'payments',
+    appKey: 'platform',
+    label: 'payments',
+    synonyms: ['payment', 'payments'],
+    support: 'ready',
+    model: PaymentModel,
+    titleFields: ['paymentId', 'referenceNumber'],
+    subtitleFields: ['status', 'purpose'],
+    routeBase: '/payments',
+    amountField: 'amount',
+    mutability: 'write',
+  },
+  {
+    moduleKey: 'refunds',
+    appKey: 'platform',
+    label: 'refunds',
+    synonyms: ['refund', 'refunds'],
+    support: 'ready',
+    model: RefundModel,
+    titleFields: ['refundId', 'refundNumber', 'reason'],
+    subtitleFields: ['status'],
+    routeBase: '/payments',
+    amountField: 'amount',
+    mutability: 'write',
   },
   {
     moduleKey: 'imports',
@@ -203,12 +257,13 @@ const MODULES = [
     moduleKey: 'articles',
     appKey: 'helpdesk',
     label: 'articles',
-    synonyms: ['article', 'articles', 'knowledge base', 'kb'],
+    synonyms: ['article', 'articles', 'knowledge base', 'kb', 'faq'],
     support: 'ready',
-    model: DocumentModel,
+    model: ContentDocumentModel,
     titleFields: ['title'],
-    subtitleFields: ['status'],
-    routeBase: '/documents',
+    subtitleFields: ['status', 'visibility'],
+    routeBase: '/helpdesk/articles',
+    mutability: 'read_only',
   },
   {
     moduleKey: 'campaigns',
@@ -235,18 +290,24 @@ const MODULES = [
     appKey: 'marketing',
     label: 'audiences',
     synonyms: ['audience', 'audiences'],
-    support: 'unsupported',
-    titleFields: [],
-    routeBase: null,
+    support: 'ready',
+    model: MarketingAudienceModel,
+    titleFields: ['name'],
+    subtitleFields: ['status'],
+    routeBase: '/marketing/audiences',
+    mutability: 'read_only',
   },
   {
     moduleKey: 'segments',
     appKey: 'marketing',
     label: 'segments',
     synonyms: ['segment', 'segments'],
-    support: 'unsupported',
-    titleFields: [],
-    routeBase: null,
+    support: 'ready',
+    model: MarketingSegmentModel,
+    titleFields: ['name'],
+    subtitleFields: ['status'],
+    routeBase: '/marketing/segments',
+    mutability: 'read_only',
   },
   {
     moduleKey: 'assets',
@@ -269,7 +330,36 @@ const MODULES = [
     titleFields: ['responseId'],
     subtitleFields: ['status'],
     routeBase: '/responses',
+    mutability: 'read_only',
   },
+];
+
+/** Platform ModuleDefinition keys that must appear in MODULES (CI gate). */
+const REQUIRED_PLATFORM_MODULE_KEYS = [
+  'people',
+  'organizations',
+  'deals',
+  'quotes',
+  'sales_orders',
+  'tasks',
+  'documents',
+  'events',
+  'items',
+  'forms',
+  'templates',
+  'imports',
+  'inventory',
+  'cases',
+  'articles',
+  'campaigns',
+  'blog',
+  'audiences',
+  'segments',
+  'assets',
+  'responses',
+  'invoices',
+  'payments',
+  'refunds',
 ];
 
 const APPS = [
@@ -328,7 +418,27 @@ function listModules() {
     synonyms: m.synonyms,
     titleFields: m.titleFields,
     routeBase: m.routeBase,
+    mutability: m.mutability || (m.support === 'ready' ? 'write' : 'read_only'),
+    unavailableReason: m.unavailableReason || (m.support === 'unsupported' ? 'No model binding' : null),
   }));
+}
+
+/**
+ * CI / health: every required platform moduleKey must exist in MODULES.
+ * Unsupported without silent omission is OK; missing keys fail.
+ */
+function assertModuleRegistryComplete(requiredKeys = REQUIRED_PLATFORM_MODULE_KEYS) {
+  const missing = [];
+  for (const key of requiredKeys) {
+    if (!BY_KEY.has(key)) missing.push(key);
+  }
+  if (missing.length) {
+    const err = new Error(`Astra module registry missing bindings: ${missing.join(', ')}`);
+    err.code = 'ASTRA_MODULE_REGISTRY_INCOMPLETE';
+    err.missing = missing;
+    throw err;
+  }
+  return { ok: true, modules: MODULES.length };
 }
 
 function startOfLocalDay(d = new Date()) {
@@ -526,7 +636,13 @@ function resolveModel(moduleKey, deps = {}) {
     assets: models.ContentAsset,
     responses: models.FormResponse,
     imports: models.ImportHistory,
-    articles: models.Document,
+    articles: models.ContentDocument || models.Document,
+    invoices: models.Invoice,
+    payments: models.Payment,
+    refunds: models.Refund,
+    audiences: models.MarketingAudience,
+    segments: models.MarketingSegment,
+    templates: models.ContentTemplate,
   };
   return overrides[moduleKey] || mod.model || null;
 }
@@ -555,6 +671,7 @@ function coverageReport() {
 module.exports = {
   APPS,
   MODULES,
+  REQUIRED_PLATFORM_MODULE_KEYS,
   detectModuleKey,
   getModule,
   listModules,
@@ -563,6 +680,7 @@ module.exports = {
   resolveModel,
   recordPathFor,
   coverageReport,
+  assertModuleRegistryComplete,
   CASE_OPEN,
   TASK_DONE,
   escapeRegex,

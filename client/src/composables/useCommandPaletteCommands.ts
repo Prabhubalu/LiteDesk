@@ -65,6 +65,7 @@ export function useCommandPaletteCommands() {
       isOwner: !!authStore.user.isOwner,
       role: authStore.user.role,
       permissions: authStore.user.permissions,
+      entitledAddons: authStore.user.entitledAddons || null,
     });
   });
 

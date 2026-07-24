@@ -1,34 +1,31 @@
 <template>
-  <div class="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2 dark:border-neutral-700 dark:bg-neutral-800/50">
-    <label class="flex items-center gap-2 text-sm">
-      <span class="font-medium text-neutral-700 dark:text-neutral-300">
+  <div class="flex flex-wrap items-end gap-3">
+    <label class="block min-w-[12rem] text-sm">
+      <span class="mb-1.5 block text-neutral-700 dark:text-neutral-300">
         {{ t('analytics.dashboardDateRangeLabel') }}
       </span>
-      <select
-        :value="preset"
-        class="rounded-lg border border-neutral-300 bg-white px-2 py-1 text-sm dark:border-neutral-600 dark:bg-neutral-900"
-        @change="onPresetChange"
-      >
-        <option v-for="option in presets" :key="option.value" :value="option.value">
-          {{ option.label }}
-        </option>
-      </select>
+      <HeadlessSelect
+        :model-value="preset"
+        :options="presetOptions"
+        teleport
+        @update:model-value="onPresetChange"
+      />
     </label>
     <template v-if="preset === 'custom'">
-      <label class="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
-        <span>{{ t('analytics.dateFrom') }}</span>
+      <label class="block min-w-[10rem] text-sm">
+        <span class="mb-1.5 block text-neutral-600 dark:text-neutral-400">{{ t('analytics.dateFrom') }}</span>
         <input
           type="date"
-          class="rounded-lg border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-600 dark:bg-neutral-900"
+          class="block w-full rounded-md border-0 bg-gray-100 px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:bg-gray-700 dark:text-white dark:outline-white/10 dark:focus:bg-gray-800 dark:focus:outline-indigo-500"
           :value="fromDate"
           @change="onFromChange"
         />
       </label>
-      <label class="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
-        <span>{{ t('analytics.dateTo') }}</span>
+      <label class="block min-w-[10rem] text-sm">
+        <span class="mb-1.5 block text-neutral-600 dark:text-neutral-400">{{ t('analytics.dateTo') }}</span>
         <input
           type="date"
-          class="rounded-lg border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-600 dark:bg-neutral-900"
+          class="block w-full rounded-md border-0 bg-gray-100 px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:bg-gray-700 dark:text-white dark:outline-white/10 dark:focus:bg-gray-800 dark:focus:outline-indigo-500"
           :value="toDate"
           @change="onToChange"
         />
@@ -40,6 +37,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import type { AnalyticsDateRangePreset, AnalyticsDateRangeValue } from '@/utils/analyticsDateRange';
 
 const props = defineProps<{
@@ -52,7 +50,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const presets = computed(() => [
+const presetOptions = computed(() => [
+  { value: 'today', label: t('analytics.datePresetToday') },
+  { value: 'yesterday', label: t('analytics.datePresetYesterday') },
+  { value: 'thisWeek', label: t('analytics.datePresetThisWeek') },
   { value: 'last7days', label: t('analytics.datePresetLast7') },
   { value: 'last30days', label: t('analytics.datePresetLast30') },
   { value: 'thisMonth', label: t('analytics.datePresetThisMonth') },
@@ -64,9 +65,9 @@ const preset = computed(() => props.modelValue.preset || 'last30days');
 const fromDate = computed(() => (props.modelValue.from ? props.modelValue.from.slice(0, 10) : ''));
 const toDate = computed(() => (props.modelValue.to ? props.modelValue.to.slice(0, 10) : ''));
 
-function onPresetChange(event: Event) {
-  const value = (event.target as HTMLSelectElement).value as AnalyticsDateRangePreset;
-  emit('update:modelValue', { ...props.modelValue, preset: value });
+function onPresetChange(value: string | number | null) {
+  const next = String(value || 'last30days') as AnalyticsDateRangePreset;
+  emit('update:modelValue', { ...props.modelValue, preset: next });
 }
 
 function onFromChange(event: Event) {
@@ -83,7 +84,7 @@ function onToChange(event: Event) {
   emit('update:modelValue', {
     ...props.modelValue,
     preset: 'custom',
-    to: value ? new Date(`${value}T23:59:59`).toISOString() : undefined,
+    to: value ? new Date(`${value}T23:59:59.999`).toISOString() : undefined,
   });
 }
 </script>

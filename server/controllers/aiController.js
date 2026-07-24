@@ -26,10 +26,11 @@ async function listAiAuditLogsHandler(req, res) {
   try {
     const organizationId = getOrganizationId(req);
     const query = req.query || {};
-    const summaryDays = Math.min(Math.max(Number(query.summaryDays) || 30, 1), 365);
-    const days = Math.min(Math.max(Number(query.days) || summaryDays, 1), 365);
-    const from = query.from
-      || new Date(Date.now() - days * 86400000).toISOString();
+    const from = query.from ? String(query.from) : null;
+    const to = query.to ? String(query.to) : null;
+    const summaryDays = Math.min(Math.max(Number(query.summaryDays) || 30, 1), 3650);
+    const days = Math.min(Math.max(Number(query.days) || summaryDays, 1), 3650);
+    const resolvedFrom = from || (!to ? new Date(Date.now() - days * 86400000).toISOString() : null);
 
     const payload = await listAiAuditLogs({
       organizationId,
@@ -38,8 +39,8 @@ async function listAiAuditLogsHandler(req, res) {
       abilityKey: query.abilityKey || null,
       status: query.status || null,
       userId: query.userId || null,
-      from,
-      to: query.to || null,
+      from: resolvedFrom,
+      to,
       includeSummary: query.includeSummary !== 'false',
       summaryDays,
     });
@@ -150,6 +151,62 @@ async function putAiSettings(req, res) {
       success: false,
       code: error.code || 'AI_SETTINGS_UPDATE_FAILED',
       message: error.message || 'Failed to update AI settings',
+    });
+  }
+}
+
+async function resetAiTokenPool(req, res) {
+  try {
+    if (!isTenantPrivilegedUser(req.user)) {
+      return res.status(403).json({
+        success: false,
+        code: 'AI_SETTINGS_FORBIDDEN',
+        message: 'Only organization owners or admins can reset AI tokens',
+      });
+    }
+
+    const { FREE_STARTER_TOKENS } = require('../constants/aiTokenConstants');
+    const { resetOrgAiTokenPool } = require('../services/ai/aiCreditService');
+    const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+
+    const organizationId = getOrganizationId(req);
+    let before = {};
+    try {
+      before = cloneForAudit(await getPublicAiSettings(organizationId));
+    } catch {
+      before = {};
+    }
+
+    const result = await resetOrgAiTokenPool({
+      organizationId,
+      tokens: FREE_STARTER_TOKENS,
+      clearAudit: true,
+    });
+    const payload = await getPublicAiSettings(organizationId);
+
+    attachSettingsAuditDiff(
+      res,
+      before,
+      cloneForAudit({
+        operation: 'reset_token_pool',
+        ...result,
+        tokensAvailable: payload.settings?.tokensAvailable,
+      }),
+      { keys: ['operation', 'tokensAvailable', 'tokensGranted', 'tokensConsumed', 'auditDeleted'] },
+    );
+
+    return res.json({
+      success: true,
+      message: 'AI token pool reset',
+      ...payload,
+      reset: result,
+    });
+  } catch (error) {
+    console.error('[aiController.resetAiTokenPool] error:', error);
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      code: error.code || 'AI_TOKEN_RESET_FAILED',
+      message: error.message || 'Failed to reset AI token pool',
     });
   }
 }
@@ -493,6 +550,7 @@ module.exports = {
   getAiSettings,
   getAiModels,
   putAiSettings,
+  resetAiTokenPool,
   echoAi,
   echoAiStream,
   enqueueDocumentEmbedJob,

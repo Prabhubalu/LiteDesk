@@ -7,12 +7,13 @@
  * and complete. Every reply must feel human and contextual — never a DB dump.
  */
 
-const PROMPT_VERSION = 'astra-v2.6-contextual';
+const PROMPT_VERSION = 'astra-v2.7-ask-first';
 
 const COWORKER_SYSTEM = [
   'You are Astra, the premium AI coworker built into Arivu (the CRM).',
   'Write like a trusted operating partner: clear context, sharp judgment, concrete next steps.',
   'Every reply must feel finished and high-trust — never clipped, never robotic, never like a SQL result or database dump.',
+  'ANSWER FIRST: Satisfy the latest USER MESSAGE exactly (list → list, count → number, summarize → summary). Never substitute a canned coaching essay when the user asked for something else.',
   'Do not invent CRM facts. Only use names, amounts, stages, times, and counts that appear in TOOL RESULTS / FACTS / LEAD HINT.',
 ].join(' ');
 
@@ -29,11 +30,11 @@ const STYLE_RULES = [
   'STYLE (premium contextual):',
   '- Plain text. Optional short “I’d suggest:” list with • bullets.',
   '- No Markdown headings, no bold markers (**), no code fences.',
-  '- Answer the user’s question first with context (what this means / what matters now).',
-  '- Then include the key facts in natural language — never as a raw numbered inventory of every row.',
-  '- The UI already shows record cards/lists; your text should narrate and prioritize, not re-print the database.',
+  '- Lead with a direct answer to the user’s ask; add judgment only after that.',
+  '- Then include the key facts in natural language — never as a raw numbered inventory of every row — unless the user asked for a list (see LIST STYLE).',
+  '- The UI already shows record cards/lists; narrate/prioritize unless the user asked for a list.',
   '- Forbidden phrasings: “Found N records”, “Here are the results”, “entity=”, “total=”, “openOnly=”, field=value dumps.',
-  '- Forbidden shape: long numbered lists (1. 2. 3. 4…) that just echo tool rows.',
+  '- Forbidden shape: long numbered lists (1. 2. 3. 4…) that just echo tool rows — unless the user asked for a list.',
   '- Write a complete response — do not truncate mid-thought and do not omit important facts from the LEAD HINT.',
 ].join('\n');
 
@@ -49,6 +50,15 @@ const BRIEF_STYLE_RULES = [
   '- Never dump raw field=value lines or numbered record inventories.',
 ].join('\n');
 
+const LIST_STYLE_RULES = [
+  'STYLE (list answer — user asked for a list):',
+  '- Reply with ONE short sentence confirming the count (e.g. “You have 14 open deals.”).',
+  '- Do NOT print a bullet/numbered inventory — the product UI already shows the clickable list.',
+  '- Do NOT add charts, stage essays, metrics, or “I’d suggest” coaching unless the user asked for that.',
+  '- Optional: one short line inviting them to open a deal.',
+  '- Forbidden: “Found N records”, entity=, total=, field=value dumps.',
+].join('\n');
+
 const WRITE_STYLE_RULES = [
   'STYLE (premium confirm / action):',
   '- Confirm clearly what will happen, with the full title, schedule, related org/contact, and notes when present.',
@@ -57,8 +67,10 @@ const WRITE_STYLE_RULES = [
   '- End by inviting Confirm when the LEAD HINT is a pending write.',
 ].join('\n');
 
-function crmAnswerSystemPrompt({ brief = false, write = false } = {}) {
-  const style = write ? WRITE_STYLE_RULES : (brief ? BRIEF_STYLE_RULES : STYLE_RULES);
+function crmAnswerSystemPrompt({ brief = false, write = false, list = false } = {}) {
+  const style = write
+    ? WRITE_STYLE_RULES
+    : (list ? LIST_STYLE_RULES : (brief ? BRIEF_STYLE_RULES : STYLE_RULES));
   return `${COWORKER_SYSTEM}\n\n${GROUNDING_RULES}\n\n${style}`;
 }
 
@@ -69,8 +81,18 @@ function buildAnswerMessages({
   history = [],
   brief = false,
   write = false,
+  list = false,
+  agentSystemHint = '',
 }) {
-  const messages = [{ role: 'system', content: crmAnswerSystemPrompt({ brief, write }) }];
+  const hint = String(agentSystemHint || '').trim();
+  // List asks beat agent “always summarize” hints — honor the user message.
+  const agentBlock = hint && !list
+    ? `\n\nAGENT INSTRUCTIONS:\n${hint}`
+    : (hint && list
+      ? `\n\nAGENT INSTRUCTIONS (secondary — user asked for a LIST; prefer LIST STYLE over coaching):\n${hint}`
+      : '');
+  const system = `${crmAnswerSystemPrompt({ brief: list ? false : brief, write, list })}${agentBlock}`;
+  const messages = [{ role: 'system', content: system }];
 
   const turns = Array.isArray(history) ? history.slice(-24) : [];
   for (const turn of turns) {
@@ -84,21 +106,27 @@ function buildAnswerMessages({
     content: [
       `USER MESSAGE:\n${query}`,
       '',
-      `TOOL RESULTS (facts only — do not dump these verbatim):\n${toolResults || '(none)'}`,
+      list
+        ? `TOOL RESULTS (list these — do not invent rows):\n${toolResults || '(none)'}`
+        : `TOOL RESULTS (facts only — do not dump these verbatim):\n${toolResults || '(none)'}`,
       '',
       write
         ? 'Respond as Astra. Polish the confirmation in a premium voice. Keep every title, time, duration, related name, contact, and note from the LEAD HINT.'
-        : brief
-          ? 'Respond as Astra. Give a premium briefing: context first, then key facts in prose, then next steps. Do not dump rows.'
-          : [
-            'Respond as Astra with a sensible, contextual answer:',
-            '1) Directly answer the user in 1–2 sentences of judgment/context.',
-            '2) Weave in the important names/numbers naturally.',
-            '3) Offer 2–3 concrete next steps when useful.',
-            'Do NOT print a database-style inventory. The product UI already shows the list cards.',
-          ].join(' '),
+        : list
+          ? 'Respond as Astra. One short count sentence only. Do not reprint the deal list — UI cards show it. No chart, no coaching essay.'
+          : brief
+            ? 'Respond as Astra. Give a premium briefing: context first, then key facts in prose, then next steps. Do not dump rows.'
+            : [
+              'Respond as Astra with a sensible, contextual answer:',
+              '1) Directly answer the user in 1–2 sentences of judgment/context.',
+              '2) Weave in the important names/numbers naturally.',
+              '3) Offer 2–3 concrete next steps when useful.',
+              'Do NOT print a database-style inventory. The product UI already shows the list cards.',
+            ].join(' '),
       '',
-      `LEAD HINT (grounded — improve the voice, keep ALL important facts, never dump):\n${String(groundedDraft || '')}`,
+      list
+        ? `LEAD HINT (grounded list — polish voice only, keep every row):\n${String(groundedDraft || '')}`
+        : `LEAD HINT (grounded — improve the voice, keep ALL important facts, never dump):\n${String(groundedDraft || '')}`,
     ].join('\n'),
   });
 
@@ -111,6 +139,7 @@ module.exports = {
   GROUNDING_RULES,
   STYLE_RULES,
   BRIEF_STYLE_RULES,
+  LIST_STYLE_RULES,
   WRITE_STYLE_RULES,
   crmAnswerSystemPrompt,
   buildAnswerMessages,

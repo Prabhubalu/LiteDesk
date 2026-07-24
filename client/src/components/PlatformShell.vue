@@ -1,11 +1,17 @@
 <template>
   <div
+    data-platform-shell
     :class="[
-      'flex overflow-x-hidden bg-neutral-100 dark:bg-neutral-900',
+      'flex min-w-0 overflow-x-hidden bg-neutral-100 dark:bg-neutral-900',
+      'transition-[width,max-width] duration-300 ease-out',
       useViewportLock
         ? 'h-[calc(100dvh-var(--platform-banner-offset,0px))] max-h-[calc(100dvh-var(--platform-banner-offset,0px))] overflow-hidden'
         : 'min-h-0 h-[calc(100dvh-var(--platform-banner-offset,0px))] max-h-[calc(100dvh-var(--platform-banner-offset,0px))] overflow-hidden'
     ]"
+    :style="{
+      width: 'calc(100% - var(--arivu-assistant-rail, 0px))',
+      maxWidth: 'calc(100% - var(--arivu-assistant-rail, 0px))',
+    }"
   >
     <!-- Sidebar Navigation -->
     <!-- ARCHITECTURE NOTE: GlobalSearch is owned by GlobalSurfacesProvider. -->

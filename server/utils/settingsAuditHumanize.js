@@ -12,6 +12,7 @@ const SURFACE_LABELS = Object.freeze({
   addons: 'Add-ons',
   applications: 'Applications',
   automation: 'Automation',
+  numbering: 'Module numbering',
   'business-hours': 'Business hours',
   roles: 'Roles & permissions',
   sharing: 'Sharing rules',
@@ -93,7 +94,15 @@ const FIELD_LABELS = Object.freeze({
   warmupEnabled: 'Warmup enabled',
   reputationEnabled: 'Reputation enabled',
   creditsRemaining: 'Credits remaining',
-  monthlyCredits: 'Monthly credits'
+  monthlyCredits: 'Monthly credits',
+  format: 'Number format',
+  prefix: 'Prefix',
+  suffix: 'Suffix',
+  sequenceLength: 'Sequence length',
+  startingSequence: 'Starting sequence',
+  currentSequence: 'Current sequence',
+  resetRule: 'Reset rule',
+  allowManualEdit: 'Allow manual edit'
 });
 
 /**
@@ -142,6 +151,14 @@ function extractModuleKeyFromSnapshot(value) {
  */
 function extractModuleKeyFromPath(path) {
   const p = String(path || '');
+  const numberingMatch = p.match(/\/module-numbering\/([^/?#]+)/i);
+  if (numberingMatch?.[1]) {
+    try {
+      return decodeURIComponent(numberingMatch[1]).trim().toLowerCase();
+    } catch {
+      return String(numberingMatch[1]).trim().toLowerCase();
+    }
+  }
   const systemMatch = p.match(/\/modules\/system\/([^/?#]+)/i);
   if (systemMatch?.[1]) return String(systemMatch[1]).trim().toLowerCase();
   return null;
@@ -181,7 +198,6 @@ function getSurfaceLabel(surface) {
 function resolveAreaLabel(params = {}) {
   const surface = String(params.surface || '').trim();
   const base = getSurfaceLabel(surface);
-  if (surface !== 'modules') return base;
 
   const moduleKey =
     (params.moduleKey && String(params.moduleKey).trim().toLowerCase()) ||
@@ -189,6 +205,13 @@ function resolveAreaLabel(params = {}) {
     extractModuleKeyFromSnapshot(params.before) ||
     extractModuleKeyFromPath(params.path || '');
 
+  if (surface === 'numbering') {
+    if (!moduleKey) return base;
+    const mod = getModuleAreaLabel(moduleKey);
+    return mod ? `${base} · ${mod}` : base;
+  }
+
+  if (surface !== 'modules') return base;
   if (!moduleKey) return base;
   return getModuleAreaLabel(moduleKey);
 }
@@ -387,6 +410,7 @@ function inferInvokePhrase(path) {
   if (p.includes('/suspend')) return 'Suspended';
   if (p.includes('/reactivate')) return 'Reactivated';
   if (p.includes('/verify')) return 'Verified';
+  if (p.includes('/resync')) return 'Resynced sequence for';
   return null;
 }
 

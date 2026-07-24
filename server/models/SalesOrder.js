@@ -176,6 +176,15 @@ SalesOrderSchema.pre('validate', async function assignSalesOrderIds(next) {
     }
     if (this.salesOrderNumber) return next();
 
+    const { allocate } = require('../services/moduleNumberingService');
+    const result = await allocate({
+      organizationId: this.organizationId,
+      moduleKey: 'sales_orders',
+    });
+    if (result?.recordId) {
+      this.salesOrderNumber = result.recordId;
+      return next();
+    }
     const SalesOrder = this.constructor;
     const count = await SalesOrder.countDocuments({ organizationId: this.organizationId });
     this.salesOrderNumber = `SO-${String(count + 1).padStart(4, '0')}`;

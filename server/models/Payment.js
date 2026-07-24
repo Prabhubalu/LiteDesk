@@ -122,6 +122,15 @@ PaymentSchema.pre('validate', async function assignPaymentIds(next) {
     }
     if (this.paymentNumber) return next();
 
+    const { allocate } = require('../services/moduleNumberingService');
+    const result = await allocate({
+      organizationId: this.organizationId,
+      moduleKey: 'payments',
+    });
+    if (result?.recordId) {
+      this.paymentNumber = result.recordId;
+      return next();
+    }
     const PaymentModel = this.constructor;
     const count = await PaymentModel.countDocuments({ organizationId: this.organizationId });
     this.paymentNumber = `PAY-${String(count + 1).padStart(4, '0')}`;

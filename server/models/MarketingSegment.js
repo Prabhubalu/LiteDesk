@@ -14,6 +14,7 @@ const MarketingSegmentSchema = new Schema(
       index: true
     },
     name: { type: String, required: true, trim: true, maxlength: 255 },
+    segmentNumber: { type: String, trim: true },
     description: { type: String, trim: true, default: '' },
     primaryEntity: {
       appKey: { type: String, trim: true, lowercase: true, default: 'sales' },
@@ -32,5 +33,17 @@ const MarketingSegmentSchema = new Schema(
 
 MarketingSegmentSchema.index({ organizationId: 1, updatedAt: -1 });
 MarketingSegmentSchema.index({ organizationId: 1, name: 1 });
+MarketingSegmentSchema.index({ organizationId: 1, segmentNumber: 1 }, { unique: true, sparse: true });
+
+MarketingSegmentSchema.pre('validate', async function assignSegmentNumber(next) {
+  if (this.segmentNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'segments', fieldKey: 'segmentNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 module.exports = wrapTenantModel(mongoose.model('MarketingSegment', MarketingSegmentSchema));

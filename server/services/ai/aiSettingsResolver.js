@@ -1,20 +1,17 @@
+'use strict';
+
 const Organization = require('../../models/Organization');
 const { AI_DEFAULTS, AI_KEY_MODES, AI_PROVIDERS, AI_PROVIDER_MODEL_DEFAULTS } = require('../../constants/aiProviders');
 const { AiConfigurationError } = require('./errors');
 const { decryptByokApiKey } = require('./aiSettingsService');
 const { normalizeCustomPiiRulesForDisplay } = require('./piiRedaction');
+const {
+  getPlatformApiKey,
+  getPlatformDefaults,
+} = require('./platformAiConfigService');
 
-function getPlatformApiKey(provider) {
-  const normalized = String(provider || '').trim().toLowerCase();
-  if (normalized === AI_PROVIDERS.OPENAI) return process.env.OPENAI_API_KEY || process.env.AI_OPENAI_API_KEY || null;
-  if (normalized === AI_PROVIDERS.AZURE_OPENAI) return process.env.AZURE_OPENAI_API_KEY || null;
-  if (normalized === AI_PROVIDERS.ANTHROPIC) return process.env.ANTHROPIC_API_KEY || null;
-  if (normalized === AI_PROVIDERS.GEMINI) return process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || null;
-  if (normalized === AI_PROVIDERS.OPENROUTER) return process.env.OPENROUTER_API_KEY || process.env.AI_OPENROUTER_API_KEY || null;
-  if (normalized === AI_PROVIDERS.NVIDIA) return process.env.NVIDIA_API_KEY || process.env.AI_NVIDIA_API_KEY || null;
-  if (normalized === AI_PROVIDERS.BEDROCK) return process.env.AWS_BEDROCK_API_KEY || null;
-  return null;
-}
+/** Org sentinel for Control Plane defaults (not a real LLM adapter). */
+const ARIVU_PROVIDER = AI_PROVIDERS.ARIVU;
 
 /** Background / structured classify-tier abilities — always prefer mini unless overridden. */
 const CLASSIFY_TIER_ABILITIES = new Set([
@@ -89,12 +86,20 @@ async function loadOrgAiSettings(organizationId) {
     throw new AiConfigurationError('Organization not found', 'ORGANIZATION_NOT_FOUND');
   }
 
-  const aiSettings = organization.aiSettings || {};
+  const { ensureTokenLedger } = require('./aiCreditService');
+  await ensureTokenLedger(organizationId);
+  const refreshed = await Organization.findById(organizationId)
+    .select('+aiSettings.apiKeyEncrypted')
+    .lean();
+  const org = refreshed || organization;
+
+  const aiSettings = org.aiSettings || {};
+  const storedProvider = String(aiSettings.llmProvider || '').trim().toLowerCase();
   return {
-    organization,
+    organization: org,
     aiSettings: {
       enabled: Boolean(aiSettings.enabled),
-      llmProvider: aiSettings.llmProvider || AI_DEFAULTS.llmProvider,
+      llmProvider: storedProvider || ARIVU_PROVIDER,
       llmModel: aiSettings.llmModel || null,
       embeddingProvider: aiSettings.embeddingProvider || AI_DEFAULTS.embeddingProvider,
       keyMode: aiSettings.keyMode || AI_KEY_MODES.PLATFORM,
@@ -104,22 +109,49 @@ async function loadOrgAiSettings(organizationId) {
       azureResourceName: aiSettings.azureResourceName || null,
       azureDeploymentName: aiSettings.azureDeploymentName || null,
       modelOverrides: aiSettings.modelOverrides || {},
-      credits: aiSettings.credits || { balance: 0 },
+      credits: aiSettings.credits || { balance: 0, ledgerUnit: 'tokens' },
       dataUseConsent: aiSettings.dataUseConsent || { accepted: false },
       piiCustomRules: normalizeCustomPiiRulesForDisplay(aiSettings.piiCustomRules),
     },
   };
 }
 
-function resolveApiKey(aiSettings) {
+/**
+ * Expand org provider `arivu` → Control Plane default provider; apply platform default model when org has Auto.
+ */
+async function expandPlatformProviderSettings(aiSettings) {
+  const keyMode = aiSettings.keyMode || AI_KEY_MODES.PLATFORM;
+  let llmProvider = String(aiSettings.llmProvider || '').trim().toLowerCase();
+  let llmModel = aiSettings.llmModel;
+
+  const needsPlatformDefaults =
+    keyMode === AI_KEY_MODES.PLATFORM
+    && (!llmProvider || llmProvider === ARIVU_PROVIDER);
+
+  if (needsPlatformDefaults) {
+    const defaults = await getPlatformDefaults();
+    llmProvider = defaults.defaultLlmProvider || AI_DEFAULTS.llmProvider;
+    if (!String(llmModel || '').trim() && defaults.defaultLlmModel) {
+      llmModel = defaults.defaultLlmModel;
+    }
+  }
+
+  return {
+    ...aiSettings,
+    llmProvider,
+    llmModel,
+    requestedProvider: aiSettings.llmProvider,
+  };
+}
+
+async function resolveApiKey(aiSettings) {
   if (aiSettings.keyMode === AI_KEY_MODES.BYOK) {
     return decryptByokApiKey(aiSettings.apiKeyEncrypted);
   }
   return getPlatformApiKey(aiSettings.llmProvider);
 }
 
-function resolveEmbeddingApiKey(aiSettings, llmApiKey) {
-  // BYOK key is only valid for embeddings when both providers match.
+async function resolveEmbeddingApiKey(aiSettings, llmApiKey) {
   if (aiSettings.keyMode === AI_KEY_MODES.BYOK) {
     return aiSettings.embeddingProvider === aiSettings.llmProvider
       ? llmApiKey
@@ -129,29 +161,47 @@ function resolveEmbeddingApiKey(aiSettings, llmApiKey) {
 }
 
 async function resolveAiRequestConfig({ organizationId, abilityKey, modelOverride = '' }) {
-  const { aiSettings } = await loadOrgAiSettings(organizationId);
+  const { aiSettings: rawSettings } = await loadOrgAiSettings(organizationId);
 
-  if (!aiSettings.enabled) {
+  if (!rawSettings.enabled) {
     throw new AiConfigurationError('AI is not enabled for this organization', 'AI_DISABLED');
   }
 
-  if (!aiSettings.dataUseConsent?.accepted) {
+  if (!rawSettings.dataUseConsent?.accepted) {
     throw new AiConfigurationError('AI data-use consent has not been accepted', 'AI_CONSENT_REQUIRED');
   }
 
-  const apiKey = resolveApiKey(aiSettings);
+  if (rawSettings.keyMode === AI_KEY_MODES.BYOK && rawSettings.llmProvider === ARIVU_PROVIDER) {
+    throw new AiConfigurationError(
+      'Bring Your Own Key requires a concrete LLM provider (not Arivu default).',
+      'AI_PROVIDER_INVALID',
+    );
+  }
+
+  if (
+    rawSettings.keyMode === AI_KEY_MODES.PLATFORM
+    && rawSettings.llmProvider
+    && rawSettings.llmProvider !== ARIVU_PROVIDER
+  ) {
+    throw new AiConfigurationError(
+      'Only Arivu (default) uses platform keys. Switch to Bring Your Own Key for this provider, or select Arivu (default).',
+      'AI_KEY_MODE_INVALID',
+    );
+  }
+
+  const aiSettings = await expandPlatformProviderSettings(rawSettings);
+
+  const apiKey = await resolveApiKey(aiSettings);
   if (!apiKey) {
     throw new AiConfigurationError('AI provider key is not configured', 'AI_KEY_NOT_CONFIGURED');
   }
 
-  // Embeddings currently support openai/openrouter adapters. If the org selected an
-  // LLM-only provider for embeddings, fall back to OpenAI platform embeddings key.
   let embeddingProvider = aiSettings.embeddingProvider;
-  let embeddingApiKey = resolveEmbeddingApiKey(aiSettings, apiKey);
+  let embeddingApiKey = await resolveEmbeddingApiKey(aiSettings, apiKey);
   const supportedEmbed = new Set([AI_PROVIDERS.OPENAI, AI_PROVIDERS.OPENROUTER]);
   if (!supportedEmbed.has(String(embeddingProvider || '').toLowerCase())) {
     embeddingProvider = AI_PROVIDERS.OPENAI;
-    embeddingApiKey = getPlatformApiKey(AI_PROVIDERS.OPENAI) || embeddingApiKey;
+    embeddingApiKey = (await getPlatformApiKey(AI_PROVIDERS.OPENAI)) || embeddingApiKey;
   }
 
   const override = String(modelOverride || '').trim();
@@ -159,12 +209,14 @@ async function resolveAiRequestConfig({ organizationId, abilityKey, modelOverrid
 
   return {
     provider: aiSettings.llmProvider,
+    requestedProvider: aiSettings.requestedProvider,
     embeddingProvider,
     keyMode: aiSettings.keyMode,
     apiKey,
     embeddingApiKey,
     model: resolvedModel,
     creditsBalance: Number(aiSettings.credits?.balance || 0),
+    tokensBalance: Number(aiSettings.credits?.balance || 0),
     piiCustomRules: aiSettings.piiCustomRules || [],
     providerOptions: {
       azureResourceName: aiSettings.azureResourceName || null,
@@ -180,4 +232,5 @@ module.exports = {
   loadOrgAiSettings,
   resolveAiRequestConfig,
   resolveModel,
+  expandPlatformProviderSettings,
 };

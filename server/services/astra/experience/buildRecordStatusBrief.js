@@ -11,12 +11,13 @@ const DealModel = require('../../../models/Deal');
 const CaseModel = require('../../../models/Case');
 const PeopleModel = require('../../../models/People');
 const TaskModel = require('../../../models/Task');
+const QuoteModel = require('../../../models/Quote');
 const OrganizationModel = require('../../../models/Organization');
 const { DEAL_STATUS } = require('../../../constants/dealStatus');
 const { CASE_OPEN, TASK_DONE, recordPathFor, getModule } = require('../tools/moduleCatalog');
 const { synthesizeOrgStatusNarrative } = require('./coworkerSynthesis');
 
-const BRIEF_WORDS = /\b(status|health|overview|summary|details|about|tell me about|how is|how'?s|what'?s going on|pulse)\b/i;
+const BRIEF_WORDS = /\b(status|health|overview|summary|summarise|summarize|brief|details|about|tell me about|how is|how'?s|what'?s going on|pulse|next best action|next step|follow-?up|expired|revive|best next|what'?s the best)\b/i;
 
 function wantsRecordBrief(query) {
   return BRIEF_WORDS.test(String(query || ''));
@@ -81,6 +82,7 @@ async function buildRecordStatusBrief({
   const Case = models.Case || CaseModel;
   const People = models.People || PeopleModel;
   const Task = models.Task || TaskModel;
+  const Quote = models.Quote || QuoteModel;
   const Organization = models.Organization || OrganizationModel;
   const tenantId = toOrgId(organizationId);
   const recordId = toId(hit.id);
@@ -229,11 +231,16 @@ async function buildRecordStatusBrief({
     };
   } else if (entity === 'deals') {
     const deal = await Deal.findOne({ _id: recordId, organizationId: tenantId, deletedAt: null })
-      .select('name stage status amount expectedCloseDate lastActivityDate')
+      .select('name stage status amount expectedCloseDate lastActivityDate probability')
       .lean()
       .catch(() => null);
     if (deal) {
       related.record.status = deal.status || null;
+      related.record.stage = deal.stage || null;
+      related.record.amount = money(deal.amount);
+      related.record.probability = deal.probability != null ? Number(deal.probability) : null;
+      related.record.expectedCloseDate = deal.expectedCloseDate || null;
+      related.record.lastActivityDate = deal.lastActivityDate || null;
       related.record.subtitle = [deal.stage, deal.status].filter(Boolean).join(' · ');
       related.openDeals = {
         total: 1,
@@ -275,6 +282,38 @@ async function buildRecordStatusBrief({
         })),
       };
     }
+  } else if (entity === 'quotes') {
+    const quote = await Quote.findOne({ _id: recordId, organizationId: tenantId, deletedAt: null })
+      .select('quoteNumber quoteTitle name title status total amount expirationDate validUntil contactId dealId')
+      .lean()
+      .catch(() => null);
+    if (quote) {
+      related.record.status = quote.status || null;
+      related.record.subtitle = [quote.quoteNumber, quote.status].filter(Boolean).join(' · ');
+      related.record.amount = money(quote.total ?? quote.amount);
+      related.record.expectedCloseDate = quote.expirationDate || quote.validUntil || null;
+      related.record.quoteNumber = quote.quoteNumber || null;
+    }
+  } else if (entity === 'tasks') {
+    const task = await Task.findOne({ _id: recordId, organizationId: tenantId, deletedAt: null })
+      .select('title status priority dueDate')
+      .lean()
+      .catch(() => null);
+    if (task) {
+      related.record.status = task.status || null;
+      related.record.subtitle = [task.priority, task.status].filter(Boolean).join(' · ');
+      related.record.expectedCloseDate = task.dueDate || null;
+      related.openTasks = {
+        total: 1,
+        overdue: task.dueDate && new Date(task.dueDate) < new Date() ? 1 : 0,
+        items: [{
+          id: String(task._id),
+          title: task.title || title,
+          subtitle: related.record.subtitle,
+          href: recordPathFor('tasks', task._id),
+        }],
+      };
+    }
   }
 
   const narrative = entity === 'organizations'
@@ -285,13 +324,49 @@ async function buildRecordStatusBrief({
     const bits = [];
     if (related.record.derivedStatus) bits.push(related.record.derivedStatus);
     else if (related.record.customerStatus) bits.push(related.record.customerStatus);
-    else if (related.record.status) bits.push(related.record.status);
+    else if (related.record.stage && related.record.status) {
+      bits.push(`${related.record.stage} · ${related.record.status}`);
+    } else if (related.record.status) bits.push(related.record.status);
     if (related.record.industry) bits.push(related.record.industry);
     return `${title}${bits.length ? ` — ${bits.join(', ')}` : ''}.`;
   })();
 
-  const draft = narrative?.draft || lead;
-  const suggestions = narrative?.suggestions || [];
+  const dealDraft = entity === 'deals'
+    ? [
+      lead,
+      related.record.amount != null ? `Amount: $${Math.round(Number(related.record.amount) || 0).toLocaleString()}.` : '',
+      related.record.probability != null ? `Probability: ${related.record.probability}%.` : '',
+      related.record.expectedCloseDate
+        ? `Expected close: ${new Date(related.record.expectedCloseDate).toLocaleDateString()}.`
+        : '',
+      'Brief the user on this deal only (not the whole pipeline): status, risk, and the next best commercial action.',
+    ].filter(Boolean).join(' ')
+    : null;
+
+  const quoteDraft = entity === 'quotes'
+    ? [
+      lead,
+      related.record.quoteNumber ? `Quote number: ${related.record.quoteNumber}.` : '',
+      related.record.amount != null ? `Amount: $${Math.round(Number(related.record.amount) || 0).toLocaleString()}.` : '',
+      related.record.expectedCloseDate
+        ? `Expiry/valid until: ${new Date(related.record.expectedCloseDate).toLocaleDateString()}.`
+        : '',
+      related.record.status === 'Expired' || /expir/i.test(String(related.record.status || ''))
+        ? 'This quote is expired. Recommend revise, re-send, or close — and offer a short follow-up draft if useful.'
+        : 'Recommend the single best next step on this quote.',
+    ].filter(Boolean).join(' ')
+    : null;
+
+  const draft = narrative?.draft || dealDraft || quoteDraft || lead;
+  const suggestions = narrative?.suggestions || (
+    entity === 'deals'
+      ? [
+        `What's blocking ${title}?`,
+        `Draft an update email about ${title}`,
+        `What is the next best action for ${title}?`,
+      ]
+      : []
+  );
 
   const hasSignal = related.openDeals.total
     || related.openCases.total

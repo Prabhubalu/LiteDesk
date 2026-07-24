@@ -2,7 +2,7 @@ const AddonPricingDefinition = require('../models/AddonPricingDefinition');
 const AddonDefinition = require('../models/AddonDefinition');
 const addonPricingRegistry = require('../constants/addonPricingRegistry');
 const { normalizeAddonKey, isValidAddonKey } = require('../constants/addonKeys');
-const { getAddonPricing, normalizePricingShape } = require('../services/addonPricingService');
+const { getAddonPricing, normalizePricingShape, normalizePacksForAddon } = require('../services/addonPricingService');
 
 function sanitizePlansInput(plans) {
   if (!plans || typeof plans !== 'object') return null;
@@ -80,18 +80,26 @@ exports.upsertAddonPricing = async (req, res) => {
     const defaultPlan = body.defaultPlan || fallback.defaultPlan || 'BASIC';
     const trialDays = body.trialDays ?? fallback.trialDays ?? 14;
     const plans = sanitizePlansInput(body.plans) || fallback.plans;
+    const creditPacks = body.creditPacks !== undefined
+      ? normalizePacksForAddon(addonKey, body.creditPacks)
+      : undefined;
+
+    const update = {
+      addonKey,
+      billingType,
+      defaultPlan,
+      trialDays: Math.max(0, Number(trialDays) || 0),
+      plans,
+      enabled: body.enabled !== false,
+      updatedBy: req.user._id,
+    };
+    if (creditPacks !== undefined) {
+      update.creditPacks = creditPacks;
+    }
 
     const row = await AddonPricingDefinition.findOneAndUpdate(
       { addonKey },
-      {
-        addonKey,
-        billingType,
-        defaultPlan,
-        trialDays: Math.max(0, Number(trialDays) || 0),
-        plans,
-        enabled: body.enabled !== false,
-        updatedBy: req.user._id,
-      },
+      update,
       { upsert: true, new: true, setDefaultsOnInsert: true },
     ).lean();
 

@@ -49,6 +49,8 @@ const AiConversationSchema = new mongoose.Schema(
     contextLabel: { type: String, trim: true, default: '' },
     appKey: { type: String, trim: true, default: '' },
     messageCount: { type: Number, default: 0, index: true },
+    /** Denormalized sidebar snippet — avoids loading `messages` on list. */
+    preview: { type: String, trim: true, maxlength: 160, default: '' },
   },
   { timestamps: true },
 );

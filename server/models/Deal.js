@@ -26,6 +26,11 @@ const DealSchema = new Schema({
         required: true, 
         trim: true 
     },
+    dealNumber: {
+        type: String,
+        trim: true,
+        index: true,
+    },
     /**
      * Canonical expected value. Platform reports/dashboards/workflows read this only.
      * When amountMode=AUTO, DealPricingService overwrites from DealLine grand total.
@@ -360,6 +365,18 @@ DealSchema.index({ organizationId: 1, expectedCloseDate: 1 });
 DealSchema.index({ organizationId: 1, lastActivityDate: -1 });
 DealSchema.index({ organizationId: 1, deletedAt: 1 });
 DealSchema.index({ organizationId: 1, importHistoryId: 1 });
+DealSchema.index({ organizationId: 1, dealNumber: 1 }, { unique: true, sparse: true });
+
+DealSchema.pre('validate', async function assignDealNumber(next) {
+  if (this.dealNumber || !this.isNew) return next();
+  try {
+    const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+    await assignModuleRecordNumber(this, { moduleKey: 'deals', fieldKey: 'dealNumber' });
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 // Virtual for weighted value (amount * probability)
 DealSchema.virtual('weightedValue').get(function() {

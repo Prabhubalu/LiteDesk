@@ -5,7 +5,7 @@ const { AiConfigurationError } = require('./errors');
 const { listSupportedProviders } = require('./providerRegistry');
 const { getPiiRedactionCatalog, sanitizeCustomPiiRulesForStorage, normalizeCustomPiiRulesForDisplay } = require('./piiRedaction');
 
-const LLM_PROVIDERS = new Set(Object.values(AI_PROVIDERS));
+const LLM_PROVIDERS = new Set([...Object.values(AI_PROVIDERS)]);
 const EMBEDDING_PROVIDERS = new Set([
   AI_PROVIDERS.OPENAI,
   AI_PROVIDERS.AZURE_OPENAI,
@@ -22,12 +22,9 @@ function maskLast4(plain) {
 }
 
 function getPlatformApiKey(provider) {
-  if (provider === AI_PROVIDERS.OPENAI) return process.env.OPENAI_API_KEY || process.env.AI_OPENAI_API_KEY || null;
-  if (provider === AI_PROVIDERS.ANTHROPIC) return process.env.ANTHROPIC_API_KEY || null;
-  if (provider === AI_PROVIDERS.GEMINI) return process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || null;
-  if (provider === AI_PROVIDERS.OPENROUTER) return process.env.OPENROUTER_API_KEY || process.env.AI_OPENROUTER_API_KEY || null;
-  if (provider === AI_PROVIDERS.NVIDIA) return process.env.NVIDIA_API_KEY || process.env.AI_NVIDIA_API_KEY || null;
-  return null;
+  // Sync env fallback for non-request paths (model catalog). Prefer platformAiConfigService at runtime.
+  const { getEnvPlatformApiKey } = require('./platformAiConfigService');
+  return getEnvPlatformApiKey(provider);
 }
 
 async function fetchProviderJson(url, options = {}) {
@@ -147,12 +144,33 @@ async function listAvailableLlmModels({ organizationId, provider }) {
   };
 }
 
+function tokenPoolFromCredits(credits = {}) {
+  const available = Math.max(0, Math.floor(Number(credits.balance) || 0));
+  const grantedRaw = Number(credits.grantedTotal);
+  const granted = Number.isFinite(grantedRaw) && grantedRaw >= 0
+    ? Math.max(available, Math.floor(grantedRaw))
+    : available;
+  return {
+    creditsBalance: available,
+    tokensBalance: available,
+    tokensAvailable: available,
+    tokensGranted: granted,
+    tokensConsumed: Math.max(0, granted - available),
+    starterGrantTokens: Number(credits.starterGrantTokens || 0) || null,
+  };
+}
+
 function toPublicAiSettings(aiSettings) {
-  const llmProvider = aiSettings.llmProvider || AI_DEFAULTS.llmProvider;
-  const fallbackModel = AI_PROVIDER_MODEL_DEFAULTS[llmProvider]?.generate || AI_DEFAULTS.generateModel;
+  const storedProvider = String(aiSettings.llmProvider || '').trim().toLowerCase() || AI_PROVIDERS.ARIVU;
+  const displayProvider = storedProvider === AI_PROVIDERS.ARIVU
+    ? AI_PROVIDERS.ARIVU
+    : (storedProvider || AI_DEFAULTS.llmProvider);
+  const fallbackModel = storedProvider === AI_PROVIDERS.ARIVU
+    ? AI_DEFAULTS.generateModel
+    : (AI_PROVIDER_MODEL_DEFAULTS[displayProvider]?.generate || AI_DEFAULTS.generateModel);
   return {
     enabled: Boolean(aiSettings.enabled),
-    llmProvider,
+    llmProvider: displayProvider,
     // Empty stored model = "Auto": resolver routes per-ability tier defaults.
     autoModel: !String(aiSettings.llmModel || '').trim(),
     llmModel: String(aiSettings.llmModel || '').trim() || fallbackModel,
@@ -164,7 +182,7 @@ function toPublicAiSettings(aiSettings) {
     azureResourceName: aiSettings.azureResourceName || null,
     azureDeploymentName: aiSettings.azureDeploymentName || null,
     modelOverrides: aiSettings.modelOverrides || {},
-    creditsBalance: Number(aiSettings.credits?.balance || 0),
+    ...tokenPoolFromCredits(aiSettings.credits),
     dataUseConsent: {
       accepted: Boolean(aiSettings.dataUseConsent?.accepted),
       acceptedAt: aiSettings.dataUseConsent?.acceptedAt || null,
@@ -175,6 +193,8 @@ function toPublicAiSettings(aiSettings) {
 }
 
 async function getPublicAiSettings(organizationId) {
+  const { ensureTokenLedger } = require('./aiCreditService');
+  await ensureTokenLedger(organizationId);
   const organization = await Organization.findById(organizationId).lean();
   if (!organization) {
     throw new AiConfigurationError('Organization not found', 'ORGANIZATION_NOT_FOUND');
@@ -185,6 +205,7 @@ async function getPublicAiSettings(organizationId) {
     piiRedaction: getPiiRedactionCatalog(piiCustomRules),
     supported: {
       ...listSupportedProviders(),
+      llmProviders: [AI_PROVIDERS.ARIVU, ...listSupportedProviders().llmProviders],
       llmModelsByProvider: AI_PROVIDER_LLM_MODELS,
     },
   };
@@ -211,21 +232,26 @@ async function updateAiSettings({ organizationId, userId, patch }) {
     if (!LLM_PROVIDERS.has(provider)) {
       throw new AiConfigurationError(`Unsupported LLM provider: ${provider}`, 'AI_PROVIDER_INVALID');
     }
-    const providerChanged = settings.llmProvider !== provider;
-    settings.llmProvider = provider;
-    // OpenRouter key is valid for both chat + embeddings; keep them aligned unless caller overrides.
-    if (provider === AI_PROVIDERS.OPENROUTER && patch.embeddingProvider === undefined) {
-      settings.embeddingProvider = AI_PROVIDERS.OPENROUTER;
-    }
-    // Only reset model when provider actually changes AND caller did not send llmModel.
-    // Live provider catalogs (Anthropic/OpenAI) include models outside the static fallback list.
-    if (providerChanged && patch.llmModel === undefined) {
-      const allowedModels = AI_PROVIDER_LLM_MODELS[provider];
-      const currentModel = String(settings.llmModel || '').trim();
-      // Keep "Auto" (empty) selection across provider switches.
-      if (currentModel && Array.isArray(allowedModels) && allowedModels.length) {
-        if (!allowedModels.includes(currentModel)) {
-          settings.llmModel = AI_PROVIDER_MODEL_DEFAULTS[provider]?.generate || allowedModels[0];
+    if (provider === AI_PROVIDERS.ARIVU) {
+      settings.llmProvider = AI_PROVIDERS.ARIVU;
+      settings.keyMode = AI_KEY_MODES.PLATFORM;
+    } else {
+      const providerChanged = settings.llmProvider !== provider;
+      settings.llmProvider = provider;
+      // Non-Arivu providers are always BYOK for tenants.
+      settings.keyMode = AI_KEY_MODES.BYOK;
+      // OpenRouter key is valid for both chat + embeddings; keep them aligned unless caller overrides.
+      if (provider === AI_PROVIDERS.OPENROUTER && patch.embeddingProvider === undefined) {
+        settings.embeddingProvider = AI_PROVIDERS.OPENROUTER;
+      }
+      // Only reset model when provider actually changes AND caller did not send llmModel.
+      if (providerChanged && patch.llmModel === undefined) {
+        const allowedModels = AI_PROVIDER_LLM_MODELS[provider];
+        const currentModel = String(settings.llmModel || '').trim();
+        if (currentModel && Array.isArray(allowedModels) && allowedModels.length) {
+          if (!allowedModels.includes(currentModel)) {
+            settings.llmModel = AI_PROVIDER_MODEL_DEFAULTS[provider]?.generate || allowedModels[0];
+          }
         }
       }
     }
@@ -256,6 +282,20 @@ async function updateAiSettings({ organizationId, userId, patch }) {
     const keyMode = String(patch.keyMode).trim().toLowerCase();
     if (!KEY_MODES.has(keyMode)) {
       throw new AiConfigurationError(`Unsupported key mode: ${keyMode}`, 'AI_KEY_MODE_INVALID');
+    }
+    const provider = String(settings.llmProvider || '').trim().toLowerCase();
+    // Enforce: Arivu → platform only; all other providers → BYOK only.
+    if (provider === AI_PROVIDERS.ARIVU && keyMode !== AI_KEY_MODES.PLATFORM) {
+      throw new AiConfigurationError(
+        'Arivu (default) always uses the platform key. Choose another provider for Bring Your Own Key.',
+        'AI_KEY_MODE_INVALID',
+      );
+    }
+    if (provider && provider !== AI_PROVIDERS.ARIVU && keyMode !== AI_KEY_MODES.BYOK) {
+      throw new AiConfigurationError(
+        'Only Arivu (default) uses platform keys. Other providers require Bring Your Own Key.',
+        'AI_KEY_MODE_INVALID',
+      );
     }
     settings.keyMode = keyMode;
   }
@@ -317,13 +357,33 @@ async function updateAiSettings({ organizationId, userId, patch }) {
     }
   }
 
-  if (patch.creditsBalance !== undefined) {
-    const balance = Number(patch.creditsBalance);
-    if (!Number.isFinite(balance) || balance < 0) {
-      throw new AiConfigurationError('creditsBalance must be a non-negative number', 'AI_CREDITS_INVALID');
+  if (patch.tokensBalance !== undefined) {
+    const tokens = Number(patch.tokensBalance);
+    if (!Number.isFinite(tokens) || tokens < 0) {
+      throw new AiConfigurationError('tokensBalance must be a non-negative number', 'AI_TOKENS_INVALID');
     }
     if (!settings.credits) settings.credits = {};
-    settings.credits.balance = Math.floor(balance);
+    const next = Math.floor(tokens);
+    settings.credits.balance = next;
+    settings.credits.ledgerUnit = 'tokens';
+    settings.credits.grantedTotal = Math.max(
+      Math.floor(Number(settings.credits.grantedTotal) || 0),
+      next,
+    );
+  } else if (patch.creditsBalance !== undefined) {
+    // Legacy alias: creditsBalance is now tokens.
+    const balance = Number(patch.creditsBalance);
+    if (!Number.isFinite(balance) || balance < 0) {
+      throw new AiConfigurationError('creditsBalance must be a non-negative number', 'AI_TOKENS_INVALID');
+    }
+    if (!settings.credits) settings.credits = {};
+    const next = Math.floor(balance);
+    settings.credits.balance = next;
+    settings.credits.ledgerUnit = 'tokens';
+    settings.credits.grantedTotal = Math.max(
+      Math.floor(Number(settings.credits.grantedTotal) || 0),
+      next,
+    );
   }
 
   if (settings.keyMode === AI_KEY_MODES.BYOK && !settings.apiKeyEncrypted && !patch.clearByokKey) {

@@ -40,7 +40,7 @@ describe('aiAuditLogService', () => {
       promptVersion: 'v1',
       status: 'success',
       usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
-      creditsDebited: 1,
+      creditsDebited: 150,
       latencyMs: 420,
       createdAt: new Date('2026-07-17T10:00:00.000Z'),
       userId: {
@@ -53,11 +53,13 @@ describe('aiAuditLogService', () => {
 
     assert.equal(row.abilityKey, 'summarize');
     assert.equal(row.usage.totalTokens, 150);
+    assert.equal(row.creditsDebited, 150);
+    assert.equal(row.tokensBilled, 150);
     assert.equal(row.user.name, 'Ada Lovelace');
     assert.equal(row.user.email, 'ada@example.com');
   });
 
-  it('serializeAuditLogRow handles system rows without user', () => {
+  it('serializeAuditLogRow scales legacy credit debits to tokens', () => {
     const row = serializeAuditLogRow({
       _id: new mongoose.Types.ObjectId(),
       abilityKey: 'embed',
@@ -72,6 +74,7 @@ describe('aiAuditLogService', () => {
     });
 
     assert.equal(row.user, null);
-    assert.equal(row.creditsDebited, 1);
+    assert.equal(row.creditsDebited, 1000);
+    assert.equal(row.tokensBilled, 1000);
   });
 });

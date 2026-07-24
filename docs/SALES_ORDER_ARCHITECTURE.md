@@ -112,7 +112,7 @@ Every invoice line (future) MUST retain: `sourceSalesOrderLineId`, `sourceSalesO
 
 ### 5.1 `SalesOrder` (header)
 
-First-class MongoDB document. Auto-number per org: `SO-{seq}` (configurable prefix).
+First-class MongoDB document. Auto-number per org via Module Numbering (`Settings → Automation → Module Numbering`): default `SO-{SEQ}`.
 
 ```javascript
 // server/models/SalesOrder.js (planned)

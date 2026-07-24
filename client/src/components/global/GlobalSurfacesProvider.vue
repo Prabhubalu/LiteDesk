@@ -11,7 +11,7 @@
     that are available across the entire application.
     
     Responsibilities:
-    - Owns global UI surfaces (GlobalSearch, CommandPalette, AstraCommandPalette)
+    - Owns global UI surfaces (GlobalSearch, CommandPalette, AstraCommandPalette, AstraSidePanel)
     - Owns their visibility state
     - Owns global keyboard shortcuts (Cmd/Ctrl+K, Cmd/Ctrl+/)
     - Owns global custom-event listeners
@@ -55,7 +55,8 @@
       :releases="unseenReleases"
     />
     <ReleaseNotesCenter v-model="centerOpen" />
-    <AstraCommandPalette />
+    <AstraCommandPalette v-if="aiSuiteEntitled" />
+    <AstraSidePanel v-if="aiSuiteEntitled" />
 
     <Teleport
       v-if="announcementBanner"
@@ -79,6 +80,7 @@ const { t } = useI18n();
  * - GlobalSearch
  * - CommandPalette
  * - AstraCommandPalette
+ * - AstraSidePanel
  *
  * Rules:
  * - Must be mounted exactly once
@@ -91,6 +93,7 @@ const { t } = useI18n();
 import { computed, ref, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
 import { isStandalonePublicRoute, isTrialExpiredShelllessRoute, isAuthLifecyclePublicRoute } from '@/utils/standaloneRoutes';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
@@ -110,6 +113,9 @@ const ReleaseNotesCenter = defineAsyncComponent(() =>
 );
 const AstraCommandPalette = defineAsyncComponent(() =>
   import('@/astra/surfaces/AstraCommandPalette.vue')
+);
+const AstraSidePanel = defineAsyncComponent(() =>
+  import('@/astra/surfaces/AstraSidePanel.vue')
 );
 const AnnouncementBannerHost = defineAsyncComponent(() =>
   import('@/components/announcements/AnnouncementBannerHost.vue')
@@ -138,6 +144,7 @@ const surfacesEnabled = computed(() =>
   && !isTrialExpiredShelllessRoute(route.path)
   && !isAuthLifecyclePublicRoute(route.path)
 );
+const aiSuiteEntitled = computed(() => isAiSuiteEntitled(authStore.user));
 const {
   unseenReleases,
   surface,

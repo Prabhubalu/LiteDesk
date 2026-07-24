@@ -234,8 +234,6 @@ export function getRecordLabel(record) {
   if (record.item_name) return record.item_name;
   if (record.item_code) return record.item_code;
   if (record.quoteTitle) return record.quoteTitle;
-  if (record.quoteNumber) return record.quoteNumber;
-  if (record.invoiceNumber) return record.invoiceNumber;
   if (record.title) return record.title;
   if (record.documentNumber) return record.documentNumber;
   if (record.eventName) return record.eventName;
@@ -246,6 +244,22 @@ export function getRecordLabel(record) {
     return `${firstName} ${lastName}`.trim() || 'Unnamed Record';
   }
   if (record.email) return record.email;
+  // Module numbering / human Record IDs (fallback when no friendly name)
+  if (record.quoteNumber) return record.quoteNumber;
+  if (record.invoiceNumber) return record.invoiceNumber;
+  if (record.salesOrderNumber) return record.salesOrderNumber;
+  if (record.paymentNumber) return record.paymentNumber;
+  if (record.personNumber) return record.personNumber;
+  if (record.organizationNumber) return record.organizationNumber;
+  if (record.dealNumber) return record.dealNumber;
+  if (record.taskNumber) return record.taskNumber;
+  if (record.eventNumber) return record.eventNumber;
+  if (record.formNumber) return record.formNumber;
+  if (record.responseNumber) return record.responseNumber;
+  if (record.recordNumber) return record.recordNumber;
+  if (record.articleNumber) return record.articleNumber;
+  if (record.blogNumber) return record.blogNumber;
+  if (record.caseId) return record.caseId;
   if (record._id) return record._id.toString().substring(0, 8);
   if (record.id) return record.id.toString().substring(0, 8);
   

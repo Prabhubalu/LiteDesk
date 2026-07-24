@@ -18,6 +18,18 @@ const RESERVED_KEYS = new Set([
   'source', // System-managed creation channel; set only via sourceResolver on the server
   'playbookState',
   'portalAccess',
+  'personNumber',
+  'organizationNumber',
+  'dealNumber',
+  'taskNumber',
+  'eventNumber',
+  'formNumber',
+  'responseNumber',
+  'recordNumber',
+  'articleNumber',
+  'blogNumber',
+  'segmentNumber',
+  'templateNumber',
   // API response-only computed fields — never persist back into customFields
   'lastActivity',
   'lastActivityDate',

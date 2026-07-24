@@ -185,6 +185,11 @@ const FormResponseSchema = new Schema({
         unique: true,
         trim: true
     },
+    responseNumber: {
+        type: String,
+        trim: true,
+        index: true,
+    },
 
     // 🔗 LINKED RECORDS
     // **********************************
@@ -415,12 +420,27 @@ FormResponseSchema.index({ 'linkedTo.type': 1, 'linkedTo.id': 1 });
 FormResponseSchema.index({ submittedBy: 1 });
 FormResponseSchema.index({ archived: 1, invalidated: 1 });
 
-// Pre-save middleware to auto-generate responseId
+FormResponseSchema.index({ organizationId: 1, responseNumber: 1 }, { unique: true, sparse: true });
+
+// Pre-save middleware to auto-generate responseId / responseNumber
 FormResponseSchema.pre('save', async function(next) {
-    if (!this.responseId) {
-        // Generate responseId: RSP-001, RSP-002, etc.
-        const count = await mongoose.model('FormResponse').countDocuments({ organizationId: this.organizationId });
-        this.responseId = `RSP-${String(count + 1).padStart(3, '0')}`;
+    if (!this.responseId || !this.responseNumber) {
+        try {
+            if (!this.responseNumber) {
+                const { assignModuleRecordNumber } = require('../utils/assignModuleRecordNumber');
+                await assignModuleRecordNumber(this, { moduleKey: 'responses', fieldKey: 'responseNumber' });
+            }
+            if (!this.responseId && this.responseNumber) {
+                this.responseId = this.responseNumber;
+            }
+            if (!this.responseId) {
+                const count = await mongoose.model('FormResponse').countDocuments({ organizationId: this.organizationId });
+                this.responseId = `RSP-${String(count + 1).padStart(3, '0')}`;
+                if (!this.responseNumber) this.responseNumber = this.responseId;
+            }
+        } catch (err) {
+            return next(err);
+        }
     }
     next();
 });
