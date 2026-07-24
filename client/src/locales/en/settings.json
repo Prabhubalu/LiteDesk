@@ -4844,7 +4844,7 @@
     "description": "Agents catalog section title"
   },
   "aiAgentsHint": {
-    "message": "Create specialists with Astra. Astra (coworker) is the default seat; legacy seeded zoos are hidden.",
+    "message": "Astra Mission Control routes Ask. Platform default specialists are seeded for your organization; customize prompts and tools here.",
     "description": "Agents catalog section hint"
   },
   "aiAgentsOotbNote": {
@@ -4872,7 +4872,7 @@
     "description": "Per-agent tools heading"
   },
   "aiAgentsToolsHint": {
-    "message": "Prefer fabric tools (module.search / module.get) — they cover every CRM module. Turn on “Show all tools” only for advanced domain actions.",
+    "message": "Prefer fabric tools (module.search / module.get) — they cover every Platform module. Turn on “Show all tools” only for advanced domain actions.",
     "description": "Agent tools tab hint"
   },
   "aiAgentsNoTools": {
@@ -4918,6 +4918,10 @@
   "aiAgentsModifiedBadge": {
     "message": "Modified",
     "description": "Badge when agent/tool differs from default"
+  },
+  "aiAgentsPlatformBadge": {
+    "message": "Platform",
+    "description": "Badge for seeded Platform default agent"
   },
   "aiAgentsDisabledBadge": {
     "message": "Off",

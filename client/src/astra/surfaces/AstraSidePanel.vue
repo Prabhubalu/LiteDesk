@@ -75,7 +75,7 @@
             <span class="h-1 w-10 rounded-full bg-neutral-300 dark:bg-neutral-600" />
           </div>
 
-          <header class="relative z-[1] flex shrink-0 items-center justify-between gap-2 border-b border-neutral-200/70 px-3.5 py-2.5 dark:border-white/[0.08]">
+          <header class="relative z-30 flex shrink-0 items-center justify-between gap-2 border-b border-neutral-200/70 bg-white/95 px-3.5 py-2.5 backdrop-blur dark:border-white/[0.08] dark:bg-neutral-900/95">
             <div class="relative min-w-0 flex-1">
               <button
                 type="button"
@@ -91,7 +91,7 @@
               </button>
               <div
                 v-if="historyMenuOpen"
-                class="absolute left-0 top-full z-20 mt-1.5 w-64 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900"
+                class="absolute left-0 top-full z-50 mt-1.5 w-64 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900"
               >
                 <div v-if="conversations.length" class="max-h-56 overflow-y-auto py-1">
                   <button
@@ -260,6 +260,7 @@
                   <AstraMessageBlocks
                     v-if="msg.blocks?.length"
                     :blocks="msg.blocks"
+                    @action="onSuggestion"
                   />
                   <div
                     v-if="msg.proposals?.length"
@@ -301,7 +302,7 @@
                             :disabled="confirming"
                             @click="onConfirmProposal(msg.id, proposal)"
                           >
-                            {{ t('astra.confirmAction') }}
+                            {{ isEmailSendProposal(proposal) ? t('astra.reviewAndSend') : t('astra.confirmAction') }}
                           </button>
                           <button
                             type="button"
@@ -314,17 +315,12 @@
                       </div>
                     </div>
                   </div>
-                  <div v-if="msg.suggestions?.length" class="flex flex-wrap gap-1.5">
-                    <button
-                      v-for="(suggestion, idx) in msg.suggestions"
-                      :key="`${msg.id}-s-${idx}`"
-                      type="button"
-                      class="rounded-full border border-neutral-200/80 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 shadow-sm transition hover:border-primary-300 hover:bg-primary-50/60 hover:text-primary-800 dark:border-white/10 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-primary-500/40 dark:hover:bg-primary-950/40 dark:hover:text-primary-200"
-                      @click="onSuggestion(suggestionPrompt(suggestion))"
-                    >
-                      {{ suggestionLabel(suggestion) }}
-                    </button>
-                  </div>
+                  <AstraFollowUps
+                    v-if="msg.suggestions?.length"
+                    :suggestions="msg.suggestions"
+                    :key-prefix="msg.id"
+                    @select="onSuggestion"
+                  />
                 </div>
               </div>
 
@@ -469,9 +465,11 @@ import { useAstraStatusLine } from '@/astra/composables/useAstraStatusLine';
 import { useAstraConversations } from '@/astra/composables/useAstraConversations';
 import AstraMessageBlocks from '@/astra/blocks/AstraMessageBlocks.vue';
 import AstraAnswerBody from '@/astra/components/AstraAnswerBody.vue';
+import AstraFollowUps from '@/astra/components/AstraFollowUps.vue';
 import AstraLogo from '@/astra/components/AstraLogo.vue';
 import type { AstraUiBlock } from '@/astra/blocks/types';
 import { resolveAstraNbaIcon } from '@/astra/utils/resolveAstraNbaIcon';
+import { isEmailSendProposal, openEmailComposeFromAstra } from '@/astra/utils/openEmailCompose';
 import { resolvePageAiContext } from '@/utils/resolvePageAiContext';
 import {
   getPersistedRecordTabName,
@@ -1036,17 +1034,27 @@ async function onSuggestion(suggestion: string) {
   await ask(suggestion);
 }
 
-function suggestionLabel(suggestion: AstraSuggestion): string {
-  if (typeof suggestion === 'string') return suggestion;
-  return suggestion.label || suggestion.prompt;
-}
-
-function suggestionPrompt(suggestion: AstraSuggestion): string {
-  if (typeof suggestion === 'string') return suggestion;
-  return suggestion.prompt || suggestion.label;
-}
-
 async function onConfirmProposal(messageId: string, proposal: AstraProposal) {
+  if (isEmailSendProposal(proposal)) {
+    openEmailComposeFromAstra(proposal);
+    messages.value = messages.value.map((m) => {
+      if (m.id !== messageId) return m;
+      return {
+        ...m,
+        proposals: (m.proposals || []).map((p) => {
+          if (p.id !== proposal.id) return p;
+          return { ...p, status: 'completed' as const, rationale: t('astra.emailOpenedInCompose') };
+        }),
+      };
+    });
+    messages.value.push({
+      id: `a-confirm-${Date.now()}`,
+      role: 'assistant',
+      body: t('astra.emailOpenedInCompose'),
+    });
+    await scrollToEnd();
+    return;
+  }
   const result = await confirmProposal(proposal, { conversationId: conversationId.value });
   if (!result.ok) return;
   messages.value = messages.value.map((m) => {

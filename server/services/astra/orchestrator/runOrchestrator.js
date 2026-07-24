@@ -18,6 +18,7 @@ const { recordTurn } = require('../governance/audit');
 const { ensureBootstrapped } = require('../bootstrap');
 const sessionMemory = require('../memory/sessionMemory');
 const { buildUiBlocks, wantsChartAsk } = require('../experience/buildUiBlocks');
+const { applyAskFidelity } = require('../experience/answerFidelity');
 const { wantsRecordBrief, buildRecordStatusBrief } = require('../experience/buildRecordStatusBrief');
 const { synthesizePipelineNarrative } = require('../experience/coworkerSynthesis');
 const {
@@ -37,6 +38,11 @@ const {
 const { pickAgentWithLlm } = require('./pickAgentWithLlm');
 const { resolveEventCreateSlots, isGarbageTitle } = require('./extractEventSlots');
 const { runAgentToolLoop } = require('./agentLoop');
+const {
+  planSpecialistsWithLlm,
+  mergeSpecialistOutputs,
+  isMissionControlKey,
+} = require('./missionControl');
 const {
   refersToSameFocus,
   resolveTurnFocus,
@@ -365,18 +371,19 @@ function relatedHitsToToolResult(relatedModule, relatedRows, query) {
 
 /** Deterministic lead text + claims. Visual facts go in UI blocks, not Markdown. */
 function buildGroundedAnswer(intent, query, toolResult) {
-  const listIntent = wantsListAnswer(query) || toolResult?.listIntent === true;
-  if (toolResult && listIntent) toolResult.listIntent = true;
+  const focused = applyAskFidelity(toolResult, query);
+  const listIntent = wantsListAnswer(query) || focused?.listIntent === true;
+  if (focused && listIntent) focused.listIntent = true;
 
-  const { lead, blocks } = buildUiBlocks(intent, toolResult, {
+  const { lead, blocks } = buildUiBlocks(intent, focused, {
     listIntent,
     query,
   });
 
   if (intent === 'crm_search' || intent === 'knowledge') {
-    const hits = toolResult?.hits || [];
-    const total = toolResult?.counts?.total ?? hits.length;
-    const entity = toolResult?.entity || (intent === 'knowledge' ? 'articles' : 'records');
+    const hits = focused?.hits || [];
+    const total = focused?.counts?.total ?? hits.length;
+    const entity = focused?.entity || (intent === 'knowledge' ? 'articles' : 'records');
     const claims = hits.length
       ? [{ type: 'count', entity, value: total }]
         .concat(hits.slice(0, 5).map((h) => ({ type: 'record', id: h.id, title: h.title })))
@@ -384,25 +391,29 @@ function buildGroundedAnswer(intent, query, toolResult) {
 
     if (listIntent) {
       const chartAsk = wantsChartAsk(query);
+      const premiumList = Boolean(focused?.askFocus);
       return {
         draft: [
           lead,
           '',
-          chartAsk
-            ? 'User asked for a list and a chart. Reply with ONE short sentence confirming the count and that the chart is below.'
-            : 'User asked for a list. Reply with ONE short sentence confirming the count.',
-          'Do NOT reprint every deal as bullets — the UI record list already shows them.',
+          premiumList
+            ? 'User asked for a focused set. Reply with 1–2 premium sentences answering the ask; name up to 2 standout records. Do NOT dump every row.'
+            : chartAsk
+              ? 'User asked for a list and a chart. Reply with ONE short sentence confirming the count and that the chart is below.'
+              : 'User asked for a list. Reply with a premium count sentence.',
+          'Do NOT reprint every deal as bullets — the interactive UI list already shows them.',
           chartAsk
             ? 'Do NOT invent a markdown table or ASCII chart — the UI chart block already shows the breakdown.'
-            : 'Do NOT add a chart, metrics essay, or pipeline coaching.',
+            : 'Invite one next move (open a card / brief me / draft follow-up).',
         ].join('\n'),
         lead,
         blocks,
         claims,
+        toolResult: focused,
       };
     }
 
-    const contextual = buildContextualLead(intent, query, toolResult, lead);
+    const contextual = buildContextualLead(intent, query, focused, lead);
     const draftFacts = hits.length
       ? [
         contextual,
@@ -414,10 +425,10 @@ function buildGroundedAnswer(intent, query, toolResult) {
       ].join('\n')
       : contextual;
 
-    return { draft: draftFacts, lead: contextual, blocks, claims };
+    return { draft: draftFacts, lead: contextual, blocks, claims, toolResult: focused };
   }
 
-  return { draft: lead, lead, blocks, claims: [] };
+  return { draft: lead, lead, blocks, claims: [], toolResult: focused };
 }
 
 /** Deterministic follow-up chips. */
@@ -429,19 +440,29 @@ function buildSuggestions(intent, query, toolResult) {
 
   if (intent === 'crm_search') {
     if (entity === 'deals') {
-      if (toolResult?.openOnly) {
+      if (toolResult?.askFocus === 'near_close') {
+        suggestions.push('Which of these should I prioritize this week?');
+        if (first?.title) {
+          suggestions.push(`Draft a closing email for ${first.title}`);
+          suggestions.push(`What’s blocking ${first.title}?`);
+        }
+        suggestions.push('Show all open deals');
+      } else if (toolResult?.openOnly) {
         suggestions.push('Which of these need attention this week?');
+        suggestions.push('Show deals near closure');
         suggestions.push('Show won deals instead');
       } else {
         suggestions.push('Show only open deals');
       }
-      if (first?.title) {
+      if (first?.title && toolResult?.askFocus !== 'near_close') {
         suggestions.push(`Tell me more about ${first.title}`);
         suggestions.push(`Draft a follow-up for ${first.title}`);
-      } else {
+      } else if (!first?.title) {
         suggestions.push('List my open deals');
       }
-      suggestions.push('How many open deals do I have?');
+      if (!suggestions.includes('How many open deals do I have?')) {
+        suggestions.push('How many open deals do I have?');
+      }
     } else if (entity === 'cases') {
       suggestions.push('Show high-priority open cases');
       if (first?.title) suggestions.push(`Summarize ${first.title}`);
@@ -741,16 +762,52 @@ async function runOrchestrator(request = {}, deps = {}) {
   });
   let agentKey = agentPick.agentKey;
   let agent = agents.getAgent(agentKey);
+  let mcPlan = null;
+  let executionAgentKey = agentKey;
 
-  // Email drafts need email.draft — don't let a CRM specialist steal the seat without that tool.
+  // Mission Control: plan specialists; execute with primary specialist tools/prompt.
+  if (isMissionControlKey(agentKey) || !agent) {
+    if (!agent && agents.hasAgent?.('mission-control')) {
+      agentKey = 'mission-control';
+      agent = agents.getAgent('mission-control');
+      agentPick = { ...agentPick, agentKey, reason: 'mc_fallback' };
+    }
+    mcPlan = await planSpecialistsWithLlm({
+      query,
+      intent,
+      focus,
+      agents,
+      request,
+      llm,
+      llmIntent: deps.llmIntent,
+    });
+    const primaryKey = mcPlan.specialists?.[0];
+    const primary = primaryKey ? agents.getAgent(primaryKey) : null;
+    if (primary) {
+      executionAgentKey = primaryKey;
+      agent = primary;
+    }
+    agentKey = 'mission-control';
+    agentPick = {
+      ...agentPick,
+      agentKey: 'mission-control',
+      reason: mcPlan.reason || agentPick.reason,
+      specialists: mcPlan.specialists,
+      parallel: mcPlan.parallel,
+    };
+  }
+
+  // Email drafts need email.draft — route through Email specialist under Mission Control.
   if (
     intent === 'email_draft'
     && !agentAllowsTool(agent, 'email.draft')
-    && agents.hasAgent?.('coworker')
   ) {
-    agentKey = 'coworker';
-    agent = agents.getAgent('coworker');
-    agentPick = { ...agentPick, agentKey: 'coworker', reason: 'email_draft_tool_guard' };
+    const emailAgent = agents.getAgent?.('email') || agents.getAgent?.('coworker');
+    if (emailAgent && agentAllowsTool(emailAgent, 'email.draft')) {
+      executionAgentKey = emailAgent.name;
+      agent = emailAgent;
+      agentPick = { ...agentPick, reason: 'email_draft_tool_guard', specialists: ['email'] };
+    }
   }
 
   const polishWithAgent = (opts) => polishCoworkerAnswer({
@@ -764,6 +821,7 @@ async function runOrchestrator(request = {}, deps = {}) {
     userId: request.userId || null,
     surface: request.surface || 'chat',
     agentKey,
+    executionAgentKey,
     focus,
     situation,
     deps: {
@@ -776,7 +834,9 @@ async function runOrchestrator(request = {}, deps = {}) {
   const baseMeta = {
     intent,
     agentKey,
-    agentName: agent?.title || agentKey,
+    executionAgentKey,
+    agentName: agents.getAgent?.(agentKey)?.title || agent?.title || agentKey,
+    specialists: mcPlan?.specialists || null,
     confidence: classification.confidence,
     conversationId,
     intentReason: classification.reason || null,
@@ -1369,7 +1429,7 @@ async function runOrchestrator(request = {}, deps = {}) {
     const toolName = 'crm.tasks.create';
     if (!agentAllowsTool(agent, toolName)) {
       return finish({
-        answer: 'This seat cannot create tasks. Try asking from Astra coworker.',
+        answer: 'This seat cannot create tasks. Try asking from Astra Mission Control.',
         blocks: [],
         suggestions: ['Create a task to follow up'],
         claims: [],
@@ -1999,12 +2059,73 @@ async function runOrchestrator(request = {}, deps = {}) {
   }
 
   if (!briefMode && !coachMode) {
-    ({ draft, lead, blocks, claims } = buildGroundedAnswer(intent, query, toolResult));
+    const grounded = buildGroundedAnswer(intent, query, toolResult);
+    draft = grounded.draft;
+    lead = grounded.lead;
+    blocks = grounded.blocks;
+    claims = grounded.claims;
+    if (grounded.toolResult) toolResult = grounded.toolResult;
     if (intent === 'crm_search' && subjectHit) {
       updateFocusFromToolResult(memory, request.organizationId, conversationId, {
         ...toolResult,
         hits: [subjectHit],
       });
+    }
+  }
+
+  // Mission Control multi-specialist: run at most one extra seat, then merge.
+  if (
+    mcPlan
+    && Array.isArray(mcPlan.specialists)
+    && mcPlan.specialists.length > 1
+    && (intent === 'meeting_prep' || intent === 'research')
+  ) {
+    const specialistResults = [{
+      agentKey: executionAgentKey,
+      title: agent?.title || executionAgentKey,
+      answer: draft || lead || '',
+    }];
+    const extraKeys = mcPlan.specialists.slice(1, 2);
+    const runExtra = async (key) => {
+      const seat = agents.getAgent(key);
+      if (!seat) return null;
+      const initial = pickInitialToolName(seat, intent, query);
+      const loop = await runAgentToolLoop({
+        registry,
+        ctx: { ...ctx, agentKey: key },
+        agent: seat,
+        intent,
+        query,
+        initialToolName: initial,
+        agentAllowsTool,
+      });
+      const grounded = buildGroundedAnswer(intent, query, loop.toolResult);
+      return {
+        agentKey: key,
+        title: seat.title || key,
+        answer: grounded.draft || grounded.lead || loop.toolResult?.guidance || '',
+      };
+    };
+    if (mcPlan.parallel) {
+      const extras = await Promise.all(extraKeys.map((k) => runExtra(k)));
+      for (const r of extras) if (r) specialistResults.push(r);
+    } else {
+      for (const k of extraKeys) {
+        const r = await runExtra(k);
+        if (r) specialistResults.push(r);
+      }
+    }
+    const mcAgent = agents.getAgent('mission-control');
+    const merged = await mergeSpecialistOutputs({
+      query,
+      plan: mcPlan,
+      specialistResults,
+      llm,
+      missionControlHint: mcAgent?.systemHint || '',
+    });
+    if (merged?.answer) {
+      draft = merged.answer;
+      lead = merged.answer;
     }
   }
 

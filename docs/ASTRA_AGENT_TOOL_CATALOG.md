@@ -1,7 +1,7 @@
-# Astra Master + Universal Fabric + Knowledge
+# Astra Mission Control + Platform Defaults + Universal Fabric
 
-> **Product direction (locked):** CapIndex + universal `module.*` fabric + Master-authored agents + grounded Knowledge fabric.  
-> **No seeded 45-agent zoo in Settings** — only coworker seed + Master-created specialists.  
+> **Product direction (locked):** CapIndex + universal `module.*` fabric + **Astra Mission Control** as Ask entry + **20 seeded Platform default agents** (Mission Control + 19 specialists) + optional Master-authored extras + grounded Knowledge fabric.  
+> **Naming:** Never say “CRM” in user-facing agent copy — say **Platform** (product: Arivu).  
 > Parent: [`ASTRA_V2_ARCHITECTURE.md`](./ASTRA_V2_ARCHITECTURE.md)
 
 ## Architecture
@@ -9,10 +9,24 @@
 ```
 ModuleDefinition ∪ moduleCatalog ∪ listTools ∪ knowledge
         → CapIndex(org)
-        → Master propose/create
-        → AstraTenantAgent (tool recipes + Role/Goal/Tools/Constraints template)
-        → Orchestrator agent loop (plan→execute→observe→reflect, max 3)
+        → Seeded Platform defaults (mission-control + specialists)
+        → Optional Master propose/create extras
+        → AstraTenantAgent (tool recipes + full prompt pack)
+        → Mission Control plan → specialist agent loop(s) → merge
 ```
+
+### Platform default agents
+
+Source: `server/services/astra/agents/defaultAgentCatalog.js` + `defaultAgents/*.md`.
+
+| Key | Role |
+| --- | --- |
+| `mission-control` | Always-on Ask orchestrator (no direct writes) |
+| `summary` … `workday-orchestrator` | 19 specialists (see catalog) |
+
+**Deferred:** Strategic Advisor (listed historically under Mission Control; no Platform spec yet).
+
+Seed: `SEED_BUILTIN_AGENTS` = all 20. Catalog version `ASTRA_CATALOG_VERSION = 2`. Soft-alias: `coworker` → Mission Control.
 
 ### Universal fabric
 
@@ -32,7 +46,9 @@ Registry CI: `server/services/astra/tools/__tests__/moduleRegistry.test.js` (`as
 ### Master
 
 - `POST /api/ai/v2/master/propose` — plain English → CapIndex-bound proposal  
-- `POST /api/ai/v2/master/create` — persist agent (merge/reuse near-duplicates)
+- `POST /api/ai/v2/master/create` — persist **extra** agents (merge/reuse near-duplicates)
+
+Does **not** replace Mission Control as the default Ask entry.
 
 Thresholds: match ≥0.62, auto-create ≥0.80, duplicate ≥0.88, max 2 runtime creates/day/org.
 
@@ -52,9 +68,9 @@ Website: curated URL fetch or paste (no full-site crawl in v1).
 
 `server/services/astra/orchestrator/agentLoop.js` — after empty/weak tool result, reflect and try an alternate tool (max 3 steps, 1 transient retry).
 
-### Router
+### Mission Control router
 
-Ask does **not** force `coworker`. `resolveAgentKey` scores enabled tenant agents; falls back to coworker / ephemeral.
+Ask defaults to `mission-control`. `orchestrator/missionControl.js` plans specialists (heuristic + optional LLM), runs primary (+ parallel extras), merges into one Platform answer. Explicit `request.agent` remains for Settings → Try.
 
 ### Vector agent memory
 

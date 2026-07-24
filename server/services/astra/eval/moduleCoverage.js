@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * moduleCoverage — OOTB CI: every registry module must map to Astra tools + an app seat.
+ * moduleCoverage — OOTB CI: every registry module must map to Astra tools + Platform seats.
  * Fails closed when a module has no search/tool coverage or its app has no agent.
  */
 
@@ -9,6 +9,7 @@ const { listModules } = require('../tools/moduleCatalog');
 const toolRegistry = require('../tools/toolRegistry');
 const agentRegistry = require('../agents/agentRegistry');
 const { ensureBootstrapped } = require('../bootstrap');
+const { SPECIALIST_KEYS, MISSION_CONTROL_KEY } = require('../agents/defaultAgentCatalog');
 
 /** moduleKey → dedicated tool names (search.crm also covers ready modules). */
 const MODULE_TOOLS = {
@@ -35,16 +36,24 @@ const MODULE_TOOLS = {
   responses: ['search.crm'],
 };
 
-/** appKey → required agent names */
+/** appKey → required Platform default agent names */
 const APP_AGENTS = {
-  sales: ['pipeline-closer', 'sales-qualification', 'proposal'],
-  helpdesk: ['case-triage', 'knowledge'],
-  marketing: ['campaign', 'audience', 'content'],
-  inventory: ['inventory', 'fulfillment'],
-  audit: ['audit-planner', 'audit-field', 'audit-review'],
-  portal: ['portal'],
-  control_plane: ['control-plane'],
-  platform: ['coworker', 'documents', 'analyst', 'workflow'],
+  sales: ['deal-intelligence', 'forecast-pipeline', 'record-creation', 'email'],
+  helpdesk: ['case-intelligence', 'knowledge-intelligence'],
+  marketing: ['email', 'conversation-intelligence', 'search'],
+  inventory: ['search', 'data-quality'],
+  audit: ['process-intelligence', 'data-quality', 'analytics-decision'],
+  portal: ['knowledge-intelligence'],
+  control_plane: ['integration-intelligence'],
+  platform: [
+    MISSION_CONTROL_KEY,
+    'summary',
+    'search',
+    'task-activity',
+    'workday-orchestrator',
+    'relationship-intelligence',
+    'customer-360',
+  ],
 };
 
 /**
@@ -72,10 +81,10 @@ function checkModuleCoverage() {
     }
   }
 
-  // Extra app keys from product (projects/lms) even if not in moduleCatalog yet
-  for (const name of ['projects', 'lms', 'live-chat', 'mailroom', 'reviewer']) {
+  // Full Platform default catalog must be present
+  for (const name of [MISSION_CONTROL_KEY, ...SPECIALIST_KEYS]) {
     if (!agentRegistry.hasAgent(name)) {
-      missingAgents.push({ appKey: 'extra', agent: name });
+      missingAgents.push({ appKey: 'platform_defaults', agent: name });
     }
   }
 

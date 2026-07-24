@@ -19,42 +19,60 @@
 
     <div
       :class="[
-        'flex max-h-72 flex-col divide-y divide-neutral-100 dark:divide-white/[0.06]',
+        'flex max-h-80 flex-col divide-y divide-neutral-100 dark:divide-white/[0.06]',
         PLATFORM_HOME_LIST_SCROLL_CLASS,
       ]"
     >
-      <button
+      <div
         v-for="item in items"
         :key="item.id"
-        type="button"
-        class="group flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60 sm:px-4"
-        @click="onOpen(item)"
+        class="group"
       >
-        <span
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-          :class="iconWrapClass"
+        <button
+          type="button"
+          class="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60 sm:px-4"
+          @click="onOpen(item)"
         >
-          <component :is="iconComponent" class="h-4 w-4" />
-        </span>
-        <span class="min-w-0 flex-1">
-          <span class="block truncate text-sm font-medium text-neutral-900 group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
-            {{ item.title }}
+          <span
+            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+            :class="iconWrapClass"
+          >
+            <component :is="iconComponent" class="h-4 w-4" />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block truncate text-sm font-medium text-neutral-900 group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
+              {{ item.title }}
+            </span>
+            <span
+              v-if="item.subtitle"
+              class="mt-0.5 block truncate text-xs text-neutral-500 dark:text-neutral-400"
+            >
+              {{ item.subtitle }}
+            </span>
           </span>
           <span
-            v-if="item.subtitle"
-            class="mt-0.5 block truncate text-xs text-neutral-500 dark:text-neutral-400"
+            v-if="item.amount != null"
+            class="shrink-0 text-xs font-medium tabular-nums text-neutral-600 dark:text-neutral-300"
           >
-            {{ item.subtitle }}
+            {{ formatAmount(item.amount) }}
           </span>
-        </span>
-        <span
-          v-if="item.amount != null"
-          class="shrink-0 text-xs font-medium tabular-nums text-neutral-600 dark:text-neutral-300"
+          <ChevronRightIcon class="h-4 w-4 shrink-0 text-neutral-300 group-hover:text-primary-500 dark:text-neutral-600" />
+        </button>
+        <div
+          v-if="item.actions?.length"
+          class="flex flex-wrap gap-1.5 px-3.5 pb-2.5 sm:px-4"
         >
-          {{ formatAmount(item.amount) }}
-        </span>
-        <ChevronRightIcon class="h-4 w-4 shrink-0 text-neutral-300 group-hover:text-primary-500 dark:text-neutral-600" />
-      </button>
+          <button
+            v-for="action in item.actions"
+            :key="action.id || action.label"
+            type="button"
+            class="rounded-full border border-neutral-200/80 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-600 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-primary-500/40 dark:hover:bg-primary-950/40 dark:hover:text-primary-200"
+            @click.stop="onAction(action)"
+          >
+            {{ action.label }}
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -74,13 +92,17 @@ import {
   PLATFORM_HOME_CARD_HEADER_DIVIDER_CLASS,
   PLATFORM_HOME_LIST_SCROLL_CLASS,
 } from '@/utils/platformHomeLayout';
-import type { AstraRecordListItem } from '@/astra/blocks/types';
+import type { AstraRecordListItem, AstraRecordAction } from '@/astra/blocks/types';
 
 const props = defineProps<{
   title?: string;
   entity?: string;
   total?: number;
   items: AstraRecordListItem[];
+}>();
+
+const emit = defineEmits<{
+  action: [prompt: string];
 }>();
 
 const { t } = useI18n();
@@ -116,5 +138,10 @@ function onOpen(item: AstraRecordListItem) {
   if (item.href) {
     void router.push(item.href);
   }
+}
+
+function onAction(action: AstraRecordAction) {
+  const prompt = String(action.prompt || action.label || '').trim();
+  if (prompt) emit('action', prompt);
 }
 </script>

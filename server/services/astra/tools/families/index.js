@@ -49,6 +49,20 @@ const {
   runModuleUpdate,
 } = require('../moduleFabric');
 const { groundedRetrieve } = require('../../retrieval/groundedRetriever');
+const { applyAskFidelity, stageMongoHintFromAsk } = require('../../experience/answerFidelity');
+const {
+  executeDealUpdate,
+  executeNotesCreate,
+  executeActivityLog,
+  executeCaseAssign,
+  executeCaseResolve,
+  executeQuotesSend,
+  executeInvoiceSend,
+  executeInvoiceVoid,
+  executePaymentRecord,
+  executePaymentLinkCreate,
+  executeNotImplemented,
+} = require('../executeConfirmedWrites');
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -236,6 +250,10 @@ async function runCrmSearch(input = {}, ctx = {}) {
   }
 
   let filter = plan.filter;
+  const stageHint = stageMongoHintFromAsk(input.query || '', plan.entity);
+  if (stageHint) {
+    filter = { ...filter, ...stageHint };
+  }
   if (plan.entity === 'organizations' && ctx.organizationId) {
     const { buildTenantAccessibleCrmOrganizationQuery } = require('../../../../utils/crmOrganizationAccess');
     filter = await buildTenantAccessibleCrmOrganizationQuery(ctx.organizationId);
@@ -262,7 +280,9 @@ async function runCrmSearch(input = {}, ctx = {}) {
     };
   }
 
-  const limit = Math.min(Math.max(Number(input.limit) || 25, 1), 100);
+  // Pull a wider page when the ask is semantic so post-filter still has candidates.
+  const baseLimit = Math.min(Math.max(Number(input.limit) || 25, 1), 100);
+  const limit = stageHint ? Math.min(100, Math.max(baseLimit, 50)) : baseLimit;
 
   const [rows, total] = await Promise.all([
     runList(model, filter, { limit, sort: plan.sort || { updatedAt: -1 } }),
@@ -270,7 +290,7 @@ async function runCrmSearch(input = {}, ctx = {}) {
   ]);
 
   const hits = (Array.isArray(rows) ? rows : []).map((row) => normalizeHit(plan.entity, row));
-  return {
+  const raw = {
     entity: plan.entity,
     listIntent: plan.listIntent,
     openOnly: plan.openOnly,
@@ -279,7 +299,9 @@ async function runCrmSearch(input = {}, ctx = {}) {
     hits,
     counts: { total: Number(total) || hits.length, returned: hits.length },
     guidance: plan.guidance,
+    query: String(input.query || ''),
   };
+  return applyAskFidelity(raw, input.query || '');
 }
 
 async function runKnowledgeSearch(input = {}, ctx = {}) {
@@ -322,16 +344,79 @@ async function runEmailDraft(input = {}) {
   };
 }
 
-async function runEmailSend(input = {}) {
+async function runEmailSend(input = {}, ctx = {}) {
+  const to = String(input.to || '').trim();
+  const subject = String(input.subject || '').trim();
+  const body = String(input.body || input.text || '').trim();
+
   if (input.confirmed !== true) {
     return buildConfirmation({
       toolName: 'email.send',
       risk: RISK.WRITE,
-      summary: `Send email to ${input.to || '(no recipient)'}`,
-      payload: input,
+      summary: to ? `Send email to ${to}` : 'Send this email (add recipient first)',
+      payload: { ...input, to, subject, body },
     });
   }
-  return { sent: true, to: input.to, guidance: 'Email sent.' };
+
+  if (!to || !to.includes('@')) {
+    return {
+      ok: false,
+      sent: false,
+      error: 'ASTRA_EMAIL_NO_RECIPIENT',
+      guidance: 'Cannot send — add a recipient email first, then confirm again.',
+    };
+  }
+  if (!subject) {
+    return {
+      ok: false,
+      sent: false,
+      error: 'ASTRA_EMAIL_NO_SUBJECT',
+      guidance: 'Cannot send — subject is required.',
+    };
+  }
+
+  try {
+    const emailService = require('../../../emailService');
+    const result = await emailService.sendCrmEmail({
+      to,
+      subject,
+      text: body,
+      html: body ? `<pre style="font-family:inherit;white-space:pre-wrap">${body
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')}</pre>` : undefined,
+      organizationId: ctx.organizationId || null,
+      moduleKey: 'people',
+      metadata: { source: 'astra', tool: 'email.send' },
+    });
+
+    if (!result?.success) {
+      return {
+        ok: false,
+        sent: false,
+        error: 'ASTRA_EMAIL_SEND_FAILED',
+        guidance: result?.error
+          ? `Email was not sent: ${result.error}`
+          : 'Email was not sent — outbound email is not configured for this organization.',
+      };
+    }
+
+    return {
+      ok: true,
+      sent: true,
+      to,
+      messageId: result.messageId || null,
+      provider: result.provider || null,
+      guidance: `Email sent to ${to}.`,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      sent: false,
+      error: 'ASTRA_EMAIL_SEND_FAILED',
+      guidance: `Email was not sent: ${err?.message || 'unexpected error'}`,
+    };
+  }
 }
 
 function relatedModuleKey(relatedTo) {
@@ -579,7 +664,7 @@ async function runTaskCreate(input = {}, ctx = {}) {
   }
 }
 
-async function runNotesCreate(input = {}) {
+async function runNotesCreate(input = {}, ctx = {}) {
   const body = String(input.body || input.text || '').trim();
   if (input.confirmed !== true) {
     return buildConfirmation({
@@ -589,10 +674,10 @@ async function runNotesCreate(input = {}) {
       payload: { body, relatedTo: input.relatedTo || null },
     });
   }
-  return { created: true, body, guidance: 'Note added.' };
+  return executeNotesCreate(input, ctx);
 }
 
-async function runActivityLog(input = {}) {
+async function runActivityLog(input = {}, ctx = {}) {
   const summary = String(input.summary || input.title || 'Activity').trim();
   if (input.confirmed !== true) {
     return buildConfirmation({
@@ -606,7 +691,7 @@ async function runActivityLog(input = {}) {
       },
     });
   }
-  return { logged: true, summary, guidance: 'Activity logged.' };
+  return executeActivityLog(input, ctx);
 }
 
 async function runReports(input = {}, ctx = {}) {
@@ -830,7 +915,7 @@ async function runDealUpdate(input = {}, ctx = {}) {
       payload: { dealId, ...patch },
     });
   }
-  return { updated: true, dealId, patch, guidance: 'Deal updated.' };
+  return executeDealUpdate(input, ctx);
 }
 
 async function runPeopleCreate(input = {}, ctx = {}) {
@@ -1049,10 +1134,13 @@ async function runQuotesDraft(input = {}, ctx = {}) {
       },
     });
   }
-  return { drafted: true, dealName, guidance: 'Quote draft ready.' };
+  return executeNotImplemented(
+    'quotes.draft',
+    'Drafting a full quote',
+  );
 }
 
-async function runDomainConfirmAction(toolName, summary, input = {}) {
+async function runDomainConfirmAction(toolName, summary, input = {}, executor) {
   if (input.confirmed !== true) {
     return buildConfirmation({
       toolName,
@@ -1061,51 +1149,105 @@ async function runDomainConfirmAction(toolName, summary, input = {}) {
       payload: input,
     });
   }
-  return { ok: true, toolName, guidance: `${summary} — confirmed.`, ...input };
+  if (typeof executor === 'function') {
+    return executor(input);
+  }
+  return executeNotImplemented(toolName, summary);
 }
 
-async function runQuotesSend(input = {}) {
-  return runDomainConfirmAction('quotes.send', `Send quote ${input.quoteId || input.quoteNumber || ''}`.trim(), input);
+async function runQuotesSend(input = {}, ctx = {}) {
+  return runDomainConfirmAction(
+    'quotes.send',
+    `Send quote ${input.quoteId || input.quoteNumber || ''}`.trim(),
+    input,
+    (payload) => executeQuotesSend(payload, ctx),
+  );
 }
 
 async function runQuotesConvert(input = {}) {
-  return runDomainConfirmAction('quotes.convert_to_order', `Convert quote ${input.quoteId || ''} to sales order`, input);
+  return runDomainConfirmAction(
+    'quotes.convert_to_order',
+    `Convert quote ${input.quoteId || ''} to sales order`,
+    input,
+  );
 }
 
-async function runInvoiceSend(input = {}) {
-  return runDomainConfirmAction('invoices.send', `Send invoice ${input.invoiceId || input.invoiceNumber || ''}`.trim(), input);
+async function runInvoiceSend(input = {}, ctx = {}) {
+  return runDomainConfirmAction(
+    'invoices.send',
+    `Send invoice ${input.invoiceId || input.invoiceNumber || ''}`.trim(),
+    input,
+    (payload) => executeInvoiceSend(payload, ctx),
+  );
 }
 
-async function runInvoiceVoid(input = {}) {
-  return runDomainConfirmAction('invoices.void', `Void invoice ${input.invoiceId || input.invoiceNumber || ''}`.trim(), input);
+async function runInvoiceVoid(input = {}, ctx = {}) {
+  return runDomainConfirmAction(
+    'invoices.void',
+    `Void invoice ${input.invoiceId || input.invoiceNumber || ''}`.trim(),
+    input,
+    (payload) => executeInvoiceVoid(payload, ctx),
+  );
 }
 
-async function runPaymentRecord(input = {}) {
-  return runDomainConfirmAction('payments.record', `Record payment ${input.amount != null ? input.amount : ''}`.trim(), input);
+async function runPaymentRecord(input = {}, ctx = {}) {
+  return runDomainConfirmAction(
+    'payments.record',
+    `Record payment ${input.amount != null ? input.amount : ''}`.trim(),
+    input,
+    (payload) => executePaymentRecord(payload, ctx),
+  );
 }
 
 async function runPaymentAllocate(input = {}) {
-  return runDomainConfirmAction('payments.allocate', `Allocate payment ${input.paymentId || ''}`.trim(), input);
+  return runDomainConfirmAction(
+    'payments.allocate',
+    `Allocate payment ${input.paymentId || ''}`.trim(),
+    input,
+  );
 }
 
 async function runRefundCreate(input = {}) {
-  return runDomainConfirmAction('refunds.create', `Create refund ${input.amount != null ? input.amount : ''}`.trim(), input);
+  return runDomainConfirmAction(
+    'refunds.create',
+    `Create refund ${input.amount != null ? input.amount : ''}`.trim(),
+    input,
+  );
 }
 
-async function runPaymentLinkCreate(input = {}) {
-  return runDomainConfirmAction('payment_links.create', 'Create payment link', input);
+async function runPaymentLinkCreate(input = {}, ctx = {}) {
+  return runDomainConfirmAction(
+    'payment_links.create',
+    'Create payment link',
+    input,
+    (payload) => executePaymentLinkCreate(payload, ctx),
+  );
 }
 
 async function runSalesOrderFulfill(input = {}) {
-  return runDomainConfirmAction('sales_orders.fulfill', `Fulfill sales order ${input.salesOrderId || ''}`.trim(), input);
+  return runDomainConfirmAction(
+    'sales_orders.fulfill',
+    `Fulfill sales order ${input.salesOrderId || ''}`.trim(),
+    input,
+  );
 }
 
-async function runCasesAssign(input = {}) {
-  return runDomainConfirmAction('cases.assign', `Assign case ${input.caseId || ''}`.trim(), input);
+async function runCasesAssign(input = {}, ctx = {}) {
+  return runDomainConfirmAction(
+    'cases.assign',
+    `Assign case ${input.caseId || ''}`.trim(),
+    input,
+    (payload) => executeCaseAssign(payload, ctx),
+  );
 }
 
-async function runCasesResolve(input = {}) {
-  return runDomainConfirmAction('cases.resolve', `Resolve case ${input.caseId || ''}`.trim(), input);
+async function runCasesResolve(input = {}, ctx = {}) {
+  return runDomainConfirmAction(
+    'cases.resolve',
+    `Resolve case ${input.caseId || ''}`.trim(),
+    input,
+    (payload) => executeCaseResolve(payload, ctx),
+  );
 }
 
 async function runReviewerCritique(input = {}) {
@@ -1197,7 +1339,27 @@ function thinModuleTool(toolName, moduleLabel) {
         payload: { ...input, action },
       });
     }
-    return { ok: true, module: moduleLabel, action, guidance: `${moduleLabel} ${action} applied.` };
+    if (action === 'create') {
+      const create = toolRegistry.getTool('module.create');
+      if (create) {
+        return create.run({
+          ...input,
+          moduleKey: input.moduleKey || input.entity,
+          confirmed: true,
+        }, ctx);
+      }
+    }
+    if (action === 'update') {
+      const update = toolRegistry.getTool('module.update');
+      if (update) {
+        return update.run({
+          ...input,
+          moduleKey: input.moduleKey || input.entity,
+          confirmed: true,
+        }, ctx);
+      }
+    }
+    return executeNotImplemented(toolName, `${moduleLabel} ${action}`);
   };
 }
 

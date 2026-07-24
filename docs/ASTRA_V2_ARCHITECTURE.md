@@ -1,7 +1,7 @@
 # Astra v2 — AI Platform Architecture (Source of Truth)
 
-> **Product = Arivu** (the CRM users work in).
-> **Platform = Astra** (the AI layer/coworker embedded in Arivu).
+> **Product = Arivu** (the Platform users work in).
+> **Platform AI = Astra** (Mission Control + specialists embedded in Arivu).
 >
 > This document is the **active** source of truth for the AI platform runtime.
 > For the **agent/tool roadmap, OOTB App×Module coverage, and workforce execution plan**, see
@@ -15,7 +15,7 @@
 
 1. **Clean-slate, layered platform** — one predictable pipeline, no tangle of
    ad-hoc services.
-2. **Grounded by construction** — Astra never states a CRM fact that did not
+2. **Grounded by construction** — Astra never states a Platform fact that did not
    come from a tool result. The LLM only *rephrases* a deterministic draft.
 3. **Governed** — every turn passes through risk, audit, credits, and PII
    governance. Writes/destructive actions require explicit confirmation.
@@ -44,17 +44,19 @@ Request → │  Context  →  Orchestrator  →  Agents  →  Tools  →  Model
   (best-effort; a memory outage never blocks an answer).
 
 ### Orchestrator (`orchestrator/runOrchestrator.js`)
-`intent → tool(s) → grounded answer → LLM polish`
+`intent → Mission Control plan → specialist tool(s) → grounded answer → LLM polish`
+- **Mission Control** — default Ask entry (`mission-control`). Plans specialists via
+  `orchestrator/missionControl.js`, merges multi-seat outputs, enforces confirm on writes.
 - **Intent** — coarse classifier: `crm_search | knowledge | workflow | chitchat`.
-  A strong how-to phrase ("how do I configure…") outranks incidental CRM nouns.
-- **Tools** — selects and runs the tool for the intent.
+  A strong how-to phrase ("how do I configure…") outranks incidental Platform nouns.
+- **Tools** — selects and runs the tool for the intent / specialist allow-list.
 - **Grounded answer** — deterministic draft + `claims[]` derived **only** from
   tool results.
 - **Status brief** — for “status / about / details of X” on a resolved org,
   deal, or person, `buildRecordStatusBrief` pulls related open deals, cases,
   tasks, and people; the LLM narrates a 2–4 sentence readout (still grounded).
-- **Email draft** — “draft/write an email…” routes to `email_draft` (not CRM
-  search). Uses chat focus (e.g. named deal) + returns an `email.send`
+- **Email draft** — “draft/write an email…” routes to `email_draft` (Email specialist).
+  Uses chat focus (e.g. named deal) + returns an `email.send`
   confirmation proposal.
 - **LLM polish** — rephrases the draft in a coworker voice. **Override rule:**
   if hits exist but the polished text drops *every* grounded claim, the polished
@@ -64,8 +66,9 @@ Request → │  Context  →  Orchestrator  →  Agents  →  Tools  →  Model
 ### Agents (`agents/`)
 - `agentRegistry.js` — catalog of capability profiles (tool allow-list + system
   hint + autonomy level).
-- `builtinAgents.js` — shipped agents: `coworker`, `crm-analyst`,
-  `inbox-assistant`.
+- `defaultAgentCatalog.js` / `builtinAgents.js` — shipped Platform defaults:
+  `mission-control` + 19 specialists (prompt pack in `defaultAgents/*.md`).
+  Soft-alias: `coworker` → Mission Control.
 - `workflowAgent.js` — runs an ordered list of tool steps as one unit; halts on
   a write tool until confirmed.
 - `customAgentMigration.js` — maps legacy `AiTenantAgent` docs → v2 agent specs.

@@ -1458,5 +1458,13 @@
   "portalCasesCreateDisabled": {
     "message": "You do not have permission to create cases. Contact your account manager if you need access.",
     "description": "Shown when a non-partner portal user cannot create cases"
+  },
+  "recordKnowledgeSuggestedReply": {
+    "message": "Suggested reply",
+    "description": "Case knowledge panel AI draft heading"
+  },
+  "recordKnowledgeSuggestedReplyHint": {
+    "message": "Review and edit before sending. Never auto-sent.",
+    "description": "Case knowledge panel AI draft hint"
   }
 }

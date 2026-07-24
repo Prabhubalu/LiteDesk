@@ -11,7 +11,8 @@ const { BUILTIN_AGENTS, SEED_BUILTIN_AGENTS } = require('./builtinAgents');
 const bootstrap = require('../bootstrap');
 const toolRegistry = require('../tools/toolRegistry');
 
-const ASTRA_CATALOG_VERSION = 1;
+/** v2: Mission Control + 19 Platform default specialists (full prompt pack). */
+const ASTRA_CATALOG_VERSION = 2;
 
 function normalizeOrgId(organizationId) {
   if (!organizationId) return null;
@@ -118,33 +119,62 @@ async function ensureTenantAstraCatalog(organizationId) {
   bootstrap.ensureBootstrapped();
 
   const [existingAgents, existingTools] = await Promise.all([
-    AstraTenantAgent.find({ organizationId: orgId }).select('key').lean(),
+    AstraTenantAgent.find({ organizationId: orgId })
+      .select('key isCustomized catalogVersion defaultKey')
+      .lean(),
     AstraTenantToolConfig.find({ organizationId: orgId }).select('toolName').lean(),
   ]);
 
-  const agentKeys = new Set(existingAgents.map((a) => a.key));
   const toolNames = new Set(existingTools.map((t) => t.toolName));
+  const existingByKey = new Map(existingAgents.map((a) => [a.key, a]));
 
   const agentInserts = [];
+  let refreshedAgents = 0;
   for (const builtin of SEED_BUILTIN_AGENTS) {
-    if (agentKeys.has(builtin.name)) continue;
-    agentInserts.push({
-      organizationId: orgId,
-      key: builtin.name,
-      defaultKey: builtin.name,
-      title: builtin.title || builtin.name,
-      description: builtin.description || '',
-      systemHint: builtin.systemHint || '',
-      autonomy: builtin.autonomy || 'assist',
-      toolAllowlist: Array.isArray(builtin.tools) ? [...builtin.tools] : [],
-      enabled: true,
-      catalogVersion: ASTRA_CATALOG_VERSION,
-      isCustomized: false,
-      source: 'builtin',
-    });
+    const existing = existingByKey.get(builtin.name);
+    if (!existing) {
+      agentInserts.push({
+        organizationId: orgId,
+        key: builtin.name,
+        defaultKey: builtin.name,
+        title: builtin.title || builtin.name,
+        description: builtin.description || '',
+        systemHint: builtin.systemHint || '',
+        autonomy: builtin.autonomy || 'assist',
+        toolAllowlist: Array.isArray(builtin.tools) ? [...builtin.tools] : [],
+        enabled: true,
+        catalogVersion: ASTRA_CATALOG_VERSION,
+        isCustomized: false,
+        source: 'builtin',
+      });
+      continue;
+    }
+    // Refresh non-customized platform seats when catalog version advances
+    if (
+      !existing.isCustomized
+      && existing.defaultKey === builtin.name
+      && (existing.catalogVersion || 0) < ASTRA_CATALOG_VERSION
+    ) {
+      await AstraTenantAgent.updateOne(
+        { organizationId: orgId, key: builtin.name, isCustomized: false },
+        {
+          $set: {
+            title: builtin.title || builtin.name,
+            description: builtin.description || '',
+            systemHint: builtin.systemHint || '',
+            autonomy: builtin.autonomy || 'assist',
+            toolAllowlist: Array.isArray(builtin.tools) ? [...builtin.tools] : [],
+            enabled: true,
+            catalogVersion: ASTRA_CATALOG_VERSION,
+            source: 'builtin',
+          },
+        },
+      );
+      refreshedAgents += 1;
+    }
   }
 
-  // Disable legacy seeded zoo (non-customized platform seats except coworker)
+  // Disable legacy thin seeded zoo (non-customized seats not in current Platform defaults)
   const seedKeys = new Set(SEED_BUILTIN_AGENTS.map((a) => a.name));
   await AstraTenantAgent.updateMany(
     {
@@ -190,6 +220,7 @@ async function ensureTenantAstraCatalog(organizationId) {
 
   return {
     seededAgents: agentInserts.length,
+    refreshedAgents,
     seededTools: toolInserts.length,
   };
 }
@@ -241,13 +272,16 @@ async function listAgentsForOrg(organizationId) {
     AstraTenantAgent.find({ organizationId: orgId }).sort({ title: 1 }).lean(),
     buildToolsByNameMap(orgId),
   ]);
+  const seedKeys = new Set(SEED_BUILTIN_AGENTS.map((a) => a.name));
   const visible = docs.filter((doc) => {
-    if (doc.key === 'coworker') return true;
+    // Hide soft-alias coworker row if Mission Control is seeded
+    if (doc.key === 'coworker' && seedKeys.has('mission-control')) return false;
+    if (seedKeys.has(doc.key)) return true;
     if (doc.isCustomized || doc.source === 'master' || doc.source === 'runtime' || doc.source === 'custom') {
       return true;
     }
-    // Hide legacy seeded zoo from Settings
-    if (doc.defaultKey && doc.defaultKey !== 'coworker') return false;
+    // Hide legacy thin seeded zoo not in current Platform defaults
+    if (doc.defaultKey && !seedKeys.has(doc.defaultKey) && !seedKeys.has(doc.key)) return false;
     return doc.enabled !== false;
   });
   return visible.map((doc) => agentDocToApi(doc, toolsByName));
@@ -305,7 +339,7 @@ async function updateAgentForOrg(organizationId, key, patch, userId = null) {
     doc.description = String(patch.description || '').trim().slice(0, 500);
   }
   if (patch.systemHint !== undefined) {
-    doc.systemHint = String(patch.systemHint || '').trim().slice(0, 8000);
+    doc.systemHint = String(patch.systemHint || '').trim().slice(0, 32000);
   }
   if (patch.autonomy !== undefined) {
     doc.autonomy = patch.autonomy === 'confirm' ? 'confirm' : 'assist';
@@ -570,19 +604,30 @@ async function resolveAgentRegistryForOrg(organizationId) {
     });
   }
 
-  // Ephemeral Astra if no agents
+  // Ephemeral Mission Control (+ coworker alias) if no agents
   if (!map.size) {
-    const coworker = builtinByName('coworker');
-    if (coworker) {
+    const mc = builtinByName('mission-control') || builtinByName('coworker');
+    if (mc) {
+      map.set(mc.name === 'coworker' ? 'mission-control' : mc.name, {
+        name: mc.name === 'coworker' ? 'mission-control' : mc.name,
+        title: mc.title,
+        description: mc.description,
+        tools: mc.tools || [],
+        systemHint: mc.systemHint || '',
+        autonomy: 'assist',
+      });
       map.set('coworker', {
         name: 'coworker',
-        title: coworker.title,
-        description: coworker.description,
-        tools: coworker.tools || [],
-        systemHint: coworker.systemHint || '',
+        title: mc.title,
+        description: mc.description,
+        tools: mc.tools || [],
+        systemHint: mc.systemHint || '',
         autonomy: 'assist',
       });
     }
+  } else if (map.has('mission-control') && !map.has('coworker')) {
+    const mc = map.get('mission-control');
+    map.set('coworker', { ...mc, name: 'coworker' });
   }
 
   return {

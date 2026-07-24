@@ -77,6 +77,12 @@
               <div class="flex items-center gap-1.5">
                 <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ agent.title }}</p>
                 <span
+                  v-if="agent.defaultKey"
+                  class="shrink-0 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-800 dark:bg-sky-900/40 dark:text-sky-200"
+                >
+                  {{ t('settings.aiAgentsPlatformBadge') }}
+                </span>
+                <span
                   v-if="agent.isCustomized"
                   class="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
                 >

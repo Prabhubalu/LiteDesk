@@ -8,6 +8,7 @@
  */
 
 const { getModule, recordPathFor } = require('../tools/moduleCatalog');
+const { applyAskFidelity } = require('./answerFidelity');
 
 function entityLabel(entity) {
   const mod = getModule(entity);
@@ -75,6 +76,12 @@ function buildChartBlock(entity, hits, query) {
  * @returns {{ lead: string, blocks: object[] }}
  */
 function buildUiBlocks(intent, toolResult, options = {}) {
+  const query = options.query || toolResult?.query || '';
+  const focused = applyAskFidelity(toolResult, query);
+  return buildUiBlocksInner(intent, focused, { ...options, query });
+}
+
+function buildUiBlocksInner(intent, toolResult, options = {}) {
   const blocks = [];
   const hits = toolResult?.hits || [];
   const total = toolResult?.counts?.total ?? hits.length;
@@ -85,6 +92,7 @@ function buildUiBlocks(intent, toolResult, options = {}) {
   const query = options.query || toolResult?.query || '';
   const chartAsk = wantsChartAsk(query);
   const label = entityLabel(entity);
+  const askFocused = Boolean(toolResult?.askFocus || toolResult?.counts?.matchedAsk);
 
   if (intent === 'chitchat') {
     return {
@@ -109,12 +117,17 @@ function buildUiBlocks(intent, toolResult, options = {}) {
           ? ' open'
           : '';
     return {
-      lead: `I couldn't find any${qualifier} ${label} that match that. Want me to widen the search?`,
+      lead: toolResult?.leadOverride
+        || `I couldn't find any${qualifier} ${label} that match that. Want me to widen the search?`,
       blocks: [
         {
           type: 'empty',
-          title: `No${qualifier} ${label} found`,
-          description: 'Try a different filter, drop open-only, or search by a specific name.',
+          title: askFocused
+            ? (toolResult?.listTitle || `No matches`)
+            : `No${qualifier} ${label} found`,
+          description: askFocused
+            ? 'Nothing matched that ask. Try a broader stage, or list all open deals.'
+            : 'Try a different filter, drop open-only, or search by a specific name.',
         },
       ],
     };
@@ -122,13 +135,15 @@ function buildUiBlocks(intent, toolResult, options = {}) {
 
   const qualifier = overdueOnly
     ? ' overdue'
-    : openOnly && entity === 'deals'
+    : openOnly && entity === 'deals' && !askFocused
       ? ' open'
       : '';
   const firstName = hits[0]?.title || null;
   const secondName = hits[1]?.title || null;
   let lead;
-  if (listIntent) {
+  if (toolResult?.leadOverride) {
+    lead = toolResult.leadOverride;
+  } else if (listIntent) {
     lead = `You have ${total}${qualifier} ${label}.`;
   } else if (total === 1 && firstName) {
     const detail = hits[0]?.subtitle ? ` — ${hits[0].subtitle}` : '';
@@ -145,11 +160,12 @@ function buildUiBlocks(intent, toolResult, options = {}) {
     ? Math.min(50, Math.max(hits.length, 1))
     : 8;
 
-  const listTitle = overdueOnly
-    ? 'Overdue tasks'
-    : openOnly && entity === 'deals'
-      ? 'Open deals'
-      : label.charAt(0).toUpperCase() + label.slice(1);
+  const listTitle = toolResult?.listTitle
+    || (overdueOnly
+      ? 'Overdue tasks'
+      : openOnly && entity === 'deals'
+        ? 'Open deals'
+        : label.charAt(0).toUpperCase() + label.slice(1));
 
   const listItems = hits.slice(0, maxList).map((h) => ({
     id: h.id,
@@ -158,7 +174,36 @@ function buildUiBlocks(intent, toolResult, options = {}) {
     status: h.status || null,
     amount: h.amount ?? null,
     href: recordPath(entity, h.id),
+    actions: Array.isArray(h.actions) ? h.actions.slice(0, 3) : undefined,
   })).filter((item) => item.id && item.title);
+
+  // Premium interactive strip: matching count + pipeline value when deals
+  if (askFocused || listIntent) {
+    const pipelineValue = entity === 'deals'
+      ? hits.reduce((sum, h) => sum + (Number(h.amount) || 0), 0)
+      : null;
+    const metricItems = [
+      {
+        id: 'matched',
+        label: askFocused ? 'Matching your ask' : `Total ${label}`,
+        value: total,
+        tone: 'primary',
+      },
+    ];
+    if (pipelineValue != null && pipelineValue > 0) {
+      metricItems.push({
+        id: 'value',
+        label: 'Pipeline value',
+        value: new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0,
+        }).format(pipelineValue),
+        tone: 'success',
+      });
+    }
+    blocks.push({ type: 'metrics', items: metricItems });
+  }
 
   // List ask: clickable list; still attach a chart when the user asked for one.
   if (listIntent) {
@@ -184,23 +229,25 @@ function buildUiBlocks(intent, toolResult, options = {}) {
         ? 'Open tasks'
         : `Total ${label}`;
 
-  blocks.push({
-    type: 'metrics',
-    items: [
-      {
-        id: 'total',
-        label: totalLabel,
-        value: total,
-        tone: 'primary',
-      },
-      {
-        id: 'shown',
-        label: 'Shown here',
-        value: listItems.length,
-        tone: 'neutral',
-      },
-    ],
-  });
+  if (!askFocused && !listIntent) {
+    blocks.push({
+      type: 'metrics',
+      items: [
+        {
+          id: 'total',
+          label: totalLabel,
+          value: total,
+          tone: 'primary',
+        },
+        {
+          id: 'shown',
+          label: 'Shown here',
+          value: listItems.length,
+          tone: 'neutral',
+        },
+      ],
+    });
+  }
 
   // Chart only when the user asked for a breakdown / chart.
   if (chartAsk) {

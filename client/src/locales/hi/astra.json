@@ -266,5 +266,13 @@
   "draftCopied": {
     "message": "Copied",
     "description": "Confirm Astra draft was copied"
+  },
+  "responseFromAgent": {
+    "message": "{name}",
+    "description": "Label above an Astra reply naming which agent answered"
+  },
+  "emailNeedsRecipient": {
+    "message": "Add a recipient email before sending.",
+    "description": "Shown when Confirm is blocked because email To is empty"
   }
 }
