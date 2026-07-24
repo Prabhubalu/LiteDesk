@@ -1,3 +1,2 @@
-export function isAiSuiteEntitled(
-  user: { entitledAddons?: { ai?: boolean } | null } | null | undefined,
-): boolean;
+/** Duck-typed — only reads `user?.entitledAddons?.ai`. */
+export function isAiSuiteEntitled(user?: unknown): boolean;
