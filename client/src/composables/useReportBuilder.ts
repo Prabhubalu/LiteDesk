@@ -5,7 +5,6 @@ import { useAnalyticsReports } from '@/composables/useAnalyticsReports';
 import { useAnalyticsHome } from '@/composables/useAnalyticsHome';
 import { useAnalyticsSchedules } from '@/composables/useAnalyticsSchedules';
 import { useAuthStore } from '@/stores/authRegistry';
-// @ts-expect-error JS module without declaration file
 import { useNotifications } from '@/composables/useNotifications';
 import {
   captureAnalyticsReportCreated,
