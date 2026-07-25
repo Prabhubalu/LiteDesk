@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const AGENT_VERSION = '0.2.0';
+const AGENT_VERSION = '0.2.2';
 
 /**
  * ProgramData on Windows; fallback to ~/.arivu/connector elsewhere.

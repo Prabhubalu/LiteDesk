@@ -2,41 +2,89 @@
 
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 const {
   startLocalUi,
   openInBrowser,
   integrationCenterUrl,
+  DEFAULT_PORT,
 } = require('./localUi');
 const { discoverTally } = require('./discovery');
-const { AGENT_VERSION, saveConfig } = require('./config');
+const { AGENT_VERSION, saveConfig, ensureDataDir } = require('./config');
 
-/** Minimal 16x16 teal PNG (base64) for tray fallback. */
-const TRAY_PNG_B64 =
-  'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NkYGD4z0ABYBzVMKoBBgZGRkZGBgoGRkbG/wz4AAMDw38GBsb/DFQzgPGogVEDRg0YNWDUAAYGBgYGABqmAxF7b0bZAAAAAElFTkSuQmCC';
-
-function ensureTrayIcon(dataDir) {
-  const iconPath = path.join(dataDir, 'tray.png');
-  if (!fs.existsSync(iconPath)) {
-    fs.writeFileSync(iconPath, Buffer.from(TRAY_PNG_B64, 'base64'));
+function appendLog(cfg, line) {
+  try {
+    ensureDataDir(cfg);
+    const logPath = path.join(cfg.dataDir, 'logs', 'tray.log');
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${line}\n`, 'utf8');
+  } catch (_) {
+    /* ignore */
   }
-  return iconPath;
 }
 
-function statusLabel(cfg, discovery) {
-  if (!cfg.agentToken || !cfg.connectionId) return 'Not paired';
-  if (discovery && !discovery.tallyRunning) return 'Paired · Tally offline';
-  if (cfg.tallyPort || discovery?.tallyPort) return 'Connected';
-  return 'Paired';
+function waitForUi(url, attempts = 20) {
+  const statusUrl = `${String(url).replace(/\/$/, '')}/api/status`;
+  return new Promise((resolve) => {
+    let left = attempts;
+    const tick = () => {
+      const req = http.get(statusUrl, (res) => {
+        res.resume();
+        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 500) {
+          resolve(true);
+          return;
+        }
+        retry();
+      });
+      req.on('error', retry);
+      req.setTimeout(800, () => {
+        req.destroy();
+        retry();
+      });
+    };
+    const retry = () => {
+      left -= 1;
+      if (left <= 0) {
+        resolve(false);
+        return;
+      }
+      setTimeout(tick, 250);
+    };
+    tick();
+  });
+}
+
+function keepAliveForever() {
+  return new Promise(() => {
+    /* never resolves — keeps tray/UI process alive */
+  });
 }
 
 /**
- * Run tray companion: localhost UI + system tray (when systray2 available).
- * Does not run the sync loop — Windows service owns heartbeat/poll.
+ * User-session companion: hosts pairing UI on 127.0.0.1:17932.
+ * Tray icon is best-effort; UI + browser are the reliable path.
  */
 async function runTray(cfg) {
-  const ui = startLocalUi(cfg);
+  appendLog(cfg, `tray start v${AGENT_VERSION}`);
   console.log(`[tray] Arivu Connector UI v${AGENT_VERSION}`);
-  console.log(`[tray] Open ${ui.url}`);
+
+  let ui;
+  try {
+    ui = await startLocalUi(cfg);
+  } catch (err) {
+    appendLog(cfg, `startLocalUi threw: ${err.message}`);
+    console.error('[tray] Failed to start local UI:', err.message);
+    console.error(`[tray] Open Start Menu → Arivu Connector again, or check logs in ${cfg.dataDir}\\logs\\tray.log`);
+    await keepAliveForever();
+    return;
+  }
+
+  appendLog(cfg, `ui url=${ui.url} alreadyRunning=${Boolean(ui.alreadyRunning)} error=${ui.error || ''}`);
+  console.log(`[tray] Local UI: ${ui.url}${ui.alreadyRunning ? ' (already running)' : ''}`);
+
+  if (ui.error && !ui.alreadyRunning) {
+    console.error(`[tray] Bind error: ${ui.error}`);
+    console.error('[tray] Is another Arivu Connector already running? Check Task Manager for arivu-connector-agent.exe');
+  }
 
   let discovery = null;
   try {
@@ -49,102 +97,87 @@ async function runTray(cfg) {
       cfg.tallyPort = discovery.tallyPort;
       saveConfig(cfg);
     }
-  } catch (_) {
-    /* ignore */
+  } catch (err) {
+    appendLog(cfg, `discover: ${err.message}`);
   }
 
-  openInBrowser(ui.url);
+  const ready = await waitForUi(ui.url);
+  appendLog(cfg, `ui ready=${ready}`);
+  if (!ready) {
+    console.error('[tray] UI did not become ready on', ui.url);
+    console.error('[tray] Check', path.join(cfg.dataDir, 'logs', 'tray.log'));
+  } else {
+    console.log('[tray] UI is ready — opening browser');
+    openInBrowser(ui.url);
+  }
 
-  let SysTray;
-  try {
-    // Optional native tray — may be absent on non-Windows or if not installed.
-    // eslint-disable-next-line import/no-extraneous-dependencies, global-require
-    SysTray = require('systray2').default || require('systray2');
-  } catch (err) {
-    console.warn('[tray] systray2 not available — UI-only mode:', err.message);
-    console.warn('[tray] Keep this window open. Use the browser UI to pair.');
-    // Keep process alive
-    await new Promise(() => {});
+  // Optional tray icon — never let native tray crash kill the UI server
+  setImmediate(() => {
+    tryStartTrayIcon(cfg, ui, discovery).catch((err) => {
+      appendLog(cfg, `tray icon skipped: ${err.message}`);
+      console.warn('[tray] Tray icon unavailable (UI still works):', err.message);
+    });
+  });
+
+  console.log('[tray] Keep this process running. Pairing page:', ui.url);
+  console.log(`[tray] Default port ${DEFAULT_PORT}. Log: ${path.join(cfg.dataDir, 'logs', 'tray.log')}`);
+  await keepAliveForever();
+}
+
+async function tryStartTrayIcon(cfg, ui, discovery) {
+  // Disabled by default in packaged EXE — systray2 native often crashes pkg builds.
+  // Set ARIVU_ENABLE_TRAY_ICON=1 to attempt.
+  if (String(process.env.ARIVU_ENABLE_TRAY_ICON || '').trim() !== '1') {
+    appendLog(cfg, 'tray icon disabled (set ARIVU_ENABLE_TRAY_ICON=1 to enable)');
     return;
   }
 
-  const iconPath = ensureTrayIcon(cfg.dataDir);
+  let SysTray;
+  // eslint-disable-next-line import/no-extraneous-dependencies, global-require
+  SysTray = require('systray2').default || require('systray2');
+
+  const iconPath = path.join(cfg.dataDir, 'tray.png');
+  if (!fs.existsSync(iconPath)) {
+    const b64 =
+      'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NkYGD4z0ABYBzVMKoBBgZGRkZGBgoGRkbG/wz4AAMDw38GBsb/DFQzgPGogVEDRg0YNWDUAAYGBgYGABqmAxF7b0bZAAAAAElFTkSuQmCC';
+    fs.writeFileSync(iconPath, Buffer.from(b64, 'base64'));
+  }
   const iconB64 = fs.readFileSync(iconPath).toString('base64');
+
+  const label = () => {
+    if (!cfg.agentToken || !cfg.connectionId) return 'Not paired';
+    if (discovery && !discovery.tallyRunning) return 'Paired · Tally offline';
+    if (cfg.tallyPort || discovery?.tallyPort) return 'Connected';
+    return 'Paired';
+  };
 
   const buildMenu = () => ({
     icon: iconB64,
     title: 'Arivu',
-    tooltip: `Arivu Connector — ${statusLabel(cfg, discovery)}`,
+    tooltip: `Arivu Connector — ${label()}`,
     items: [
-      {
-        title: statusLabel(cfg, discovery),
-        enabled: false,
-        checked: false,
-      },
+      { title: label(), enabled: false, checked: false },
       { title: 'Open Connector UI', enabled: true },
       { title: 'Open Arivu Integration Center', enabled: true },
-      { title: 'Discover Tally', enabled: true },
       { title: 'Quit tray', enabled: true },
     ],
   });
 
-  const systray = new SysTray({
-    menu: buildMenu(),
-    copyDir: true,
-  });
-
+  const systray = new SysTray({ menu: buildMenu(), copyDir: true });
   systray.onClick((action) => {
     const title = action?.item?.title;
-    if (title === 'Open Connector UI') {
-      openInBrowser(ui.url);
-      return;
-    }
-    if (title === 'Open Arivu Integration Center') {
-      openInBrowser(integrationCenterUrl(cfg));
-      return;
-    }
-    if (title === 'Discover Tally') {
-      discoverTally({
-        host: cfg.tallyHost,
-        portMin: cfg.tallyPortMin,
-        portMax: cfg.tallyPortMax,
-      })
-        .then((d) => {
-          discovery = d;
-          if (d.tallyPort) {
-            cfg.tallyPort = d.tallyPort;
-            saveConfig(cfg);
-          }
-          return systray.sendAction({
-            type: 'update-menu',
-            menu: buildMenu(),
-          });
-        })
-        .catch((err) => console.warn('[tray] discover failed', err.message));
-      return;
-    }
-    if (title === 'Quit tray') {
-      systray.kill(false);
+    if (title === 'Open Connector UI') openInBrowser(ui.url);
+    else if (title === 'Open Arivu Integration Center') openInBrowser(integrationCenterUrl(cfg));
+    else if (title === 'Quit tray') {
       try {
-        ui.server.close();
+        systray.kill(false);
       } catch (_) {
         /* ignore */
       }
       process.exit(0);
     }
   });
-
-  // Refresh tooltip periodically
-  setInterval(() => {
-    try {
-      ui.reloadConfig();
-      systray.sendAction({ type: 'update-menu', menu: buildMenu() });
-    } catch (_) {
-      /* ignore */
-    }
-  }, 15_000);
-
-  console.log('[tray] System tray started');
+  appendLog(cfg, 'tray icon started');
 }
 
 module.exports = { runTray };

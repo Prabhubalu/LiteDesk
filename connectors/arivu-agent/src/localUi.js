@@ -74,108 +74,183 @@ function sendHtml(res, html) {
 }
 
 function uiHtmlPath() {
-  // pkg-friendly: prefer next to this file, then cwd
+  // pkg-friendly: prefer next to this file, then next to EXE, then cwd
   const candidates = [
     path.join(__dirname, 'ui', 'index.html'),
-    path.join(process.cwd(), 'src', 'ui', 'index.html'),
     path.join(path.dirname(process.execPath), 'ui', 'index.html'),
+    path.join(process.cwd(), 'src', 'ui', 'index.html'),
+    path.join(process.cwd(), 'ui', 'index.html'),
   ];
   for (const p of candidates) {
-    if (fs.existsSync(p)) return p;
+    try {
+      if (fs.existsSync(p)) return p;
+    } catch (_) {
+      /* ignore */
+    }
   }
-  return candidates[0];
+  return null;
+}
+
+function loadUiHtml() {
+  const p = uiHtmlPath();
+  if (p) {
+    try {
+      return fs.readFileSync(p, 'utf8');
+    } catch (_) {
+      /* fall through */
+    }
+  }
+  // eslint-disable-next-line global-require
+  return require('./uiHtmlEmbedded');
 }
 
 /**
  * Start localhost-only connector UI. Mutates cfg in place on pair/discover/repair.
- * @returns {{ server: import('http').Server, port: number, url: string }}
+ * @returns {Promise<{ server: import('http').Server|null, port: number, url: string, alreadyRunning?: boolean }>}
  */
 function startLocalUi(cfg, opts = {}) {
-  const port = Number(opts.port || process.env.ARIVU_LOCAL_UI_PORT || DEFAULT_PORT);
+  const preferred = Number(opts.port || process.env.ARIVU_LOCAL_UI_PORT || DEFAULT_PORT);
   let lastDiscovery = null;
 
-  const server = http.createServer(async (req, res) => {
+  function writeUiUrlFile(url) {
     try {
-      const url = new URL(req.url || '/', `http://127.0.0.1:${port}`);
-
-      if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
-        const html = fs.readFileSync(uiHtmlPath(), 'utf8');
-        return sendHtml(res, html);
+      const dir = cfg.dataDir || path.dirname(cfg.configPath || '');
+      if (dir) {
+        fs.writeFileSync(path.join(dir, 'ui.url'), `${url}\n`, 'utf8');
       }
+    } catch (_) {
+      /* ignore */
+    }
+  }
 
-      if (req.method === 'GET' && url.pathname === '/api/status') {
-        return sendJson(res, 200, {
-          success: true,
-          data: {
-            paired: Boolean(cfg.agentToken && cfg.connectionId),
-            agentVersion: AGENT_VERSION,
-            agentDeviceId: cfg.agentDeviceId,
-            connectionId: cfg.connectionId || null,
-            apiBase: cfg.apiBase,
-            tallyHost: cfg.tallyHost,
-            tallyPort: cfg.tallyPort || lastDiscovery?.tallyPort || null,
-            tallyRunning: Boolean(cfg.tallyPort || lastDiscovery?.tallyRunning),
-            companies: lastDiscovery?.companies || [],
-            integrationCenterUrl: integrationCenterUrl(cfg),
+  function attachHandlers(server, port) {
+    server.on('request', async (req, res) => {
+      try {
+        const url = new URL(req.url || '/', `http://127.0.0.1:${port}`);
+
+        if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
+          const html = loadUiHtml();
+          return sendHtml(res, html);
+        }
+
+        if (req.method === 'GET' && url.pathname === '/api/status') {
+          // Reload config so service+tray share pairing state from disk
+          try {
+            const fresh = loadConfig(cfg.configPath);
+            Object.assign(cfg, fresh);
+          } catch (_) {
+            /* ignore */
+          }
+          return sendJson(res, 200, {
+            success: true,
+            data: {
+              paired: Boolean(cfg.agentToken && cfg.connectionId),
+              agentVersion: AGENT_VERSION,
+              agentDeviceId: cfg.agentDeviceId,
+              connectionId: cfg.connectionId || null,
+              apiBase: cfg.apiBase,
+              tallyHost: cfg.tallyHost,
+              tallyPort: cfg.tallyPort || lastDiscovery?.tallyPort || null,
+              tallyRunning: Boolean(cfg.tallyPort || lastDiscovery?.tallyRunning),
+              companies: lastDiscovery?.companies || [],
+              integrationCenterUrl: integrationCenterUrl(cfg),
+            },
+          });
+        }
+
+        if (req.method === 'POST' && url.pathname === '/api/pair') {
+          const body = await readBody(req);
+          const code = String(body.pairingCode || '').trim();
+          if (!code) {
+            return sendJson(res, 400, { success: false, message: 'pairingCode required' });
+          }
+          const result = await completePairing(cfg, code);
+          const restart = await restartWindowsService();
+          return sendJson(res, 200, {
+            success: true,
+            data: { ...result, serviceRestart: restart },
+          });
+        }
+
+        if (req.method === 'POST' && url.pathname === '/api/discover') {
+          const discovery = await discoverTally({
+            host: cfg.tallyHost,
+            portMin: cfg.tallyPortMin,
+            portMax: cfg.tallyPortMax,
+          });
+          lastDiscovery = discovery;
+          if (discovery.tallyPort) {
+            cfg.tallyPort = discovery.tallyPort;
+            saveConfig(cfg);
+          }
+          return sendJson(res, 200, { success: true, data: discovery });
+        }
+
+        if (req.method === 'POST' && url.pathname === '/api/repair') {
+          cfg.agentToken = null;
+          cfg.connectionId = null;
+          cfg.organizationId = null;
+          saveConfig(cfg);
+          await restartWindowsService();
+          return sendJson(res, 200, { success: true, data: { unpaired: true } });
+        }
+
+        return sendJson(res, 404, { success: false, message: 'Not found' });
+      } catch (err) {
+        console.error('[localUi]', err);
+        return sendJson(res, 500, { success: false, message: err.message || 'Server error' });
+      }
+    });
+  }
+
+  function tryListen(port) {
+    return new Promise((resolve) => {
+      const server = http.createServer();
+      attachHandlers(server, port);
+
+      const onError = (err) => {
+        server.removeListener('listening', onListening);
+        if (err.code === 'EADDRINUSE') {
+          resolve({
+            server: null,
+            port,
+            url: `http://127.0.0.1:${port}/`,
+            alreadyRunning: true,
+          });
+          return;
+        }
+        console.error('[localUi] listen failed:', err.message);
+        resolve({
+          server: null,
+          port,
+          url: `http://127.0.0.1:${port}/`,
+          error: err.message,
+        });
+      };
+
+      const onListening = () => {
+        server.removeListener('error', onError);
+        const url = `http://127.0.0.1:${port}/`;
+        writeUiUrlFile(url);
+        console.log(`[localUi] listening on ${url}`);
+        resolve({
+          server,
+          port,
+          url,
+          reloadConfig() {
+            const fresh = loadConfig(cfg.configPath);
+            Object.assign(cfg, fresh);
           },
         });
-      }
+      };
 
-      if (req.method === 'POST' && url.pathname === '/api/pair') {
-        const body = await readBody(req);
-        const code = String(body.pairingCode || '').trim();
-        if (!code) {
-          return sendJson(res, 400, { success: false, message: 'pairingCode required' });
-        }
-        const result = await completePairing(cfg, code);
-        const restart = await restartWindowsService();
-        return sendJson(res, 200, {
-          success: true,
-          data: { ...result, serviceRestart: restart },
-        });
-      }
+      server.once('error', onError);
+      server.once('listening', onListening);
+      server.listen(port, '127.0.0.1');
+    });
+  }
 
-      if (req.method === 'POST' && url.pathname === '/api/discover') {
-        const discovery = await discoverTally({
-          host: cfg.tallyHost,
-          portMin: cfg.tallyPortMin,
-          portMax: cfg.tallyPortMax,
-        });
-        lastDiscovery = discovery;
-        if (discovery.tallyPort) {
-          cfg.tallyPort = discovery.tallyPort;
-          saveConfig(cfg);
-        }
-        return sendJson(res, 200, { success: true, data: discovery });
-      }
-
-      if (req.method === 'POST' && url.pathname === '/api/repair') {
-        cfg.agentToken = null;
-        cfg.connectionId = null;
-        cfg.organizationId = null;
-        saveConfig(cfg);
-        await restartWindowsService();
-        return sendJson(res, 200, { success: true, data: { unpaired: true } });
-      }
-
-      return sendJson(res, 404, { success: false, message: 'Not found' });
-    } catch (err) {
-      console.error('[localUi]', err);
-      return sendJson(res, 500, { success: false, message: err.message || 'Server error' });
-    }
-  });
-
-  server.listen(port, '127.0.0.1');
-
-  return {
-    server,
-    port,
-    url: `http://127.0.0.1:${port}/`,
-    reloadConfig() {
-      const fresh = loadConfig(cfg.configPath);
-      Object.assign(cfg, fresh);
-    },
-  };
+  return tryListen(preferred);
 }
 
 function openInBrowser(url) {
