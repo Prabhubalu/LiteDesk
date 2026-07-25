@@ -276,6 +276,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const astraV2Routes = require('./routes/astraV2Routes');
 const astraStudioRoutes = require('./routes/astraStudioRoutes');
 const tallyConnectorRoutes = require('./routes/tallyConnectorRoutes');
+const tallyAgentRoutes = require('./routes/tallyAgentRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -314,6 +315,7 @@ app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/ai', aiRoutes);
 app.use('/api/ai/v2', astraV2Routes);
 app.use('/api/astra/studio', astraStudioRoutes);
+app.use('/api/connectors/tally/agent', tallyAgentRoutes);
 app.use('/api/connectors/tally', tallyConnectorRoutes);
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/helpdesk/articles', helpdeskArticlesRoutes);

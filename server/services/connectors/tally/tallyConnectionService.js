@@ -2,6 +2,7 @@
 
 const crypto = require('crypto');
 const TallyConnection = require('../../../models/TallyConnection');
+const TallyAgentBridge = require('../../../models/TallyAgentBridge');
 
 const PAIRING_CODE_TTL_MS = 15 * 60 * 1000;
 
@@ -42,6 +43,23 @@ async function createPairingCode({ organizationId, createdBy = null }) {
     if (createdBy) connection.createdBy = createdBy;
     await connection.save();
   }
+
+  // Master-DB bridge so the Windows agent can complete pairing without a user JWT
+  await TallyAgentBridge.findOneAndUpdate(
+    { organizationId },
+    {
+      $set: {
+        organizationId,
+        connectionId: String(connection._id),
+        status: 'pending_pair',
+        pairingCode,
+        pairingCodeExpiresAt,
+        agentTokenHash: null,
+        agentDeviceId: null,
+      },
+    },
+    { upsert: true, new: true }
+  );
 
   return {
     connectionId: String(connection._id),
