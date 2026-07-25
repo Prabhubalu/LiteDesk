@@ -22,7 +22,7 @@ function defaultConfigPath() {
 }
 
 const DEFAULTS = {
-  apiBase: process.env.ARIVU_API_BASE || 'https://api.arivu.app',
+  apiBase: process.env.ARIVU_API_BASE || 'https://api.arivusystems.com',
   agentToken: process.env.ARIVU_AGENT_TOKEN || null,
   connectionId: process.env.ARIVU_CONNECTION_ID || null,
   agentDeviceId: process.env.ARIVU_AGENT_DEVICE_ID || null,
@@ -74,7 +74,7 @@ function writeConfigTemplate(targetPath = defaultConfigPath()) {
   const dir = path.dirname(targetPath);
   fs.mkdirSync(dir, { recursive: true });
   const template = {
-    apiBase: 'https://api.arivu.app',
+    apiBase: 'https://api.arivusystems.com',
     agentToken: null,
     connectionId: null,
     agentDeviceId: null,

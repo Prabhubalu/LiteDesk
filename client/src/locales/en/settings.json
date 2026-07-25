@@ -18664,7 +18664,7 @@
     "description": "Pairing code expiry label"
   },
   "addonsTallyPairingAfterHint": {
-    "message": "Default agent apiBase is https://api.arivu.app. For local testing only, edit %ProgramData%\\Arivu\\Connector\\config.json and set apiBase to your API (e.g. http://YOUR_MAC_IP:3000). Generate a fresh code, run Pair Connector, then Refresh status.",
+    "message": "Default agent apiBase is https://api.arivusystems.com. If pairing fails with ENOTFOUND, edit %ProgramData%\\Arivu\\Connector\\config.json and set apiBase correctly, then generate a fresh code and run Pair Connector again.",
     "description": "Hint after generating pairing code"
   },
   "addonsTallyRefreshStatus": {
