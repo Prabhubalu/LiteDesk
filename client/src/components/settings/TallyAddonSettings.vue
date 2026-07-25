@@ -73,6 +73,16 @@
         <p v-if="pairingExpiresAt" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
           {{ t('settings.addonsTallyPairingExpires', { date: formatDateTime(pairingExpiresAt) }) }}
         </p>
+        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          {{ t('settings.addonsTallyPairingAfterHint') }}
+        </p>
+        <button
+          type="button"
+          class="mt-3 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+          @click="loadConnection"
+        >
+          {{ t('settings.addonsTallyRefreshStatus') }}
+        </button>
       </div>
 
       <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">

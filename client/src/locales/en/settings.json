@@ -18663,6 +18663,14 @@
     "message": "Expires {date}",
     "description": "Pairing code expiry label"
   },
+  "addonsTallyPairingAfterHint": {
+    "message": "Default agent apiBase is https://api.arivu.app. For local testing only, edit %ProgramData%\\Arivu\\Connector\\config.json and set apiBase to your API (e.g. http://YOUR_MAC_IP:3000). Generate a fresh code, run Pair Connector, then Refresh status.",
+    "description": "Hint after generating pairing code"
+  },
+  "addonsTallyRefreshStatus": {
+    "message": "Refresh status",
+    "description": "Reload Tally connection status button"
+  },
   "addonsTallyConnectionTitle": {
     "message": "Connection",
     "description": "Tally connection status section title"
