@@ -33,7 +33,7 @@ See `docs/architecture/notifications-hardening.md`.
 
         <!-- Drawer panel: solid bg + z-index so backdrop never shows through the panel -->
         <aside
-          class="relative z-[2] flex h-full min-h-0 w-full shrink-0 flex-col rounded-none bg-white dark:bg-neutral-900 sm:w-[360px] md:w-[380px] lg:w-[400px] max-h-screen border-l border-neutral-200/60 dark:border-neutral-700/60 shadow-2xl shadow-neutral-900/5 dark:shadow-black/20"
+          class="relative z-[2] flex h-full min-h-0 w-full shrink-0 flex-col rounded-tl-xl overflow-hidden bg-white dark:bg-neutral-900 sm:w-[360px] md:w-[380px] lg:w-[400px] max-h-screen border-l border-neutral-200/60 dark:border-neutral-700/60 shadow-2xl shadow-neutral-900/5 dark:shadow-black/20"
           role="dialog"
           aria-modal="true"
           :aria-label="t('notifications.panelAria')"

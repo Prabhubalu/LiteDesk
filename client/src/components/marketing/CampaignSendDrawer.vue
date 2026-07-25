@@ -25,7 +25,7 @@
               leave-from="translate-x-0"
               leave-to="translate-x-full"
             >
-              <DialogPanel class="pointer-events-auto flex h-full w-screen max-w-lg flex-col bg-white shadow-xl dark:bg-gray-900">
+              <DialogPanel class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-screen max-w-lg flex-col bg-white shadow-xl dark:bg-gray-900">
                 <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                   <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ t('marketing.campaignsSendDrawerTitle') }}

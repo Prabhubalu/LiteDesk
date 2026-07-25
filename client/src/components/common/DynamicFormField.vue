@@ -3,7 +3,7 @@
     <div class="flex items-start justify-between gap-3">
       <label 
         :for="field.key" 
-        class="block text-sm/6 font-medium text-gray-900 dark:text-white"
+        class="block text-sm font-normal text-gray-700 dark:text-gray-300"
       >
         {{ effectiveLabel }}
         <span v-if="isRequired" class="text-red-500">*</span>
@@ -83,7 +83,7 @@
       :required="isRequired"
       :disabled="isReadOnly"
       :class="[
-        'block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+        'block w-full mt-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
         localValidationError || errors[field.key]
           ? 'border-red-500 dark:border-red-500 focus:ring-red-500 dark:focus:ring-red-500'
           : ''
@@ -104,7 +104,7 @@
       :disabled="isReadOnly"
       :rows="field.textSettings?.rows || 4"
       :maxlength="field.textSettings?.maxLength"
-      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 resize-none"
+      class="block w-full mt-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 resize-none"
     />
     
     <!-- Email -->
@@ -120,7 +120,7 @@
       :placeholder="field.placeholder || `email@example.com`"
       :required="isRequired"
       :disabled="isReadOnly"
-      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+      class="block w-full mt-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
     />
     
     <!-- Phone -->
@@ -136,7 +136,7 @@
       :invalid="Boolean(localValidationError || errors[field.key])"
       class="mt-2"
       :input-class="[
-        'block w-full min-w-0 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+        'block w-full min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
         localValidationError || errors[field.key] ? 'border-red-500 dark:border-red-500' : '',
       ].join(' ')"
       @update:model-value="updateValue($event)"
@@ -161,8 +161,8 @@
         :max="field.numberSettings?.max"
         :step="field.numberSettings?.decimalPlaces ? Math.pow(0.1, field.numberSettings.decimalPlaces) : 0.01"
         :class="[
-          'block w-full rounded-l-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
-          localValidationError || errors[field.key] ? 'border border-red-500 dark:border-red-500' : ''
+          'block w-full rounded-l-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
+          localValidationError || errors[field.key] ? 'border-red-500 dark:border-red-500' : ''
         ]"
       />
       <Listbox
@@ -173,8 +173,8 @@
         <div class="relative w-24">
           <ListboxButton
             :class="[
-              'h-full w-full rounded-r-md border-l-0 bg-gray-100 dark:bg-gray-700 px-2 py-2 text-left text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10',
-              localValidationError || errors[field.key] ? 'border border-red-500 dark:border-red-500' : 'border border-gray-300 dark:border-white/10',
+              'h-full w-full rounded-r-lg border border-l-0 border-gray-200 bg-white px-2 py-2.5 text-left text-sm text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
+              localValidationError || errors[field.key] ? 'border-red-500 dark:border-red-500' : '',
               isReadOnly || !currencyCodeEditable ? 'opacity-60 cursor-not-allowed' : ''
             ]"
           >
@@ -236,7 +236,7 @@
       :min="field.numberSettings?.min"
       :max="field.numberSettings?.max"
       :step="field.dataType === 'Integer' ? 1 : (field.numberSettings?.decimalPlaces ? Math.pow(0.1, field.numberSettings.decimalPlaces) : 0.01)"
-      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+      class="block w-full mt-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
     />
     
     <!-- Date -->
@@ -246,7 +246,7 @@
       :model-value="formatDateForInput(value)"
       :disabled="isReadOnly"
       :invalid="Boolean(localValidationError || errors[field.key])"
-      input-class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 cursor-pointer"
+      input-class="block w-full mt-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 cursor-pointer"
       @update:model-value="updateValue($event)"
       @blur="$emit('blur')"
       @enter="$emit('blur')"
@@ -259,7 +259,7 @@
       :model-value="normalizeDateTimeInput(value)"
       :disabled="isReadOnly"
       :invalid="Boolean(localValidationError || errors[field.key])"
-      input-class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:focus:outline-indigo-500 cursor-pointer"
+      input-class="block w-full mt-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 cursor-pointer"
       @update:model-value="updateValue($event)"
       @blur="$emit('blur')"
       @enter="$emit('blur')"
@@ -272,7 +272,7 @@
           <ComboboxButton
             @click="handlePicklistButtonClick"
             :class="[
-              'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+              'block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
               'relative cursor-default text-left',
               isReadOnly
                 ? 'opacity-50 cursor-not-allowed'
@@ -313,7 +313,7 @@
                     @click.stop
                     @mousedown.stop
                     :placeholder="t('common.formSearchOptions')"
-                    class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
+                    class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 relative z-10"
                     autocomplete="off"
                   />
                 </div>
@@ -375,7 +375,7 @@
         <div class="relative">
           <ListboxButton
             :class="[
-              'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+              'block w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
               'relative cursor-default text-left',
               isReadOnly
                 ? 'opacity-50 cursor-not-allowed'
@@ -434,8 +434,8 @@
         :class="[
           'w-full rounded-md transition-all text-base sm:text-sm/6',
           isReadOnly
-            ? 'bg-gray-100 dark:bg-gray-700 opacity-50 cursor-not-allowed'
-            : 'bg-gray-100 dark:bg-gray-700 cursor-pointer focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10',
+            ? 'border border-gray-200 bg-gray-50 dark:border-gray-600 dark:bg-gray-800 opacity-50 cursor-not-allowed'
+            : 'border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-900/80 cursor-pointer focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:focus-within:border-indigo-400',
           showMultiOptions ? 'outline-2 -outline-offset-2 outline-indigo-500 dark:outline-indigo-500' : ''
         ]"
         @click.stop="!isReadOnly && onMultiPicklistTriggerClick()"
@@ -501,7 +501,7 @@
                 @click.stop
                 @mousedown.stop
                 :placeholder="t('common.formSearchOptions')"
-                class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
+                class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 relative z-10"
                 autocomplete="off"
               />
             </div>
@@ -582,7 +582,7 @@
       <!-- Read-only lookup: show static text (no dropdown / no browse icon) -->
       <div
         v-if="isReadOnly"
-        class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10"
+        class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
       >
         <span :class="['block truncate', !value && 'text-gray-500 dark:text-gray-500']">
           {{ getLookupSelectedLabel() || '—' }}
@@ -594,7 +594,7 @@
           <ComboboxButton
             @click="handleLookupButtonClick"
             :class="[
-              'flex items-center w-full gap-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
+              'flex items-center w-full gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
               'cursor-default text-left min-w-0 h-[2.5rem]',
               isReadOnly
                 ? 'opacity-50 cursor-not-allowed'
@@ -669,7 +669,7 @@
                     @click.stop
                     @mousedown.stop
                     :placeholder="t('common.formSearchRecords')"
-                    class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
+                    class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 relative z-10"
                     autocomplete="off"
                   />
                 </div>
@@ -767,7 +767,7 @@
             leave-from="opacity-100"
             leave-to="opacity-0"
           >
-            <div class="fixed inset-0 bg-gray-500/75 dark:bg-black/75" />
+            <div class="fixed inset-0 bg-black/25 dark:bg-black/50" />
           </TransitionChild>
 
           <div class="fixed inset-0 overflow-hidden">
@@ -783,26 +783,26 @@
                   leave-to="translate-x-full"
                 >
                   <DialogPanel class="pointer-events-auto w-screen max-w-3xl">
-                    <div class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
+                    <div class="relative flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
                       <!-- Header -->
-                      <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
-                        <div class="flex items-center justify-between">
-                          <DialogTitle class="text-base font-semibold text-white">
+                      <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
+                        <div class="flex items-center justify-between gap-3">
+                          <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                             {{ t('common.formLookupSelectTitle', { label: lookupModuleSingularLabel }) }}
                           </DialogTitle>
                           <div class="ml-3 flex h-7 items-center">
                             <button
                               type="button"
-                              class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                              class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
                               @click="closeLookupModal"
                             >
                               <span class="absolute -inset-2.5" />
                               <span class="sr-only">{{ t('common.closePanel') }}</span>
-                              <XMarkIcon class="size-6" aria-hidden="true" />
+                              <XMarkIcon class="size-5" aria-hidden="true" />
                             </button>
                           </div>
                         </div>
-                        <p class="mt-1 text-sm text-indigo-300">
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                           {{ t('common.formLookupChooseOne', { module: lookupModuleSingularLabel.toLowerCase(), field: effectiveLabel }) }}
                         </p>
                       </div>
@@ -818,7 +818,7 @@
                                 ref="lookupModalSearchInputRef"
                                 v-model="lookupModalSearchInput"
                                 type="search"
-                                class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 pl-9 pr-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10"
+                                class="block w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
                                 :placeholder="t('common.formLookupSearchModule', { module: lookupModulePluralLabel.toLowerCase() })"
                                 autocomplete="off"
                                 @input="handleLookupSearchInput"
@@ -842,7 +842,7 @@
                           <!-- Loading skeletons -->
                           <ul v-if="lookupModalLoading" class="divide-y divide-gray-200 dark:divide-gray-700">
                             <li v-for="i in 6" :key="`skeleton-${i}`" class="flex items-center gap-3 py-3 px-2">
-                              <div class="size-9 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
+                              <div class="size-8 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
                               <div class="min-w-0 flex-1 space-y-2">
                                 <div class="h-3.5 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
                                 <div class="h-3 w-2/3 animate-pulse rounded bg-gray-100 dark:bg-gray-700/70" />
@@ -891,13 +891,7 @@
                               ]"
                             >
                               <div class="shrink-0">
-                                <Avatar v-if="isUserLookupField" :user="row" size="md" />
-                                <div
-                                  v-else
-                                  class="flex size-9 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200"
-                                >
-                                  {{ getLookupInitials(row) }}
-                                </div>
+                                <Avatar :record="row" size="md" />
                               </div>
                               <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-2">
@@ -934,13 +928,13 @@
                       </div>
 
                       <!-- Footer -->
-                      <div class="flex flex-shrink-0 items-center justify-between gap-3 px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-gray-700">
+                      <div class="flex flex-shrink-0 items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-5 py-3.5 sm:px-6">
                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ lookupModalPageSummary }}</p>
                         <div class="flex items-center gap-2">
                           <button
                             v-if="canCreateLookupRecord"
                             type="button"
-                            class="inline-flex items-center gap-1.5 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                             @click="openLookupCreateDrawer"
                           >
                             <PlusIcon class="size-4" aria-hidden="true" />
@@ -949,7 +943,7 @@
                           <div class="ml-1 flex items-center gap-1">
                             <button
                               type="button"
-                              class="inline-flex size-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                              class="inline-flex size-8 items-center justify-center rounded-lg text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
                               :disabled="lookupModalCurrentPage <= 1 || lookupModalLoading"
                               :title="t('actions.previous')"
                               @click="handleLookupPageChange(lookupModalCurrentPage - 1)"
@@ -962,7 +956,7 @@
                             </span>
                             <button
                               type="button"
-                              class="inline-flex size-8 items-center justify-center rounded-md text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                              class="inline-flex size-8 items-center justify-center rounded-lg text-gray-500 dark:text-gray-300 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
                               :disabled="lookupModalCurrentPage >= lookupModalTotalPages || lookupModalLoading"
                               :title="t('actions.next')"
                               @click="handleLookupPageChange(lookupModalCurrentPage + 1)"
@@ -1009,7 +1003,7 @@
       :placeholder="field.placeholder || `https://example.com`"
       :required="isRequired"
       :disabled="isReadOnly"
-      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+      class="block w-full mt-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
     />
     
     <!-- Image -->
@@ -1069,7 +1063,7 @@
       type="text"
       :value="value || field.defaultValue || '(Auto-generated)'"
       disabled
-      class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-800 px-3 py-2 text-gray-500 dark:text-gray-400 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 cursor-not-allowed"
+      class="block w-full mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed"
     />
     
     <!-- Error message (render dynamically only when present) -->
@@ -2692,16 +2686,6 @@ const getLookupSubtitle = (row) => {
     if (value) return String(value);
   }
   return '';
-};
-
-const getLookupInitials = (row) => {
-  const label = getLookupDisplay(row) || '?';
-  return label
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('') || '?';
 };
 
 const refreshLookupModalData = () => {

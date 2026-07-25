@@ -27,15 +27,15 @@
               leave-to="translate-x-full"
             >
               <DialogPanel class="pointer-events-auto w-screen max-w-2xl">
-                <div class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
+                <div class="rounded-tl-xl overflow-hidden relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
                   <!-- Fixed Header -->
-                  <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
+                  <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6">
                     <div class="flex items-center justify-between">
-                      <DialogTitle class="text-base font-semibold text-white">{{ t('forms.previewDrawerTitle') }}</DialogTitle>
+                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ t('forms.previewDrawerTitle') }}</DialogTitle>
                       <div class="ml-3 flex h-7 items-center">
                         <button 
                           type="button" 
-                          class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" 
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer" 
                           @click="handleClose"
                         >
                           <span class="absolute -inset-2.5"></span>
@@ -45,7 +45,7 @@
                       </div>
                     </div>
                     <div class="mt-1">
-                      <p class="text-sm text-indigo-300">{{ t('forms.previewDrawerSubtitle') }}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('forms.previewDrawerSubtitle') }}</p>
                     </div>
                   </div>
                   <!-- Scrollable Content -->

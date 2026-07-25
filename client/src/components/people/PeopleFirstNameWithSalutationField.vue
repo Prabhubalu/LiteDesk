@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-2 w-full">
+  <div class="flex gap-2 w-full items-stretch">
     <HeadlessSelect
       :id="salutationId"
       :model-value="salutation || ''"
@@ -22,8 +22,9 @@
       :required="required"
       :disabled="disabled"
       :class="[
-        'block min-w-0 flex-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
-        invalid ? 'border-red-500 dark:border-red-500' : ''
+        FORM_FIELD_CONTROL_CLASS,
+        'min-w-0 flex-1',
+        invalid ? FORM_FIELD_INVALID_CLASS : ''
       ]"
       @input="onFirstNameInput"
       @blur="$emit('blur')"
@@ -37,6 +38,10 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { PEOPLE_SALUTATION_OPTIONS } from '@/platform/fields/peopleSalutationField';
+import {
+  FORM_FIELD_CONTROL_CLASS,
+  FORM_FIELD_INVALID_CLASS,
+} from '@/utils/formFieldControlClasses';
 
 const props = defineProps({
   firstName: {

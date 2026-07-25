@@ -131,9 +131,9 @@ const leftContentClass = computed(() => {
     return wideLeftContentClass;
   }
   if (props.leftExpanded) {
-    return 'record-page-layout__left-content max-w-4xl mx-auto w-full px-6 flex flex-col flex-1 min-h-0';
+    return 'record-page-layout__left-content max-w-6xl mx-auto w-full px-6 flex flex-col flex-1 min-h-0';
   }
-  return 'record-page-layout__left-content max-w-4xl mx-auto w-full px-6';
+  return 'record-page-layout__left-content max-w-6xl mx-auto w-full px-6';
 });
 
 provide('recordLayoutIsMobile', computed(() => isMobile.value));

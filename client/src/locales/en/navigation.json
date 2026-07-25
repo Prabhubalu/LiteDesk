@@ -611,6 +611,110 @@
     "message": "Manage stock locations, ledger movements, reservations, and fulfillment from this workspace.",
     "description": "Short description on Inventory app dashboard"
   },
+  "inventoryPurchaseOrders": {
+    "message": "Purchase Orders",
+    "description": "Inventory dashboard link to purchase orders"
+  },
+  "inventoryDeliveryNotes": {
+    "message": "Delivery Notes",
+    "description": "Inventory dashboard link to delivery notes"
+  },
+  "inventoryStockrooms": {
+    "message": "Stockrooms",
+    "description": "Inventory dashboard link to stockrooms"
+  },
+  "inventorySettings": {
+    "message": "Inventory Settings",
+    "description": "Inventory dashboard link to settings"
+  },
+  "inventoryTaxes": {
+    "message": "Taxes",
+    "description": "Inventory dashboard link to tax settings"
+  },
+  "inventoryCharges": {
+    "message": "Charges",
+    "description": "Inventory dashboard link to charge settings"
+  },
+  "inventoryReceiptNotes": {
+    "message": "Receipt Notes",
+    "description": "Inventory nav for receipt notes"
+  },
+  "inventoryPurchaseReturns": {
+    "message": "Purchase Returns",
+    "description": "Inventory nav for purchase returns"
+  },
+  "inventoryDeliveryReturns": {
+    "message": "Delivery Returns",
+    "description": "Inventory nav for delivery returns"
+  },
+  "inventorySalesReturns": {
+    "message": "Sales Returns",
+    "description": "Inventory nav for sales returns"
+  },
+  "inventoryAdjustments": {
+    "message": "Stock Adjustments",
+    "description": "Inventory nav for stock adjustments"
+  },
+  "inventoryAdjustmentsDesc": {
+    "message": "Correct on-hand quantities by location",
+    "description": "Stock adjustments page subtitle"
+  },
+  "inventoryAdjustmentCreate": {
+    "message": "New adjustment",
+    "description": "Create stock adjustment button"
+  },
+  "inventoryAdjustmentsEmpty": {
+    "message": "No stock adjustments yet.",
+    "description": "Empty state for stock adjustments"
+  },
+  "inventoryTransfers": {
+    "message": "Stock Transfers",
+    "description": "Inventory nav for stock transfers"
+  },
+  "inventoryTransfersDesc": {
+    "message": "Move stock between stockrooms",
+    "description": "Stock transfers page subtitle"
+  },
+  "inventoryTransferCreate": {
+    "message": "New transfer",
+    "description": "Create stock transfer button"
+  },
+  "inventoryTransfersEmpty": {
+    "message": "No stock transfers yet.",
+    "description": "Empty state for stock transfers"
+  },
+  "inventoryStockroom": {
+    "message": "Stockroom",
+    "description": "Stockroom field label"
+  },
+  "inventorySourceStockroom": {
+    "message": "From stockroom",
+    "description": "Transfer source location"
+  },
+  "inventoryDestStockroom": {
+    "message": "To stockroom",
+    "description": "Transfer destination location"
+  },
+  "inventoryReason": {
+    "message": "Reason",
+    "description": "Adjustment reason field"
+  },
+  "inventoryVariantId": {
+    "message": "Variant ID",
+    "description": "Variant identifier field"
+  },
+  "inventoryQtyDelta": {
+    "message": "Quantity delta",
+    "description": "Adjustment quantity change"
+  },
+  "inventoryTransferQty": {
+    "message": "Quantity",
+    "description": "Transfer quantity field"
+  },
+  "inventoryItemGroups": {
+    "message": "Item Groups",
+    "description": "Link to catalog item groups settings"
+  },
   "marketingDashboardBlurb": {
     "message": "Create email campaigns, manage audiences and templates, and measure engagement — delivery is handled by AMDS.",
     "description": "Short description on Marketing app dashboard"

@@ -104,6 +104,16 @@ const ItemVariantSchema = new Schema({
   modifiedBy: {
     type: Schema.Types.ObjectId,
     ref: 'User'
+  },
+  itemGroupId: {
+    type: Schema.Types.ObjectId,
+    ref: 'ItemGroup',
+    default: null,
+    index: true
+  },
+  attributeValues: {
+    type: Schema.Types.Mixed,
+    default: {}
   }
 }, {
   timestamps: true

@@ -2216,7 +2216,7 @@ onUnmounted(() => {
   unbindCustomizeDrawerPositionListeners();
 });
 
-const QUOTES_LIST_COLUMNS_PREFS_VERSION = 2;
+const QUOTES_LIST_COLUMNS_PREFS_VERSION = 5;
 const quotesListColumnsPrefsVersionKey = 'arivu-listview-quotes-columns-prefs-version';
 const LIVE_CHAT_CLOSED_COLUMNS_PREFS_VERSION = 4;
 const liveChatClosedColumnsPrefsVersionKey = 'arivu-listview-live-chat-closed-columns-prefs-version';
@@ -2691,12 +2691,19 @@ const normalizeColumnOrder = (columns) => {
   }
 
   if (props.moduleKey === 'quotes') {
-    const quotesOrder = ['quoteNumber', 'quoteTitle', 'status', 'grandTotal', 'validUntil', 'updatedAt'];
+    const quotesOrder = [
+      'quoteTitle',
+      'quoteNumber',
+      'organizationRefId',
+      'status',
+      'grandTotal',
+      'validUntil',
+      'assignedTo',
+      'updatedAt'
+    ];
     const orderedColumns = [];
     const processedKeys = new Set();
-    const lockedKey =
-      visibleColumns.value.find((c) => c.locked)?.key ||
-      quotesOrder[0];
+    const lockedKey = 'quoteTitle';
 
     const lockedCol = columns.find((col) => col.key === lockedKey);
     if (lockedCol) {
@@ -2708,13 +2715,15 @@ const normalizeColumnOrder = (columns) => {
       if (processedKeys.has(key)) return;
       const col = columns.find((c) => c.key === key);
       if (col) {
-        orderedColumns.push(col);
+        orderedColumns.push({ ...col, locked: false });
         processedKeys.add(key);
       }
     });
 
     columns.forEach((col) => {
-      if (!processedKeys.has(col.key)) orderedColumns.push(col);
+      if (!processedKeys.has(col.key)) {
+        orderedColumns.push({ ...col, locked: false });
+      }
     });
 
     return orderedColumns;

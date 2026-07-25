@@ -2910,5 +2910,45 @@
   "formCatalogCategoryCreateFailed": {
     "message": "Could not create category",
     "description": "Error when inline catalog category creation fails"
+  },
+  "demoRequestsConvertConfirmBody": {
+    "message": "Convert {company} to an active organization?",
+    "description": "Demo convert modal confirmation"
+  },
+  "demoRequestsConvertActivationHint": {
+    "message": "We'll email {email} a secure link to activate their workspace and set their own password. No password is shared with you.",
+    "description": "Demo convert activation explanation"
+  },
+  "demoRequestsConverting": {
+    "message": "Converting...",
+    "description": "Demo convert in-progress button"
+  },
+  "demoRequestsResendActivation": {
+    "message": "Resend activation",
+    "description": "Resend demo workspace activation email"
+  },
+  "demoRequestsResendingActivation": {
+    "message": "Sending...",
+    "description": "Resend activation in progress"
+  },
+  "demoRequestsToastConvertedActivationSent": {
+    "message": "Converted. Activation email sent to the demo contact.",
+    "description": "Toast when demo convert sends activation email"
+  },
+  "demoRequestsToastConvertedActivationLink": {
+    "message": "Converted, but email could not be sent. Share this activation link: {url}",
+    "description": "Toast when demo convert returns manual activation URL"
+  },
+  "demoRequestsToastActivationResent": {
+    "message": "Activation email resent.",
+    "description": "Toast when demo activation email is resent"
+  },
+  "demoRequestsToastActivationLink": {
+    "message": "Email could not be sent. Share this activation link: {url}",
+    "description": "Toast when resend returns manual activation URL"
+  },
+  "demoRequestsToastFailedToResendActivation": {
+    "message": "Failed to resend activation",
+    "description": "Toast when demo activation resend fails"
   }
 }

@@ -3,6 +3,7 @@ type SettingsAccessCtx = {
   role: string | null | undefined;
   permissions: Record<string, any> | null | undefined;
   entitledAddons?: { ai?: boolean } | null;
+  inventoryEnabled?: boolean;
 };
 
 function isPrivilegedSettingsRole(role: string | null | undefined): boolean {
@@ -52,6 +53,8 @@ export function canAccessSettingsTab(
   if (tabId === 'ai' && ctx.entitledAddons != null && ctx.entitledAddons.ai !== true) {
     return false;
   }
+  // Inventory Settings only when Inventory capability is enabled for the org.
+  if (tabId === 'inventory' && ctx.inventoryEnabled !== true) return false;
 
   if (ctx.isOwner) return true;
   if (isPrivilegedSettingsRole(ctx.role)) return true;
@@ -69,6 +72,10 @@ export function canAccessSettingsTab(
       return Boolean(p.edit);
     case 'addons':
       return Boolean(p.edit || p.manageBilling);
+    case 'catalog':
+      return Boolean(p.edit);
+    case 'inventory':
+      return Boolean(p.edit);
     case 'subscriptions':
       return Boolean(p.manageBilling);
     case 'notifications':
@@ -107,6 +114,8 @@ const SETTINGS_TAB_IDS = [
   'core-modules',
   'applications',
   'addons',
+  'catalog',
+  'inventory',
   'automation',
   'webforms',
   'performance',
@@ -124,6 +133,8 @@ export function hasAnySettingsAccess(ctx: {
   isOwner: boolean;
   role: string | null | undefined;
   permissions: Record<string, any> | null | undefined;
+  entitledAddons?: { ai?: boolean } | null;
+  inventoryEnabled?: boolean;
 }): boolean {
   return SETTINGS_TAB_IDS.some((id) => canAccessSettingsTab(id, ctx));
 }

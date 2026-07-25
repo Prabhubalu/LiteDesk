@@ -51,7 +51,6 @@
     @back="navigateToOverview"
   />
   <MailroomSettings v-else-if="currentView === 'mailroom'" class="flex min-h-0 flex-1 flex-col overflow-hidden" />
-  <CatalogSettingsHub v-else-if="currentView === 'catalog'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
   <QuotesSettings v-else-if="currentView === 'quotes'" class="flex min-h-0 flex-1 flex-col overflow-hidden" @back="navigateToOverview" />
   <ModuleNumberingSettings
     v-else-if="currentView === 'module-numbering'"
@@ -71,7 +70,6 @@ import SlaPolicyHub from '@/components/settings/sla/SlaPolicyHub.vue';
 
 const { t } = useI18n();
 import MailroomSettings from '@/components/settings/MailroomSettings.vue';
-import CatalogSettingsHub from '@/components/settings/CatalogSettingsHub.vue';
 import QuotesSettings from '@/components/settings/QuotesSettings.vue';
 import ModuleNumberingSettings from '@/components/settings/ModuleNumberingSettings.vue';
 import { getModuleIconComponent } from '@/utils/moduleIcons';
@@ -179,20 +177,6 @@ const ModuleNumberingIcon = () => h('svg', {
   }),
 ]);
 
-const CatalogIcon = () => h('svg', {
-  fill: 'none',
-  stroke: 'currentColor',
-  viewBox: '0 0 24 24',
-  xmlns: 'http://www.w3.org/2000/svg',
-}, [
-  h('path', {
-    'stroke-linecap': 'round',
-    'stroke-linejoin': 'round',
-    'stroke-width': '2',
-    d: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-  }),
-]);
-
 const automationOptions = [
   {
     id: 'assignment-rules',
@@ -224,14 +208,6 @@ const automationOptions = [
     descriptionKey: 'settings.automationMailroomDesc',
     icon: MailroomIcon,
     iconBg: 'bg-gradient-to-br from-sky-500 to-sky-600',
-    inShell: true,
-  },
-  {
-    id: 'catalog',
-    nameKey: 'settings.automationCatalog',
-    descriptionKey: 'settings.automationCatalogDesc',
-    icon: CatalogIcon,
-    iconBg: 'bg-gradient-to-br from-amber-500 to-amber-600',
     inShell: true,
   },
   {
@@ -282,7 +258,6 @@ const currentView = computed(() => {
   if (view === 'sla-policies') return 'sla-policies';
   if (view === 'sla') return 'sla';
   if (view === 'mailroom') return 'mailroom';
-  if (view === 'catalog') return 'catalog';
   if (view === 'quotes') return 'quotes';
   if (view === 'module-numbering') return 'module-numbering';
   if (route.query.assignmentApp) return 'assignment-rules';

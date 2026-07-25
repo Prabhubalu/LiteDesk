@@ -274,5 +274,13 @@
   "emailNeedsRecipient": {
     "message": "Add a recipient email before sending.",
     "description": "Shown when Confirm is blocked because email To is empty"
+  },
+  "reviewAndSend": {
+    "message": "Review & send",
+    "description": "Open compose drawer to verify and send an Astra email draft"
+  },
+  "emailOpenedInCompose": {
+    "message": "Opened in compose — review the To, subject, and body, then send when ready.",
+    "description": "Assistant message after Astra opens the email compose drawer"
   }
 }

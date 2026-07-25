@@ -236,6 +236,8 @@ const NotificationSettings = defineAsyncComponent(() => import('@/components/set
 const DemoRequests = defineAsyncComponent(() => import('@/views/DemoRequests.vue'));
 const InstanceManagement = defineAsyncComponent(() => import('@/views/InstanceManagement.vue'));
 const AutomationSettings = defineAsyncComponent(() => import('@/components/settings/AutomationSettings.vue'));
+const CatalogSettingsHub = defineAsyncComponent(() => import('@/components/settings/CatalogSettingsHub.vue'));
+const InventorySettings = defineAsyncComponent(() => import('@/components/settings/InventorySettings.vue'));
 const PerformanceSettings = defineAsyncComponent(() => import('@/components/settings/PerformanceSettings.vue'));
 const BusinessHoursSettings = defineAsyncComponent(() => import('@/components/settings/BusinessHoursSettings.vue'));
 const WebformsSettings = defineAsyncComponent(() => import('@/components/settings/WebformsSettings.vue'));
@@ -529,6 +531,34 @@ const AutomationIcon = () => h('svg', {
   })
 ]);
 
+const InventoryIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'
+  })
+]);
+
+const CatalogIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10'
+  })
+]);
+
 const WebformsIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -590,6 +620,7 @@ const settingsAccessCtx = computed(() => ({
   role: authStore.user?.role,
   permissions: authStore.user?.permissions,
   entitledAddons: authStore.user?.entitledAddons || null,
+  inventoryEnabled: authStore.inventoryEnabled === true,
 }));
 
 const tabs = computed(() => {
@@ -601,6 +632,8 @@ const tabs = computed(() => {
     { id: 'core-modules', nameKey: 'settings.tabCoreModules', icon: CoreModulesIcon, component: CoreModulesList },
     { id: 'applications', nameKey: 'settings.tabApplications', icon: AppsIcon, component: ApplicationsList },
     { id: 'addons', nameKey: 'settings.tabAddons', icon: AddonsIcon, component: AddonsSettings },
+    { id: 'catalog', nameKey: 'settings.tabCatalog', icon: CatalogIcon, component: CatalogSettingsHub },
+    { id: 'inventory', nameKey: 'settings.tabInventory', icon: InventoryIcon, component: InventorySettings },
     { id: 'automation', nameKey: 'settings.tabAutomation', icon: AutomationIcon, component: AutomationSettings },
     { id: 'webforms', nameKey: 'settings.tabWebforms', icon: WebformsIcon, component: WebformsSettings },
     { id: 'performance', nameKey: 'settings.tabPerformance', icon: PerformanceIcon, component: PerformanceSettings },
@@ -753,6 +786,12 @@ function handleTabClick(tab) {
   } else if (tab.id === 'addons') {
     activeTab.value = 'addons';
     router.replace({ path: '/settings', query: { tab: 'addons' } });
+  } else if (tab.id === 'catalog') {
+    activeTab.value = 'catalog';
+    router.replace({ path: '/settings', query: { tab: 'catalog' } });
+  } else if (tab.id === 'inventory') {
+    activeTab.value = 'inventory';
+    router.replace({ path: '/settings', query: { tab: 'inventory' } });
   } else if (tab.id === 'automation') {
     activeTab.value = 'automation';
     router.replace({ path: '/settings', query: { tab: 'automation' } });
@@ -822,7 +861,7 @@ watch(() => route.query.tab, () => {
 });
 
 watch(
-  () => [route.query.tab, route.query.app, route.query.config],
+  () => [route.query.tab, route.query.app, route.query.config, route.query.automationView, route.query.inventoryView],
   () => {
     if (
       route.query.tab === 'applications'
@@ -830,6 +869,25 @@ watch(
       && route.query.config === 'execution-settings'
     ) {
       router.replace({ path: '/settings', query: { tab: 'automation', automationView: 'sla' } });
+      return;
+    }
+    // Legacy Taxes URL → Inventory Settings
+    if (route.query.tab === 'automation' && route.query.automationView === 'taxes') {
+      router.replace({ path: '/settings', query: { tab: 'inventory', inventoryView: 'taxes' } });
+      return;
+    }
+    // Legacy Catalog URL → Catalog Settings
+    if (route.query.tab === 'automation' && route.query.automationView === 'catalog') {
+      const query = { tab: 'catalog' };
+      if (typeof route.query.catalogView === 'string' && route.query.catalogView) {
+        query.catalogView = route.query.catalogView;
+      }
+      router.replace({ path: '/settings', query });
+      return;
+    }
+    // Legacy Item Groups URL → Catalog Settings
+    if (route.query.tab === 'inventory' && route.query.inventoryView === 'item-groups') {
+      router.replace({ path: '/settings', query: { tab: 'catalog', catalogView: 'item-groups' } });
     }
   },
   { immediate: true },

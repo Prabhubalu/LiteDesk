@@ -13,19 +13,19 @@
           aria-modal="true"
           :aria-label="t('records.printDrawerTitle')"
         >
-          <div class="flex-shrink-0 bg-indigo-700 px-4 py-5 dark:bg-indigo-800 sm:px-6">
+          <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-5 sm:px-6">
             <div class="flex items-center justify-between gap-3">
               <div class="min-w-0">
-                <h2 class="truncate text-base font-semibold text-white">
+                <h2 class="truncate text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                   {{ t('records.printDrawerTitle') }}
                 </h2>
-                <p class="mt-1 text-sm text-indigo-200">
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   {{ t('records.printDrawerSubtitle') }}
                 </p>
               </div>
               <button
                 type="button"
-                class="rounded-md text-indigo-200 hover:text-white"
+                class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                 :aria-label="t('actions.close')"
                 @click="close"
               >

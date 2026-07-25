@@ -8,7 +8,7 @@ const { deriveHeaderFulfillmentStatus } = require('../constants/salesOrderFulfil
 const { isMongoObjectIdString } = require('../utils/isMongoObjectId');
 
 const LINE_TOTALS_SELECT =
-  '_id salesOrderLineId salesOrderSectionId lineType parentBundleLineId bundleSnapshot hiddenLine quantity unitPriceSnapshot lineSubtotal lineTaxTotal lineTotal discountType discountValue discountAmount quantityFulfilled quantityCancelled quantityBackordered fulfillmentStatus';
+  '_id salesOrderLineId salesOrderSectionId lineType parentBundleLineId bundleSnapshot hiddenLine quantity unitPriceSnapshot lineSubtotal lineTaxTotal lineTotal discountType discountValue discountAmount quantityFulfilled quantityCancelled quantityBackordered fulfillmentStatus taxSnapshot chargeSnapshot';
 
 async function listSalesOrderSections({ organizationId, salesOrderId }) {
   return SalesOrderSection.find({ organizationId, salesOrderId })

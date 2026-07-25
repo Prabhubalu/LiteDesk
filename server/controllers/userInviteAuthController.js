@@ -34,6 +34,7 @@ exports.validateInvite = async (req, res) => {
         firstName: result.firstName,
         lastName: result.lastName,
         organizationName: result.organizationName,
+        isWorkspaceActivation: result.isWorkspaceActivation === true,
         entitledApps: result.entitledApps || []
       }
     });

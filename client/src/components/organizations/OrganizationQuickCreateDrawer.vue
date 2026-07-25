@@ -49,57 +49,55 @@
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-gray-500/50 dark:bg-black/60" />
+        <div class="fixed inset-0 bg-black/25 dark:bg-black/50" />
       </TransitionChild>
 
       <div class="fixed inset-0 overflow-hidden">
         <div class="absolute inset-0 overflow-hidden">
           <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
             <TransitionChild 
-              enter="transform transition ease-in-out duration-300 sm:duration-300" 
+              enter="transform transition ease-out duration-300 sm:duration-300" 
               enter-from="translate-x-full" 
               enter-to="translate-x-0" 
-              leave="transform transition ease-in-out duration-300 sm:duration-300" 
+              leave="transform transition ease-in duration-250 sm:duration-250" 
               leave-from="translate-x-0" 
               leave-to="translate-x-full"
             >
               <!-- Drawer width behavior aligned with shared create drawers -->
               <DialogPanel
                 :class="[
-                  'pointer-events-auto h-full flex flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
+                  'rounded-tl-xl overflow-hidden pointer-events-auto h-full flex flex-col bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 w-screen max-w-full overflow-x-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width]',
                   drawerWidthClass
                 ]"
               >
-                <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col">
                   <!-- Fixed Header -->
-                  <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
-                    <div class="flex items-center justify-between">
-                      <DialogTitle class="text-base font-semibold text-white">
+                  <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
+                    <div class="flex items-center justify-between gap-3">
+                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                         {{ isEditMode ? 'Edit Organization' : 'New Organization' }}
                       </DialogTitle>
                       <div class="ml-3 flex h-7 items-center">
                         <button 
                           type="button" 
-                          class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" 
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer" 
                           @click="closeDrawer"
                         >
                           <span class="absolute -inset-2.5"></span>
                           <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
-                          <XMarkIcon class="size-6" aria-hidden="true" />
+                          <XMarkIcon class="size-5" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
-                    <div class="mt-1">
-                      <p class="text-sm text-indigo-300">
-                        {{ helperText }}
-                      </p>
-                    </div>
+                    <p v-if="helperText" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      {{ helperText }}
+                    </p>
                   </div>
 
                   <!-- Scrollable Content Area -->
                   <div class="flex-1 overflow-y-auto">
-                    <div class="px-4 sm:px-6 py-6">
-                      <div class="space-y-6">
+                    <div class="px-5 sm:px-6 py-5">
+                      <div class="space-y-5">
                           <!-- General Error Message -->
                           <div v-if="errors._general" class="rounded-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
                             <div class="flex">
@@ -190,34 +188,34 @@
                   </div>
 
                   <!-- Fixed Footer -->
-                  <div class="flex shrink-0 items-center justify-between gap-3 px-4 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                  <div class="flex shrink-0 items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-5 py-3.5 sm:px-6">
                     <!-- Left: Mode switch button -->
                     <div class="flex-1">
                       <button 
                         v-if="mode === 'quick'"
                         type="button" 
-                        class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
+                        class="text-sm font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 cursor-pointer transition-colors" 
                         @click="switchToFull"
                       >{{ t('organizations.organizationQuickCreateDrawerFullForm') }}</button>
                       <button 
                         v-else
                         type="button" 
-                        class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
+                        class="text-sm font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 cursor-pointer transition-colors" 
                         @click="switchToQuick"
                       >{{ t('organizations.organizationQuickCreateDrawerBackToQuick') }}</button>
                     </div>
 
                     <!-- Right: Cancel and Save/Create buttons (always on the right) -->
-                    <div class="flex gap-3">
+                    <div class="flex items-center gap-2.5">
                       <button 
                         type="button" 
-                        class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
+                        class="rounded-lg px-3.5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors" 
                         @click="closeDrawer"
                       >{{ t('performance.cancelWizard') }}</button>
                       <button 
                         type="submit" 
                         :disabled="saving || !formData.name" 
-                        class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        class="inline-flex min-w-[5.5rem] justify-center rounded-lg bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       >
                         {{ saving ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create organization') }}
                       </button>
@@ -235,7 +233,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
@@ -303,6 +301,42 @@ const isEditMode = computed(() => !!props.organizationId);
 // ARCHITECTURAL INTENT: Quick Create unblocks flow. Full Form is intentional completion.
 // NOTE: This is the UI mode. createMode tracks submission intent and must be kept in sync.
 const mode = ref('quick');
+/** Animated panel width; staged vs content mode so expand/collapse doesn't snap. */
+const panelWide = ref(false);
+let modeAnimTimer = null;
+
+function clearModeAnimTimer() {
+  if (modeAnimTimer) {
+    clearTimeout(modeAnimTimer);
+    modeAnimTimer = null;
+  }
+}
+
+function setOrgDrawerMode(nextMode, { animate = true } = {}) {
+  const expanded = nextMode === 'full';
+  clearModeAnimTimer();
+  if (!animate) {
+    mode.value = nextMode;
+    createMode.value = nextMode;
+    panelWide.value = expanded;
+    return;
+  }
+  if (expanded) {
+    panelWide.value = true;
+    modeAnimTimer = setTimeout(() => {
+      mode.value = 'full';
+      createMode.value = 'full';
+      modeAnimTimer = null;
+    }, 140);
+  } else {
+    mode.value = 'quick';
+    createMode.value = 'quick';
+    modeAnimTimer = setTimeout(() => {
+      panelWide.value = false;
+      modeAnimTimer = null;
+    }, 90);
+  }
+}
 
 // Form data (preserved across mode switches)
 const formData = ref({ ...props.initialData });
@@ -464,7 +498,7 @@ const helperText = computed(() => {
 
 // Computed: Drawer width class based on mode (quick vs full)
 const drawerWidthClass = computed(() => {
-  return mode.value === 'full' ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]';
+  return panelWide.value ? 'sm:w-[60rem]' : 'sm:w-[30rem]';
 });
 
 // Exclude only system and tenant fields from Quick Create rendering.
@@ -534,8 +568,7 @@ const scrollToFirstErrorField = async () => {
  * Updates both UI mode and submission intent mode.
  */
 const switchToFull = () => {
-  mode.value = 'full';
-  createMode.value = 'full';
+  setOrgDrawerMode('full');
 
   // Ensure formData has structure for full form fields
   // DO NOT clear existing values - preserve drafts
@@ -556,8 +589,7 @@ const switchToFull = () => {
  * DO NOT clear form state - preserve drafts for UX.
  */
 const switchToQuick = () => {
-  mode.value = 'quick';
-  createMode.value = 'quick';
+  setOrgDrawerMode('quick');
 };
 
 /**
@@ -788,8 +820,7 @@ const fetchOrganizationData = async () => {
         address: data.address || ''
       };
       
-      mode.value = 'quick';
-      createMode.value = 'quick';
+      setOrgDrawerMode('quick', { animate: false });
     } else {
       errors.value._general = response.message || 'Failed to load organization data';
     }
@@ -815,8 +846,7 @@ watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
     fetchOrganizationModuleDefinition();
     if (isEditMode.value) {
-      mode.value = 'quick';
-      createMode.value = 'quick';
+      setOrgDrawerMode('quick', { animate: false });
       fetchOrganizationData();
     } else {
       // Create mode: use initial data
@@ -825,9 +855,12 @@ watch(() => props.isOpen, (isOpen) => {
         types: Array.isArray(props.initialData?.types) ? [...props.initialData.types] : [],
       };
       errors.value = {};
-      mode.value = 'quick'; // Reset to quick mode on open
-      createMode.value = 'quick'; // Reset submission intent mode
+      setOrgDrawerMode('quick', { animate: false });
     }
   }
+});
+
+onUnmounted(() => {
+  clearModeAnimTimer();
 });
 </script>

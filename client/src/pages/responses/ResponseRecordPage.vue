@@ -20,10 +20,18 @@
           @next="goToNext"
         >
           <template #breadcrumbs>
-            <span class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <span>{{ t('navigation.moduleResponses') }}</span>
-              <span class="h-1 w-1 rounded-full bg-gray-400 dark:bg-gray-500" />
-              <span class="font-medium text-gray-900 dark:text-white">{{ responseTitle }}</span>
+            <span class="flex min-w-0 items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <button
+                type="button"
+                class="shrink-0 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                :aria-label="t('records.genericBackTo', { singular: t('navigation.moduleResponses') })"
+                :title="t('records.genericBackTo', { singular: t('navigation.moduleResponses') })"
+                @click="goBackToModuleList"
+              >
+                {{ t('navigation.moduleResponses') }}
+              </button>
+              <span class="h-1 w-1 shrink-0 rounded-full bg-gray-400 dark:bg-gray-500" />
+              <span class="truncate font-medium text-gray-900 dark:text-white">{{ responseTitle }}</span>
             </span>
           </template>
           <template #pageActions>
@@ -495,6 +503,7 @@ import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
 import RecordHeader from '@/components/record-page/RecordHeader.vue';
 import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
+import { useRecordModuleBack } from '@/components/record-page/composables/useRecordModuleBack';
 import RelatedRecordsPanel from '@/components/relationships/RelatedRecordsPanel.vue';
 import EngagementResponseContent from '@/components/forms/EngagementResponseContent.vue';
 import { isAuditFormType, isEngagementFormType } from '@/utils/engagementFormDisplay';
@@ -508,6 +517,7 @@ const props = defineProps({
 defineEmits(['close']);
 
 const { t } = useI18n();
+const { goBackToModuleList } = useRecordModuleBack();
 
 const REVIEW_STATUS_VARIANTS = {
   New: 'default',

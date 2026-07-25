@@ -68,7 +68,7 @@ async function createQuote(req, res) {
     const { resolveCurrencyOrOrgDefault } = require('../utils/orgCurrency');
     const currency = await resolveCurrencyOrOrgDefault(req.body?.currency, organizationId);
 
-    const quote = await Quote.create({
+    const payload = {
       organizationId,
       assignedTo,
       quoteTitle: req.body?.quoteTitle ?? null,
@@ -91,7 +91,31 @@ async function createQuote(req, res) {
       approvalRequired: approvalRequiredDefault,
 
       customFields: req.body?.customFields ?? {}
-    });
+    };
+
+    let quote = null;
+    let lastErr = null;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        quote = await Quote.create(payload);
+        break;
+      } catch (err) {
+        lastErr = err;
+        const isDup =
+          err?.code === 11000 ||
+          String(err?.message || '').includes('E11000') ||
+          String(err?.message || '').includes('duplicate key');
+        if (!isDup || attempt >= 4) throw err;
+        // Sequence lag vs soft-deleted quoteNumbers — resync then retry with a fresh number.
+        try {
+          const { resyncFromExistingRecords } = require('../services/moduleNumberingService');
+          await resyncFromExistingRecords(organizationId, 'quotes');
+        } catch (resyncErr) {
+          console.warn('[quotes] numbering resync failed:', resyncErr?.message || resyncErr);
+        }
+      }
+    }
+    if (!quote) throw lastErr || new Error('Failed to create quote');
 
     await writeQuoteActivity({
       organizationId,
@@ -121,12 +145,19 @@ async function createQuote(req, res) {
 
     return res.status(201).json({ success: true, data: quote });
   } catch (err) {
-    const code = err?.code;
-    const status = code === 'VALIDATION' ? 400 : 500;
+    console.error('[quotes] createQuote failed:', err?.message || err, err?.stack || '');
+    const isDup =
+      err?.code === 11000 ||
+      String(err?.message || '').includes('E11000') ||
+      String(err?.message || '').includes('duplicate key');
+    const code = err?.code === 'VALIDATION' ? 'VALIDATION' : isDup ? 'DUPLICATE' : err?.code || 'UNKNOWN';
+    const status = code === 'VALIDATION' ? 400 : isDup ? 409 : 500;
     return res.status(status).json({
       success: false,
-      message: err.message || 'Failed to create quote',
-      code: code || 'UNKNOWN',
+      message: isDup
+        ? 'Quote number conflict — please try again'
+        : err.message || 'Failed to create quote',
+      code,
       details: err.details || null
     });
   }
@@ -253,7 +284,13 @@ async function getQuotes(req, res) {
     const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
 
     const [rows, total, listCardBreakdown] = await Promise.all([
-      Quote.find(q).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit).lean(),
+      Quote.find(q)
+        .sort({ [sortBy]: sortOrder })
+        .skip(skip)
+        .limit(limit)
+        .populate({ path: 'assignedTo', select: 'firstName lastName email username avatar' })
+        .populate({ path: 'organizationRefId', select: 'name' })
+        .lean(),
       Quote.countDocuments(q),
       computeQuotesListStatistics(q, req.user._id)
     ]);
@@ -1615,6 +1652,103 @@ async function reviseQuote(req, res) {
   }
 }
 
+async function patchQuoteTaxesCharges(req, res) {
+  try {
+    const organizationId = req.user.organizationId;
+    const quoteId = req.params.id;
+
+    const quote = await Quote.findOne({ _id: quoteId, organizationId });
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote not found', code: 'NOT_FOUND' });
+    }
+    if (quote.approvalLocked === true) {
+      return res.status(400).json({ success: false, message: 'Quote is approval-locked', code: 'APPROVAL_LOCKED' });
+    }
+
+    const override = req.body?.overridePricing === true;
+    assertQuoteCommerciallyEditableForLineWrite({
+      quoteStatus: quote.status,
+      overridePricing: override,
+      req
+    });
+
+    const { hydrateTaxIds } = require('../services/commercialTaxApplicationService');
+    const { getActiveChargesByIds } = require('../services/chargeService');
+    const { calculateDocumentCharges } = require('../services/chargeCalculationService');
+    const { CHARGE_SCOPES, isTransactionScope } = require('../constants/chargeConstants');
+
+    if (Array.isArray(req.body?.transactionTaxIds)) {
+      const taxes = await hydrateTaxIds(organizationId, req.body.transactionTaxIds);
+      quote.transactionTaxSnapshot = {
+        taxes: taxes.map((t) => ({
+          taxId: t.taxId,
+          name: t.name,
+          code: t.code,
+          taxType: t.taxType,
+          taxValue: t.taxValue,
+          scope: t.scope
+        }))
+      };
+      quote.markModified('transactionTaxSnapshot');
+    }
+
+    if (Array.isArray(req.body?.transactionChargeIds)) {
+      const charges = await getActiveChargesByIds(req.body.transactionChargeIds, organizationId);
+      const txnCharges = charges
+        .filter((c) => isTransactionScope(c.scope || CHARGE_SCOPES.TRANSACTION))
+        .map((c) => ({
+          chargeId: String(c._id),
+          name: c.name,
+          code: c.code,
+          chargeType: c.chargeType,
+          chargeValue: c.chargeValue,
+          scope: c.scope
+        }));
+      const lines = await QuoteLine.find({ organizationId, quoteId: quote._id }).lean();
+      const calc = calculateDocumentCharges({
+        lines: lines.map((l) => ({
+          quantity: 1,
+          unitPrice: Number(l.lineSubtotal) || 0,
+          charges: []
+        })),
+        transactionCharges: txnCharges
+      });
+      quote.chargeDocumentSnapshot = { charges: calc.transactionCharges };
+      quote.chargesTotal = calc.transactionChargeTotal;
+      quote.markModified('chargeDocumentSnapshot');
+    }
+
+    await quote.save();
+
+    const { totals, sections } = await recomputeQuoteAndSectionTotals({ organizationId, quoteId: quote._id });
+    const lines = await QuoteLine.find({ organizationId, quoteId: quote._id })
+      .sort({ lineOrder: 1, createdAt: 1 })
+      .lean();
+    const refreshed = await Quote.findOne({ _id: quoteId, organizationId }).lean();
+
+    await writeQuoteActivity({
+      organizationId,
+      quoteId: quote._id,
+      userId: req.user._id,
+      action: 'quote_taxes_charges_updated',
+      message: 'Quote taxes/charges updated',
+      details: { totals }
+    });
+
+    return res.json({
+      success: true,
+      data: { quote: refreshed, sections, lines, totals }
+    });
+  } catch (err) {
+    const status = err?.code === 'VALIDATION' || err?.code === 'QUOTE_COMMERCIALLY_LOCKED' ? 400 : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to update taxes/charges',
+      code: err?.code || 'UNKNOWN'
+    });
+  }
+}
+
 module.exports = {
   createQuote,
   getQuotes,
@@ -1637,5 +1771,6 @@ module.exports = {
   recalculateQuote,
   reviseQuote,
   sendQuoteEmail,
-  patchQuoteDiscounts
+  patchQuoteDiscounts,
+  patchQuoteTaxesCharges
 };

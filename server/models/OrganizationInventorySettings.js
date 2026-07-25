@@ -49,7 +49,43 @@ const OrganizationInventorySettingsSchema = new Schema(
       default: INVENTORY_VALUATION_METHOD_DEFAULT
     },
     /** When true, ATP adds ItemInventory.incoming (procurement stub) */
-    includeIncomingInAtp: { type: Boolean, default: false }
+    includeIncomingInAtp: { type: Boolean, default: false },
+
+    /** Stockroom add-on activation marker (idempotent) */
+    stockroomAddonActivatedAt: { type: Date, default: null },
+
+    /** Configurable reason lists */
+    adjustmentReasons: {
+      type: [String],
+      default: [
+        'Physical Stock Count',
+        'Damaged Goods',
+        'Expired Goods',
+        'Lost Inventory',
+        'Theft',
+        'Internal Consumption',
+        'Sample Distribution',
+        'Opening Stock Correction',
+        'Data Correction',
+        'System Error Correction',
+        'Other'
+      ]
+    },
+    transferReasons: {
+      type: [String],
+      default: [
+        'Branch Replenishment',
+        'Warehouse Balancing',
+        'Store Replenishment',
+        'Production Requirement',
+        'Customer Demand',
+        'Overstock Redistribution',
+        'Warehouse Consolidation',
+        'Internal Request',
+        'Temporary Storage',
+        'Other'
+      ]
+    }
   },
   { timestamps: true }
 );

@@ -8,7 +8,8 @@ const { listLedgerEntries } = require('../services/inventoryTransactionService')
 const {
   createAdjustment,
   postAdjustment,
-  getAdjustmentById
+  getAdjustmentById,
+  listAdjustments
 } = require('../services/inventoryAdjustmentService');
 const {
   createTransfer,
@@ -125,6 +126,19 @@ async function createAdjustmentHandler(req, res) {
       ...req.body
     });
     res.status(201).json({ success: true, data: row });
+  } catch (err) {
+    res.status(mapErrorStatus(err)).json({ success: false, message: err.message, code: err.code });
+  }
+}
+
+async function listAdjustmentsHandler(req, res) {
+  try {
+    const rows = await listAdjustments({
+      organizationId: getOrganizationId(req),
+      status: req.query.status || null,
+      limit: Number(req.query.limit) || 50
+    });
+    res.json({ success: true, data: rows });
   } catch (err) {
     res.status(mapErrorStatus(err)).json({ success: false, message: err.message, code: err.code });
   }
@@ -492,6 +506,7 @@ module.exports = {
   listBalancesHandler,
   listLedgerHandler,
   createAdjustmentHandler,
+  listAdjustmentsHandler,
   postAdjustmentHandler,
   getAdjustmentHandler,
   rebuildBalancesHandler,

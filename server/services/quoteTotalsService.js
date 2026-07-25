@@ -37,8 +37,14 @@ function computeLineTotals(line) {
 
   const lineSubtotal = Math.max(0, gross - discount);
 
-  // MVP: no tax engine yet
-  const lineTaxTotal = 0;
+  // Prefer engine snapshot tax; fall back to stored lineTaxTotal; else 0
+  let lineTaxTotal = 0;
+  const snap = line.taxSnapshot;
+  if (snap && Array.isArray(snap.taxes) && snap.taxes.length) {
+    lineTaxTotal = snap.taxes.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  } else if (Number.isFinite(Number(line.lineTaxTotal)) && Number(line.lineTaxTotal) > 0) {
+    lineTaxTotal = Number(line.lineTaxTotal);
+  }
   const lineTotal = lineSubtotal + lineTaxTotal;
 
   return { lineSubtotal, lineTaxTotal, lineTotal, lineDiscount: discount };

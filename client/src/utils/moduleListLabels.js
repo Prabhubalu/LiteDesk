@@ -4,6 +4,7 @@
 
 import { MODULE_LABEL_KEYS } from '@/utils/navigationLabels';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { formatKeyToLabel } from '@/utils/fieldDisplay';
 
 /** @type {Record<string, string>} */
 const MODULE_I18N_NS = {
@@ -328,7 +329,14 @@ export function resolveListCreateLabel(moduleKey, fallback, t, te) {
  * @param {(key: string) => boolean} te
  */
 export function resolveListColumnLabel(moduleKey, columnKey, fallback, t, te) {
-  return resolveFieldLabel(moduleKey, { key: columnKey, label: fallback }, t, te);
+  const resolved = resolveFieldLabel(moduleKey, { key: columnKey, label: fallback }, t, te);
+  const key = String(columnKey || '').trim();
+  const label = String(resolved || fallback || '').trim();
+  if (!label || label === key) return formatKeyToLabel(key);
+  const keyNorm = key.replace(/[\s_-]+/g, '').toLowerCase();
+  const labelNorm = label.replace(/[\s_-]+/g, '').toLowerCase();
+  if (keyNorm && labelNorm === keyNorm && !/\s/.test(label)) return formatKeyToLabel(key);
+  return label;
 }
 
 /**
@@ -339,7 +347,7 @@ export function resolveListColumnLabel(moduleKey, columnKey, fallback, t, te) {
  * @param {(key: string) => boolean} te
  */
 export function resolveListFilterLabel(moduleKey, filterKey, fallback, t, te) {
-  return resolveFieldLabel(moduleKey, { key: filterKey, label: fallback }, t, te);
+  return resolveListColumnLabel(moduleKey, filterKey, fallback, t, te);
 }
 
 /**

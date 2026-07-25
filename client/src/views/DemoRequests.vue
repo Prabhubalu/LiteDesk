@@ -152,6 +152,13 @@
                   class="px-3 py-1.5 text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all hover:scale-105"
                   :title="t('common.demoRequestsConvertToOrganization2')"
                 >{{ t('common.demoRequestsConvert2') }}</button>
+                <button
+                  v-else
+                  @click="resendActivation(request)"
+                  class="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all hover:scale-105 disabled:opacity-50"
+                  :disabled="resendingId === request._id"
+                  :title="t('common.demoRequestsResendActivation')"
+                >{{ resendingId === request._id ? t('common.demoRequestsResendingActivation') : t('common.demoRequestsResendActivation') }}</button>
               </div>
             </td>
           </tr>
@@ -295,18 +302,12 @@
         </div>
         
         <div class="p-6">
-          <p class="mb-6 text-gray-700 dark:text-gray-300">{{ t('common.demoRequestsConvert') }}<strong class="text-gray-900 dark:text-white">{{ convertModalRequest.companyName }}</strong> to an active organization?</p>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Temporary Password *</label>
-            <input 
-              v-model="convertPassword" 
-              type="password" 
-              class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              :placeholder="t('common.demoRequestsEnterTemporaryPasswordForOwner')"
-              required
-            />
-          </div>
+          <p class="mb-4 text-gray-700 dark:text-gray-300">
+            {{ t('common.demoRequestsConvertConfirmBody', { company: convertModalRequest.companyName }) }}
+          </p>
+          <p class="mb-6 text-sm text-gray-600 dark:text-gray-400">
+            {{ t('common.demoRequestsConvertActivationHint', { email: convertModalRequest.email }) }}
+          </p>
 
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.demoRequestsSubscriptionTier') }}</label>
@@ -322,9 +323,9 @@
             <button 
               @click="convertRequest" 
               class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="converting || !convertPassword"
+              :disabled="converting"
             >
-              {{ converting ? 'Converting...' : 'Convert' }}
+              {{ converting ? t('common.demoRequestsConverting') : t('common.demoRequestsConvert2') }}
             </button>
             <button @click="closeConvertModal" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors">{{ t('performance.cancelWizard') }}</button>
           </div>
@@ -359,9 +360,9 @@ const updateStatusValue = ref('');
 const updatingStatus = ref(false);
 
 const convertModalRequest = ref(null);
-const convertPassword = ref('');
 const convertTier = ref('trial');
 const converting = ref(false);
+const resendingId = ref(null);
 
 const fetchDemoRequests = async () => {
   loading.value = true;
@@ -439,17 +440,15 @@ const updateStatus = async () => {
 
 const openConvertModal = (request) => {
   convertModalRequest.value = request;
-  convertPassword.value = '';
   convertTier.value = 'trial';
 };
 
 const closeConvertModal = () => {
   convertModalRequest.value = null;
-  convertPassword.value = '';
 };
 
 const convertRequest = async () => {
-  if (!convertModalRequest.value || !convertPassword.value) return;
+  if (!convertModalRequest.value) return;
   
   converting.value = true;
   
@@ -459,14 +458,20 @@ const convertRequest = async () => {
       {
         method: 'POST',
         body: JSON.stringify({
-          password: convertPassword.value,
           subscriptionTier: convertTier.value
         })
       }
     );
     
     if (data.success) {
-      alert(t('common.demoRequestsToastSuccessfullyConvertedToOrganization'));
+      const payload = data.data || {};
+      if (payload.activationEmailSent) {
+        alert(t('common.demoRequestsToastConvertedActivationSent'));
+      } else if (payload.activationUrl) {
+        alert(t('common.demoRequestsToastConvertedActivationLink', { url: payload.activationUrl }));
+      } else {
+        alert(t('common.demoRequestsToastSuccessfullyConvertedToOrganization'));
+      }
       closeConvertModal();
       await fetchDemoRequests();
       await fetchStats();
@@ -476,6 +481,32 @@ const convertRequest = async () => {
     alert(err.message || t('common.demoRequestsToastFailedToConvertRequest'));
   } finally {
     converting.value = false;
+  }
+};
+
+const resendActivation = async (request) => {
+  if (!request?._id) return;
+  resendingId.value = request._id;
+  try {
+    const data = await apiClient(`/demo/requests/${request._id}/resend-activation`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+    if (data.success) {
+      const payload = data.data || {};
+      if (payload.activationEmailSent) {
+        alert(t('common.demoRequestsToastActivationResent'));
+      } else if (payload.activationUrl) {
+        alert(t('common.demoRequestsToastActivationLink', { url: payload.activationUrl }));
+      } else {
+        alert(data.message || t('common.demoRequestsToastActivationResent'));
+      }
+    }
+  } catch (err) {
+    console.error('Error resending activation:', err);
+    alert(err.message || t('common.demoRequestsToastFailedToResendActivation'));
+  } finally {
+    resendingId.value = null;
   }
 };
 

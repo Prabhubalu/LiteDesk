@@ -2,6 +2,7 @@ function applyQuoteTotalsToRecord(record, totals) {
   if (!record || !totals || typeof totals !== 'object') return;
   if (totals.subtotal != null) record.subtotal = totals.subtotal;
   if (totals.taxTotal != null) record.taxTotal = totals.taxTotal;
+  if (totals.chargesTotal != null) record.chargesTotal = totals.chargesTotal;
   if (totals.grandTotal != null) record.grandTotal = totals.grandTotal;
   if (totals.lineDiscountTotal != null) record.lineDiscountTotal = totals.lineDiscountTotal;
   if (totals.globalDiscountTotal != null) record.globalDiscountTotal = totals.globalDiscountTotal;
@@ -64,6 +65,18 @@ export function applyQuoteDiscountsToRecord(record, { quote, lines, totals, sect
     }
     if (quote.globalDiscountAmount !== undefined) {
       record.globalDiscountAmount = quote.globalDiscountAmount;
+      changed = true;
+    }
+    if (quote.transactionTaxSnapshot !== undefined) {
+      record.transactionTaxSnapshot = quote.transactionTaxSnapshot;
+      changed = true;
+    }
+    if (quote.chargeDocumentSnapshot !== undefined) {
+      record.chargeDocumentSnapshot = quote.chargeDocumentSnapshot;
+      changed = true;
+    }
+    if (quote.chargesTotal !== undefined) {
+      record.chargesTotal = quote.chargesTotal;
       changed = true;
     }
   }

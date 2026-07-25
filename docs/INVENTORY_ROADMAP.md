@@ -6,7 +6,7 @@
 
 **Prerequisite:** Catalog C0–C5 · SO SO0–SO4 complete.
 
-**Last updated:** 2026-06-02
+**Last updated:** 2026-07-25
 
 ---
 
@@ -20,6 +20,13 @@
 | **INV2** | ✅ Done | Transfers, cycle counts, variance posting, rebuild hardening |
 | **INV3** | ✅ Done | Line-add ATP guards (warn/block) + portal quote accept |
 | **INV4** | ✅ Done | Lot/serial modes, valuation hooks, incoming qty stub |
+| **Phase 0 Tax wire** | ✅ Done | Tax RBAC + engine wired into Quote/SO/Invoice lines |
+| **Phase 1 Charges** | ✅ Done | Charge engine + settings hub + calculate API |
+| **INV5 Procurement** | ✅ Done | PO → Receipt Note → Purchase Return (+ inventory post) |
+| **INV6 Fulfillment docs** | ✅ Done | Delivery Note / Delivery Return / Sales Return |
+| **INV7 Stock UI** | ✅ Done | Stockrooms productization + addon activation |
+| **CPQ add-ons** | ✅ Done | Item Groups, config validation, pricing engine MVP |
+| **UI polish** | ✅ Done | Tax/charge pickers on Quotes; PO/RN/PR/DN/DR/SR create+actions; Adjustments/Transfers; Inventory sidebar + Item Groups settings |
 
 ---
 

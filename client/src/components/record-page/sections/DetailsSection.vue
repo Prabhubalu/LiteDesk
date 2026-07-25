@@ -35,16 +35,16 @@
             <span class="min-w-0 truncate">{{ field.groupLabel || 'Fields' }}</span>
           </div>
         </h4>
-        <!-- Related record link + optional inline listbox: hover → primary; click value → open record. Inline edit via dropdown, never edit drawer. -->
+        <!-- Linked non-entity rows (e.g. task Related to). Entity/user use EditableLabeledValue for grid alignment. -->
         <div
-          v-if="field.recordPath && typeof context.openTab === 'function'"
-          :class="isCompact ? 'details-section__field' : 'flex min-h-[2rem] items-center gap-3 px-4 py-2'"
+          v-if="field.recordPath && typeof context.openTab === 'function' && field.type !== 'entity' && field.type !== 'user'"
+          :class="isCompact ? 'details-section__field' : 'record-field-row-grid min-h-[2rem] px-4 py-2'"
         >
           <template v-if="!isCompact">
-            <span class="flex-shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true">
+            <span class="flex h-4 w-4 shrink-0 items-center justify-center text-gray-400 dark:text-gray-500" aria-hidden="true">
               <component :is="getFieldIcon(field)" class="h-4 w-4" />
             </span>
-            <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
+            <span class="min-w-0 truncate text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
           </template>
           <span v-else :class="DRAWER_FIELD_LABEL_CLASS">{{ displayFieldLabel(field) }}</span>
 
@@ -193,13 +193,13 @@
 
         <div
           v-else-if="field.canOpenEditor && typeof field.onEdit === 'function'"
-          :class="isCompact ? 'details-section__field' : 'flex min-h-[2rem] items-center gap-3 px-4 py-2'"
+          :class="isCompact ? 'details-section__field' : 'record-field-row-grid min-h-[2rem] px-4 py-2'"
         >
           <template v-if="!isCompact">
-            <span class="flex-shrink-0 text-gray-400 dark:text-gray-500" aria-hidden="true">
+            <span class="flex h-4 w-4 shrink-0 items-center justify-center text-gray-400 dark:text-gray-500" aria-hidden="true">
               <component :is="getFieldIcon(field)" class="h-4 w-4" />
             </span>
-            <span class="min-w-[12rem] flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
+            <span class="min-w-0 truncate text-sm text-gray-700 dark:text-gray-300">{{ displayFieldLabel(field) }}</span>
           </template>
           <span v-else :class="DRAWER_FIELD_LABEL_CLASS">{{ displayFieldLabel(field) }}</span>
           <button
@@ -256,6 +256,12 @@
             :record-country="recordCountry"
             :field-key="field.key"
             :module-key="String(context?.module || '')"
+            :record-path="field.recordPath || ''"
+            :on-open-record="
+              field.recordPath && typeof context.openTab === 'function'
+                ? () => context.openTab(field.recordPath, { background: false, insertAdjacent: true })
+                : null
+            "
             row-padding-class="py-2 px-4 min-h-[2rem]"
             :commit-save="(v) => commitFieldSave(field, v)"
           />

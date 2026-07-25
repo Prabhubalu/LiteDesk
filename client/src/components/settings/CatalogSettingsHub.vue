@@ -1,13 +1,10 @@
 <template>
   <SettingsScrollPanel content-class="max-w-5xl">
     <template #header>
-      <div>
-        <button type="button" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2" @click="$emit('back')">
-          {{ t('actions.back') }}
-        </button>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.catalogHubTitle') }}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ t('settings.catalogHubDesc') }}</p>
-      </div>
+      <SettingsPageHeader
+        :title="t('settings.catalogHubTitle')"
+        :subtitle="t('settings.catalogHubDesc')"
+      />
     </template>
 
     <template #tabs>
@@ -20,33 +17,53 @@
           :class="activeTab === tab.id
             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
             : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
-          @click="activeTab = tab.id"
+          @click="setActiveTab(tab.id)"
         >
           {{ t(tab.labelKey) }}
         </button>
       </nav>
     </template>
 
-    <CatalogCategoriesSettings v-if="activeTab === 'categories'" embedded @back="$emit('back')" />
+    <CatalogCategoriesSettings v-if="activeTab === 'categories'" embedded />
     <CatalogPriceBooksSettings v-else-if="activeTab === 'price-books'" key="catalog-price-books" />
+    <ItemGroupsSettings v-else-if="activeTab === 'item-groups'" key="catalog-item-groups" />
   </SettingsScrollPanel>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import SettingsPageHeader from '@/components/settings/SettingsPageHeader.vue';
 import CatalogCategoriesSettings from '@/components/settings/CatalogCategoriesSettings.vue';
 import CatalogPriceBooksSettings from '@/components/settings/CatalogPriceBooksSettings.vue';
-
-defineEmits(['back']);
+import ItemGroupsSettings from '@/components/settings/ItemGroupsSettings.vue';
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 
 const tabs = [
   { id: 'categories', labelKey: 'settings.catalogTabCategories' },
-  { id: 'price-books', labelKey: 'settings.catalogTabPriceBooks' }
+  { id: 'price-books', labelKey: 'settings.catalogTabPriceBooks' },
+  { id: 'item-groups', labelKey: 'settings.catalogTabItemGroups' },
 ];
 
-const activeTab = ref('categories');
+const VALID_TABS = new Set(tabs.map((tab) => tab.id));
+
+const activeTab = computed(() => {
+  const view = String(route.query.catalogView || '');
+  return VALID_TABS.has(view) ? view : 'categories';
+});
+
+function setActiveTab(id) {
+  const query = { ...route.query, tab: 'catalog' };
+  if (id === 'categories') {
+    delete query.catalogView;
+  } else {
+    query.catalogView = id;
+  }
+  router.push({ path: '/settings', query });
+}
 </script>

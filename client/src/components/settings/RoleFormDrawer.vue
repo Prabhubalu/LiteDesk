@@ -27,11 +27,11 @@
             >
               <div class="pointer-events-auto h-full flex">
                 <DialogPanel
-                  class="flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] w-[min(92vw,56rem)]"
+                  class="rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] w-[min(92vw,56rem)]"
                 >
-                  <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
-                    <!-- Header (same indigo for all roles; system roles use in-body notices) -->
-                    <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-5 sm:px-6">
+                  <form @submit.prevent="handleSubmit" class="rounded-none relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- Header; system roles use in-body notices -->
+                    <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-5 sm:px-6">
                       <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 min-w-0">
                           <div
@@ -41,15 +41,15 @@
                             <component :is="roleIconComponent" class="w-5 h-5" aria-hidden="true" />
                           </div>
                           <div class="min-w-0">
-                            <DialogTitle class="text-base font-semibold text-white truncate">
+                            <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white truncate">
                               {{ isEditing ? (form.name || t('settings.roleDrawerEdit')) : t('settings.roleDrawerCreate') }}
                             </DialogTitle>
-                            <p class="mt-0.5 text-sm text-indigo-300 line-clamp-2">
+                            <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
                               {{ headerSubtitle }}
                             </p>
                             <div
                               v-if="isSystemRole"
-                              class="mt-2 inline-flex items-center gap-1.5 rounded-md bg-white/15 px-2.5 py-1 text-xs font-medium text-indigo-100"
+                              class="mt-2 inline-flex items-center gap-1.5 rounded-md bg-gray-100 dark:bg-gray-800 px-2.5 py-1 text-xs font-medium text-gray-600 dark:text-gray-300"
                             >
                               <LockClosedIcon class="w-3.5 h-3.5 shrink-0" />
                               {{ t('settings.roleDrawerSystemLocked') }}
@@ -58,7 +58,7 @@
                         </div>
                         <button
                           type="button"
-                          class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer flex-shrink-0"
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer flex-shrink-0"
                           @click="requestClose"
                         >
                           <span class="absolute -inset-2.5" />
@@ -67,15 +67,15 @@
                         </button>
                       </div>
 
-                      <nav class="mt-4 flex gap-1 rounded-lg bg-indigo-800/50 p-1" :aria-label="t('settings.roleDrawerNavAria')">
+                      <nav class="mt-4 flex gap-1 rounded-lg bg-gray-100 dark:bg-gray-800 p-1" :aria-label="t('settings.roleDrawerNavAria')">
                         <button
                           v-for="tab in editorTabs"
                           :key="tab.id"
                           type="button"
                           :class="[
                             activeTab === tab.id
-                              ? 'bg-white text-indigo-700 shadow-sm'
-                              : 'text-indigo-200 hover:text-white hover:bg-white/10',
+                              ? 'bg-white text-indigo-700 shadow-sm dark:bg-gray-900 dark:text-indigo-300'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-700/60',
                             'flex-1 rounded-md px-3 py-2 text-xs font-semibold transition-colors'
                           ]"
                           @click="activeTab = tab.id"

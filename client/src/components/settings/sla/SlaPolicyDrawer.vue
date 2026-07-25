@@ -25,7 +25,7 @@
               leave-from="translate-x-0"
               leave-to="translate-x-full"
             >
-              <DialogPanel class="pointer-events-auto flex h-full w-screen max-w-5xl flex-col bg-white shadow-xl dark:bg-gray-900">
+              <DialogPanel class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-screen max-w-5xl flex-col bg-white shadow-xl dark:bg-gray-900">
                 <div class="flex shrink-0 items-start justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-gray-800">
                   <div class="min-w-0">
                     <DialogTitle class="text-base font-semibold text-gray-900 dark:text-white">

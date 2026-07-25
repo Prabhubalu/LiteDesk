@@ -29,7 +29,8 @@ const {
   getQuoteApprovalHistoryHandler,
   getQuoteProcessApprovals,
   sendQuoteEmail,
-  patchQuoteDiscounts
+  patchQuoteDiscounts,
+  patchQuoteTaxesCharges
 } = require('../controllers/quoteController');
 
 const {
@@ -87,6 +88,7 @@ router.post('/:id/share/revoke', checkPermission('quotes', 'edit'), revokeQuoteS
 router.post('/:id/convert', checkPermission('quotes', 'edit'), convertQuote);
 router.post('/:id/recalculate', checkPermission('quotes', 'edit'), recalculateQuote);
 router.patch('/:id/discounts', checkPermission('quotes', 'edit'), patchQuoteDiscounts);
+router.patch('/:id/taxes-charges', checkPermission('quotes', 'edit'), patchQuoteTaxesCharges);
 router.post('/:id/revise', checkPermission('quotes', 'edit'), reviseQuote);
 router.get('/:id/sections', checkPermission('quotes', 'view'), listSections);
 router.post('/:id/sections', checkPermission('quotes', 'edit'), createSection);

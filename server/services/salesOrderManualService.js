@@ -75,6 +75,88 @@ async function createManualSalesOrder({ organizationId, userId, body = {} }) {
   return order.toObject();
 }
 
+const PATCHABLE_HEADER_FIELDS = new Set([
+  'orderTitle',
+  'orderDate',
+  'requestedDeliveryDate',
+  'currency',
+  'exchangeRateSnapshot',
+  'assignedTo',
+  'customerId',
+  'organizationRefId',
+  'contactId',
+  'dealId',
+  'caseId',
+  'fulfillmentMode',
+  'billToAddressSnapshot',
+  'shipToAddressSnapshot',
+  'paymentTermsSnapshot',
+  'customFields'
+]);
+
+async function loadSalesOrderOrThrow({ organizationId, salesOrderRef }) {
+  const ref = String(salesOrderRef || '').trim();
+  const order =
+    (await SalesOrder.findOne({ organizationId, salesOrderId: ref, deletedAt: null })) ||
+    (await SalesOrder.findOne({ organizationId, _id: ref, deletedAt: null }));
+
+  if (!order) {
+    const err = new Error('Sales order not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+  return order;
+}
+
+/**
+ * Draft-only header patch (create/edit drawer + record details).
+ * @param {object} params
+ */
+async function patchSalesOrderHeader({ organizationId, salesOrderRef, userId, body = {} }) {
+  const order = await loadSalesOrderOrThrow({ organizationId, salesOrderRef });
+
+  if (String(order.status || '') !== SALES_ORDER_STATUS_DEFAULT) {
+    const err = new Error('Sales order header can only be edited in Draft status.');
+    err.code = 'SALES_ORDER_NOT_DRAFT';
+    err.details = { status: order.status };
+    throw err;
+  }
+
+  const patchBody = {};
+  for (const [key, value] of Object.entries(body || {})) {
+    if (!PATCHABLE_HEADER_FIELDS.has(key)) continue;
+    patchBody[key] = value;
+  }
+
+  if (patchBody.fulfillmentMode != null) {
+    patchBody.fulfillmentMode = assertValidFulfillmentMode(patchBody.fulfillmentMode);
+  }
+
+  if (Object.keys(patchBody).length === 0) {
+    return order.toObject();
+  }
+
+  for (const key of Object.keys(patchBody)) {
+    order[key] = patchBody[key];
+  }
+  order.modifiedBy = userId || null;
+  await order.save();
+
+  await writeSalesOrderActivity({
+    organizationId,
+    salesOrderId: order._id,
+    userId,
+    action: 'sales_order_updated',
+    message: 'Sales order updated',
+    details: {
+      salesOrderId: order.salesOrderId,
+      salesOrderNumber: order.salesOrderNumber
+    }
+  });
+
+  return order.toObject();
+}
+
 /**
  * @param {object} params
  */
@@ -237,6 +319,7 @@ async function deleteDraftSalesOrder({
 
 module.exports = {
   createManualSalesOrder,
+  patchSalesOrderHeader,
   confirmSalesOrder,
   cancelSalesOrder,
   deleteDraftSalesOrder

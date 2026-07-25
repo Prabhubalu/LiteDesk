@@ -12,6 +12,7 @@ const {
   listBalancesHandler,
   listLedgerHandler,
   createAdjustmentHandler,
+  listAdjustmentsHandler,
   postAdjustmentHandler,
   getAdjustmentHandler,
   rebuildBalancesHandler,
@@ -57,6 +58,7 @@ router.get('/atp', checkPermission('inventory', 'view'), getAtpHandler);
 router.get('/reservations', checkPermission('inventory', 'view'), listReservationsHandler);
 
 router.post('/adjustments', checkPermission('inventory', 'adjust'), createAdjustmentHandler);
+router.get('/adjustments', checkPermission('inventory', 'view'), listAdjustmentsHandler);
 router.get('/adjustments/:id', checkPermission('inventory', 'view'), getAdjustmentHandler);
 router.post('/adjustments/:id/post', checkPermission('inventory', 'adjust'), postAdjustmentHandler);
 

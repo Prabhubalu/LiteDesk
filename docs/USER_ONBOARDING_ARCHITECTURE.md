@@ -71,7 +71,7 @@
 |------|-------|
 | Invited | Accept invite (password) → login → `/platform/home` with no first-run guidance |
 | Self-serve | `RegistrationForm` → redirect to `{ name: 'dashboard' }` (stale route) → no setup flow |
-| Demo | Form submission only; onboarding starts after conversion credentials email |
+| Demo | Form submission only; onboarding starts after activation email + set password |
 
 Invited-user onboarding answers: **"What should I do in this org?"**
 
@@ -127,8 +127,8 @@ Checklist steps and primary CTA routes are derived from `context` (apps + role),
                     invited          self_serve    demo_converted
                           │              │              │
                           ▼              ▼              ▼
-                   accept-invite    register       conversion email
-                   (password)       (auto-login)   (login)
+                   accept-invite    register       activation email
+                   (password)       (auto-login)   (set password)
                           │              │              │
                           ▼              └──────┬───────┘
                    first login                 ▼
@@ -280,9 +280,13 @@ Registration creates (existing behavior in `authController.registerUser`):
 
 Demo form (`/demo`) is lead capture only — no product access.
 
-Onboarding starts after admin conversion (`demoController`):
+On admin conversion (`demoController`):
 
+- Provision tenant DB + owner user with `status: invited` (no admin-set password)
 - Tag `origin: demo_converted`
+- Email the demo contact a **workspace activation** link (same accept-invite token path; founder copy)
+- Owner sets their own password → first session → `/onboarding`
+- Resend via `POST /api/demo/requests/:id/resend-activation` while still pending
 - Carry `industry`, `companySize`, `message` into personalized copy
 - Optionally pre-seed sample data from vertical template (P2)
 - Optional "Your Arivu rep: {name}" card on Platform Home

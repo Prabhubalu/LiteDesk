@@ -27,16 +27,16 @@
             >
               <div class="pointer-events-auto h-full flex">
                 <DialogPanel
-                  class="flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] w-[30rem] transition-[width] duration-200 ease-out"
+                  class="rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] w-[30rem] transition-[width] duration-200 ease-out"
                 >
-                  <form @submit.prevent="handleSave" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                  <form @submit.prevent="handleSave" class="rounded-none relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
                     <!-- Header: matches CreateRecordDrawer / TaskEditDrawer -->
-                    <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6 flex-shrink-0">
+                    <div class="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6 flex-shrink-0">
                       <div class="flex items-center justify-between">
-                        <DialogTitle class="text-base font-semibold text-white">{{ t('settings.modFieldsAddCustomField') }}</DialogTitle>
+                        <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ t('settings.modFieldsAddCustomField') }}</DialogTitle>
                         <button
                           type="button"
-                          class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
                           @click="handleClose"
                         >
                           <span class="absolute -inset-2.5" />
@@ -44,7 +44,7 @@
                           <XMarkIcon class="size-6" aria-hidden="true" />
                         </button>
                       </div>
-                      <p class="mt-1 text-sm text-indigo-300">{{ t('settings.settingsAddFieldSubtitle') }}</p>
+                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.settingsAddFieldSubtitle') }}</p>
                     </div>
 
                     <!-- Body: scrollable, matches record drawer -->

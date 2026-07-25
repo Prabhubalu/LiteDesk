@@ -23,9 +23,13 @@
 
         <form v-else-if="step === 'password'" class="space-y-6" @submit.prevent="goToProfile">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('auth.acceptInviteTitle') }}</h1>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {{ invite.isWorkspaceActivation ? t('auth.acceptWorkspaceTitle') : t('auth.acceptInviteTitle') }}
+            </h1>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              {{ t('auth.acceptInviteSubtitle', { organization: invite.organizationName }) }}
+              {{ invite.isWorkspaceActivation
+                ? t('auth.acceptWorkspaceSubtitle', { organization: invite.organizationName })
+                : t('auth.acceptInviteSubtitle', { organization: invite.organizationName }) }}
             </p>
           </div>
 
@@ -133,6 +137,7 @@ const invite = ref({
   firstName: '',
   lastName: '',
   organizationName: '',
+  isWorkspaceActivation: false,
   entitledApps: []
 });
 

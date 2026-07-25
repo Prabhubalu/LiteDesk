@@ -44,10 +44,17 @@ const InventoryLocationSchema = new Schema(
 
     parentLocationId: { type: String, trim: true, default: null, index: true },
     isDefault: { type: Boolean, default: false, index: true },
+    systemGenerated: { type: Boolean, default: false, index: true },
     allowNegative: { type: Boolean, default: false },
+    managerId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    contactSnapshot: { type: Schema.Types.Mixed, default: null },
+    description: { type: String, trim: true, default: null },
 
     addressSnapshot: { type: Schema.Types.Mixed, default: null },
     externalRef: { type: String, trim: true, default: null },
+    externalReferenceId: { type: String, trim: true, default: null },
+    syncStatus: { type: String, trim: true, default: 'not_synced' },
+    lastSyncAt: { type: Date, default: null },
 
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     modifiedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null }

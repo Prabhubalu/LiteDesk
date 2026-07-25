@@ -14,21 +14,20 @@
           :aria-label="drawerTitle"
         >
           <div
-            class="flex-shrink-0 px-4 py-5 sm:px-6"
-            :class="isDraftSend ? 'bg-amber-700 dark:bg-amber-800' : 'bg-indigo-700 dark:bg-indigo-800'"
+            class="flex-shrink-0 px-4 py-5 sm:px-6 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900"
           >
             <div class="flex items-center justify-between">
-              <h2 class="text-base font-semibold text-white">{{ drawerTitle }}</h2>
+              <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ drawerTitle }}</h2>
               <button
                 type="button"
-                class="rounded-md text-white/80 hover:text-white"
+                class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                 :aria-label="t('actions.cancel')"
                 @click="close"
               >
                 <XMarkIcon class="size-6" />
               </button>
             </div>
-            <p class="mt-1 text-sm text-white/90">{{ drawerSubtitle }}</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ drawerSubtitle }}</p>
           </div>
 
           <form class="flex-1 flex flex-col min-h-0" @submit.prevent="submit">

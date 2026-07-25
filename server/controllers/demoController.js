@@ -289,14 +289,7 @@ exports.convertToOrganization = async (req, res) => {
             });
         }
         
-        const { password, subscriptionTier = 'trial' } = req.body;
-        
-        if (!password) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Password is required for conversion' 
-            });
-        }
+        const { subscriptionTier = 'trial' } = req.body;
         
         console.log('🔄 Converting demo request to ORGANIZATION:', demoRequest.email);
         
@@ -558,7 +551,7 @@ exports.convertToOrganization = async (req, res) => {
             console.warn('⚠️  Failed to mirror module definitions to tenant DB:', mirrorError.message);
         }
         
-        // Create owner user in the organization's database
+        // Create owner user pending workspace activation (no admin-set password)
         console.log('👤 Step 5: Creating owner user in organization database...');
         
         // Import User model for organization database
@@ -607,22 +600,34 @@ exports.convertToOrganization = async (req, res) => {
             console.log('✅ Created User model on organization connection');
         }
         
-        // Extract first and last name (used in both org and master DB)
         const nameParts = demoRequest.contactName ? demoRequest.contactName.split(' ') : [];
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
-        
-        // Check if user already exists
-        const existingUser = await OrgUser.findOne({ email: demoRequest.email.toLowerCase() });
-        
+        const ownerEmail = demoRequest.email.toLowerCase();
+
+        const userInviteService = require('../services/userInviteService');
+        const { buildInviteUrl } = require('../utils/userAuthTokens');
+        const {
+            initializeOnboardingForUser,
+            ONBOARDING_ORIGINS
+        } = require('../services/onboardingService');
+
+        const inviteCredentials = userInviteService.buildInviteCredentials({});
+        const inviteTokenHash = userInviteService.hashToken(inviteCredentials.inviteTokenRaw);
+        const hashedPassword = await bcrypt.hash(inviteCredentials.password, 10);
+
+        const existingUser = await OrgUser.findOne({ email: ownerEmail });
+        let ownerUser;
+
         if (existingUser) {
             console.log('⚠️  User already exists in organization database');
-            // Update existing user
             existingUser.organizationId = tenantOrganization._id;
             existingUser.role = 'owner';
             existingUser.isOwner = true;
-            existingUser.status = 'active';
+            existingUser.status = inviteCredentials.initialStatus;
             existingUser.userType = 'INTERNAL';
+            existingUser.password = hashedPassword;
+            existingUser.mustChangePassword = false;
             existingUser.allowedApps = activeOrgAppKeys;
             existingUser.appAccess = activeOrgAppKeys.map((appKey) => ({
                 appKey,
@@ -630,83 +635,87 @@ exports.convertToOrganization = async (req, res) => {
                 status: 'ACTIVE',
                 addedAt: new Date()
             }));
+            existingUser.invitedAt = new Date();
+            existingUser.invitedBy = req.user?._id || null;
+            existingUser.inviteAcceptedAt = null;
+            existingUser.emailVerifiedAt = null;
+            existingUser.inviteTokenHash = inviteTokenHash;
+            existingUser.inviteTokenExpiresAt = inviteCredentials.inviteTokenExpiresAt;
+            existingUser.emailVerificationTokenHash = null;
+            existingUser.emailVerificationExpiresAt = null;
+            existingUser.emailVerificationSentAt = null;
             existingUser.setPermissionsByRole('owner');
-            const {
-                initializeOnboardingForUser,
-                ONBOARDING_ORIGINS
-            } = require('../services/onboardingService');
             await initializeOnboardingForUser(existingUser, {
                 origin: ONBOARDING_ORIGINS.DEMO_CONVERTED
             });
             await existingUser.save();
-            console.log('✅ Existing user updated as owner');
-
-            await UserDirectory.findOneAndUpdate(
-                { email: demoRequest.email.toLowerCase() },
-                {
-                    $set: {
-                        organizationId: tenantOrganization._id,
-                        tenantDatabaseName: dbName,
-                        tenantUserId: existingUser._id,
-                        status: 'active'
-                    }
-                },
-                { upsert: true, new: true, setDefaultsOnInsert: true }
-            );
-            console.log('✅ User directory updated for existing tenant user');
+            ownerUser = existingUser;
+            console.log('✅ Existing user updated as pending owner activation');
         } else {
-            // Hash password
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-            
-            // Create owner user in organization database
-            const ownerUser = await OrgUser.create({
+            ownerUser = await OrgUser.create({
                 organizationId: tenantOrganization._id,
                 username: demoRequest.email.split('@')[0] || demoRequest.contactName?.toLowerCase().replace(/\s+/g, '') || 'user',
-                email: demoRequest.email.toLowerCase(),
+                email: ownerEmail,
                 password: hashedPassword,
                 firstName: firstName,
                 lastName: lastName,
                 phoneNumber: demoRequest.phone || '',
                 role: 'owner',
                 isOwner: true,
-                status: 'active',
+                status: inviteCredentials.initialStatus,
                 userType: 'INTERNAL',
+                mustChangePassword: false,
                 allowedApps: activeOrgAppKeys,
                 appAccess: activeOrgAppKeys.map((appKey) => ({
                     appKey,
                     roleKey: 'ADMIN',
                     status: 'ACTIVE',
                     addedAt: new Date()
-                }))
+                })),
+                invitedAt: new Date(),
+                invitedBy: req.user?._id || null,
+                inviteTokenHash,
+                inviteTokenExpiresAt: inviteCredentials.inviteTokenExpiresAt
             });
-            
-            // Set owner permissions
+
             ownerUser.setPermissionsByRole('owner');
-            const {
-                initializeOnboardingForUser,
-                ONBOARDING_ORIGINS
-            } = require('../services/onboardingService');
             await initializeOnboardingForUser(ownerUser, {
                 origin: ONBOARDING_ORIGINS.DEMO_CONVERTED
             });
             await ownerUser.save();
-            
-            console.log('✅ Owner user created in organization database:', ownerUser.email);
+            console.log('✅ Owner user created pending activation:', ownerUser.email);
+        }
 
-            await UserDirectory.findOneAndUpdate(
-                { email: demoRequest.email.toLowerCase() },
-                {
-                    $set: {
-                        organizationId: tenantOrganization._id,
-                        tenantDatabaseName: dbName,
-                        tenantUserId: ownerUser._id,
-                        status: 'active'
-                    }
-                },
-                { upsert: true, new: true, setDefaultsOnInsert: true }
-            );
-            console.log('✅ User directory entry created for tenant owner');
+        await UserDirectory.findOneAndUpdate(
+            { email: ownerEmail },
+            {
+                $set: {
+                    organizationId: tenantOrganization._id,
+                    tenantDatabaseName: dbName,
+                    tenantUserId: ownerUser._id,
+                    status: 'active',
+                    inviteTokenHash,
+                    emailVerificationTokenHash: null
+                }
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        console.log('✅ User directory entry upserted for tenant owner');
+
+        const activationEmailResult = await userInviteService.sendDemoWorkspaceActivationForUser({
+            user: ownerUser,
+            organization: tenantOrganization,
+            inviteToken: inviteCredentials.inviteTokenRaw
+        });
+        const activationEmailSent = activationEmailResult.sent === true;
+        if (!activationEmailSent) {
+            console.warn('⚠️  Demo workspace activation email not sent:', {
+                email: ownerEmail,
+                reason: activationEmailResult.reason || null,
+                channel: activationEmailResult.channel || null
+            });
+        } else {
+            console.log('✅ Demo workspace activation email sent:', ownerEmail);
         }
         
         // Do not create a full user in master DB for converted tenants.
@@ -723,7 +732,7 @@ exports.convertToOrganization = async (req, res) => {
                     instance = await InstanceRegistry.create({
                         instanceName: tenantOrganization.name || demoRequest.companyName,
                         subdomain,
-                        ownerEmail: demoRequest.email.toLowerCase(),
+                        ownerEmail: ownerEmail,
                         ownerName: demoRequest.contactName,
                         status: 'active',
                         provisioningStage: 'complete',
@@ -777,22 +786,30 @@ exports.convertToOrganization = async (req, res) => {
         await demoRequest.save();
         
         // Return success response
+        const responseData = {
+            demoRequestId: demoRequest._id,
+            organizationId: demoRequest.organizationId,
+            tenantOrganizationId: tenantOrganization._id,
+            databaseName: dbName,
+            subdomain: instance?.subdomain || null,
+            status: 'converted',
+            ownerEmail,
+            activationEmailSent,
+            note: activationEmailSent
+                ? 'Activation email sent. Owner must activate their workspace before signing in.'
+                : 'Workspace provisioned. Activation email was not sent — use Resend activation or share the activation link.'
+        };
+        if (!activationEmailSent && inviteCredentials.inviteTokenRaw) {
+            responseData.activationUrl = buildInviteUrl(inviteCredentials.inviteTokenRaw);
+            responseData.activationEmailReason = activationEmailResult.reason || null;
+        }
+
         res.json({
             success: true,
-            message: 'Organization converted successfully. Dedicated database created.',
-            data: {
-                demoRequestId: demoRequest._id,
-                organizationId: demoRequest.organizationId,
-                tenantOrganizationId: tenantOrganization._id,
-                databaseName: dbName,
-                subdomain: instance?.subdomain || null,
-                status: 'converted',
-                loginCredentials: {
-                    email: demoRequest.email,
-                    password: 'Use the password you provided during conversion'
-                },
-                note: 'User can now login to access their organization'
-            }
+            message: activationEmailSent
+                ? 'Organization converted. Activation email sent to the demo contact.'
+                : 'Organization converted. Activation email could not be sent.',
+            data: responseData
         });
         
     } catch (error) {
@@ -816,6 +833,129 @@ exports.convertToOrganization = async (req, res) => {
         if (error.keyValue) errorResponse.keyValue = error.keyValue;
         
         res.status(500).json(errorResponse);
+    }
+};
+
+
+// --- Resend demo workspace activation email ---
+exports.resendDemoActivation = async (req, res) => {
+    try {
+        const demoRequest = await DemoRequest.findById(req.params.id);
+        if (!demoRequest) {
+            return res.status(404).json({
+                success: false,
+                message: 'Demo request not found'
+            });
+        }
+        if (demoRequest.status !== 'converted') {
+            return res.status(400).json({
+                success: false,
+                message: 'Only converted demo requests can resend activation',
+                code: 'NOT_CONVERTED'
+            });
+        }
+
+        let tenantOrganization = await Organization.findOne({
+            legacyOrganizationId: demoRequest.organizationId,
+            isTenant: true
+        });
+        if (!tenantOrganization && demoRequest.convertedToInstanceId) {
+            const instance = await InstanceRegistry.findById(demoRequest.convertedToInstanceId).lean();
+            if (instance?.databaseConnection?.database) {
+                tenantOrganization = await Organization.findOne({
+                    'database.name': instance.databaseConnection.database,
+                    isTenant: true
+                });
+            }
+        }
+        if (!tenantOrganization?.database?.name || !tenantOrganization.database.initialized) {
+            return res.status(400).json({
+                success: false,
+                message: 'Converted tenant workspace is not ready',
+                code: 'TENANT_NOT_READY'
+            });
+        }
+
+        const userInviteService = require('../services/userInviteService');
+        const { buildInviteUrl } = require('../utils/userAuthTokens');
+        const ScopedUser = await userInviteService.getScopedUserModel(tenantOrganization);
+        const ownerEmail = String(demoRequest.email || '').toLowerCase().trim();
+        const ownerUser = await ScopedUser.findOne({ email: ownerEmail, isOwner: true });
+        if (!ownerUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'Owner user not found for converted demo',
+                code: 'OWNER_NOT_FOUND'
+            });
+        }
+        if (ownerUser.status === 'active' && ownerUser.inviteAcceptedAt) {
+            return res.status(400).json({
+                success: false,
+                message: 'Owner has already activated their workspace',
+                code: 'ALREADY_ACTIVATED'
+            });
+        }
+
+        const inviteCredentials = userInviteService.buildInviteCredentials({});
+        const inviteTokenHash = userInviteService.hashToken(inviteCredentials.inviteTokenRaw);
+        ownerUser.password = await bcrypt.hash(inviteCredentials.password, 10);
+        ownerUser.status = inviteCredentials.initialStatus;
+        ownerUser.mustChangePassword = false;
+        ownerUser.invitedAt = new Date();
+        ownerUser.invitedBy = req.user?._id || ownerUser.invitedBy || null;
+        ownerUser.inviteAcceptedAt = null;
+        ownerUser.emailVerifiedAt = null;
+        ownerUser.inviteTokenHash = inviteTokenHash;
+        ownerUser.inviteTokenExpiresAt = inviteCredentials.inviteTokenExpiresAt;
+        ownerUser.emailVerificationTokenHash = null;
+        ownerUser.emailVerificationExpiresAt = null;
+        ownerUser.emailVerificationSentAt = null;
+        await ownerUser.save();
+
+        await UserDirectory.findOneAndUpdate(
+            { email: ownerEmail },
+            {
+                $set: {
+                    organizationId: tenantOrganization._id,
+                    tenantDatabaseName: tenantOrganization.database.name,
+                    tenantUserId: ownerUser._id,
+                    status: 'active',
+                    inviteTokenHash,
+                    emailVerificationTokenHash: null
+                }
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        const activationEmailResult = await userInviteService.sendDemoWorkspaceActivationForUser({
+            user: ownerUser,
+            organization: tenantOrganization,
+            inviteToken: inviteCredentials.inviteTokenRaw
+        });
+
+        const responseData = {
+            ownerEmail,
+            activationEmailSent: activationEmailResult.sent === true
+        };
+        if (!activationEmailResult.sent) {
+            responseData.activationUrl = buildInviteUrl(inviteCredentials.inviteTokenRaw);
+            responseData.activationEmailReason = activationEmailResult.reason || null;
+        }
+
+        return res.json({
+            success: true,
+            message: activationEmailResult.sent
+                ? 'Activation email resent'
+                : 'Activation link reissued; email could not be sent',
+            data: responseData
+        });
+    } catch (error) {
+        console.error('[demoController] resendDemoActivation error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error resending activation email',
+            error: error.message
+        });
     }
 };
 

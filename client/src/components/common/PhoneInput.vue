@@ -155,7 +155,7 @@
         :class="[
           inputClass,
           numberInputHeightClass,
-          'rounded-l-none box-border',
+          'rounded-l-none rounded-r-lg box-border',
           invalid ? 'border-red-500 dark:border-red-500' : ''
         ]"
         @input="handleNumberInput"
@@ -228,7 +228,7 @@ const props = defineProps({
   inputClass: {
     type: String,
     default:
-      'block w-full min-w-0 rounded-md border border-gray-300/60 bg-gray-100 px-3 py-2 text-base text-gray-900 outline-none placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-gray-800 dark:focus:outline-indigo-500 sm:text-sm',
+      'block w-full min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20',
   },
   /** Compact trigger + panel editor for narrow row layouts (e.g. key fields). */
   popover: {
@@ -295,26 +295,24 @@ const numberInputHeightClass = computed(() => (
 ));
 
 const countryButtonClass = computed(() => {
-  const typographyClass = isCompactEditor.value ? 'text-sm' : 'text-base sm:text-sm/6';
   const shared = [
-    'flex shrink-0 items-center gap-1 rounded-l-md bg-gray-100 px-2 text-left text-gray-900 transition-colors dark:bg-gray-700 dark:text-white',
-    typographyClass,
+    'flex shrink-0 items-center gap-1 rounded-l-lg border border-r-0 bg-white px-2.5 text-left text-sm text-gray-900 transition-colors dark:bg-gray-900/80 dark:text-white',
     props.disabled ? 'cursor-not-allowed opacity-60' : 'hover:bg-gray-50 dark:hover:bg-gray-800',
   ];
 
   if (isCompactEditor.value) {
     return [
       ...shared,
-      'border border-r-0 outline-none',
+      'outline-none',
       props.editorHeightClass,
-      props.invalid ? 'border-red-500 dark:border-red-500' : 'border-gray-300/60 dark:border-gray-600',
+      props.invalid ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600',
     ];
   }
 
   return [
     ...shared,
-    'h-full outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800',
-    props.invalid ? 'border border-red-500 dark:border-red-500' : '',
+    'h-full focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:focus:border-indigo-400',
+    props.invalid ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600',
   ];
 });
 

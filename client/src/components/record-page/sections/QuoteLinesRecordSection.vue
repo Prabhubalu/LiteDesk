@@ -21,8 +21,8 @@
     <div
       ref="workspacePanelRef"
       :class="[
-        'quote-lines-workspace__panel relative flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10',
-        isLinesExpanded ? 'flex-1 min-h-0 h-full overflow-hidden' : 'max-h-[min(75vh,820px)] min-h-[16rem]'
+        'quote-lines-workspace__panel relative flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm overflow-hidden',
+        isLinesExpanded ? 'flex-1 min-h-0 h-full' : 'max-h-[min(75vh,820px)] min-h-[16rem]'
       ]"
     >
       <div
@@ -44,10 +44,7 @@
           </button>
         </div>
         <div class="flex flex-wrap items-center gap-2 shrink-0 ml-auto">
-          <label class="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 select-none">
-            <input v-model="showPricingColumns" type="checkbox" class="rounded" />
-            {{ t('records.linesShowPricingDetails') }}
-          </label>
+          <QuoteLinesColumnOptions />
           <QuoteLinesHeaderActions :record="record" :context="context" />
         </div>
       </div>
@@ -62,14 +59,14 @@
           v-for="block in displaySectionBlocks"
           :key="block.key"
           :class="[
-            'quote-section-block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm ring-1 ring-gray-950/[0.04] dark:ring-white/[0.06] transition-colors',
+            'quote-section-block rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-clip shadow-sm transition-colors',
             sectionBlockDropClass(block)
           ]"
         >
           <div
             v-if="block.section"
             :class="[
-              'quote-section-header sticky top-0 z-[5] flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 border-b-2 border-gray-200 dark:border-gray-600 bg-gray-100/95 dark:bg-gray-800/95 backdrop-blur-sm transition-colors',
+              'quote-section-header sticky top-0 z-[5] flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 border-b border-gray-200 dark:border-gray-600 bg-gray-100/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-t-lg transition-colors',
               sectionHeaderDropClass(block)
             ]"
           >
@@ -177,15 +174,16 @@
         >
           <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th :class="[lineTableHeadClass, stickyColClass('name'), stickyColumnsActive && showPricingColumns && 'quote-lines-col-name']">{{ t('records.linesName') }}</th>
-              <th :class="[lineTableHeadClass, stickyColumnsActive && showPricingColumns && 'quote-lines-col-sku']">{{ t('records.linesSku') }}</th>
+              <th :class="[lineTableHeadClass, stickyColClass('name'), 'quote-lines-col-name']">{{ t('records.linesName') }}</th>
+              <th v-if="showSkuColumn" :class="[lineTableHeadClass, 'quote-lines-col-sku']">{{ t('records.linesSku') }}</th>
               <th v-if="showPricingColumns" :class="[lineTableHeadClass, 'quote-lines-col-scroll']">{{ t('records.linesPriceBook') }}</th>
               <th v-if="showPricingColumns" :class="[lineTableHeadClass, 'quote-lines-col-scroll']">{{ t('records.linesPriceSource') }}</th>
-              <th :class="[lineTableHeadClass, 'text-right']">{{ t('records.linesQty') }}</th>
-              <th :class="[lineTableHeadClass, 'text-right']">{{ t('records.linesUnitPrice') }}</th>
-              <th v-if="linesEditable" :class="[lineTableHeadClass, 'text-right']">{{ t('records.linesDiscount') }}</th>
-              <th :class="[lineTableHeadClass, stickyColClass('total'), 'text-right', stickyColumnsActive && showPricingColumns && 'quote-lines-col-total']">{{ t('records.linesTotal') }}</th>
-              <th v-if="linesEditable" :class="[stickyColClass('actions'), 'px-3 py-2.5 text-right w-12']">
+              <th :class="[lineTableHeadClass, 'quote-lines-col-qty text-right']">{{ t('records.linesQty') }}</th>
+              <th :class="[lineTableHeadClass, 'quote-lines-col-unit-price text-right']">{{ t('records.linesUnitPrice') }}</th>
+              <th v-if="linesEditable && showDiscountColumn" :class="[lineTableHeadClass, 'quote-lines-col-discount text-right']">{{ t('records.linesDiscount') }}</th>
+              <th :class="[lineTableHeadClass, 'quote-lines-col-tax text-right']">{{ t('records.linesTax') }}</th>
+              <th :class="[lineTableHeadClass, stickyColClass('total'), 'quote-lines-col-total text-right']">{{ t('records.linesTotal') }}</th>
+              <th v-if="linesEditable" :class="[stickyColClass('actions'), 'quote-lines-col-actions px-3 py-2.5 text-right']">
                 <span class="sr-only">{{ t('records.linesMoreActions') }}</span>
               </th>
             </tr>
@@ -219,7 +217,7 @@
                 class="group/quote-line quote-line-row text-gray-900 dark:text-gray-100 transition-colors hover:bg-gray-50/80 dark:hover:bg-gray-800/40"
                 :class="isBundleParent ? 'quote-line-row--bundle bg-indigo-50/40 dark:bg-indigo-900/10 hover:bg-indigo-50/70 dark:hover:bg-indigo-900/20' : ''"
               >
-              <td :class="[stickyColClass('name'), 'px-3 py-2.5 align-middle', stickyColumnsActive && showPricingColumns && 'quote-lines-col-name']">
+              <td :class="[stickyColClass('name'), 'quote-lines-col-name px-3 py-2.5 align-middle']">
                 <div class="flex items-start gap-1.5 min-w-0">
                   <button
                     v-if="!isLineDragDisabled(line)"
@@ -251,18 +249,18 @@
                   </div>
                 </div>
               </td>
-              <td class="px-3 py-2.5 align-middle font-mono text-xs text-gray-600 dark:text-gray-300">
+              <td v-if="showSkuColumn" class="quote-lines-col-sku px-3 py-2.5 align-middle font-mono text-xs text-gray-600 dark:text-gray-300">
                 {{ line.skuSnapshot || '—' }}
               </td>
-              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-700 dark:text-gray-200">
+              <td v-if="showPricingColumns" class="quote-lines-col-scroll px-3 py-2.5 align-middle text-xs text-gray-700 dark:text-gray-200">
                 <span :title="priceProvenanceTitle(line)">
                   {{ line.priceBookNameSnapshot || '—' }}
                 </span>
               </td>
-              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-500 dark:text-gray-400">
+              <td v-if="showPricingColumns" class="quote-lines-col-scroll px-3 py-2.5 align-middle text-xs text-gray-500 dark:text-gray-400">
                 {{ pricingSourceLabel(line.pricingSourceSnapshot) }}
               </td>
-              <td class="px-3 py-2.5 align-middle text-right">
+              <td class="quote-lines-col-qty px-3 py-2.5 align-middle text-right">
                 <input
                   v-if="linesEditable"
                   :class="lineQtyInputClass"
@@ -276,40 +274,69 @@
                 />
                 <span v-else class="tabular-nums">{{ line.quantity }}</span>
               </td>
-              <td class="px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
+              <td class="quote-lines-col-unit-price px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
                 {{ formatMoney(line.unitPriceSnapshot) }}
               </td>
-              <td v-if="linesEditable" class="px-3 py-2.5 align-middle text-right">
-                <div class="inline-flex items-center justify-end gap-1.5">
-                  <HeadlessSelect
-                    :model-value="lineDiscountType(line)"
-                    :options="discountTypeOptions"
-                    allow-empty
-                    :empty-label="t('records.linesDiscountNone')"
-                    empty-value=""
-                    :disabled="busy"
-                    :button-class="lineSelectButtonClass"
-                    wrapper-class="inline-block min-w-[4.5rem]"
-                    teleport
-                    @update:model-value="(v) => patchLineDiscount(line, { type: v })"
-                  />
+              <td v-if="linesEditable && showDiscountColumn" class="quote-lines-col-discount px-3 py-2.5 align-middle text-right overflow-visible">
+                <div :class="discountGroupClass">
                   <input
-                    v-if="lineDiscountType(line)"
-                    :class="lineCompactInputClass"
-                    type="number"
-                    min="0"
-                    step="any"
+                    :class="discountGroupInputClass"
+                    type="text"
+                    inputmode="decimal"
                     :aria-label="t('records.linesDiscount')"
-                    :value="lineDiscountValue(line)"
+                    :value="lineDiscountInputValue(line)"
+                    :placeholder="discountValuePlaceholder"
                     :disabled="busy"
+                    @input="sanitizeDiscountInputEvent"
                     @change="(e) => patchLineDiscount(line, { value: e.target.value })"
                   />
+                  <div class="quote-lines-discount-type" data-discount-type-root>
+                    <button
+                      type="button"
+                      class="quote-lines-discount-type-btn"
+                      :disabled="busy"
+                      :aria-label="t('records.linesDiscount')"
+                      :aria-expanded="isDiscountTypeMenuOpen(`line:${lineRowKey(line)}`)"
+                      @click="toggleDiscountTypeMenu(`line:${lineRowKey(line)}`, $event)"
+                    >
+                      <span class="quote-lines-discount-type-label">{{ discountAddonLabel(lineDiscountType(line)) }}</span>
+                    </button>
+                    <Teleport to="body">
+                      <div
+                        v-if="isDiscountTypeMenuOpen(`line:${lineRowKey(line)}`)"
+                        class="quote-lines-discount-type-menu"
+                        role="listbox"
+                        :style="discountTypeMenuStyle"
+                      >
+                        <button
+                          v-for="opt in discountTypeOptions"
+                          :key="opt.value"
+                          type="button"
+                          role="option"
+                          class="quote-lines-discount-type-option"
+                          :class="{ 'is-selected': lineDiscountType(line) === opt.value }"
+                          :aria-selected="lineDiscountType(line) === opt.value"
+                          @click="chooseDiscountType(`line:${lineRowKey(line)}`, opt.value, (v) => patchLineDiscount(line, { type: v }))"
+                        >
+                          {{ opt.label }}
+                        </button>
+                      </div>
+                    </Teleport>
+                  </div>
                 </div>
               </td>
-              <td :class="[stickyColClass('total'), 'px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
+              <td class="quote-lines-col-tax px-3 py-2.5 align-middle text-right">
+                <LineTaxPickerCell
+                  :tax-snapshot="line.taxSnapshot"
+                  :line-tax-total="line.lineTaxTotal"
+                  :disabled="busy"
+                  @save="(taxIds) => patchLineTaxes(line, taxIds)"
+                />
+              </td>
+              <td :class="[stickyColClass('total'), 'quote-lines-col-total px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
                 {{ formatMoney(line.lineTotal) }}
               </td>
-              <td :class="[stickyColClass('actions'), 'px-3 py-2.5 align-middle text-right']">
+              <td :class="[stickyColClass('actions'), 'quote-lines-col-actions px-3 py-2.5 align-middle text-right']">
                 <div
                   v-if="linesEditable"
                   class="inline-flex items-center justify-end opacity-100 lg:opacity-0 lg:group-hover/quote-line:opacity-100 transition-opacity"
@@ -335,10 +362,9 @@
           >
             <tr class="quote-line-draft-row bg-indigo-50/40 dark:bg-indigo-950/25 text-gray-900 dark:text-gray-100">
               <td
-                :colspan="draftSearchColspan"
-                :class="[stickyColClass('name'), 'quote-line-draft-search-cell px-3 py-2 align-middle']"
+                :class="[stickyColClass('name'), 'quote-lines-col-name quote-line-draft-search-cell px-3 py-2 align-middle']"
               >
-                <div class="flex items-center gap-1.5 min-w-0 w-full max-w-2xl">
+                <div class="flex items-center gap-1.5 min-w-0 w-full">
                   <div class="relative min-w-0 flex-1">
                     <MagnifyingGlassIcon
                       class="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
@@ -378,7 +404,7 @@
                           {{ t('states.loading') }}
                         </li>
                         <li
-                          v-else-if="!draftRow(block).searchResults.length"
+                          v-else-if="!draftRow(block).searchResults.length && (draftRow(block).searchQuery.trim() || !canCreateQuoteItem)"
                           class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
                         >
                           {{ t('records.linesNoVariantsFound') }}
@@ -393,6 +419,19 @@
                           <span class="text-gray-900 dark:text-white">{{ hit.item_name || hit.variant_code }}</span>
                           <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
                         </li>
+                        <li
+                          v-if="canCreateQuoteItem"
+                          class="border-t border-gray-100 dark:border-gray-700 mt-1"
+                        >
+                          <button
+                            type="button"
+                            class="flex w-full items-center gap-2 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                            @mousedown.prevent="openAddNewItemFromDraft(block)"
+                          >
+                            <PlusIcon class="h-4 w-4 shrink-0" aria-hidden="true" />
+                            <span>{{ t('records.linesAddNewItem') }}</span>
+                          </button>
+                        </li>
                       </ul>
                     </Teleport>
                   </div>
@@ -404,12 +443,13 @@
                     :aria-label="t('records.linesOpenLookup')"
                     @click="openVariantPickerForDraft(block)"
                   >
-                    <MagnifyingGlassIcon class="h-4 w-4" aria-hidden="true" />
+                    <CubeIcon class="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
               </td>
-              <td :class="[stickyColClass('total'), 'px-3 py-2 align-middle text-right text-xs text-gray-400 dark:text-gray-500 tabular-nums']">—</td>
-              <td :class="[stickyColClass('actions'), 'px-3 py-2 align-middle text-right']">
+              <td :colspan="draftSearchMiddleColspan" class="px-3 py-2 align-middle" />
+              <td :class="[stickyColClass('total'), 'quote-lines-col-total px-3 py-2 align-middle text-right text-xs text-gray-400 dark:text-gray-500 tabular-nums']">—</td>
+              <td :class="[stickyColClass('actions'), 'quote-lines-col-actions px-3 py-2 align-middle text-right']">
                 <button
                   type="button"
                   class="inline-flex items-center justify-center p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50"
@@ -440,7 +480,7 @@
               class="text-gray-900 dark:text-gray-100"
               :class="isBundleParent ? 'quote-line-row--bundle bg-indigo-50/40 dark:bg-indigo-900/10' : ''"
             >
-              <td :class="[stickyColClass('name'), 'px-3 py-2.5 align-middle', stickyColumnsActive && showPricingColumns && 'quote-lines-col-name']">
+              <td :class="[stickyColClass('name'), 'quote-lines-col-name px-3 py-2.5 align-middle']">
                 <div class="min-w-0 flex items-start gap-1" :class="indent ? 'pl-4' : ''">
                   <span v-if="indent" class="text-gray-400 shrink-0" aria-hidden="true">↳</span>
                   <div class="min-w-0">
@@ -451,20 +491,23 @@
                   </div>
                 </div>
               </td>
-              <td class="px-3 py-2.5 align-middle font-mono text-xs text-gray-600 dark:text-gray-300">
+              <td v-if="showSkuColumn" class="quote-lines-col-sku px-3 py-2.5 align-middle font-mono text-xs text-gray-600 dark:text-gray-300">
                 {{ line.skuSnapshot || '—' }}
               </td>
-              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-700 dark:text-gray-200">
+              <td v-if="showPricingColumns" class="quote-lines-col-scroll px-3 py-2.5 align-middle text-xs text-gray-700 dark:text-gray-200">
                 {{ line.priceBookNameSnapshot || '—' }}
               </td>
-              <td v-if="showPricingColumns" class="px-3 py-2.5 align-middle text-xs text-gray-500 dark:text-gray-400">
+              <td v-if="showPricingColumns" class="quote-lines-col-scroll px-3 py-2.5 align-middle text-xs text-gray-500 dark:text-gray-400">
                 {{ pricingSourceLabel(line.pricingSourceSnapshot) }}
               </td>
-              <td class="px-3 py-2.5 align-middle text-right tabular-nums">{{ line.quantity }}</td>
-              <td class="px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
+              <td class="quote-lines-col-qty px-3 py-2.5 align-middle text-right tabular-nums">{{ line.quantity }}</td>
+              <td class="quote-lines-col-unit-price px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
                 {{ formatMoney(line.unitPriceSnapshot) }}
               </td>
-              <td :class="[stickyColClass('total'), 'px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
+              <td class="quote-lines-col-tax px-3 py-2.5 align-middle text-right tabular-nums text-xs text-gray-600 dark:text-gray-300">
+                {{ formatMoney(line.lineTaxTotal) }}
+              </td>
+              <td :class="[stickyColClass('total'), 'quote-lines-col-total px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
                 {{ formatMoney(line.lineTotal) }}
               </td>
             </tr>
@@ -486,7 +529,7 @@
                 :class="[
                   lineTableFootCellClass,
                   stickyColClass('name'),
-                  stickyColumnsActive && showPricingColumns && 'quote-lines-col-name',
+                  'quote-lines-col-name',
                   'quote-lines-add-actions-cell'
                 ]"
               >
@@ -516,51 +559,70 @@
               <td :class="[lineTableFootCellClass, stickyColClass('actions')]" />
             </tr>
           </tfoot>
-          <tfoot
-            v-if="block.section && !block.isOrphan && block.section.showSectionTotal !== false"
-            class="quote-lines-section-foot"
-          >
-            <tr class="text-sm">
-              <td :class="[lineTableFootCellClass, stickyColClass('name')]" />
-              <td :colspan="sectionFooterBeforeUnitPriceColspan" :class="lineTableFootCellClass" />
-              <td :class="[lineTableFootCellClass, 'text-right text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap']">
-                {{ t('records.quoteSectionSubtotal') }}:
-              </td>
-              <td v-if="linesEditable" :class="[lineTableFootCellClass, 'text-right overflow-visible']">
-                <div class="inline-flex items-center justify-end gap-1.5 overflow-visible">
-                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('records.quoteSectionDiscount') }}</span>
-                  <HeadlessSelect
-                    :model-value="sectionDiscountType(block.section)"
-                    :options="discountTypeOptions"
-                    allow-empty
-                    :empty-label="t('records.linesDiscountNone')"
-                    empty-value=""
-                    :disabled="busy"
-                    :button-class="lineSelectButtonClass"
-                    wrapper-class="inline-block min-w-[4.5rem] overflow-visible"
-                    teleport
-                    @update:model-value="(v) => saveSectionDiscount(block.section, { type: v })"
-                  />
-                  <input
-                    v-if="sectionDiscountType(block.section)"
-                    :class="lineCompactInputClass"
-                    type="number"
-                    min="0"
-                    step="any"
-                    :aria-label="t('records.quoteSectionDiscount')"
-                    :value="sectionDiscountValue(block.section)"
-                    :disabled="busy"
-                    @change="(e) => saveSectionDiscount(block.section, { value: e.target.value })"
-                  />
-                </div>
-              </td>
-              <td :class="[lineTableFootCellClass, stickyColClass('total'), 'text-right font-medium tabular-nums text-gray-900 dark:text-gray-100']">
-                {{ formatMoney(block.section.sectionTotal) }}
-              </td>
-              <td v-if="linesEditable" :class="[lineTableFootCellClass, stickyColClass('actions')]" />
-            </tr>
-          </tfoot>
         </table>
+          </div>
+          <div
+            v-if="block.section && !block.isOrphan && block.section.showSectionTotal !== false"
+            class="quote-lines-section-summary flex items-center justify-end border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30"
+          >
+            <div class="quote-lines-section-summary-label px-3 py-2.5 text-right">
+              <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                {{ t('records.quoteSectionSubtotal') }}:
+              </span>
+            </div>
+            <div class="quote-lines-section-summary-discount px-3 py-2.5 flex items-center justify-end">
+              <div v-if="linesEditable" :class="discountGroupClass">
+                <input
+                  :class="discountGroupInputClass"
+                  type="text"
+                  inputmode="decimal"
+                  :aria-label="t('records.quoteSectionDiscount')"
+                  :value="sectionDiscountInputValue(block.section)"
+                  :placeholder="discountValuePlaceholder"
+                  :disabled="busy"
+                  @input="sanitizeDiscountInputEvent"
+                  @change="(e) => saveSectionDiscount(block.section, { value: e.target.value })"
+                />
+                <div class="quote-lines-discount-type" data-discount-type-root>
+                  <button
+                    type="button"
+                    class="quote-lines-discount-type-btn"
+                    :disabled="busy"
+                    :aria-label="t('records.quoteSectionDiscount')"
+                    :aria-expanded="isDiscountTypeMenuOpen(`section:${block.key}`)"
+                    @click="toggleDiscountTypeMenu(`section:${block.key}`, $event)"
+                  >
+                    <span class="quote-lines-discount-type-label">{{ discountAddonLabel(sectionDiscountType(block.section)) }}</span>
+                  </button>
+                  <Teleport to="body">
+                    <div
+                      v-if="isDiscountTypeMenuOpen(`section:${block.key}`)"
+                      class="quote-lines-discount-type-menu"
+                      role="listbox"
+                      :style="discountTypeMenuStyle"
+                    >
+                      <button
+                        v-for="opt in discountTypeOptions"
+                        :key="opt.value"
+                        type="button"
+                        role="option"
+                        class="quote-lines-discount-type-option"
+                        :class="{ 'is-selected': sectionDiscountType(block.section) === opt.value }"
+                        :aria-selected="sectionDiscountType(block.section) === opt.value"
+                        @click="chooseDiscountType(`section:${block.key}`, opt.value, (v) => saveSectionDiscount(block.section, { type: v }))"
+                      >
+                        {{ opt.label }}
+                      </button>
+                    </div>
+                  </Teleport>
+                </div>
+              </div>
+            </div>
+            <div class="quote-lines-section-summary-tax px-3 py-2.5" aria-hidden="true" />
+            <div class="quote-lines-section-summary-total px-3 py-2.5 text-right text-sm font-medium tabular-nums text-gray-900 dark:text-gray-100">
+              {{ formatMoney(block.section.sectionTotal) }}
+            </div>
+            <div v-if="linesEditable" class="quote-lines-section-summary-actions px-3 py-2.5" aria-hidden="true" />
           </div>
         </div>
       </div>
@@ -584,30 +646,51 @@
         <div class="flex items-center justify-between gap-2 text-sm">
           <span class="text-gray-600 dark:text-gray-400 shrink-0">{{ t('records.linesTotalsGlobalDiscount') }}</span>
           <div class="inline-flex items-center gap-2 ml-auto">
-            <div v-if="linesEditable" class="inline-flex items-center gap-1.5">
-              <HeadlessSelect
-                :model-value="globalDiscountType"
-                :options="discountTypeOptions"
-                allow-empty
-                :empty-label="t('records.linesDiscountNone')"
-                empty-value=""
-                :disabled="busy"
-                :button-class="lineSelectButtonClass"
-                wrapper-class="inline-block min-w-[4.5rem]"
-                teleport
-                @update:model-value="onGlobalDiscountTypeChange"
-              />
+            <div v-if="linesEditable" :class="discountGroupClass">
               <input
-                v-if="globalDiscountType"
-                v-model.number="globalDiscountValue"
-                :class="lineCompactInputClass"
-                type="number"
-                min="0"
-                step="any"
+                :class="discountGroupInputClass"
+                type="text"
+                inputmode="decimal"
                 :aria-label="t('records.linesTotalsGlobalDiscount')"
+                :value="globalDiscountInputValue"
+                :placeholder="discountValuePlaceholder"
                 :disabled="busy"
-                @change="saveGlobalDiscount"
+                @input="sanitizeDiscountInputEvent"
+                @change="onGlobalDiscountValueChange"
               />
+              <div class="quote-lines-discount-type" data-discount-type-root>
+                <button
+                  type="button"
+                  class="quote-lines-discount-type-btn"
+                  :disabled="busy"
+                  :aria-label="t('records.linesTotalsGlobalDiscount')"
+                  :aria-expanded="isDiscountTypeMenuOpen('global')"
+                  @click="toggleDiscountTypeMenu('global', $event)"
+                >
+                  <span class="quote-lines-discount-type-label">{{ discountAddonLabel(globalDiscountType) }}</span>
+                </button>
+                <Teleport to="body">
+                  <div
+                    v-if="isDiscountTypeMenuOpen('global')"
+                    class="quote-lines-discount-type-menu"
+                    role="listbox"
+                    :style="discountTypeMenuStyle"
+                  >
+                    <button
+                      v-for="opt in discountTypeOptions"
+                      :key="opt.value"
+                      type="button"
+                      role="option"
+                      class="quote-lines-discount-type-option"
+                      :class="{ 'is-selected': globalDiscountType === opt.value }"
+                      :aria-selected="globalDiscountType === opt.value"
+                      @click="chooseDiscountType('global', opt.value, onGlobalDiscountTypeChange)"
+                    >
+                      {{ opt.label }}
+                    </button>
+                  </div>
+                </Teleport>
+              </div>
             </div>
             <span
               v-if="totals.globalDiscountTotal > 0 || !linesEditable"
@@ -617,9 +700,41 @@
             </span>
           </div>
         </div>
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsTax') }}</span>
-          <span class="font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.taxTotal) }}</span>
+        <div class="flex items-center justify-between gap-2 text-sm" data-doc-tax-root>
+          <div class="flex min-w-0 items-center gap-2">
+            <span class="shrink-0 text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsTax') }}</span>
+            <button
+              v-if="linesEditable"
+              type="button"
+              class="shrink-0 text-xs text-indigo-600 hover:underline dark:text-indigo-400 disabled:opacity-50"
+              :disabled="busy"
+              :aria-expanded="openDocTaxes"
+              @click="openDocTaxesPicker($event)"
+            >
+              {{ t('actions.edit') }}
+            </button>
+          </div>
+          <span class="shrink-0 font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.taxTotal) }}</span>
+        </div>
+        <div
+          v-if="totals.chargesTotal > 0 || linesEditable"
+          class="flex items-center justify-between gap-2 text-sm"
+          data-doc-charge-root
+        >
+          <div class="flex min-w-0 items-center gap-2">
+            <span class="shrink-0 text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsCharges') }}</span>
+            <button
+              v-if="linesEditable"
+              type="button"
+              class="shrink-0 text-xs text-indigo-600 hover:underline dark:text-indigo-400 disabled:opacity-50"
+              :disabled="busy"
+              :aria-expanded="openDocCharges"
+              @click="openDocChargesPicker($event)"
+            >
+              {{ t('actions.edit') }}
+            </button>
+          </div>
+          <span class="shrink-0 font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.chargesTotal) }}</span>
         </div>
         <div v-if="totals.adjustmentTotal !== 0" class="flex items-center justify-between text-sm">
           <span class="text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsAdjustment') }}</span>
@@ -644,7 +759,7 @@
     </div>
 
     <!-- Pickers -->
-    <div v-if="showBundlePicker" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
+    <div v-if="showBundlePicker" class="fixed inset-0 z-[10050] flex items-center justify-center bg-black/40 p-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full max-w-lg space-y-3 max-h-[80vh] flex flex-col">
         <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.linesPickBundleTitle') }}</h4>
         <input
@@ -679,7 +794,7 @@
       </div>
     </div>
 
-    <div v-if="showBundleOptionalModal" class="fixed inset-0 z-[75] flex items-center justify-center bg-black/40 p-4">
+    <div v-if="showBundleOptionalModal" class="fixed inset-0 z-[10055] flex items-center justify-center bg-black/40 p-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full max-w-lg space-y-3 max-h-[80vh] flex flex-col">
         <h4 class="text-base font-semibold text-gray-900 dark:text-white">
           {{ t('records.linesBundleOptionalTitle') }}
@@ -728,61 +843,230 @@
       </div>
     </div>
 
-    <div v-if="showVariantPicker" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-5 w-full max-w-lg space-y-3 max-h-[80vh] flex flex-col">
-        <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.linesPickVariantTitle') }}</h4>
-        <input
-          v-model="variantSearchQuery"
-          type="search"
-          :class="lineFormControlClass"
-          :placeholder="t('records.linesVariantSearchPlaceholder')"
-          :disabled="busy"
-          @input="debouncedVariantSearch"
-        />
-        <ul class="flex-1 overflow-y-auto space-y-1 min-h-[120px]">
-          <li v-if="variantSearchLoading" class="text-sm text-gray-500 px-2">{{ t('states.loading') }}</li>
-          <li v-else-if="!variantSearchResults.length" class="text-sm text-gray-500 px-2">{{ t('records.linesNoVariantsFound') }}</li>
-          <li
-            v-for="hit in variantSearchResults"
-            :key="hit._id"
-            class="flex items-start gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-            :class="isVariantPickerSelected(hit) ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''"
-            @click="toggleVariantPickerSelection(hit)"
-          >
-            <input
-              type="checkbox"
-              class="mt-1 rounded pointer-events-none"
-              :checked="isVariantPickerSelected(hit)"
-              tabindex="-1"
-              :disabled="busy"
-              @click.stop
-            />
-            <span class="min-w-0 flex-1">
-              <span class="text-sm text-gray-900 dark:text-white">{{ hit.item_name || hit.variant_code }}</span>
-              <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
-            </span>
-          </li>
-        </ul>
-        <div class="flex justify-end gap-2">
-          <button
-            type="button"
-            class="px-3 py-2 text-sm"
-            :disabled="busy"
-            @click="closeVariantPicker"
-          >
-            {{ t('actions.cancel') }}
-          </button>
-          <button
-            type="button"
-            class="px-3 py-2 text-sm rounded-md bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
-            :disabled="busy || !variantPickerSelectedCount"
-            @click="confirmVariantPickerSelection"
-          >
-            {{ t('records.linesAddSelected', { count: variantPickerSelectedCount }) }}
-          </button>
+    <TransitionRoot as="template" :show="showVariantPicker">
+      <Dialog
+        :initialFocus="variantPickerSearchInputRef"
+        class="relative z-[10050]"
+        @close="closeVariantPicker"
+      >
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-200"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-gray-500/75 dark:bg-black/75" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 overflow-hidden">
+          <div class="absolute inset-0 overflow-hidden">
+            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+              <TransitionChild
+                as="template"
+                enter="transform transition ease-in-out duration-300 sm:duration-300"
+                enter-from="translate-x-full"
+                enter-to="translate-x-0"
+                leave="transform transition ease-in-out duration-300 sm:duration-300"
+                leave-from="translate-x-0"
+                leave-to="translate-x-full"
+              >
+                <DialogPanel class="pointer-events-auto w-screen max-w-3xl">
+                  <div class="rounded-tl-xl overflow-hidden relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
+                    <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6">
+                      <div class="flex items-center justify-between">
+                        <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+                          {{ t('records.linesPickVariantTitle') }}
+                        </DialogTitle>
+                        <div class="ml-3 flex h-7 items-center">
+                          <button
+                            type="button"
+                            class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
+                            @click="closeVariantPicker"
+                          >
+                            <span class="absolute -inset-2.5" />
+                            <span class="sr-only">{{ t('common.closePanel') }}</span>
+                            <XMarkIcon class="size-6" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {{ t('records.linesPickItemsSubtitle') }}
+                      </p>
+                    </div>
+
+                    <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
+                      <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center gap-3">
+                          <div class="relative flex-1 min-w-0">
+                            <MagnifyingGlassIcon
+                              class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400"
+                              aria-hidden="true"
+                            />
+                            <input
+                              ref="variantPickerSearchInputRef"
+                              v-model="variantSearchQuery"
+                              type="search"
+                              class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 pl-9 pr-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10"
+                              :placeholder="t('records.linesVariantSearchPlaceholder')"
+                              :disabled="busy"
+                              autocomplete="off"
+                              @input="debouncedVariantSearch"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            class="inline-flex shrink-0 items-center justify-center rounded-md bg-white dark:bg-gray-800 p-2 text-gray-500 dark:text-gray-300 shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="busy || variantSearchLoading"
+                            :title="variantSearchLoading ? t('common.formRefreshing') : t('actions.refresh')"
+                            @click="runVariantSearch"
+                          >
+                            <span class="sr-only">{{ t('actions.refresh') }}</span>
+                            <ArrowPathIcon
+                              class="size-4"
+                              :class="variantSearchLoading ? 'animate-spin' : ''"
+                              aria-hidden="true"
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="flex-1 overflow-auto p-4">
+                        <ul v-if="variantSearchLoading" class="divide-y divide-gray-200 dark:divide-gray-700">
+                          <li v-for="i in 6" :key="`variant-skeleton-${i}`" class="flex items-center gap-3 py-3 px-2">
+                            <div class="size-8 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
+                            <div class="min-w-0 flex-1 space-y-2">
+                              <div class="h-3.5 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+                              <div class="h-3 w-2/3 animate-pulse rounded bg-gray-100 dark:bg-gray-700/70" />
+                            </div>
+                            <div class="h-4 w-16 animate-pulse rounded bg-gray-100 dark:bg-gray-700/70" />
+                          </li>
+                        </ul>
+
+                        <div
+                          v-else-if="!variantSearchResults.length"
+                          class="flex min-h-[20rem] flex-col items-center justify-center text-center px-6"
+                        >
+                          <div class="flex size-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                            <CubeIcon class="size-6 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                          </div>
+                          <h4 class="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            {{ t('records.linesNoVariantsFound') }}
+                          </h4>
+                          <p class="mt-1 max-w-sm text-sm text-gray-500 dark:text-gray-400">
+                            {{
+                              variantSearchQuery.trim()
+                                ? t('records.linesPickItemsNoMatch', { query: variantSearchQuery.trim() })
+                                : t('records.linesPickItemsEmptyHint')
+                            }}
+                          </p>
+                          <button
+                            v-if="canCreateQuoteItem"
+                            type="button"
+                            class="mt-4 inline-flex items-center gap-2 rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600"
+                            @click="openAddNewItemFromPicker"
+                          >
+                            <PlusIcon class="size-4" aria-hidden="true" />
+                            {{ t('records.linesAddNewItem') }}
+                          </button>
+                        </div>
+
+                        <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+                          <li
+                            v-for="hit in variantSearchResults"
+                            :key="hit._id"
+                            :class="[
+                              'flex items-center gap-3 py-3 px-2 rounded-md transition-colors cursor-pointer',
+                              isVariantPickerSelected(hit)
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10'
+                                : 'hover:bg-gray-50 dark:hover:bg-gray-700/40'
+                            ]"
+                            @click="toggleVariantPickerSelection(hit)"
+                          >
+                            <div
+                              class="flex size-5 shrink-0 items-center justify-center rounded border"
+                              :class="
+                                isVariantPickerSelected(hit)
+                                  ? 'border-indigo-600 bg-indigo-600 text-white'
+                                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+                              "
+                            >
+                              <CheckSolidIcon
+                                v-if="isVariantPickerSelected(hit)"
+                                class="size-3.5"
+                                aria-hidden="true"
+                              />
+                            </div>
+                            <Avatar :record="variantHitAvatarRecord(hit)" size="md" />
+                            <div class="min-w-0 flex-1">
+                              <div class="flex items-center gap-2 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {{ hit.item_name || hit.variant_code || '—' }}
+                                </p>
+                              </div>
+                              <p
+                                v-if="variantHitSubtitle(hit)"
+                                class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate font-mono"
+                              >
+                                {{ variantHitSubtitle(hit) }}
+                              </p>
+                            </div>
+                            <div class="shrink-0 text-right">
+                              <p class="text-sm font-medium tabular-nums text-gray-900 dark:text-white">
+                                {{ formatVariantHitPrice(hit) }}
+                              </p>
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div class="flex flex-shrink-0 items-center justify-between gap-3 px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-gray-700">
+                      <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {{
+                          variantPickerSelectedCount
+                            ? t('records.linesPickItemsSelectedCount', { count: variantPickerSelectedCount })
+                            : t('records.linesPickItemsSelectHint')
+                        }}
+                      </p>
+                      <div class="flex items-center gap-2">
+                        <button
+                          v-if="canCreateQuoteItem"
+                          type="button"
+                          class="inline-flex items-center gap-1.5 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          @click="openAddNewItemFromPicker"
+                        >
+                          <PlusIcon class="size-4" aria-hidden="true" />
+                          {{ t('common.formCreateNew') }}
+                        </button>
+                        <button
+                          type="button"
+                          class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                          :disabled="busy"
+                          @click="closeVariantPicker"
+                        >
+                          {{ t('actions.cancel') }}
+                        </button>
+                        <button
+                          type="button"
+                          class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          :disabled="busy || !variantPickerSelectedCount"
+                          @click="confirmVariantPickerSelection"
+                        >
+                          {{ t('records.linesAddSelected', { count: variantPickerSelectedCount }) }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </DialogPanel>
+              </TransitionChild>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </Dialog>
+    </TransitionRoot>
 
     <QuoteSectionFormModal
       :show="showSectionModal"
@@ -793,6 +1077,118 @@
       @submit="submitSectionModal"
     />
 
+    <Teleport to="body">
+      <div
+        v-if="openDocTaxes"
+        data-doc-taxes-popover
+        class="fixed z-[10050] w-[20rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg ring-1 ring-black/5 dark:border-gray-600 dark:bg-gray-800 dark:ring-white/10"
+        :style="docTaxesPopoverStyle"
+        role="dialog"
+        :aria-label="t('records.linesDocTaxes')"
+      >
+        <div class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+          <h3 class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('records.linesDocTaxes') }}</h3>
+        </div>
+        <div class="max-h-64 space-y-1.5 overflow-y-auto px-3 py-2">
+          <p
+            v-if="docTaxesLoadError"
+            class="rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-xs text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+          >
+            {{ docTaxesLoadError }}
+          </p>
+          <div v-else-if="docTaxesLoading" class="flex justify-center py-4">
+            <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-indigo-600" />
+          </div>
+          <template v-else>
+            <label
+              v-for="opt in docTaxOptions"
+              :key="opt.id"
+              class="flex cursor-pointer items-center gap-2 text-sm text-gray-800 dark:text-gray-200"
+            >
+              <HeadlessCheckbox
+                :model-value="docTaxIds.includes(opt.id)"
+                @update:model-value="(checked) => toggleDocTaxId(opt.id, checked)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+            <p v-if="!docTaxOptions.length" class="text-xs text-gray-500">{{ t('records.linesDocTaxPickerEmpty') }}</p>
+          </template>
+        </div>
+        <div class="flex justify-end gap-2 border-t border-gray-200 px-3 py-2 dark:border-gray-700">
+          <button type="button" class="px-2.5 py-1 text-xs text-gray-600 dark:text-gray-300" @click="openDocTaxes = false">
+            {{ t('actions.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white disabled:opacity-50"
+            :disabled="busy || docTaxesLoading || !!docTaxesLoadError"
+            @click="persistDocTaxes"
+          >
+            {{ busy ? t('states.saving') : t('actions.save') }}
+          </button>
+        </div>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div
+        v-if="openDocCharges"
+        data-doc-charges-popover
+        class="fixed z-[10050] w-[20rem] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg ring-1 ring-black/5 dark:border-gray-600 dark:bg-gray-800 dark:ring-white/10"
+        :style="docChargesPopoverStyle"
+        role="dialog"
+        :aria-label="t('records.linesDocCharges')"
+      >
+        <div class="border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+          <h3 class="text-xs font-semibold text-gray-900 dark:text-white">{{ t('records.linesDocCharges') }}</h3>
+        </div>
+        <div class="max-h-64 space-y-1.5 overflow-y-auto px-3 py-2">
+          <p
+            v-if="docChargesLoadError"
+            class="rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-xs text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+          >
+            {{ docChargesLoadError }}
+          </p>
+          <div v-else-if="docChargesLoading" class="flex justify-center py-4">
+            <div class="h-5 w-5 animate-spin rounded-full border-b-2 border-indigo-600" />
+          </div>
+          <template v-else>
+            <label
+              v-for="opt in docChargeOptions"
+              :key="opt.id"
+              class="flex cursor-pointer items-center gap-2 text-sm text-gray-800 dark:text-gray-200"
+            >
+              <HeadlessCheckbox
+                :model-value="docChargeIds.includes(opt.id)"
+                @update:model-value="(checked) => toggleDocChargeId(opt.id, checked)"
+              />
+              <span>{{ opt.label }}</span>
+            </label>
+            <p v-if="!docChargeOptions.length" class="text-xs text-gray-500">{{ t('records.linesChargePickerEmpty') }}</p>
+            <p
+              v-if="docChargeIds.length"
+              class="mt-1.5 text-xs font-medium text-gray-700 dark:text-gray-300"
+            >
+              {{ t('records.linesDocChargesPreview', { amount: formatMoney(docChargesPreviewTotal) }) }}
+            </p>
+          </template>
+        </div>
+        <div class="flex justify-end gap-2 border-t border-gray-200 px-3 py-2 dark:border-gray-700">
+          <button type="button" class="px-2.5 py-1 text-xs text-gray-600 dark:text-gray-300" @click="openDocCharges = false">
+            {{ t('actions.cancel') }}
+          </button>
+          <button
+            type="button"
+            class="rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white disabled:opacity-50"
+            :disabled="busy || docChargesLoading || !!docChargesLoadError"
+            @click="persistDocCharges"
+          >
+            {{ busy ? t('states.saving') : t('actions.save') }}
+          </button>
+        </div>
+      </div>
+    </Teleport>
+
     <DeleteConfirmationModal
       :show="showDeleteLineModal"
       :record-name="linePendingDelete?.itemNameSnapshot || t('records.linesTitle')"
@@ -801,6 +1197,17 @@
       @close="showDeleteLineModal = false"
       @confirm="confirmRemoveLine"
     />
+
+    <CreateRecordDrawer
+      v-if="canCreateQuoteItem"
+      :isOpen="showItemCreateDrawer"
+      moduleKey="items"
+      :prefillText="itemCreatePrefillText"
+      prefillFieldKey="item_name"
+      :initialData="itemCreateInitialData"
+      @close="closeItemCreateDrawer"
+      @saved="handleItemCreatedFromDraft"
+    />
   </section>
 </template>
 
@@ -808,26 +1215,41 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  TransitionChild,
+  TransitionRoot
+} from '@headlessui/vue';
+import {
+  ArrowPathIcon,
   Bars3Icon,
   ChevronDownIcon,
   ChevronUpIcon,
+  CubeIcon,
   MagnifyingGlassIcon,
   PlusIcon,
   Squares2X2Icon,
   TrashIcon,
   XMarkIcon
 } from '@heroicons/vue/24/outline';
+import { CheckIcon as CheckSolidIcon } from '@heroicons/vue/24/solid';
 import draggable from 'vuedraggable';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import { unwrapCatalogApiData, unwrapCatalogApiList } from '@/utils/catalogApi';
 import { useAuthStore } from '@/stores/authRegistry';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
-import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import Avatar from '@/components/common/Avatar.vue';
+import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import QuoteLinesHeaderActions from '@/components/record-page/sections/QuoteLinesHeaderActions.vue';
+import QuoteLinesColumnOptions from '@/components/record-page/sections/QuoteLinesColumnOptions.vue';
 import QuoteSectionFormModal from '@/components/record-page/sections/QuoteSectionFormModal.vue';
+import LineTaxPickerCell from '@/components/record-page/sections/LineTaxPickerCell.vue';
+import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { isCommerciallyLockedStatus } from '@/constants/quoteLifecycle';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import { useQuoteLinesColumnPrefs } from '@/composables/useQuoteLinesColumnPrefs';
 import {
   buildQuoteSectionBlocks,
   sectionRef as quoteSectionRef,
@@ -851,6 +1273,15 @@ const { t } = useI18n();
 const notifications = useNotifications();
 const authStore = useAuthStore();
 
+const canCreateQuoteItem = computed(() => authStore.can('items', 'create'));
+const showItemCreateDrawer = ref(false);
+const itemCreateBlockKey = ref(null);
+const itemCreatePrefillText = ref('');
+const itemCreateInitialData = computed(() => {
+  const seed = String(itemCreatePrefillText.value || '').trim();
+  return seed ? { item_name: seed } : {};
+});
+
 const lineTableHeadClass =
   'px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400';
 const lineTableFootCellClass =
@@ -860,11 +1291,8 @@ const lineFormControlClass =
 const lineInputClass =
   'h-8 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed';
 const lineQtyInputClass = `${lineInputClass} w-[4.5rem] text-right tabular-nums ml-auto block`;
-const lineCompactInputClass = `${lineInputClass} w-16 text-xs text-right tabular-nums`;
-const lineSelectButtonClass =
-  '!h-8 !min-w-[4.5rem] !px-2 !py-1 !text-xs !rounded !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
-const lineFormSelectButtonClass =
-  '!h-9 !px-3 !py-2 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
+const discountGroupClass = 'quote-lines-discount-group';
+const discountGroupInputClass = 'quote-lines-discount-value';
 const lineAddBarControlClass =
   '!h-8 !px-2.5 !py-1.5 !text-sm !rounded-md !bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-white !outline-none ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:!ring-2 focus:!ring-indigo-500 disabled:!opacity-50 disabled:!cursor-not-allowed';
 const lineAddBarSelectClass =
@@ -875,15 +1303,75 @@ const lineInlineSearchInputClass =
 const QUOTE_RECENT_VARIANTS_KEY = 'arivu:quote-recent-variants';
 const QUOTE_RECENT_VARIANTS_MAX = 12;
 
-const discountTypeOptions = computed(() => [
-  { value: 'percent', label: t('records.linesDiscountPercent') },
-  { value: 'amount', label: t('records.linesDiscountAmount') }
-]);
+function discountAddonLabel(type) {
+  const key = String(type || '');
+  if (key === 'amount') return discountCurrencySymbol.value;
+  return '%';
+}
+
+const discountTypeMenuKey = ref('');
+const discountTypeMenuStyle = ref({});
+
+function isDiscountTypeMenuOpen(key) {
+  return discountTypeMenuKey.value === key;
+}
+
+function toggleDiscountTypeMenu(key, event) {
+  event?.stopPropagation?.();
+  if (discountTypeMenuKey.value === key) {
+    closeDiscountTypeMenu();
+    return;
+  }
+  const btn = event?.currentTarget;
+  if (btn?.getBoundingClientRect) {
+    const rect = btn.getBoundingClientRect();
+    discountTypeMenuStyle.value = {
+      top: `${Math.round(rect.bottom + 4)}px`,
+      left: `${Math.round(rect.right)}px`,
+      transform: 'translateX(-100%)'
+    };
+  }
+  discountTypeMenuKey.value = key;
+}
+
+function closeDiscountTypeMenu() {
+  discountTypeMenuKey.value = '';
+}
+
+function chooseDiscountType(_key, type, apply) {
+  apply?.(type);
+  closeDiscountTypeMenu();
+}
+
+function onDiscountTypeMenuPointerDown(event) {
+  if (!discountTypeMenuKey.value) return;
+  if (event.target?.closest?.('[data-discount-type-root], .quote-lines-discount-type-menu')) return;
+  closeDiscountTypeMenu();
+}
+
+function currencySymbolForCode(code) {
+  const normalized = String(code || '').trim().toUpperCase();
+  if (!normalized) return '$';
+  try {
+    const parts = new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: normalized,
+      currencyDisplay: 'narrowSymbol'
+    }).formatToParts(0);
+    return parts.find((part) => part.type === 'currency')?.value || normalized;
+  } catch {
+    return normalized;
+  }
+}
 
 const quoteId = computed(() => props.record?._id);
 const { busy, overrideLock } = useQuoteLinesSession(quoteId);
+const {
+  showSkuColumn,
+  showDiscountColumn,
+  showPricingColumns
+} = useQuoteLinesColumnPrefs();
 
-const showPricingColumns = ref(false);
 const showDeleteLineModal = ref(false);
 const linePendingDelete = ref(null);
 const workspacePanelRef = ref(null);
@@ -935,7 +1423,7 @@ const canReorderSections = computed(
 
 const { stickyColumnsActive } = useQuoteLinesStickyColumns(
   () => workspacePanelRef.value,
-  [showPricingColumns, sectionBlocks, isLinesExpanded]
+  [showPricingColumns, showSkuColumn, showDiscountColumn, sectionBlocks, isLinesExpanded]
 );
 
 function onQuoteLinesTableScroll(event) {
@@ -1312,17 +1800,56 @@ async function toggleSectionInclude(section, checked) {
 }
 
 function sectionDiscountType(section) {
-  return normalizeDiscountType(section?.sectionDiscountType);
+  return normalizeDiscountType(section?.sectionDiscountType) || 'percent';
 }
 
 function sectionDiscountValue(section) {
   return Number(section?.sectionDiscountValue) || 0;
 }
 
+function sectionDiscountInputValue(section) {
+  const raw = Number(section?.sectionDiscountValue);
+  if (!normalizeDiscountType(section?.sectionDiscountType) || !Number.isFinite(raw) || raw === 0) return '';
+  return String(raw);
+}
+
+/** Keep discount fields numeric (digits + one decimal point). */
+function sanitizeDiscountInputEvent(event) {
+  const el = event?.target;
+  if (!el || typeof el.value !== 'string') return;
+  const raw = el.value;
+  let next = raw.replace(/[^\d.]/g, '');
+  const dot = next.indexOf('.');
+  if (dot !== -1) {
+    next = `${next.slice(0, dot + 1)}${next.slice(dot + 1).replace(/\./g, '')}`;
+  }
+  if (next === raw) return;
+  const start = el.selectionStart;
+  el.value = next;
+  if (typeof start === 'number') {
+    const pos = Math.max(0, start - (raw.length - next.length));
+    el.setSelectionRange(pos, pos);
+  }
+}
+
 async function saveSectionDiscount(section, patch = {}) {
   if (!linesEditable.value || !props.record?._id || !section) return;
-  const nextType = patch.type !== undefined ? String(patch.type || '') : sectionDiscountType(section);
-  const nextValue = patch.value !== undefined ? Number(patch.value) : sectionDiscountValue(section);
+  let nextType = patch.type !== undefined ? String(patch.type || '') : sectionDiscountType(section);
+  let nextValue = patch.value !== undefined ? Number(patch.value) : sectionDiscountValue(section);
+
+  if (patch.value !== undefined) {
+    const raw = String(patch.value ?? '').trim();
+    if (raw === '') {
+      nextType = '';
+      nextValue = 0;
+    } else {
+      nextValue = Number(raw);
+      nextType = normalizeDiscountType(nextType) || 'percent';
+    }
+  } else {
+    nextType = normalizeDiscountType(nextType) || 'percent';
+  }
+
   if (nextType && (!Number.isFinite(nextValue) || nextValue < 0)) return;
 
   busy.value = true;
@@ -1385,41 +1912,43 @@ function mutationPayload(data) {
 }
 
 const currencyCode = computed(() => String(props.record?.currency || '').trim().toUpperCase());
+const discountCurrencySymbol = computed(() => currencySymbolForCode(currencyCode.value));
+const discountTypeOptions = computed(() => [
+  { value: 'percent', label: '%' },
+  { value: 'amount', label: discountCurrencySymbol.value }
+]);
 
 function lineRowKey(line) {
   return String(line?.quoteLineId || line?._id || '');
 }
 
 const tableColspan = computed(() => {
-  let n = 2; // name, sku
+  let n = 1; // name
+  if (showSkuColumn.value) n += 1;
   if (showPricingColumns.value) n += 2;
-  n += 3; // qty, unit, total
-  if (linesEditable.value) n += 2; // discount, actions
+  n += 2; // qty, unit price
+  if (linesEditable.value && showDiscountColumn.value) n += 1;
+  n += 1; // tax
+  n += 1; // total
+  if (linesEditable.value) n += 1; // actions
   return n;
 });
 
-/** Draft add-line search spans scrollable columns; total + actions stay separate. */
-const draftSearchColspan = computed(() => tableColspan.value - 2);
+/** Draft search sits in Name only; middle columns are empty spacers. */
+const draftSearchMiddleColspan = computed(() => Math.max(1, tableColspan.value - 3));
 
-/** Add-line footer: name+sku (sticky) + scrollable middle + total + actions (sticky). */
-const addActionsLeadingColspan = computed(() => 2);
+/** Add-line footer: name[+sku] (sticky) + scrollable middle + total + actions (sticky). */
+const addActionsLeadingColspan = computed(() => (showSkuColumn.value ? 2 : 1));
 const addActionsMiddleColspan = computed(() => tableColspan.value - addActionsLeadingColspan.value - 2);
 
-/** Columns from SKU through QTY — footer label sits in the unit-price column. */
-const sectionFooterBeforeUnitPriceColspan = computed(() => {
-  let n = 2; // sku, qty
-  if (showPricingColumns.value) n += 2;
-  return n;
-});
-
-const globalDiscountType = ref('');
+const globalDiscountType = ref('percent');
 const globalDiscountValue = ref(0);
 
 watch(
   () => [props.record?.globalDiscountType, props.record?.globalDiscountValue],
   ([type, value]) => {
     if (busy.value) return;
-    globalDiscountType.value = normalizeGlobalDiscountType(type);
+    globalDiscountType.value = normalizeGlobalDiscountType(type) || 'percent';
     globalDiscountValue.value = Number(value) || 0;
   },
   { immediate: true }
@@ -1436,19 +1965,41 @@ function normalizeGlobalDiscountType(rawType) {
   return normalizeDiscountType(rawType);
 }
 
+const discountValuePlaceholder = '—';
+
 function lineDiscountType(line) {
-  return normalizeDiscountType(line?.discountType);
+  return normalizeDiscountType(line?.discountType) || 'percent';
 }
 
 function lineDiscountValue(line) {
   return Number(line?.discountValue) || 0;
 }
 
+function lineDiscountInputValue(line) {
+  const raw = Number(line?.discountValue);
+  if (!normalizeDiscountType(line?.discountType) || !Number.isFinite(raw) || raw === 0) return '';
+  return String(raw);
+}
+
 async function patchLineDiscount(line, patch = {}) {
   if (!linesEditable.value || !props.record?._id || !line?.quoteLineId) return;
 
-  const nextType = patch.type !== undefined ? String(patch.type || '') : lineDiscountType(line);
-  const nextValue = patch.value !== undefined ? Number(patch.value) : lineDiscountValue(line);
+  let nextType = patch.type !== undefined ? String(patch.type || '') : lineDiscountType(line);
+  let nextValue = patch.value !== undefined ? Number(patch.value) : lineDiscountValue(line);
+
+  if (patch.value !== undefined) {
+    const raw = String(patch.value ?? '').trim();
+    if (raw === '') {
+      nextType = '';
+      nextValue = 0;
+    } else {
+      nextValue = Number(raw);
+      nextType = normalizeDiscountType(nextType) || 'percent';
+    }
+  } else {
+    nextType = normalizeDiscountType(nextType) || 'percent';
+  }
+
   if (nextType && (!Number.isFinite(nextValue) || nextValue < 0)) return;
 
   busy.value = true;
@@ -1475,17 +2026,287 @@ async function patchLineDiscount(line, patch = {}) {
   }
 }
 
+const openDocTaxes = ref(false);
+const openDocCharges = ref(false);
+const docTaxesPopoverStyle = ref({});
+const docChargesPopoverStyle = ref({});
+const docTaxOptions = ref([]);
+const docChargeOptions = ref([]);
+const docTaxIds = ref([]);
+const docChargeIds = ref([]);
+const docTaxesLoading = ref(false);
+const docChargesLoading = ref(false);
+const docTaxesLoadError = ref('');
+const docChargesLoadError = ref('');
+
+const DOC_PICKER_WIDTH = 320;
+const DOC_PICKER_EST_HEIGHT = 280;
+
+function positionDocPicker(event) {
+  const btn = event?.currentTarget;
+  if (!btn?.getBoundingClientRect) return {};
+  const rect = btn.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const left = Math.max(8, Math.min(Math.round(rect.left), vw - DOC_PICKER_WIDTH - 8));
+  const spaceAbove = rect.top;
+  const spaceBelow = vh - rect.bottom;
+  const openAbove = spaceAbove >= Math.min(DOC_PICKER_EST_HEIGHT, 200) || spaceAbove > spaceBelow;
+  if (openAbove) {
+    return {
+      left: `${left}px`,
+      bottom: `${Math.round(vh - rect.top + 4)}px`,
+      top: 'auto'
+    };
+  }
+  return {
+    left: `${left}px`,
+    top: `${Math.round(rect.bottom + 4)}px`,
+    bottom: 'auto'
+  };
+}
+
+function closeDocPickers() {
+  openDocTaxes.value = false;
+  openDocCharges.value = false;
+}
+
+function onDocPickerPointerDown(event) {
+  if (!openDocTaxes.value && !openDocCharges.value) return;
+  if (
+    event.target?.closest?.(
+      '[data-doc-tax-root], [data-doc-charge-root], [data-doc-taxes-popover], [data-doc-charges-popover]'
+    )
+  ) {
+    return;
+  }
+  closeDocPickers();
+}
+
+function onDocPickerRepositionClose() {
+  if (openDocTaxes.value || openDocCharges.value) closeDocPickers();
+}
+
+function toggleDocId(listRef, id, checked) {
+  const idStr = String(id);
+  const next = Array.isArray(listRef.value) ? [...listRef.value] : [];
+  const idx = next.indexOf(idStr);
+  if (checked) {
+    if (idx < 0) next.push(idStr);
+  } else if (idx >= 0) {
+    next.splice(idx, 1);
+  }
+  listRef.value = next;
+}
+
+function toggleDocTaxId(id, checked) {
+  toggleDocId(docTaxIds, id, checked);
+}
+
+function toggleDocChargeId(id, checked) {
+  toggleDocId(docChargeIds, id, checked);
+}
+
+function unwrapApiList(res) {
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res)) return res;
+  return [];
+}
+
+function formatTaxOptionLabel(row) {
+  const name = row?.name || '';
+  const value = row?.taxValue;
+  if (row?.taxType === 'FIXED_AMOUNT') return `${name} (${value})`;
+  return `${name} (${value}%)`;
+}
+
+function formatChargeOptionLabel(row) {
+  const name = row?.name || '';
+  const value = row?.chargeValue;
+  if (row?.chargeType === 'PERCENTAGE') return `${name} (${value}%)`;
+  return `${name} (${value})`;
+}
+
+function snapshotTaxIds() {
+  const taxSnap = props.record?.transactionTaxSnapshot?.taxes || [];
+  return taxSnap.map((x) => String(x.taxId || '')).filter(Boolean);
+}
+
+function snapshotChargeIds() {
+  const chargeSnap = props.record?.chargeDocumentSnapshot?.charges || [];
+  return chargeSnap.map((x) => String(x.chargeId || '')).filter(Boolean);
+}
+
+const docChargesPreviewTotal = computed(() => {
+  const selected = new Set((docChargeIds.value || []).map(String));
+  if (!selected.size) return 0;
+  const base = (lines.value || []).reduce(
+    (sum, line) => sum + (Number(line?.lineSubtotal) || 0),
+    0
+  );
+  let total = 0;
+  for (const opt of docChargeOptions.value || []) {
+    if (!selected.has(String(opt.id))) continue;
+    const value = Number(opt.chargeValue);
+    if (!Number.isFinite(value) || value < 0) continue;
+    if (opt.chargeType === 'PERCENTAGE') {
+      total += (base * value) / 100;
+    } else {
+      total += value;
+    }
+  }
+  return Math.round(total * 100) / 100;
+});
+
+async function patchLineTaxes(line, taxIds = []) {
+  if (!linesEditable.value || !props.record?._id || !line?.quoteLineId) return;
+  busy.value = true;
+  try {
+    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
+      overridePricing: overrideLock.value === true,
+      taxIds: Array.isArray(taxIds) ? taxIds : []
+    });
+    if (res?.success && res?.data?.line) {
+      emit('updated', {
+        type: 'line-updated',
+        line: res.data.line,
+        ...mutationPayload(res.data)
+      });
+    } else {
+      notifications.error(res?.message || t('records.linesTaxUpdateFailed'));
+    }
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesTaxUpdateFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function saveDocumentTaxesCharges({ transactionTaxIds, transactionChargeIds }) {
+  if (!linesEditable.value || !props.record?._id) return false;
+  busy.value = true;
+  try {
+    const res = await apiClient.patch(`/quotes/${props.record._id}/taxes-charges`, {
+      overridePricing: overrideLock.value === true,
+      transactionTaxIds,
+      transactionChargeIds
+    });
+    if (res?.success) {
+      emit('updated', {
+        type: 'quote-taxes-charges-updated',
+        quote: res?.data?.quote ?? null,
+        lines: res?.data?.lines ?? null,
+        ...mutationPayload(res.data)
+      });
+      return true;
+    }
+    notifications.error(res?.message || t('records.linesTaxUpdateFailed'));
+    return false;
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesTaxUpdateFailed'));
+    return false;
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function loadDocTaxOptions() {
+  docTaxesLoadError.value = '';
+  docTaxesLoading.value = true;
+  try {
+    const taxesRes = await apiClient.get('/taxes', {
+      params: { scope: 'TRANSACTION', applicableOn: 'SALES' }
+    });
+    docTaxOptions.value = unwrapApiList(taxesRes).map((r) => ({
+      id: String(r._id),
+      label: formatTaxOptionLabel(r),
+      taxType: r.taxType,
+      taxValue: Number(r.taxValue)
+    }));
+  } catch (err) {
+    docTaxOptions.value = [];
+    docTaxesLoadError.value =
+      err?.response?.data?.message || err?.message || t('records.linesDocTaxesChargesLoadFailed');
+  } finally {
+    docTaxesLoading.value = false;
+  }
+}
+
+async function loadDocChargeOptions() {
+  docChargesLoadError.value = '';
+  docChargesLoading.value = true;
+  try {
+    const chargesRes = await apiClient.get('/charges', {
+      params: { scope: 'TRANSACTION', applicableOn: 'SALES' }
+    });
+    docChargeOptions.value = unwrapApiList(chargesRes).map((r) => ({
+      id: String(r._id),
+      label: formatChargeOptionLabel(r),
+      chargeType: r.chargeType,
+      chargeValue: Number(r.chargeValue)
+    }));
+  } catch (err) {
+    docChargeOptions.value = [];
+    docChargesLoadError.value =
+      err?.response?.data?.message || err?.message || t('records.linesDocTaxesChargesLoadFailed');
+  } finally {
+    docChargesLoading.value = false;
+  }
+}
+
+async function openDocTaxesPicker(event) {
+  event?.stopPropagation?.();
+  if (openDocTaxes.value) {
+    openDocTaxes.value = false;
+    return;
+  }
+  openDocCharges.value = false;
+  docTaxIds.value = snapshotTaxIds();
+  docTaxesPopoverStyle.value = positionDocPicker(event);
+  openDocTaxes.value = true;
+  await loadDocTaxOptions();
+}
+
+async function openDocChargesPicker(event) {
+  event?.stopPropagation?.();
+  if (openDocCharges.value) {
+    openDocCharges.value = false;
+    return;
+  }
+  openDocTaxes.value = false;
+  docChargeIds.value = snapshotChargeIds();
+  docChargesPopoverStyle.value = positionDocPicker(event);
+  openDocCharges.value = true;
+  await loadDocChargeOptions();
+}
+
+async function persistDocTaxes() {
+  const ok = await saveDocumentTaxesCharges({
+    transactionTaxIds: [...docTaxIds.value],
+    transactionChargeIds: snapshotChargeIds()
+  });
+  if (ok) openDocTaxes.value = false;
+}
+
+async function persistDocCharges() {
+  const ok = await saveDocumentTaxesCharges({
+    transactionTaxIds: snapshotTaxIds(),
+    transactionChargeIds: [...docChargeIds.value]
+  });
+  if (ok) openDocCharges.value = false;
+}
+
 async function saveGlobalDiscount() {
   if (!linesEditable.value || !props.record?._id) return;
-  const type = globalDiscountType.value || null;
-  const value = type ? Number(globalDiscountValue.value) || 0 : 0;
+  const value = Number(globalDiscountValue.value) || 0;
+  const type = value > 0 ? globalDiscountType.value || 'percent' : null;
   if (type && value < 0) return;
 
   busy.value = true;
   try {
     const res = await apiClient.patch(`/quotes/${props.record._id}/discounts`, {
       globalDiscountType: type,
-      globalDiscountValue: value,
+      globalDiscountValue: type ? value : 0,
       overridePricing: overrideLock.value === true
     });
     if (res?.success) {
@@ -1505,8 +2326,20 @@ async function saveGlobalDiscount() {
   }
 }
 
+const globalDiscountInputValue = computed(() => {
+  const raw = Number(globalDiscountValue.value);
+  if (!Number.isFinite(raw) || raw === 0) return '';
+  return String(raw);
+});
+
+function onGlobalDiscountValueChange(event) {
+  const raw = String(event?.target?.value ?? '').trim();
+  globalDiscountValue.value = raw === '' ? 0 : Number(raw) || 0;
+  saveGlobalDiscount();
+}
+
 function onGlobalDiscountTypeChange(value) {
-  globalDiscountType.value = value || '';
+  globalDiscountType.value = value || 'percent';
   saveGlobalDiscount();
 }
 
@@ -1642,6 +2475,7 @@ const totals = computed(() => {
     lineDiscountTotal: readMoneyField('lineDiscountTotal'),
     globalDiscountTotal: readMoneyField('globalDiscountTotal'),
     taxTotal: readMoneyField('taxTotal'),
+    chargesTotal: readMoneyField('chargesTotal'),
     adjustmentTotal: readMoneyField('adjustmentTotal'),
     grandTotal: readMoneyField('grandTotal')
   };
@@ -1649,9 +2483,27 @@ const totals = computed(() => {
   if (fromRecord.grandTotal > 0 || !lines.value.length) {
     return fromRecord;
   }
-  const lineSum = lines.value.reduce((sum, line) => sum + (Number(line?.lineTotal) || 0), 0);
-  if (lineSum <= 0) return fromRecord;
-  return { ...fromRecord, subtotal: lineSum, grandTotal: lineSum };
+
+  // Header empty: derive pre-tax subtotal + tax from lines (not tax-inclusive lineTotal)
+  const lineSubtotalSum = lines.value.reduce(
+    (sum, line) => sum + (Number(line?.lineSubtotal) || 0),
+    0
+  );
+  const lineTaxSum = lines.value.reduce(
+    (sum, line) => sum + (Number(line?.lineTaxTotal) || 0),
+    0
+  );
+  if (lineSubtotalSum <= 0) {
+    const lineSum = lines.value.reduce((sum, line) => sum + (Number(line?.lineTotal) || 0), 0);
+    if (lineSum <= 0) return fromRecord;
+    return { ...fromRecord, subtotal: lineSum, grandTotal: lineSum };
+  }
+  return {
+    ...fromRecord,
+    subtotal: lineSubtotalSum,
+    taxTotal: lineTaxSum,
+    grandTotal: Math.max(0, lineSubtotalSum + lineTaxSum)
+  };
 });
 
 const totalsStaleHint = computed(() => {
@@ -1672,6 +2524,7 @@ const priceBookOptions = computed(() =>
 const selectedPriceBookId = ref('');
 
 const showVariantPicker = ref(false);
+const variantPickerSearchInputRef = ref(null);
 const variantSearchQuery = ref('');
 const variantSearchResults = ref([]);
 const variantSearchLoading = ref(false);
@@ -1734,6 +2587,40 @@ function variantHitLabel(hit) {
     return hit.variant_code ? `${hit.item_name} (${hit.variant_code})` : hit.item_name;
   }
   return hit.variant_code || String(hit._id);
+}
+
+function variantHitAvatarRecord(hit) {
+  return {
+    ...hit,
+    name: hit?.item_name || hit?.name || hit?.variant_code || hit?.item_code || '',
+  };
+}
+
+function variantHitSubtitle(hit) {
+  const code = String(hit?.variant_code || '').trim();
+  const itemCode = String(hit?.item_code || '').trim();
+  if (code && itemCode && code !== itemCode) return `${code} · ${itemCode}`;
+  return code || itemCode || '';
+}
+
+function formatVariantHitPrice(hit) {
+  const amount = hit?.selling_price;
+  if (amount == null || amount === '') return '—';
+  const code = String(hit?.currency || currencyCode.value || '').trim().toUpperCase();
+  return formatQuoteMoney(amount, code);
+}
+
+function openAddNewItemFromPicker() {
+  if (!canCreateQuoteItem.value) return;
+  const blockKey = variantPickerBlockKey.value;
+  const query = String(variantSearchQuery.value || '').trim();
+  closeVariantPicker();
+  const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
+  if (!block) return;
+  if (!hasDraftRow(block.key)) ensureDraftRow(block);
+  const state = draftRow(block);
+  if (state && query) state.searchQuery = query;
+  openAddNewItemFromDraft(block);
 }
 
 function readRecentVariantHits() {
@@ -1998,10 +2885,11 @@ async function runDraftSearch(block) {
   if (!state) return;
   if (!state.searchQuery.trim()) {
     state.searchResults = recentHitsForAdd();
-    state.searchOpen = state.searchResults.length > 0;
+    // Keep open on click even with no recent hits so "Add New Item" remains reachable.
+    state.searchOpen = true;
     state.searchLoading = false;
     state.searchHighlight = -1;
-    if (state.searchOpen) scheduleDraftSearchMenuPosition(block);
+    scheduleDraftSearchMenuPosition(block);
     return;
   }
   state.searchLoading = true;
@@ -2076,6 +2964,84 @@ async function commitDraftFromHit(block, hit) {
     notifications.error(e?.message || t('records.linesAddFailed'));
     state.committing = false;
   }
+}
+
+function openAddNewItemFromDraft(block) {
+  if (!canCreateQuoteItem.value || !linesEditable.value || busy.value) return;
+  const state = draftRow(block);
+  if (state) state.searchOpen = false;
+  itemCreateBlockKey.value = block?.key ?? null;
+  itemCreatePrefillText.value = String(state?.searchQuery || '').trim();
+  showItemCreateDrawer.value = true;
+}
+
+function closeItemCreateDrawer() {
+  showItemCreateDrawer.value = false;
+  itemCreateBlockKey.value = null;
+  itemCreatePrefillText.value = '';
+}
+
+function hitFromCreatedItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  const variant = item.defaultVariant && typeof item.defaultVariant === 'object' ? item.defaultVariant : null;
+  const variantId =
+    variant?._id ||
+    item.catalogVariantId ||
+    item.defaultVariantId ||
+    null;
+  if (!variantId) return null;
+  return {
+    _id: variantId,
+    variant_code: variant?.variant_code || item.sku || item.item_code || null,
+    item_id: item._id,
+    item_name: item.item_name || item.name || null,
+    item_code: item.item_code || null,
+    item_type: item.item_type || null,
+    selling_price: variant?.selling_price ?? item.selling_price ?? 0,
+    currency: variant?.currency || item.currency || currencyCode.value,
+    is_default: variant?.is_default ?? true
+  };
+}
+
+async function resolveVariantHitForItem(item) {
+  const direct = hitFromCreatedItem(item);
+  if (direct) return direct;
+  const itemId = String(item?._id || '');
+  if (!itemId) return null;
+  try {
+    const res = await apiClient.get(`/items/${itemId}/variants`);
+    const variants = unwrapCatalogApiData(res);
+    const list = Array.isArray(variants) ? variants : [];
+    const preferred = list.find((v) => v?.is_default) || list[0];
+    if (!preferred?._id) return null;
+    return {
+      _id: preferred._id,
+      variant_code: preferred.variant_code || null,
+      item_id: itemId,
+      item_name: item.item_name || item.name || null,
+      item_code: item.item_code || null,
+      item_type: item.item_type || null,
+      selling_price: preferred.selling_price ?? 0,
+      currency: preferred.currency || currencyCode.value,
+      is_default: preferred.is_default ?? true
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function handleItemCreatedFromDraft(savedRecord) {
+  const blockKey = itemCreateBlockKey.value;
+  closeItemCreateDrawer();
+  const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
+  if (!block || !linesEditable.value) return;
+  const hit = await resolveVariantHitForItem(savedRecord);
+  if (!hit) {
+    notifications.error(t('records.linesAddFailed'));
+    return;
+  }
+  if (!hasDraftRow(block.key)) ensureDraftRow(block);
+  await commitDraftFromHit(block, hit);
 }
 
 async function confirmVariantPickerSelection() {
@@ -2527,6 +3493,10 @@ onMounted(() => {
   bindWorkspaceKeydown(workspacePanelRef.value);
   window.addEventListener('scroll', syncOpenDraftSearchMenus, true);
   window.addEventListener('resize', syncOpenDraftSearchMenus);
+  window.addEventListener('scroll', onDocPickerRepositionClose, true);
+  window.addEventListener('resize', onDocPickerRepositionClose);
+  document.addEventListener('pointerdown', onDiscountTypeMenuPointerDown, true);
+  document.addEventListener('pointerdown', onDocPickerPointerDown, true);
 });
 
 onUnmounted(() => {
@@ -2534,6 +3504,10 @@ onUnmounted(() => {
   unbindWorkspaceKeydown(workspacePanelRef.value);
   window.removeEventListener('scroll', syncOpenDraftSearchMenus, true);
   window.removeEventListener('resize', syncOpenDraftSearchMenus);
+  window.removeEventListener('scroll', onDocPickerRepositionClose, true);
+  window.removeEventListener('resize', onDocPickerRepositionClose);
+  document.removeEventListener('pointerdown', onDiscountTypeMenuPointerDown, true);
+  document.removeEventListener('pointerdown', onDocPickerPointerDown, true);
   clearQuoteLinesSession(quoteId.value);
 });
 
@@ -2589,31 +3563,278 @@ function priceProvenanceTitle(line) {
   user-select: none;
 }
 
-/* Horizontal scroll anchors: name (left), total + actions (right). */
-.quote-lines-table--sticky {
-  --ql-name-min-w: 11rem;
-  --ql-actions-w: 3rem;
+/* Column widths: Name takes remaining space; other columns stay compact. */
+.quote-lines-table {
+  table-layout: fixed;
+  width: 100%;
 }
 
-.quote-lines-table--sticky-pricing .quote-lines-col-name {
-  min-width: var(--ql-name-min-w);
-  max-width: 16rem;
+.quote-lines-col-name {
+  width: auto;
 }
 
-.quote-lines-table--sticky-pricing .quote-lines-col-sku {
-  min-width: 6.75rem;
+.quote-lines-col-sku {
+  width: 6.5rem;
 }
 
-.quote-lines-table--sticky-pricing .quote-lines-col-total {
-  min-width: 6.5rem;
+.quote-lines-col-qty {
+  width: 5.5rem;
+}
+
+.quote-lines-col-unit-price {
+  width: 7.25rem;
+}
+
+.quote-lines-col-discount {
+  width: 9rem;
+}
+
+/* Fixed width — without this, table-layout:fixed gives leftover space to Tax (no rule) + Name. */
+.quote-lines-col-tax {
+  width: 9rem;
+}
+
+.quote-lines-discount-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 9rem;
+  height: 2rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(209 213 219);
+  background-color: rgb(255 255 255);
+  box-sizing: border-box;
+}
+
+.quote-lines-discount-group:focus-within {
+  border-color: rgb(99 102 241);
+  box-shadow: 0 0 0 1px rgb(99 102 241);
+}
+
+.dark .quote-lines-discount-group {
+  border-color: rgb(75 85 99);
+  background-color: rgb(31 41 55);
+}
+
+.dark .quote-lines-discount-group:focus-within {
+  border-color: rgb(129 140 248);
+  box-shadow: 0 0 0 1px rgb(129 140 248);
+}
+
+.quote-lines-discount-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 0.5rem;
+  font-size: 0.875rem;
+  line-height: 2rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: rgb(17 24 39);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dark .quote-lines-discount-value {
+  color: rgb(243 244 246);
+}
+
+.quote-lines-discount-value:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quote-lines-discount-value::placeholder {
+  color: rgb(156 163 175);
+  opacity: 1;
+}
+
+.dark .quote-lines-discount-value::placeholder {
+  color: rgb(107 114 128);
+}
+
+.quote-lines-discount-type {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  background-color: rgb(243 244 246);
+  border: 0;
+  border-left: 1px solid rgb(209 213 219);
+  border-radius: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(55 65 81);
+}
+
+.dark .quote-lines-discount-type {
+  background-color: rgb(55 65 81);
+  border-left-color: rgb(75 85 99);
+  color: rgb(229 231 235);
+}
+
+.quote-lines-discount-type-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 0.85rem 0 0.25rem;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: inherit;
+  cursor: pointer;
+  outline: none !important;
+}
+
+.quote-lines-discount-type-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.quote-lines-discount-type-label {
+  line-height: 1;
+}
+
+.quote-lines-discount-type-btn::after {
+  content: '';
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: translateY(-35%);
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 4px solid rgb(17 24 39);
+  pointer-events: none;
+}
+
+.dark .quote-lines-discount-type-btn::after {
+  border-top-color: rgb(229 231 235);
+}
+
+.quote-lines-discount-type-menu {
+  position: fixed;
+  z-index: 10050;
+  min-width: 3.5rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(209 213 219);
+  background-color: rgb(255 255 255);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  padding: 0.25rem;
+}
+
+.dark .quote-lines-discount-type-menu {
+  border-color: rgb(75 85 99);
+  background-color: rgb(31 41 55);
+}
+
+.quote-lines-discount-type-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgb(17 24 39);
+  cursor: pointer;
+}
+
+.quote-lines-discount-type-option:hover,
+.quote-lines-discount-type-option.is-selected {
+  background-color: rgb(238 242 255);
+  color: rgb(67 56 202);
+}
+
+.dark .quote-lines-discount-type-option {
+  color: rgb(243 244 246);
+}
+
+.dark .quote-lines-discount-type-option:hover,
+.dark .quote-lines-discount-type-option.is-selected {
+  background-color: rgb(49 46 129 / 0.45);
+  color: rgb(199 210 254);
+}
+
+.quote-lines-col-total {
+  width: 7.25rem;
+}
+
+.quote-lines-col-actions {
+  width: 3rem;
+}
+
+/* Align with Unit price → Discount → Tax → Total → Actions columns (from the right). */
+.quote-lines-section-summary-label {
+  box-sizing: border-box;
+  width: 7.25rem;
+  flex: 0 0 7.25rem;
+}
+
+.quote-lines-section-summary-discount {
+  box-sizing: border-box;
+  width: 9rem;
+  flex: 0 0 9rem;
+}
+
+.quote-lines-section-summary-tax {
+  box-sizing: border-box;
+  width: 9rem;
+  flex: 0 0 9rem;
+}
+
+.quote-lines-section-summary-total {
+  box-sizing: border-box;
+  width: 7.25rem;
+  flex: 0 0 7.25rem;
+}
+
+.quote-lines-section-summary-actions {
+  box-sizing: border-box;
+  width: 3rem;
+  flex: 0 0 3rem;
 }
 
 .quote-lines-col-scroll {
-  min-width: 8.5rem;
+  width: 8rem;
 }
 
-.quote-line-draft-search-cell {
-  min-width: 14rem;
+/* Horizontal scroll anchors: name (left), total + actions (right). */
+.quote-lines-table--sticky {
+  /* separate is required — collapse ignores z-index and breaks sticky left in Chromium */
+  border-collapse: separate;
+  border-spacing: 0;
+  --ql-name-w: 14rem;
+  --ql-actions-w: 3rem;
+}
+
+.quote-lines-table--sticky-pricing {
+  --ql-name-w: 16rem;
+}
+
+.quote-lines-table--sticky-pricing .quote-lines-col-sku {
+  min-width: 6.5rem;
+}
+
+.quote-lines-table--sticky-pricing .quote-lines-col-total {
+  min-width: 7.25rem;
 }
 
 .quote-lines-add-actions-foot .quote-lines-add-actions-cell {
@@ -2623,6 +3844,8 @@ function priceProvenanceTitle(line) {
 .quote-lines-table-scroll {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
+  /* Contain horizontal sticky to this scroller (not an overflow-y ancestor). */
+  overflow-y: hidden;
 }
 
 .quote-lines-table-scroll.overflow-x-auto:hover,
@@ -2636,7 +3859,6 @@ function priceProvenanceTitle(line) {
   z-index: 2;
   background-color: var(--ql-sticky-cell-bg, rgb(255 255 255));
   background-clip: padding-box;
-  isolation: isolate;
 }
 
 .quote-lines-table--sticky thead th.quote-lines-sticky {
@@ -2665,8 +3887,17 @@ function priceProvenanceTitle(line) {
   background-color: var(--ql-sticky-bundle-hover-bg, rgb(224 231 255 / 0.7));
 }
 
+/* Definite width required for sticky-left under table-layout:fixed (right cols already have one). */
 .quote-lines-table--sticky .quote-lines-sticky-left-name {
   left: 0;
+  width: var(--ql-name-w);
+  min-width: var(--ql-name-w);
+  max-width: var(--ql-name-w);
+  z-index: 3;
+}
+
+.quote-lines-table--sticky thead th.quote-lines-sticky-left-name {
+  z-index: 6;
 }
 
 .quote-lines-table--sticky-editable .quote-lines-sticky-right-total {

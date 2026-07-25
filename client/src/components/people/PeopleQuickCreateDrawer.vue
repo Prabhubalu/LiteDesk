@@ -37,7 +37,7 @@
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-gray-500/50 dark:bg-black/60" />
+        <div class="fixed inset-0 bg-black/25 dark:bg-black/50" />
       </TransitionChild>
 
       <div class="fixed inset-0 overflow-hidden">
@@ -45,43 +45,69 @@
           <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
             <TransitionChild 
               as="template" 
-              enter="transform transition ease-in-out duration-300 sm:duration-300" 
+              enter="transform transition ease-out duration-300 sm:duration-300" 
               enter-from="translate-x-full" 
               enter-to="translate-x-0" 
-              leave="transform transition ease-in-out duration-300 sm:duration-300" 
+              leave="transform transition ease-in duration-250 sm:duration-250" 
               leave-from="translate-x-0" 
               leave-to="translate-x-full"
             >
               <div class="pointer-events-auto h-full flex max-w-full">
               <DialogPanel
                 :class="[
-                  'flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
+                  'rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 w-screen max-w-full overflow-x-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width]',
                   drawerPanelClass
                 ]"
               >
-                <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col">
                   <!-- Header -->
-                  <div class="flex shrink-0 items-center justify-between bg-indigo-700 dark:bg-indigo-800 px-4 py-4 sm:px-6">
-                    <div class="min-w-0">
-                      <DialogTitle class="text-base font-semibold text-white">{{ drawerTitle }}</DialogTitle>
+                  <div class="relative flex shrink-0 items-center gap-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
+                    <div class="min-w-0 shrink-0 pr-2">
+                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ drawerTitle }}</DialogTitle>
+                    </div>
+                    <div
+                      v-if="fullMode"
+                      class="pointer-events-none absolute inset-x-5 top-1/2 z-10 flex -translate-y-1/2 justify-center sm:inset-x-6"
+                    >
+                      <div class="pointer-events-auto relative w-full max-w-xs">
+                        <label class="sr-only" for="people-create-field-search">{{ t('common.massEditSearchFields') }}</label>
+                        <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                        <input
+                          id="people-create-field-search"
+                          v-model="fieldSearch"
+                          type="text"
+                          :class="FORM_FIELD_SEARCH_CONTROL_CLASS"
+                          :placeholder="t('common.massEditSearchFields')"
+                          autocomplete="off"
+                        />
+                        <button
+                          v-if="fieldSearch"
+                          type="button"
+                          class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                          :aria-label="t('records.activityClearSearchAria')"
+                          @click="fieldSearch = ''"
+                        >
+                          <XMarkIcon class="size-4" aria-hidden="true" />
+                        </button>
+                      </div>
                     </div>
                     <button
                       type="button"
-                      class="relative ml-3 shrink-0 rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
+                      class="relative z-20 ml-auto shrink-0 rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
                       @click="closeDrawer"
                     >
                       <span class="absolute -inset-2.5" />
                       <span class="sr-only">{{ t('forms.previewClosePanelSr') }}</span>
-                      <XMarkIcon class="size-6" aria-hidden="true" />
+                      <XMarkIcon class="size-5" aria-hidden="true" />
                     </button>
                   </div>
 
                   <!-- Body -->
                   <div class="h-0 min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
                     <div
-                      class="px-4 sm:px-6 py-6"
-                      @input.capture="markUserInteraction"
-                      @change.capture="markUserInteraction"
+                      class="px-5 sm:px-6 py-5"
+                      @input.capture="markFormChanged"
+                      @change.capture="markFormChanged"
                       @pointerdown.capture="markUserInteraction"
                     >
                       <div :class="drawerBodyLayoutClass">
@@ -125,6 +151,7 @@
                                 :moduleOverride="peopleModuleOverride"
                                 :singleColumn="coreFormSingleColumn"
                                 :useQuickCreateOrder="true"
+                                :fieldSearch="fullMode ? fieldSearch : ''"
                                 context="platform"
                                 @update:formData="updateFormData"
                                 @ready="onFormReady"
@@ -133,7 +160,7 @@
 
                             <!-- 2. App participation -->
                             <section
-                              v-if="hasAppParticipationSection"
+                              v-if="hasAppParticipationSection && !fieldSearch.trim()"
                               :class="participationSectionClass"
                             >
                               <PeopleDrawerSectionHeading
@@ -305,6 +332,7 @@
                                 :excludeFields="coreFormExcludeFields"
                                 :moduleOverride="peopleModuleOverride"
                                 :singleColumn="coreFormSingleColumn"
+                                :fieldSearch="fieldSearch"
                                 context="platform"
                                 @update:formData="updateFormData"
                               />
@@ -317,26 +345,26 @@
                   </div>
 
                   <!-- Footer -->
-                  <div class="flex shrink-0 items-center justify-between gap-3 px-4 py-4 bg-white dark:bg-gray-800">
+                  <div class="flex shrink-0 items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-5 py-3.5 sm:px-6">
                     <button
                       v-if="showFullModeToggle"
                       type="button"
-                      class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 cursor-pointer"
+                      class="text-sm font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 cursor-pointer transition-colors"
                       @click="toggleFullMode"
                     >
                       {{ fullMode ? t('common.drawerBackQuickCreate') : t('common.drawerShowAllFields') }}
                     </button>
                     <div v-else class="flex-1" />
-                    <div class="flex gap-3">
-                      <button 
-                        type="button" 
-                        class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" 
+                    <div class="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        class="rounded-lg px-3.5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                         @click="closeDrawer"
                       >{{ t('actions.cancel') }}</button>
-                      <button 
-                        type="submit" 
-                        :disabled="saving || submitDisabled" 
-                        class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      <button
+                        type="submit"
+                        :disabled="saving || submitDisabled"
+                        class="inline-flex min-w-[5.5rem] justify-center rounded-lg bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       >
                         {{ saving ? t('states.saving') : (isEditMode ? t('actions.update') : t('actions.save')) }}
                       </button>
@@ -363,7 +391,7 @@ declare const process: {
   };
 };
 
-import { ref, computed, watch, toRef, nextTick, defineComponent, h, type PropType, type Component } from 'vue';
+import { ref, computed, watch, toRef, nextTick, onUnmounted, defineComponent, h, type PropType, type Component } from 'vue';
 import {
   Dialog,
   DialogPanel,
@@ -371,8 +399,10 @@ import {
   TransitionChild,
   TransitionRoot
 } from '@headlessui/vue';
-import { XMarkIcon, BriefcaseIcon, LifebuoyIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { XMarkIcon, BriefcaseIcon, LifebuoyIcon, CheckCircleIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
+import { FORM_FIELD_SEARCH_CONTROL_CLASS } from '@/utils/formFieldControlClasses';
+import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import AppSection, { type AppSectionModelValue } from '@/components/people/AppSection.vue';
 import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
@@ -404,17 +434,14 @@ const PeopleDrawerSectionHeading = defineComponent({
   },
   setup(props) {
     return () =>
-      h('div', { class: 'flex items-center gap-3' }, [
-        h(
-          'h3',
-          {
-            class:
-              'shrink-0 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white'
-          },
-          props.label
-        ),
-        h('div', { class: 'h-px flex-1 bg-gray-200 dark:bg-gray-700', 'aria-hidden': 'true' })
-      ]);
+      h(
+        'h3',
+        {
+          class:
+            'text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white'
+        },
+        props.label
+      );
   }
 });
 
@@ -478,13 +505,47 @@ const drawerTitle = computed(() =>
 const drawerBodyLayoutClass = computed(() => 'space-y-6');
 
 const fullMode = ref(false);
+/** Animated panel width; staged vs content mode so expand/collapse doesn't snap. */
+const panelWide = ref(false);
+let modeAnimTimer: ReturnType<typeof setTimeout> | null = null;
+const fieldSearch = ref('');
 const editLoading = ref(false);
 const editRecordSeeded = ref(false);
 const initialParticipationApps = ref<PeopleParticipationAppKey[]>([]);
 
+function clearModeAnimTimer() {
+  if (modeAnimTimer) {
+    clearTimeout(modeAnimTimer);
+    modeAnimTimer = null;
+  }
+}
+
+function setDrawerMode(expanded: boolean, { animate = true }: { animate?: boolean } = {}) {
+  clearModeAnimTimer();
+  if (!expanded) fieldSearch.value = '';
+  if (!animate) {
+    fullMode.value = expanded;
+    panelWide.value = expanded;
+    return;
+  }
+  if (expanded) {
+    panelWide.value = true;
+    modeAnimTimer = setTimeout(() => {
+      fullMode.value = true;
+      modeAnimTimer = null;
+    }, 140);
+  } else {
+    fullMode.value = false;
+    modeAnimTimer = setTimeout(() => {
+      panelWide.value = false;
+      modeAnimTimer = null;
+    }, 90);
+  }
+}
+
 function toggleFullMode() {
-  markUserInteraction();
-  fullMode.value = !fullMode.value;
+  markFormChanged();
+  setDrawerMode(!(fullMode.value || panelWide.value));
 }
 
 const strictQuickCreateForForm = computed(() => !fullMode.value);
@@ -561,7 +622,7 @@ function isAppSelected(appKey: PeopleParticipationAppKey) {
 }
 
 function toggleAppSelection(appKey: PeopleParticipationAppKey) {
-  markUserInteraction();
+  markFormChanged();
   if (isAppSelected(appKey)) {
     selectedOptionalAppKeys.value = selectedOptionalAppKeys.value.filter((k) => k !== appKey);
     const nextForms = { ...appForms.value };
@@ -631,9 +692,10 @@ const hasAppParticipationSection = computed(() =>
   (props.optionalAppParticipation && contextAppKeyPropIsNull.value) || !!effectiveAppKey.value
 );
 
-const showQuickCreateFieldsSection = computed(() =>
-  !fullMode.value || coreQuickCreateFieldsOverride.value.length > 0
-);
+const showQuickCreateFieldsSection = computed(() => {
+  if (!fullMode.value) return true;
+  return visibleQuickCreateFieldKeys.value.length > 0;
+});
 
 const participationSectionClass = computed(() => {
   const classes = ['flex', 'flex-col', 'gap-4'];
@@ -653,7 +715,27 @@ const fullOtherCoreFields = computed(() => {
   );
 });
 
-const hasFullOtherCoreFields = computed(() => fullOtherCoreFields.value.length > 0);
+function fieldKeyMatchesSearch(key: string): boolean {
+  const q = fieldSearch.value.trim().toLowerCase();
+  if (!q) return true;
+  const fields = peopleModuleOverride.value?.fields || [];
+  const field = fields.find(
+    (f: { key?: string; label?: string }) =>
+      String(f?.key || '').toLowerCase() === String(key).toLowerCase()
+  );
+  const label = String(getFieldDisplayLabel(field) || field?.label || key).toLowerCase();
+  return label.includes(q) || String(key).toLowerCase().includes(q);
+}
+
+const visibleQuickCreateFieldKeys = computed(() =>
+  coreQuickCreateFieldsOverride.value.filter((key) => fieldKeyMatchesSearch(key))
+);
+
+const visibleFullOtherCoreFields = computed(() =>
+  fullOtherCoreFields.value.filter((key) => fieldKeyMatchesSearch(key))
+);
+
+const hasFullOtherCoreFields = computed(() => visibleFullOtherCoreFields.value.length > 0);
 
 const showFullModeToggle = computed(() => !!peopleModuleOverride.value);
 
@@ -727,8 +809,14 @@ const moduleDefinition = ref<any>(null);
 
 /** True after real user interaction (backdrop/Escape blocked); not set by programmatic DynamicForm sync */
 const userHasEdited = ref(false);
+/** True when form values actually changed (refresh/leave confirm) */
+const hasUnsavedChanges = ref(false);
 function markUserInteraction() {
   userHasEdited.value = true;
+}
+function markFormChanged() {
+  userHasEdited.value = true;
+  hasUnsavedChanges.value = true;
 }
 
 async function scrollToFirstErrorField() {
@@ -783,7 +871,7 @@ const submitDisabled = computed(() =>
 );
 
 // Drawer panel width — narrow quick, wide full (aligned with CreateRecordDrawer)
-const drawerPanelClass = computed(() => (fullMode.value ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]'));
+const drawerPanelClass = computed(() => (panelWide.value ? 'sm:w-[60rem]' : 'sm:w-[30rem]'));
 
 function getParticipationFieldKeySet(): Set<string> {
   const keys = new Set<string>(['sales_type', 'helpdesk_role', 'type']);
@@ -979,7 +1067,8 @@ const closeDrawer = () => {
       selectedOptionalAppKeys.value = [];
       errors.value = {};
       userHasEdited.value = false;
-      fullMode.value = false;
+      hasUnsavedChanges.value = false;
+      setDrawerMode(false, { animate: false });
       editRecordSeeded.value = false;
       initialParticipationApps.value = [];
     }, 300);
@@ -1330,30 +1419,45 @@ const handleSubmit = async () => {
   }
 };
 
+function handleBeforeUnload(event: BeforeUnloadEvent) {
+  if (!props.isOpen || !hasUnsavedChanges.value) return;
+  event.preventDefault();
+  event.returnValue = '';
+}
+
 // Reset form when drawer opens
 watch(() => props.isOpen, async (isOpen) => {
-  if (isOpen) {
-    userHasEdited.value = false;
-    fullMode.value = false;
-    errors.value = {};
-    editRecordSeeded.value = false;
-    initialParticipationApps.value = [];
+  if (!isOpen) {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    return;
+  }
+  userHasEdited.value = false;
+  hasUnsavedChanges.value = false;
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  setDrawerMode(false, { animate: false });
+  errors.value = {};
+  editRecordSeeded.value = false;
+  initialParticipationApps.value = [];
 
-    if (isEditMode.value) {
-      formData.value = {};
-      appForms.value = {};
-      selectedOptionalAppKeys.value = [];
-      await loadEditRecord();
-      return;
-    }
-
+  if (isEditMode.value) {
     formData.value = {};
     appForms.value = {};
     selectedOptionalAppKeys.value = [];
-    if (effectiveAppKey.value) {
-      appForms.value = { [effectiveAppKey.value]: { participationType: null } };
-    }
+    await loadEditRecord();
+    return;
   }
+
+  formData.value = {};
+  appForms.value = {};
+  selectedOptionalAppKeys.value = [];
+  if (effectiveAppKey.value) {
+    appForms.value = { [effectiveAppKey.value]: { participationType: null } };
+  }
+});
+
+onUnmounted(() => {
+  clearModeAnimTimer();
+  window.removeEventListener('beforeunload', handleBeforeUnload);
 });
 </script>
 
