@@ -8,6 +8,7 @@ const {
     getDemoRequest,
     updateDemoRequest,
     convertToOrganization,
+    resendDemoActivation,
     deleteDemoRequest,
     getStats
 } = require('../controllers/demoController');
@@ -22,6 +23,7 @@ router.get('/requests/stats', protect, requireAdmin(), requireMasterOrganization
 router.get('/requests/:id', protect, requireAdmin(), requireMasterOrganization(), getDemoRequest);
 router.patch('/requests/:id', protect, requireAdmin(), requireMasterOrganization(), updateDemoRequest);
 router.post('/requests/:id/convert', protect, requireAdmin(), requireMasterOrganization(), convertToOrganization);
+router.post('/requests/:id/resend-activation', protect, requireAdmin(), requireMasterOrganization(), resendDemoActivation);
 router.delete('/requests/:id', protect, requireAdmin(), requireMasterOrganization(), deleteDemoRequest);
 
 module.exports = router;

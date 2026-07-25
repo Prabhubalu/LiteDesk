@@ -25,6 +25,7 @@ async function ensureMainWarehouse(organizationId, userId = null) {
       locationType: 'warehouse',
       status: INVENTORY_LOCATION_STATUS_DEFAULT,
       isDefault: true,
+      systemGenerated: true,
       createdBy: userId || null,
       modifiedBy: userId || null
     });

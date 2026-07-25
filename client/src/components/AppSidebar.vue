@@ -373,9 +373,11 @@ function onDesktopSidebarMqChange(event: MediaQueryListEvent) {
 }
 
 function isFlyoutSuppressed(appId: string): boolean {
+  // Only suppress hover peek when this app's drawer is pinned/docked.
+  // Route-active apps (e.g. Core on Quotes) must still open the flyout on hover when unpinned.
   if (dockedAppId.value === appId) return true;
   if (appId === WORKSPACE_MORE_ID) return isWorkspaceMoreActive.value;
-  return isAppRailActive(appId);
+  return false;
 }
 
 function isAppChromeOpen(appId: string): boolean {

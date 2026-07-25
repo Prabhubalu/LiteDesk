@@ -8,13 +8,13 @@
         <div class="absolute inset-0 overflow-hidden">
           <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
             <TransitionChild as="template" enter="transform transition ease-in-out duration-300" enter-from="translate-x-full" enter-to="translate-x-0" leave="transform transition ease-in-out duration-300" leave-from="translate-x-0" leave-to="translate-x-full">
-              <DialogPanel class="pointer-events-auto flex h-full w-screen max-w-md flex-col bg-white shadow-xl dark:bg-gray-800">
-                <div class="flex shrink-0 items-center justify-between border-b border-gray-200 bg-indigo-700 px-4 py-4 dark:border-gray-700 dark:bg-indigo-800">
+              <DialogPanel class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-screen max-w-md flex-col bg-white shadow-xl dark:bg-gray-800">
+                <div class="flex shrink-0 items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-4">
                   <div class="min-w-0">
-                    <DialogTitle class="text-base font-semibold text-white">{{ t('settings.assignRulesUsersDrawerTitle') }}</DialogTitle>
-                    <p v-if="ruleName" class="mt-0.5 truncate text-sm text-indigo-200">{{ ruleName }}</p>
+                    <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ t('settings.assignRulesUsersDrawerTitle') }}</DialogTitle>
+                    <p v-if="ruleName" class="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">{{ ruleName }}</p>
                   </div>
-                  <button type="button" class="rounded-md p-1 text-indigo-200 hover:text-white" @click="emit('close')">
+                  <button type="button" class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200" @click="emit('close')">
                     <XMarkIcon class="h-6 w-6" />
                   </button>
                 </div>

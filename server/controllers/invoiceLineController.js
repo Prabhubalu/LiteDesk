@@ -79,13 +79,29 @@ async function addInvoiceLine(req, res) {
     });
 
     const unitPrice = Number(price.unitPrice) || 0;
-    const computed = invoiceTotalsService.computeLineTotals({
-      quantity,
-      unitPriceSnapshot: unitPrice,
-      discountType: null,
-      discountValue: 0,
-      discountAmount: 0
-    });
+    const {
+      resolveLineDefaultTaxes,
+      hydrateTaxIds,
+      applyTaxesToLine
+    } = require('../services/commercialTaxApplicationService');
+
+    let itemTaxes = [];
+    if (Array.isArray(req.body?.taxIds) && req.body.taxIds.length) {
+      itemTaxes = await hydrateTaxIds(organizationId, req.body.taxIds);
+    } else {
+      itemTaxes = await resolveLineDefaultTaxes(organizationId, { side: 'SALES', lineKind: 'ITEM' });
+    }
+
+    const computed = applyTaxesToLine(
+      {
+        quantity,
+        unitPriceSnapshot: unitPrice,
+        discountType: null,
+        discountValue: 0,
+        discountAmount: 0
+      },
+      itemTaxes
+    );
 
     const section = await resolveSectionForInvoice({
       organizationId,
@@ -111,7 +127,7 @@ async function addInvoiceLine(req, res) {
       priceBookNameSnapshot: price.priceBookName || null,
       priceBookEntryIdSnapshot: price.entryId || null,
       pricingAsOfDateSnapshot: pricingAsOfDate ? new Date(pricingAsOfDate) : null,
-      taxSnapshot: { mode: 'none', source: 'mvp_placeholder' },
+      taxSnapshot: computed.taxSnapshot,
       lineSubtotal: computed.lineSubtotal,
       lineTaxTotal: computed.lineTaxTotal,
       lineTotal: computed.lineTotal,

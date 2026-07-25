@@ -80,8 +80,12 @@ const InvoiceSchema = new Schema(
     sectionDiscountTotal: { type: Number, default: 0 },
     globalDiscountTotal: { type: Number, default: 0 },
     taxTotal: { type: Number, default: 0 },
+    chargesTotal: { type: Number, default: 0 },
     adjustmentTotal: { type: Number, default: 0 },
     grandTotal: { type: Number, default: 0 },
+    transactionTaxSnapshot: { type: Schema.Types.Mixed, default: { taxes: [] } },
+    chargeDocumentSnapshot: { type: Schema.Types.Mixed, default: { charges: [] } },
+    taxDocumentSnapshot: { type: Schema.Types.Mixed, default: {} },
 
     amountPaid: { type: Number, default: 0 },
     amountDue: { type: Number, default: 0 },

@@ -55,7 +55,14 @@
               <span v-else class="text-record-empty">—</span>
             </template>
             <template v-else>
-              <span v-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
+              <span
+                v-if="displayValue"
+                :class="[
+                  'editable-labeled-value__text block truncate',
+                  canOpenLinkedRecord ? 'transition-colors hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer' : ''
+                ]"
+                @click="onLinkedRecordClick"
+              >{{ displayValue }}</span>
               <span v-else class="text-record-empty">—</span>
             </template>
           </ListboxButton>
@@ -186,7 +193,14 @@
           <span v-else class="text-record-empty">—</span>
         </template>
         <template v-else>
-          <span v-if="displayValue" class="editable-labeled-value__text block truncate">{{ displayValue }}</span>
+          <span
+            v-if="displayValue"
+            :class="[
+              'editable-labeled-value__text block truncate',
+              canOpenLinkedRecord ? 'transition-colors hover:text-primary-600 dark:hover:text-primary-400 cursor-pointer' : ''
+            ]"
+            @click="onLinkedRecordClick"
+          >{{ displayValue }}</span>
           <span v-else class="text-record-empty">—</span>
         </template>
       </div>
@@ -774,22 +788,25 @@ import DatePicker from '@/components/common/DatePicker.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { getApiErrorMessage } from '@/utils/httpErrors';
 
-/** Match DynamicFormField / quick create drawer — keep in sync. */
-const DRAWER_FIELD_LABEL_CLASS = 'block text-sm/6 font-medium text-gray-900 dark:text-white';
+import {
+  FORM_FIELD_CONTROL_CLASS,
+  FORM_FIELD_INVALID_CLASS,
+  FORM_FIELD_LABEL_CLASS,
+  FORM_FIELD_LISTBOX_CLASS,
+  FORM_FIELD_PHONE_INPUT_CLASS,
+  FORM_FIELD_READ_ONLY_CLASS,
+  joinFormFieldClasses,
+} from '@/utils/formFieldControlClasses';
 
-const DRAWER_FIELD_CONTROL_CLASS =
-  'block w-full mt-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500';
-
+/** Match DynamicFormField / quick create drawer — keep in sync via formFieldControlClasses. */
+const DRAWER_FIELD_LABEL_CLASS = FORM_FIELD_LABEL_CLASS;
+const DRAWER_FIELD_CONTROL_CLASS = `mt-1 ${FORM_FIELD_CONTROL_CLASS}`;
 const DRAWER_FIELD_TEXTAREA_CLASS = `${DRAWER_FIELD_CONTROL_CLASS} resize-none`;
-
-const DRAWER_FIELD_READ_ONLY_DISPLAY_CLASS =
-  'block w-full mt-1 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10';
-
-const DRAWER_FIELD_LISTBOX_CLASS =
-  'block w-full rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 relative cursor-default text-left';
+const DRAWER_FIELD_READ_ONLY_DISPLAY_CLASS = `mt-1 ${FORM_FIELD_READ_ONLY_CLASS}`;
+const DRAWER_FIELD_LISTBOX_CLASS = FORM_FIELD_LISTBOX_CLASS;
 
 function joinDrawerFieldClasses(...parts) {
-  return parts.filter(Boolean).join(' ');
+  return joinFormFieldClasses(...parts);
 }
 
 const props = defineProps({
@@ -901,6 +918,15 @@ const props = defineProps({
     type: [Object, Function],
     default: null
   },
+  /** Linked record path — when set with onOpenRecord, entity display value opens the record. */
+  recordPath: {
+    type: String,
+    default: ''
+  },
+  onOpenRecord: {
+    type: Function,
+    default: null
+  },
   /**
    * When set, called instead of relying on a fire-and-forget @save handler.
    * Must return a Promise; on failure the field stays in edit mode and shows the error.
@@ -1007,10 +1033,11 @@ const isValidObjectId = (value) => typeof value === 'string' && /^[0-9a-fA-F]{24
 
 /** Matches DynamicFormField / quick create drawer phone control styling. */
 const formPhoneInputClass = computed(() => {
-  const base =
-    'block w-full min-w-0 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500';
   const hasErr = phoneError.value || saveHttpError.value;
-  return joinDrawerFieldClasses(base, hasErr && 'border-red-500 dark:border-red-500');
+  return joinDrawerFieldClasses(
+    FORM_FIELD_PHONE_INPUT_CLASS,
+    hasErr && FORM_FIELD_INVALID_CLASS
+  );
 });
 
 /**
@@ -1455,6 +1482,16 @@ const enablePicklistSearch = computed(() => {
   if (props.type === 'entity') return true;
   return count > 6;
 });
+
+const canOpenLinkedRecord = computed(
+  () => Boolean(props.recordPath) && typeof props.onOpenRecord === 'function'
+);
+
+function onLinkedRecordClick(e) {
+  if (!canOpenLinkedRecord.value) return;
+  e?.stopPropagation?.();
+  props.onOpenRecord();
+}
 
 const showListboxSearch = computed(
   () =>

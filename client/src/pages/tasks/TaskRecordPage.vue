@@ -35,8 +35,18 @@
         @next="goToNextTask"
       >
         <template #breadcrumbs>
-          <span class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-            {{ taskModuleLabel }} <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"></span> {{ (task?.title || '').trim() || (task?._id || '').slice(-8) || 'N/A' }}
+          <span class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              class="shrink-0 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              :aria-label="t('records.genericBackTo', { singular: taskModuleLabel })"
+              :title="t('records.genericBackTo', { singular: taskModuleLabel })"
+              @click="goBackToModuleList"
+            >
+              {{ taskModuleLabel }}
+            </button>
+            <span class="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500 shrink-0"></span>
+            <span class="truncate">{{ (task?.title || '').trim() || (task?._id || '').slice(-8) || 'N/A' }}</span>
           </span>
         </template>
         

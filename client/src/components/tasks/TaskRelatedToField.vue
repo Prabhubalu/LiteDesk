@@ -1,10 +1,12 @@
 <template>
   <div class="space-y-2">
-    <label v-if="label" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+    <label v-if="label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
       {{ label }}
       <span v-if="required" class="text-red-500">*</span>
     </label>
-    <div class="flex flex-col sm:flex-row gap-2">
+    <div
+      class="flex flex-col sm:flex-row sm:items-stretch rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:focus-within:border-indigo-400 dark:focus-within:ring-indigo-400/20"
+    >
       <!-- Type: Headless UI Listbox -->
       <Listbox
         :model-value="localType"
@@ -15,13 +17,14 @@
       >
         <ListboxButton
           :class="[
-            'relative w-full h-[2.5rem] flex items-center cursor-default rounded-md bg-gray-100 dark:bg-gray-700 py-0 pl-3 pr-10 text-left text-sm text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:outline-indigo-500 border-0',
-            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+            'relative w-full h-[2.5rem] flex items-center border-0 bg-transparent py-0 pl-3 pr-10 text-left text-sm text-gray-900 focus:outline-none dark:text-white',
+            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+            localType && localType !== 'none' ? 'sm:border-r sm:border-gray-200 dark:sm:border-gray-600' : ''
           ]"
         >
           <span class="block truncate">{{ typeOptions.find(o => o.value === localType)?.label ?? 'None' }}</span>
           <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-            <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+            <ChevronUpDownIcon class="h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
           </span>
         </ListboxButton>
         <Transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
@@ -51,7 +54,7 @@
       </Listbox>
 
       <!-- Record: Headless UI Combobox (searchable) -->
-      <div v-if="localType && localType !== 'none'" class="flex-1 min-w-0 relative">
+      <div v-if="localType && localType !== 'none'" class="flex-1 min-w-0 relative border-t border-gray-200 sm:border-t-0 dark:border-gray-600">
         <Combobox
           :model-value="localId"
           @update:model-value="onRecordSelect"
@@ -61,8 +64,9 @@
           <div class="relative">
             <ComboboxButton
               :class="[
-                'relative w-full h-[2.5rem] flex items-center cursor-default rounded-md bg-gray-100 dark:bg-gray-700 py-0 pl-3 pr-20 text-left text-sm text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300/20 focus:outline-2 focus:outline-indigo-500 border-0',
-                (disabled || optionsLoading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                'relative w-full h-[2.5rem] flex items-center border-0 bg-transparent py-0 pl-3 pr-20 text-left text-sm text-gray-900 focus:outline-none dark:text-white',
+                (disabled || optionsLoading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                !selectedRecordLabel && !(disabled || optionsLoading) ? 'text-gray-400 dark:text-gray-500' : ''
               ]"
             >
               <span class="block truncate">
@@ -75,10 +79,10 @@
                 class="absolute inset-y-0 right-8 flex items-center pr-1 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                 :title="t('common.formCreateAndSelect')"
               >
-                <PlusIcon class="h-5 w-5" />
+                <PlusIcon class="h-4 w-4" />
               </button>
               <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                <ChevronUpDownIcon class="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                <ChevronUpDownIcon class="h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
               </span>
             </ComboboxButton>
             <Transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0" @after-enter="focusRecordSearch">
@@ -97,7 +101,7 @@
                       @click.stop
                       @mousedown.stop
                       :placeholder="`Search ${typeLabel}...`"
-                      class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
+                      class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 relative z-10"
                       autocomplete="off"
                     />
                   </div>

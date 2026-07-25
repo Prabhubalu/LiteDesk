@@ -7,7 +7,7 @@ const { isCommerciallyLockedStatus } = require('../constants/quoteLifecycle');
 const { isMongoObjectIdString } = require('../utils/isMongoObjectId');
 
 const LINE_TOTALS_SELECT =
-  '_id quoteLineId quoteSectionId lineType parentBundleLineId bundleSnapshot hiddenLine quantity unitPriceSnapshot lineSubtotal lineTaxTotal lineTotal discountType discountValue discountAmount';
+  '_id quoteLineId quoteSectionId lineType parentBundleLineId bundleSnapshot hiddenLine quantity unitPriceSnapshot lineSubtotal lineTaxTotal lineTotal discountType discountValue discountAmount taxSnapshot chargeSnapshot';
 
 async function listQuoteSections({ organizationId, quoteId }) {
   return QuoteSection.find({ organizationId, quoteId }).sort({ sectionOrder: 1, createdAt: 1 }).lean();
@@ -69,7 +69,9 @@ async function loadLinesForTotals({ organizationId, quoteId }) {
 
 async function recomputeQuoteAndSectionTotals({ organizationId, quoteId }) {
   const quote = await Quote.findOne({ _id: quoteId, organizationId })
-    .select('globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal status')
+    .select(
+      'globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal status chargesTotal transactionTaxSnapshot'
+    )
     .lean();
 
   const quoteDiscount = {
@@ -80,16 +82,89 @@ async function recomputeQuoteAndSectionTotals({ organizationId, quoteId }) {
   };
 
   const sections = await listQuoteSections({ organizationId, quoteId });
-  const lines = await loadLinesForTotals({ organizationId, quoteId });
+  let lines = await loadLinesForTotals({ organizationId, quoteId });
+
+  // Re-apply tax engine per line so lineTaxTotal stays consistent with snapshots
+  const {
+    applyTaxesToLine,
+    taxesFromSnapshot,
+    recalculateDocumentMoney
+  } = require('./commercialTaxApplicationService');
+
+  const lineBulkOps = [];
+  const refreshedLines = [];
+  for (const line of lines) {
+    const taxes = taxesFromSnapshot(line.taxSnapshot);
+    // Without snapshot taxes, keep stored money — do not re-apply with [].
+    if (!taxes.length) {
+      refreshedLines.push(line);
+      continue;
+    }
+    const applied = applyTaxesToLine(line, taxes);
+    refreshedLines.push({
+      ...line,
+      lineSubtotal: applied.lineSubtotal,
+      lineTaxTotal: applied.lineTaxTotal,
+      lineTotal: applied.lineTotal,
+      taxSnapshot: applied.taxSnapshot
+    });
+    if (line._id) {
+      lineBulkOps.push({
+        updateOne: {
+          filter: { _id: line._id, organizationId, quoteId },
+          update: {
+            $set: {
+              lineSubtotal: applied.lineSubtotal,
+              lineTaxTotal: applied.lineTaxTotal,
+              lineTotal: applied.lineTotal,
+              taxSnapshot: applied.taxSnapshot
+            }
+          }
+        }
+      });
+    }
+  }
+  if (lineBulkOps.length) {
+    await QuoteLine.bulkWrite(lineBulkOps, { ordered: false });
+  }
+  lines = refreshedLines;
+
+  const txnTaxes = Array.isArray(quote?.transactionTaxSnapshot?.taxes)
+    ? quote.transactionTaxSnapshot.taxes
+    : [];
+  const money = recalculateDocumentMoney({
+    lines,
+    transactionTaxes: txnTaxes,
+    chargesTotal: Number(quote?.chargesTotal) || 0,
+    globalDiscountType: quoteDiscount.globalDiscountType,
+    globalDiscountValue: quoteDiscount.globalDiscountValue,
+    globalDiscountAmount: quoteDiscount.globalDiscountAmount,
+    adjustmentTotal: quoteDiscount.adjustmentTotal
+  });
 
   let totals;
   let updatedSections = sections;
 
   if (!sections.length) {
-    totals = quoteTotalsService.computeQuoteTotalsFromLines(lines, quoteDiscount);
+    totals = {
+      ...quoteTotalsService.computeQuoteTotalsFromLines(lines, quoteDiscount),
+      taxTotal: money.totals.taxTotal,
+      chargesTotal: money.totals.chargesTotal,
+      grandTotal: money.totals.grandTotal,
+      taxDocumentSnapshot: money.taxDocumentSnapshot
+    };
+    // Prefer engine grand total which includes charges + txn taxes
+    totals.grandTotal = money.totals.grandTotal;
+    totals.taxTotal = money.totals.taxTotal;
   } else {
     const result = quoteTotalsService.computeQuoteTotalsWithSections(sections, lines, quoteDiscount);
-    totals = result.quoteTotals;
+    totals = {
+      ...result.quoteTotals,
+      taxTotal: money.totals.taxTotal,
+      chargesTotal: money.totals.chargesTotal,
+      grandTotal: money.totals.grandTotal,
+      taxDocumentSnapshot: money.taxDocumentSnapshot
+    };
 
     const bulkOps = result.sectionResults.map((row) => ({
       updateOne: {
@@ -112,7 +187,21 @@ async function recomputeQuoteAndSectionTotals({ organizationId, quoteId }) {
     }
   }
 
-  await Quote.updateOne({ _id: quoteId, organizationId }, { $set: totals });
+  await Quote.updateOne(
+    { _id: quoteId, organizationId },
+    {
+      $set: {
+        subtotal: totals.subtotal,
+        lineDiscountTotal: totals.lineDiscountTotal,
+        globalDiscountTotal: totals.globalDiscountTotal,
+        taxTotal: totals.taxTotal,
+        chargesTotal: totals.chargesTotal ?? 0,
+        adjustmentTotal: totals.adjustmentTotal,
+        grandTotal: totals.grandTotal,
+        taxDocumentSnapshot: totals.taxDocumentSnapshot || {}
+      }
+    }
+  );
 
   return { totals, sections: updatedSections };
 }

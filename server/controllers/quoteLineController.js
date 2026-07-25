@@ -175,13 +175,30 @@ async function addQuoteLine(req, res) {
     });
 
     const unitPrice = Number(price.unitPrice) || 0;
-    const computed = quoteTotalsService.computeLineTotals({
-      quantity,
-      unitPriceSnapshot: unitPrice,
-      discountType: null,
-      discountValue: 0,
-      discountAmount: 0
-    });
+
+    const {
+      resolveLineDefaultTaxes,
+      hydrateTaxIds,
+      applyTaxesToLine
+    } = require('../services/commercialTaxApplicationService');
+
+    let itemTaxes = [];
+    if (Array.isArray(req.body?.taxIds) && req.body.taxIds.length) {
+      itemTaxes = await hydrateTaxIds(organizationId, req.body.taxIds);
+    } else {
+      itemTaxes = await resolveLineDefaultTaxes(organizationId, { side: 'SALES', lineKind: 'ITEM' });
+    }
+
+    const computed = applyTaxesToLine(
+      {
+        quantity,
+        unitPriceSnapshot: unitPrice,
+        discountType: null,
+        discountValue: 0,
+        discountAmount: 0
+      },
+      itemTaxes
+    );
 
     const inventoryAtp = await guardQuoteLineQuantity({
       organizationId,
@@ -219,10 +236,7 @@ async function addQuoteLine(req, res) {
       pricingEffectiveToSnapshot: price.effectiveTo ? new Date(price.effectiveTo) : null,
       pricingMinQtySnapshot: Number.isFinite(Number(price.minQty)) ? Number(price.minQty) : null,
 
-      taxSnapshot: {
-        mode: 'none',
-        source: 'mvp_placeholder'
-      },
+      taxSnapshot: computed.taxSnapshot,
       lineSubtotal: computed.lineSubtotal,
       lineTaxTotal: computed.lineTaxTotal,
       lineTotal: computed.lineTotal,
@@ -384,7 +398,7 @@ async function addQuoteBundle(req, res) {
       priceBookEntryIdSnapshot: null,
       pricingAsOfDateSnapshot: pricingAsOfDate ? new Date(pricingAsOfDate) : null,
 
-      taxSnapshot: { mode: 'none', source: 'mvp_placeholder' },
+      taxSnapshot: { mode: 'none', source: 'taxCalculationService' },
       lineSubtotal: parentComputed.lineSubtotal,
       lineTaxTotal: parentComputed.lineTaxTotal,
       lineTotal: parentComputed.lineTotal,
@@ -472,7 +486,7 @@ async function addQuoteBundle(req, res) {
         pricingEffectiveToSnapshot: compPrice.effectiveTo ? new Date(compPrice.effectiveTo) : null,
         pricingMinQtySnapshot: Number.isFinite(Number(compPrice.minQty)) ? Number(compPrice.minQty) : null,
 
-        taxSnapshot: { mode: 'none', source: 'mvp_placeholder' },
+        taxSnapshot: { mode: 'none', source: 'taxCalculationService' },
         lineSubtotal: compComputed.lineSubtotal,
         lineTaxTotal: compComputed.lineTaxTotal,
         lineTotal: compComputed.lineTotal,
@@ -790,19 +804,39 @@ async function patchQuoteLine(req, res) {
       }
     }
 
+    if (req.body?.taxIds !== undefined) {
+      const {
+        hydrateTaxIds,
+        applyTaxesToLine
+      } = require('../services/commercialTaxApplicationService');
+      const itemTaxes = Array.isArray(req.body.taxIds) && req.body.taxIds.length
+        ? await hydrateTaxIds(organizationId, req.body.taxIds)
+        : [];
+      const applied = applyTaxesToLine(line, itemTaxes);
+      line.taxSnapshot = applied.taxSnapshot;
+      line.lineSubtotal = applied.lineSubtotal;
+      line.lineTaxTotal = applied.lineTaxTotal;
+      line.lineTotal = applied.lineTotal;
+    } else {
+      const {
+        applyTaxesToLine,
+        taxesFromSnapshot
+      } = require('../services/commercialTaxApplicationService');
+      const applied = applyTaxesToLine(line, taxesFromSnapshot(line.taxSnapshot));
+      line.taxSnapshot = applied.taxSnapshot;
+      line.lineSubtotal = applied.lineSubtotal;
+      line.lineTaxTotal = applied.lineTaxTotal;
+      line.lineTotal = applied.lineTotal;
+    }
+
     const commercialFieldsChanged =
       req.body?.quantity !== undefined ||
       req.body?.discountType !== undefined ||
       req.body?.discountValue !== undefined ||
       req.body?.discountAmount !== undefined ||
       req.body?.hiddenLine !== undefined ||
-      req.body?.optionalLine !== undefined;
-
-    // Recompute totals (MVP placeholder). No tax engine yet.
-    const computed = quoteTotalsService.computeLineTotals(line);
-    line.lineSubtotal = computed.lineSubtotal;
-    line.lineTaxTotal = computed.lineTaxTotal;
-    line.lineTotal = computed.lineTotal;
+      req.body?.optionalLine !== undefined ||
+      req.body?.taxIds !== undefined;
 
     // If quote is locked, keep lockedSnapshot true
     line.lockedSnapshot = line.lockedSnapshot || isCommerciallyLockedStatus(quote.status);

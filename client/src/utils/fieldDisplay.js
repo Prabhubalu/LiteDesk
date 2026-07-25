@@ -67,14 +67,22 @@ export function getFieldDisplayLabel(field, moduleKey = null) {
   // (list headers / customize often call this without moduleKey).
   if (mk || normalizeAssignedToKey(key) || hasGlobalSystemLabel) {
     const resolved = resolveFieldLabel(mk, field, t, te);
-    if (resolved) return resolved;
+    if (resolved && !isRawFieldKeyLabel(key, resolved)) return resolved;
   }
 
-  if (!label) return formatKeyToLabel(key);
-  const keyNorm = key.replace(/\s+/g, '').toLowerCase();
-  const labelNorm = label.replace(/\s+/g, '').toLowerCase();
-  if (keyNorm && labelNorm === keyNorm) return formatKeyToLabel(key);
+  if (!label || isRawFieldKeyLabel(key, label)) return formatKeyToLabel(key);
   return label;
+}
+
+/** True when label is the technical field key (camelCase/snake), not a human Field Label. */
+function isRawFieldKeyLabel(key, label) {
+  const keyStr = String(key || '').trim();
+  const labelStr = String(label || '').trim();
+  if (!keyStr || !labelStr) return !labelStr;
+  if (labelStr === keyStr) return true;
+  const keyNorm = keyStr.replace(/[\s_-]+/g, '').toLowerCase();
+  const labelNorm = labelStr.replace(/[\s_-]+/g, '').toLowerCase();
+  return Boolean(keyNorm && labelNorm === keyNorm && !/\s/.test(labelStr));
 }
 
 /**

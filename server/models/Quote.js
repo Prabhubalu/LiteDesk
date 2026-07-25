@@ -103,8 +103,15 @@ const QuoteSchema = new Schema(
     lineDiscountTotal: { type: Number, default: 0 },
     globalDiscountTotal: { type: Number, default: 0 },
     taxTotal: { type: Number, default: 0 },
+    chargesTotal: { type: Number, default: 0 },
     adjustmentTotal: { type: Number, default: 0 },
     grandTotal: { type: Number, default: 0 },
+
+    /** Applied transaction-level taxes (engine snapshots) */
+    transactionTaxSnapshot: { type: Schema.Types.Mixed, default: { taxes: [] } },
+    /** Applied transaction-level charges (engine snapshots) */
+    chargeDocumentSnapshot: { type: Schema.Types.Mixed, default: { charges: [] } },
+    taxDocumentSnapshot: { type: Schema.Types.Mixed, default: {} },
 
     // Approval/sharing/conversion flags (detailed entities come in later phases)
     approvalRequired: { type: Boolean, default: false, index: true },

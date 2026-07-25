@@ -31,7 +31,9 @@ const CORE_MODULE_ORDER = [
   'quotes',
   'sales_orders',
   'invoices',
-  'payments'
+  'payments',
+  'taxes',
+  'charges'
 ];
 const {
   isCommercialPlatformModuleKey,
@@ -68,6 +70,8 @@ const LEGACY_FLAT_STORAGE_KEYS = new Set([
   'responses',
   'webforms',
   'items',
+  'taxes',
+  'charges',
   'documents',
   'templates',
   'reports',

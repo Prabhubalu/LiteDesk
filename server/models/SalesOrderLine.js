@@ -78,6 +78,7 @@ const SalesOrderLineSchema = new Schema(
     discountAmount: { type: Number, default: 0 },
 
     taxSnapshot: { type: Schema.Types.Mixed, default: {} },
+    chargeSnapshot: { type: Schema.Types.Mixed, default: { charges: [] } },
 
     lineSubtotal: { type: Number, default: 0 },
     lineTaxTotal: { type: Number, default: 0 },

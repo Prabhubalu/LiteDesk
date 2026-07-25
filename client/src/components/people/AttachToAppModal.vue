@@ -27,23 +27,23 @@
                 leave-to="translate-x-full"
               >
                 <DialogPanel
-                  class="pointer-events-auto flex h-full w-full max-w-2xl flex-col bg-white shadow-xl dark:bg-gray-800"
+                  class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-full max-w-2xl flex-col bg-white shadow-xl dark:bg-gray-800"
                 >
                   <form
                     class="relative flex h-full min-h-0 flex-col divide-y divide-gray-200 dark:divide-gray-700"
                     @submit.prevent="handleSubmit"
                   >
                     <!-- Header (same pattern as ParticipationEditModal / CreateRecordDrawer) -->
-                    <div class="flex shrink-0 items-center justify-between bg-indigo-700 px-4 py-6 sm:px-6 dark:bg-indigo-800">
+                    <div class="flex shrink-0 items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6">
                       <div class="min-w-0 pr-2">
-                        <DialogTitle class="text-base font-semibold text-white">
+                        <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                           Attach to {{ formatAppName(appKey) }}
                         </DialogTitle>
-                        <p class="mt-1 text-sm text-indigo-200">{{ t('people.attachToAppModalAddThisPersonToTheApp') }}</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ t('people.attachToAppModalAddThisPersonToTheApp') }}</p>
                       </div>
                       <button
                         type="button"
-                        class="relative shrink-0 rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                        class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer shrink-0"
                         @click="close"
                       >
                         <span class="absolute -inset-2.5" />

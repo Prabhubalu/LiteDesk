@@ -512,7 +512,7 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
       if (m.excludeFromApps === true) return false;
       if (m.appKey && m.appKey.toLowerCase() === 'platform') return false;
       if (FORBIDDEN_RAW_ENTITY_MODULE_KEYS.has(m.moduleKey)) return false;
-      // Inventory app: Dashboard is the only lens until stock workbench UI ships.
+      // Inventory ledger module is replaced by workbench links below.
       if (
         normalizedAppId === 'INVENTORY' &&
         String(m.moduleKey || '').toLowerCase() === 'inventory'
@@ -545,6 +545,30 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
         } satisfies SidebarItem;
       }
     );
+
+  if (normalizedAppId === 'INVENTORY' && hasPermission('inventory.view', snapshot)) {
+    const inventoryWorkbench: Array<{ key: string; route: string; labelKey: string; label: string; icon: string }> = [
+      { key: 'purchase_orders', route: '/inventory/purchase-orders', labelKey: 'navigation.inventoryPurchaseOrders', label: 'Purchase Orders', icon: 'document-text' },
+      { key: 'receipt_notes', route: '/inventory/receipt-notes', labelKey: 'navigation.inventoryReceiptNotes', label: 'Receipt Notes', icon: 'inbox' },
+      { key: 'purchase_returns', route: '/inventory/purchase-returns', labelKey: 'navigation.inventoryPurchaseReturns', label: 'Purchase Returns', icon: 'arrow-uturn-left' },
+      { key: 'delivery_notes', route: '/inventory/delivery-notes', labelKey: 'navigation.inventoryDeliveryNotes', label: 'Delivery Notes', icon: 'truck' },
+      { key: 'delivery_returns', route: '/inventory/delivery-returns', labelKey: 'navigation.inventoryDeliveryReturns', label: 'Delivery Returns', icon: 'arrow-uturn-left' },
+      { key: 'sales_returns', route: '/inventory/sales-returns', labelKey: 'navigation.inventorySalesReturns', label: 'Sales Returns', icon: 'arrow-uturn-left' },
+      { key: 'stockrooms', route: '/inventory/stockrooms', labelKey: 'navigation.inventoryStockrooms', label: 'Stockrooms', icon: 'building-office-2' },
+      { key: 'stock_adjustments', route: '/inventory/adjustments', labelKey: 'navigation.inventoryAdjustments', label: 'Stock Adjustments', icon: 'adjustments-horizontal' },
+      { key: 'stock_transfers', route: '/inventory/transfers', labelKey: 'navigation.inventoryTransfers', label: 'Stock Transfers', icon: 'arrows-right-left' },
+    ];
+    for (const item of inventoryWorkbench) {
+      modules.push({
+        kind: 'app',
+        id: `${activeAppId}:${item.key}`,
+        ...sidebarLabel(item.labelKey, item.label),
+        route: item.route,
+        icon: item.icon,
+        moduleKey: item.key,
+      });
+    }
+  }
 
   const dashboard: SidebarItem = {
     kind: 'app',

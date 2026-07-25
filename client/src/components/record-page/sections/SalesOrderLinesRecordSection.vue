@@ -1,10 +1,39 @@
 <template>
   <section v-if="record?._id" class="space-y-3">
-    <div v-if="isDraftEditable" class="flex justify-end">
+    <div v-if="isDraftEditable" class="flex flex-wrap items-center justify-between gap-2">
+      <div class="relative min-w-[16rem] flex-1 max-w-md" ref="searchRootRef">
+        <input
+          v-model="searchQuery"
+          type="search"
+          class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-1.5 text-sm text-gray-900 dark:text-white"
+          :placeholder="t('records.dealLinesAddProductPlaceholder')"
+          :disabled="addBusy"
+          @focus="onSearchFocus"
+          @input="onSearchInput"
+        />
+        <div
+          v-if="showHits"
+          class="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg"
+        >
+          <button
+            v-for="hit in hits"
+            :key="hit._id"
+            type="button"
+            class="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+            :disabled="addBusy"
+            @click="addFromHit(hit)"
+          >
+            <span class="font-medium text-gray-900 dark:text-gray-100">{{ hitLabel(hit) }}</span>
+            <span v-if="hit.variant_code || hit.sku" class="text-xs font-mono text-gray-500">{{ hit.variant_code || hit.sku }}</span>
+          </button>
+          <div v-if="searchLoading" class="px-3 py-2 text-xs text-gray-500">{{ t('states.loading') }}</div>
+          <div v-else-if="!hits.length" class="px-3 py-2 text-xs text-gray-500">{{ t('records.dealLinesNoCatalogHits') }}</div>
+        </div>
+      </div>
       <button
         type="button"
         class="inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
-        :disabled="sectionBusy"
+        :disabled="sectionBusy || addBusy"
         @click="openAddSection"
       >
         {{ t('records.salesOrderSectionAdd') }}
@@ -146,9 +175,10 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { unwrapCatalogApiData } from '@/utils/catalogApi';
 import { useNotifications } from '@/composables/useNotifications';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
 import QuoteSectionFormModal from '@/components/record-page/sections/QuoteSectionFormModal.vue';
@@ -162,11 +192,18 @@ const { t } = useI18n();
 const notifications = useNotifications();
 const busyLineId = ref('');
 const sectionBusy = ref(false);
+const addBusy = ref(false);
 const sectionModalOpen = ref(false);
 const sectionModalMode = ref('create');
 const sectionModalInitial = ref(null);
 const sectionModalEditingId = ref(null);
 const draftQty = reactive({});
+const searchRootRef = ref(null);
+const searchQuery = ref('');
+const hits = ref([]);
+const showHits = ref(false);
+const searchLoading = ref(false);
+let searchTimer = null;
 
 const isDraftEditable = computed(() => String(props.record?.status || '') === 'Draft');
 
@@ -230,18 +267,21 @@ function emitSectionUpdate(payload) {
   }
 }
 
-function applyMutationToRecord({ line, totals, sections, deletedLine }) {
+function applyMutationToRecord({ line, lines, totals, sections, deletedLine }) {
   if (totals && props.record) {
     Object.assign(props.record, totals);
   }
   if (Array.isArray(sections)) {
     props.record.sections = sections;
   }
-  if (line && Array.isArray(props.record?.lines)) {
+  if (Array.isArray(lines)) {
+    props.record.lines = lines;
+  } else if (line && Array.isArray(props.record?.lines)) {
     const idx = props.record.lines.findIndex(
       (row) => String(row.salesOrderLineId) === String(line.salesOrderLineId)
     );
     if (idx >= 0) props.record.lines[idx] = line;
+    else props.record.lines = [...props.record.lines, line];
   }
   if (deletedLine && Array.isArray(props.record?.lines)) {
     const parentId = deletedLine._id ? String(deletedLine._id) : null;
@@ -252,6 +292,78 @@ function applyMutationToRecord({ line, totals, sections, deletedLine }) {
     });
   }
 }
+
+function hitLabel(hit) {
+  return hit?.item_name || hit?.name || hit?.variant_code || hit?._id || '—';
+}
+
+async function fetchCatalogHits(q, limit = 25) {
+  const res = await apiClient.get('/catalog/variants/search', {
+    params: { q: q || '', limit }
+  });
+  const data = unwrapCatalogApiData(res);
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.results)) return data.results;
+  return [];
+}
+
+function onSearchFocus() {
+  showHits.value = true;
+  if (!hits.value.length) onSearchInput();
+}
+
+function onSearchInput() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    searchLoading.value = true;
+    showHits.value = true;
+    try {
+      hits.value = await fetchCatalogHits(searchQuery.value.trim(), searchQuery.value.trim() ? 12 : 25);
+    } catch {
+      hits.value = [];
+    } finally {
+      searchLoading.value = false;
+    }
+  }, 250);
+}
+
+function onPointerDownOutside(e) {
+  if (!showHits.value) return;
+  const root = searchRootRef.value;
+  if (root && !root.contains(e.target)) showHits.value = false;
+}
+
+async function addFromHit(hit) {
+  const variantId = hit?._id;
+  if (!variantId || !props.record?._id) return;
+  addBusy.value = true;
+  showHits.value = false;
+  try {
+    const res = await apiClient.post(`/sales-orders/${props.record._id}/lines`, {
+      variantId,
+      quantity: 1
+    });
+    if (!res?.success) {
+      notifications.error(res?.message || t('records.linesAddFailed'));
+      return;
+    }
+    applyMutationToRecord(res.data || {});
+    emitSectionUpdate({ type: 'lines-added', ...res.data });
+    searchQuery.value = '';
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesAddFailed'));
+  } finally {
+    addBusy.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onPointerDownOutside, true);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onPointerDownOutside, true);
+  clearTimeout(searchTimer);
+});
 
 async function saveQuantity(line) {
   const nextQty = Number(draftQty[line.salesOrderLineId]);

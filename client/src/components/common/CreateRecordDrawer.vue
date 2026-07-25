@@ -12,7 +12,7 @@
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-gray-500/50 dark:bg-black/60" />
+        <div class="fixed inset-0 bg-black/25 dark:bg-black/50" />
       </TransitionChild>
 
       <div class="fixed inset-0 overflow-hidden">
@@ -20,44 +20,70 @@
           <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
             <TransitionChild 
               as="template" 
-              enter="transform transition ease-in-out duration-300 sm:duration-300" 
+              enter="transform transition ease-out duration-300 sm:duration-300" 
               enter-from="translate-x-full" 
               enter-to="translate-x-0" 
-              leave="transform transition ease-in-out duration-300 sm:duration-300" 
+              leave="transform transition ease-in duration-250 sm:duration-250" 
               leave-from="translate-x-0" 
               leave-to="translate-x-full"
             >
               <div class="pointer-events-auto h-full flex max-w-full">
                 <DialogPanel
                   :class="[
-                    'flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
-                    isQuoteForm || fullMode ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]'
+                    'rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 w-screen max-w-full overflow-x-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width]',
+                    isCommercialLinesForm ? 'sm:w-[80rem]' : panelWide ? 'sm:w-[60rem]' : 'sm:w-[30rem]'
                   ]"
                   @pointerdown.capture="markUserInteraction"
                   @focusin.capture="markUserInteraction"
                 >
-                <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col">
                   <!-- Header: fixed at top -->
-                  <div class="flex items-center justify-between bg-indigo-700 dark:bg-indigo-800 px-4 py-4 sm:px-6 flex-shrink-0">
-                    <DialogTitle class="text-base font-semibold text-white">{{ computedTitle }}</DialogTitle>
+                  <div class="relative flex shrink-0 items-center gap-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
+                    <DialogTitle class="min-w-0 shrink-0 pr-2 text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ computedTitle }}</DialogTitle>
+                    <div
+                      v-if="showFieldSearch"
+                      class="pointer-events-none absolute inset-x-5 top-1/2 z-10 flex -translate-y-1/2 justify-center sm:inset-x-6"
+                    >
+                      <div class="pointer-events-auto relative w-full max-w-xs">
+                        <label class="sr-only" for="create-drawer-field-search">{{ t('common.massEditSearchFields') }}</label>
+                        <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                        <input
+                          id="create-drawer-field-search"
+                          v-model="fieldSearch"
+                          type="text"
+                          :class="FORM_FIELD_SEARCH_CONTROL_CLASS"
+                          :placeholder="t('common.massEditSearchFields')"
+                          autocomplete="off"
+                        />
+                        <button
+                          v-if="fieldSearch"
+                          type="button"
+                          class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                          :aria-label="t('records.activityClearSearchAria')"
+                          @click="fieldSearch = ''"
+                        >
+                          <XMarkIcon class="size-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
                     <button
                       ref="closeButtonRef"
                       type="button"
-                      class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
+                      class="relative z-20 ml-auto shrink-0 rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
                       @click="closeDrawer"
                     >
                       <span class="absolute -inset-2.5" />
                       <span class="sr-only">{{ t('common.closePanel') }}</span>
-                      <XMarkIcon class="size-6" aria-hidden="true" />
+                      <XMarkIcon class="size-5" aria-hidden="true" />
                     </button>
                   </div>
 
                   <!-- Body: scrollable (user interaction only — not programmatic DynamicForm sync) -->
                   <div class="h-0 flex-1 overflow-y-auto">
                     <div
-                      class="px-4 sm:px-6 py-6 space-y-6"
-                      @input.capture="markUserInteraction"
-                      @change.capture="markUserInteraction"
+                      class="px-5 sm:px-6 py-5 space-y-5"
+                      @input.capture="markFormChanged"
+                      @change.capture="markFormChanged"
                       @pointerdown.capture="markUserInteraction"
                     >
                           <!-- General Error Message -->
@@ -65,7 +91,7 @@
                             <div class="flex">
                               <div class="flex-shrink-0">
                                 <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l-1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                 </svg>
                               </div>
                               <div class="ml-3">
@@ -94,31 +120,39 @@
                             :useQuickCreateOrder="(useQuickCreateOrder || strictQuickCreateForForm) && !fullMode"
                             :singleColumn="!fullMode"
                             :quickCreateFirstWhenExpanded="effectiveQuickCreateMode"
+                            :fieldSearch="showFieldSearch ? fieldSearch : ''"
                             @update:formData="updateFormData"
                             @ready="onFormReady"
                           >
-                            <template v-if="isQuoteForm" #after-quick-create>
+                            <template v-if="isCommercialLinesForm" #after-quick-create>
                               <div class="space-y-3 pt-2">
-                                <div class="flex items-center gap-3">
-                                  <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
-                                    {{ t('records.quoteLinesSectionTitle') }}
-                                  </h3>
-                                  <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                                </div>
-                                <div v-if="quoteFormLoading" class="flex justify-center py-10">
+                                <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
+                                  {{ t(commercialLinesConfig.linesTitleKey) }}
+                                </h3>
+                                <div v-if="commercialFormLoading" class="flex justify-center py-10">
                                   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
                                 </div>
                                 <QuoteLinesRecordSection
-                                  v-else-if="quoteFormRecord"
-                                  :record="quoteFormRecord"
-                                  :context="quoteLinesFormContext"
+                                  v-else-if="isQuoteModule && commercialFormRecord"
+                                  :record="commercialFormRecord"
+                                  :context="commercialLinesFormContext"
                                   @updated="handleQuoteLinesUpdated"
+                                />
+                                <InvoiceLinesRecordSection
+                                  v-else-if="isInvoiceModule && commercialFormRecord"
+                                  :record="commercialFormRecord"
+                                  :context="commercialLinesFormContext"
+                                />
+                                <SalesOrderLinesRecordSection
+                                  v-else-if="isSalesOrderModule && commercialFormRecord"
+                                  :record="commercialFormRecord"
+                                  :context="commercialLinesFormContext"
                                 />
                                 <p
                                   v-else
                                   class="text-sm text-red-600 dark:text-red-400"
                                 >
-                                  {{ isQuoteEdit ? t('records.quoteLoadFailed') : t('records.quoteCreateDraftFailed') }}
+                                  {{ isCommercialLinesEdit ? t(commercialLinesConfig.loadFailedKey) : t(commercialLinesConfig.draftFailedKey) }}
                                 </p>
                               </div>
                             </template>
@@ -157,20 +191,20 @@
                   </div>
 
                   <!-- Footer: left toggle + right actions (same as edit drawer) -->
-                  <div class="flex shrink-0 flex items-center justify-between gap-3 px-4 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                  <div class="flex shrink-0 items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-gray-900/95 backdrop-blur px-5 py-3.5 sm:px-6">
                     <button
                       v-if="showFullModeToggle"
                       type="button"
-                      class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 cursor-pointer"
+                      class="text-sm font-medium text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 cursor-pointer transition-colors"
                       @click="toggleFullMode"
                     >
                       {{ fullMode ? t('common.drawerBackQuickCreate') : t('common.drawerShowAllFields') }}
                     </button>
                     <span v-else />
-                    <div class="flex gap-3">
+                    <div class="flex items-center gap-2.5">
                       <button
                         type="button"
-                        class="rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                        class="rounded-lg px-3.5 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                         @click="closeDrawer"
                       >
                         {{ t('actions.cancel') }}
@@ -178,7 +212,7 @@
                       <button
                         type="submit"
                         :disabled="saving"
-                        class="inline-flex justify-center rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        class="inline-flex min-w-[5.5rem] justify-center rounded-lg bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       >
                         {{ saving ? t('states.saving') : (isEditing ? t('actions.update') : t('actions.save')) }}
                       </button>
@@ -197,13 +231,14 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, nextTick, defineAsyncComponent } from 'vue';
+import { ref, watch, computed, nextTick, onUnmounted, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
-import { XMarkIcon } from '@heroicons/vue/24/outline';
+import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from './DynamicForm.vue';
+import { FORM_FIELD_SEARCH_CONTROL_CLASS } from '@/utils/formFieldControlClasses';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
 // Lazy-load to avoid circular chunk ↔ record-activity init (production TDZ).
 const DealLinesSection = defineAsyncComponent(
@@ -212,7 +247,15 @@ const DealLinesSection = defineAsyncComponent(
 const QuoteLinesRecordSection = defineAsyncComponent(
   () => import('@/components/record-page/sections/QuoteLinesRecordSection.vue')
 );
+const InvoiceLinesRecordSection = defineAsyncComponent(
+  () => import('@/components/record-page/sections/InvoiceLinesRecordSection.vue')
+);
+const SalesOrderLinesRecordSection = defineAsyncComponent(
+  () => import('@/components/record-page/sections/SalesOrderLinesRecordSection.vue')
+);
 import apiClient from '@/utils/apiClient';
+import { getApiUrlForFetch } from '@/config/apiBase';
+import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import {
   fetchPeopleListCached,
@@ -266,6 +309,7 @@ import {
 } from '@/platform/fields/itemFieldModel';
 import { normalizeModuleFieldsFromMetadata } from '@/platform/fields/fieldMerge';
 import {
+  applyQuoteDiscountsToRecord,
   applyQuoteLineDeleteToRecord,
   applyQuoteLinesAddToRecord,
   applyQuoteLinesMutationToRecord,
@@ -348,19 +392,59 @@ const { openTab, activeTab } = useTabs();
 const { isSalesContext } = useCreationContext();
 const { typeDefs: organizationTypeDefs } = useOrganizationTypes();
 const isEditing = computed(() => !!props.record);
-const isQuoteModule = computed(() => props.moduleKey?.toLowerCase() === 'quotes');
-const isQuoteCreate = computed(() => isQuoteModule.value && !isEditing.value);
-const isQuoteEdit = computed(() => isQuoteModule.value && isEditing.value);
-const isQuoteForm = computed(() => isQuoteModule.value);
+const moduleKeyLower = computed(() => props.moduleKey?.toLowerCase() || '');
+const isQuoteModule = computed(() => moduleKeyLower.value === 'quotes');
+const isInvoiceModule = computed(() => moduleKeyLower.value === 'invoices');
+const isSalesOrderModule = computed(() => moduleKeyLower.value === 'sales_orders');
+const isCommercialLinesForm = computed(
+  () => isQuoteModule.value || isInvoiceModule.value || isSalesOrderModule.value
+);
+const isCommercialLinesCreate = computed(() => isCommercialLinesForm.value && !isEditing.value);
+const isCommercialLinesEdit = computed(() => isCommercialLinesForm.value && isEditing.value);
+const COMMERCIAL_LINES_CONFIG = {
+  quotes: {
+    apiPath: '/quotes',
+    draftFailedKey: 'records.quoteCreateDraftFailed',
+    loadFailedKey: 'records.quoteLoadFailed',
+    linesTitleKey: 'records.quoteLinesSectionTitle'
+  },
+  invoices: {
+    apiPath: '/invoices',
+    draftFailedKey: 'records.invoiceCreateDraftFailed',
+    loadFailedKey: 'records.invoiceLoadFailed',
+    linesTitleKey: 'records.invoiceLinesSectionTitle'
+  },
+  sales_orders: {
+    apiPath: '/sales-orders',
+    draftFailedKey: 'records.salesOrderCreateDraftFailed',
+    loadFailedKey: 'records.salesOrderLoadFailed',
+    linesTitleKey: 'records.salesOrderLinesSectionTitle'
+  }
+};
+const commercialLinesConfig = computed(
+  () => COMMERCIAL_LINES_CONFIG[moduleKeyLower.value] || COMMERCIAL_LINES_CONFIG.quotes
+);
 const fullMode = ref(false);
+/** Drives animated panel width; staged slightly ahead/behind content mode for smoother expand/collapse. */
+const panelWide = ref(false);
+let modeAnimTimer = null;
+const fieldSearch = ref('');
+const showFieldSearch = computed(
+  () => fullMode.value || !effectiveQuickCreateMode.value || isCommercialLinesForm.value
+);
 const closeButtonRef = ref(null);
-const quoteFormRecord = ref(null);
-const quoteFormLoading = ref(false);
-const quoteFormEnsurePromise = ref(null);
-/** Auto-created quote id while create drawer is open; discarded unless Save succeeds */
-const quoteCreateDraftId = ref(null);
-const quoteCreateSaved = ref(false);
-const quoteLinesFormContext = { expandedLeftSection: '' };
+const commercialFormRecord = ref(null);
+const commercialFormLoading = ref(false);
+const commercialFormEnsurePromise = ref(null);
+/** Auto-created commercial doc id while create drawer is open; discarded unless Save succeeds */
+const commercialCreateDraftId = ref(null);
+const commercialCreateSaved = ref(false);
+const commercialLinesFormContext = {
+  expandedLeftSection: '',
+  onSectionUpdated({ payload } = {}) {
+    handleCommercialLinesSectionUpdated(payload);
+  }
+};
 
 function isDuplicateKeyError(error) {
   const msg = String(
@@ -374,11 +458,12 @@ function isDuplicateKeyError(error) {
     msg.includes('duplicate key');
 }
 
-async function createQuoteDraftWithRetry(payload, maxAttempts = 3) {
+async function createCommercialDraftWithRetry(payload, maxAttempts = 3) {
+  const apiPath = commercialLinesConfig.value.apiPath;
   let lastError = null;
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     try {
-      return await apiClient.post('/quotes', payload);
+      return await apiClient.post(apiPath, payload);
     } catch (error) {
       lastError = error;
       if (!isDuplicateKeyError(error) || attempt >= maxAttempts - 1) {
@@ -390,13 +475,43 @@ async function createQuoteDraftWithRetry(payload, maxAttempts = 3) {
 }
 
 // Two modes: Quick Create Mode (only quick create fields) | Full Form Mode (all fields from config except system)
-// Show toggle when quick-create is configured. Quotes always open in full form (no toggle).
-const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isQuoteForm.value);
+// Show toggle when quick-create is configured. Commercial line docs always open in full form (no toggle).
+const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isCommercialLinesForm.value);
+
+function clearModeAnimTimer() {
+  if (modeAnimTimer) {
+    clearTimeout(modeAnimTimer);
+    modeAnimTimer = null;
+  }
+}
+
+function setDrawerMode(expanded, { animate = true } = {}) {
+  clearModeAnimTimer();
+  if (!expanded) fieldSearch.value = '';
+  if (!animate) {
+    fullMode.value = expanded;
+    panelWide.value = expanded;
+    return;
+  }
+  if (expanded) {
+    panelWide.value = true;
+    modeAnimTimer = setTimeout(() => {
+      fullMode.value = true;
+      modeAnimTimer = null;
+    }, 140);
+  } else {
+    fullMode.value = false;
+    modeAnimTimer = setTimeout(() => {
+      panelWide.value = false;
+      modeAnimTimer = null;
+    }, 90);
+  }
+}
 
 function toggleFullMode() {
   markUserInteraction();
-  const enteringFull = !fullMode.value;
-  fullMode.value = enteringFull;
+  const enteringFull = !fullMode.value && !panelWide.value;
+  setDrawerMode(enteringFull);
   if (enteringFull && props.moduleKey === 'deals') {
     syncLegacyLookupsIntoDealRelationships();
   }
@@ -405,7 +520,7 @@ function toggleFullMode() {
 // Quick Create Mode: show only fields from Settings → Quick Create
 // Full Form Mode: show all fields from module config (except system) in config order
 const effectiveQuickCreateMode = computed(() => {
-  if (isQuoteEdit.value) return true;
+  if (isCommercialLinesEdit.value) return true;
   if (props.quickCreateMode) return true;
   // If module settings provide a quickCreate config, default to strict quick-create mode.
   // This keeps create drawers aligned with Settings-selected fields.
@@ -415,7 +530,16 @@ const effectiveQuickCreateMode = computed(() => {
   if (hasConfiguredQuickCreate) return true;
 
   // Fallback defaults for modules where create drawers are quick-create first by design.
-  const useQuickCreateByDefault = ['organizations', 'tasks', 'items', 'deals', 'cases', 'quotes'];
+  const useQuickCreateByDefault = [
+    'organizations',
+    'tasks',
+    'items',
+    'deals',
+    'cases',
+    'quotes',
+    'invoices',
+    'sales_orders'
+  ];
   return useQuickCreateByDefault.includes(props.moduleKey?.toLowerCase());
 });
 
@@ -425,8 +549,8 @@ const strictQuickCreateForForm = computed(() => {
   if (!effectiveQuickCreateMode.value) return false;
   if (props.quickCreateMode) return true;
   if (fullMode.value) return false;
-  // Quotes: only Settings → Quick Create selected fields (never required-field fallback).
-  if (props.moduleKey?.toLowerCase() === 'quotes') return true;
+  // Commercial line docs: only Settings → Quick Create selected fields (never required-field fallback).
+  if (isCommercialLinesForm.value) return true;
   const qc = effectiveModuleOverrideForDrawer.value?.quickCreate
     ?? moduleOverrideFromSettings.value?.quickCreate;
   return Array.isArray(qc) && qc.length > 0;
@@ -441,6 +565,8 @@ const moduleNameMap = {
   'cases': 'Case',
   'events': 'Event',
   'quotes': 'Quote',
+  'invoices': 'Invoice',
+  'sales_orders': 'Sales Order',
   'users': 'User'
 };
 
@@ -532,6 +658,17 @@ const effectiveExcludeFields = computed(() => {
     }
     return Array.from(excluded);
   }
+  if (isInvoiceModule.value || isSalesOrderModule.value) {
+    const fields = effectiveModuleOverrideForDrawer.value?.fields || [];
+    for (const field of fields) {
+      const key = String(field?.key || '');
+      if (!key) continue;
+      if (isSystemField(moduleKeyLower.value, { key })) {
+        excluded.add(key);
+      }
+    }
+    return Array.from(excluded);
+  }
   return Array.from(excluded);
 });
 
@@ -568,11 +705,15 @@ async function fetchModuleForDrawer() {
       // Sales CRM routes are not always nested under /sales/*
       : currentPath.startsWith('/deals') ? 'sales'
       : currentPath.startsWith('/quotes') ? 'platform'
+      : currentPath.startsWith('/invoices') ? 'platform'
+      : currentPath.startsWith('/sales-orders') ? 'platform'
       : '';
 
     // Platform core modules must resolve to platform appKey even off-module routes (e.g. global search).
     const moduleAppKeyHintByKey = {
       quotes: 'platform',
+      invoices: 'platform',
+      sales_orders: 'platform',
       items: 'platform',
       forms: 'platform',
       tasks: 'platform',
@@ -620,8 +761,14 @@ const saving = ref(false);
 const moduleDefinition = ref(null);
 /** True when the user has interacted with the form (backdrop/Escape blocked); not set by programmatic sync */
 const userHasEdited = ref(false);
+/** True when form values / lines actually changed (refresh/leave confirm) */
+const hasUnsavedChanges = ref(false);
 function markUserInteraction() {
   userHasEdited.value = true;
+}
+function markFormChanged() {
+  userHasEdited.value = true;
+  hasUnsavedChanges.value = true;
 }
 // Module definition fetched when drawer opens so Quick Create fields come from Settings
 const moduleOverrideFromSettings = ref(null);
@@ -685,7 +832,7 @@ const effectiveModuleOverrideForDrawer = computed(() => {
     };
   }
 
-  if (moduleKeyLower === 'quotes') {
+  if (moduleKeyLower === 'quotes' || moduleKeyLower === 'invoices' || moduleKeyLower === 'sales_orders') {
     const quickMode = effectiveQuickCreateMode.value && !fullMode.value;
     const fieldKeys = new Set(
       (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
@@ -760,6 +907,7 @@ const dealLinesCurrency = computed(() => {
 
 const handleDealLinesDraftChange = (payload) => {
   dealLinesDraft.value = payload || null;
+  if (payload) markFormChanged();
   if (payload?.amountMode === 'AUTO' && payload.amount != null) {
     formData.value = { ...formData.value, amount: payload.amount, amountMode: 'AUTO' };
   } else if (payload?.amountMode) {
@@ -967,41 +1115,69 @@ function syncLegacyLookupsIntoDealRelationships() {
   );
 }
 
-function discardQuoteCreateDraft(draftId) {
-  const id = String(draftId || quoteCreateDraftId.value || '').trim();
-  if (!id || quoteCreateSaved.value) return;
-  apiClient.delete(`/quotes/${id}`)
+function discardCommercialCreateDraft(draftId, { keepalive = false } = {}) {
+  const id = String(draftId || commercialCreateDraftId.value || '').trim();
+  if (!id || commercialCreateSaved.value) return;
+  const apiPath = commercialLinesConfig.value.apiPath;
+
+  if (keepalive && typeof fetch !== 'undefined') {
+    const token = authStore.user?.token;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (isQuoteModule.value) clearQuoteLinesSession(id);
+    void fetch(getApiUrlForFetch(`${apiPath}/${id}`), {
+      method: 'DELETE',
+      headers,
+      keepalive: true,
+    }).catch((error) => {
+      drawerWarn('[CreateRecordDrawer] Failed to discard commercial draft on unload:', error);
+    });
+    return;
+  }
+
+  apiClient.delete(`${apiPath}/${id}`)
     .catch((error) => {
-      drawerWarn('[CreateRecordDrawer] Failed to discard quote draft:', error);
+      drawerWarn('[CreateRecordDrawer] Failed to discard commercial draft:', error);
     })
     .finally(() => {
-      clearQuoteLinesSession(id);
+      if (isQuoteModule.value) clearQuoteLinesSession(id);
     });
+}
+
+function handleCommercialCreatePageHide(event) {
+  // bfcache: page may be restored — do not discard
+  if (event?.persisted) return;
+  if (!isCommercialLinesCreate.value || commercialCreateSaved.value || saving.value) return;
+  const id = commercialCreateDraftId.value;
+  if (!id) return;
+  discardCommercialCreateDraft(id, { keepalive: true });
+  commercialCreateDraftId.value = null;
 }
 
 const closeDrawer = () => {
   if (!saving.value) {
     const draftIdToDiscard =
-      isQuoteCreate.value && quoteCreateDraftId.value && !quoteCreateSaved.value
-        ? quoteCreateDraftId.value
+      isCommercialLinesCreate.value && commercialCreateDraftId.value && !commercialCreateSaved.value
+        ? commercialCreateDraftId.value
         : null;
 
-    fullMode.value = false;
-    quoteFormRecord.value = null;
-    quoteFormLoading.value = false;
-    quoteFormEnsurePromise.value = null;
-    quoteCreateDraftId.value = null;
-    quoteCreateSaved.value = false;
+    setDrawerMode(false, { animate: false });
+    commercialFormRecord.value = null;
+    commercialFormLoading.value = false;
+    commercialFormEnsurePromise.value = null;
+    commercialCreateDraftId.value = null;
+    commercialCreateSaved.value = false;
     emit('close');
 
     if (draftIdToDiscard) {
-      discardQuoteCreateDraft(draftIdToDiscard);
+      discardCommercialCreateDraft(draftIdToDiscard);
     }
     // Reset form after closing
     setTimeout(() => {
       formData.value = {};
       errors.value = {};
       userHasEdited.value = false;
+      hasUnsavedChanges.value = false;
       if (props.moduleKey === 'deals') {
         dealRelationships.value = { dealPeople: [], dealOrganizations: [] };
         dealLinesDraft.value = null;
@@ -1010,45 +1186,45 @@ const closeDrawer = () => {
   }
 };
 
-async function loadQuoteFormRecord(quoteId) {
-  const loaded = await apiClient.get(`/quotes/${quoteId}`);
-  quoteFormRecord.value = loaded?.data || loaded;
+async function loadCommercialFormRecord(recordId) {
+  const loaded = await apiClient.get(`${commercialLinesConfig.value.apiPath}/${recordId}`);
+  commercialFormRecord.value = loaded?.data || loaded;
 }
 
-async function ensureQuoteFormRecord() {
-  if (!isQuoteForm.value) return;
+async function ensureCommercialFormRecord() {
+  if (!isCommercialLinesForm.value) return;
 
   const editId = props.record?._id || props.record?.id;
-  if (isQuoteEdit.value && editId) {
-    if (String(quoteFormRecord.value?._id || '') === String(editId)) return;
-    if (quoteFormEnsurePromise.value) {
-      await quoteFormEnsurePromise.value;
+  if (isCommercialLinesEdit.value && editId) {
+    if (String(commercialFormRecord.value?._id || '') === String(editId)) return;
+    if (commercialFormEnsurePromise.value) {
+      await commercialFormEnsurePromise.value;
       return;
     }
 
-    quoteFormLoading.value = true;
-    quoteFormEnsurePromise.value = (async () => {
+    commercialFormLoading.value = true;
+    commercialFormEnsurePromise.value = (async () => {
       try {
-        await loadQuoteFormRecord(editId);
+        await loadCommercialFormRecord(editId);
       } catch (error) {
-        drawerWarn('[CreateRecordDrawer] Failed to load quote for edit:', error);
+        drawerWarn('[CreateRecordDrawer] Failed to load commercial record for edit:', error);
       } finally {
-        quoteFormEnsurePromise.value = null;
-        quoteFormLoading.value = false;
+        commercialFormEnsurePromise.value = null;
+        commercialFormLoading.value = false;
       }
     })();
-    await quoteFormEnsurePromise.value;
+    await commercialFormEnsurePromise.value;
     return;
   }
 
-  if (!isQuoteCreate.value || quoteFormRecord.value?._id) return;
-  if (quoteFormEnsurePromise.value) {
-    await quoteFormEnsurePromise.value;
+  if (!isCommercialLinesCreate.value || commercialFormRecord.value?._id) return;
+  if (commercialFormEnsurePromise.value) {
+    await commercialFormEnsurePromise.value;
     return;
   }
 
-  quoteFormLoading.value = true;
-  quoteFormEnsurePromise.value = (async () => {
+  commercialFormLoading.value = true;
+  commercialFormEnsurePromise.value = (async () => {
     try {
       const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
       const createPayload = applyCreateOwnerDefaultsToPayload(
@@ -1056,30 +1232,30 @@ async function ensureQuoteFormRecord() {
           ...props.initialData,
           ...(orgCurrency && !props.initialData?.currency ? { currency: orgCurrency } : {}),
         },
-        'quotes',
+        moduleKeyLower.value,
         resolveCurrentUserId(authStore.user)
       );
-      const created = await createQuoteDraftWithRetry(createPayload);
+      const created = await createCommercialDraftWithRetry(createPayload);
       const createdRecord = created?.data || created;
-      const quoteId = createdRecord?._id || createdRecord?.id;
-      if (!quoteId) {
-        throw new Error('Quote draft was not created');
+      const draftId = createdRecord?._id || createdRecord?.id;
+      if (!draftId) {
+        throw new Error('Commercial draft was not created');
       }
-      quoteCreateDraftId.value = quoteId;
-      quoteCreateSaved.value = false;
-      await loadQuoteFormRecord(quoteId);
+      commercialCreateDraftId.value = draftId;
+      commercialCreateSaved.value = false;
+      await loadCommercialFormRecord(draftId);
       if (moduleDefinition.value) {
-        mergeQuoteFormRecordIntoFormData(quoteFormRecord.value);
+        mergeCommercialFormRecordIntoFormData(commercialFormRecord.value);
       }
     } catch (error) {
-      drawerWarn('[CreateRecordDrawer] Failed to create quote draft:', error);
+      drawerWarn('[CreateRecordDrawer] Failed to create commercial draft:', error);
     } finally {
-      quoteFormEnsurePromise.value = null;
-      quoteFormLoading.value = false;
+      commercialFormEnsurePromise.value = null;
+      commercialFormLoading.value = false;
     }
   })();
 
-  await quoteFormEnsurePromise.value;
+  await commercialFormEnsurePromise.value;
 }
 
 function applyOrgCurrencyToCreateForm() {
@@ -1090,10 +1266,10 @@ function applyOrgCurrencyToCreateForm() {
   // Only replace empty or platform schema default — keep explicit user selections
   if (current && current !== 'USD') {
     if (
-      quoteFormRecord.value &&
-      String(quoteFormRecord.value.currency || '').toUpperCase() !== current
+      commercialFormRecord.value &&
+      String(commercialFormRecord.value.currency || '').toUpperCase() !== current
     ) {
-      quoteFormRecord.value = { ...quoteFormRecord.value, currency: current };
+      commercialFormRecord.value = { ...commercialFormRecord.value, currency: current };
     }
     return;
   }
@@ -1101,14 +1277,14 @@ function applyOrgCurrencyToCreateForm() {
     formData.value = { ...formData.value, currency: orgCurrency };
   }
   if (
-    quoteFormRecord.value &&
-    String(quoteFormRecord.value.currency || '').toUpperCase() !== orgCurrency
+    commercialFormRecord.value &&
+    String(commercialFormRecord.value.currency || '').toUpperCase() !== orgCurrency
   ) {
-    quoteFormRecord.value = { ...quoteFormRecord.value, currency: orgCurrency };
+    commercialFormRecord.value = { ...commercialFormRecord.value, currency: orgCurrency };
   }
 }
 
-function mergeQuoteFormRecordIntoFormData(record) {
+function mergeCommercialFormRecordIntoFormData(record) {
   if (!record || !moduleDefinition.value?.fields) return;
   const next = { ...formData.value };
   for (const field of moduleDefinition.value.fields) {
@@ -1137,15 +1313,28 @@ function mergeQuoteFormRecordIntoFormData(record) {
 }
 
 function handleQuoteLinesUpdated(payload) {
-  const record = quoteFormRecord.value;
+  const record = commercialFormRecord.value;
   if (!record) return;
+  if (payload?.type && payload.type !== 'soft-refresh') {
+    markFormChanged();
+  }
 
+  const bumpRecord = () => {
+    // New object identity so totals / discount watchers re-run in the lines section
+    commercialFormRecord.value = { ...record };
+  };
+
+  if (payload?.type === 'soft-refresh') {
+    void handleCommercialLinesSectionUpdated(payload);
+    return;
+  }
   if (payload?.type === 'line-deleted') {
     applyQuoteLineDeleteToRecord(record, {
       deletedLine: payload.deletedLine,
       totals: payload.totals,
       sections: payload.sections,
     });
+    bumpRecord();
     return;
   }
   if (payload?.type === 'lines-added') {
@@ -1154,6 +1343,7 @@ function handleQuoteLinesUpdated(payload) {
       totals: payload.totals,
       sections: payload.sections,
     });
+    bumpRecord();
     return;
   }
   if (payload?.type === 'line-updated') {
@@ -1162,6 +1352,7 @@ function handleQuoteLinesUpdated(payload) {
       totals: payload.totals,
       sections: payload.sections,
     });
+    bumpRecord();
     return;
   }
   if (payload?.type === 'lines-recalculated') {
@@ -1170,6 +1361,20 @@ function handleQuoteLinesUpdated(payload) {
       totals: payload.totals,
       sections: payload.sections,
     });
+    bumpRecord();
+    return;
+  }
+  if (
+    (payload?.type === 'quote-discounts-updated' ||
+      payload?.type === 'quote-taxes-charges-updated') &&
+    applyQuoteDiscountsToRecord(record, {
+      quote: payload.quote,
+      lines: payload.lines,
+      totals: payload.totals,
+      sections: payload.sections,
+    })
+  ) {
+    bumpRecord();
     return;
   }
   if (
@@ -1182,6 +1387,21 @@ function handleQuoteLinesUpdated(payload) {
         totals: payload.totals,
         sections: payload.sections,
       });
+    }
+    bumpRecord();
+  }
+}
+
+async function handleCommercialLinesSectionUpdated(payload) {
+  if (!payload) return;
+  if (payload.type && payload.type !== 'soft-refresh') {
+    markFormChanged();
+  }
+  if (payload.type === 'soft-refresh' && commercialFormRecord.value?._id) {
+    try {
+      await loadCommercialFormRecord(commercialFormRecord.value._id);
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to refresh commercial lines:', error);
     }
   }
 }
@@ -1413,8 +1633,8 @@ const onFormReady = (module) => {
   if (isFirstLoad || isEditing.value) {
     initializeForm(module);
     if (!isEditing.value) applySearchPrefill(module);
-    if (isQuoteCreate.value && quoteFormRecord.value) {
-      mergeQuoteFormRecordIntoFormData(quoteFormRecord.value);
+    if (isCommercialLinesCreate.value && commercialFormRecord.value) {
+      mergeCommercialFormRecordIntoFormData(commercialFormRecord.value);
     }
     // Defeat late DynamicFormField mounts that re-emit schema defaultValue 'USD'
     if (!isEditing.value) {
@@ -1450,14 +1670,14 @@ watch(() => props.record, () => {
 watch(() => [props.isOpen, props.moduleKey], ([open, key]) => {
   if (open && key) {
     fetchModuleForDrawer();
-    if (String(key).toLowerCase() === 'quotes') {
-      ensureQuoteFormRecord();
+    if (isCommercialLinesForm.value) {
+      ensureCommercialFormRecord();
     }
   } else {
     moduleOverrideFromSettings.value = null;
-    quoteFormRecord.value = null;
-    quoteFormLoading.value = false;
-    quoteFormEnsurePromise.value = null;
+    commercialFormRecord.value = null;
+    commercialFormLoading.value = false;
+    commercialFormEnsurePromise.value = null;
     dealOverrideCache.mod = null;
     dealOverrideCache.pipelineKey = undefined;
     dealOverrideCache.quickMode = undefined;
@@ -1579,8 +1799,8 @@ const handleSubmit = async () => {
   });
   
   errors.value = {};
-  if (isQuoteCreate.value && !quoteFormRecord.value?._id) {
-    errors.value._general = t('records.quoteCreateDraftFailed');
+  if (isCommercialLinesCreate.value && !commercialFormRecord.value?._id) {
+    errors.value._general = t(commercialLinesConfig.value.draftFailedKey);
     return;
   }
   saving.value = true;
@@ -2009,7 +2229,10 @@ const handleSubmit = async () => {
       'users': '/users'
     };
     
-    endpoint = moduleEndpointMap[props.moduleKey] || `/${props.moduleKey}`;
+    endpoint =
+      moduleEndpointMap[props.moduleKey] ||
+      getModuleRecordCrudPathBase(props.moduleKey) ||
+      `/${props.moduleKey}`;
     let createEndpoint = endpoint;
     
     // Remove legacyOrganizationId if it's null to avoid unique index conflicts
@@ -2144,17 +2367,17 @@ const handleSubmit = async () => {
         role: 'Lead',
         formData: submitData
       });
-    } else if (isQuoteCreate.value && quoteFormRecord.value?._id) {
-      const quoteId = quoteFormRecord.value._id;
-      response = await apiClient.put(`${endpoint}/${quoteId}`, submitData);
+    } else if (isCommercialLinesCreate.value && commercialFormRecord.value?._id) {
+      const draftId = commercialFormRecord.value._id;
+      response = await apiClient.put(`${endpoint}/${draftId}`, submitData);
       const savedData = response?.data || response;
-      if (savedData && quoteFormRecord.value) {
+      if (savedData && commercialFormRecord.value) {
         response = {
           ...response,
           data: {
             ...savedData,
-            lines: quoteFormRecord.value.lines,
-            sections: quoteFormRecord.value.sections,
+            lines: commercialFormRecord.value.lines,
+            sections: commercialFormRecord.value.sections,
           },
         };
       }
@@ -2173,8 +2396,8 @@ const handleSubmit = async () => {
     if (response.success || response.data) {
       drawerDbg('[CreateRecordDrawer] ✅ Success! Closing drawer...');
       saving.value = false; // Reset saving state before closing
-      if (isQuoteCreate.value) {
-        quoteCreateSaved.value = true;
+      if (isCommercialLinesCreate.value) {
+        commercialCreateSaved.value = true;
       }
 
       const savedRecord = response.data || response;
@@ -2198,6 +2421,8 @@ const handleSubmit = async () => {
             'events': () => savedRecord.eventName || savedRecord.title || 'Event',
             'cases': () => savedRecord.caseId || savedRecord.title || 'Case',
             'quotes': () => savedRecord.quoteNumber || savedRecord.quoteTitle || 'Quote',
+            'invoices': () => savedRecord.invoiceNumber || savedRecord.invoiceTitle || 'Invoice',
+            'sales_orders': () => savedRecord.salesOrderNumber || savedRecord.orderTitle || 'Sales Order',
             'users': () => savedRecord.firstName && savedRecord.lastName 
               ? `${savedRecord.firstName} ${savedRecord.lastName}`.trim()
               : savedRecord.email || savedRecord.username || 'User'
@@ -2219,6 +2444,8 @@ const handleSubmit = async () => {
             'events': `/events/${recordId}`,
             'cases': `/helpdesk/cases/${recordId}`,
             'quotes': `/quotes/${recordId}`,
+            'invoices': `/invoices/${recordId}`,
+            'sales_orders': `/sales-orders/${recordId}`,
             'users': `/users/${recordId}`
           };
           
@@ -2233,6 +2460,8 @@ const handleSubmit = async () => {
             'events': '📅',
             'cases': 'ticket',
             'quotes': 'document-text',
+            'invoices': 'document-text',
+            'sales_orders': 'shopping-cart',
             'users': 'user'
           };
           
@@ -2385,28 +2614,39 @@ const handleSubmit = async () => {
   }
 };
 
+function handleBeforeUnload(event) {
+  if (!props.isOpen || !hasUnsavedChanges.value) return;
+  event.preventDefault();
+  event.returnValue = '';
+}
+
 // Reset form when drawer opens/closes
 watch(() => props.isOpen, (isOpen, wasOpen) => {
   if (!isOpen && wasOpen) {
-    const draftId = quoteCreateDraftId.value;
-    if (isQuoteCreate.value && draftId && !quoteCreateSaved.value) {
-      discardQuoteCreateDraft(draftId);
+    const draftId = commercialCreateDraftId.value;
+    if (isCommercialLinesCreate.value && draftId && !commercialCreateSaved.value) {
+      discardCommercialCreateDraft(draftId);
     }
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('pagehide', handleCommercialCreatePageHide);
   }
   if (isOpen) {
     userHasEdited.value = false;
-    quoteCreateDraftId.value = null;
-    quoteCreateSaved.value = false;
-    fullMode.value = isQuoteForm.value;
+    hasUnsavedChanges.value = false;
+    commercialCreateDraftId.value = null;
+    commercialCreateSaved.value = false;
+    setDrawerMode(isCommercialLinesForm.value, { animate: false });
     errors.value = {};
     moduleDefinition.value = null;
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleCommercialCreatePageHide);
     // Form seeds from record in onFormReady / moduleOverride watch after module loads
   } else {
-    quoteFormRecord.value = null;
-    quoteFormLoading.value = false;
-    quoteFormEnsurePromise.value = null;
-    quoteCreateDraftId.value = null;
-    quoteCreateSaved.value = false;
+    commercialFormRecord.value = null;
+    commercialFormLoading.value = false;
+    commercialFormEnsurePromise.value = null;
+    commercialCreateDraftId.value = null;
+    commercialCreateSaved.value = false;
     // Reset when closed so the next open re-seeds from record via onFormReady
     setTimeout(() => {
       formData.value = {};
@@ -2414,5 +2654,11 @@ watch(() => props.isOpen, (isOpen, wasOpen) => {
       moduleDefinition.value = null;
     }, 300);
   }
+});
+
+onUnmounted(() => {
+  clearModeAnimTimer();
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  window.removeEventListener('pagehide', handleCommercialCreatePageHide);
 });
 </script>

@@ -26,16 +26,16 @@
                 leave-from="translate-x-0"
                 leave-to="translate-x-full"
               >
-                <div class="pointer-events-auto flex h-full">
-                  <DialogPanel class="flex h-full w-[30rem] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800">
-                    <form class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700" @submit.prevent="submit">
-                      <div class="flex shrink-0 items-center justify-between bg-indigo-700 px-4 py-4 dark:bg-indigo-800 sm:px-6">
-                        <DialogTitle class="truncate text-base font-semibold text-white">
+                <div class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full">
+                  <DialogPanel class="rounded-tl-xl overflow-hidden flex h-full w-[30rem] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800">
+                    <form class="rounded-none relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700" @submit.prevent="submit">
+                      <div class="flex shrink-0 items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-4 sm:px-6">
+                        <DialogTitle class="truncate text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                           {{ drawerTitle }}
                         </DialogTitle>
                         <button
                           type="button"
-                          class="relative ml-3 shrink-0 rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer ml-3 shrink-0"
                           @click="emit('close')"
                         >
                           <span class="absolute -inset-2.5" />

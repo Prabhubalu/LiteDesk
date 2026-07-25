@@ -515,7 +515,13 @@ async function resyncFromExistingRecords(organizationId, moduleKey) {
     } else if (key === 'blog') {
       filter.addonKey = 'blog';
     }
-    rows = await Model.find(filter).select(field).lean();
+    // Prefer raw collection for commercial docs so soft-deleted numbers still count
+    // (unique indexes retain those values).
+    if (key === 'quotes' || key === 'sales_orders' || key === 'invoices' || key === 'invoices:credit_note') {
+      rows = await Model.collection.find(filter, { projection: { [field]: 1 } }).toArray();
+    } else {
+      rows = await Model.find(filter).select(field).lean();
+    }
   }
   let max = 0;
   const extractOpts = {

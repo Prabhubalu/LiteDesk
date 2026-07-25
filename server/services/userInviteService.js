@@ -12,7 +12,11 @@ const {
   getVerificationExpiry,
   isTokenExpired
 } = require('../utils/userAuthTokens');
-const { sendInviteEmail, sendVerificationEmail } = require('./userAccountEmailService');
+const {
+  sendInviteEmail,
+  sendDemoWorkspaceReadyEmail,
+  sendVerificationEmail
+} = require('./userAccountEmailService');
 const { generateSecurePassword } = require('./provisioning/utils/passwordGenerator');
 
 function cloneUserSchema(connection) {
@@ -196,6 +200,25 @@ function inviterDisplayName(inviter) {
   return full || inviter?.username || inviter?.email || 'Your administrator';
 }
 
+function mapEmailSendResult(result, user, organization, label) {
+  if (!result.success) {
+    console.warn(`[userInviteService] ${label} email not sent:`, {
+      email: user.email,
+      organizationId: organization?._id,
+      reason: result.reason || result.error,
+      channel: result.channel || null
+    });
+  }
+
+  return {
+    sent: result.success === true,
+    skipped: result.skipped === true,
+    reason: result.reason || result.error || null,
+    messageId: result.messageId || null,
+    channel: result.channel || null
+  };
+}
+
 async function sendInviteForUser({
   user,
   organization,
@@ -213,22 +236,23 @@ async function sendInviteForUser({
     welcomeNote
   });
 
-  if (!result.success) {
-    console.warn('[userInviteService] Invite email not sent:', {
-      email: user.email,
-      organizationId: organization?._id,
-      reason: result.reason || result.error,
-      channel: result.channel || null
-    });
-  }
+  return mapEmailSendResult(result, user, organization, 'Invite');
+}
 
-  return {
-    sent: result.success === true,
-    skipped: result.skipped === true,
-    reason: result.reason || result.error || null,
-    messageId: result.messageId || null,
-    channel: result.channel || null
-  };
+async function sendDemoWorkspaceActivationForUser({
+  user,
+  organization,
+  inviteToken
+}) {
+  const result = await sendDemoWorkspaceReadyEmail({
+    to: user.email,
+    invitee: user,
+    organizationId: organization?._id,
+    organizationName: organization?.name,
+    inviteToken
+  });
+
+  return mapEmailSendResult(result, user, organization, 'Demo workspace activation');
 }
 
 async function issueVerificationForUser({
@@ -294,12 +318,16 @@ async function validateInviteToken(rawToken) {
     return { valid: false, code: 'TOKEN_EXPIRED', email: user.email };
   }
 
+  const { ONBOARDING_ORIGINS } = require('./onboardingService');
+  const isWorkspaceActivation = user.onboarding?.origin === ONBOARDING_ORIGINS.DEMO_CONVERTED;
+
   return {
     valid: true,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
     organizationName: organization.name,
+    isWorkspaceActivation,
     entitledApps: (user.appAccess || [])
       .filter((a) => a?.status === 'ACTIVE')
       .map((a) => a.appKey)
@@ -350,8 +378,13 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
     initializeOnboardingForUser,
     ONBOARDING_ORIGINS
   } = require('./onboardingService');
+  const preservedOrigin = user.onboarding?.origin;
+  const origin = preservedOrigin === ONBOARDING_ORIGINS.DEMO_CONVERTED
+    || preservedOrigin === ONBOARDING_ORIGINS.SELF_SERVE
+    ? preservedOrigin
+    : ONBOARDING_ORIGINS.INVITED;
   await initializeOnboardingForUser(user, {
-    origin: ONBOARDING_ORIGINS.INVITED,
+    origin,
     welcomeNote: user.onboarding?.welcomeNote || null,
     suggestedTask: user.onboarding?.suggestedTask || null
   });
@@ -532,6 +565,7 @@ module.exports = {
   syncDirectoryEntry,
   buildInviteCredentials,
   sendInviteForUser,
+  sendDemoWorkspaceActivationForUser,
   issueVerificationForUser,
   validateInviteToken,
   acceptInvite,

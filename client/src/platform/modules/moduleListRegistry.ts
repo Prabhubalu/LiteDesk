@@ -1629,8 +1629,17 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
 
   quotes: {
     defaultColumns: {
-      defaultVisibleColumns: ['quoteNumber', 'quoteTitle', 'status', 'grandTotal', 'updatedAt'],
-      lockedColumn: 'quoteNumber',
+      defaultVisibleColumns: [
+        'quoteTitle',
+        'quoteNumber',
+        'organizationRefId',
+        'status',
+        'grandTotal',
+        'validUntil',
+        'assignedTo',
+        'updatedAt'
+      ],
+      lockedColumn: 'quoteTitle',
       excludedFromDefault: ['customFields', 'sourceRef']
     },
     statistics: {

@@ -26,16 +26,16 @@
               leave-to="translate-x-full"
             >
               <DialogPanel class="pointer-events-auto w-screen max-w-3xl">
-                <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
+                <form @submit.prevent="handleSubmit" class="rounded-tl-xl overflow-hidden relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
                   <div class="h-0 flex-1 overflow-y-auto">
-                    <div class="bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
+                    <div class="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6">
                       <div class="flex items-center justify-between">
-                        <DialogTitle class="text-base font-semibold text-white">
+                        <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                           {{ isEditing ? t('process.ruleFormEditHeading') : t('process.ruleFormNewHeading') }}
                         </DialogTitle>
                         <button
                           type="button"
-                          class="relative rounded-md text-indigo-200 hover:text-white"
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
                           @click="$emit('close')"
                         >
                           <XMarkIcon class="size-6" aria-hidden="true" />

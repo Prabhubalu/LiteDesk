@@ -1,0 +1,10 @@
+export const FORM_FIELD_LABEL_CLASS: string;
+export const FORM_FIELD_CONTROL_CLASS: string;
+export const FORM_FIELD_SEARCH_CONTROL_CLASS: string;
+export const FORM_FIELD_CONTROL_MT_CLASS: string;
+export const FORM_FIELD_TEXTAREA_CLASS: string;
+export const FORM_FIELD_LISTBOX_CLASS: string;
+export const FORM_FIELD_READ_ONLY_CLASS: string;
+export const FORM_FIELD_INVALID_CLASS: string;
+export const FORM_FIELD_PHONE_INPUT_CLASS: string;
+export function joinFormFieldClasses(...parts: Array<string | false | null | undefined>): string;

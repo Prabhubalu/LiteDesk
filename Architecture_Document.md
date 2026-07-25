@@ -291,7 +291,9 @@ Lifecycle per tenant: `status`, `organizationId` (unique), `demoRequestId`, `isI
 
 #### Item / Catalog
 
-`items`, `itemvariants`, `catalogcategories`, `catalogpricebooks`, bundles, lifecycle, media gallery.
+`items`, `itemvariants`, `catalogcategories`, `catalogpricebooks`, `itemgroups`, bundles, lifecycle, media gallery.
+
+**Settings IA:** Catalog is a top-level Settings tab (categories, price books, item groups). Inventory Settings is ledger/ops only (taxes, charges). Bundle is an item type (composition), not a settings domain.
 
 #### Form + FormResponse vs Webform
 
@@ -326,7 +328,14 @@ Public: `/api/public/quotes`, `/api/public/pay`.
 ### Inventory (`INVENTORY` app)
 
 Ledger-centric: `inventorylocations`, `inventoryledgerentries`, `inventorytransactions`, `inventoryreservations`, `inventorytransfers`, `inventoryadjustments`, `inventorycounts`, `inventorylots`, `inventoryserials`, `iteminventory`, `organizationinventorysettings`.  
-APIs under `/api/inventory`. Fulfillment ties to Sales Orders.
+APIs under `/api/inventory` (ledger + commercial docs: purchase-orders, receipt-notes, purchase-returns, delivery-notes, delivery-returns, sales-returns). Fulfillment ties to Sales Orders.
+
+### Commercial Taxes (shared)
+
+Reusable tax configuration for Sales + Inventory documents (not ledger-owned).  
+Models: `taxes`, `taxgroups`, `organizationtaxsettings`, `taxregionalassignments`.  
+API: `/api/taxes` (Sales app + items feature; calc via `taxCalculationService`).  
+Settings UI: Settings → Inventory → Taxes. Consumer helpers: resolve-defaults, suggest-regional, calculate.
 
 ---
 

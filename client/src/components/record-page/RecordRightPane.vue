@@ -3,13 +3,11 @@
     ref="paneRootRef"
     :class="[
       'record-right-pane relative flex min-w-0 flex-col h-full bg-white dark:bg-gray-900 overflow-hidden',
-      isResizing ? 'record-right-pane--no-transition' : 'transition-[width] duration-300 ease-out',
+      isResizing ? 'record-right-pane--no-transition' : 'transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
       { 'is-scrolling': isScrolling },
       fullWidth || layoutIsMobile
         ? 'w-full flex-1'
-        : activeTab
-          ? 'w-full lg:flex-shrink-0'
-          : 'w-20'
+        : 'lg:flex-shrink-0'
     ]"
     :style="paneRootStyle"
     @scroll.capture="showScrollbar"
@@ -61,14 +59,14 @@
       </div>
     </div>
 
-    <!-- Content - Split Layout -->
-    <div class="flex-1 overflow-hidden flex">
-      <!-- Main Content Area - Always render for smooth transitions -->
+    <!-- Content - Split Layout: justify-end so collapsed clip keeps the tab rail visible -->
+    <div class="flex-1 overflow-hidden flex min-w-0 justify-end">
+      <!-- Fixed open width + overflow clip: expand reveals content instead of reflowing it -->
       <div 
         ref="scrollContainer"
-        class="flex-1 overflow-x-hidden transition-all duration-300 min-h-0 flex flex-col"
+        class="record-right-pane__content overflow-x-hidden min-h-0 flex flex-col transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
         :class="[
-          { 'opacity-0': !activeTab, 'opacity-100': activeTab },
+          { 'opacity-0 pointer-events-none': !activeTab, 'opacity-100': activeTab },
           activeTab === 'summary' && props.summaryLayout === 'fill'
             ? 'overflow-hidden'
             : 'overflow-y-auto',
@@ -76,11 +74,12 @@
             ? 'bg-white dark:bg-gray-900'
             : 'bg-gray-50 dark:bg-gray-900'
         ]"
+        :style="contentAreaStyle"
       >
         <!-- Dynamic Tab Content - single wrapper for active tab only so it gets full height -->
         <div class="w-full h-full flex-1 flex flex-col min-h-0">
           <template v-for="tab in effectiveTabs" :key="tab.id">
-            <div v-if="activeTab === tab.id" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+            <div v-if="renderedTab === tab.id" class="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
               <!-- Summary tab: use teleport target for layout's left content on mobile -->
               <template v-if="tab.id === 'summary' && layoutIsMobile">
                 <div
@@ -125,8 +124,8 @@
         </div>
       </div>
 
-      <!-- Right Sidebar - Tabs (ml-auto keeps tabs on the right when content is collapsed) -->
-      <div class="w-20 ml-auto border-l border-gray-200 dark:border-gray-700 flex flex-col items-center py-4 gap-2 flex-shrink-0">
+      <!-- Right Sidebar - Tabs (justify-end on parent keeps this rail visible when collapsed) -->
+      <div class="w-20 border-l border-gray-200 dark:border-gray-700 flex flex-col items-center py-4 gap-2 flex-shrink-0">
         <button
           v-for="tab in effectiveTabs"
           :key="tab.id"
@@ -136,7 +135,7 @@
         >
           <div
             :class="[
-              'p-2 rounded-lg flex items-center justify-center',
+              'p-2 rounded-lg flex items-center justify-center transition-colors duration-200',
               activeTab === tab.id
                 ? 'bg-gray-100 dark:bg-gray-700'
                 : ''
@@ -145,7 +144,7 @@
             <component
               :is="getTabIcon(tab.id)"
               :class="[
-                'w-5 h-5 flex-shrink-0',
+                'w-5 h-5 flex-shrink-0 transition-colors duration-200',
                 activeTab === tab.id
                   ? 'text-indigo-600 dark:text-indigo-400'
                   : 'text-gray-600 dark:text-gray-400'
@@ -154,7 +153,7 @@
           </div>
           <span 
             :class="[
-              'text-[10.5px] font-medium leading-tight text-center',
+              'text-[10.5px] font-medium leading-tight text-center transition-colors duration-200',
               activeTab === tab.id
                 ? 'text-indigo-600 dark:text-indigo-400'
                 : 'text-gray-600 dark:text-gray-400'
@@ -196,6 +195,9 @@ const PANE_WIDTH_RESIZED_KEY = 'arivu:record-right-pane-user-resized';
 const DEFAULT_PANE_WIDTH_PX = 500;
 const MIN_PANE_WIDTH_PX = 480;
 const MAX_PANE_WIDTH_PX = 720;
+/** Matches former Tailwind `w-20` rail — must stay in style so width can transition. */
+const COLLAPSED_PANE_WIDTH_PX = 80;
+const PANE_WIDTH_TRANSITION_MS = 300;
 const LEFT_CONTENT_MIN_PX = 380;
 const RESIZE_DRAG_THRESHOLD_PX = 4;
 
@@ -340,6 +342,8 @@ const resolveActiveTab = () => {
 
 // Initialize activeTab with priority: mobile→summary | persisted > defaultTab prop > null
 const activeTab = ref(resolveActiveTab());
+/** Stays set through collapse animation so content does not unmount mid-transition. */
+const renderedTab = ref(activeTab.value);
 const paneRootRef = ref(null);
 const paneUserResized = ref(loadPaneUserResized());
 const paneWidthPx = ref(loadPaneWidthPx());
@@ -354,6 +358,7 @@ let resizeStartX = 0;
 let resizeStartWidthPx = 0;
 let resizeDidDrag = false;
 let windowResizeHandler = null;
+let collapseUnmountTimer = null;
 
 const isResizableDesktop = computed(
   () => !props.fullWidth && !layoutIsMobile.value && !!activeTab.value
@@ -384,11 +389,27 @@ const effectivePaneWidthPx = computed(() => {
 });
 
 const paneRootStyle = computed(() => {
-  if (!isResizableDesktop.value) return undefined;
+  // Mobile / full-width: let flex classes own sizing.
+  if (props.fullWidth || layoutIsMobile.value) return undefined;
+  // Always set explicit px width on desktop so expand/collapse can interpolate.
+  // Do not set minWidth here — MIN_PANE_WIDTH_PX would snap collapsed (80px) open instantly.
+  const width = activeTab.value ? effectivePaneWidthPx.value : COLLAPSED_PANE_WIDTH_PX;
   return {
-    width: `${effectivePaneWidthPx.value}px`,
-    minWidth: `${MIN_PANE_WIDTH_PX}px`,
+    width: `${width}px`,
     maxWidth: '100%'
+  };
+});
+
+/** Desktop: lock content to open size so the shell width clips/reveals instead of reflowing. */
+const contentAreaStyle = computed(() => {
+  if (props.fullWidth || layoutIsMobile.value) {
+    return { flex: '1 1 0%' };
+  }
+  const openContentWidth = Math.max(0, effectivePaneWidthPx.value - COLLAPSED_PANE_WIDTH_PX);
+  return {
+    width: `${openContentWidth}px`,
+    minWidth: `${openContentWidth}px`,
+    flex: '0 0 auto'
   };
 });
 
@@ -526,6 +547,7 @@ onUpdated(syncSummaryTeleportReady);
 
 onBeforeUnmount(() => {
   if (scrollHideTimer) clearTimeout(scrollHideTimer);
+  if (collapseUnmountTimer) clearTimeout(collapseUnmountTimer);
   layoutSummaryTeleportReady.value = false;
   endPaneResize({ persist: false });
   if (windowResizeHandler) {
@@ -558,6 +580,24 @@ watch(layoutIsMobile, (isMobile) => {
 watch(activeTab, (newTab) => {
   emit('active-tab-change', newTab);
   savePersistedTab(newTab);
+
+  if (collapseUnmountTimer) {
+    clearTimeout(collapseUnmountTimer);
+    collapseUnmountTimer = null;
+  }
+
+  if (newTab) {
+    renderedTab.value = newTab;
+    return;
+  }
+
+  // Collapse: keep DOM until width transition finishes
+  collapseUnmountTimer = setTimeout(() => {
+    if (!activeTab.value) {
+      renderedTab.value = null;
+    }
+    collapseUnmountTimer = null;
+  }, PANE_WIDTH_TRANSITION_MS);
 });
 
 // Handle tab click
@@ -676,7 +716,7 @@ const getTabIcon = (tabId) => {
 }
 
 .record-right-pane--no-transition {
-  transition: none;
+  transition: none !important;
 }
 
 .record-right-pane-resize-handle {

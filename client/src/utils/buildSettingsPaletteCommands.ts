@@ -6,6 +6,7 @@ export type SettingsAccessContext = {
   role: string | null | undefined;
   permissions: Record<string, unknown> | null | undefined;
   entitledAddons?: { ai?: boolean } | null;
+  inventoryEnabled?: boolean;
 };
 
 type SettingsPaletteTab = {
@@ -59,6 +60,20 @@ const SETTINGS_PALETTE_TABS: SettingsPaletteTab[] = [
     descriptionKey: 'settings.tabApplicationsDesc',
     route: '/settings?tab=applications',
     order: 60,
+  },
+  {
+    id: 'catalog',
+    labelKey: 'settings.tabCatalog',
+    descriptionKey: 'settings.tabCatalogDesc',
+    route: '/settings?tab=catalog',
+    order: 62,
+  },
+  {
+    id: 'inventory',
+    labelKey: 'settings.tabInventory',
+    descriptionKey: 'settings.tabInventoryDesc',
+    route: '/settings?tab=inventory',
+    order: 65,
   },
   {
     id: 'automation',

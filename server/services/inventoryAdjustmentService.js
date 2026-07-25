@@ -135,8 +135,15 @@ async function getAdjustmentById({ organizationId, inventoryAdjustmentId }) {
   return InventoryAdjustment.findOne({ organizationId, inventoryAdjustmentId }).lean();
 }
 
+async function listAdjustments({ organizationId, status = null, limit = 50 }) {
+  const query = { organizationId };
+  if (status) query.status = status;
+  return InventoryAdjustment.find(query).sort({ createdAt: -1 }).limit(limit).lean();
+}
+
 module.exports = {
   createAdjustment,
   postAdjustment,
-  getAdjustmentById
+  getAdjustmentById,
+  listAdjustments
 };

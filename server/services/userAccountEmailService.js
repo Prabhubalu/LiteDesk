@@ -191,6 +191,80 @@ async function sendInviteEmail({
   });
 }
 
+function buildDemoWorkspaceReadyEmailContent({
+  invitee,
+  organizationName,
+  activateUrl
+}) {
+  const name = displayName(invitee);
+  const org = organizationName || 'your workspace';
+  const subject = `Your ${org} workspace is ready on Arivu`;
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:15px;color:#3f3f46;line-height:1.6;">
+      Hi ${escapeHtml(name)}, your Arivu workspace for
+      <strong>${escapeHtml(org)}</strong> is ready.
+    </p>
+    <p style="margin:0 0 24px;font-size:14px;color:#52525b;line-height:1.6;">
+      Activate your account to choose your password and start setup. Activating also verifies your email address.
+    </p>
+    <p style="margin:0 0 24px;">
+      <a href="${escapeHtml(activateUrl)}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">
+        Activate workspace
+      </a>
+    </p>
+    <p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">
+      This link expires in 72 hours. If you did not request a demo, you can ignore this email.
+    </p>`;
+
+  const text = [
+    `Hi ${name},`,
+    '',
+    `Your Arivu workspace for ${org} is ready.`,
+    '',
+    'Activate your account to choose your password and start setup.',
+    'Activating also verifies your email address.',
+    '',
+    `Activate workspace: ${activateUrl}`,
+    '',
+    'This link expires in 72 hours.'
+  ].join('\n');
+
+  return {
+    subject,
+    text,
+    html: buildEmailShell({
+      title: `${org} is ready`,
+      bodyHtml,
+      accentColor: '#4f46e5'
+    })
+  };
+}
+
+async function sendDemoWorkspaceReadyEmail({
+  to,
+  invitee,
+  organizationId,
+  organizationName,
+  inviteToken
+}) {
+  const activateUrl = buildInviteUrl(inviteToken);
+  const content = buildDemoWorkspaceReadyEmailContent({
+    invitee,
+    organizationName,
+    activateUrl
+  });
+
+  return sendAccountEmail({
+    organizationId,
+    to,
+    subject: content.subject,
+    text: content.text,
+    html: content.html,
+    replyTo: process.env.SYSTEM_EMAIL_REPLY_TO || process.env.EMAIL_REPLY_TO
+  });
+}
+
 function buildPasswordResetEmailContent({ user, organizationName, resetUrl }) {
   const name = displayName(user);
   const org = organizationName || 'Arivu';
@@ -367,10 +441,12 @@ async function sendPortalInviteEmail({
 module.exports = {
   sendAccountEmail,
   sendInviteEmail,
+  sendDemoWorkspaceReadyEmail,
   sendPortalInviteEmail,
   sendVerificationEmail,
   sendPasswordResetEmail,
   buildInviteEmailContent,
+  buildDemoWorkspaceReadyEmailContent,
   buildVerificationEmailContent,
   buildPasswordResetEmailContent
 };

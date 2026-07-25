@@ -10,22 +10,22 @@
           <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
             <TransitionChild as="template" enter="transform transition ease-in-out duration-300 sm:duration-300" enter-from="translate-x-full" enter-to="translate-x-0" leave="transform transition ease-in-out duration-300 sm:duration-300" leave-from="translate-x-0" leave-to="translate-x-full">
               <DialogPanel class="pointer-events-auto w-screen max-w-3xl">
-                <div class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
+                <div class="rounded-tl-xl overflow-hidden relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
                   <!-- Header -->
-                  <div class="flex items-center justify-between px-6 py-4 bg-indigo-700 dark:bg-indigo-800">
+                  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                     <div class="flex items-center gap-2 min-w-0">
                       <button
                         v-if="showTypeSelector && selectedModuleKey"
                         type="button"
-                        class="shrink-0 p-1 rounded text-indigo-200 hover:text-white"
+                        class="shrink-0 rounded-lg p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200"
                         :aria-label="t('common.linkRecordsBackToType')"
                         @click="clearRecordTypeSelection"
                       >
                         <ChevronLeftIcon class="size-5" />
                       </button>
-                      <DialogTitle class="text-base font-semibold text-white truncate">{{ computedTitle }}</DialogTitle>
+                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white truncate">{{ computedTitle }}</DialogTitle>
                     </div>
-                    <button type="button" class="rounded-md text-indigo-200 hover:text-white shrink-0" @click="closeDrawer">
+                    <button type="button" class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 shrink-0" @click="closeDrawer">
                       <span class="sr-only">{{ t('common.closePanel') }}</span>
                       <XMarkIcon class="size-6" />
                     </button>

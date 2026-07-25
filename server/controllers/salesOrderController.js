@@ -8,6 +8,7 @@ const { listSalesOrderSections } = require('../services/salesOrderSectionService
 const { userCanOverrideExpiredQuotes } = require('../services/quoteConversionService');
 const {
   createManualSalesOrder,
+  patchSalesOrderHeader,
   confirmSalesOrder,
   cancelSalesOrder,
   deleteDraftSalesOrder
@@ -323,6 +324,34 @@ async function createSalesOrder(req, res) {
     return res.status(err?.code === 'VALIDATION' ? 400 : 500).json({
       success: false,
       message: err.message || 'Failed to create sales order',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+/**
+ * PATCH/PUT /api/sales-orders/:id — Draft header update
+ */
+async function patchSalesOrderHandler(req, res) {
+  try {
+    const order = await patchSalesOrderHeader({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: order });
+  } catch (err) {
+    const status =
+      err?.code === 'NOT_FOUND'
+        ? 404
+        : err?.code === 'SALES_ORDER_NOT_DRAFT' || err?.code === 'VALIDATION'
+          ? 400
+          : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to update sales order',
       code: err?.code || 'UNKNOWN',
       details: err?.details || null
     });
@@ -693,6 +722,7 @@ module.exports = {
   getSalesOrders,
   getSalesOrderById,
   createSalesOrder,
+  patchSalesOrderHandler,
   confirmSalesOrderHandler,
   cancelSalesOrderHandler,
   listFulfillments,

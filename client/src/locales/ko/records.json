@@ -1300,16 +1300,16 @@
     "description": "Button label to open variant picker for quote line add"
   },
   "linesPickVariantTitle": {
-    "message": "Pick variant",
-    "description": "Modal title for quote line variant picker"
+    "message": "Pick items",
+    "description": "Slide-over title for quote line multi-select item picker"
   },
   "linesVariantSearchPlaceholder": {
-    "message": "Search variants…",
-    "description": "Search input placeholder in quote line variant picker"
+    "message": "Search items…",
+    "description": "Search input placeholder in quote line item picker"
   },
   "linesNoVariantsFound": {
-    "message": "No variants found.",
-    "description": "Empty state in quote line variant picker"
+    "message": "No items found.",
+    "description": "Empty state title in quote line item picker"
   },
   "linesDefaultPriceBook": {
     "message": "Default price book",
@@ -3579,6 +3579,10 @@
     "message": "Search products…",
     "description": "Inline search placeholder in quote lines add row"
   },
+  "linesAddNewItem": {
+    "message": "Add New Item",
+    "description": "Option in quote line product search dropdown to create a new catalog item"
+  },
   "linesOpenLookup": {
     "message": "Open product lookup",
     "description": "Aria label for opening full variant lookup from quote lines add row"
@@ -4082,5 +4086,153 @@
   "linesAddSelected": {
     "message": "Add selected ({count})",
     "description": "Confirm button for multi-select product lookup on quote lines"
+  },
+  "linesColumns": {
+    "message": "Columns",
+    "description": "Toolbar button to configure quote line table columns"
+  },
+  "linesColumnsTitle": {
+    "message": "Line columns",
+    "description": "Title in quote lines column options popover"
+  },
+  "linesColumnsHint": {
+    "message": "Keep the table lean. Turn on only what you need.",
+    "description": "Hint under quote lines column options title"
+  },
+  "linesColumnsAlwaysOn": {
+    "message": "Always shown",
+    "description": "Label for core quote line columns that cannot be hidden"
+  },
+  "linesColumnsOptional": {
+    "message": "Optional",
+    "description": "Label for optional quote line columns"
+  },
+  "linesColumnsReset": {
+    "message": "Reset to defaults",
+    "description": "Reset quote line column preferences to Name, Qty, Unit price, Total"
+  },
+  "linesColOptSku": {
+    "message": "SKU",
+    "description": "Optional quote line column: product SKU"
+  },
+  "linesColOptSkuDesc": {
+    "message": "Show catalog SKU next to the product name.",
+    "description": "Description for optional SKU column"
+  },
+  "linesColOptItemDiscount": {
+    "message": "Item-level discount",
+    "description": "Optional quote line column: per-line discount"
+  },
+  "linesColOptItemDiscountDesc": {
+    "message": "Edit percent or amount discounts on each line.",
+    "description": "Description for optional item-level discount column"
+  },
+  "linesColOptPricingDetails": {
+    "message": "Pricing details",
+    "description": "Optional quote line columns: price book and source"
+  },
+  "linesColOptPricingDetailsDesc": {
+    "message": "Show price book and pricing source for each line.",
+    "description": "Description for optional pricing details columns"
+  },
+  "linesPickItemsSubtitle": {
+    "message": "Select one or more items to add to this quote.",
+    "description": "Subtitle under pick-items slide-over header"
+  },
+  "linesPickItemsSelectHint": {
+    "message": "Select items to add",
+    "description": "Footer hint when no items are selected in quote item picker"
+  },
+  "linesPickItemsSelectedCount": {
+    "message": "{count} selected",
+    "description": "Footer selected count in quote item picker"
+  },
+  "linesPickItemsNoMatch": {
+    "message": "No items match “{query}”. Try another search or create a new item.",
+    "description": "Empty state when item picker search has no matches"
+  },
+  "linesPickItemsEmptyHint": {
+    "message": "Search the catalog or create a new item to add it to this quote.",
+    "description": "Empty state hint when item picker has no results and no query"
+  },
+  "invoiceLinesSectionTitle": {
+    "message": "Lines",
+    "description": "Section heading for invoice lines in create drawer"
+  },
+  "salesOrderLinesSectionTitle": {
+    "message": "Lines",
+    "description": "Section heading for sales order lines in create drawer"
+  },
+  "invoiceCreateDraftFailed": {
+    "message": "Could not start a new invoice. Please try again.",
+    "description": "Error when invoice draft creation fails on drawer open"
+  },
+  "invoiceLoadFailed": {
+    "message": "Could not load invoice lines. Please try again.",
+    "description": "Error when invoice record with lines fails to load in edit drawer"
+  },
+  "salesOrderCreateDraftFailed": {
+    "message": "Could not start a new sales order. Please try again.",
+    "description": "Error when sales order draft creation fails on drawer open"
+  },
+  "salesOrderLoadFailed": {
+    "message": "Could not load sales order lines. Please try again.",
+    "description": "Error when sales order record with lines fails to load in edit drawer"
+  },
+  "linesTotalsCharges": {
+    "message": "Charges",
+    "description": "Quote lines totals summary row for additional charges"
+  },
+  "linesTax": {
+    "message": "Tax",
+    "description": "Quote lines table tax column"
+  },
+  "linesTaxNone": {
+    "message": "None",
+    "description": "No tax selected on line"
+  },
+  "linesTaxPickerTitle": {
+    "message": "Line taxes",
+    "description": "Line tax picker modal title"
+  },
+  "linesTaxPickerDesc": {
+    "message": "Select item-level taxes for this line.",
+    "description": "Line tax picker description"
+  },
+  "linesTaxPickerEmpty": {
+    "message": "No item-level taxes configured.",
+    "description": "Empty tax picker"
+  },
+  "linesChargePickerEmpty": {
+    "message": "No transaction charges configured.",
+    "description": "Empty charge picker"
+  },
+  "linesTaxUpdateFailed": {
+    "message": "Could not update taxes.",
+    "description": "Tax update error toast"
+  },
+  "linesEditDocTaxesCharges": {
+    "message": "Edit document taxes & charges",
+    "description": "Open document-level tax/charge editor"
+  },
+  "linesDocTaxes": {
+    "message": "Transaction taxes",
+    "description": "Document tax picker section"
+  },
+  "linesDocCharges": {
+    "message": "Transaction charges",
+    "description": "Document charge picker section"
+  },
+  "linesDocTaxPickerEmpty": {
+    "message": "No transaction taxes configured.",
+    "description": "Empty document/transaction tax picker"
+  },
+  "linesDocTaxesChargesLoadFailed": {
+    "message": "Could not load taxes and charges.",
+    "description": "Document tax/charge picker load error"
+  },
+  "linesDocChargesPreview": {
+    "message": "Selected charges: {amount}",
+    "description": "Live preview of selected document charges before save"
   }
 }

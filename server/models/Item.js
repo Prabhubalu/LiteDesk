@@ -80,6 +80,13 @@ const ItemSchema = new Schema({
         type: Schema.Types.Mixed,
         default: {}
     },
+    /** CPQ Item Group parent (template); null for manually created items */
+    itemGroupId: {
+        type: Schema.Types.ObjectId,
+        ref: 'ItemGroup',
+        default: null,
+        index: true
+    },
     tags: [{
         type: String,
         trim: true

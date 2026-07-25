@@ -25,39 +25,39 @@
               leave-from="translate-x-0"
               leave-to="translate-x-full"
             >
-              <div class="pointer-events-auto flex h-full">
+              <div class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full">
                 <DialogPanel
                   v-if="user"
-                  class="flex h-full w-[min(92vw,42rem)] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800"
+                  class="rounded-tl-xl overflow-hidden flex h-full w-[min(92vw,42rem)] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800"
                 >
-                  <form class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700" @submit.prevent="handleSubmit">
-                    <div class="shrink-0 bg-indigo-700 px-4 py-5 dark:bg-indigo-800 sm:px-6">
+                  <form class="rounded-none relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700" @submit.prevent="handleSubmit">
+                    <div class="shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-5 sm:px-6">
                       <div class="flex items-start justify-between gap-3">
                         <div class="flex min-w-0 items-start gap-3">
                           <div
                             v-if="user.avatar"
-                            class="h-11 w-11 shrink-0 overflow-hidden rounded-xl ring-2 ring-white/20"
+                            class="h-11 w-11 shrink-0 overflow-hidden rounded-xl ring-2 ring-gray-200 dark:ring-gray-700"
                           >
                             <img :src="user.avatar" :alt="userDisplayName(user)" class="h-full w-full object-cover" />
                           </div>
                           <div
                             v-else
-                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-sm font-bold text-white shadow-lg"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-sm font-bold text-primary-700 dark:bg-primary-900/50 dark:text-primary-300"
                           >
                             {{ userInitials(user) }}
                           </div>
                           <div class="min-w-0">
-                            <DialogTitle class="truncate text-base font-semibold text-white">
+                            <DialogTitle class="truncate text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                               {{ userDisplayName(user) }}
                             </DialogTitle>
-                            <p class="mt-0.5 truncate text-sm text-indigo-200">
+                            <p class="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
                               {{ user.email }}
                             </p>
                           </div>
                         </div>
                         <button
                           type="button"
-                          class="relative shrink-0 cursor-pointer rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer shrink-0"
                           @click="close"
                         >
                           <span class="absolute -inset-2.5" />

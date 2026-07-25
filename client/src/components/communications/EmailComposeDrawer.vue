@@ -15,19 +15,19 @@
 
         <!-- Drawer panel -->
         <aside
-          class="relative z-10 w-full sm:w-[36rem] max-w-[95vw] bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col max-h-screen"
+          class="rounded-tl-xl overflow-hidden relative z-10 w-full sm:w-[36rem] max-w-[95vw] bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 shadow-2xl flex flex-col max-h-screen"
           role="dialog"
           aria-modal="true"
           :aria-label="t('inbox.emailComposeDrawerSendEmail2')"
         >
           <!-- Header: matches CreateRecordDrawer / TaskEditDrawer -->
-          <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-6 sm:px-6">
+          <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6">
             <div class="flex items-center justify-between">
-              <h2 class="text-base font-semibold text-white">{{ t('inbox.emailComposeDrawerSendEmail') }}</h2>
+              <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ t('inbox.emailComposeDrawerSendEmail') }}</h2>
               <button
                 type="button"
                 @click="close"
-                class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer"
+                class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
                 :aria-label="t('settings.roleDrawerCloseSr')"
               >
                 <span class="absolute -inset-2.5" />
@@ -35,7 +35,7 @@
                 <XMarkIcon class="size-6" aria-hidden="true" />
               </button>
             </div>
-            <p class="mt-1 text-sm text-indigo-300">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
               <template v-if="standaloneMode">{{ t('inbox.emailComposeDrawerSendFromYourWorkspaceRepliesRoute') }}</template>
               <template v-else>{{ t('inbox.emailComposeDrawerComposeAndSendAnEmailFrom') }}</template>
             </p>

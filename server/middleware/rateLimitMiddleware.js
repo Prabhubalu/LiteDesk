@@ -118,7 +118,9 @@ const AUTH_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
 );
 const AUTH_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.AUTH_RATE_LIMIT_MAX_REQUESTS,
-    isProduction ? 5 : 30
+    // Failed attempts only (see skipSuccessfulRequests). Progressive throttle
+    // remains the primary soft block (~8); this is a harder per-account ceiling.
+    isProduction ? 20 : 30
 );
 const GENERAL_RATE_LIMIT_REDIS_FAILURE_MODE = process.env.GENERAL_RATE_LIMIT_REDIS_FAILURE_MODE || 'fail-open';
 const AUTH_RATE_LIMIT_REDIS_FAILURE_MODE = process.env.AUTH_RATE_LIMIT_REDIS_FAILURE_MODE || 'fail-closed';
@@ -395,19 +397,20 @@ const apiLimiter = rateLimit({
 });
 
 // Strict rate limiter for authentication endpoints
+const AUTH_RATE_LIMIT_MESSAGE = {
+    error: 'Too many login attempts for this account, please try again after a few minutes.',
+    code: 'AUTH_RATE_LIMIT_EXCEEDED'
+};
+
 const authLimiter = rateLimit({
     windowMs: AUTH_RATE_LIMIT_WINDOW_MS,
     max: AUTH_RATE_LIMIT_MAX_REQUESTS,
     ...rateLimitHeadersAndStore('auth', AUTH_RATE_LIMIT_WINDOW_MS, AUTH_RATE_LIMIT_REDIS_FAILURE_MODE),
-    message: {
-        error: 'Too many login attempts from this IP, please try again after a few minutes.',
-        code: 'AUTH_RATE_LIMIT_EXCEEDED'
-    },
-    handler: makeRateLimitHandler('auth', {
-        error: 'Too many login attempts from this IP, please try again after a few minutes.',
-        code: 'AUTH_RATE_LIMIT_EXCEEDED'
-    }),
-    // Use IP + user identifier for better tracking
+    // Count only failed auth responses so successful logins / session reads do not burn budget
+    skipSuccessfulRequests: true,
+    message: AUTH_RATE_LIMIT_MESSAGE,
+    handler: makeRateLimitHandler('auth', AUTH_RATE_LIMIT_MESSAGE),
+    // Per IP + email (not whole-building IP)
     keyGenerator: (req) => {
         const email = String(req.body?.email || '').trim().toLowerCase();
         return `auth:ip:${getClientIp(req)}:email:${email}`;

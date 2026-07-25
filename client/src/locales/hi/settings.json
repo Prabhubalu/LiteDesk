@@ -18054,5 +18054,553 @@
   "aiAgentsFabricBadge": {
     "message": "Fabric",
     "description": "Badge on generic module.* tools"
+  },
+  "automationTaxes": {
+    "message": "Taxes",
+    "description": "Automation hub taxes option"
+  },
+  "automationTaxesDesc": {
+    "message": "Configure tax rates, groups, defaults, and regional suggestions used across sales and inventory documents.",
+    "description": "Taxes option description"
+  },
+  "taxHubTitle": {
+    "message": "Taxes",
+    "description": "Tax settings hub title"
+  },
+  "taxHubDesc": {
+    "message": "Central tax rates, groups, defaults, and regional assignments for Quotes, Orders, Invoices, and Inventory documents.",
+    "description": "Tax settings hub description"
+  },
+  "taxTabRates": {
+    "message": "Tax rates",
+    "description": "Taxes hub rates tab"
+  },
+  "taxTabGroups": {
+    "message": "Tax groups",
+    "description": "Taxes hub groups tab"
+  },
+  "taxTabDefaults": {
+    "message": "Defaults",
+    "description": "Taxes hub defaults tab"
+  },
+  "taxTabRegional": {
+    "message": "Regional",
+    "description": "Taxes hub regional tab"
+  },
+  "taxRatesDesc": {
+    "message": "Reusable tax definitions. Percentage taxes are supported in MVP; fixed amounts are reserved for later.",
+    "description": "Tax rates list description"
+  },
+  "taxAddRate": {
+    "message": "Add tax",
+    "description": "Add tax button"
+  },
+  "taxSearchPlaceholder": {
+    "message": "Search by name or code",
+    "description": "Tax list search placeholder"
+  },
+  "taxColName": {
+    "message": "Name",
+    "description": "Tax list column name"
+  },
+  "taxColCode": {
+    "message": "Code",
+    "description": "Tax list column code"
+  },
+  "taxColType": {
+    "message": "Type",
+    "description": "Tax list column type"
+  },
+  "taxColValue": {
+    "message": "Value",
+    "description": "Tax list column value"
+  },
+  "taxColScope": {
+    "message": "Scope",
+    "description": "Tax list column scope"
+  },
+  "taxColApplicable": {
+    "message": "Applicable on",
+    "description": "Tax list column applicable on"
+  },
+  "taxColStatus": {
+    "message": "Status",
+    "description": "Tax list column status"
+  },
+  "taxColUpdated": {
+    "message": "Last updated",
+    "description": "Tax list column updated"
+  },
+  "taxNoRates": {
+    "message": "No taxes yet. Create a tax rate to get started.",
+    "description": "Empty tax rates state"
+  },
+  "taxLoadFailed": {
+    "message": "Could not load taxes.",
+    "description": "Tax list load error"
+  },
+  "taxNewTitle": {
+    "message": "New tax",
+    "description": "Create tax dialog title"
+  },
+  "taxEditTitle": {
+    "message": "Edit tax",
+    "description": "Edit tax dialog title"
+  },
+  "taxName": {
+    "message": "Tax name",
+    "description": "Tax name field"
+  },
+  "taxCode": {
+    "message": "Tax code",
+    "description": "Tax code field"
+  },
+  "taxDescription": {
+    "message": "Description",
+    "description": "Tax description field"
+  },
+  "taxType": {
+    "message": "Tax type",
+    "description": "Tax type field"
+  },
+  "taxTypePercentage": {
+    "message": "Percentage",
+    "description": "Percentage tax type"
+  },
+  "taxTypeFixed": {
+    "message": "Fixed amount (coming soon)",
+    "description": "Fixed amount tax type disabled"
+  },
+  "taxValue": {
+    "message": "Tax value",
+    "description": "Tax value field"
+  },
+  "taxScope": {
+    "message": "Tax scope",
+    "description": "Tax scope field"
+  },
+  "taxScopeItem": {
+    "message": "Item level",
+    "description": "Item level scope"
+  },
+  "taxScopeTransaction": {
+    "message": "Transaction level",
+    "description": "Transaction level scope"
+  },
+  "taxScopeBoth": {
+    "message": "Both",
+    "description": "Both scopes"
+  },
+  "taxApplicableOn": {
+    "message": "Applicable on",
+    "description": "Applicable on field"
+  },
+  "taxApplicablePurchase": {
+    "message": "Purchase",
+    "description": "Purchase applicable"
+  },
+  "taxApplicableSales": {
+    "message": "Sales",
+    "description": "Sales applicable"
+  },
+  "taxApplicableBoth": {
+    "message": "Both",
+    "description": "Both purchase and sales"
+  },
+  "taxIsDefault": {
+    "message": "Default tax",
+    "description": "Default tax checkbox"
+  },
+  "taxStatusActive": {
+    "message": "Active",
+    "description": "Active status"
+  },
+  "taxStatusInactive": {
+    "message": "Inactive",
+    "description": "Inactive status"
+  },
+  "taxActivate": {
+    "message": "Activate",
+    "description": "Activate tax action"
+  },
+  "taxDeactivate": {
+    "message": "Deactivate",
+    "description": "Deactivate tax action"
+  },
+  "taxDeleteConfirm": {
+    "message": "Delete this tax? It will be removed from all tax groups.",
+    "description": "Delete tax confirmation"
+  },
+  "taxGroupsDesc": {
+    "message": "Combine taxes so users select one group and all member taxes apply.",
+    "description": "Tax groups description"
+  },
+  "taxAddGroup": {
+    "message": "Add group",
+    "description": "Add tax group button"
+  },
+  "taxNoGroups": {
+    "message": "No tax groups yet.",
+    "description": "Empty tax groups"
+  },
+  "taxGroupName": {
+    "message": "Group name",
+    "description": "Tax group name"
+  },
+  "taxGroupSelectTaxes": {
+    "message": "Select taxes",
+    "description": "Tax group multi-select label"
+  },
+  "taxGroupNewTitle": {
+    "message": "New tax group",
+    "description": "New tax group dialog"
+  },
+  "taxGroupEditTitle": {
+    "message": "Edit tax group",
+    "description": "Edit tax group dialog"
+  },
+  "taxGroupMembers": {
+    "message": "{count} taxes",
+    "description": "Tax group member count"
+  },
+  "taxDefaultsDesc": {
+    "message": "Defaults auto-populate on document create. Users can override when permitted.",
+    "description": "Tax defaults description"
+  },
+  "taxDefaultPurchase": {
+    "message": "Default purchase taxes",
+    "description": "Default purchase taxes"
+  },
+  "taxDefaultSales": {
+    "message": "Default sales taxes",
+    "description": "Default sales taxes"
+  },
+  "taxDefaultItem": {
+    "message": "Default item taxes",
+    "description": "Default item taxes"
+  },
+  "taxDefaultService": {
+    "message": "Default service taxes",
+    "description": "Default service taxes"
+  },
+  "taxDefaultPurchaseGroup": {
+    "message": "Default purchase tax group",
+    "description": "Default purchase tax group"
+  },
+  "taxDefaultSalesGroup": {
+    "message": "Default sales tax group",
+    "description": "Default sales tax group"
+  },
+  "taxDefaultsSaved": {
+    "message": "Tax defaults saved.",
+    "description": "Tax defaults save toast"
+  },
+  "taxRegionalDesc": {
+    "message": "Assign taxes by country, state, or region. Documents can suggest matching taxes.",
+    "description": "Regional tax description"
+  },
+  "taxAddRegional": {
+    "message": "Add assignment",
+    "description": "Add regional assignment"
+  },
+  "taxNoRegional": {
+    "message": "No regional assignments yet.",
+    "description": "Empty regional list"
+  },
+  "taxRegionLevel": {
+    "message": "Level",
+    "description": "Region level"
+  },
+  "taxRegionCountry": {
+    "message": "Country",
+    "description": "Country level"
+  },
+  "taxRegionState": {
+    "message": "State",
+    "description": "State level"
+  },
+  "taxRegionRegion": {
+    "message": "Region",
+    "description": "Region level"
+  },
+  "taxCountryCode": {
+    "message": "Country code",
+    "description": "ISO country code"
+  },
+  "taxStateCode": {
+    "message": "State code",
+    "description": "State/province code"
+  },
+  "taxRegionName": {
+    "message": "Region name",
+    "description": "Region name field"
+  },
+  "taxRegionalNewTitle": {
+    "message": "New regional assignment",
+    "description": "New regional dialog"
+  },
+  "taxRegionalEditTitle": {
+    "message": "Edit regional assignment",
+    "description": "Edit regional dialog"
+  },
+  "taxShowInactive": {
+    "message": "Show inactive",
+    "description": "Show inactive taxes toggle"
+  },
+  "taxNoneOption": {
+    "message": "None",
+    "description": "None select option"
+  },
+  "tabInventory": {
+    "message": "Inventory",
+    "description": "Settings sidebar Inventory tab"
+  },
+  "tabInventoryDesc": {
+    "message": "Taxes, charges, and inventory app configuration.",
+    "description": "Inventory settings tab description"
+  },
+  "inventoryHubDesc": {
+    "message": "Configure taxes, charges, and other Inventory app settings used across procurement and fulfillment.",
+    "description": "Inventory settings hub description"
+  },
+  "inventoryTaxes": {
+    "message": "Taxes",
+    "description": "Inventory settings taxes card"
+  },
+  "inventoryTaxesDesc": {
+    "message": "Tax rates, groups, defaults, and regional suggestions for sales and inventory documents.",
+    "description": "Inventory taxes card description"
+  },
+  "inventoryCharges": {
+    "message": "Charges",
+    "description": "Inventory settings charges card"
+  },
+  "inventoryChargesDesc": {
+    "message": "Freight, packaging, and other additional charges. Coming soon.",
+    "description": "Inventory charges card description placeholder"
+  },
+  "taxValuePlaceholder": {
+    "message": "e.g. 18",
+    "description": "Tax value input placeholder"
+  },
+  "chargeHubTitle": {
+    "message": "Charges",
+    "description": "Charge settings hub title"
+  },
+  "chargeHubDesc": {
+    "message": "Reusable fixed and percentage charges applied at item or transaction level.",
+    "description": "Charge settings hub description"
+  },
+  "chargeTabRates": {
+    "message": "Charge rates",
+    "description": "Charges hub rates tab"
+  },
+  "chargeTabDefaults": {
+    "message": "Defaults",
+    "description": "Charges hub defaults tab"
+  },
+  "chargeRatesDesc": {
+    "message": "Create and manage reusable charges such as freight, packaging, and insurance.",
+    "description": "Charge rates list description"
+  },
+  "chargeShowInactive": {
+    "message": "Show inactive",
+    "description": "Toggle inactive charges in list"
+  },
+  "chargeSearchPlaceholder": {
+    "message": "Search charges…",
+    "description": "Charge list search placeholder"
+  },
+  "chargeAddRate": {
+    "message": "Add charge",
+    "description": "Add charge button"
+  },
+  "chargeNoRates": {
+    "message": "No charges configured yet.",
+    "description": "Empty charges list"
+  },
+  "chargeColName": {
+    "message": "Name",
+    "description": "Charge table name column"
+  },
+  "chargeColType": {
+    "message": "Type",
+    "description": "Charge table type column"
+  },
+  "chargeColValue": {
+    "message": "Value",
+    "description": "Charge table value column"
+  },
+  "chargeColScope": {
+    "message": "Scope",
+    "description": "Charge table scope column"
+  },
+  "chargeColStatus": {
+    "message": "Status",
+    "description": "Charge table status column"
+  },
+  "chargeStatusActive": {
+    "message": "Active",
+    "description": "Active charge status"
+  },
+  "chargeStatusInactive": {
+    "message": "Inactive",
+    "description": "Inactive charge status"
+  },
+  "chargeActivate": {
+    "message": "Activate",
+    "description": "Activate charge action"
+  },
+  "chargeDeactivate": {
+    "message": "Deactivate",
+    "description": "Deactivate charge action"
+  },
+  "chargeNewTitle": {
+    "message": "New charge",
+    "description": "Create charge dialog title"
+  },
+  "chargeEditTitle": {
+    "message": "Edit charge",
+    "description": "Edit charge dialog title"
+  },
+  "chargeName": {
+    "message": "Charge name",
+    "description": "Charge name field"
+  },
+  "chargeCode": {
+    "message": "Charge code",
+    "description": "Charge code field"
+  },
+  "chargeType": {
+    "message": "Charge type",
+    "description": "Charge type field"
+  },
+  "chargeTypeFixed": {
+    "message": "Fixed amount",
+    "description": "Fixed amount charge type"
+  },
+  "chargeTypePercentage": {
+    "message": "Percentage",
+    "description": "Percentage charge type"
+  },
+  "chargeValue": {
+    "message": "Charge value",
+    "description": "Charge value field"
+  },
+  "chargeScope": {
+    "message": "Charge scope",
+    "description": "Charge scope field"
+  },
+  "chargeApplicableOn": {
+    "message": "Applicable on",
+    "description": "Charge applicable on field"
+  },
+  "chargeIsDefault": {
+    "message": "Default charge",
+    "description": "Default charge checkbox"
+  },
+  "chargeDeleteConfirm": {
+    "message": "Delete this charge? Documents that already applied it keep their snapshots.",
+    "description": "Delete charge confirmation"
+  },
+  "chargeDefaultsDesc": {
+    "message": "Default charges auto-apply when creating sales or purchase documents.",
+    "description": "Charge defaults description"
+  },
+  "chargeDefaultSales": {
+    "message": "Default sales charges",
+    "description": "Default sales charges label"
+  },
+  "chargeDefaultPurchase": {
+    "message": "Default purchase charges",
+    "description": "Default purchase charges label"
+  },
+  "chargeDefaultItem": {
+    "message": "Default item-level charges",
+    "description": "Default item charges label"
+  },
+  "itemGroups": {
+    "message": "Item Groups",
+    "description": "Inventory settings item groups card title"
+  },
+  "itemGroupsDesc": {
+    "message": "Define variant attributes and generate SKUs from item groups.",
+    "description": "Inventory settings item groups card description"
+  },
+  "itemGroupsEmpty": {
+    "message": "No item groups yet.",
+    "description": "Empty state for item groups settings"
+  },
+  "itemGroupAdd": {
+    "message": "Add item group",
+    "description": "Create item group button"
+  },
+  "itemGroupName": {
+    "message": "Name",
+    "description": "Item group name field"
+  },
+  "itemGroupStatus": {
+    "message": "Status",
+    "description": "Item group status column"
+  },
+  "itemGroupPreview": {
+    "message": "Preview",
+    "description": "Preview generated variants"
+  },
+  "itemGroupGenerate": {
+    "message": "Generate",
+    "description": "Generate variants from group"
+  },
+  "itemGroupPreviewResult": {
+    "message": "Preview would create {count} variants.",
+    "description": "Item group preview result toast"
+  },
+  "itemGroupGenerateResult": {
+    "message": "Created {count} variants.",
+    "description": "Item group generate result toast"
+  },
+  "itemGroupAttrsPlaceholder": {
+    "message": "Color:Black,White\nStorage:128,256",
+    "description": "Item group attributes textarea placeholder"
+  },
+  "itemGroupAttrsHint": {
+    "message": "One attribute per line as Name:value1,value2",
+    "description": "Item group attributes format hint"
+  },
+  "itemGroupPricingTitle": {
+    "message": "Pricing calculator",
+    "description": "CPQ pricing calculator section title"
+  },
+  "itemGroupPricingDesc": {
+    "message": "Smoke-test discount rules against a base price.",
+    "description": "CPQ pricing calculator description"
+  },
+  "itemGroupBasePrice": {
+    "message": "Base price",
+    "description": "Pricing calculator base price field"
+  },
+  "itemGroupDiscountPercent": {
+    "message": "Discount %",
+    "description": "Pricing calculator discount percent"
+  },
+  "itemGroupCalcPrice": {
+    "message": "Calculate",
+    "description": "Run pricing calculator"
+  },
+  "itemGroupPriceResult": {
+    "message": "Calculated price: {price}",
+    "description": "Pricing calculator result"
+  },
+  "catalogTabItemGroups": {
+    "message": "Item groups",
+    "description": "Catalog hub item groups tab"
+  },
+  "tabCatalog": {
+    "message": "Catalog",
+    "description": "Settings sidebar Catalog tab"
+  },
+  "tabCatalogDesc": {
+    "message": "Product catalog categories, price books, and item groups.",
+    "description": "Catalog settings tab description"
   }
 }

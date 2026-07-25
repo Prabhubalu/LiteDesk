@@ -23,7 +23,7 @@
           v-if="col.fieldKey && getFieldByKey(col.fieldKey) && shouldShowField(getFieldByKey(col.fieldKey))"
         >
           <template v-if="props.moduleKey === 'tasks' && col.fieldKey === 'description'">
-            <label :for="`field-${col.fieldKey}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+            <label :for="`field-${col.fieldKey}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
               {{ getFieldDisplayLabel(getFieldByKey(col.fieldKey)) || t('common.taskDescriptionFallback') }}
               <span v-if="getFieldByKey(col.fieldKey)?.required" class="text-red-500">*</span>
             </label>
@@ -62,12 +62,9 @@
       <!-- Full mode: quick-create fields first, then grouped remaining fields -->
       <template v-if="useSectionedFullForm">
         <div v-if="quickCreateFields.length" class="space-y-3">
-          <div class="flex items-center gap-3">
-            <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
-              {{ t('common.formQuickCreateFields') }}
-            </h3>
-            <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-          </div>
+          <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
+            {{ t('common.formQuickCreateFields') }}
+          </h3>
           <div :class="['grid gap-4', props.singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2']">
             <div
               v-for="field in quickCreateFields"
@@ -79,7 +76,7 @@
               :data-field-key="field.key"
             >
               <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
-                <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
                   {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                   <span v-if="field.required" class="text-red-500">*</span>
                 </label>
@@ -130,18 +127,14 @@
           </div>
         </div>
         <slot name="after-quick-create" />
-        <hr v-if="groupedRemainingSections.length" class="border-gray-200 dark:border-gray-700" />
         <section
           v-for="section in groupedRemainingSections"
           :key="section.key"
           class="space-y-3"
         >
-          <div class="flex items-center gap-3">
-            <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
-              {{ section.label }}
-            </h3>
-            <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-          </div>
+          <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
+            {{ section.label }}
+          </h3>
           <div :class="['grid gap-4', props.singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2']">
             <div
               v-for="field in section.fields"
@@ -153,7 +146,7 @@
               :data-field-key="field.key"
             >
               <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
-                <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
                   {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                   <span v-if="field.required" class="text-red-500">*</span>
                 </label>
@@ -218,7 +211,7 @@
             :data-field-key="field.key"
           >
             <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
-              <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+              <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
                 {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                 <span v-if="field.required" class="text-red-500">*</span>
               </label>
@@ -267,7 +260,6 @@
             />
           </div>
         </div>
-        <hr v-if="remainingFields.length" class="border-gray-200 dark:border-gray-700" />
         <div
           v-if="remainingFields.length"
           class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"
@@ -282,7 +274,7 @@
             :data-field-key="field.key"
           >
             <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
-              <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+              <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
                 {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
                 <span v-if="field.required" class="text-red-500">*</span>
               </label>
@@ -335,7 +327,7 @@
       <!-- Default: single or 2-col grid -->
       <div v-else :class="['grid gap-4', props.singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2']">
         <div 
-          v-for="field in orderedFields" 
+          v-for="field in displayOrderedFields" 
           :key="field.key"
           :class="[
             (field.dataType === 'Text-Area' || field.dataType === 'Rich Text' || field.dataType === 'Image' || (props.moduleKey === 'tasks' && field.key === 'description')) && !props.singleColumn ? 'md:col-span-2' : '',
@@ -345,7 +337,7 @@
         >
           <!-- Task description: full-width TipTap editor (same as edit drawer) -->
           <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
-            <label :for="`field-${field.key}`" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
+            <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
               {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
               <span v-if="field.required" class="text-red-500">*</span>
             </label>
@@ -514,6 +506,11 @@ const props = defineProps({
   quickCreateFirstWhenExpanded: {
     type: Boolean,
     default: false // When true and showAllFields, render quick create fields at top, then divider, then remaining (like edit drawer)
+  },
+  /** When set, only fields whose label or key match (case-insensitive) are shown */
+  fieldSearch: {
+    type: String,
+    default: ''
   }
 });
 
@@ -1097,22 +1094,44 @@ const orderedFields = computed(() => {
   return ordered;
 });
 
-// For quickCreateFirstWhenExpanded: split into quick create (top) and remaining (below divider)
+// For quickCreateFirstWhenExpanded: split into quick create (top) and remaining (below divider).
+// Required fields are force-included in orderedFields for create; treat them as quick-create
+// for sectioning so they don't drop into "Core Fields".
 const quickCreateKeysForLayout = computed(() => {
   const qc = moduleDefinition.value?.quickCreate || [];
-  return new Set(qc.map(k => String(k).toLowerCase().trim()).filter(Boolean));
+  const set = new Set(qc.map((k) => String(k).toLowerCase().trim()).filter(Boolean));
+  if (props.quickCreateFirstWhenExpanded && props.showAllFields) {
+    for (const field of moduleDefinition.value?.fields || []) {
+      if (!field?.required || !field?.key) continue;
+      set.add(String(field.key).toLowerCase().trim());
+    }
+  }
+  return set;
 });
+
+const fieldMatchesSearch = (field) => {
+  const q = String(props.fieldSearch || '').trim().toLowerCase();
+  if (!q) return true;
+  if (!field) return false;
+  const label = String(getFieldDisplayLabel(field) || field.label || '').toLowerCase();
+  const key = String(field.key || '').toLowerCase();
+  return label.includes(q) || key.includes(q);
+};
+
+const displayOrderedFields = computed(() =>
+  orderedFields.value.filter((field) => shouldShowField(field))
+);
 
 const quickCreateFields = computed(() => {
   if (!props.quickCreateFirstWhenExpanded || !props.showAllFields) return [];
   const set = quickCreateKeysForLayout.value;
-  return orderedFields.value.filter(f => f?.key && set.has(f.key.toLowerCase()));
+  return displayOrderedFields.value.filter(f => f?.key && set.has(f.key.toLowerCase()));
 });
 
 const remainingFields = computed(() => {
   if (!props.quickCreateFirstWhenExpanded || !props.showAllFields) return [];
   const set = quickCreateKeysForLayout.value;
-  return orderedFields.value.filter(f => f?.key && !set.has(f.key.toLowerCase()));
+  return displayOrderedFields.value.filter(f => f?.key && !set.has(f.key.toLowerCase()));
 });
 
 const useQuickCreateFirstLayout = computed(() =>
@@ -1258,6 +1277,7 @@ const getFieldComponent = (field) => {
 
 const shouldShowField = (field) => {
   if (!field || !field.key) return false;
+  if (!fieldMatchesSearch(field)) return false;
 
   if (shouldHidePeopleSalutationFormField(props.moduleKey, field.key)) return false;
 

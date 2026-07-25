@@ -6,15 +6,19 @@
   <div class="relative">
     <div
       :class="[
-        'w-full rounded-md transition-all text-base sm:text-sm/6',
+        'w-full min-h-[2.5rem] rounded-lg border text-sm transition-[border-color,box-shadow]',
         disabled
-          ? 'bg-gray-100 dark:bg-gray-700 opacity-50 cursor-not-allowed'
-          : 'bg-gray-100 dark:bg-gray-700 cursor-pointer focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10',
-        panelOpen ? 'outline-2 -outline-offset-2 outline-indigo-500 dark:outline-indigo-500' : ''
+          ? 'border-gray-200 bg-gray-50 text-gray-500 opacity-60 cursor-not-allowed dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400'
+          : 'border-gray-200 bg-white text-gray-900 cursor-pointer dark:border-gray-600 dark:bg-gray-900/80 dark:text-white',
+        !disabled && panelOpen
+          ? 'border-indigo-500 ring-2 ring-indigo-500/20 dark:border-indigo-400 dark:ring-indigo-400/20'
+          : !disabled
+            ? 'hover:border-gray-300 dark:hover:border-gray-500 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:focus-within:border-indigo-400'
+            : ''
       ]"
       @click.stop="!disabled && togglePanel()"
     >
-      <div class="flex flex-wrap items-center gap-2 px-3 py-2 min-h-[2.5rem]">
+      <div class="flex flex-wrap items-center gap-2 px-3 py-2.5 min-h-[2.5rem]">
         <template v-if="draftRecord.tags?.length">
           <span
             v-for="tagName in draftRecord.tags"
@@ -33,7 +37,7 @@
             </button>
           </span>
         </template>
-        <span v-else class="text-gray-500 dark:text-gray-500 text-base sm:text-sm/6 px-2">
+        <span v-else class="text-gray-400 dark:text-gray-500 text-sm px-0.5">
           {{ placeholder }}
         </span>
       </div>

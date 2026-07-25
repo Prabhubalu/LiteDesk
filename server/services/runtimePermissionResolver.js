@@ -50,7 +50,7 @@ const {
 } = require('../constants/commercialPlatformParticipation');
 const { isInventoryEnabledForOrg } = require('./inventoryCapabilityService');
 /** Cross-app capabilities that are not owned by a single business app. */
-const CROSS_FUNCTIONAL_MODULES = new Set(['imports', 'documents', 'templates']);
+const CROSS_FUNCTIONAL_MODULES = new Set(['imports', 'documents', 'templates', 'taxes', 'charges']);
 
 /** In-memory org context cache for a single request materialization burst */
 const orgContextCache = new Map();
@@ -432,6 +432,19 @@ function resolveRuntimePermission(user, module, action, options = {}) {
   let perms = user.permissions?.[legacyMod] || user.permissions?.people;
   if (!perms && storageModule === 'responses') {
     perms = user.permissions?.forms;
+  }
+  // Taxes / Charges: fall back to items grants when dedicated envelope not yet on role
+  if (!perms && (storageModule === 'taxes' || storageModule === 'charges')) {
+    perms = user.permissions?.items || null;
+    if (perms) {
+      const itemsAction =
+        envelopeAction === 'manageGroups' || envelopeAction === 'configureDefaults'
+          ? 'edit'
+          : envelopeAction;
+      if (perms[itemsAction] === true) return true;
+      if (itemsAction === 'view' && (perms.view === true || perms.read === true)) return true;
+      return false;
+    }
   }
   if (!perms) return false;
   if (perms[envelopeAction] === true) return true;

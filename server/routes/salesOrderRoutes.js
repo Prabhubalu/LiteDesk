@@ -11,6 +11,7 @@ const {
   getSalesOrders,
   getSalesOrderById,
   createSalesOrder,
+  patchSalesOrderHandler,
   confirmSalesOrderHandler,
   cancelSalesOrderHandler,
   listFulfillments,
@@ -50,6 +51,8 @@ router.get('/', filterByOwnership('sales_orders'), checkPermission('sales_orders
 router.post('/merge', checkPermission('sales_orders', 'merge'), mergeSalesOrdersHandler);
 router.post('/', checkPermission('sales_orders', 'create'), createSalesOrder);
 router.get('/:id', checkPermission('sales_orders', 'view'), getSalesOrderById);
+router.patch('/:id', checkPermission('sales_orders', 'edit'), patchSalesOrderHandler);
+router.put('/:id', checkPermission('sales_orders', 'edit'), patchSalesOrderHandler);
 router.post('/:id/confirm', checkPermission('sales_orders', 'confirm'), confirmSalesOrderHandler);
 router.post('/:id/cancel', checkPermission('sales_orders', 'cancel'), cancelSalesOrderHandler);
 router.get('/:id/fulfillments', checkPermission('sales_orders', 'view'), listFulfillments);

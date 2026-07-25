@@ -194,27 +194,27 @@
             >
               <div class="pointer-events-auto h-full flex">
                 <DialogPanel
-                  class="flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] w-[min(92vw,42rem)]"
+                  class="rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl max-w-[95vw] w-[min(92vw,42rem)]"
                 >
-                  <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
-                    <div class="flex-shrink-0 bg-indigo-700 dark:bg-indigo-800 px-4 py-5 sm:px-6">
+                  <form @submit.prevent="handleSubmit" class="rounded-none relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-5 sm:px-6">
                       <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 min-w-0">
-                          <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-white/15 text-white shadow-lg flex-shrink-0">
+                          <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-primary-50 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300 shadow-none flex-shrink-0">
                             <UserPlusIcon class="w-5 h-5" aria-hidden="true" />
                           </div>
                           <div class="min-w-0">
-                            <DialogTitle class="text-base font-semibold text-white truncate">
+                            <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white truncate">
                               {{ t('settings.inviteTitle') }}
                             </DialogTitle>
-                            <p class="mt-0.5 text-sm text-indigo-300 line-clamp-2">
+                            <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
                               {{ t('settings.inviteDrawerSubtitle') }}
                             </p>
                           </div>
                         </div>
                         <button
                           type="button"
-                          class="relative rounded-md text-indigo-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white cursor-pointer flex-shrink-0"
+                          class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer flex-shrink-0"
                           @click="requestClose"
                         >
                           <span class="absolute -inset-2.5" />
