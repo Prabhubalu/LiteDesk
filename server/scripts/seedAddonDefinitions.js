@@ -143,6 +143,25 @@ const AI_CREDITS_ADDON = {
   },
 };
 
+const TALLY_ADDON = {
+  addonKey: ADDON_KEYS.TALLY,
+  name: 'TallyPrime Connector',
+  description:
+    'Connect TallyPrime via the Arivu Connector Agent. Sync masters, inventory, and commercial vouchers with conflict handling and Integration Center.',
+  icon: 'building-library',
+  category: 'INTEGRATION',
+  enabled: true,
+  order: 60,
+  optionalApps: ['SALES'],
+  marketplace: {
+    category: 'Integrations',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'TallyPrime sync with Windows Agent — masters, stock, and vouchers.',
+    docsUrl: '',
+  },
+};
+
 /** Legacy split packages — disabled in catalog; entitlement still accepted via alias. */
 const LEGACY_AI_ADDONS_DISABLED = [
   {
@@ -251,6 +270,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const defResultAnnouncements = await upsertAddonDefinition(ANNOUNCEMENTS_ADDON);
   const defResultAi = await upsertAddonDefinition(AI_ADDON);
   const defResultAiCredits = await upsertAddonDefinition(AI_CREDITS_ADDON);
+  const defResultTally = await upsertAddonDefinition(TALLY_ADDON);
   for (const legacy of LEGACY_AI_ADDONS_DISABLED) {
     // eslint-disable-next-line no-await-in-loop
     await upsertAddonDefinition(legacy);
@@ -262,6 +282,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const pricingResultAnnouncements = await upsertAddonPricing(ADDON_KEYS.ANNOUNCEMENTS);
   const pricingResultAi = await upsertAddonPricing(ADDON_KEYS.AI);
   const pricingResultAiCredits = await upsertAddonPricing(ADDON_KEYS.AI_CREDITS);
+  const pricingResultTally = await upsertAddonPricing(ADDON_KEYS.TALLY);
 
   if (!useExistingConnection) {
     await mongoose.disconnect();
@@ -275,6 +296,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
     defResultAnnouncements,
     defResultAi,
     defResultAiCredits,
+    defResultTally,
     pricingResultLiveChat,
     pricingResultEmailCredits,
     pricingResultArticles,
@@ -282,6 +304,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
     pricingResultAnnouncements,
     pricingResultAi,
     pricingResultAiCredits,
+    pricingResultTally,
   };
 }
 
@@ -294,6 +317,7 @@ async function main() {
   console.log(`AddonDefinition announcements: ${result.defResultAnnouncements}`);
   console.log(`AddonDefinition ai: ${result.defResultAi}`);
   console.log(`AddonDefinition ai_credits: ${result.defResultAiCredits}`);
+  console.log(`AddonDefinition tally: ${result.defResultTally}`);
   console.log(`AddonPricingDefinition live_chat: ${result.pricingResultLiveChat}`);
   console.log(`AddonPricingDefinition email_credits: ${result.pricingResultEmailCredits}`);
   console.log(`AddonPricingDefinition articles: ${result.pricingResultArticles}`);
@@ -301,6 +325,7 @@ async function main() {
   console.log(`AddonPricingDefinition announcements: ${result.pricingResultAnnouncements}`);
   console.log(`AddonPricingDefinition ai: ${result.pricingResultAi}`);
   console.log(`AddonPricingDefinition ai_credits: ${result.pricingResultAiCredits}`);
+  console.log(`AddonPricingDefinition tally: ${result.pricingResultTally}`);
   console.log('Done.');
 }
 
@@ -313,6 +338,7 @@ module.exports = {
   ANNOUNCEMENTS_ADDON,
   AI_ADDON,
   AI_CREDITS_ADDON,
+  TALLY_ADDON,
 };
 
 if (require.main === module) {

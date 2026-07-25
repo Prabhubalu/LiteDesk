@@ -130,6 +130,14 @@
                 {{ t('settings.addonsConfigure') }}
               </button>
               <button
+                v-if="addon.addonKey === 'tally'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openTallySettings"
+              >
+                {{ t('settings.addonsConfigure') }}
+              </button>
+              <button
                 v-if="addon.addonKey === 'announcements'"
                 type="button"
                 class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
@@ -257,6 +265,12 @@
     @back="navigateToOverview"
   />
 
+  <TallyAddonSettings
+    v-else-if="currentView === 'tally-settings'"
+    class="flex min-h-0 flex-1 flex-col overflow-hidden"
+    @back="navigateToOverview"
+  />
+
   <BlogAddonSettings
     v-else-if="currentView === 'blog-settings'"
     class="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -291,6 +305,7 @@ import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import AddonPlatformPricingSettings from '@/components/settings/AddonPlatformPricingSettings.vue';
 import LiveChatAddonSettings from '@/components/settings/LiveChatAddonSettings.vue';
 import ArticlesAddonSettings from '@/components/settings/ArticlesAddonSettings.vue';
+import TallyAddonSettings from '@/components/settings/TallyAddonSettings.vue';
 import BlogAddonSettings from '@/components/settings/BlogAddonSettings.vue';
 import EmailCreditsAddonSettings from '@/components/settings/EmailCreditsAddonSettings.vue';
 import AiCreditsAddonSettings from '@/components/settings/AiCreditsAddonSettings.vue';
@@ -407,6 +422,7 @@ const currentView = computed(() => {
   if (view === 'live-chat' && route.query.liveChatView === 'bots') return 'live-chat-bots';
   if (view === 'live-chat' && route.query.liveChatView === 'website-content') return 'live-chat-website-content';
   if (view === 'articles') return 'articles-settings';
+  if (view === 'tally') return 'tally-settings';
   if (view === 'blog') return 'blog-settings';
   if (view === 'email-credits') return 'email-credits-settings';
   if (view === 'ai-credits') return 'ai-credits-settings';
@@ -449,6 +465,13 @@ function openArticlesSettings() {
   router.push({
     path: '/settings',
     query: { tab: 'addons', addonView: 'articles' },
+  });
+}
+
+function openTallySettings() {
+  router.push({
+    path: '/settings',
+    query: { tab: 'addons', addonView: 'tally' },
   });
 }
 

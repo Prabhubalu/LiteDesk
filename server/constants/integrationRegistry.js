@@ -47,5 +47,18 @@ module.exports = [
     dataSharedSummary: 'Configured event payloads containing record data.',
     dataSharedDetails: 'When enabled, the platform sends configured event payloads to your endpoints. Payloads may include record IDs, basic field values, and timestamps. Disabling webhooks stops new calls but does not delete any existing data in your systems.',
     recommended: false
+  },
+  {
+    key: 'tally',
+    name: 'TallyPrime',
+    description: 'Sync parties, inventory, and commercial vouchers with TallyPrime via the Arivu Connector Agent (Windows).',
+    scope: 'platform',
+    apps: ['SALES'],
+    category: 'Accounting',
+    addonKey: 'tally',
+    settingsPath: '/settings?tab=addons',
+    dataSharedSummary: 'Company masters, voucher headers/lines, GST fields, and sync status.',
+    dataSharedDetails: 'When the tally addon is installed, the Windows Agent exchanges XML with local Tally and HTTPS with Arivu. Shared data may include party/ledger names, GSTIN, item/HSN, voucher amounts, and IRN when preserved. Disabling the addon stops new sync jobs; it does not delete vouchers already posted in Tally.',
+    recommended: false
   }
 ];

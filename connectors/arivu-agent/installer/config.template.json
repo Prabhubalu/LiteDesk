@@ -1,0 +1,14 @@
+{
+  "apiBase": "https://api.arivu.app",
+  "agentToken": null,
+  "connectionId": null,
+  "agentDeviceId": null,
+  "organizationId": null,
+  "tallyHost": "127.0.0.1",
+  "tallyPortMin": 9000,
+  "tallyPortMax": 9010,
+  "tallyPort": null,
+  "heartbeatIntervalMs": 30000,
+  "pollIntervalMs": 5000,
+  "updateCheckIntervalMs": 21600000
+}

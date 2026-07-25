@@ -300,11 +300,16 @@ async function verifyReceiptNote({ organizationId, id, userId }) {
   }
 
   if (inventoryLines.length) {
+    const { resolveInventoryLocationUuid } = require('./inventoryLocationService');
+    const locUuid = await resolveInventoryLocationUuid({
+      organizationId,
+      locationRef: rn.receiptLocationId
+    });
     await postInventoryTransaction({
       organizationId,
       userId,
       transactionType: 'adjustment',
-      inventoryLocationId: rn.receiptLocationId,
+      inventoryLocationId: locUuid,
       lines: inventoryLines,
       sourceContext: 'purchase_receipt',
       sourceRef: {
@@ -432,7 +437,7 @@ async function approvePurchaseReturn({ organizationId, id, userId }) {
     byLocation.get(loc).push({
       variantId: line.variantId,
       quantityDelta: -Number(line.quantityReturned),
-      entryType: 'return',
+      entryType: 'adjustment_out',
       unitCostSnapshot: line.unitPrice,
       lineId: String(line._id),
       sourceRef: {
@@ -443,12 +448,14 @@ async function approvePurchaseReturn({ organizationId, id, userId }) {
     });
   }
 
+  const { resolveInventoryLocationUuid } = require('./inventoryLocationService');
   for (const [loc, invLines] of byLocation.entries()) {
+    const locUuid = await resolveInventoryLocationUuid({ organizationId, locationRef: loc });
     await postInventoryTransaction({
       organizationId,
       userId,
       transactionType: 'adjustment',
-      inventoryLocationId: loc,
+      inventoryLocationId: locUuid,
       lines: invLines,
       sourceContext: 'purchase_return',
       sourceRef: {

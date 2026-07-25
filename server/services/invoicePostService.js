@@ -170,8 +170,17 @@ async function postInvoice({ organizationId, invoiceMongoId, userId }) {
     });
   }
 
+  const posted = invoice.toObject();
+
+  try {
+    const { enqueueAfterInvoicePost } = require('./connectors/tally/tallyOutboxHooks');
+    await enqueueAfterInvoicePost({ organizationId, invoice: posted });
+  } catch (_err) {
+    // Non-blocking: Tally outbox must not break invoice post
+  }
+
   return {
-    invoice: invoice.toObject(),
+    invoice: posted,
     allocations: allocationResult.allocations,
     sourceInvoice: allocationResult.sourceInvoice || null
   };

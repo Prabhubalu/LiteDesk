@@ -74,7 +74,13 @@ const PaymentSchema = new Schema(
       type: PaymentInstrumentSnapshotSchema,
       default: () => ({})
     },
+    /** Gateway / PSP reference (Razorpay, Stripe, bank UTR, etc.) — not Tally */
     externalReference: { type: String, trim: true, default: null, index: true },
+
+    // External sync triad (Tally / accounting connectors) — distinct from gateway externalReference
+    externalReferenceId: { type: String, trim: true, default: null, index: true },
+    syncStatus: { type: String, trim: true, default: 'not_synced', index: true },
+    lastSyncAt: { type: Date, default: null },
 
     amountAllocated: { type: Number, default: 0 },
     amountUnallocated: { type: Number, default: 0 },

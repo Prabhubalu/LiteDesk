@@ -98,4 +98,14 @@ module.exports = {
     },
     creditPacks: DEFAULT_AI_TOKEN_PACKS,
   },
+  tally: {
+    billingType: 'FLAT',
+    defaultPlan: 'BASIC',
+    trialDays: 14,
+    plans: {
+      BASIC: { flatPriceCents: null, currency: 'USD' },
+      PRO: { flatPriceCents: null, currency: 'USD' },
+      ENTERPRISE: { flatPriceCents: null, currency: 'USD' },
+    },
+  },
 };
