@@ -275,6 +275,8 @@ const publicMarketingRoutes = require('./routes/publicMarketingRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const astraV2Routes = require('./routes/astraV2Routes');
 const astraStudioRoutes = require('./routes/astraStudioRoutes');
+const tallyConnectorRoutes = require('./routes/tallyConnectorRoutes');
+const tallyAgentRoutes = require('./routes/tallyAgentRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -313,6 +315,8 @@ app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/ai', aiRoutes);
 app.use('/api/ai/v2', astraV2Routes);
 app.use('/api/astra/studio', astraStudioRoutes);
+app.use('/api/connectors/tally/agent', tallyAgentRoutes);
+app.use('/api/connectors/tally', tallyConnectorRoutes);
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/helpdesk/articles', helpdeskArticlesRoutes);
 app.use('/api/marketing/campaigns', marketingCampaignRoutes);
@@ -337,6 +341,9 @@ const { itemGroupRouter, stockroomAddonRouter } = require('./routes/cpqAndStockr
 app.use('/api/inventory/purchase-orders', require('./routes/purchaseOrderRoutes'));
 app.use('/api/inventory/receipt-notes', require('./routes/receiptNoteRoutes'));
 app.use('/api/inventory/purchase-returns', require('./routes/purchaseReturnRoutes'));
+app.use('/api/inventory/purchase-bills', require('./routes/purchaseBillRoutes'));
+app.use('/api/inventory/vendor-payments', require('./routes/vendorPaymentRoutes'));
+app.use('/api/inventory/journals', require('./routes/journalRoutes'));
 app.use('/api/inventory/delivery-notes', dnRouter);
 app.use('/api/inventory/delivery-returns', drRouter);
 app.use('/api/inventory/sales-returns', srRouter);

@@ -2,6 +2,7 @@
  * INV0 — Inventory locations + Main Warehouse bootstrap.
  */
 
+const mongoose = require('mongoose');
 const InventoryLocation = require('../models/InventoryLocation');
 const OrganizationInventorySettings = require('../models/OrganizationInventorySettings');
 const {
@@ -136,8 +137,36 @@ async function getLocationById({ organizationId, inventoryLocationId }) {
   return InventoryLocation.findOne({ organizationId, inventoryLocationId }).lean();
 }
 
+/**
+ * Resolve either a public UUID (`inventoryLocationId`) or Mongo `_id` to the UUID
+ * used by the inventory ledger. Fulfillment/procurement docs historically stored ObjectId.
+ */
+async function resolveInventoryLocationUuid({ organizationId, locationRef }) {
+  const raw = locationRef == null ? '' : String(locationRef).trim();
+  if (!raw) {
+    const err = new Error('inventoryLocationId is required');
+    err.code = 'VALIDATION';
+    throw err;
+  }
+
+  let location = await InventoryLocation.findOne({ organizationId, inventoryLocationId: raw }).lean();
+  if (!location && mongoose.Types.ObjectId.isValid(raw)) {
+    location = await InventoryLocation.findOne({ organizationId, _id: raw }).lean();
+  }
+  if (!location) {
+    const err = new Error('Inventory location not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+  return location.inventoryLocationId;
+}
+
 async function assertActiveLocation({ organizationId, inventoryLocationId }) {
-  const location = await getLocationById({ organizationId, inventoryLocationId });
+  const uuid = await resolveInventoryLocationUuid({
+    organizationId,
+    locationRef: inventoryLocationId
+  });
+  const location = await getLocationById({ organizationId, inventoryLocationId: uuid });
   if (!location) {
     const err = new Error('Inventory location not found');
     err.code = 'NOT_FOUND';
@@ -157,5 +186,6 @@ module.exports = {
   listLocations,
   createLocation,
   getLocationById,
+  resolveInventoryLocationUuid,
   assertActiveLocation
 };

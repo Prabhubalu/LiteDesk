@@ -599,6 +599,30 @@ const OrganizationSchema = new mongoose.Schema({
     },
     preferredPaymentMethod: { type: String, trim: true },
     taxId: { type: String, trim: true },
+
+    // India GST (GTM-1) — optional, CRM parties
+    gstin: { type: String, trim: true, uppercase: true },
+    gstRegistrationType: {
+        type: String,
+        trim: true,
+        enum: [
+            'regular',
+            'composition',
+            'unregistered',
+            'sez',
+            'casual',
+            'isd',
+            'tax_deductor',
+            'tax_collector'
+        ]
+    },
+    stateCode: { type: String, trim: true },
+    billingAddressStructured: { type: mongoose.Schema.Types.Mixed },
+
+    // External sync triad (Tally / accounting connectors) — CRM parties
+    externalReferenceId: { type: String, trim: true, default: null, index: true },
+    syncStatus: { type: String, trim: true, default: 'not_synced', index: true },
+    lastSyncAt: { type: Date, default: null },
     
     // Distributor/Dealer-specific
     channelRegion: { type: String, trim: true },

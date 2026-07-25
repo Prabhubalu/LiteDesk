@@ -1,0 +1,265 @@
+;; ArivuConnector.All.tdl — single-file fallback (no #Include). Prefer ArivuConnector.tdl when Includes work.
+;; Generated for Tally builds that reject sibling Includes. Pack v1.0.0
+
+;; ============================================================================
+;; Arivu Connector TDL Pack v1.0.0
+;; Compatible: TallyPrime 3.x / 4.x (+ Tally.ERP 9 where object names match)
+;; Source: TallyHelp XML Integration, GST schema Rel 3+, connector field requirements
+;;
+;; LOAD (once per PC) — single-file fallback:
+;;   F1 → TDL & Add-On → F4 Manage Local TDLs → add THIS file only
+;; Prefer ArivuConnector.tdl (with Includes) when your Tally build supports it.
+;;
+;; Do NOT rename Collection IDs — Arivu Agent depends on exact names.
+;; Version: keep in sync with ArivuConnector.VERSION below and agent ARIVU_TDL_VERSION.
+;; ============================================================================
+
+
+;; ---------------------------------------------------------------------------
+;; Gateway entry + version probe
+;; ---------------------------------------------------------------------------
+
+[#Menu: Gateway of Tally]
+    Add : Key Item : Before : Quit : Arivu Connector : A : Display : Arivu Connector Info : NOT $$IsEmpty:$$SelectedCmps
+
+[Report: Arivu Connector Info]
+    Form : Arivu Connector Info
+    Title : $$LocaleString:"Arivu Connector"
+
+[Form: Arivu Connector Info]
+    Parts : Arivu Connector Info
+    Width : 70% Screen
+    Height : 55% Screen
+
+[Part: Arivu Connector Info]
+    Lines : ACI Title, ACI Ver, ACI Line1, ACI Line2, ACI Line3, ACI Line4, ACI Line5
+    Scroll : Vertical
+
+[Line: ACI Title]
+    Fields : ACI Medium Bold
+    Local : Field : ACI Medium Bold : Set as : $$LocaleString:"Arivu Connector TDL is loaded"
+    Space Top : 1
+
+[Line: ACI Ver]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"TDL Pack Version: 1.0.0 (Arivu)"
+
+[Line: ACI Line1]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"1) F12 → Enable ODBC / HTTP server (port 9000)"
+
+[Line: ACI Line2]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"2) Keep Desktop → Arivu Connector running (user session)"
+
+[Line: ACI Line3]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"3) Dry run from Arivu Integration Center to discover companies"
+
+[Line: ACI Line4]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"Pack covers: Masters, Inventory, Vouchers (with entries), GST/HSN, incremental AlterID"
+
+[Line: ACI Line5]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"Support: https://app.arivusystems.com/integrations/tally"
+
+[Field: ACI Medium Bold]
+    Use : Name Field
+    Align : Centre
+    Style : Large Bold
+    Color : Blue
+
+[Field: ACI Medium]
+    Use : Name Field
+    Align : Left
+    Full Width : Yes
+    Word Wrap : Yes
+
+;; Tiny collection so agent can verify TDL load / version via XML
+[Collection: Arivu Connector Meta]
+    Type : Company
+    Max : 1
+    Fetch : Name, GUID
+    Compute : ArivuTdlPackVersion : "1.0.0"
+    Compute : ArivuTdlPackName : "ArivuConnector"
+
+
+;; ---- Masters ----
+;; ============================================================================
+;; ArivuConnector.Masters.tdl — Accounting & organization masters
+;; Future-proof: Fetch includes GUID, MasterID, AlterID where available for incremental sync
+;; ============================================================================
+
+[Collection: Arivu List of Companies]
+    Type : Company
+    Fetch : Name, GUID, StartingFrom, BooksFrom, EndingAt, CompanyNumber, FormalName, Address, StateName, Pincode, Phone, Email, IsGSTOn, GSTDetails, HSNDetails
+    Compute : ArivuCompanyKey : $GUID
+    Compute : ArivuCompanyName : $Name
+
+[Collection: Arivu List of Groups]
+    Type : Group
+    Fetch : Name, Parent, GUID, MasterID, AlterID, IsSubLedger, IsRevenue, IsDeemedPositive, IsBillWiseOn, IsCostCentresOn, GSTDetails, HSNDetails
+    Compute : ArivuGroupName : $Name
+
+[Collection: Arivu List of Ledgers]
+    Type : Ledger
+    Fetch : Name, Parent, GUID, MasterID, AlterID, ClosingBalance, OpeningBalance, PartyGSTIN, LedStateName, IncomeTaxNumber, LedgerPhone, Address, Email, CreditLimit, IsBillWiseOn, IsCostCentresOn, GSTApplicable, GSTRegistrationType, GSTTypeofSupply, GSTDutyHead, GSTDetails, HSNDetails, TaxType, CurrencyName
+    Compute : ArivuLedgerName : $Name
+    Compute : ArivuLedgerParent : $Parent
+
+[Collection: Arivu List of Currencies]
+    Type : Currency
+    Fetch : Name, GUID, OriginalName, FormalName, ISOCurrencyCode, DecimalPlaces, InMillions, Symbol
+    Compute : ArivuCurrencyName : $Name
+
+[Collection: Arivu List of Voucher Types]
+    Type : Voucher Type
+    Fetch : Name, Parent, GUID, MasterID, AlterID, NumberingMethod, IsDeemedPositive, AffectsStock, IsInvoice, IsOptional, IsCommonParty, PreventDuplicates, PrefillZero, BeginningNumber, EndingNumber
+    Compute : ArivuVoucherTypeName : $Name
+
+[Collection: Arivu List of Cost Categories]
+    Type : Cost Category
+    Fetch : Name, GUID, MasterID, AlterID, AllocateRevenue, AllocateNonRevenue
+    Compute : ArivuCostCategoryName : $Name
+
+[Collection: Arivu List of Cost Centres]
+    Type : Cost Centre
+    Fetch : Name, Parent, GUID, MasterID, AlterID, Category, RevenueLedger, NonRevenueLedger
+    Compute : ArivuCostCentreName : $Name
+
+[Collection: Arivu List of Units]
+    Type : Unit
+    Fetch : Name, GUID, DecimalPlaces, IsSimpleUnit, OriginalName, AdditionalUnits, Conversion, GSTRepUoM
+    Compute : ArivuUnitName : $Name
+
+[Collection: Arivu List of Attendance Types]
+    Type : Attendance Type
+    Fetch : Name, Parent, GUID, AttendanceType, PeriodType
+    Compute : ArivuAttendanceTypeName : $Name
+
+;; End Masters
+
+;; ---- Inventory ----
+;; ============================================================================
+;; ArivuConnector.Inventory.tdl — Stock / warehouse / batch masters
+;; ============================================================================
+
+[Collection: Arivu List of Stock Groups]
+    Type : Stock Group
+    Fetch : Name, Parent, GUID, MasterID, AlterID, IsAddable, GSTDetails, HSNDetails, GSTApplicable
+    Compute : ArivuStockGroupName : $Name
+
+[Collection: Arivu List of Stock Categories]
+    Type : Stock Category
+    Fetch : Name, Parent, GUID, MasterID, AlterID
+    Compute : ArivuStockCategoryName : $Name
+
+[Collection: Arivu List of Stock Items]
+    Type : Stock Item
+    Fetch : Name, Parent, GUID, MasterID, AlterID, BaseUnits, AdditionalUnits, Conversion, ClosingBalance, OpeningBalance, ClosingRate, OpeningRate, ClosingValue, OpeningValue, HasBatchNumbers, IsBatchWiseOn, HasExpiryDate, IsPerishable, GSTApplicable, GSTDetails, HSNDetails, GSTTypeofSupply, GSTRepUoM, GSTItemUnits, Description, PartNo, Narration, CostingMethod, ValuationMethod, Category, GodownName, GodownEntries.*, BatchEntries.*, IgnorePhysicalDifference, IgnoreNegativeStock
+    Compute : ArivuStockItemName : $Name
+
+[Collection: Arivu List of Godowns]
+    Type : Godown
+    Fetch : Name, Parent, GUID, MasterID, AlterID, Address, GodownType, HasStock, JobberStock
+    Compute : ArivuGodownName : $Name
+
+[Collection: Arivu List of Batches]
+    Type : Batch
+    Fetch : Name, GUID, Parent, ClosingBalance, ClosingRate, ClosingValue, ManufacturedOn, ExpiryDate, GodownName
+    Compute : ArivuBatchName : $Name
+
+[Collection: Arivu Stock Summary]
+    Type : Stock Item
+    Fetch : Name, Parent, GUID, BaseUnits, ClosingBalance, ClosingRate, ClosingValue, GodownEntries.*, BatchEntries.*, GSTDetails, HSNDetails
+    Compute : ArivuStockItemName : $Name
+
+;; End Inventory
+
+;; ---- Vouchers ----
+;; ============================================================================
+;; ArivuConnector.Vouchers.tdl — Transaction collections with nested entries
+;; Critical: LedgerEntries.* / InventoryEntries.* must be Fetch'd or XML is header-only.
+;; Date window via SVFROMDATE / SVTODATE in agent XML. Incremental via AlterID/MasterID.
+;; Typed collections intentionally have NO Filter (avoids formula breakage across builds);
+;; agent/cloud filters by VoucherTypeName after export.
+;; ============================================================================
+
+[Collection: Arivu List of Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, BasicBuyerName, IRN, AckNo, AckDate, IsCancelled, IsOptional, IsInvoice, EffectiveDate, EnteredBy, Amount, GSTRegistration, GSTRegistrationType, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*, InventoryEntriesIn.*, InventoryEntriesOut.*, BillAllocations.*, CostCentreAllocations.*
+    Compute : ArivuVoucherKey : $GUID
+    Compute : ArivuVoucherMasterId : $MasterID
+    Compute : ArivuVoucherAlterId : $AlterID
+
+[Collection: Arivu Sales Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IRN, AckNo, AckDate, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*, BillAllocations.*
+
+[Collection: Arivu Purchase Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*, BillAllocations.*
+
+[Collection: Arivu Payment Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, BillAllocations.*
+
+[Collection: Arivu Receipt Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, BillAllocations.*
+
+[Collection: Arivu Journal Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, CostCentreAllocations.*
+
+[Collection: Arivu Contra Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*
+
+[Collection: Arivu Credit Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IRN, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*
+
+[Collection: Arivu Debit Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*
+
+[Collection: Arivu Stock Journal Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, IsCancelled, InventoryEntries.*, AllInventoryEntries.*, InventoryEntriesIn.*, InventoryEntriesOut.*
+
+[Collection: Arivu Delivery Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, InventoryEntries.*, AllInventoryEntries.*, LedgerEntries.*
+
+[Collection: Arivu Receipt Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, InventoryEntries.*, AllInventoryEntries.*, LedgerEntries.*
+
+;; End Vouchers
+
+;; ---- GST ----
+;; ============================================================================
+;; ArivuConnector.GST.tdl — India GST / HSN masters (TallyPrime Rel 3+ schema aware)
+;; Refs: TallyHelp GST schema, Rel 3.0 XML tag changes
+;; ============================================================================
+
+[Collection: Arivu List of GST Classifications]
+    Type : GST Classification
+    Fetch : Name, GUID, MasterID, AlterID, HSN, HSNCode, SupplyType, ReportingUOM, Taxability, GSTNatureOfTransaction, IsNonGSTGoods, GSTDetails, HSNDetails
+    Compute : ArivuGstClassName : $Name
+
+[Collection: Arivu List of Tax Units]
+    Type : Tax Unit
+    Fetch : Name, GUID, MasterID, AlterID, StateName
+    Compute : ArivuTaxUnitName : $Name
+
+;; Prefer full ledger pull; this is a convenience subset by name patterns via agent filter later
+[Collection: Arivu List of GST Duty Ledgers]
+    Type : Ledger
+    Fetch : Name, Parent, GUID, MasterID, AlterID, GSTDutyHead, GSTApplicable, GSTTypeofSupply, TaxType, GSTDetails, HSNDetails, ClosingBalance
+
+;; End GST
+
+;; End ArivuConnector.All.tdl

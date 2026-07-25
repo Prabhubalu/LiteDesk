@@ -69,6 +69,10 @@ async function run() {
   const aiEmbedQueueService = require('./services/ai/aiEmbedQueueService');
   aiEmbedQueueService.startWorker();
   console.log(`[worker] AI embed worker is running (Bull: ${aiEmbedQueueService.AI_EMBED_QUEUE_NAME})`);
+
+  const tallySyncQueueService = require('./services/connectors/tally/tallySyncQueueService');
+  tallySyncQueueService.startWorker();
+  console.log(`[worker] Tally sync worker is running (Bull: ${tallySyncQueueService.TALLY_SYNC_QUEUE_NAME})`);
 }
 
 async function stop(signal) {
@@ -113,6 +117,12 @@ async function stop(signal) {
     await aiEmbedQueueService.closeQueue();
   } catch (e) {
     console.error('[worker] ai embed queue close', e.message);
+  }
+  try {
+    const tallySyncQueueService = require('./services/connectors/tally/tallySyncQueueService');
+    await tallySyncQueueService.closeQueue();
+  } catch (e) {
+    console.error('[worker] tally sync queue close', e.message);
   }
   try {
     await mongoose.connection.close();

@@ -1,0 +1,35 @@
+;; ============================================================================
+;; ArivuConnector.Inventory.tdl — Stock / warehouse / batch masters
+;; ============================================================================
+
+[Collection: Arivu List of Stock Groups]
+    Type : Stock Group
+    Fetch : Name, Parent, GUID, MasterID, AlterID, IsAddable, GSTDetails, HSNDetails, GSTApplicable
+    Compute : ArivuStockGroupName : $Name
+
+[Collection: Arivu List of Stock Categories]
+    Type : Stock Category
+    Fetch : Name, Parent, GUID, MasterID, AlterID
+    Compute : ArivuStockCategoryName : $Name
+
+[Collection: Arivu List of Stock Items]
+    Type : Stock Item
+    Fetch : Name, Parent, GUID, MasterID, AlterID, BaseUnits, AdditionalUnits, Conversion, ClosingBalance, OpeningBalance, ClosingRate, OpeningRate, ClosingValue, OpeningValue, HasBatchNumbers, IsBatchWiseOn, HasExpiryDate, IsPerishable, GSTApplicable, GSTDetails, HSNDetails, GSTTypeofSupply, GSTRepUoM, GSTItemUnits, Description, PartNo, Narration, CostingMethod, ValuationMethod, Category, GodownName, GodownEntries.*, BatchEntries.*, IgnorePhysicalDifference, IgnoreNegativeStock
+    Compute : ArivuStockItemName : $Name
+
+[Collection: Arivu List of Godowns]
+    Type : Godown
+    Fetch : Name, Parent, GUID, MasterID, AlterID, Address, GodownType, HasStock, JobberStock
+    Compute : ArivuGodownName : $Name
+
+[Collection: Arivu List of Batches]
+    Type : Batch
+    Fetch : Name, GUID, Parent, ClosingBalance, ClosingRate, ClosingValue, ManufacturedOn, ExpiryDate, GodownName
+    Compute : ArivuBatchName : $Name
+
+[Collection: Arivu Stock Summary]
+    Type : Stock Item
+    Fetch : Name, Parent, GUID, BaseUnits, ClosingBalance, ClosingRate, ClosingValue, GodownEntries.*, BatchEntries.*, GSTDetails, HSNDetails
+    Compute : ArivuStockItemName : $Name
+
+;; End Inventory

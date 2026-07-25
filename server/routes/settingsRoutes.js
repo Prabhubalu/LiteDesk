@@ -81,6 +81,7 @@ router.get('/addons/blog/settings', addonSettingsController.getBlogAddonSettings
 router.put('/addons/blog/settings', addonSettingsController.updateBlogAddonSettings);
 router.post('/addons/blog/settings/test-webhook', addonSettingsController.sendBlogPublishWebhookTest);
 router.post('/addons/blog/settings/generate-webhook-secret', addonSettingsController.generateBlogPublishWebhookSecret);
+router.use('/addons/tally/settings', require('./tallyAddonSettingsRoutes'));
 router.get('/addons/live_chat/widget', addonSettingsController.getLiveChatWidgetSettings);
 router.put('/addons/live_chat/widget', addonSettingsController.updateLiveChatWidgetSettings);
 router.get('/addons/live_chat/outcomes', addonSettingsController.getLiveChatOutcomeSettings);

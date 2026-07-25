@@ -171,6 +171,13 @@ async function recordPayment({
     if (matchErr.code === 'BANK_TRANSFER_AMOUNT_MISMATCH') throw matchErr;
   }
 
+  try {
+    const { enqueueAfterPayment } = require('./connectors/tally/tallyOutboxHooks');
+    await enqueueAfterPayment({ organizationId, payment: finalPayment });
+  } catch (_err) {
+    // Non-blocking: Tally outbox must not break payment record
+  }
+
   return {
     payment: finalPayment,
     allocations: applyResult?.allocations || [],

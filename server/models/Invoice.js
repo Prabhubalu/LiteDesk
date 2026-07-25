@@ -7,6 +7,7 @@ const {
   INVOICE_TYPES,
   INVOICE_TYPE_DEFAULT
 } = require('../constants/invoiceLifecycle');
+const { IRN_STATUS_VALUES } = require('../constants/indiaGstConstants');
 
 const { Schema } = mongoose;
 
@@ -125,6 +126,27 @@ const InvoiceSchema = new Schema(
       index: true
     },
     lastPaymentAt: { type: Date, default: null },
+
+    // India GST (GTM-1) — e-invoice / e-way bill hooks
+    placeOfSupply: { type: String, trim: true, default: null },
+    partyGstin: { type: String, trim: true, uppercase: true, default: null },
+    irn: { type: String, trim: true, default: null, index: true },
+    irnStatus: {
+      type: String,
+      enum: IRN_STATUS_VALUES,
+      default: 'not_generated',
+      index: true
+    },
+    qrPayload: { type: String, default: null },
+    ackNo: { type: String, trim: true, default: null },
+    ackDate: { type: Date, default: null },
+    ewayBillNo: { type: String, trim: true, default: null, index: true },
+    ewayBillDate: { type: Date, default: null },
+
+    // External sync triad (Tally / accounting connectors)
+    externalReferenceId: { type: String, trim: true, default: null, index: true },
+    syncStatus: { type: String, trim: true, default: 'not_synced', index: true },
+    lastSyncAt: { type: Date, default: null },
 
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     modifiedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
