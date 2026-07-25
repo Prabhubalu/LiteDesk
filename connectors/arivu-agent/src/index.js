@@ -307,7 +307,7 @@ async function main() {
 
   ensureDataDir(cfg);
 
-  if (args.includes('--tray')) {
+  if (args.includes('--tray') || args.includes('--ui')) {
     await runTray(cfg);
     return;
   }

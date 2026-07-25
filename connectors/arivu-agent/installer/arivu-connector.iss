@@ -10,7 +10,7 @@
 ;   ISCC.exe installer\arivu-connector.iss
 
 #define MyAppName "Arivu Connector Agent"
-#define MyAppVersion "0.2.0"
+#define MyAppVersion "0.2.2"
 #define MyAppPublisher "Arivu"
 #define MyAppExeName "arivu-connector-agent.exe"
 #define MyServiceName "ArivuConnectorAgent"
@@ -44,6 +44,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ; Self-contained Node agent (pkg embeds Node — no separate Node.js install)
 Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "config.template.json"; DestDir: "{commonappdata}\Arivu\Connector"; DestName: "config.json"; Flags: onlyifdoesntexist
+; Loose UI copy next to EXE (fallback if pkg asset path fails)
+Source: "..\src\ui\*"; DestDir: "{app}\ui"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Optional VC++ redistributable
 Source: "redist\VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall skipifsourcedoesntexist
 
@@ -57,6 +59,7 @@ Name: "{commonappdata}\Arivu\Connector\updates"
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
 Name: "{group}\Arivu Connector (console)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--console"
 Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
+Name: "{userdesktop}\Arivu Connector"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
 
 [Run]
@@ -68,8 +71,8 @@ Filename: "{sys}\sc.exe"; Parameters: "delete {#MyServiceName}"; Flags: runhidde
 Filename: "{sys}\sc.exe"; Parameters: "create {#MyServiceName} binPath= ""{app}\{#MyAppExeName}"" start= auto DisplayName= ""Arivu Connector Agent"""; Flags: runhidden; StatusMsg: "Registering Windows service..."
 Filename: "{sys}\sc.exe"; Parameters: "description {#MyServiceName} ""Bridges local Tally XML API to Arivu cloud."""; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "start {#MyServiceName}"; Flags: runhidden; StatusMsg: "Starting Arivu Connector Agent..."
-; Customer UX: tray + local pairing UI (no terminal)
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"; Description: "Open Arivu Connector (tray + pair)"; Flags: postinstall nowait skipifsilent
+; CRITICAL: runasoriginaluser — elevated Setup kills child processes / wrong session otherwise
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"; Description: "Open Arivu Connector pairing UI"; Flags: postinstall nowait skipifsilent runasoriginaluser unchecked
 
 [UninstallRun]
 Filename: "{sys}\sc.exe"; Parameters: "stop {#MyServiceName}"; Flags: runhidden; RunOnceId: "StopArivuSvc"
@@ -81,6 +84,7 @@ procedure InitializeWizard;
 begin
   WizardForm.WelcomeLabel2.Caption :=
     'This wizard installs the Arivu Connector Agent.'#13#10#13#10 +
-    'After install, a tray icon and pairing window open. Paste the code from Arivu Integrations → Tally.'#13#10#13#10 +
-    'TallyPrime itself is not bundled — install Tally separately and enable XML HTTP (port 9000).';
+    'After install, open Desktop / Start Menu → Arivu Connector. A small console stays open and the pairing page loads at http://127.0.0.1:17932/'#13#10#13#10 +
+    'Paste the code from Arivu Integrations → Tally. Keep that window open while using the connector.'#13#10#13#10 +
+    'TallyPrime itself is not bundled — enable XML HTTP (port 9000).';
 end;
