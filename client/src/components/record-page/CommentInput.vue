@@ -177,14 +177,23 @@
               {{ getInitials(item) }}
             </span>
             <span
+              v-else-if="item.type === 'all'"
+              class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs flex-shrink-0"
+            >
+              <UsersIcon class="w-3.5 h-3.5" />
+            </span>
+            <span
               v-else
               class="w-6 h-6 rounded-full bg-gray-400 dark:bg-gray-600 flex items-center justify-center text-white text-xs flex-shrink-0"
             >
               <UserGroupIcon class="w-3 h-3" />
             </span>
-            <span class="min-w-0 flex-1 truncate">{{ item.name }}</span>
+            <span class="min-w-0 flex-1 truncate">{{ item.type === 'all' ? `@${item.name}` : item.name }}</span>
             <span v-if="item.type === 'group'" class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
               {{ t('records.commentMentionGroup') }}
+            </span>
+            <span v-else-if="item.type === 'all'" class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+              {{ t('records.commentMentionAll') }}
             </span>
           </button>
         </template>
@@ -202,6 +211,7 @@ import { useI18n } from 'vue-i18n';
 import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import {
   UserGroupIcon,
+  UsersIcon,
   PaperClipIcon,
   XMarkIcon,
   AtSymbolIcon,
@@ -292,12 +302,15 @@ const MIN_ACTIVITY_EDITOR_HEIGHT = 48;
 const isDarkTheme = ref(false);
 
 // Mention format for storage: @[Display Name](type:id)
+const ALL_MENTION = Object.freeze({ type: 'all', id: 'all', name: 'all' });
 const toMentionString = (item) => `@[${item.name}](${item.type}:${item.id})`;
 
 // Create mention chip HTML element
 const createMentionChip = (item) => {
   const span = document.createElement('span');
-  const mentionTone = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200';
+  const mentionTone = item.type === 'all'
+    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+    : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200';
   span.className = `mention-chip inline-flex items-center px-1.5 py-0.5 mx-px rounded text-xs font-medium ${mentionTone} whitespace-nowrap`;
   span.contentEditable = 'false';
   span.dataset.type = item.type;
@@ -308,7 +321,7 @@ const createMentionChip = (item) => {
 };
 
 const mentionOptions = computed(() => {
-  const result = [];
+  const result = [ALL_MENTION];
   users.value.forEach((u) => {
     result.push({
       type: 'user',
@@ -412,7 +425,7 @@ const resizeActivityEditor = () => {
 // Parse @[Name](type:id) and render as HTML with chips
 const parseValueToHtml = (value) => {
   if (!value) return '';
-  const MENTION_REGEX = /@\[([^\]]+)\]\((user|group|agent):([^)]+)\)/g;
+  const MENTION_REGEX = /@\[([^\]]+)\]\((user|group|agent|all):([^)]+)\)/g;
   const escapeWithLineBreaks = (text) => escapeHtml(text).replace(/\n/g, '<br>');
   let html = '';
   let lastIndex = 0;
@@ -420,7 +433,10 @@ const parseValueToHtml = (value) => {
   MENTION_REGEX.lastIndex = 0;
   while ((match = MENTION_REGEX.exec(value)) !== null) {
     html += escapeWithLineBreaks(value.slice(lastIndex, match.index));
-    html += `<span class="mention-chip inline-flex items-center px-1.5 py-0.5 mx-px rounded text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200 whitespace-nowrap" contenteditable="false" data-type="${escapeHtml(match[2])}" data-id="${escapeHtml(match[3])}" data-name="${escapeHtml(match[1])}">@${escapeHtml(match[1])}</span>`;
+    const tone = match[2] === 'all'
+      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+      : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200';
+    html += `<span class="mention-chip inline-flex items-center px-1.5 py-0.5 mx-px rounded text-xs font-medium ${tone} whitespace-nowrap" contenteditable="false" data-type="${escapeHtml(match[2])}" data-id="${escapeHtml(match[3])}" data-name="${escapeHtml(match[1])}">@${escapeHtml(match[1])}</span>`;
     lastIndex = MENTION_REGEX.lastIndex;
   }
   html += escapeWithLineBreaks(value.slice(lastIndex));

@@ -730,26 +730,26 @@
             @click="openTagPopoverFromField($event)"
             class="w-full min-w-0 min-h-8 flex items-center text-sm text-left text-gray-900 dark:text-white rounded px-2 py-1 -mx-2 -my-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
           >
-            <div v-if="task.tags && task.tags.length > 0" class="flex flex-wrap gap-1.5 text-left">
+            <div v-if="detailTagChips.length > 0" class="flex flex-wrap gap-1.5 text-left">
               <span
-                v-for="(tag, index) in task.tags"
-                :key="`${tag}-${index}`"
-                :class="['inline-block text-xs px-2 py-0.5 rounded', getTagChipClass(tag)]"
+                v-for="item in detailTagChips"
+                :key="item.key"
+                :class="['inline-block text-xs px-2 py-0.5 rounded', item.chipClass]"
               >
-                {{ tag }}
+                {{ item.label }}
               </span>
             </div>
             <span v-else class="text-record-empty">{{ t('records.tagsSearchPh') }}</span>
           </button>
 
           <div v-else class="w-full min-w-0 min-h-8 text-sm text-gray-900 dark:text-white rounded px-2 py-1 cursor-default select-none bg-gray-50 dark:bg-gray-800/60 flex items-center">
-            <div v-if="task.tags && task.tags.length > 0" class="flex flex-wrap gap-1.5 text-left">
+            <div v-if="detailTagChips.length > 0" class="flex flex-wrap gap-1.5 text-left">
               <span
-                v-for="(tag, index) in task.tags"
-                :key="`${tag}-${index}`"
-                :class="['inline-block text-xs px-2 py-0.5 rounded', getTagChipClass(tag)]"
+                v-for="item in detailTagChips"
+                :key="item.key"
+                :class="['inline-block text-xs px-2 py-0.5 rounded', item.chipClass]"
               >
-                {{ tag }}
+                {{ item.label }}
               </span>
             </div>
             <span v-else class="text-record-empty">{{ keyFieldsEmptyLabel }}</span>
@@ -1682,6 +1682,7 @@ import {
   extractRecordUpdatedAtMs,
   recordRecordDetailFingerprint,
 } from '@/utils/recordDetailFreshness';
+import { dispatchRecordUpdated } from '@/utils/moduleListFreshness';
 import { useStickyTitleRow } from '@/components/record-page/composables/useStickyTitleRow';
 import { FLOATING_OVERLAY_Z_CLASS } from '@/constants/zIndexLayers';
 import RecordPageTitleRow from '@/components/record-page/RecordPageTitleRow.vue';
@@ -2190,10 +2191,21 @@ const {
 } = useRecordTagPopoverPosition();
 
 const tagStorageKey = computed(() => {
-  const organizationId = authStore.user?.organizationId || authStore.organization?._id || 'default-org';
+  const raw = authStore.user?.organizationId || authStore.organization?._id || 'default-org';
+  const organizationId = raw && typeof raw === 'object' && raw._id != null ? String(raw._id) : String(raw);
   return `arivu-task-tag-definitions-${organizationId}`;
 });
 const hasTaskTags = computed(() => Array.isArray(task.value?.tags) && task.value.tags.length > 0);
+
+function notifyTaskListUpdated() {
+  if (!task.value?._id) return;
+  dispatchRecordUpdated({
+    moduleKey: 'tasks',
+    recordId: task.value._id,
+    record: task.value,
+    appKey: 'PLATFORM'
+  });
+}
 
 const persistRecordTagsForTask = async (cleaned) => {
   if (!task.value || !canEditTask.value) return;
@@ -2203,6 +2215,7 @@ const persistRecordTagsForTask = async (cleaned) => {
   } else {
     task.value.tags = cleaned;
   }
+  notifyTaskListUpdated();
 };
 
 const getFieldLabel = (fieldKey) => {
@@ -2670,11 +2683,23 @@ const canEditTask = computed(() => {
   return authStore.can('tasks', 'edit');
 });
 
-const { getTagChipClass: getTaskTagChipClass } = useRecordTags(task, {
+const { getTagChipClass, instanceTagDefinitions } = useRecordTags(task, {
   tagStorageKey,
   canEdit: canEditTask,
   persistTags: persistRecordTagsForTask,
   instanceTagSource: 'tasks'
+});
+const getTaskTagChipClass = getTagChipClass;
+
+/** Force Details chips to track shared tag definitions (color updates + assign without refresh). */
+const detailTagChips = computed(() => {
+  void instanceTagDefinitions.value;
+  const tags = Array.isArray(task.value?.tags) ? task.value.tags : [];
+  return tags.map((tag, index) => ({
+    key: `${String(tag)}-${index}`,
+    label: tag,
+    chipClass: getTagChipClass(tag)
+  }));
 });
 
 // Check if user can link records (same as edit for now, can be refined)
@@ -2886,6 +2911,7 @@ const saveRelatedToFromPopover = async () => {
       const displayName = relatedToPopoverValue.value?.displayLabel;
       task.value.relatedTo = displayName ? { ...payload, name: displayName } : payload;
       if (!displayName && payload.id) await resolveRelatedToDisplayName();
+      notifyTaskListUpdated();
       closeRelatedToPopover();
     } else {
       relatedToPopoverError.value = response.message || 'Failed to save';
@@ -4751,6 +4777,7 @@ const commentMentionsCurrentUser = (event) => {
     const mentionByIdRegex = new RegExp(`@\\[[^\\]]+\\]\\(user:${escapeRegExp(currentUserId)}\\)`, 'i');
     if (mentionByIdRegex.test(content)) return true;
   }
+  if (/@\[[^\]]+\]\(all:[^)]+\)/i.test(content)) return true;
 
   // Legacy fallback for plain-text mentions without encoded IDs.
   const candidateNames = [
@@ -4910,6 +4937,7 @@ const handleTitleSave = async (newTitle) => {
     
     if (response.success && response.data) {
       task.value.title = newTitle;
+      notifyTaskListUpdated();
       // Optionally update tab title if needed
       // updateTabTitle(activeTabId.value, newTitle);
     }
@@ -4951,6 +4979,7 @@ const handleFieldSave = async (fieldName, newValue) => {
           customFields.value[idx] = { ...cf, value: newValue != null ? String(newValue) : '' };
         }
       }
+      notifyTaskListUpdated();
     }
   } catch (err) {
     console.error(`Error updating task ${fieldName}:`, err);
@@ -5142,6 +5171,7 @@ const handleMarkComplete = async () => {
     await apiClient.patch(`/tasks/${task.value._id}/status`, { status: 'completed' });
     task.value.status = 'completed';
     task.value.completedDate = new Date().toISOString();
+    notifyTaskListUpdated();
     await fetchActivityEvents();
   } catch (err) {
     console.error('Error marking complete:', err);
@@ -5317,6 +5347,7 @@ const handleUnlinkRelated = async (type, record) => {
       const response = await apiClient.put(`/tasks/${task.value._id}`, { projectId: null });
       if (response?.success && response.data) {
         task.value = response.data;
+        notifyTaskListUpdated();
       }
       await fetchRelatedRecords();
       return;
@@ -5398,7 +5429,10 @@ const handleLinkRecordDrawerLinked = async ({ moduleKey, ids, context, relations
     if (normalizedModuleKey === 'projects') {
       // Task has a single project; use first selected id
       const response = await apiClient.put(`/tasks/${task.value._id}`, { projectId: idsToLink[0] });
-      if (response.success && response.data) Object.assign(task.value, response.data);
+      if (response.success && response.data) {
+        Object.assign(task.value, response.data);
+        notifyTaskListUpdated();
+      }
     } else if (payloadRelationshipKey && payloadTargetAppKey) {
       for (const recordId of idsToLink) {
         try {

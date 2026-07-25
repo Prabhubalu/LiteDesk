@@ -41,3 +41,11 @@ export function canTransferLiveChatSession(user, session) {
   const assignedId = session.assignedAgentId ? String(session.assignedAgentId) : '';
   return assignedId && assignedId === String(user._id || '');
 }
+
+/** True when agent may reply/handle: unassigned (claimable) or owned by current user. */
+export function canHandleLiveChatSession(user, session) {
+  if (!canReplyLiveChatSessions(user) || !session) return false;
+  const assignedId = session.assignedAgentId ? String(session.assignedAgentId) : '';
+  if (!assignedId) return true;
+  return assignedId === String(user._id || '');
+}

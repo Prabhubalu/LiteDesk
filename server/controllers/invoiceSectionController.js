@@ -248,4 +248,66 @@ async function deleteSection(req, res) {
   }
 }
 
-module.exports = { listSections, createSection, patchSection, deleteSection, ensureDefaultInvoiceSection };
+module.exports = {
+  listSections,
+  createSection,
+  patchSection,
+  deleteSection,
+  ensureDefaultInvoiceSection,
+  reorderInvoiceSectionsHandler,
+  patchInvoiceSectionDiscountsHandler
+};
+
+function invoiceSectionDraftErrorStatus(err) {
+  if (
+    err?.code === 'VALIDATION' ||
+    err?.code === 'NOT_FOUND' ||
+    err?.code === 'INVOICE_NOT_DRAFT' ||
+    err?.code === 'SECTION_NOT_FOUND' ||
+    err?.code === 'INVOICE_COMMERCIALLY_LOCKED'
+  ) {
+    return 400;
+  }
+  return 500;
+}
+
+async function reorderInvoiceSectionsHandler(req, res) {
+  try {
+    const { reorderInvoiceSections } = require('../services/invoiceCommercialDraftService');
+    const result = await reorderInvoiceSections({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      userId: req.user._id,
+      orders: req.body?.orders
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(invoiceSectionDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to reorder invoice sections',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function patchInvoiceSectionDiscountsHandler(req, res) {
+  try {
+    const { patchInvoiceSectionDiscounts } = require('../services/invoiceCommercialDraftService');
+    const result = await patchInvoiceSectionDiscounts({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      sectionId: req.params.sectionId,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(invoiceSectionDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to update section discounts',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}

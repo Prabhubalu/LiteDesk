@@ -62,8 +62,16 @@ async function applySessionAgentAssignment({
     return { applied: false, reason: 'already_assigned', agentId: nextStr };
   }
 
-  const isTransfer = Boolean(prevStr);
-  const isClaim = Boolean(metadata?.claim);
+  // Queue routing must never steal ownership from an agent who already claimed/replied.
+  const claimOnly =
+    Boolean(metadata?.claimOnly)
+    || normalizedAssignedBy === LIVE_CHAT_ASSIGNED_BY.QUEUE_ROUTING;
+  if (claimOnly && prevStr) {
+    return { applied: false, reason: 'assignment_conflict', agentId: prevStr };
+  }
+
+  const isTransfer = !claimOnly && Boolean(prevStr);
+  const isClaim = Boolean(metadata?.claim) || claimOnly || !prevStr;
   const now = new Date();
   const agentsToAdd = [agentObjectId];
   const prevObjectId = toObjectId(prevId);
@@ -89,7 +97,32 @@ async function applySessionAgentAssignment({
     update.$inc = { transferCount: 1 };
   }
 
-  await ChatSession.updateOne({ _id: sessionId }, update);
+  // Atomic ownership change: claim only when unassigned; transfer only from expected owner.
+  const filter = {
+    _id: sessionId,
+    status: { $ne: 'closed' },
+  };
+  if (isTransfer) {
+    filter.assignedAgentId = prevObjectId;
+  } else {
+    filter.$or = [{ assignedAgentId: null }, { assignedAgentId: { $exists: false } }];
+  }
+
+  const updated = await ChatSession.findOneAndUpdate(filter, update, { new: true })
+    .select('_id')
+    .lean();
+  if (!updated) {
+    const current = await ChatSession.findById(sessionId)
+      .select('assignedAgentId status')
+      .lean();
+    if (!current || String(current.status || '') === 'closed') {
+      return { applied: false, reason: 'session_not_found' };
+    }
+    if (String(current.assignedAgentId || '') === nextStr) {
+      return { applied: false, reason: 'already_assigned', agentId: nextStr };
+    }
+    return { applied: false, reason: 'assignment_conflict' };
+  }
 
   const action = resolveAssignmentAction({ isTransfer, isClaim });
   await LiveChatSessionAssignmentEvent.create({

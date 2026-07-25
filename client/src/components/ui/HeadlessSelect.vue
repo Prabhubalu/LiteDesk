@@ -272,7 +272,19 @@ function onOptionsFocusIn(event) {
 
 function onSearchKeydown(event) {
   // Keep typing in the search field; still allow Escape to bubble for close if needed.
+  // Let ListboxOptions receive arrow/Enter navigation (custom search steals focus otherwise).
   if (event.key === 'Escape') return;
+  if (
+    event.key === 'ArrowDown' ||
+    event.key === 'ArrowUp' ||
+    event.key === 'Home' ||
+    event.key === 'End' ||
+    event.key === 'Enter' ||
+    event.key === 'PageUp' ||
+    event.key === 'PageDown'
+  ) {
+    return;
+  }
   event.stopPropagation();
 }
 

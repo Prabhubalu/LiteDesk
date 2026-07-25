@@ -92,6 +92,16 @@ async function patchInvoiceLine({ organizationId, invoiceRef, lineRef, userId, b
     }
   }
 
+  const { applyCommercialLineDiscountAndTax } = require('../utils/applyCommercialLineCommercialFields');
+  const { taxTouched } = await applyCommercialLineDiscountAndTax(line, body, {
+    organizationId,
+    forceTaxRecompute: body.quantity !== undefined
+  });
+
+  if (!taxTouched) {
+    recomputeLineTotals(line);
+  }
+
   await line.save();
   const { totals, sections } = await recomputeInvoiceAndSectionTotals({
     organizationId,

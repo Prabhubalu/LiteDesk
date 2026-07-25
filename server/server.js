@@ -384,6 +384,15 @@ app.get(
   '/api/appointments/calendar/microsoft/callback',
   require('./controllers/appointmentCalendarController').microsoftOAuthCallback
 );
+app.get(
+  '/api/user/calendar-connections/google/callback',
+  require('./controllers/userCalendarConnectionController').googleOAuthCallback
+);
+app.get(
+  '/api/user/calendar-connections/microsoft/callback',
+  require('./controllers/userCalendarConnectionController').microsoftOAuthCallback
+);
+app.use('/api/user/calendar-connections', require('./routes/userCalendarConnectionRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/forms', formRoutes.protected); // Protected form routes (Audit / Survey)
 app.use('/api/webforms', webformRoutes.protected); // Protected webform routes

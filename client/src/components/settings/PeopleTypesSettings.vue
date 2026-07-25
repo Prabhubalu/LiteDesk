@@ -262,7 +262,7 @@
         aria-modal="true"
         aria-labelledby="people-types-add-title"
       >
-        <div class="absolute inset-0 bg-black/50" @click="showAddRole = false" />
+        <div class="absolute inset-0 bg-black/50" @click="closeAddRole" />
         <div
           class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 w-full max-w-md mx-4"
           @click.stop
@@ -271,6 +271,12 @@
             <h3 id="people-types-add-title" class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.peopleTypesAddRole') }}</h3>
           </div>
           <div class="p-4 space-y-4">
+            <div
+              v-if="addRoleError"
+              class="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-800 dark:text-red-300"
+            >
+              {{ addRoleError }}
+            </div>
             <div>
               <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.peopleTypesRoleNameLabel') }}</label>
               <input
@@ -278,6 +284,7 @@
                 type="text"
                 :placeholder="t('settings.peopleTypesRoleNamePh')"
                 class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white"
+                @input="addRoleError = ''"
                 @keyup.enter="submitAddRole"
               />
             </div>
@@ -308,7 +315,7 @@
               <button
                 type="button"
                 class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded"
-                @click="showAddRole = false"
+                @click="closeAddRole"
               >
                 {{ t('actions.cancel') }}
               </button>
@@ -463,6 +470,7 @@ const deleteConfirmCount = ref(0);
 const showAddRole = ref(false);
 const newRoleValue = ref('');
 const newRoleColor = ref('#3b82f6');
+const addRoleError = ref('');
 
 const editingRowIdx = ref(-1);
 const editRowValue = ref('');
@@ -689,7 +697,7 @@ async function fetchUsage() {
 }
 
 function openAddRole() {
-  clearClientError();
+  addRoleError.value = '';
   newRoleValue.value = '';
   const colorOpt =
     PEOPLE_TYPE_COLOR_OPTIONS[rows.value.length % PEOPLE_TYPE_COLOR_OPTIONS.length] ?? PEOPLE_TYPE_COLOR_OPTIONS[0];
@@ -697,21 +705,26 @@ function openAddRole() {
   showAddRole.value = true;
 }
 
+function closeAddRole() {
+  showAddRole.value = false;
+  addRoleError.value = '';
+  newRoleValue.value = '';
+}
+
 function submitAddRole() {
   const v = newRoleValue.value.trim();
   if (!v) {
-    clientError.value = t('settings.peopleTypesErrEnterName');
+    addRoleError.value = t('settings.peopleTypesErrEnterName');
     return;
   }
   const dup = rows.value.some((r) => r.value.trim().toLowerCase() === v.toLowerCase());
   if (dup) {
-    clientError.value = t('settings.peopleTypesErrDuplicateExists');
+    addRoleError.value = t('settings.peopleTypesErrDuplicateExists');
     return;
   }
-  clearClientError();
+  addRoleError.value = '';
   rows.value = [...rows.value, { value: v, color: peopleTypeColorToHex(newRoleColor.value) }];
-  showAddRole.value = false;
-  newRoleValue.value = '';
+  closeAddRole();
 }
 
 function onRowColorInput(index: number, e: Event) {

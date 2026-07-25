@@ -235,44 +235,56 @@ export const useAuthStore = defineStore('auth', {
             };
 
             const explicitAllowedApps = normalizeAppKeys(userData.allowedApps);
-            if (explicitAllowedApps.length > 0) {
-                return explicitAllowedApps;
-            }
-
-            if (Array.isArray(userData.appAccess) && userData.appAccess.length > 0) {
-                const fromAppAccess = userData.appAccess
+            const fromAppAccess = Array.isArray(userData.appAccess) && userData.appAccess.length > 0
+                ? userData.appAccess
                     .filter((access) => {
                         if (!access || typeof access !== 'object') return false;
                         const status = String(access.status || 'ACTIVE').toUpperCase();
                         return status === 'ACTIVE';
                     })
                     .map((access) => (typeof access.appKey === 'string' ? access.appKey.toUpperCase() : null))
-                    .filter(Boolean);
-                if (fromAppAccess.length > 0) {
-                    return Array.from(new Set(fromAppAccess));
-                }
-            }
+                    .filter(Boolean)
+                : [];
 
             // IMPORTANT:
             // For non-owners, org enabledApps is tenant-level capability and must NOT
-            // expand user-level app access. Only owners can inherit from enabledApps.
+            // expand user-level app access. Owners inherit org-enabled apps so a newly
+            // enabled app appears without requiring logout/login.
             const sourceOrganization = organization || userData.organization || userData.organizationId;
-            const isOwnerUser = userData?.isOwner === true;
+            const isOwnerUser =
+                userData?.isOwner === true ||
+                String(userData?.role || '').toLowerCase() === 'owner';
+            const fromEnabledApps = [];
             if (isOwnerUser && sourceOrganization && Array.isArray(sourceOrganization.enabledApps)) {
-                const fromEnabledApps = sourceOrganization.enabledApps
-                    .map((app) => {
-                        if (typeof app === 'string') return app.toUpperCase();
-                        if (app && typeof app === 'object') {
-                            const status = String(app.status || 'ACTIVE').toUpperCase();
-                            if (status !== 'ACTIVE') return null;
-                            return typeof app.appKey === 'string' ? app.appKey.toUpperCase() : null;
+                for (const app of sourceOrganization.enabledApps) {
+                    if (typeof app === 'string') {
+                        fromEnabledApps.push(app.toUpperCase());
+                        continue;
+                    }
+                    if (app && typeof app === 'object') {
+                        const status = String(app.status || 'ACTIVE').toUpperCase();
+                        if (status !== 'ACTIVE') continue;
+                        if (typeof app.appKey === 'string') {
+                            fromEnabledApps.push(app.appKey.toUpperCase());
                         }
-                        return null;
-                    })
-                    .filter(Boolean);
-                if (fromEnabledApps.length > 0) {
-                    return Array.from(new Set(fromEnabledApps));
+                    }
                 }
+            }
+
+            if (isOwnerUser && fromEnabledApps.length > 0) {
+                return Array.from(new Set([
+                    ...explicitAllowedApps,
+                    ...fromAppAccess,
+                    ...fromEnabledApps,
+                ]));
+            }
+
+            if (explicitAllowedApps.length > 0) {
+                return explicitAllowedApps;
+            }
+
+            if (fromAppAccess.length > 0) {
+                return Array.from(new Set(fromAppAccess));
             }
 
             return normalizeAppKeys(fallbackAllowedApps);

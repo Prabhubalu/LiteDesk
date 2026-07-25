@@ -231,8 +231,164 @@ async function deleteInvoiceLineHandler(req, res) {
   }
 }
 
+async function addInvoiceBundleHandler(req, res) {
+  try {
+    const { addInvoiceBundle } = require('../services/commercialBundleDraftService');
+    const result = await addInvoiceBundle({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.status(201).json({ success: true, data: result });
+  } catch (err) {
+    const status =
+      err?.code === 'VALIDATION' ||
+      err?.code === 'VARIANT_NOT_SELLABLE' ||
+      err?.code === 'INVOICE_NOT_DRAFT' ||
+      err?.code === 'SECTION_NOT_FOUND' ||
+      err?.code === 'INVOICE_COMMERCIAL_LOCK'
+        ? 400
+        : err?.code === 'NOT_FOUND'
+          ? 404
+          : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to add bundle',
+      code: err?.code || 'UNKNOWN'
+    });
+  }
+}
+
+async function patchInvoiceBundleOptionalsHandler(req, res) {
+  try {
+    const { patchInvoiceBundleOptionals } = require('../services/commercialBundleDraftService');
+    const result = await patchInvoiceBundleOptionals({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      parentLineRef: req.params.parentLineId,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    const status =
+      err?.code === 'VALIDATION' ||
+      err?.code === 'INVOICE_NOT_DRAFT' ||
+      err?.code === 'INVOICE_COMMERCIAL_LOCK'
+        ? 400
+        : err?.code === 'NOT_FOUND'
+          ? 404
+          : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to update bundle optional components',
+      code: err?.code || 'UNKNOWN'
+    });
+  }
+}
+
 module.exports = {
   addInvoiceLine,
+  addInvoiceBundleHandler,
+  patchInvoiceBundleOptionalsHandler,
   patchInvoiceLineHandler,
-  deleteInvoiceLineHandler
+  deleteInvoiceLineHandler,
+  reorderInvoiceLinesHandler,
+  patchInvoiceDiscountsHandler,
+  recalculateInvoiceHandler,
+  patchInvoiceTaxesChargesHandler
 };
+
+function invoiceDraftErrorStatus(err) {
+  if (
+    err?.code === 'VALIDATION' ||
+    err?.code === 'NOT_FOUND' ||
+    err?.code === 'INVOICE_NOT_DRAFT' ||
+    err?.code === 'INVOICE_LINE_LOCKED' ||
+    err?.code === 'SECTION_NOT_FOUND' ||
+    err?.code === 'INVOICE_COMMERCIALLY_LOCKED'
+  ) {
+    return 400;
+  }
+  return 500;
+}
+
+async function reorderInvoiceLinesHandler(req, res) {
+  try {
+    const { reorderInvoiceLines } = require('../services/invoiceCommercialDraftService');
+    const result = await reorderInvoiceLines({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      userId: req.user._id,
+      orders: req.body?.orders
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(invoiceDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to reorder invoice lines',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function patchInvoiceDiscountsHandler(req, res) {
+  try {
+    const { patchInvoiceDiscounts } = require('../services/invoiceCommercialDraftService');
+    const result = await patchInvoiceDiscounts({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(invoiceDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to update invoice discounts',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function recalculateInvoiceHandler(req, res) {
+  try {
+    const { recalculateInvoice } = require('../services/invoiceCommercialDraftService');
+    const result = await recalculateInvoice({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      userId: req.user._id
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(invoiceDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to recalculate invoice',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function patchInvoiceTaxesChargesHandler(req, res) {
+  try {
+    const { patchInvoiceTaxesCharges } = require('../services/invoiceCommercialDraftService');
+    const result = await patchInvoiceTaxesCharges({
+      organizationId: req.user.organizationId,
+      invoiceRef: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(invoiceDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to update invoice taxes/charges',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}

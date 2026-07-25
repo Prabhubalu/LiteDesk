@@ -2950,5 +2950,13 @@
   "demoRequestsToastFailedToResendActivation": {
     "message": "Failed to resend activation",
     "description": "Toast when demo activation resend fails"
+  },
+  "tableMultiSortHint": {
+    "message": "Click to sort · Shift+click to add multi-sort",
+    "description": "Tooltip for column sort control explaining multi-sort"
+  },
+  "tableMultiSortAddHint": {
+    "message": "Shift+click to add sort",
+    "description": "Instant tooltip on unsorted column sort icons when a sort is already active"
   }
 }

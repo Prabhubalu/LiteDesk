@@ -105,8 +105,11 @@ Every invoice line sourced from a sales order MUST retain: `sourceSalesOrderLine
 | **Server authority** | Totals, allocation rollups, and SO `invoiceStatus` updated only in invoice services |
 | **Multi-tenant** | Strict `organizationId` on every collection and query |
 | **No invoice revisions (INV0)** | Corrections via credit note or cancel-before-post; amendment flows later |
+| **Shared commercial Lines UI** | Draft Lines use the same workspace as Quotes (`QuoteLinesRecordSection` + `commercialLines` adapters). Draft commercial APIs mirror Quotes (lines, sections, discounts, taxes/charges, reorder, bundles). Posted remains commercially locked. |
 
 **Forbidden:** Editing Posted invoice line unit prices without credit note; deleting active allocations; invoicing beyond SO remaining billable qty without override permission + audit.
+
+**Client contract:** `client/src/platform/commercialLines/adapters.js` — `invoiceCommercialLinesAdapter`. Do not reintroduce a thin invoice-only lines table.
 
 ---
 

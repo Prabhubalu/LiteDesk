@@ -524,22 +524,26 @@ exports.list = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    // Handle sorting - default to newest first (desc) so new records appear on first page
-    const sortBy = req.query.sortBy || 'createdAt';
-    // If no explicit sortOrder provided, default to descending (newest first)
-    // Only use 'asc' if explicitly requested
-    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-    // List UI column "name" is computed (first_name + last_name); there is no DB field "name".
-    // Sort by given name then family name to match "First Last" display order.
-    // Tie-break with _id so skip/limit pagination is stable (otherwise duplicate createdAt
-    // timestamps cause overlapping or gap pages → fewer rows loaded than totalRecords).
-    let sortOptions;
-    if (sortBy === 'name') {
-      sortOptions = { first_name: sortOrder, last_name: sortOrder, _id: sortOrder };
-    } else if (sortBy === '_id') {
-      sortOptions = { _id: sortOrder };
-    } else {
-      sortOptions = { [sortBy]: sortOrder, _id: sortOrder };
+    // Handle sorting - supports multi-sort: sortBy=a,b&sortOrder=asc,desc
+    // List UI column "name" is computed (first_name + last_name); expand for Mongo.
+    const { parseListSort } = require('../utils/parseListSort');
+    const { sorts } = parseListSort(req.query, {
+      defaultField: 'createdAt',
+      defaultOrder: 'desc',
+      tieBreaker: null
+    });
+    const sortOptions = {};
+    for (const { field, order } of sorts) {
+      const dir = order === 'asc' ? 1 : -1;
+      if (field === 'name') {
+        sortOptions.first_name = dir;
+        sortOptions.last_name = dir;
+      } else {
+        sortOptions[field] = dir;
+      }
+    }
+    if (!Object.prototype.hasOwnProperty.call(sortOptions, '_id')) {
+      sortOptions._id = sorts[0].order === 'asc' ? 1 : -1;
     }
 
     const User = require('../models/User');
