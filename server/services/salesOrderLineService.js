@@ -189,7 +189,15 @@ async function patchSalesOrderLine({
     }
   }
 
-  recomputeLineTotals(line);
+  const { applyCommercialLineDiscountAndTax } = require('../utils/applyCommercialLineCommercialFields');
+  const { discountTouched, taxTouched } = await applyCommercialLineDiscountAndTax(line, body, {
+    organizationId,
+    forceTaxRecompute: quantityChanged || body.quantity !== undefined
+  });
+
+  if (!taxTouched) {
+    recomputeLineTotals(line);
+  }
   await line.save();
 
   const { totals, sections } = await recomputeSalesOrderAndSectionTotals({
@@ -224,7 +232,12 @@ async function patchSalesOrderLine({
     });
   }
 
-  if (quantityChanged || (body.quantity !== undefined && !sectionChanged)) {
+  if (
+    quantityChanged ||
+    discountTouched ||
+    taxTouched ||
+    (body.quantity !== undefined && !sectionChanged)
+  ) {
     await writeSalesOrderActivity({
       organizationId,
       salesOrderId: order._id,

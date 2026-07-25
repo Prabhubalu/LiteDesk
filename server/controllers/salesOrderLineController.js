@@ -214,8 +214,62 @@ async function addSalesOrderLine(req, res) {
   }
 }
 
+async function addSalesOrderBundleHandler(req, res) {
+  try {
+    const { addSalesOrderBundle } = require('../services/commercialBundleDraftService');
+    const result = await addSalesOrderBundle({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.status(201).json({ success: true, data: result });
+  } catch (err) {
+    const status =
+      err?.code === 'VALIDATION' ||
+      err?.code === 'VARIANT_NOT_SELLABLE' ||
+      err?.code === 'SALES_ORDER_NOT_DRAFT' ||
+      err?.code === 'SECTION_NOT_FOUND'
+        ? 400
+        : err?.code === 'NOT_FOUND'
+          ? 404
+          : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to add bundle',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function patchSalesOrderBundleOptionalsHandler(req, res) {
+  try {
+    const { patchSalesOrderBundleOptionals } = require('../services/commercialBundleDraftService');
+    const result = await patchSalesOrderBundleOptionals({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      parentLineRef: req.params.parentLineId,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    const status =
+      err?.code === 'VALIDATION' || err?.code === 'SALES_ORDER_NOT_DRAFT' ? 400 : err?.code === 'NOT_FOUND' ? 404 : 500;
+    return res.status(status).json({
+      success: false,
+      message: err.message || 'Failed to update bundle optional components',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
 module.exports = {
   addSalesOrderLine,
+  addSalesOrderBundleHandler,
+  patchSalesOrderBundleOptionalsHandler,
   patchSalesOrderLine: async function patchSalesOrderLineHandler(req, res) {
     try {
       const result = await patchSalesOrderLine({
@@ -271,5 +325,103 @@ module.exports = {
         details: err?.details || null
       });
     }
-  }
+  },
+  reorderSalesOrderLinesHandler,
+  patchSalesOrderDiscountsHandler,
+  recalculateSalesOrderHandler,
+  patchSalesOrderTaxesChargesHandler
 };
+
+function draftErrorStatus(err) {
+  if (err?.code === 'INSUFFICIENT_ATP') return 409;
+  if (
+    err?.code === 'VALIDATION' ||
+    err?.code === 'NOT_FOUND' ||
+    err?.code === 'SALES_ORDER_NOT_DRAFT' ||
+    err?.code === 'SECTION_NOT_FOUND'
+  ) {
+    return 400;
+  }
+  return 500;
+}
+
+async function reorderSalesOrderLinesHandler(req, res) {
+  try {
+    const {
+      reorderSalesOrderLines
+    } = require('../services/salesOrderCommercialDraftService');
+    const result = await reorderSalesOrderLines({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id,
+      orders: req.body?.orders
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(draftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to reorder sales order lines',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function patchSalesOrderDiscountsHandler(req, res) {
+  try {
+    const { patchSalesOrderDiscounts } = require('../services/salesOrderCommercialDraftService');
+    const result = await patchSalesOrderDiscounts({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(draftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to update sales order discounts',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function recalculateSalesOrderHandler(req, res) {
+  try {
+    const { recalculateSalesOrder } = require('../services/salesOrderCommercialDraftService');
+    const result = await recalculateSalesOrder({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(draftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to recalculate sales order',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function patchSalesOrderTaxesChargesHandler(req, res) {
+  try {
+    const { patchSalesOrderTaxesCharges } = require('../services/salesOrderCommercialDraftService');
+    const result = await patchSalesOrderTaxesCharges({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(draftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to update sales order taxes/charges',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}

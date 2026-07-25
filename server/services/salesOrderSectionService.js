@@ -68,7 +68,7 @@ async function loadLinesForTotals({ organizationId, salesOrderId }) {
 async function recomputeSalesOrderAndSectionTotals({ organizationId, salesOrderId }) {
   const order = await SalesOrder.findOne({ _id: salesOrderId, organizationId })
     .select(
-      'globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal status fulfillmentMode'
+      'globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal status fulfillmentMode chargesTotal transactionTaxSnapshot invoicedAmount'
     )
     .lean();
 
@@ -80,7 +80,50 @@ async function recomputeSalesOrderAndSectionTotals({ organizationId, salesOrderI
   };
 
   const sections = await listSalesOrderSections({ organizationId, salesOrderId });
-  const lines = await loadLinesForTotals({ organizationId, salesOrderId });
+  let lines = await loadLinesForTotals({ organizationId, salesOrderId });
+
+  const {
+    applyTaxesToLine,
+    taxesFromSnapshot
+  } = require('./commercialTaxApplicationService');
+  const { enrichTotalsWithDocumentMoney } = require('../utils/applyDocumentTaxesCharges');
+
+  const lineBulkOps = [];
+  const refreshedLines = [];
+  for (const line of lines) {
+    const taxes = taxesFromSnapshot(line.taxSnapshot);
+    if (!taxes.length) {
+      refreshedLines.push(line);
+      continue;
+    }
+    const applied = applyTaxesToLine(line, taxes);
+    refreshedLines.push({
+      ...line,
+      lineSubtotal: applied.lineSubtotal,
+      lineTaxTotal: applied.lineTaxTotal,
+      lineTotal: applied.lineTotal,
+      taxSnapshot: applied.taxSnapshot
+    });
+    if (line._id) {
+      lineBulkOps.push({
+        updateOne: {
+          filter: { _id: line._id, organizationId, salesOrderId },
+          update: {
+            $set: {
+              lineSubtotal: applied.lineSubtotal,
+              lineTaxTotal: applied.lineTaxTotal,
+              lineTotal: applied.lineTotal,
+              taxSnapshot: applied.taxSnapshot
+            }
+          }
+        }
+      });
+    }
+  }
+  if (lineBulkOps.length) {
+    await SalesOrderLine.bulkWrite(lineBulkOps, { ordered: false });
+  }
+  lines = refreshedLines;
 
   let totals;
   let updatedSections = sections;
@@ -116,6 +159,17 @@ async function recomputeSalesOrderAndSectionTotals({ organizationId, salesOrderI
       updatedSections = await listSalesOrderSections({ organizationId, salesOrderId });
     }
   }
+
+  totals = enrichTotalsWithDocumentMoney({
+    baseTotals: totals,
+    lines,
+    transactionTaxSnapshot: order?.transactionTaxSnapshot,
+    chargesTotal: order?.chargesTotal,
+    globalDiscountType: orderDiscount.globalDiscountType,
+    globalDiscountValue: orderDiscount.globalDiscountValue,
+    globalDiscountAmount: orderDiscount.globalDiscountAmount,
+    adjustmentTotal: orderDiscount.adjustmentTotal
+  });
 
   const fulfillmentStatus = deriveHeaderFulfillmentStatus(lines);
   const remainingBillableAmount = Math.max(

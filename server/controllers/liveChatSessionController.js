@@ -19,7 +19,7 @@ const {
   linkExistingPersonToSession,
   syncLinkedPeopleMetadataForSession,
 } = require('../services/liveChatCrmAdapter');
-const { claimSessionForAgent, transferSessionToAgent } = require('../services/liveChatSessionAssignmentService');
+const { claimSessionForAgent, transferSessionToAgent, ensureAgentOwnsOrClaimsSession, assertAgentNotBlockedByAssignment } = require('../services/liveChatSessionAssignmentService');
 const { recordFirstAgentResponse, listAssignmentEventsForSession } = require('../services/liveChatSessionAssignmentTrackingService');
 const { canAdminLiveChat } = require('../utils/liveChatPermissionUtils');
 const { computeSessionTimingFields } = require('../utils/liveChatSessionTimingUtils');
@@ -296,6 +296,12 @@ exports.createSessionNote = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Session not found' });
     }
 
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId: session._id,
+      agentId: req.user._id,
+    });
+
     const data = await createSessionNote({
       organizationId: req.user.organizationId,
       sessionId: session._id,
@@ -404,6 +410,11 @@ exports.uploadMessageAttachment = async (req, res) => {
     if (session.status === 'closed') {
       return res.status(409).json({ success: false, message: 'Session is closed' });
     }
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId: session._id,
+      agentId: req.user._id,
+    });
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
@@ -438,6 +449,12 @@ exports.sendMessage = async (req, res) => {
       return res.status(409).json({ success: false, message: 'Session is closed' });
     }
 
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId: session._id,
+      agentId: req.user._id,
+    });
+
     const body = String(req.body?.body || '').trim();
     const attachments = normalizeMessageAttachments(req.body?.attachments);
     if (!body && !attachments.length) {
@@ -461,7 +478,9 @@ exports.sendMessage = async (req, res) => {
       {
         $set: {
           lastMessageAt: now,
-          lifecycleStatus: session.lifecycleStatus === 'waiting' ? 'active' : session.lifecycleStatus,
+          lifecycleStatus: ['waiting', 'assigned'].includes(String(session.lifecycleStatus || ''))
+            ? 'active'
+            : session.lifecycleStatus,
           updatedAt: now,
         },
       },
@@ -514,6 +533,8 @@ exports.setTyping = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Session not found' });
     }
 
+    assertAgentNotBlockedByAssignment(session, req.user._id);
+
     setTyping({
       sessionId: session._id,
       authorType: 'agent',
@@ -535,6 +556,12 @@ exports.patchSession = async (req, res) => {
     if (!session) {
       return res.status(404).json({ success: false, message: 'Session not found' });
     }
+
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId: session._id,
+      agentId: req.user._id,
+    });
 
     const fieldPatch = buildAgentSessionFieldPatch(req.body || {});
     if (!Object.keys(fieldPatch).length) {
@@ -581,6 +608,12 @@ exports.endSession = async (req, res) => {
         },
       });
     }
+
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId: session._id,
+      agentId: req.user._id,
+    });
 
     const outcome = normalizeOutcomeKey(req.body?.outcome);
     if (!outcome) {
@@ -874,6 +907,11 @@ exports.claimSession = async (req, res) => {
 exports.createLinkedCase = async (req, res) => {
   try {
     const sessionId = requireObjectId(req.params.sessionId);
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId,
+      agentId: req.user._id,
+    });
     const title = req.body?.title != null ? String(req.body.title) : null;
 
     const result = await createCaseFromLiveChatSession({
@@ -908,6 +946,11 @@ exports.createLinkedCase = async (req, res) => {
 exports.linkExistingCase = async (req, res) => {
   try {
     const sessionId = requireObjectId(req.params.sessionId);
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId,
+      agentId: req.user._id,
+    });
     const caseId = req.body?.caseId;
     if (!caseId) {
       return res.status(400).json({ success: false, message: 'caseId is required' });
@@ -938,6 +981,11 @@ exports.linkExistingCase = async (req, res) => {
 exports.createLinkedLead = async (req, res) => {
   try {
     const sessionId = requireObjectId(req.params.sessionId);
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId,
+      agentId: req.user._id,
+    });
 
     const result = await createLeadFromLiveChatSession({
       organizationId: req.user.organizationId,
@@ -970,6 +1018,11 @@ exports.createLinkedLead = async (req, res) => {
 exports.linkExistingPerson = async (req, res) => {
   try {
     const sessionId = requireObjectId(req.params.sessionId);
+    await ensureAgentOwnsOrClaimsSession({
+      organizationId: req.user.organizationId,
+      sessionId,
+      agentId: req.user._id,
+    });
     const personId = req.body?.personId;
     if (!personId) {
       return res.status(400).json({ success: false, message: 'personId is required' });

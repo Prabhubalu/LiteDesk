@@ -825,7 +825,8 @@ onActivated(() => {
         ref="homeScrollRef"
         class="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
       >
-        <div class="mx-auto w-full space-y-4 px-3 pb-4 pt-4 sm:px-4 lg:px-5" :class="homeWidthClass">
+        <div class="px-3 pb-4 pt-4 sm:px-4 lg:px-5">
+          <div class="mx-auto w-full space-y-4" :class="homeWidthClass">
       <div v-if="!pageLoading && onboarding" class="space-y-3">
         <OnboardingTrialBanner :trial="onboarding.trial" />
         <OnboardingSampleDataCard
@@ -1177,6 +1178,7 @@ onActivated(() => {
           </p>
         </div>
       </template>
+          </div>
         </div>
       </div>
     </div>

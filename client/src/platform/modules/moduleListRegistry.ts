@@ -527,7 +527,7 @@ export function resolvePeopleListAppContext(
 
 /**
  * Normalize Tasks filters
- * Expands date filter objects (dueDate / due_date) into API params: dueDatePreset, dueDateOp, dueDateFrom, dueDateTo, dueDateDays
+ * Expands date filter objects into API params: {field}Preset, {field}Op, {field}From, {field}To, {field}Days
  */
 function normalizeTasksFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
@@ -539,8 +539,8 @@ function normalizeTasksFilters(filters: Record<string, any>, currentUserId?: str
     }
   }
 
-  // Expand date filter object for dueDate / due_date into API params (or remove when no filter)
-  const dateFieldKeys = ['dueDate', 'due_date'] as const;
+  // Expand date filter objects into API params (or remove when no filter)
+  const dateFieldKeys = ['dueDate', 'due_date', 'createdAt', 'updatedAt'] as const;
   for (const fieldKey of dateFieldKeys) {
     const value = normalized[fieldKey];
     if (value == null || value === '') {

@@ -47,6 +47,7 @@
       :default-view-id="defaultViewId"
       :sort-field="sortField"
       :sort-order="sortOrder"
+      :sorts="sorts"
       :pagination="pagination"
       :external-filters="filters"
       :parent-search-query="searchQuery"
@@ -157,6 +158,11 @@ import {
 } from '@/utils/buildListColumnsFromModuleFields';
 import { normalizeFilterSelectOptions } from '@/utils/picklistOptionUtils';
 import { normalizeListPagination } from '@/utils/normalizeListPagination';
+import {
+  normalizeSortSpecs,
+  parsePersistedSort,
+  serializeSortsForApi
+} from '@/utils/listMultiSort';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { allSettledWithConcurrency } from '@/utils/allSettledWithConcurrency';
 import { startBulkDelete } from '@/utils/runBulkDelete';
@@ -650,6 +656,22 @@ const statisticsLoading = ref(false);
 const statsConfig = ref([]);
 const sortField = ref('');
 const sortOrder = ref('desc'); // Default to newest first so new records appear on page 1
+const sorts = ref([]);
+
+function setListSorts(nextSorts, options = {}) {
+  const normalized = normalizeSortSpecs(nextSorts).map((spec) => ({
+    field: normalizePeopleListSortField(spec.field),
+    order: spec.order
+  }));
+  sorts.value = normalized;
+  if (normalized.length > 0) {
+    sortField.value = normalized[0].field;
+    sortOrder.value = normalized[0].order;
+  } else if (!options.keepPrimary) {
+    sortField.value = options.field ?? '';
+    sortOrder.value = options.order ?? 'desc';
+  }
+}
 
 /** People list: API/registry use sales_type; legacy layouts may still reference type */
 const normalizePeopleListSortField = (key) => {
@@ -795,14 +817,11 @@ const buildList = async () => {
 
       // Initialize sort from definition
       if (definition?.defaultSort) {
-        sortField.value = normalizePeopleListSortField(definition.defaultSort.column);
-        // For people module, prefer 'desc' (newest first) for better UX
-        // This ensures new identity-only records appear on page 1
-        if (props.moduleKey === 'people' && definition.defaultSort.column === 'createdAt') {
-          sortOrder.value = 'desc';
-        } else {
-          sortOrder.value = definition.defaultSort.order;
-        }
+        const order =
+          props.moduleKey === 'people' && definition.defaultSort.column === 'createdAt'
+            ? 'desc'
+            : (definition.defaultSort.order === 'asc' ? 'asc' : 'desc');
+        setListSorts([{ field: definition.defaultSort.column, order }]);
       }
       
       // Initialize pagination from definition
@@ -865,9 +884,16 @@ const buildList = async () => {
           if (savedView) {
             filters.value = resolveSavedViewFilters(savedView, currentUserId);
             const savedConfig = savedView.config;
-            if (savedConfig?.sort?.field) {
-              sortField.value = normalizePeopleListSortField(savedConfig.sort.field);
-              sortOrder.value = savedConfig.sort.order === 'asc' ? 'asc' : 'desc';
+            if (savedConfig?.sort?.field || savedConfig?.sort?.sorts?.length) {
+              const parsed = parsePersistedSort(savedConfig.sort);
+              if (parsed.length) {
+                setListSorts(parsed);
+              } else {
+                setListSorts([{
+                  field: savedConfig.sort.field,
+                  order: savedConfig.sort.order === 'asc' ? 'asc' : 'desc'
+                }]);
+              }
             }
             if (savedConfig?.search !== undefined) {
               searchQuery.value = savedConfig.search;
@@ -951,6 +977,7 @@ const adaptedColumns = computed(() => {
       sortable: col.sortable ?? false,
       sortKey: col.fieldPath || col.key,
       dataType: col.dataType,
+      filterType: fieldDef?.filterType || col.filterType,
       options: listColumnFilterOptions(col.options || fieldDef?.options),
     };
   });
@@ -979,6 +1006,7 @@ const adaptedFilterFields = computed(() => {
       key: field.key,
       label,
       dataType: field.dataType,
+      filterType: field.filterType,
       options: listColumnFilterOptions(field.options),
     };
   });
@@ -1330,11 +1358,19 @@ function applyActiveSystemViewScope(normalizedFilters, moduleConfig) {
 function buildListFetchContext(requestedPage, options = {}) {
   const page =
     requestedPage ?? normalizeListPagination(pagination.value).currentPage;
+  const sortParams = serializeSortsForApi(
+    sorts.value.length
+      ? sorts.value
+      : sortField.value
+        ? [{ field: sortField.value, order: sortOrder.value || 'desc' }]
+        : [],
+    { field: 'createdAt', order: 'desc' }
+  );
   const params = {
     page,
     limit: pagination.value.limit,
-    sortBy: normalizePeopleListSortField(sortField.value) || 'createdAt',
-    sortOrder: sortField.value ? (sortOrder.value || 'desc') : 'desc'
+    sortBy: sortParams.sortBy,
+    sortOrder: sortParams.sortOrder
   };
 
   const moduleConfig = resolveModuleListConfig(props.moduleKey);
@@ -2383,9 +2419,14 @@ const handleSetDefaultView = (viewId) => {
   }
 };
 
-const handleSortUpdate = ({ sortField: key, sortOrder: order }) => {
-  sortField.value = normalizePeopleListSortField(key);
-  sortOrder.value = order;
+const handleSortUpdate = ({ sortField: key, sortOrder: order, sorts: nextSorts }) => {
+  if (Array.isArray(nextSorts)) {
+    setListSorts(nextSorts, { field: key || '', order: order || 'desc' });
+  } else if (key) {
+    setListSorts([{ field: key, order: order === 'asc' ? 'asc' : 'desc' }]);
+  } else {
+    setListSorts([]);
+  }
   pagination.value.currentPage = 1;
   clearListSessionState();
   fetchData();

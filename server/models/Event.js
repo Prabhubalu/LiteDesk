@@ -393,6 +393,12 @@ const eventSchema = new Schema({
     default: {}
   },
 
+  // User-level personal calendar sync (Google / Microsoft 365)
+  calendarSync: {
+    googleEventId: { type: String, default: null, trim: true },
+    microsoftEventId: { type: String, default: null, trim: true }
+  },
+
   // Public booking / appointment extension (Events sub-module)
   appointment: {
     isAppointment: { type: Boolean, default: false, index: true },

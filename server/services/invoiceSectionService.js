@@ -35,7 +35,9 @@ async function loadLinesForTotals({ organizationId, invoiceId }) {
 
 async function recomputeInvoiceAndSectionTotals({ organizationId, invoiceId }) {
   const invoice = await Invoice.findOne({ _id: invoiceId, organizationId })
-    .select('globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal status')
+    .select(
+      'globalDiscountType globalDiscountValue globalDiscountAmount adjustmentTotal status chargesTotal transactionTaxSnapshot'
+    )
     .lean();
 
   const invoiceDiscount = {
@@ -46,7 +48,50 @@ async function recomputeInvoiceAndSectionTotals({ organizationId, invoiceId }) {
   };
 
   const sections = await listInvoiceSections({ organizationId, invoiceId });
-  const lines = await loadLinesForTotals({ organizationId, invoiceId });
+  let lines = await loadLinesForTotals({ organizationId, invoiceId });
+
+  const {
+    applyTaxesToLine,
+    taxesFromSnapshot
+  } = require('./commercialTaxApplicationService');
+  const { enrichTotalsWithDocumentMoney } = require('../utils/applyDocumentTaxesCharges');
+
+  const lineBulkOps = [];
+  const refreshedLines = [];
+  for (const line of lines) {
+    const taxes = taxesFromSnapshot(line.taxSnapshot);
+    if (!taxes.length) {
+      refreshedLines.push(line);
+      continue;
+    }
+    const applied = applyTaxesToLine(line, taxes);
+    refreshedLines.push({
+      ...line,
+      lineSubtotal: applied.lineSubtotal,
+      lineTaxTotal: applied.lineTaxTotal,
+      lineTotal: applied.lineTotal,
+      taxSnapshot: applied.taxSnapshot
+    });
+    if (line._id) {
+      lineBulkOps.push({
+        updateOne: {
+          filter: { _id: line._id, organizationId, invoiceId },
+          update: {
+            $set: {
+              lineSubtotal: applied.lineSubtotal,
+              lineTaxTotal: applied.lineTaxTotal,
+              lineTotal: applied.lineTotal,
+              taxSnapshot: applied.taxSnapshot
+            }
+          }
+        }
+      });
+    }
+  }
+  if (lineBulkOps.length) {
+    await InvoiceLine.bulkWrite(lineBulkOps, { ordered: false });
+  }
+  lines = refreshedLines;
 
   let totals;
   let updatedSections = sections;
@@ -83,6 +128,17 @@ async function recomputeInvoiceAndSectionTotals({ organizationId, invoiceId }) {
     }
   }
 
+  totals = enrichTotalsWithDocumentMoney({
+    baseTotals: totals,
+    lines,
+    transactionTaxSnapshot: invoice?.transactionTaxSnapshot,
+    chargesTotal: invoice?.chargesTotal,
+    globalDiscountType: invoiceDiscount.globalDiscountType,
+    globalDiscountValue: invoiceDiscount.globalDiscountValue,
+    globalDiscountAmount: invoiceDiscount.globalDiscountAmount,
+    adjustmentTotal: invoiceDiscount.adjustmentTotal
+  });
+
   await Invoice.updateOne(
     { _id: invoiceId, organizationId },
     {
@@ -92,8 +148,10 @@ async function recomputeInvoiceAndSectionTotals({ organizationId, invoiceId }) {
         sectionDiscountTotal: totals.sectionDiscountTotal || 0,
         globalDiscountTotal: totals.globalDiscountTotal || 0,
         taxTotal: totals.taxTotal || 0,
+        chargesTotal: totals.chargesTotal || 0,
         adjustmentTotal: totals.adjustmentTotal || 0,
-        grandTotal: totals.grandTotal || 0
+        grandTotal: totals.grandTotal || 0,
+        taxDocumentSnapshot: totals.taxDocumentSnapshot || {}
       }
     }
   );

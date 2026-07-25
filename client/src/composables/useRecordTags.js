@@ -1,5 +1,10 @@
 import { ref, computed, watch, unref } from 'vue';
 import apiClient from '@/utils/apiClient';
+import {
+  getTagDefinitions,
+  setTagDefinitions,
+  tagDefinitionsEpoch
+} from '@/composables/tagDefinitionsStore';
 const TAG_REMOVE_UNDO_MS = 5000;
 
 const TAG_COLOR_OPTIONS = [
@@ -67,7 +72,16 @@ export function useRecordTags(recordRef, options) {
   const tagSearchInputRef = ref(null);
   const tagListOpen = ref(false);
   const tagSearchQuery = ref('');
-  const instanceTagDefinitions = ref([]);
+  /** Shared across page chips + popover so color edits / assignments stay in sync without refresh. */
+  const instanceTagDefinitions = computed({
+    get() {
+      void tagDefinitionsEpoch.value;
+      return getTagDefinitions(tagStorageKey.value);
+    },
+    set(next) {
+      setTagDefinitions(tagStorageKey.value, next);
+    }
+  });
   const tagEditorMode = ref('none');
   const editingTagName = ref('');
   const isSavingTagState = ref(false);
@@ -111,7 +125,29 @@ export function useRecordTags(recordRef, options) {
     });
   });
 
+  const peekTagDefinitionFromStorage = (tagName) => {
+    const normalized = normalizeTagName(tagName);
+    if (!normalized) return null;
+    try {
+      const raw = localStorage.getItem(tagStorageKey.value);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return null;
+      const match = parsed.find(
+        (row) => normalizeTagName(row?.name).toLowerCase() === normalized.toLowerCase()
+      );
+      if (!match) return null;
+      const color = TAG_COLOR_OPTIONS.some((option) => option.key === match.color)
+        ? match.color
+        : computeDefaultTagColorKey(normalized);
+      return { name: normalized, color, isPublic: !!match.isPublic };
+    } catch {
+      return null;
+    }
+  };
+
   const getTagColorOption = (tagNameOrObject) => {
+    void tagDefinitionsEpoch.value;
     const name = typeof tagNameOrObject === 'object' && tagNameOrObject != null
       ? (tagNameOrObject.name || tagNameOrObject.label || tagNameOrObject.title || '')
       : String(tagNameOrObject || '').trim();
@@ -119,9 +155,11 @@ export function useRecordTags(recordRef, options) {
     const definition = name
       ? instanceTagDefinitions.value.find(tagDef => String(tagDef.name).toLowerCase() === String(name).toLowerCase())
       : null;
+    const storedDefinition = !definition && name ? peekTagDefinitionFromStorage(name) : null;
+    const resolvedDefinition = definition || storedDefinition;
     const key = (colorFromObject && TAG_COLOR_OPTIONS.some(o => o.key === colorFromObject))
       ? colorFromObject
-      : (definition?.color || computeDefaultTagColorKey(name));
+      : (resolvedDefinition?.color || computeDefaultTagColorKey(name));
     return TAG_COLOR_OPTIONS.find(option => option.key === key) || TAG_COLOR_OPTIONS[0];
   };
   const getTagChipClass = (tagNameOrObject) => getTagColorOption(tagNameOrObject).chipClass;
@@ -168,6 +206,8 @@ export function useRecordTags(recordRef, options) {
   };
 
   const mergeTagDefinitions = (tagNames = []) => {
+    // Prefer persisted colors over an empty/stale in-memory list from another instance.
+    loadTagDefinitionsFromStorage();
     const existingByName = new Map(instanceTagDefinitions.value.map(def => [def.name.toLowerCase(), def]));
     tagNames.forEach((name) => {
       const normalizedName = normalizeTagName(name);
@@ -183,6 +223,7 @@ export function useRecordTags(recordRef, options) {
   // Rebuild definitions from live module tags (prunes stale local-only entries),
   // while preserving color/public metadata for tags that still exist.
   const syncTagDefinitions = (tagNames = []) => {
+    loadTagDefinitionsFromStorage();
     const existingByName = new Map(
       instanceTagDefinitions.value.map((def) => [String(def.name || '').toLowerCase(), def])
     );

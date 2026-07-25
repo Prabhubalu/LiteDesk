@@ -81,6 +81,107 @@
         background: #22c55e;
         border: 2.5px solid #fff;
         box-sizing: border-box;
+        transition: background 180ms ease;
+      }
+      body[data-view="chatClosed"] .logo-online {
+        background: #94a3b8;
+      }
+      .session-ended {
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin: 10px 0 4px;
+        padding: 4px 0 2px;
+        animation: arivuMsgIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .session-ended-rule {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+      }
+      .session-ended-rule::before,
+      .session-ended-rule::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #cbd5e1 30%, #cbd5e1 70%, transparent);
+      }
+      .session-ended-rule span {
+        flex: none;
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #64748b;
+        white-space: nowrap;
+      }
+      .session-ended-card {
+        width: 100%;
+        max-width: 280px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+        padding: 14px 16px 12px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+      .session-ended-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        color: #475569;
+        margin-bottom: 2px;
+      }
+      .session-ended-icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+      }
+      .session-ended-title {
+        margin: 0;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: -0.01em;
+      }
+      .session-ended-sub {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      .session-ended-cta {
+        margin-top: 6px;
+        border: 0;
+        background: transparent;
+        color: var(--brand-deep, #1e3a5f);
+        font-size: 12.5px;
+        font-weight: 650;
+        cursor: pointer;
+        padding: 6px 8px;
+        border-radius: 8px;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .session-ended-cta:hover {
+        background: #f1f5f9;
+        text-decoration: none;
+      }
+      .session-ended-cta:focus-visible {
+        outline: 2px solid var(--brand-deep, #1e3a5f);
+        outline-offset: 2px;
       }
       header h1 {
         font-size: 15px;
@@ -226,6 +327,66 @@
         box-shadow: none;
       }
       .msg-row.system .meta { justify-content: center; }
+      .emptyChat {
+        display: none;
+        flex: 1 1 auto;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        min-height: 180px;
+        padding: 8px 4px 16px;
+      }
+      .emptyChatCard {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+        max-width: 100%;
+      }
+      .emptyChatTitle {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.35;
+      }
+      .emptyChatSub {
+        margin: 0;
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.4;
+      }
+      .emptyChatChips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .emptyChatChip {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        color: #334155;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.2;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      }
+      .emptyChatChip:hover {
+        border-color: rgba(92, 103, 215, 0.35);
+        background: rgba(92, 103, 215, 0.06);
+        color: var(--primary);
+      }
+      .emptyChatChip:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+      .emptyChatChip:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
       .receipt {
         display: inline-flex;
         align-items: center;
@@ -1131,6 +1292,13 @@
             <img class="poweredLogo" src="/assets/logo/Logo_word_dark.svg" alt="Arivu" />
           </div>
         </div>
+        <div id="emptyChat" class="emptyChat" style="display:none;" aria-hidden="true">
+          <div class="emptyChatCard">
+            <p class="emptyChatTitle" id="emptyChatTitle">How can we help today?</p>
+            <p class="emptyChatSub">Ask a question or pick a topic to get started.</p>
+            <div class="emptyChatChips" id="emptyChatChips" role="group" aria-label="Suggested topics"></div>
+          </div>
+        </div>
       </div>
       <footer id="composer">
         <div id="typing" class="hint" style="padding: 0;"></div>
@@ -1159,7 +1327,7 @@
               </button>
             </div>
           </div>
-          <textarea id="input" rows="1" placeholder="Type a message..."></textarea>
+          <textarea id="input" rows="1" placeholder="Describe your issue..."></textarea>
           <button class="send" id="sendBtn" type="button" aria-label="Send message">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1366,12 +1534,161 @@
         if (!enabled) setAttachMenuOpen(false)
       }
 
+      var DEFAULT_QUICK_REPLIES = [
+        'I have a question',
+        'I need help with an issue',
+        'Talk to support',
+      ]
+
+      function emptyChatGreeting() {
+        var name = visitorProfile && String(visitorProfile.name || '').trim()
+        if (name) {
+          var first = name.split(/\s+/)[0]
+          if (first) return 'Hi ' + first + ' — how can we help today?'
+        }
+        return 'How can we help today?'
+      }
+
+      function countRenderedMessages() {
+        var container = document.getElementById('messages')
+        if (!container) return 0
+        return container.querySelectorAll('.msg-row').length
+      }
+
+      function hideEmptyChatHint() {
+        var empty = document.getElementById('emptyChat')
+        if (!empty) return
+        empty.style.display = 'none'
+        empty.setAttribute('aria-hidden', 'true')
+      }
+
+      function renderEmptyChatChips() {
+        var chips = document.getElementById('emptyChatChips')
+        if (!chips || chips.__bound) return
+        chips.__bound = true
+        chips.innerHTML = ''
+        DEFAULT_QUICK_REPLIES.forEach(function (label) {
+          var btn = document.createElement('button')
+          btn.type = 'button'
+          btn.className = 'emptyChatChip'
+          btn.textContent = label
+          btn.addEventListener('click', function () {
+            if (view !== 'chatOpen') return
+            var input = document.getElementById('input')
+            if (!input || input.disabled) return
+            input.value = label
+            resizeComposerInput()
+            void sendComposerMessage()
+          })
+          chips.appendChild(btn)
+        })
+      }
+
+      function syncEmptyChatHint() {
+        var empty = document.getElementById('emptyChat')
+        if (!empty) return
+        var show = view === 'chatOpen' && countRenderedMessages() === 0
+        if (!show) {
+          hideEmptyChatHint()
+          return
+        }
+        var title = document.getElementById('emptyChatTitle')
+        if (title) title.textContent = emptyChatGreeting()
+        renderEmptyChatChips()
+        empty.style.display = 'flex'
+        empty.setAttribute('aria-hidden', 'false')
+      }
+
+      function focusComposer() {
+        var input = document.getElementById('input')
+        if (!input || input.disabled) return
+        requestAnimationFrame(function () {
+          try {
+            input.focus({ preventScroll: true })
+          } catch (_) {
+            try { input.focus() } catch (__) {}
+          }
+        })
+      }
+
       function setHeaderNotice(msg, isError) {
         var el = document.getElementById('headerNotice')
         if (!el) return
         el.textContent = msg || ''
         el.style.display = msg ? 'block' : 'none'
-        el.style.color = isError ? 'rgba(185,28,28,0.95)' : 'rgba(100,116,139,0.95)'
+        el.style.color = isError ? 'rgba(254,202,202,0.98)' : 'rgba(226,232,240,0.92)'
+      }
+
+      function removeSessionEndedMarker() {
+        var existing = document.getElementById('sessionEndedMarker')
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing)
+      }
+
+      function ensureSessionEndedMarker(endedAt) {
+        var container = document.getElementById('messages')
+        if (!container) return
+        var existing = document.getElementById('sessionEndedMarker')
+        var timeLabel = formatMessageTime(endedAt || Date.now())
+        var subText = timeLabel
+          ? ('Thanks for chatting with us · ' + timeLabel)
+          : 'Thanks for chatting with us.'
+        if (existing) {
+          var subEl = existing.querySelector('.session-ended-sub')
+          if (subEl) subEl.textContent = subText
+          container.appendChild(existing)
+          scheduleScrollMessagesToBottom()
+          return
+        }
+        var wrap = document.createElement('div')
+        wrap.id = 'sessionEndedMarker'
+        wrap.className = 'session-ended'
+        wrap.setAttribute('role', 'status')
+        wrap.setAttribute('aria-live', 'polite')
+
+        var rule = document.createElement('div')
+        rule.className = 'session-ended-rule'
+        rule.setAttribute('aria-hidden', 'true')
+        var ruleLabel = document.createElement('span')
+        ruleLabel.textContent = 'Conversation ended'
+        rule.appendChild(ruleLabel)
+
+        var card = document.createElement('div')
+        card.className = 'session-ended-card'
+
+        var icon = document.createElement('div')
+        icon.className = 'session-ended-icon'
+        icon.setAttribute('aria-hidden', 'true')
+        icon.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none">'
+          + '<path d="M7 12.5l3.2 3.2L17 8.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
+          + '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>'
+          + '</svg>'
+
+        var title = document.createElement('p')
+        title.className = 'session-ended-title'
+        title.textContent = 'This conversation has ended'
+
+        var sub = document.createElement('p')
+        sub.className = 'session-ended-sub'
+        sub.textContent = subText
+
+        var cta = document.createElement('button')
+        cta.type = 'button'
+        cta.className = 'session-ended-cta'
+        cta.id = 'sessionEndedNewChatBtn'
+        cta.textContent = 'Start a new conversation'
+        cta.addEventListener('click', function () {
+          void startNewChatFlow()
+        })
+
+        card.appendChild(icon)
+        card.appendChild(title)
+        card.appendChild(sub)
+        card.appendChild(cta)
+        wrap.appendChild(rule)
+        wrap.appendChild(card)
+        container.appendChild(wrap)
+        scheduleScrollMessagesToBottom()
       }
 
       function reportWidgetHeight() {
@@ -1399,6 +1716,7 @@
         if (endBtn) endBtn.style.display = next === 'chatOpen' ? 'inline-block' : 'none'
         if (next === 'chatClosed') {
           setHeaderNotice('Conversation ended', false)
+          ensureSessionEndedMarker(Date.now())
           if (!activeSessionHasMessages) {
             setFeedbackPanelVisible(false)
             setFeedbackThanksVisible(false)
@@ -1409,8 +1727,15 @@
           } else {
             void refreshFeedbackPanel()
           }
-        } else if (next !== 'chatOpen') {
-          setHeaderNotice('', false)
+        } else {
+          removeSessionEndedMarker()
+          if (next !== 'chatOpen') setHeaderNotice('', false)
+        }
+        if (next === 'chatOpen') {
+          syncEmptyChatHint()
+          focusComposer()
+        } else {
+          hideEmptyChatHint()
         }
         if (next === 'chatOpen' || next === 'chatClosed') {
           scheduleScrollMessagesToBottom()
@@ -1421,6 +1746,7 @@
           if (next === 'chatOpen' || next === 'chatClosed') {
             scheduleScrollMessagesToBottom()
           }
+          if (next === 'chatOpen') focusComposer()
         })
       }
 
@@ -1727,10 +2053,12 @@
         // brute: reset to only cards by recreating known nodes is too risky; instead remove non-card nodes:
         children.forEach(function (c) {
           if (!c) return
-          if (c.id === 'inbox' || c.id === 'prechat') return
+          if (c.id === 'inbox' || c.id === 'prechat' || c.id === 'emptyChat') return
           container.removeChild(c)
         })
         seenMessageKeys = {}
+        removeSessionEndedMarker()
+        hideEmptyChatHint()
       }
 
       async function fetchSessionMeta(id, secret) {
@@ -2392,6 +2720,7 @@
         wrap.appendChild(el)
         wrap.appendChild(meta)
         container.appendChild(wrap)
+        hideEmptyChatHint()
         if (m && m._id) {
           messageDomById[String(m._id)] = { wrap: wrap, receiptEl: receiptEl, message: m }
         }
@@ -2536,6 +2865,7 @@
           })
           scheduleScrollMessagesToBottom()
         }
+        syncEmptyChatHint()
       }
 
       function stopMessagePoll() {

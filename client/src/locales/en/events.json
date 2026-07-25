@@ -1198,5 +1198,57 @@
   "eventLocationMapLoadError": {
     "message": "Map preview unavailable — location will still be saved",
     "description": "Leaflet load failure hint"
+  },
+  "calendarSyncButton": {
+    "message": "Sync",
+    "description": "Events page header button to open calendar sync dialog"
+  },
+  "calendarSyncTitle": {
+    "message": "Sync",
+    "description": "Calendar sync dialog title"
+  },
+  "calendarSyncIntro": {
+    "message": "Keep your Events in sync with Google Calendar or Microsoft 365 for your account.",
+    "description": "Calendar sync drawer instructional text"
+  },
+  "calendarSyncUserLevel": {
+    "message": "User level connectors",
+    "description": "Section heading for personal calendar connectors"
+  },
+  "calendarSyncConnectHint": {
+    "message": "Sync events you own to this calendar",
+    "description": "Hint under disconnected connector"
+  },
+  "calendarSyncProviderNotConfigured": {
+    "message": "Not configured on this workspace yet",
+    "description": "Shown when Google/Microsoft OAuth env is missing"
+  },
+  "calendarSyncReconnect": {
+    "message": "Reconnect",
+    "description": "Reconnect calendar provider button"
+  },
+  "calendarSyncConnected": {
+    "message": "Connected",
+    "description": "Connected status label"
+  },
+  "calendarSyncLoadFailed": {
+    "message": "Could not load calendar connectors",
+    "description": "Error loading connector status"
+  },
+  "calendarSyncConnectFailed": {
+    "message": "Could not connect calendar",
+    "description": "OAuth start or callback failure"
+  },
+  "calendarSyncDisconnectFailed": {
+    "message": "Could not disconnect calendar",
+    "description": "Disconnect failure toast"
+  },
+  "calendarSyncConnectedToast": {
+    "message": "{provider} connected",
+    "description": "OAuth success toast"
+  },
+  "calendarSyncDisconnectedToast": {
+    "message": "Calendar disconnected",
+    "description": "Disconnect success toast"
   }
 }

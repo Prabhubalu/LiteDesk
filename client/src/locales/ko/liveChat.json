@@ -2894,5 +2894,13 @@
   "inAppAiAskWithAgent": {
     "message": "Ask {'@'}{name} in Astra",
     "description": "Tooltip when clicking an @agent mention in Activity"
+  },
+  "sessionAssignedViewOnly": {
+    "message": "Assigned to {agent}. View only — you cannot reply to this chat.",
+    "description": "Read-only banner when another agent owns the live chat session"
+  },
+  "assignedToAgent": {
+    "message": "Assigned to {agent}",
+    "description": "Queue list assignee label for open live chat sessions"
   }
 }

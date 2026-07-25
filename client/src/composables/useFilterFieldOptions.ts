@@ -241,7 +241,7 @@ function isUserAssignmentField(key: string, filter: FilterConfig | null | undefi
       }
     }
     if (
-      filter.filterType === 'select' &&
+      (filter.filterType === 'select' || filter.filterType === 'multi-select') &&
       (key === 'folderId' || key === 'folderName') &&
       mod === 'documents'
     ) {

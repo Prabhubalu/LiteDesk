@@ -214,10 +214,13 @@ exports.getItems = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
         
-        // Sorting
-        const sortBy = req.query.sortBy || 'createdAt';
-        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-        const sort = { [sortBy]: sortOrder };
+        // Sorting (multi: sortBy=a,b&sortOrder=asc,desc)
+        const { parseListSort } = require('../utils/parseListSort');
+        const { sortObject: sort } = parseListSort(req.query, {
+            defaultField: 'createdAt',
+            defaultOrder: 'desc',
+            tieBreaker: '_id'
+        });
         
         const itemPopulate = [
             { path: 'vendor', select: 'name' },

@@ -63,9 +63,7 @@ const email = computed(() => authStore.user?.email || '');
 const role = computed(() => authStore.user?.role || '');
 const workspaceName = computed(() => authStore.organization?.name || '');
 
-const isAdmin = computed(
-  () => authStore.isAdminLike || authStore.isPlatformAdmin
-);
+const canViewControlPanel = computed(() => authStore.isPlatformAdmin);
 
 const settingsAccessCtx = computed(() => ({
   isOwner: !!authStore.user?.isOwner,
@@ -464,7 +462,7 @@ function chooseStatus(typeId) {
           {{ t('navigation.userYourProfile') }}
         </button>
         <button
-          v-if="isAdmin"
+          v-if="canViewControlPanel"
           type="button"
           role="menuitem"
           class="flex w-full items-center gap-3 px-5 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"

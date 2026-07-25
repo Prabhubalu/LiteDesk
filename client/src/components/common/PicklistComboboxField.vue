@@ -47,13 +47,13 @@
           >
             <div class="relative">
               <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
-              <input
+              <ComboboxInput
                 ref="searchInputRef"
-                v-model="searchQuery"
-                type="text"
+                :display-value="() => searchQuery"
                 :placeholder="t('common.formSearchOptions')"
                 class="w-full pl-9 pr-3 py-2 text-sm rounded-md bg-gray-100 dark:bg-gray-700 outline-1 -outline-offset-1 outline-gray-300/20 dark:outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:outline-indigo-500 text-gray-900 dark:text-white placeholder:text-gray-500 relative z-10"
                 autocomplete="off"
+                @change="searchQuery = $event.target.value"
                 @keydown.escape.stop
                 @click.stop
                 @mousedown.stop
@@ -136,6 +136,7 @@ import { Transition } from 'vue';
 import {
   Combobox,
   ComboboxButton,
+  ComboboxInput,
   ComboboxOption,
   ComboboxOptions
 } from '@headlessui/vue';
@@ -189,10 +190,19 @@ function onButtonClick() {
   searchQuery.value = '';
 }
 
+function resolveSearchInputEl(refVal) {
+  if (!refVal) return null;
+  if (typeof refVal.focus === 'function' && refVal.nodeType === 1) return refVal;
+  const el = refVal.el ?? refVal.$el ?? null;
+  if (!el) return null;
+  if (typeof el.focus === 'function') return el;
+  return typeof el.querySelector === 'function' ? el.querySelector('input') : null;
+}
+
 function focusSearchInput() {
   if (!showSearch.value) return;
   nextTick(() => {
-    searchInputRef.value?.focus?.();
+    resolveSearchInputEl(searchInputRef.value)?.focus?.();
   });
 }
 </script>

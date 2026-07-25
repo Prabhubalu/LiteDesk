@@ -183,8 +183,14 @@ function compileRuleToMongo(rule, moduleKey, context = {}) {
     return compileNotContainsClause(fieldKey, value);
   }
 
-  if (operator === 'is_any_of' && Array.isArray(value)) {
-    return { [fieldKey]: { $in: value } };
+  if (operator === 'is_any_of') {
+    const values = Array.isArray(value)
+      ? value
+      : value == null || value === ''
+        ? []
+        : [value];
+    if (values.length === 0) return null;
+    return { [fieldKey]: { $in: values } };
   }
 
   if (operator === 'is_not') {

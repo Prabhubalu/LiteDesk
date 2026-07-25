@@ -413,6 +413,7 @@ No line-level backfill required for greenfield. Existing SOs gain invoice capabi
 - Multi-SO wizard entry only from SO list bulk action — no invoice-list entry point
 - Approval workflow mirrors quotes MVP — no parallel approver chains
 - Manual invoice lines — catalog resolve on add; less mature than quote line editor
++ Manual invoice / SO draft Lines — shared Quote Lines workspace via `commercialLines` adapters (INV/SO commercial draft APIs)
 
 ### 4.6 Future dependencies (INV4+)
 

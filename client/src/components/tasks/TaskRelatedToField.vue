@@ -5,7 +5,7 @@
       <span v-if="required" class="text-red-500">*</span>
     </label>
     <div
-      class="flex flex-col sm:flex-row sm:items-stretch rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:focus-within:border-indigo-400 dark:focus-within:ring-indigo-400/20"
+      class="relative flex flex-col sm:flex-row sm:items-stretch rounded-lg border border-gray-200 bg-white shadow-sm focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:focus-within:border-indigo-400 dark:focus-within:ring-indigo-400/20"
     >
       <!-- Type: Headless UI Listbox -->
       <Listbox
@@ -29,7 +29,7 @@
         </ListboxButton>
         <Transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
           <ListboxOptions
-            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
+            class="absolute z-[10050] mt-1 max-h-60 w-full min-w-[10rem] overflow-auto rounded-lg bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
           >
             <ListboxOption
               v-for="opt in typeOptions"
@@ -87,16 +87,15 @@
             </ComboboxButton>
             <Transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0" @after-enter="focusRecordSearch">
               <ComboboxOptions
-                class="absolute z-10 mt-1 w-full overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
+                class="absolute z-[10050] mt-1 w-full overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
               >
                 <div class="p-2 border-b border-gray-200 dark:border-gray-600" @click.stop @mousedown.stop>
                   <div class="relative">
                     <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none z-20" />
-                    <input
+                    <ComboboxInput
                       ref="recordSearchInputRef"
-                      type="text"
-                      v-model="recordSearchQuery"
-                      @keydown.enter.stop
+                      :display-value="() => recordSearchQuery"
+                      @change="recordSearchQuery = $event.target.value"
                       @keydown.escape.stop
                       @click.stop
                       @mousedown.stop
@@ -154,7 +153,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, watch, computed, nextTick } from 'vue';
-import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Combobox, ComboboxButton, ComboboxOptions, ComboboxOption } from '@headlessui/vue';
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption, Combobox, ComboboxButton, ComboboxInput, ComboboxOptions, ComboboxOption } from '@headlessui/vue';
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
@@ -307,9 +306,18 @@ async function handleRelatedRecordCreated(savedRecord) {
   closeCreateDrawer();
 }
 
+function resolveSearchInputEl(refVal) {
+  if (!refVal) return null;
+  if (typeof refVal.focus === 'function' && refVal.nodeType === 1) return refVal;
+  const el = refVal.el ?? refVal.$el ?? null;
+  if (!el) return null;
+  if (typeof el.focus === 'function') return el;
+  return typeof el.querySelector === 'function' ? el.querySelector('input') : null;
+}
+
 function focusRecordSearch() {
   nextTick(() => {
-    recordSearchInputRef.value?.focus();
+    resolveSearchInputEl(recordSearchInputRef.value)?.focus?.();
   });
 }
 

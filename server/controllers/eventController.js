@@ -327,9 +327,7 @@ exports.getEvents = async (req, res) => {
             scope,
             includeRelated = 'false',
             page = 1, 
-            limit = 100,
-            sortBy = 'startDateTime',
-            sortOrder = 'asc'
+            limit = 100
         } = req.query;
         
         let query = { organizationId: req.user.organizationId, deletedAt: null };
@@ -451,9 +449,12 @@ exports.getEvents = async (req, res) => {
         const pageNum = Math.max(1, parseInt(page, 10) || 1);
         const limitNum = Math.min(Math.max(1, parseInt(limit, 10) || 100), 200);
         
-        // Sort order
-        const sortOptions = {};
-        sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+        const { parseListSort } = require('../utils/parseListSort');
+        const { sortObject: sortOptions } = parseListSort(req.query, {
+          defaultField: 'startDateTime',
+          defaultOrder: 'asc',
+          tieBreaker: '_id'
+        });
         
         const eventSkip = (pageNum - 1) * limitNum;
         const eventPopulate = [
@@ -728,6 +729,7 @@ exports.createEvent = async (req, res) => {
         
         // Explicitly ensure status is not in eventData (let model default handle it)
         delete eventData.status;
+        delete eventData.calendarSync;
         
         // Normalize eventType if provided
         if (eventData.eventType && typeof eventData.eventType === 'string') {
@@ -936,6 +938,13 @@ exports.createEvent = async (req, res) => {
         
         console.log('Event saved successfully with ID:', event._id, 'eventId:', event.eventId);
 
+        try {
+            const { safeSyncOnCreate } = require('../services/userCalendarSyncService');
+            await safeSyncOnCreate(event);
+        } catch (syncErr) {
+            console.warn('[createEvent] user calendar sync failed:', syncErr?.message || syncErr);
+        }
+
         // Fire-and-forget domain event for audit assignment (non-blocking)
         emitAuditAssigned({
             eventId: event._id,
@@ -986,6 +995,7 @@ exports.updateEvent = async (req, res) => {
         delete req.body.__v;
         delete req.body.eventId;
         delete req.body.source;
+        delete req.body.calendarSync;
         
         // Build query (support both _id and eventId)
         const query = { organizationId: req.user.organizationId, deletedAt: null };
@@ -1301,6 +1311,13 @@ exports.updateEvent = async (req, res) => {
         } catch (logErr) {
             console.warn('Record activity log (event update) failed:', logErr?.message || logErr);
         }
+
+        try {
+            const { safeSyncOnUpdate } = require('../services/userCalendarSyncService');
+            await safeSyncOnUpdate(updatedEvent);
+        } catch (syncErr) {
+            console.warn('[updateEvent] user calendar sync failed:', syncErr?.message || syncErr);
+        }
         
         res.status(200).json({
             success: true,
@@ -1327,9 +1344,18 @@ exports.deleteEvent = async (req, res) => {
             query.eventId = req.params.id;
         }
 
-        const event = await Event.findOne(query).select('_id').lean();
+        const event = await Event.findOne(query)
+            .select('_id assignedTo organizationId calendarSync appointment')
+            .lean();
         if (!event) {
             return res.status(404).json({ success: false, message: 'Event not found.' });
+        }
+
+        try {
+            const { safeSyncOnDelete } = require('../services/userCalendarSyncService');
+            await safeSyncOnDelete(event);
+        } catch (syncErr) {
+            console.warn('[deleteEvent] user calendar sync failed:', syncErr?.message || syncErr);
         }
 
         const deletionService = require('../services/deletionService');
@@ -1399,7 +1425,19 @@ exports.bulkDeleteEvents = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No valid event IDs provided.' });
         }
         
-        const events = await Event.find(query).select('_id').lean();
+        const events = await Event.find(query)
+            .select('_id assignedTo organizationId calendarSync appointment')
+            .lean();
+
+        try {
+            const { safeSyncOnDelete } = require('../services/userCalendarSyncService');
+            for (const ev of events) {
+                await safeSyncOnDelete(ev);
+            }
+        } catch (syncErr) {
+            console.warn('[bulkDeleteEvents] user calendar sync failed:', syncErr?.message || syncErr);
+        }
+
         const deletionService = require('../services/deletionService');
         const result = await deletionService.bulkMoveToTrash({
             moduleKey: 'events',

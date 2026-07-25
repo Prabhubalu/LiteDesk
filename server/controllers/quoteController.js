@@ -278,14 +278,17 @@ async function getQuotes(req, res) {
       'quoteDate',
       'validUntil'
     ]);
-    const sortBy = allowedSortFields.has(String(req.query?.sortBy || ''))
-      ? String(req.query.sortBy)
-      : 'updatedAt';
-    const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
+    const { parseListSort } = require('../utils/parseListSort');
+    const { sortObject } = parseListSort(req.query, {
+      allowedFields: allowedSortFields,
+      defaultField: 'updatedAt',
+      defaultOrder: 'desc',
+      tieBreaker: '_id'
+    });
 
     const [rows, total, listCardBreakdown] = await Promise.all([
       Quote.find(q)
-        .sort({ [sortBy]: sortOrder })
+        .sort(sortObject)
         .skip(skip)
         .limit(limit)
         .populate({ path: 'assignedTo', select: 'firstName lastName email username avatar' })

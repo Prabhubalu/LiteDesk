@@ -37,7 +37,7 @@ const BY_FILTER_TYPE: Record<string, FilterOperatorId[]> = {
   text: ['contains', 'not_contains', 'is_empty', 'is_not_empty'],
   number: ['is', 'is_not', 'is_empty', 'is_not_empty'],
   select: ['is', 'is_not', 'is_any_of', 'is_empty', 'is_not_empty'],
-  'multi-select': ['is_any_of', 'is_empty', 'is_not_empty'],
+  'multi-select': ['is_any_of', 'is', 'is_not', 'is_empty', 'is_not_empty'],
   boolean: ['is', 'is_not'],
   user: ['is', 'is_not', 'is_empty', 'is_not_empty'],
   entity: ['is', 'is_not', 'is_empty', 'is_not_empty'],

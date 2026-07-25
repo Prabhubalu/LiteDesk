@@ -31,14 +31,22 @@ const {
 const invoiceDocumentController = require('../controllers/invoiceDocumentController');
 const {
   addInvoiceLine,
+  addInvoiceBundleHandler,
+  patchInvoiceBundleOptionalsHandler,
   patchInvoiceLineHandler,
-  deleteInvoiceLineHandler
+  deleteInvoiceLineHandler,
+  reorderInvoiceLinesHandler,
+  patchInvoiceDiscountsHandler,
+  recalculateInvoiceHandler,
+  patchInvoiceTaxesChargesHandler
 } = require('../controllers/invoiceLineController');
 const {
   listSections,
   createSection,
   patchSection,
-  deleteSection
+  deleteSection,
+  reorderInvoiceSectionsHandler,
+  patchInvoiceSectionDiscountsHandler
 } = require('../controllers/invoiceSectionController');
 
 const router = express.Router();
@@ -111,11 +119,23 @@ router.post('/:id/void', checkPermission('invoices', 'void'), voidInvoiceHandler
 
 router.get('/:id/sections', checkPermission('invoices', 'view'), listSections);
 router.post('/:id/sections', checkPermission('invoices', 'edit'), createSection);
+router.patch('/:id/sections/reorder', checkPermission('invoices', 'edit'), reorderInvoiceSectionsHandler);
+router.patch('/:id/sections/:sectionId/discounts', checkPermission('invoices', 'edit'), patchInvoiceSectionDiscountsHandler);
 router.patch('/:id/sections/:sectionId', checkPermission('invoices', 'edit'), patchSection);
 router.delete('/:id/sections/:sectionId', checkPermission('invoices', 'edit'), deleteSection);
 
+router.post('/:id/bundles', checkPermission('invoices', 'edit'), addInvoiceBundleHandler);
+router.patch(
+  '/:id/bundles/:parentLineId/optionals',
+  checkPermission('invoices', 'edit'),
+  patchInvoiceBundleOptionalsHandler
+);
 router.post('/:id/lines', checkPermission('invoices', 'edit'), addInvoiceLine);
+router.patch('/:id/lines/reorder', checkPermission('invoices', 'edit'), reorderInvoiceLinesHandler);
 router.patch('/:id/lines/:lineId', checkPermission('invoices', 'edit'), patchInvoiceLineHandler);
 router.delete('/:id/lines/:lineId', checkPermission('invoices', 'edit'), deleteInvoiceLineHandler);
+router.patch('/:id/discounts', checkPermission('invoices', 'edit'), patchInvoiceDiscountsHandler);
+router.patch('/:id/taxes-charges', checkPermission('invoices', 'edit'), patchInvoiceTaxesChargesHandler);
+router.post('/:id/recalculate', checkPermission('invoices', 'edit'), recalculateInvoiceHandler);
 
 module.exports = router;

@@ -2783,6 +2783,10 @@
     "message": "Group",
     "description": "Mention item group badge"
   },
+  "commentMentionAll": {
+    "message": "Everyone",
+    "description": "Mention item @all badge — notifies all users in the instance"
+  },
   "commentMentionEmpty": {
     "message": "No users or groups found",
     "description": "Empty mention search"

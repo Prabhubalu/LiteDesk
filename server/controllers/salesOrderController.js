@@ -180,13 +180,16 @@ async function getSalesOrders(req, res) {
       'createdAt',
       'orderDate'
     ]);
-    const sortBy = allowedSortFields.has(String(req.query?.sortBy || ''))
-      ? String(req.query.sortBy)
-      : 'updatedAt';
-    const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
+    const { parseListSort } = require('../utils/parseListSort');
+    const { sortObject } = parseListSort(req.query, {
+      allowedFields: allowedSortFields,
+      defaultField: 'updatedAt',
+      defaultOrder: 'desc',
+      tieBreaker: '_id'
+    });
 
     const [rows, total, statusBreakdown] = await Promise.all([
-      SalesOrder.find(q).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit).lean(),
+      SalesOrder.find(q).sort(sortObject).skip(skip).limit(limit).lean(),
       SalesOrder.countDocuments(q),
       computeSalesOrderListStatistics(q)
     ]);

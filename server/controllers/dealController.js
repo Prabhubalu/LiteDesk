@@ -329,6 +329,19 @@ exports.createDeal = async (req, res) => {
         }
 
         assignResolvedSource(payload, 'ui');
+        // New deals appear at top of the kanban column (stageOrder asc).
+        delete payload.stageOrder;
+        payload.stageOrder = 0;
+        if (payload.stage) {
+            await Deal.updateMany(
+                {
+                    organizationId: req.user.organizationId,
+                    stage: payload.stage,
+                    deletedAt: null
+                },
+                { $inc: { stageOrder: 1 } }
+            );
+        }
         const newDeal = await Deal.create(payload);
 
         await syncLegacyToRoleBased(newDeal, req.user._id);
@@ -571,11 +584,18 @@ exports.getDeals = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
-        const sortBy = req.query.sortBy || 'createdAt';
-        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-        const sort = sortBy === 'stage'
-            ? { stage: sortOrder, stageOrder: 1 }
-            : { [sortBy]: sortOrder };
+        const { parseListSort } = require('../utils/parseListSort');
+        const { sorts, sortObject: parsedSort } = parseListSort(req.query, {
+            defaultField: 'createdAt',
+            defaultOrder: 'desc',
+            tieBreaker: '_id'
+        });
+        // Stage list order uses stageOrder as secondary when sorting by stage.
+        let sort = parsedSort;
+        if (sorts[0]?.field === 'stage') {
+            const { stage, ...rest } = parsedSort;
+            sort = { stage, stageOrder: 1, ...rest };
+        }
         
         const dealPopulate = [
             { path: 'contactId', select: 'first_name last_name email' },
