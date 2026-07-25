@@ -5,6 +5,8 @@ const TALLY_DEFAULT_SETTINGS = Object.freeze({
   dryRunDefault: true,
   autoApproveMappingConfidence: 0.95,
   companyWriteConcurrency: 1,
+  /** When true, Item/Party auto-outbox fans out to every linked companyGuid. When false, requires explicit companyGuid. */
+  autoOutboxFanOutToAllLinkedCompanies: true,
   entities: {
     parties: { enabled: true, direction: 'bidirectional' },
     items: { enabled: true, direction: 'bidirectional' },

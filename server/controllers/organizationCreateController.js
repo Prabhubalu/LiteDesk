@@ -160,6 +160,18 @@ exports.create = async (req, res) => {
 
     try {
       if (req.user?.organizationId) {
+        const { enqueueAfterPartySave } = require('../services/connectors/tally/tallyOutboxHooks');
+        await enqueueAfterPartySave({
+          organizationId: req.user.organizationId,
+          party: org,
+        });
+      }
+    } catch (tallyErr) {
+      console.warn('[organizationCreateController] tally outbox hook failed', tallyErr?.message);
+    }
+
+    try {
+      if (req.user?.organizationId) {
         const { runImmediateAssignmentForSalesRecord } = require('../services/assignmentExecutionService');
         const { enqueueAssignmentJobsForSalesRecord } = require('../services/assignmentSchedulingService');
         const fresh = await Organization.findById(org._id);

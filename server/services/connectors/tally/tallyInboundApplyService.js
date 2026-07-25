@@ -138,6 +138,7 @@ async function upsertExternal({
     connectorKey: CONNECTOR_KEYS.TALLY,
     entityType,
     externalId,
+    companyGuid: companyGuid || null,
   });
   if (existing) {
     existing.lastSyncedAt = new Date();
@@ -148,21 +149,37 @@ async function upsertExternal({
       lastJobId: jobId,
     };
     await existing.save();
-    return { upserted: false };
+    const { postProcessInboundRow } = require('./tallyMappingService');
+    await postProcessInboundRow({
+      organizationId,
+      row: existing,
+      name: remotePayload?.name || remotePayload?.NAME,
+      entityType,
+      companyGuid,
+    });
+    return { upserted: false, row: existing };
   }
 
-  await ConnectorExternalObject.create({
+  const row = await ConnectorExternalObject.create({
     organizationId,
     connectorKey: CONNECTOR_KEYS.TALLY,
     entityType,
     arivuId: pendingArivuId,
     externalId,
-    companyGuid,
+    companyGuid: companyGuid || null,
     lastSyncedAt: new Date(),
     lastDirection: 'inbound',
     metadata: { remotePayload, source: 'inbound_export', jobId },
   });
-  return { upserted: true };
+  const { postProcessInboundRow } = require('./tallyMappingService');
+  await postProcessInboundRow({
+    organizationId,
+    row,
+    name: remotePayload?.name || remotePayload?.NAME,
+    entityType,
+    companyGuid,
+  });
+  return { upserted: true, row };
 }
 
 async function applyInboundExport({

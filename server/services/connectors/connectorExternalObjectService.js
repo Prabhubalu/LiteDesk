@@ -25,12 +25,13 @@ async function upsertLink({
       connectorKey: key,
       entityType: String(entityType),
       externalId: String(externalId),
+      companyGuid: companyGuid || null,
     },
     {
       $set: {
         arivuId: String(arivuId),
         arivuModule,
-        companyGuid,
+        companyGuid: companyGuid || null,
         lastDirection,
         payloadHash,
         metadata,
@@ -41,32 +42,60 @@ async function upsertLink({
         connectorKey: key,
         entityType: String(entityType),
         externalId: String(externalId),
+        companyGuid: companyGuid || null,
       },
     },
     { upsert: true, new: true }
   );
 }
 
-async function findByExternal({ organizationId, connectorKey, entityType, externalId }) {
-  return ConnectorExternalObject.findOne({
+async function findByExternal({
+  organizationId,
+  connectorKey,
+  entityType,
+  externalId,
+  companyGuid = undefined,
+}) {
+  const q = {
     organizationId,
     connectorKey: String(connectorKey).toLowerCase(),
     entityType: String(entityType),
     externalId: String(externalId),
-  });
+  };
+  if (companyGuid !== undefined) q.companyGuid = companyGuid || null;
+  return ConnectorExternalObject.findOne(q);
 }
 
-async function findByArivu({ organizationId, connectorKey, entityType, arivuId }) {
-  return ConnectorExternalObject.findOne({
+async function findByArivu({
+  organizationId,
+  connectorKey,
+  entityType,
+  arivuId,
+  companyGuid = undefined,
+}) {
+  const q = {
     organizationId,
     connectorKey: String(connectorKey).toLowerCase(),
     entityType: String(entityType),
     arivuId: String(arivuId),
-  });
+  };
+  if (companyGuid !== undefined) q.companyGuid = companyGuid || null;
+  return ConnectorExternalObject.findOne(q);
+}
+
+async function findAllByArivu({ organizationId, connectorKey, entityType, arivuId }) {
+  return ConnectorExternalObject.find({
+    organizationId,
+    connectorKey: String(connectorKey).toLowerCase(),
+    entityType: String(entityType),
+    arivuId: String(arivuId),
+    'metadata.ignored': { $ne: true },
+  }).lean();
 }
 
 module.exports = {
   upsertLink,
   findByExternal,
   findByArivu,
+  findAllByArivu,
 };

@@ -78,7 +78,32 @@ const DEFAULT_FIELD_CATALOGS = Object.freeze({
       'AMOUNT',
       'IRN',
       'REFERENCE',
+      'PARTYLEDGERNAME',
     ],
+  },
+  payment: {
+    arivu: ['paymentNumber', 'amount', 'paymentDate', 'reference'],
+    external: ['VOUCHERNUMBER', 'AMOUNT', 'DATE', 'REFERENCE', 'PARTYLEDGERNAME'],
+  },
+  receipt: {
+    arivu: ['paymentNumber', 'amount', 'paymentDate', 'reference'],
+    external: ['VOUCHERNUMBER', 'AMOUNT', 'DATE', 'REFERENCE', 'PARTYLEDGERNAME'],
+  },
+  purchase: {
+    arivu: ['billNumber', 'billDate', 'partyGstin', 'grandTotal', 'reference'],
+    external: ['VOUCHERNUMBER', 'DATE', 'PARTYGSTIN', 'AMOUNT', 'REFERENCE', 'PARTYLEDGERNAME'],
+  },
+  credit_note: {
+    arivu: ['creditNoteNumber', 'date', 'partyGstin', 'grandTotal', 'reference'],
+    external: ['VOUCHERNUMBER', 'DATE', 'PARTYGSTIN', 'AMOUNT', 'REFERENCE', 'PARTYLEDGERNAME'],
+  },
+  debit_note: {
+    arivu: ['debitNoteNumber', 'date', 'partyGstin', 'grandTotal', 'reference'],
+    external: ['VOUCHERNUMBER', 'DATE', 'PARTYGSTIN', 'AMOUNT', 'REFERENCE', 'PARTYLEDGERNAME'],
+  },
+  stock_journal: {
+    arivu: ['transactionNumber', 'date', 'narration'],
+    external: ['VOUCHERNUMBER', 'DATE', 'NARRATION', 'REFERENCE'],
   },
 });
 

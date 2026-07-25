@@ -940,6 +940,18 @@ exports.update = async (req, res) => {
       } catch (emitErr) {
         console.error('[organizationV2Controller] emitOrganizationEvents on update failed:', emitErr?.message || emitErr);
       }
+
+      try {
+        if (tenantOrganizationId) {
+          const { enqueueAfterPartySave } = require('../services/connectors/tally/tallyOutboxHooks');
+          await enqueueAfterPartySave({
+            organizationId: tenantOrganizationId,
+            party: org,
+          });
+        }
+      } catch (tallyErr) {
+        console.warn('[organizationV2Controller] tally outbox hook failed', tallyErr?.message);
+      }
     }
     
     const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');

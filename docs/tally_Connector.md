@@ -534,6 +534,34 @@ Masters, inventory (incl. GodownEntries/BatchEntries), vouchers with nested Ledg
 - Agent discovery probes Meta + Arivu company collection; heartbeat reports `tdlLoaded` / `tdlPackVersion`.
 - Inbound apply maps every masterType/exportId into `ConnectorExternalObject` pending rows (incl. vouchers by GUID).
 
-## Agent version
+## Mapping Center (shipped)
+
+**Integrations → Tally**
+
+1. **Company switcher** (required when 2+ Active binds; auto-select if only one).
+2. **Mapping Center tabs:** Needs review · Linked · Ignored · Field maps.
+3. Actions on pending: **Create in Arivu** · **Link** · **Ignore** (system masters auto-ignored).
+4. Exact-name auto-link at confidence ≥ 0.95 on inbound pull.
+5. **Sync items / parties → Tally** enqueues masters for the selected company then drains outbox.
+6. **Conflicts:** Keep Arivu (push outbox) / Keep Tally (patch Arivu from `rightSnapshot`) / Merge (fill empty Arivu fields + push) / Ignore.
+7. Sync blocked if TDL pack not detected (or agent &lt; 0.3.x when version is known).
+8. **Auto-outbox fan-out** toggle (`autoOutboxFanOutToAllLinkedCompanies`, default on) — when off, party/item save does not invent company targets.
+9. **Create in Arivu** for credit/debit notes → Draft invoice; stock journals → Draft inventory adjustment. Generic sales/purchase vouchers still need `TALLY_INBOUND_VOUCHER_DRAFTS=1`.
+
+### Multi-company
+
+- One Arivu record may have **N** links (one `ConnectorExternalObject` per `companyGuid`).
+- No primary-company default — always pick company (or fan-out auto-outbox only to **already linked** companies).
+- Field maps are saved per company + entity type.
+- If multi-company link saves fail with duplicate key, run: `cd server && node scripts/migrateConnectorExternalObjectCompanyGuidIndex.js`
+
+### After Sync now
+
+| Result | Where |
+|--------|--------|
+| Jobs | Sync log |
+| Pending / Linked masters | Mapping Center |
+| Created parties/items/godowns | CRM Organizations / Inventory (after Create or auto-link) |
+| Outbound XML | Tally (after outbox drain) |
 
 Agent **0.3.0** + TDL pack **1.0.0**. Rebuild installer via Actions → **Tally Connector Installer**.

@@ -1,11 +1,47 @@
 'use strict';
 
 const { CONNECTOR_KEYS, CONNECTOR_ENTITY_TYPES } = require('../connectorConstants');
+const { TALLY_DEFAULT_SETTINGS } = require('../../../constants/tallyAddonConstants');
 
 /**
  * Thin outbox enqueue hooks for Tally connector.
  * Callers should wrap in try/catch — failures must not break core flows.
  */
+
+async function getAutoOutboxFanOut(organizationId) {
+  try {
+    const tallyConnectionService = require('./tallyConnectionService');
+    const connection = await tallyConnectionService.getConnection(organizationId);
+    const settings = {
+      ...TALLY_DEFAULT_SETTINGS,
+      ...(connection?.metadata?.settings || {}),
+    };
+    return settings.autoOutboxFanOutToAllLinkedCompanies !== false;
+  } catch {
+    return TALLY_DEFAULT_SETTINGS.autoOutboxFanOutToAllLinkedCompanies !== false;
+  }
+}
+
+async function resolveOutboxCompanyTargets({
+  organizationId,
+  entityType,
+  arivuId,
+  companyGuid = null,
+}) {
+  if (companyGuid) return [companyGuid];
+
+  const fanOut = await getAutoOutboxFanOut(organizationId);
+  if (!fanOut) return [];
+
+  const connectorExternalObjectService = require('../connectorExternalObjectService');
+  const links = await connectorExternalObjectService.findAllByArivu({
+    organizationId,
+    connectorKey: CONNECTOR_KEYS.TALLY,
+    entityType,
+    arivuId: String(arivuId),
+  });
+  return [...new Set(links.map((l) => l.companyGuid).filter(Boolean))];
+}
 
 async function enqueue({
   organizationId,
@@ -128,9 +164,84 @@ async function enqueueAfterDnConfirm({
   });
 }
 
+async function enqueueAfterItemVariantSave({
+  organizationId,
+  variant,
+  companyGuid = null,
+} = {}) {
+  if (!organizationId || !variant?._id) return [];
+  const results = [];
+  const targets = await resolveOutboxCompanyTargets({
+    organizationId,
+    entityType: CONNECTOR_ENTITY_TYPES.ITEM,
+    arivuId: variant._id,
+    companyGuid,
+  });
+
+  // No invent: if unlinked and no companyGuid, skip (UI must select company / Sync items)
+  if (!targets.length) return [];
+
+  for (const guid of targets) {
+    // eslint-disable-next-line no-await-in-loop
+    const row = await enqueue({
+      organizationId,
+      entityType: CONNECTOR_ENTITY_TYPES.ITEM,
+      arivuId: variant._id,
+      operation: 'upsert',
+      companyGuid: guid,
+      payload: {
+        variantId: String(variant._id),
+        variant_code: variant.variant_code || null,
+      },
+      idempotencyKey: `tally:hook:item:${variant._id}:${guid}:${variant.updatedAt || Date.now()}`,
+      metadata: { hook: 'enqueueAfterItemVariantSave' },
+    });
+    results.push(row);
+  }
+  return results;
+}
+
+async function enqueueAfterPartySave({
+  organizationId,
+  party,
+  companyGuid = null,
+} = {}) {
+  if (!organizationId || !party?._id) return [];
+  const results = [];
+  const targets = await resolveOutboxCompanyTargets({
+    organizationId,
+    entityType: CONNECTOR_ENTITY_TYPES.PARTY,
+    arivuId: party._id,
+    companyGuid,
+  });
+  if (!targets.length) return [];
+
+  for (const guid of targets) {
+    // eslint-disable-next-line no-await-in-loop
+    const row = await enqueue({
+      organizationId,
+      entityType: CONNECTOR_ENTITY_TYPES.PARTY,
+      arivuId: party._id,
+      operation: 'upsert',
+      companyGuid: guid,
+      payload: {
+        partyId: String(party._id),
+        name: party.name || null,
+      },
+      idempotencyKey: `tally:hook:party:${party._id}:${guid}:${party.updatedAt || Date.now()}`,
+      metadata: { hook: 'enqueueAfterPartySave' },
+    });
+    results.push(row);
+  }
+  return results;
+}
+
 module.exports = {
   enqueueAfterInvoicePost,
   enqueueAfterPayment,
   enqueueAfterInventoryPost,
   enqueueAfterDnConfirm,
+  enqueueAfterItemVariantSave,
+  enqueueAfterPartySave,
+  getAutoOutboxFanOut,
 };

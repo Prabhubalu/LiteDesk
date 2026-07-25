@@ -233,6 +233,15 @@ async function createItemVariant({ item, userId, payload }) {
   });
 
   await refreshItemVariantLinkage(item._id, item.organizationId);
+  try {
+    const { enqueueAfterItemVariantSave } = require('./connectors/tally/tallyOutboxHooks');
+    await enqueueAfterItemVariantSave({
+      organizationId: item.organizationId,
+      variant,
+    });
+  } catch (err) {
+    console.warn('[itemVariantService] tally outbox hook failed', err.message);
+  }
   return variant;
 }
 
@@ -282,6 +291,16 @@ async function updateItemVariant({ variantId, organizationId, userId, payload })
 
   variant.modifiedBy = userId;
   await variant.save();
+
+  try {
+    const { enqueueAfterItemVariantSave } = require('./connectors/tally/tallyOutboxHooks');
+    await enqueueAfterItemVariantSave({
+      organizationId,
+      variant,
+    });
+  } catch (err) {
+    console.warn('[itemVariantService] tally outbox hook (update) failed', err.message);
+  }
 
   if (variant.is_default) {
     const item = await Item.findOne({ _id: variant.itemId, organizationId, deletedAt: null });

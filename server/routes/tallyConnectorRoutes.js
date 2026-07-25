@@ -16,7 +16,8 @@ const ConnectorSyncEvent = require('../models/ConnectorSyncEvent');
 const ConnectorConflict = require('../models/ConnectorConflict');
 const ConnectorExternalObject = require('../models/ConnectorExternalObject');
 const TallyCompanyBinding = require('../models/TallyCompanyBinding');
-const { CONNECTOR_KEYS, CONFLICT_STATUSES } = require('../services/connectors/connectorConstants');
+const { CONNECTOR_KEYS, CONFLICT_STATUSES, CONFLICT_RESOLUTIONS } = require('../services/connectors/connectorConstants');
+const { TALLY_DEFAULT_SETTINGS } = require('../constants/tallyAddonConstants');
 
 const router = express.Router();
 
@@ -403,20 +404,262 @@ router.get('/sync/jobs', async (req, res) => {
 
 router.get('/external-objects', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit || '100', 10), 500);
-    const entityType = req.query.entityType || null;
-    const rows = await ConnectorExternalObject.find({
+    const tallyMappingService = require('../services/connectors/tally/tallyMappingService');
+    const limit = Math.min(parseInt(req.query.limit || '100', 10) || 100, 500);
+    const skip = Math.max(parseInt(req.query.skip || '0', 10) || 0, 0);
+    const result = await tallyMappingService.listExternalObjects({
       organizationId: req.user.organizationId,
-      connectorKey: CONNECTOR_KEYS.TALLY,
-      ...(entityType ? { entityType } : {}),
-    })
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .lean();
-    return res.json({ success: true, data: rows });
+      companyGuid: req.query.companyGuid || null,
+      entityType: req.query.entityType || null,
+      status: req.query.status || 'all',
+      q: req.query.q || '',
+      limit,
+      skip,
+    });
+    return res.json({
+      success: true,
+      data: result.rows,
+      meta: {
+        total: result.total,
+        limit: result.limit,
+        skip: result.skip,
+        hasMore: result.hasMore,
+      },
+    });
   } catch (error) {
     console.error('[tallyConnector] external-objects', error);
     return res.status(500).json({ success: false, message: 'Failed to list external objects' });
+  }
+});
+
+router.post('/external-objects/:id/ignore', async (req, res) => {
+  try {
+    const tallyMappingService = require('../services/connectors/tally/tallyMappingService');
+    const row = await tallyMappingService.ignoreExternalObject({
+      organizationId: req.user.organizationId,
+      externalObjectId: req.params.id,
+      reason: req.body?.reason || 'user_ignored',
+    });
+    return res.json({ success: true, data: row });
+  } catch (error) {
+    const status = error.code === 'NOT_FOUND' ? 404 : 500;
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/external-objects/:id/link', async (req, res) => {
+  try {
+    const tallyMappingService = require('../services/connectors/tally/tallyMappingService');
+    const row = await tallyMappingService.linkExternalObject({
+      organizationId: req.user.organizationId,
+      externalObjectId: req.params.id,
+      arivuId: req.body?.arivuId,
+      createdBy: req.user._id,
+    });
+    return res.json({ success: true, data: row });
+  } catch (error) {
+    const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'VALIDATION' ? 400 : 500;
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/external-objects/:id/create', async (req, res) => {
+  try {
+    const tallyMappingService = require('../services/connectors/tally/tallyMappingService');
+    const result = await tallyMappingService.createFromExternal({
+      organizationId: req.user.organizationId,
+      externalObjectId: req.params.id,
+      createdBy: req.user._id,
+    });
+    return res.json({ success: true, data: result });
+  } catch (error) {
+    const status =
+      error.code === 'NOT_FOUND' ? 404 : error.code === 'UNSUPPORTED' ? 400 : 500;
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/field-mappings', async (req, res) => {
+  try {
+    const tallyFieldMappingService = require('../services/connectors/tally/tallyFieldMappingService');
+    const ConnectorFieldMapping = require('../models/ConnectorFieldMapping');
+    const entityType = String(req.query.entityType || 'item').toLowerCase();
+    const companyGuid = req.query.companyGuid || null;
+    const existing = await ConnectorFieldMapping.findOne({
+      organizationId: req.user.organizationId,
+      connectorKey: CONNECTOR_KEYS.TALLY,
+      entityType,
+      companyGuid,
+      active: true,
+    })
+      .sort({ version: -1 })
+      .lean();
+    const suggested = tallyFieldMappingService.suggestMappings({
+      organizationId: req.user.organizationId,
+      entityType,
+      companyGuid,
+    });
+    return res.json({
+      success: true,
+      data: {
+        saved: existing,
+        catalog: tallyFieldMappingService.DEFAULT_FIELD_CATALOGS[entityType] || null,
+        suggestions: suggested.suggestions,
+      },
+    });
+  } catch (error) {
+    console.error('[tallyConnector] field-mappings', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/field-mappings/accept', async (req, res) => {
+  try {
+    const tallyFieldMappingService = require('../services/connectors/tally/tallyFieldMappingService');
+    const doc = await tallyFieldMappingService.acceptMappings({
+      organizationId: req.user.organizationId,
+      entityType: req.body?.entityType,
+      companyGuid: req.body?.companyGuid || null,
+      rules: req.body?.rules || [],
+      version: req.body?.version,
+    });
+    return res.json({ success: true, data: doc });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/masters/sync-items', async (req, res) => {
+  try {
+    const { syncStockItems } = require('../services/connectors/tally/tallyMasterSyncService');
+    const companyGuid = req.body?.companyGuid;
+    if (!companyGuid) {
+      return res.status(400).json({
+        success: false,
+        message: 'companyGuid required — select a Tally company',
+      });
+    }
+    const result = await syncStockItems({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      dryRun: Boolean(req.body?.dryRun),
+      limit: Math.min(parseInt(req.body?.limit || '100', 10) || 100, 500),
+      variantIds: Array.isArray(req.body?.variantIds) ? req.body.variantIds : null,
+    });
+    if (!req.body?.dryRun && !req.body?.skipDrain) {
+      await triggerBidirectionalSync({
+        organizationId: req.user.organizationId,
+        companyGuid,
+        jobType: 'incremental',
+        createdBy: req.user._id,
+      });
+    }
+    return res.status(202).json({ success: true, data: result });
+  } catch (error) {
+    console.error('[tallyConnector] masters/sync-items', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/masters/sync-parties', async (req, res) => {
+  try {
+    const { syncParties } = require('../services/connectors/tally/tallyMasterSyncService');
+    const companyGuid = req.body?.companyGuid;
+    if (!companyGuid) {
+      return res.status(400).json({
+        success: false,
+        message: 'companyGuid required — select a Tally company',
+      });
+    }
+    const result = await syncParties({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      dryRun: Boolean(req.body?.dryRun),
+      limit: Math.min(parseInt(req.body?.limit || '100', 10) || 100, 500),
+      partyIds: Array.isArray(req.body?.partyIds) ? req.body.partyIds : null,
+    });
+    if (!req.body?.dryRun && !req.body?.skipDrain) {
+      await triggerBidirectionalSync({
+        organizationId: req.user.organizationId,
+        companyGuid,
+        jobType: 'incremental',
+        createdBy: req.user._id,
+      });
+    }
+    return res.status(202).json({ success: true, data: result });
+  } catch (error) {
+    console.error('[tallyConnector] masters/sync-parties', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/conflicts/:id/resolve', async (req, res) => {
+  try {
+    const resolution = String(req.body?.resolution || '').trim();
+    const allowed = Object.values(CONFLICT_RESOLUTIONS);
+    if (!allowed.includes(resolution)) {
+      return res.status(400).json({
+        success: false,
+        message: `resolution must be one of: ${allowed.join(', ')}`,
+      });
+    }
+    const tallyConflictApplyService = require('../services/connectors/tally/tallyConflictApplyService');
+    const result = await tallyConflictApplyService.resolveAndApply({
+      organizationId: req.user.organizationId,
+      conflictId: req.params.id,
+      resolution,
+      resolvedBy: req.user._id,
+      note: req.body?.note || null,
+    });
+    return res.json({ success: true, data: result.conflict, applyResult: result.applyResult });
+  } catch (error) {
+    const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'VALIDATION' ? 400 : 500;
+    console.error('[tallyConnector] conflicts/resolve', error);
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/settings', async (req, res) => {
+  try {
+    const connection = await tallyConnectionService.getConnection(req.user.organizationId);
+    const settings = {
+      ...TALLY_DEFAULT_SETTINGS,
+      ...(connection?.metadata?.settings || {}),
+    };
+    return res.json({
+      success: true,
+      data: {
+        autoOutboxFanOutToAllLinkedCompanies: settings.autoOutboxFanOutToAllLinkedCompanies !== false,
+      },
+    });
+  } catch (error) {
+    console.error('[tallyConnector] settings get', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.patch('/settings', async (req, res) => {
+  try {
+    const connection = await tallyConnectionService.getConnection(req.user.organizationId);
+    if (!connection) {
+      return res.status(404).json({ success: false, message: 'No Tally connection' });
+    }
+    const next = { ...(connection.metadata?.settings || {}) };
+    if (typeof req.body?.autoOutboxFanOutToAllLinkedCompanies === 'boolean') {
+      next.autoOutboxFanOutToAllLinkedCompanies = req.body.autoOutboxFanOutToAllLinkedCompanies;
+    }
+    connection.metadata = { ...(connection.metadata || {}), settings: next };
+    connection.markModified('metadata');
+    await connection.save();
+    return res.json({
+      success: true,
+      data: {
+        autoOutboxFanOutToAllLinkedCompanies: next.autoOutboxFanOutToAllLinkedCompanies !== false,
+      },
+    });
+  } catch (error) {
+    console.error('[tallyConnector] settings patch', error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 
