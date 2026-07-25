@@ -95,16 +95,19 @@ export function applyColumnSortClick(
       if (sorts.length >= max) return sorts
       return [...sorts, { field: key, order: 'asc' }]
     }
+    const existing = sorts[idx]
+    if (!existing) return sorts
     const next = sorts.slice()
     next[idx] = {
       field: key,
-      order: sorts[idx].order === 'asc' ? 'desc' : 'asc'
+      order: existing.order === 'asc' ? 'desc' : 'asc'
     }
     return next
   }
 
-  if (sorts.length === 1 && sorts[0].field === key) {
-    return [{ field: key, order: sorts[0].order === 'asc' ? 'desc' : 'asc' }]
+  const primary = sorts[0]
+  if (sorts.length === 1 && primary?.field === key) {
+    return [{ field: key, order: primary.order === 'asc' ? 'desc' : 'asc' }]
   }
   return [{ field: key, order: 'asc' }]
 }
@@ -133,8 +136,9 @@ export function serializeSortsForApi(
   if (normalized.length === 0) {
     return { sortBy: fallback.field, sortOrder: fallback.order }
   }
-  if (normalized.length === 1) {
-    return { sortBy: normalized[0].field, sortOrder: normalized[0].order }
+  const only = normalized[0]
+  if (normalized.length === 1 && only) {
+    return { sortBy: only.field, sortOrder: only.order }
   }
   return {
     sortBy: normalized.map((s) => s.field).join(','),
@@ -148,10 +152,11 @@ export function persistSortPayload(sorts: ListSortSpec[]): {
   sorts: ListSortSpec[]
 } | null {
   const normalized = normalizeSortSpecs(sorts)
-  if (normalized.length === 0) return null
+  const primary = normalized[0]
+  if (!primary) return null
   return {
-    field: normalized[0].field,
-    order: normalized[0].order,
+    field: primary.field,
+    order: primary.order,
     sorts: normalized
   }
 }
