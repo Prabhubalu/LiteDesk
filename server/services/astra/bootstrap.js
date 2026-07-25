@@ -3,11 +3,17 @@
 /**
  * bootstrap — register all tools + agents exactly once per process.
  * Idempotent: safe to call from server start, the controller, and tests.
+ *
+ * IMPORTANT: mutate module.exports in place (never replace the object).
+ * Circular requires (tenantCatalog ↔ bootstrap) keep a live reference; replacing
+ * module.exports leaves them with an empty object → "ensureBootstrapped is not a function".
  */
 
 const toolRegistry = require('./tools/toolRegistry');
 const agentRegistry = require('./agents/agentRegistry');
 const { registerFamilies } = require('./tools/families');
+const { registerCanvasTools } = require('./tools/canvasTools');
+const { registerWebResearchTools } = require('./tools/webResearchTools');
 const { registerBuiltinAgents } = require('./agents/builtinAgents');
 
 let bootstrapped = false;
@@ -15,6 +21,8 @@ let bootstrapped = false;
 /** Register everything. Returns a summary of what is registered. */
 function bootstrapAstra() {
   registerFamilies(toolRegistry);
+  registerCanvasTools(toolRegistry);
+  registerWebResearchTools(toolRegistry);
   registerBuiltinAgents(agentRegistry);
   bootstrapped = true;
   return {
@@ -37,9 +45,7 @@ function resetForTests() {
   agentRegistry.clearRegistry();
 }
 
-module.exports = {
-  bootstrapAstra,
-  ensureBootstrapped,
-  resetForTests,
-  isBootstrapped: () => bootstrapped,
-};
+module.exports.bootstrapAstra = bootstrapAstra;
+module.exports.ensureBootstrapped = ensureBootstrapped;
+module.exports.resetForTests = resetForTests;
+module.exports.isBootstrapped = () => bootstrapped;

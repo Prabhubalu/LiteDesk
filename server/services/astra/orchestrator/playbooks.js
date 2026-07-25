@@ -39,9 +39,51 @@ const PLAYBOOKS = {
       { agentKey: 'reviewer', step: 'review' },
     ],
   },
+  'studio-meeting-prep': {
+    key: 'studio-meeting-prep',
+    title: 'Studio · Meeting Preparation',
+    description: 'Generate a Living Canvas meeting prep workspace.',
+    seats: [
+      { agentKey: 'meeting-intelligence', step: 'prep' },
+      { agentKey: 'customer-360', step: 'context' },
+      { agentKey: 'summary', step: 'canvas' },
+    ],
+  },
+  'studio-war-room': {
+    key: 'studio-war-room',
+    title: 'Studio · Opportunity War Room',
+    description: 'Generate a Living Canvas opportunity war room.',
+    seats: [
+      { agentKey: 'deal-intelligence', step: 'deal' },
+      { agentKey: 'relationship-intelligence', step: 'stakeholders' },
+      { agentKey: 'summary', step: 'canvas' },
+    ],
+  },
+  'studio-customer-360': {
+    key: 'studio-customer-360',
+    title: 'Studio · Customer 360',
+    description: 'Generate a Living Canvas customer 360 workspace.',
+    seats: [
+      { agentKey: 'customer-360', step: 'profile' },
+      { agentKey: 'conversation-intelligence', step: 'comms' },
+      { agentKey: 'summary', step: 'canvas' },
+    ],
+  },
 };
 
 const DETECTORS = [
+  {
+    key: 'studio-meeting-prep',
+    re: /\b(meeting\s+prep|prepare\s+(me\s+)?for\s+(the\s+)?meeting|living\s+canvas\s+meeting)\b/i,
+  },
+  {
+    key: 'studio-war-room',
+    re: /\b(war\s*room|opportunity\s+workspace|deal\s+war)\b/i,
+  },
+  {
+    key: 'studio-customer-360',
+    re: /\b(customer\s*360|analyze\s+this\s+customer|account\s+360\s+canvas)\b/i,
+  },
   {
     key: 'qualify-enrich-propose-task-review',
     re: /\b(qualify\s*[→\-–]+\s*enrich|full\s+sales\s+playbook|qualify\s+enrich\s+propose|run\s+(the\s+)?canonical\s+playbook)\b/i,

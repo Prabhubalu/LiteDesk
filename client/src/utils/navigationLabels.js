@@ -9,6 +9,7 @@ export const SURFACE_LABEL_KEYS = {
   home: 'navigation.home',
   inbox: 'navigation.inbox',
   astra: 'navigation.astra',
+  'astra-studio': 'navigation.astraStudio',
   'live-chat': 'navigation.liveChat',
   announcements: 'navigation.announcements',
   approvals: 'navigation.approvals',

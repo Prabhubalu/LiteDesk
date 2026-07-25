@@ -123,6 +123,37 @@ function buildSearchOrConditions(query, fieldNames) {
   return conditions;
 }
 
+/**
+ * People name search: full-string field matches plus first/last token AND pairs.
+ * Without this, "Prabhu Balu" never matches first_name=Prabhu + last_name=Balu.
+ * @param {string} query
+ * @param {string[]} [fieldNames]
+ */
+function buildPeopleNameOrConditions(
+  query,
+  fieldNames = ['first_name', 'last_name', 'email', 'phone', 'mobile'],
+) {
+  const conditions = buildSearchOrConditions(query, fieldNames);
+  const parts = normalizeSearchTerm(query).split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return conditions;
+
+  const first = parts[0];
+  const last = parts.slice(1).join(' ');
+  conditions.push({
+    $and: [
+      { first_name: buildContainsRegex(first) },
+      { last_name: buildContainsRegex(last) },
+    ],
+  });
+  conditions.push({
+    $and: [
+      { first_name: buildContainsRegex(last) },
+      { last_name: buildContainsRegex(first) },
+    ],
+  });
+  return conditions;
+}
+
 function mongoFieldScoreExpr(fieldExpr, escapedQuery, { primary = true } = {}) {
   const prefixScore = primary ? 0 : 3;
   const wordScore = primary ? 1 : 4;
@@ -356,6 +387,7 @@ module.exports = {
   sortBySearchRelevance,
   rankAndLimit,
   buildSearchOrConditions,
+  buildPeopleNameOrConditions,
   buildMongoRelevanceScoreExpr,
   buildSearchAwareSort,
   fetchRankedSearchPage,

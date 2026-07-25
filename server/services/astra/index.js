@@ -29,8 +29,8 @@ const goldenIntent = require('./eval/goldenIntent');
 module.exports = {
   flags,
   bootstrap,
-  bootstrapAstra: bootstrap.bootstrapAstra,
-  ensureBootstrapped: bootstrap.ensureBootstrapped,
+  bootstrapAstra: (...args) => require('./bootstrap').bootstrapAstra(...args),
+  ensureBootstrapped: (...args) => require('./bootstrap').ensureBootstrapped(...args),
   modelRouter,
   runOrchestrator,
   toolRegistry,

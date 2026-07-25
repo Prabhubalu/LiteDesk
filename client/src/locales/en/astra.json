@@ -11,9 +11,157 @@
     "message": "The intelligence behind your work.",
     "description": "Astra tagline shown on the copilot landing"
   },
+  "openLivingCanvas": {
+    "message": "Open Living Canvas",
+    "description": "Button on Astra home to open the embedded Living Canvas"
+  },
+  "heroCanvasTitle": {
+    "message": "Prepare a meeting",
+    "description": "Hero card to launch Living Canvas meeting prep"
+  },
+  "heroCanvasSubtitle": {
+    "message": "Build a live workspace with stakeholders, risks, and notes",
+    "description": "Hero card subtitle for Living Canvas"
+  },
+  "starterLivingCanvas": {
+    "message": "Prepare me for an upcoming customer meeting",
+    "description": "Starter prompt that opens Living Canvas"
+  },
+  "starterWarRoom": {
+    "message": "Build an opportunity war room for my top open deal",
+    "description": "Studio starter: opportunity war room"
+  },
+  "starterCustomer360": {
+    "message": "Analyze this customer and build a Customer 360 workspace",
+    "description": "Studio starter: customer 360"
+  },
+  "starterQbr": {
+    "message": "Create a quarterly business review workspace",
+    "description": "Studio starter: QBR"
+  },
+  "studioHeroMeetingTitle": {
+    "message": "Meeting preparation",
+    "description": "Studio mode suggestion card title"
+  },
+  "studioHeroMeetingSubtitle": {
+    "message": "Agenda, stakeholders, risks, and live notes",
+    "description": "Studio mode suggestion card subtitle"
+  },
+  "studioHeroWarRoomTitle": {
+    "message": "Opportunity war room",
+    "description": "Studio mode suggestion card title"
+  },
+  "studioHeroWarRoomSubtitle": {
+    "message": "Deal health, competitors, and win strategy",
+    "description": "Studio mode suggestion card subtitle"
+  },
+  "studioHero360Title": {
+    "message": "Customer 360",
+    "description": "Studio mode suggestion card title"
+  },
+  "studioHero360Subtitle": {
+    "message": "Profile, revenue, cases, and AI insights",
+    "description": "Studio mode suggestion card subtitle"
+  },
+  "studioHeroQbrTitle": {
+    "message": "Executive QBR",
+    "description": "Studio mode suggestion card title"
+  },
+  "studioHeroQbrSubtitle": {
+    "message": "Live report with KPIs, trends, and actions",
+    "description": "Studio mode suggestion card subtitle"
+  },
+  "studioGroundedWarRoomTitle": {
+    "message": "War room: {name}",
+    "description": "Personalized Studio card for a deal"
+  },
+  "studioGroundedWarRoomSubtitle": {
+    "message": "Deal health, risks, stakeholders, and win plan",
+    "description": "Personalized Studio card subtitle for a deal"
+  },
+  "studioGroundedWarRoomPrompt": {
+    "message": "Build an opportunity war room for {name}",
+    "description": "Prompt to generate a deal war room canvas"
+  },
+  "studioGroundedSupportTitle": {
+    "message": "Investigate: {name}",
+    "description": "Personalized Studio card for a case"
+  },
+  "studioGroundedSupportSubtitle": {
+    "message": "Timeline, root cause, and resolution plan",
+    "description": "Personalized Studio card subtitle for a case"
+  },
+  "studioGroundedSupportPrompt": {
+    "message": "Build a support investigation workspace for case {name}",
+    "description": "Prompt to generate a support investigation canvas"
+  },
+  "studioGroundedQuoteTitle": {
+    "message": "Prep around {name}",
+    "description": "Personalized Studio card for a quote"
+  },
+  "studioGroundedQuoteSubtitle": {
+    "message": "Meeting prep with quote context and next steps",
+    "description": "Personalized Studio card subtitle for a quote"
+  },
+  "studioGroundedQuotePrompt": {
+    "message": "Prepare a meeting workspace around quote {name}",
+    "description": "Prompt to generate a meeting canvas from a quote"
+  },
+  "studioGroundedTaskTitle": {
+    "message": "Workspace for {name}",
+    "description": "Personalized Studio card for a task"
+  },
+  "studioGroundedTaskSubtitle": {
+    "message": "Turn this follow-up into a live action board",
+    "description": "Personalized Studio card subtitle for a task"
+  },
+  "studioGroundedTaskPrompt": {
+    "message": "Build a meeting preparation workspace to finish: {name}",
+    "description": "Prompt to generate a canvas from an overdue task"
+  },
+  "studioGrounded360Title": {
+    "message": "Customer 360: {name}",
+    "description": "Personalized Studio card for an account/contact"
+  },
+  "studioGrounded360Subtitle": {
+    "message": "Profile, relationships, revenue, and risks",
+    "description": "Personalized Studio card subtitle for an account"
+  },
+  "studioGrounded360Prompt": {
+    "message": "Build a Customer 360 workspace for {name}",
+    "description": "Prompt to generate a customer 360 canvas"
+  },
+  "studioGroundedGenericTitle": {
+    "message": "Canvas for {name}",
+    "description": "Fallback personalized Studio card title"
+  },
+  "studioGroundedGenericSubtitle": {
+    "message": "Open a Living Canvas grounded on this item",
+    "description": "Fallback personalized Studio card subtitle"
+  },
+  "studioGroundedGenericPrompt": {
+    "message": "Build a Living Canvas workspace for {name}",
+    "description": "Fallback personalized Studio prompt"
+  },
   "askPrompt": {
-    "message": "Ask Astra anything about your Platform…",
+    "message": "Ask, write, or search for anything…",
     "description": "Placeholder for the Astra chat composer"
+  },
+  "askPromptStudio": {
+    "message": "Describe a workspace to build… e.g. Prepare me for tomorrow's meeting",
+    "description": "Placeholder when Astra Studio mode is selected in the composer"
+  },
+  "composerModeLabel": {
+    "message": "Astra mode",
+    "description": "Aria label for Astra AI vs Astra Studio composer toggle"
+  },
+  "modeAstraAi": {
+    "message": "Astra AI",
+    "description": "Composer mode toggle: chat / ask"
+  },
+  "modeAstraStudio": {
+    "message": "Astra Studio",
+    "description": "Composer mode toggle: Living Canvas workspace"
   },
   "send": {
     "message": "Send",
@@ -227,6 +375,54 @@
   "historyHeading": {
     "message": "Chats",
     "description": "Astra conversation history sidebar heading"
+  },
+  "sidebarAllHeading": {
+    "message": "Astra",
+    "description": "Sidebar heading when showing chats and canvases together"
+  },
+  "sidebarCanvasesHeading": {
+    "message": "Canvases",
+    "description": "Sidebar heading when filtered to Living Canvases"
+  },
+  "sidebarFilterLabel": {
+    "message": "Filter sidebar",
+    "description": "Aria label for Astra sidebar All/Chats/Canvases filter"
+  },
+  "sidebarFilterAll": {
+    "message": "All",
+    "description": "Sidebar filter: chats and canvases"
+  },
+  "sidebarFilterChats": {
+    "message": "Chats",
+    "description": "Sidebar filter: chats only"
+  },
+  "sidebarFilterCanvases": {
+    "message": "Canvases",
+    "description": "Sidebar filter: Living Canvases only"
+  },
+  "sidebarCanvasesEmpty": {
+    "message": "No canvases yet",
+    "description": "Empty state when no Studio canvases exist"
+  },
+  "sidebarAllEmpty": {
+    "message": "No chats or canvases yet",
+    "description": "Empty state when sidebar filter is All"
+  },
+  "sidebarCanvasUntitled": {
+    "message": "Untitled canvas",
+    "description": "Fallback title for untitled Living Canvas in sidebar"
+  },
+  "newCanvas": {
+    "message": "New canvas",
+    "description": "Primary action to create a new Living Canvas from the sidebar"
+  },
+  "sidebarCollapse": {
+    "message": "Collapse sidebar",
+    "description": "Aria label to collapse the Astra chats/canvases sidebar"
+  },
+  "sidebarExpand": {
+    "message": "Expand sidebar",
+    "description": "Aria label to expand the Astra chats/canvases sidebar"
   },
   "historyEmpty": {
     "message": "No previous chats yet",

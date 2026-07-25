@@ -274,6 +274,7 @@ const contentStudioRoutes = require('./routes/contentStudioRoutes');
 const publicMarketingRoutes = require('./routes/publicMarketingRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const astraV2Routes = require('./routes/astraV2Routes');
+const astraStudioRoutes = require('./routes/astraStudioRoutes');
 
 // Route Linking
 app.use('/api/auth', authRoutes);
@@ -311,6 +312,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/data-changes', require('./routes/dataChangeStreamRoutes'));
 app.use('/api/ai', aiRoutes);
 app.use('/api/ai/v2', astraV2Routes);
+app.use('/api/astra/studio', astraStudioRoutes);
 app.use('/api/helpdesk/cases', caseRoutes);
 app.use('/api/helpdesk/articles', helpdeskArticlesRoutes);
 app.use('/api/marketing/campaigns', marketingCampaignRoutes);
@@ -696,6 +698,20 @@ connectMasterWithRetry(masterUri)
       console.log(`💚 Health: http://localhost:${PORT}/health/ready (readiness) | /health/live (liveness)`);
       console.log('');
     });
+
+    try {
+      const { attachStudioWebSocket } = require('./realtime/studioWsGateway');
+      attachStudioWebSocket(server);
+    } catch (wsErr) {
+      console.warn('⚠️  Astra Studio WebSocket gateway not started:', wsErr.message);
+    }
+
+    try {
+      const { registerAutomation } = require('./services/astraStudio/automationService');
+      registerAutomation();
+    } catch (autoErr) {
+      console.warn('⚠️  Astra Studio automation not started:', autoErr.message);
+    }
   })
   .catch(err => {
     console.error('');

@@ -10,6 +10,7 @@
 
 const { getRecordContext } = require('../../recordContextService');
 const { resolveModel, getModule, recordPathFor } = require('../tools/moduleCatalog');
+const { expandRelatedRecords } = require('./expandRelatedRecords');
 
 const APP_KEY_BY_MODULE = Object.freeze({
   people: 'sales',
@@ -41,7 +42,7 @@ function titleOf(row) {
   return '';
 }
 
-function flattenRelated(relationships = [], { perRel = 6, max = 28 } = {}) {
+function flattenRelated(relationships = [], { perRel = 12, max = 40 } = {}) {
   const out = [];
   for (const rel of relationships || []) {
     const moduleKey = String(
@@ -113,7 +114,7 @@ async function loadNativeActivityLogs(moduleKey, recordId, organizationId, deps 
       .map((e) => compactActivity({
         ...e,
         message: e.message || e.action || '',
-      }, `${moduleKey}:${recordId}`));
+      }, moduleKey));
   } catch {
     return [];
   }
@@ -138,7 +139,7 @@ async function loadRecordActivityCollection(moduleKey, recordId, organizationId,
       action: r.action || r.type || 'activity',
       message: r.message || r.content || r.action || '',
       details: r.details,
-    }, `${moduleKey}:${recordId}`));
+    }, moduleKey));
   } catch {
     return [];
   }
@@ -202,13 +203,13 @@ async function loadRecordGraph(organizationId, moduleKey, recordId) {
 }
 
 function pickRelatedForDeepActivity(related = []) {
-  const priority = ['quotes', 'deals', 'cases', 'organizations', 'events', 'tasks'];
+  const priority = ['quotes', 'deals', 'cases', 'organizations', 'people', 'events', 'tasks'];
   const picked = [];
   for (const mk of priority) {
     for (const row of related) {
       if (row.moduleKey === mk && !picked.find((p) => p.id === row.id)) {
         picked.push(row);
-        if (picked.length >= 4) return picked;
+        if (picked.length >= 8) return picked;
       }
     }
   }
@@ -473,7 +474,8 @@ function derivePracticalSuggestions(signals) {
 function formatSituationForLlm(situation) {
   const lines = [];
   const f = situation.focus || {};
-  lines.push(`FOCUS: [${f.moduleKey || '?'}] ${f.title || f.name || 'record'}${f.id ? ` id=${f.id}` : ''}`);
+  // Never include Mongo ids — models echo them into user-facing panels
+  lines.push(`FOCUS: [${f.moduleKey || '?'}] ${f.title || f.name || 'record'}`);
   if (f.subtitle) lines.push(`FOCUS DETAIL: ${f.subtitle}`);
 
   if (situation.related?.length) {
@@ -481,9 +483,8 @@ function formatSituationForLlm(situation) {
     for (const r of situation.related.slice(0, 16)) {
       lines.push(`- [${r.moduleKey}] ${r.title}${r.subtitle ? ` · ${r.subtitle}` : ''}${r.status ? ` · ${r.status}` : ''}`);
     }
-  } else {
-    lines.push('RELATED RECORDS: (none loaded)');
   }
+  // Do not emit "RELATED RECORDS: (none loaded)" — models echo that into user-facing panels.
 
   if (situation.communications?.length) {
     lines.push('RECENT EMAILS:');
@@ -496,7 +497,13 @@ function formatSituationForLlm(situation) {
     lines.push('RECENT ACTIVITY (focus + related):');
     for (const a of situation.activities.slice(0, 12)) {
       const msg = a.message || a.action;
-      lines.push(`- ${a.at ? a.at.slice(0, 10) : '?'} · ${a.source || ''} · ${msg}`);
+      const src = String(a.source || '').trim();
+      // Human module label only — never "people:<objectId>"
+      const srcLabel = src && !/^[a-z]+:[a-f0-9]{24}$/i.test(src) && !/[a-f0-9]{24}/i.test(src)
+        ? src
+        : (src.includes(':') ? src.split(':')[0] : src);
+      const prefix = [a.at ? a.at.slice(0, 10) : '', srcLabel].filter(Boolean).join(' · ');
+      lines.push(`- ${prefix ? `${prefix} · ` : ''}${msg}`);
     }
   }
 
@@ -567,6 +574,19 @@ async function buildSituationContext(input = {}) {
     related = flattenRelated(full?.relationships || []);
   } catch {
     /* fall through */
+  }
+
+  // Canonical CRM links (contactId / dealPeople / account / quotes / cases / tasks)
+  // — relationship graph alone often misses these for people/orgs/deals.
+  try {
+    related = await expandRelatedRecords({
+      organizationId,
+      moduleKey,
+      recordId,
+      related,
+    });
+  } catch (err) {
+    console.warn('[situationContext] expandRelatedRecords failed:', err?.message || err);
   }
 
   if (!focusTitle || focusTitle === recordId) {
