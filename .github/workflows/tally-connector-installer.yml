@@ -72,7 +72,7 @@ jobs:
           }
 
       - name: Stage public connectors folder
-        if: ${{ inputs.publish_to_public != false }}
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish_to_public }}
         shell: pwsh
         run: |
           $dest = Join-Path $env:GITHUB_WORKSPACE "client\public\connectors"
@@ -87,6 +87,5 @@ jobs:
           path: |
             connectors/arivu-agent/dist/installer/ArivuConnectorSetup.exe
             connectors/arivu-agent/dist/arivu-connector-agent.exe
-            client/public/connectors/ArivuConnectorSetup.exe
           if-no-files-found: error
           retention-days: 30
