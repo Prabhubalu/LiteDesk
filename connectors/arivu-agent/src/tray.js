@@ -121,6 +121,29 @@ async function runTray(cfg) {
 
   console.log('[tray] Keep this process running. Pairing page:', ui.url);
   console.log(`[tray] Default port ${DEFAULT_PORT}. Log: ${path.join(cfg.dataDir, 'logs', 'tray.log')}`);
+
+  // Also run heartbeat/poll/XML in this user session.
+  // Windows services (Session 0) often cannot reliably talk to Tally in the user desktop session.
+  if (cfg.agentToken && cfg.connectionId) {
+    setImmediate(() => {
+      try {
+        // Lazy require avoids circular load with index.js → tray.js
+        // eslint-disable-next-line global-require
+        const { runLoop } = require('./index');
+        appendLog(cfg, 'starting user-session sync loop');
+        console.log('[tray] Starting sync loop in user session (so Tally company list works)');
+        runLoop(cfg).catch((err) => {
+          appendLog(cfg, `runLoop failed: ${err.message}`);
+          console.warn('[tray] sync loop error:', err.message);
+        });
+      } catch (err) {
+        appendLog(cfg, `runLoop require failed: ${err.message}`);
+      }
+    });
+  } else {
+    console.log('[tray] Not paired yet — pair first, then restart Arivu Connector from the Desktop shortcut.');
+  }
+
   await keepAliveForever();
 }
 

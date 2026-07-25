@@ -172,19 +172,31 @@ function startLocalUi(cfg, opts = {}) {
           });
         }
 
-        if (req.method === 'POST' && url.pathname === '/api/discover') {
-          const discovery = await discoverTally({
-            host: cfg.tallyHost,
-            portMin: cfg.tallyPortMin,
-            portMax: cfg.tallyPortMax,
-          });
-          lastDiscovery = discovery;
-          if (discovery.tallyPort) {
-            cfg.tallyPort = discovery.tallyPort;
-            saveConfig(cfg);
-          }
-          return sendJson(res, 200, { success: true, data: discovery });
+      if (req.method === 'POST' && url.pathname === '/api/discover') {
+        const discovery = await discoverTally({
+          host: cfg.tallyHost,
+          portMin: cfg.tallyPortMin,
+          portMax: cfg.tallyPortMax,
+        });
+        lastDiscovery = discovery;
+        if (discovery.tallyPort) {
+          cfg.tallyPort = discovery.tallyPort;
+          saveConfig(cfg);
         }
+        // Persist diagnostics for support
+        try {
+          const logDir = path.join(cfg.dataDir || path.dirname(cfg.configPath || ''), 'logs');
+          fs.mkdirSync(logDir, { recursive: true });
+          fs.writeFileSync(
+            path.join(logDir, 'last-discover.json'),
+            `${JSON.stringify(discovery, null, 2)}\n`,
+            'utf8'
+          );
+        } catch (_) {
+          /* ignore */
+        }
+        return sendJson(res, 200, { success: true, data: discovery });
+      }
 
         if (req.method === 'POST' && url.pathname === '/api/repair') {
           cfg.agentToken = null;

@@ -163,6 +163,22 @@ router.post('/poll', async (req, res) => {
   try {
     const { bridge } = await resolveBridgeFromAgentToken(req);
     const limit = Math.min(parseInt(req.body?.limit || '5', 10) || 5, 20);
+
+    // Touch connection on every poll so UI doesn't show false "stale" when agent is active
+    await runWithOrganizationTenantContext(bridge.organizationId, async () =>
+      tallyConnectionService.recordHeartbeat({
+        organizationId: bridge.organizationId,
+        connectionId: bridge.connectionId,
+        agentDeviceId: bridge.agentDeviceId,
+        agentVersion: req.body?.agentVersion,
+        metadata: { source: 'poll' },
+      })
+    ).catch(() => {});
+
+    bridge.status = 'online';
+    bridge.lastSeenAt = new Date();
+    await bridge.save().catch(() => {});
+
     const jobs = await runWithOrganizationTenantContext(bridge.organizationId, async () =>
       claimJobsForAgent({ organizationId: bridge.organizationId, limit })
     );

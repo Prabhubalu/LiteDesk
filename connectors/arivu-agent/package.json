@@ -1,6 +1,6 @@
 {
   "name": "@arivu/connector-agent",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Arivu Connector Agent — Windows service + tray that bridges local Tally XML API to Arivu cloud",
   "private": true,
   "main": "src/index.js",
@@ -23,6 +23,7 @@
     "assets": [
       "src/ui/**/*",
       "src/uiHtmlEmbedded.js",
+      "tdl/**/*",
       "assets/**/*"
     ],
     "targets": ["node18-win-x64"],

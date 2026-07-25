@@ -1,0 +1,53 @@
+;; ============================================================================
+;; ArivuConnector.Masters.tdl — Accounting & organization masters
+;; Future-proof: Fetch includes GUID, MasterID, AlterID where available for incremental sync
+;; ============================================================================
+
+[Collection: Arivu List of Companies]
+    Type : Company
+    Fetch : Name, GUID, StartingFrom, BooksFrom, EndingAt, CompanyNumber, FormalName, Address, StateName, Pincode, Phone, Email, IsGSTOn, GSTDetails, HSNDetails
+    Compute : ArivuCompanyKey : $GUID
+    Compute : ArivuCompanyName : $Name
+
+[Collection: Arivu List of Groups]
+    Type : Group
+    Fetch : Name, Parent, GUID, MasterID, AlterID, IsSubLedger, IsRevenue, IsDeemedPositive, IsBillWiseOn, IsCostCentresOn, GSTDetails, HSNDetails
+    Compute : ArivuGroupName : $Name
+
+[Collection: Arivu List of Ledgers]
+    Type : Ledger
+    Fetch : Name, Parent, GUID, MasterID, AlterID, ClosingBalance, OpeningBalance, PartyGSTIN, LedStateName, IncomeTaxNumber, LedgerPhone, Address, Email, CreditLimit, IsBillWiseOn, IsCostCentresOn, GSTApplicable, GSTRegistrationType, GSTTypeofSupply, GSTDutyHead, GSTDetails, HSNDetails, TaxType, CurrencyName
+    Compute : ArivuLedgerName : $Name
+    Compute : ArivuLedgerParent : $Parent
+
+[Collection: Arivu List of Currencies]
+    Type : Currency
+    Fetch : Name, GUID, OriginalName, FormalName, ISOCurrencyCode, DecimalPlaces, InMillions, Symbol
+    Compute : ArivuCurrencyName : $Name
+
+[Collection: Arivu List of Voucher Types]
+    Type : Voucher Type
+    Fetch : Name, Parent, GUID, MasterID, AlterID, NumberingMethod, IsDeemedPositive, AffectsStock, IsInvoice, IsOptional, IsCommonParty, PreventDuplicates, PrefillZero, BeginningNumber, EndingNumber
+    Compute : ArivuVoucherTypeName : $Name
+
+[Collection: Arivu List of Cost Categories]
+    Type : Cost Category
+    Fetch : Name, GUID, MasterID, AlterID, AllocateRevenue, AllocateNonRevenue
+    Compute : ArivuCostCategoryName : $Name
+
+[Collection: Arivu List of Cost Centres]
+    Type : Cost Centre
+    Fetch : Name, Parent, GUID, MasterID, AlterID, Category, RevenueLedger, NonRevenueLedger
+    Compute : ArivuCostCentreName : $Name
+
+[Collection: Arivu List of Units]
+    Type : Unit
+    Fetch : Name, GUID, DecimalPlaces, IsSimpleUnit, OriginalName, AdditionalUnits, Conversion, GSTRepUoM
+    Compute : ArivuUnitName : $Name
+
+[Collection: Arivu List of Attendance Types]
+    Type : Attendance Type
+    Fetch : Name, Parent, GUID, AttendanceType, PeriodType
+    Compute : ArivuAttendanceTypeName : $Name
+
+;; End Masters
