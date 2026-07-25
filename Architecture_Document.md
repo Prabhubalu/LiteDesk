@@ -694,6 +694,7 @@ Emit via `server/constants/domainEvents.js` / `domainEventHelpers`; `notificatio
 | Capability | Status |
 |------------|--------|
 | Astra v2 platform | **Active** — `docs/ASTRA_V2_ARCHITECTURE.md`, `/api/ai/v2` |
+| Astra Studio / Living Canvas | **Active** — `docs/ASTRA_STUDIO_ARCHITECTURE.md`, `/api/astra/studio`, WS `/api/astra/studio/ws`, flag `ASTRA_STUDIO` |
 | Legacy AI spine (`server/services/ai/`) | **Deprecated — cutover in progress**, still at `/api/ai` |
 | Document OCR index | Shipped (`documentOcrIndexService`) |
 | Document semantic search | Shipped — **in-app hash embeddings** on `Document.searchEmbedding` |

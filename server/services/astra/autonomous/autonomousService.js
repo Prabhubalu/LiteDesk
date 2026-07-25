@@ -11,7 +11,12 @@
 
 const AstraGoal = require('../../../models/AstraGoal');
 const toolRegistry = require('../tools/toolRegistry');
-const { ensureBootstrapped } = require('../bootstrap');
+const { ensureBootstrapped } = (() => {
+  // Call-time resolve avoids circular bootstrap capture of undefined
+  return {
+    ensureBootstrapped: () => require('../bootstrap').ensureBootstrapped(),
+  };
+})();
 
 function goalModel(deps) {
   return deps?.AstraGoal || AstraGoal;

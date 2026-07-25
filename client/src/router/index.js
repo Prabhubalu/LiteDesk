@@ -524,10 +524,21 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/astra-studio',
+    redirect: (to) => ({ path: '/astra', query: { ...to.query, view: 'canvas' } }),
+  },
+  {
+    path: '/astra-studio/:canvasId',
+    redirect: (to) => ({
+      path: '/astra',
+      query: { ...to.query, view: 'canvas', id: String(to.params.canvasId || '') },
+    }),
+  },
+  {
     path: '/astra',
     name: 'astra',
     component: () => import('@/astra/surfaces/GlobalCopilot.vue'),
-    meta: { requiresAuth: true, requiresAiSuite: true }
+    meta: { requiresAuth: true, requiresAiSuite: true },
   },
   {
     path: '/live-chat/sessions',

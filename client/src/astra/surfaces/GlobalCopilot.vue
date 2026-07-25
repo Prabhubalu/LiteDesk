@@ -1,29 +1,80 @@
 <template>
-  <div class="astra-copilot flex h-full min-h-0 w-full flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
-    <div
-      class="grid min-h-0 flex-1 grid-cols-1 overflow-hidden"
-      :class="showHistorySidebar ? 'md:grid-cols-[17.5rem_minmax(0,1fr)]' : ''"
-    >
-      <AstraConversationSidebar
-        v-if="showHistorySidebar"
-        :items="conversations"
-        :active-id="conversationId"
-        :loading="historyLoading"
-        :loading-more="historyLoadingMore"
-        :has-more="historyHasMore"
-        :mobile-open="mobileHistoryOpen"
-        @select="onSelectConversation"
-        @delete="onDeleteConversation"
-        @new-chat="onNewChat"
-        @close-mobile="mobileHistoryOpen = false"
-        @clear-older="onClearOlder"
-        @load-more="onLoadMoreHistory"
-      />
+  <div class="astra-copilot relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+    <div class="flex min-h-0 flex-1 overflow-hidden">
+      <div
+        class="relative hidden h-full shrink-0 overflow-hidden transition-[width] duration-300 ease-in-out md:block"
+        :style="{ width: sidebarDesktopOpen ? '17.5rem' : '0px' }"
+      >
+        <div class="h-full w-[17.5rem]">
+          <AstraConversationSidebar
+            :items="conversations"
+            :canvases="canvasSidebarItems"
+            :filter="sidebarFilter"
+            :active-id="sidebarActiveId"
+            :active-kind="sidebarActiveKind"
+            :loading="historyLoading"
+            :canvases-loading="canvasesLoading"
+            :loading-more="historyLoadingMore"
+            :has-more="historyHasMore"
+            :mobile-open="mobileHistoryOpen"
+            @update:filter="onSidebarFilter"
+            @select="onSelectConversation"
+            @select-canvas="onSelectCanvas"
+            @delete="onDeleteConversation"
+            @delete-canvas="onDeleteCanvas"
+            @new-chat="onNewChat"
+            @new-canvas="onNewCanvasFromSidebar"
+            @collapse="sidebarDesktopOpen = false"
+            @close-mobile="mobileHistoryOpen = false"
+            @clear-older="onClearOlder"
+            @load-more="onLoadMoreHistory"
+          />
+        </div>
+      </div>
 
-      <!-- Chat column -->
-      <section class="relative flex min-h-0 min-w-0 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+      <div class="relative min-h-0 min-w-0 flex-1 overflow-hidden">
+        <button
+          v-show="!sidebarDesktopOpen && viewMode !== 'canvas'"
+          type="button"
+          class="absolute left-3 top-3 z-30 hidden h-8 w-8 items-center justify-center rounded-lg border border-neutral-200/80 bg-white text-neutral-600 shadow-sm transition-opacity duration-200 hover:bg-neutral-50 hover:text-neutral-900 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 md:inline-flex"
+          :aria-label="t('astra.sidebarExpand')"
+          :title="t('astra.sidebarExpand')"
+          :aria-expanded="false"
+          @click="sidebarDesktopOpen = true"
+        >
+          <svg
+            class="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect x="3.75" y="4.75" width="16.5" height="14.5" rx="2.25" stroke="currentColor" stroke-width="1.5" />
+            <path d="M9.25 5v14" stroke="currentColor" stroke-width="1.5" />
+            <path d="M5.75 9h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M5.75 12h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M5.75 15h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+        </button>
+
+        <AstraLivingCanvas
+          v-if="viewMode === 'canvas'"
+          class="min-h-0 min-w-0"
+          :key="canvasSessionKey"
+          :seed-prompt="canvasSeedPrompt || undefined"
+          :seed-focus="canvasSeedFocus || undefined"
+          :resume-id="canvasResumeId || undefined"
+          :show-sidebar-expand="!sidebarDesktopOpen"
+          @back="exitCanvasMode"
+          @expand-sidebar="sidebarDesktopOpen = true"
+        />
+
+        <!-- Chat column -->
+        <section
+          v-else
+          class="relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-neutral-50 dark:bg-neutral-950"
+        >
       <header
-        v-if="showHistorySidebar"
         class="relative z-10 flex shrink-0 items-center border-b border-neutral-200/60 px-4 py-2 dark:border-white/[0.08] md:hidden"
       >
         <button
@@ -227,33 +278,78 @@
         >
           <div :class="isEmptyLanding ? '' : 'mx-auto w-full max-w-3xl'">
             <form
-              class="flex items-end gap-2 rounded-[1.5rem] border border-neutral-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-neutral-900"
+              class="astra-composer-shell flex flex-col gap-2 rounded-[1.35rem] bg-white p-2.5 shadow-sm dark:bg-neutral-900"
+              :class="isEmptyLanding
+                ? 'ring-2 ring-transparent [background:linear-gradient(#fff,#fff)_padding-box,linear-gradient(90deg,#7c3aed,#3b82f6)_border-box] dark:[background:linear-gradient(#171717,#171717)_padding-box,linear-gradient(90deg,#7c3aed,#3b82f6)_border-box] border-2 border-transparent'
+                : 'border border-neutral-200 dark:border-white/10'"
               @submit.prevent="onSend"
             >
-              <textarea
-                ref="inputEl"
-                v-model="draft"
-                rows="1"
-                class="max-h-40 min-h-[2.75rem] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100"
-                :placeholder="composerPlaceholder"
-                :disabled="asking"
-                @keydown.enter.exact.prevent="onSend"
-                @input="autoGrow"
-              />
-              <button
-                type="submit"
-                class="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-35 dark:bg-primary-500 dark:hover:bg-primary-600 dark:text-white"
-                :disabled="asking || !draft.trim()"
-                :aria-label="t('astra.send')"
+              <div class="flex items-end gap-2">
+                <textarea
+                  ref="inputEl"
+                  v-model="draft"
+                  rows="1"
+                  class="max-h-40 min-h-[2.75rem] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:text-neutral-100"
+                  :placeholder="composerPlaceholder"
+                  :disabled="asking"
+                  @keydown.enter.exact.prevent="onSend"
+                  @input="autoGrow"
+                />
+                <button
+                  type="submit"
+                  class="mb-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-35 dark:bg-primary-500 dark:hover:bg-primary-600 dark:text-white"
+                  :disabled="asking || !draft.trim()"
+                  :aria-label="t('astra.send')"
+                >
+                  <PaperAirplaneIcon class="h-4 w-4 -rotate-45 translate-x-px" />
+                </button>
+              </div>
+
+              <!-- Mode toggle: Astra AI | Astra Studio (new-chat primary) -->
+              <div
+                class="flex items-center gap-2 px-1 pb-0.5"
+                :class="isEmptyLanding ? '' : 'opacity-90'"
               >
-                <PaperAirplaneIcon class="h-4 w-4 -rotate-45 translate-x-px" />
-              </button>
+                <div
+                  class="inline-flex items-center rounded-full bg-neutral-100 p-0.5 dark:bg-neutral-800"
+                  role="tablist"
+                  :aria-label="t('astra.composerModeLabel')"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition"
+                    :class="composerMode === 'ai'
+                      ? 'bg-white text-emerald-600 shadow-sm dark:bg-neutral-700 dark:text-emerald-400'
+                      : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'"
+                    :aria-selected="composerMode === 'ai'"
+                    @click="composerMode = 'ai'"
+                  >
+                    <MagnifyingGlassIcon class="h-3.5 w-3.5" />
+                    {{ t('astra.modeAstraAi') }}
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition"
+                    :class="composerMode === 'studio'
+                      ? 'bg-white text-violet-600 shadow-sm dark:bg-neutral-700 dark:text-violet-400'
+                      : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400'"
+                    :aria-selected="composerMode === 'studio'"
+                    @click="composerMode = 'studio'"
+                  >
+                    <Squares2X2Icon class="h-3.5 w-3.5" />
+                    {{ t('astra.modeAstraStudio') }}
+                  </button>
+                </div>
+              </div>
             </form>
             <p class="mt-2 text-center text-[10px] text-neutral-400">{{ t('astra.composerFootnote') }}</p>
           </div>
         </div>
       </div>
       </section>
+      </div>
     </div>
 
     <EmailComposeDrawer
@@ -269,20 +365,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onErrorCaptured, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onActivated, onBeforeUnmount, onErrorCaptured, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {
   Bars3Icon,
   BriefcaseIcon,
   ChartBarIcon,
+  MagnifyingGlassIcon,
   PaperAirplaneIcon,
+  SparklesIcon,
+  Squares2X2Icon,
   TicketIcon,
   UserIcon,
 } from '@heroicons/vue/24/outline';
 import type { Component } from 'vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
+import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import { useAstraAsk, type AstraProposal, type AstraSuggestion } from '@/astra/composables/useAstraAsk';
 import { useAstraConversations } from '@/astra/composables/useAstraConversations';
@@ -290,8 +390,12 @@ import { useAstraStatusLine } from '@/astra/composables/useAstraStatusLine';
 import AstraMessageBlocks from '@/astra/blocks/AstraMessageBlocks.vue';
 import AstraAnswerBody from '@/astra/components/AstraAnswerBody.vue';
 import AstraConversationSidebar from '@/astra/components/AstraConversationSidebar.vue';
+import type { SidebarFilter } from '@/astra/components/AstraConversationSidebar.vue';
 import AstraFollowUps from '@/astra/components/AstraFollowUps.vue';
 import AstraLogo from '@/astra/components/AstraLogo.vue';
+import AstraLivingCanvas from '@/astraStudio/surfaces/AstraLivingCanvas.vue';
+import { deleteCanvas, listCanvases } from '@/astraStudio/api/studioApi';
+import type { CanvasMeta } from '@/astraStudio/types';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import type { AstraUiBlock } from '@/astra/blocks/types';
 import { resolveAstraNbaIcon } from '@/astra/utils/resolveAstraNbaIcon';
@@ -329,8 +433,10 @@ interface HeroSuggestion {
 }
 
 const { t } = useI18n();
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { findTabByPath } = useTabs();
 const { asking, confirming, error, askSync, confirmProposal, fetchNba } = useAstraAsk('copilot');
 const { statusLine } = useAstraStatusLine(asking);
 const {
@@ -346,11 +452,301 @@ const {
   upsertLocal,
 } = useAstraConversations();
 
+const viewMode = ref<'chat' | 'canvas'>(
+  String(route.query.view || '') === 'canvas' ? 'canvas' : 'chat',
+);
+const canvasSeedPrompt = ref('');
+const canvasSeedFocus = ref<{ moduleKey?: string; recordId?: string; recordName?: string } | null>(null);
+/** Bumps on each Studio open so Living Canvas remounts a fresh session. */
+const canvasSessionKey = ref(0);
+/** Only set when resuming an existing board via ?id= (not on new generate). */
+const canvasResumeId = ref('');
+const CANVAS_RESUME_STORAGE_KEY = 'astra.studio.lastCanvasId';
+
+function persistCanvasResume(id: string): void {
+  const trimmed = String(id || '').trim();
+  if (!trimmed) return;
+  try {
+    sessionStorage.setItem(CANVAS_RESUME_STORAGE_KEY, trimmed);
+  } catch {
+    // ignore quota / private mode
+  }
+  // TabBar stores path without query by default — keep Astra tab on the open canvas URL.
+  try {
+    const tab = findTabByPath('/astra') || findTabByPath(route.fullPath);
+    if (tab) {
+      tab.path = `/astra?view=canvas&id=${encodeURIComponent(trimmed)}`;
+    }
+  } catch {
+    // tabs unavailable
+  }
+}
+
+function clearPersistedCanvasResume(): void {
+  try {
+    sessionStorage.removeItem(CANVAS_RESUME_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+  try {
+    const tab = findTabByPath('/astra');
+    if (tab && String(tab.path || '').includes('view=canvas')) {
+      tab.path = '/astra';
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function readPersistedCanvasResume(): string {
+  try {
+    return String(sessionStorage.getItem(CANVAS_RESUME_STORAGE_KEY) || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+function isAstraRoute(): boolean {
+  return route.name === 'astra' || String(route.path || '').startsWith('/astra');
+}
+
+/** Restore Living Canvas after tab switches (keep-alive) or bare /astra navigations. */
+function restoreCanvasSessionIfNeeded(): boolean {
+  if (!isAstraRoute()) return false;
+  const urlView = String(route.query.view || '');
+  const urlId = String(route.query.id || '').trim();
+
+  if (urlView === 'canvas' && urlId) {
+    canvasResumeId.value = urlId;
+    persistCanvasResume(urlId);
+    viewMode.value = 'canvas';
+    sidebarFilter.value = 'canvases';
+    composerMode.value = 'studio';
+    return true;
+  }
+
+  if (urlView === 'canvas') {
+    viewMode.value = 'canvas';
+    sidebarFilter.value = 'canvases';
+    composerMode.value = 'studio';
+    return true;
+  }
+
+  // Explicit non-canvas view on /astra — leave chat
+  if (urlView && urlView !== 'canvas') {
+    viewMode.value = 'chat';
+    return false;
+  }
+
+  const saved = readPersistedCanvasResume();
+  if (!saved) {
+    viewMode.value = 'chat';
+    return false;
+  }
+
+  canvasResumeId.value = saved;
+  viewMode.value = 'canvas';
+  sidebarFilter.value = 'canvases';
+  composerMode.value = 'studio';
+  if (urlId !== saved || urlView !== 'canvas') {
+    void router.replace({
+      path: '/astra',
+      query: {
+        ...route.query,
+        view: 'canvas',
+        id: saved,
+      },
+    });
+  }
+  return true;
+}
+
+const sidebarFilter = ref<SidebarFilter>('all');
+const canvasesLoading = ref(false);
+const canvasList = ref<CanvasMeta[]>([]);
+/** Composer mode on new chat: Astra AI (chat) vs Astra Studio (Living Canvas). */
+const composerMode = ref<'ai' | 'studio'>('ai');
+
+const canvasSidebarItems = computed(() =>
+  canvasList.value.map((c) => ({
+    id: c._id,
+    title: c.title || '',
+    updatedAt: c.updatedAt,
+    createdAt: c.createdAt,
+  })),
+);
+
+const sidebarActiveId = computed(() => {
+  if (viewMode.value === 'canvas') {
+    return String(route.query.id || canvasResumeId.value || '');
+  }
+  return conversationId.value || '';
+});
+
+const sidebarActiveKind = computed<'chat' | 'canvas' | null>(() => {
+  if (viewMode.value === 'canvas') return 'canvas';
+  if (conversationId.value) return 'chat';
+  return null;
+});
+
+async function refreshCanvasList(): Promise<void> {
+  canvasesLoading.value = true;
+  try {
+    const list = await listCanvases({ limit: 50 });
+    const items = list.items || [];
+    const openId = String(route.query.id || canvasResumeId.value || '');
+    const orphans = items.filter((c) => isUntitledBlankCanvas(c) && c._id !== openId);
+    canvasList.value = items.filter((c) => !isUntitledBlankCanvas(c));
+    for (const orphan of orphans.slice(0, 10)) {
+      void deleteCanvas(orphan._id).catch(() => undefined);
+    }
+  } catch {
+    // keep prior list
+  } finally {
+    canvasesLoading.value = false;
+  }
+}
+
+function isUntitledBlankCanvas(c: CanvasMeta): boolean {
+  const title = String(c.title || '').trim();
+  const untitled = !title || /^untitled canvas$/i.test(title);
+  if (!untitled) return false;
+  const type = String(c.canvasType || 'blank');
+  return type === 'blank' || type === '';
+}
+
+function onSidebarFilter(next: SidebarFilter) {
+  sidebarFilter.value = next;
+  if (next === 'canvases') composerMode.value = 'studio';
+  if (next === 'chats') composerMode.value = 'ai';
+}
+
+function openCanvasMode(
+  seed?: string,
+  focus?: { moduleKey?: string; recordId?: string; recordName?: string },
+) {
+  canvasSeedPrompt.value = seed || '';
+  canvasSeedFocus.value = focus?.moduleKey && focus?.recordId ? { ...focus } : null;
+  canvasResumeId.value = '';
+  clearPersistedCanvasResume();
+  canvasSessionKey.value += 1;
+  composerMode.value = 'studio';
+  sidebarFilter.value = 'canvases';
+  viewMode.value = 'canvas';
+  const { id: _omitCanvasId, ...restQuery } = route.query;
+  void router.replace({ query: { ...restQuery, view: 'canvas' } });
+}
+
+function exitCanvasMode() {
+  viewMode.value = 'chat';
+  canvasSeedPrompt.value = '';
+  canvasSeedFocus.value = null;
+  canvasResumeId.value = '';
+  clearPersistedCanvasResume();
+  composerMode.value = 'ai';
+  const q = { ...route.query };
+  delete q.view;
+  delete q.id;
+  void router.replace({ query: q });
+}
+
+function onSelectCanvas(id: string) {
+  canvasSeedPrompt.value = '';
+  canvasSeedFocus.value = null;
+  canvasResumeId.value = id;
+  persistCanvasResume(id);
+  canvasSessionKey.value += 1;
+  composerMode.value = 'studio';
+  sidebarFilter.value = 'canvases';
+  viewMode.value = 'canvas';
+  void router.replace({
+    query: {
+      ...route.query,
+      view: 'canvas',
+      id,
+    },
+  });
+}
+
+function onNewCanvasFromSidebar() {
+  // Never create an empty "Untitled canvas" — open Studio composer instead.
+  if (viewMode.value === 'canvas') exitCanvasMode();
+  composerMode.value = 'studio';
+  sidebarFilter.value = 'canvases';
+  draft.value = '';
+  void nextTick(() => {
+    autoGrow();
+    inputEl.value?.focus();
+  });
+}
+
+async function onDeleteCanvas(id: string) {
+  try {
+    await deleteCanvas(id);
+    canvasList.value = canvasList.value.filter((c) => c._id !== id);
+    if (viewMode.value === 'canvas' && String(route.query.id || canvasResumeId.value) === id) {
+      exitCanvasMode();
+    }
+  } catch {
+    // ignore
+  }
+}
+
+// Deep-link / refresh / bare /astra: resume last canvas (TabBar + sidebar drop query params).
+restoreCanvasSessionIfNeeded();
+
+watch(
+  () => route.query.view,
+  (v) => {
+    if (!isAstraRoute()) return;
+    if (v === 'canvas') {
+      viewMode.value = 'canvas';
+      return;
+    }
+    // Bare /astra after tab switch — restore; don't wipe keep-alive canvas state.
+    if (!v && readPersistedCanvasResume()) {
+      restoreCanvasSessionIfNeeded();
+      return;
+    }
+    viewMode.value = 'chat';
+  },
+);
+
+watch(
+  () => String(route.query.id || ''),
+  (id) => {
+    if (id && (viewMode.value === 'canvas' || route.query.view === 'canvas')) {
+      canvasResumeId.value = id;
+      persistCanvasResume(id);
+      void refreshCanvasList();
+    }
+  },
+);
+
+onActivated(() => {
+  restoreCanvasSessionIfNeeded();
+});
+
 const draft = ref('');
 const messages = ref<CopilotMessage[]>([]);
 const conversationId = ref<string | undefined>(undefined);
 const conversationTitle = ref('');
 const mobileHistoryOpen = ref(false);
+const SIDEBAR_OPEN_KEY = 'astra.sidebarDesktopOpen';
+const sidebarDesktopOpen = ref(true);
+try {
+  const stored = localStorage.getItem(SIDEBAR_OPEN_KEY);
+  if (stored === '0') sidebarDesktopOpen.value = false;
+} catch {
+  /* ignore */
+}
+watch(sidebarDesktopOpen, (open) => {
+  try {
+    localStorage.setItem(SIDEBAR_OPEN_KEY, open ? '1' : '0');
+  } catch {
+    /* ignore */
+  }
+});
 const messagesEl = ref<HTMLElement | null>(null);
 const inputEl = ref<HTMLTextAreaElement | null>(null);
 const showEmailModal = ref(false);
@@ -360,8 +756,6 @@ const lastAskFocus = ref<{ moduleKey?: string; recordId?: string } | null>(null)
 const notifications = useNotifications();
 
 /** Always mount the history rail so the grid does not jump after conversations hydrate. */
-const showHistorySidebar = computed(() => true);
-
 const isEmptyLanding = computed(
   () => !messages.value.length && !asking.value,
 );
@@ -400,20 +794,182 @@ const greeting = computed(() => {
   return name ? t('astra.greetingEveningNamed', { name }) : t('astra.greetingEvening');
 });
 
-const composerPlaceholder = computed(() =>
-  firstName.value ? t('astra.askPromptNamed', { name: firstName.value }) : t('astra.askPrompt'),
-);
+const composerPlaceholder = computed(() => {
+  if (composerMode.value === 'studio') {
+    return t('astra.askPromptStudio');
+  }
+  return firstName.value ? t('astra.askPromptNamed', { name: firstName.value }) : t('astra.askPrompt');
+});
 
-const defaultHero = computed<HeroSuggestion[]>(() => [
+const defaultAiHero = computed<HeroSuggestion[]>(() => [
   { id: 'deals', title: t('astra.heroDealsTitle'), subtitle: t('astra.heroDealsSubtitle'), prompt: t('astra.starterOpenDeals'), icon: BriefcaseIcon },
   { id: 'pulse', title: t('astra.heroPulseTitle'), subtitle: t('astra.heroPulseSubtitle'), prompt: t('astra.starterPipelinePulse'), icon: ChartBarIcon },
   { id: 'cases', title: t('astra.heroCasesTitle'), subtitle: t('astra.heroCasesSubtitle'), prompt: t('astra.starterOpenCases'), icon: TicketIcon },
   { id: 'people', title: t('astra.heroPeopleTitle'), subtitle: t('astra.heroPeopleSubtitle'), prompt: t('astra.starterFindContact'), icon: UserIcon },
 ]);
 
+const defaultStudioHero = computed<HeroSuggestion[]>(() => [
+  {
+    id: 'studio-meeting',
+    title: t('astra.studioHeroMeetingTitle'),
+    subtitle: t('astra.studioHeroMeetingSubtitle'),
+    prompt: t('astra.starterLivingCanvas'),
+    icon: SparklesIcon,
+  },
+  {
+    id: 'studio-war-room',
+    title: t('astra.studioHeroWarRoomTitle'),
+    subtitle: t('astra.studioHeroWarRoomSubtitle'),
+    prompt: t('astra.starterWarRoom'),
+    icon: BriefcaseIcon,
+  },
+  {
+    id: 'studio-360',
+    title: t('astra.studioHero360Title'),
+    subtitle: t('astra.studioHero360Subtitle'),
+    prompt: t('astra.starterCustomer360'),
+    icon: UserIcon,
+  },
+  {
+    id: 'studio-qbr',
+    title: t('astra.studioHeroQbrTitle'),
+    subtitle: t('astra.studioHeroQbrSubtitle'),
+    prompt: t('astra.starterQbr'),
+    icon: ChartBarIcon,
+  },
+]);
+
+/** Map live NBA / workload cards → Studio workspace prompts grounded on the same records. */
+function studioSuggestionFromNba(card: {
+  id: string;
+  title: string;
+  subtitle: string;
+  prompt: string;
+  moduleKey?: string;
+  recordId?: string;
+  recordName?: string;
+  iconKey?: string;
+}, index: number): HeroSuggestion | null {
+  const moduleKey = String(card.moduleKey || '').toLowerCase();
+  const recordName = cleanRecordLabel(card.recordName || card.title);
+  if (!recordName) return null;
+
+  const focus = card.recordId
+    ? { moduleKey: card.moduleKey, recordId: card.recordId, recordName }
+    : undefined;
+
+  if (moduleKey === 'deals' || moduleKey === 'deal') {
+    return {
+      id: `studio-deal-${card.id || index}`,
+      title: t('astra.studioGroundedWarRoomTitle', { name: recordName }),
+      subtitle: card.subtitle || t('astra.studioGroundedWarRoomSubtitle'),
+      prompt: t('astra.studioGroundedWarRoomPrompt', { name: recordName }),
+      moduleKey: focus?.moduleKey,
+      recordId: focus?.recordId,
+      recordName,
+      icon: BriefcaseIcon,
+    };
+  }
+  if (moduleKey === 'cases' || moduleKey === 'case') {
+    return {
+      id: `studio-case-${card.id || index}`,
+      title: t('astra.studioGroundedSupportTitle', { name: recordName }),
+      subtitle: card.subtitle || t('astra.studioGroundedSupportSubtitle'),
+      prompt: t('astra.studioGroundedSupportPrompt', { name: recordName }),
+      moduleKey: focus?.moduleKey,
+      recordId: focus?.recordId,
+      recordName,
+      icon: TicketIcon,
+    };
+  }
+  if (moduleKey === 'quotes' || moduleKey === 'quote') {
+    return {
+      id: `studio-quote-${card.id || index}`,
+      title: t('astra.studioGroundedQuoteTitle', { name: recordName }),
+      subtitle: card.subtitle || t('astra.studioGroundedQuoteSubtitle'),
+      prompt: t('astra.studioGroundedQuotePrompt', { name: recordName }),
+      moduleKey: focus?.moduleKey,
+      recordId: focus?.recordId,
+      recordName,
+      icon: ChartBarIcon,
+    };
+  }
+  if (moduleKey === 'tasks' || moduleKey === 'task') {
+    return {
+      id: `studio-task-${card.id || index}`,
+      title: t('astra.studioGroundedTaskTitle', { name: recordName }),
+      subtitle: card.subtitle || t('astra.studioGroundedTaskSubtitle'),
+      prompt: t('astra.studioGroundedTaskPrompt', { name: recordName }),
+      moduleKey: focus?.moduleKey,
+      recordId: focus?.recordId,
+      recordName,
+      icon: SparklesIcon,
+    };
+  }
+  if (
+    moduleKey === 'organizations'
+    || moduleKey === 'organization'
+    || moduleKey === 'people'
+    || moduleKey === 'person'
+  ) {
+    return {
+      id: `studio-acct-${card.id || index}`,
+      title: t('astra.studioGrounded360Title', { name: recordName }),
+      subtitle: card.subtitle || t('astra.studioGrounded360Subtitle'),
+      prompt: t('astra.studioGrounded360Prompt', { name: recordName }),
+      moduleKey: focus?.moduleKey,
+      recordId: focus?.recordId,
+      recordName,
+      icon: UserIcon,
+    };
+  }
+
+  // Generic but still named to the user's card
+  return {
+    id: `studio-nba-${card.id || index}`,
+    title: t('astra.studioGroundedGenericTitle', { name: recordName }),
+    subtitle: card.subtitle || t('astra.studioGroundedGenericSubtitle'),
+    prompt: t('astra.studioGroundedGenericPrompt', { name: recordName }),
+    moduleKey: focus?.moduleKey,
+    recordId: focus?.recordId,
+    recordName,
+    icon: resolveAstraNbaIcon({
+      iconKey: card.iconKey,
+      moduleKey: card.moduleKey,
+      title: card.title,
+      label: card.title,
+    }),
+  };
+}
+
+function cleanRecordLabel(raw: string): string {
+  return String(raw || '')
+    .replace(/^(Clear overdue:\s*|Revive\s+|Unblock\s+|Advance\s+|Triage:\s*)/i, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 64);
+}
+
 const heroSuggestions = computed(() => {
-  if (!nbaCards.value.length) return defaultHero.value;
-  // Never pad with static placeholders once we have live workload cards.
+  if (composerMode.value === 'studio') {
+    const grounded: HeroSuggestion[] = [];
+    const seen = new Set<string>();
+    for (let i = 0; i < nbaCards.value.length; i += 1) {
+      const card = nbaCards.value[i];
+      if (!card) continue;
+      const mapped = studioSuggestionFromNba(card, i);
+      if (!mapped) continue;
+      const key = `${mapped.moduleKey || ''}:${mapped.recordId || mapped.title}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      grounded.push(mapped);
+      if (grounded.length >= 4) break;
+    }
+    // Prefer live grounded cards; only fall back to generics when NBA is empty
+    if (grounded.length) return grounded;
+    return defaultStudioHero.value;
+  }
+  if (!nbaCards.value.length) return defaultAiHero.value;
   return nbaCards.value.slice(0, 4).map((card, index) => ({
     id: card.id || `nba-${index}`,
     title: card.title,
@@ -518,10 +1074,15 @@ async function ask(text: string, focus: {
 }
 
 async function onSend() {
-  const text = draft.value;
+  const text = draft.value.trim();
   draft.value = '';
   await nextTick();
   autoGrow();
+  if (!text) return;
+  if (composerMode.value === 'studio') {
+    openCanvasMode(text);
+    return;
+  }
   await ask(text);
 }
 
@@ -532,17 +1093,27 @@ async function onSuggestion(suggestion: string | AstraSuggestion | {
   recordName?: string;
   title?: string;
   label?: string;
+  id?: string;
 }) {
   if (typeof suggestion === 'string') {
     const parsed = tryParseSuggestionJson(suggestion);
     if (parsed) {
+      if (isCanvasIntent(parsed.prompt)) {
+        openCanvasMode(parsed.prompt);
+        return;
+      }
       await ask(parsed.prompt, {});
+      return;
+    }
+    if (isCanvasIntent(suggestion)) {
+      openCanvasMode(suggestion);
       return;
     }
     await ask(suggestion);
     return;
   }
   const row = suggestion as {
+    id?: string;
     prompt?: string;
     label?: string;
     title?: string;
@@ -552,11 +1123,25 @@ async function onSuggestion(suggestion: string | AstraSuggestion | {
   };
   const prompt = String(row.prompt || row.label || row.title || '').trim();
   if (!prompt) return;
+  if (row.id === 'canvas-meeting' || row.id?.startsWith('studio-') || isCanvasIntent(prompt)) {
+    openCanvasMode(prompt, {
+      moduleKey: row.moduleKey,
+      recordId: row.recordId,
+      recordName: row.recordName || row.title || row.label,
+    });
+    return;
+  }
   await ask(prompt, {
     moduleKey: row.moduleKey,
     recordId: row.recordId,
     recordName: row.recordName || row.title || row.label,
   });
+}
+
+function isCanvasIntent(text: string): boolean {
+  return /\b(living\s+canvas|meeting\s+prep|prepare\s+(me\s+)?for|war\s*room|customer\s*360|account\s+plan|qbr)\b/i.test(
+    String(text || ''),
+  );
 }
 
 function tryParseSuggestionJson(raw: string): { label: string; prompt: string } | null {
@@ -694,6 +1279,9 @@ function onDismissProposal(messageId: string, proposalId: string) {
 }
 
 function onNewChat() {
+  if (viewMode.value === 'canvas') exitCanvasMode();
+  sidebarFilter.value = 'chats';
+  composerMode.value = 'ai';
   messages.value = [];
   conversationId.value = undefined;
   conversationTitle.value = '';
@@ -709,6 +1297,9 @@ function onNewChat() {
 
 async function onSelectConversation(id: string) {
   if (!id || asking.value) return;
+  if (viewMode.value === 'canvas') exitCanvasMode();
+  sidebarFilter.value = 'chats';
+  composerMode.value = 'ai';
   try {
     const detail = await loadOne(id);
     if (!detail) return;
@@ -759,6 +1350,7 @@ async function onClearOlder() {
 
 onMounted(async () => {
   window.addEventListener(ARIVU_OPEN_EMAIL_COMPOSE, onOpenEmailComposeEvent as EventListener);
+  void refreshCanvasList();
   await Promise.all([
     refreshHistory().then(async () => {
       // Retry wipe until older threads are gone (v1 flag could stick after a failed bulk delete).

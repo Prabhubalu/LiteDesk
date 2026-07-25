@@ -870,5 +870,9 @@
   "inventoryItemGroups": {
     "message": "Item Groups",
     "description": "Inventory dashboard link to item groups CPQ settings"
+  },
+  "astraStudio": {
+    "message": "Astra Studio",
+    "description": "Living canvas Astra Studio workspace navigation label"
   }
 }

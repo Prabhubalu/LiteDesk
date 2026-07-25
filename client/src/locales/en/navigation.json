@@ -23,6 +23,10 @@
     "message": "Astra",
     "description": "Full-page Astra AI assistant navigation label"
   },
+  "astraStudio": {
+    "message": "Astra Studio",
+    "description": "Living canvas Astra Studio workspace navigation label"
+  },
   "arivuCanvas": {
     "message": "Arivu Canvas",
     "description": "Generative Arivu Canvas workspace navigation label"

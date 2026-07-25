@@ -34,7 +34,7 @@ const CATALOG_META = [
     title: 'Astra Mission Control',
     description:
       'Central orchestrator: classifies intent, plans multi-agent work, invokes specialists, merges answers, and enforces confirmation. Does not mutate Platform data directly.',
-    tools: ['agent.handoff'],
+    tools: ['agent.handoff', 'canvas.generate', 'canvas.mutate', 'canvas.suggest', 'canvas.export'],
     autonomy: 'assist',
     role: 'orchestrator',
   },
@@ -43,7 +43,14 @@ const CATALOG_META = [
     title: 'Summary Agent',
     description:
       'Read-only 360° understanding of any Platform record and related activity — risks, opportunities, and next actions in under a minute.',
-    tools: [...READ_CORE, ...READ_PEOPLE_ORGS, 'documents.search', 'knowledge.search'],
+    tools: [
+      ...READ_CORE,
+      ...READ_PEOPLE_ORGS,
+      'documents.search',
+      'knowledge.search',
+      'canvas.generate',
+      'canvas.mutate',
+    ],
     autonomy: 'assist',
     role: 'specialist',
   },
