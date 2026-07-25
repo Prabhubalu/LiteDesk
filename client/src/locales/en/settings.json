@@ -18839,6 +18839,82 @@
     "message": "No recent activity",
     "description": "Empty activity list"
   },
+  "tallyLogTitle": {
+    "message": "Sync log",
+    "description": "Full connector log section title"
+  },
+  "tallyLogDesc": {
+    "message": "Complete event and job history. Filter by source, level, status, search, or time range. Click a row for details.",
+    "description": "Full connector log section description"
+  },
+  "tallyLogEmpty": {
+    "message": "No log entries match these filters",
+    "description": "Empty filtered log"
+  },
+  "tallyLogCount": {
+    "message": "Showing {shown} · {total} matched",
+    "description": "Log result count"
+  },
+  "tallyLogSearch": {
+    "message": "Search message, code, job type…",
+    "description": "Log search placeholder"
+  },
+  "tallyLogSource": {
+    "message": "Source",
+    "description": "Log source filter label"
+  },
+  "tallyLogSourceAll": {
+    "message": "All sources",
+    "description": "Log source all"
+  },
+  "tallyLogSourceEvents": {
+    "message": "Events only",
+    "description": "Log source events"
+  },
+  "tallyLogSourceJobs": {
+    "message": "Jobs only",
+    "description": "Log source jobs"
+  },
+  "tallyLogLevel": {
+    "message": "Level",
+    "description": "Log level filter"
+  },
+  "tallyLogLevelAll": {
+    "message": "All levels",
+    "description": "Log level all"
+  },
+  "tallyLogJobStatus": {
+    "message": "Job status",
+    "description": "Job status filter"
+  },
+  "tallyLogJobStatusAll": {
+    "message": "All job statuses",
+    "description": "Job status all"
+  },
+  "tallyLogApply": {
+    "message": "Apply",
+    "description": "Apply log filters"
+  },
+  "tallyLogReset": {
+    "message": "Clear filters",
+    "description": "Reset log filters"
+  },
+  "tallyLogFrom": {
+    "message": "From",
+    "description": "Log from datetime"
+  },
+  "tallyLogTo": {
+    "message": "To",
+    "description": "Log to datetime"
+  },
+  "tallyLogLoading": {
+    "message": "Loading log…",
+    "description": "Log loading state"
+  },
+  "tallyLogLoadMore": {
+    "message": "Load more",
+    "description": "Log pagination"
+  },
   "tallyActivityStubReady": {
     "message": "Integration Center ready",
     "description": "Stub timeline title when no jobs"
@@ -18899,6 +18975,10 @@
     "message": "XML API enabled",
     "description": "Validation checklist item"
   },
+  "tallyCheckTdl": {
+    "message": "Arivu TDL pack loaded",
+    "description": "Validation checklist — Tally TDL pack v1.0.0"
+  },
   "tallyCheckCompany": {
     "message": "Company bound",
     "description": "Validation checklist item"
@@ -18940,7 +19020,7 @@
     "description": "Wizard step 3"
   },
   "tallyWizardStep3Hint": {
-    "message": "Run Dry run with TallyPrime open to discover companies.",
+    "message": "Open a company in TallyPrime (not just Gateway), enable XML HTTP (port 9000), then Dry run.",
     "description": "Wizard step 3 hint"
   },
   "tallyWizardStep3Done": {
@@ -18994,6 +19074,10 @@
   "tallyOfflineStale": {
     "message": "Agent heartbeat is stale. Check the tray icon and that the Windows service is running.",
     "description": "Offline banner stale heartbeat"
+  },
+  "tallyZeroCompaniesHint": {
+    "message": "No Tally companies yet. Load TDL pack v1.0.0: F1 → TDL & Add-On → Manage Local TDLs → add C:\\Program Files\\Arivu\\Connector\\tdl\\ArivuConnector.tdl (or ArivuConnector.All.tdl if Includes fail). Sibling modules must stay in that folder. Restart Tally until Gateway shows Arivu Connector. Enable HTTP 9000, keep Desktop → Arivu Connector open, then Dry run.",
+    "description": "Shown when companies count is zero"
   }
 }
 

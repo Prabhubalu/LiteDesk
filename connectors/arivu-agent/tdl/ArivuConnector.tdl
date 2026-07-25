@@ -1,0 +1,90 @@
+;; ============================================================================
+;; Arivu Connector TDL Pack v1.0.0
+;; Compatible: TallyPrime 3.x / 4.x (+ Tally.ERP 9 where object names match)
+;; Source: TallyHelp XML Integration, GST schema Rel 3+, connector field requirements
+;;
+;; LOAD (once per PC):
+;;   F1 → TDL & Add-On → F4 Manage Local TDLs
+;;   Load selected TDL files on startup = Yes
+;;   Add THIS file only (it Includes sibling modules from the same folder)
+;;   Accept → Restart TallyPrime
+;;
+;; Do NOT rename Collection IDs — Arivu Agent depends on exact names.
+;; Version: keep in sync with ArivuConnector.VERSION below and agent ARIVU_TDL_VERSION.
+;; ============================================================================
+
+[#Include: ArivuConnector.Masters.tdl]
+[#Include: ArivuConnector.Inventory.tdl]
+[#Include: ArivuConnector.Vouchers.tdl]
+[#Include: ArivuConnector.GST.tdl]
+
+;; ---------------------------------------------------------------------------
+;; Gateway entry + version probe
+;; ---------------------------------------------------------------------------
+
+[#Menu: Gateway of Tally]
+    Add : Key Item : Before : Quit : Arivu Connector : A : Display : Arivu Connector Info : NOT $$IsEmpty:$$SelectedCmps
+
+[Report: Arivu Connector Info]
+    Form : Arivu Connector Info
+    Title : $$LocaleString:"Arivu Connector"
+
+[Form: Arivu Connector Info]
+    Parts : Arivu Connector Info
+    Width : 70% Screen
+    Height : 55% Screen
+
+[Part: Arivu Connector Info]
+    Lines : ACI Title, ACI Ver, ACI Line1, ACI Line2, ACI Line3, ACI Line4, ACI Line5
+    Scroll : Vertical
+
+[Line: ACI Title]
+    Fields : ACI Medium Bold
+    Local : Field : ACI Medium Bold : Set as : $$LocaleString:"Arivu Connector TDL is loaded"
+    Space Top : 1
+
+[Line: ACI Ver]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"TDL Pack Version: 1.0.0 (Arivu)"
+
+[Line: ACI Line1]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"1) F12 → Enable ODBC / HTTP server (port 9000)"
+
+[Line: ACI Line2]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"2) Keep Desktop → Arivu Connector running (user session)"
+
+[Line: ACI Line3]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"3) Dry run from Arivu Integration Center to discover companies"
+
+[Line: ACI Line4]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"Pack covers: Masters, Inventory, Vouchers (with entries), GST/HSN, incremental AlterID"
+
+[Line: ACI Line5]
+    Fields : ACI Medium
+    Local : Field : ACI Medium : Set as : $$LocaleString:"Support: https://app.arivusystems.com/integrations/tally"
+
+[Field: ACI Medium Bold]
+    Use : Name Field
+    Align : Centre
+    Style : Large Bold
+    Color : Blue
+
+[Field: ACI Medium]
+    Use : Name Field
+    Align : Left
+    Full Width : Yes
+    Word Wrap : Yes
+
+;; Tiny collection so agent can verify TDL load / version via XML
+[Collection: Arivu Connector Meta]
+    Type : Company
+    Max : 1
+    Fetch : Name, GUID
+    Compute : ArivuTdlPackVersion : "1.0.0"
+    Compute : ArivuTdlPackName : "ArivuConnector"
+
+;; End loader

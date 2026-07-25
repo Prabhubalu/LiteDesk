@@ -101,6 +101,17 @@
       <ul class="companies" id="companyList"></ul>
     </section>
 
+    <section class="card">
+      <p class="steps">
+        <strong>Load Arivu TDL pack in Tally (required — v1.0.0)</strong><br />
+        1. TallyPrime → F1 → TDL &amp; Add-On → F4 Manage Local TDLs<br />
+        2. Load on startup = Yes → add<br />
+        <code style="font-size:0.75rem;color:var(--text)">C:\Program Files\Arivu\Connector\tdl\ArivuConnector.tdl</code><br />
+        (Keep sibling modules in the same folder. Or load <code>ArivuConnector.All.tdl</code> if Includes fail. Gateway must show “Arivu Connector” v1.0.0)<br />
+        3. Restart Tally → enable HTTP/ODBC port 9000
+      </p>
+    </section>
+
     <section class="card" id="pairCard">
       <p class="steps">
         <strong>1.</strong> In Arivu open <em>Integrations → Tally</em> and copy the pairing code.<br />

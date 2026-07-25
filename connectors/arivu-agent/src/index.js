@@ -24,6 +24,11 @@ const {
   buildImportVoucherEnvelope,
   postXml,
 } = require('./xmlClient');
+const {
+  resolveCollectionId,
+  collectionExport,
+  ARIVU_TDL_PACK_VERSION,
+} = require('./arivuTdlXml');
 const { OfflineQueue } = require('./offlineQueue');
 const { sendHeartbeat, pollJobs, ackJob } = require('./heartbeat');
 const { runPairingCli } = require('./pairing');
@@ -44,6 +49,7 @@ async function runDiscoverAndHealth(cfg) {
     xmlEnabled: Boolean(discovery.tallyPort),
     companyAvailable: companies.length > 0,
     financialYear: companies.some((c) => Boolean(c.financialYear)),
+    tdlLoaded: Boolean(discovery.tdlLoaded),
   };
   return {
     ok: Boolean(discovery.tallyRunning),
@@ -52,11 +58,17 @@ async function runDiscoverAndHealth(cfg) {
       companies,
       checks,
       tallyVersion: discovery.tallyVersion,
+      tdlPackVersion: discovery.tdlPackVersion || ARIVU_TDL_PACK_VERSION,
+      tdlLoaded: Boolean(discovery.tdlLoaded),
+      hint: discovery.hint || null,
       stats: {
         companies: companies.length,
         parties: 0,
         items: 0,
         vouchers: 0,
+        openPorts: discovery.openPorts || [],
+        tallyPort: discovery.tallyPort || null,
+        tdlLoaded: Boolean(discovery.tdlLoaded),
       },
     },
   };
@@ -121,13 +133,27 @@ async function handleJob(cfg, job, queue) {
     }
 
     if (params.exportId && xmlPort) {
-      const xml =
-        params.masterType
-          ? buildExportMastersEnvelope(params.masterType, params.company || null)
-          : buildExportEnvelope({
-              id: params.exportId,
-              company: params.company || null,
-            });
+      let xml = params.xml || null;
+      if (!xml) {
+        const collectionId =
+          resolveCollectionId(params.exportId) ||
+          resolveCollectionId(params.masterType) ||
+          null;
+        if (collectionId) {
+          xml = collectionExport(collectionId, {
+            company: params.company || null,
+            fromDate: params.fromDate || null,
+            toDate: params.toDate || null,
+          });
+        } else if (params.masterType) {
+          xml = buildExportMastersEnvelope(params.masterType, params.company || null);
+        } else {
+          xml = buildExportEnvelope({
+            id: params.exportId,
+            company: params.company || null,
+          });
+        }
+      }
       const res = await postXml({ host: cfg.tallyHost, port: xmlPort, xml });
       return {
         ok: res.ok,
@@ -135,6 +161,8 @@ async function handleJob(cfg, job, queue) {
           statusCode: res.statusCode,
           body: res.body?.slice?.(0, 200_000) || res.body,
           exportId: params.exportId || params.masterType,
+          collection: params.masterType || params.exportId,
+          tdlPackVersion: ARIVU_TDL_PACK_VERSION,
           stats: { exported: 1 },
         },
       };
@@ -202,23 +230,28 @@ async function runLoop(cfg) {
   console.log(`[agent] apiBase=${cfg.apiBase}`);
 
   // Initial discovery
+  let lastDiscovery = null;
   try {
-    const discovery = await discoverTally({
+    lastDiscovery = await discoverTally({
       host: cfg.tallyHost,
       portMin: cfg.tallyPortMin,
       portMax: cfg.tallyPortMax,
     });
-    if (discovery.tallyPort) {
-      cfg.tallyPort = discovery.tallyPort;
+    if (lastDiscovery.tallyPort) {
+      cfg.tallyPort = lastDiscovery.tallyPort;
       console.log(`[agent] Tally detected on port ${cfg.tallyPort}`);
     } else {
       console.warn('[agent] Tally not detected on ports', cfg.tallyPortMin, '-', cfg.tallyPortMax);
     }
+    console.log(
+      `[agent] TDL pack loaded=${Boolean(lastDiscovery.tdlLoaded)} version=${lastDiscovery.tdlPackVersion || 'n/a'}`
+    );
   } catch (err) {
     console.warn('[agent] discovery error:', err.message);
   }
 
   let lastUpdateCheck = 0;
+  let discoveryTicks = 0;
 
   const tickHeartbeat = async () => {
     if (!cfg.agentToken || !cfg.connectionId) {
@@ -226,7 +259,43 @@ async function runLoop(cfg) {
       return;
     }
     try {
-      const res = await sendHeartbeat(cfg, { queueLength: queue.length(), tallyPort: cfg.tallyPort });
+      discoveryTicks += 1;
+      // Re-probe Tally/TDL every ~5 heartbeats (~2.5 min if 30s interval)
+      if (discoveryTicks === 1 || discoveryTicks % 5 === 0) {
+        try {
+          lastDiscovery = await discoverTally({
+            host: cfg.tallyHost,
+            portMin: cfg.tallyPortMin,
+            portMax: cfg.tallyPortMax,
+          });
+          if (lastDiscovery.tallyPort) cfg.tallyPort = lastDiscovery.tallyPort;
+        } catch (_) {
+          /* keep lastDiscovery */
+        }
+      }
+      const res = await sendHeartbeat(cfg, {
+        queueLength: queue.length(),
+        tallyPort: cfg.tallyPort || lastDiscovery?.tallyPort || null,
+        tdlLoaded: Boolean(lastDiscovery?.tdlLoaded),
+        tdlPackVersion: lastDiscovery?.tdlPackVersion || ARIVU_TDL_PACK_VERSION,
+        companyCount: Array.isArray(lastDiscovery?.companies) ? lastDiscovery.companies.length : 0,
+        lastHealth: {
+          ok: Boolean(lastDiscovery?.tallyRunning),
+          mode: 'live',
+          tdlLoaded: Boolean(lastDiscovery?.tdlLoaded),
+          tdlPackVersion: lastDiscovery?.tdlPackVersion || ARIVU_TDL_PACK_VERSION,
+          tallyPort: lastDiscovery?.tallyPort || cfg.tallyPort || null,
+          hint: lastDiscovery?.hint || null,
+          checks: {
+            internet: true,
+            tallyRunning: Boolean(lastDiscovery?.tallyRunning),
+            xmlEnabled: Boolean(lastDiscovery?.tallyPort),
+            companyAvailable: (lastDiscovery?.companies || []).length > 0,
+            tdlLoaded: Boolean(lastDiscovery?.tdlLoaded),
+          },
+          updatedAt: new Date().toISOString(),
+        },
+      });
       if (!res.ok) console.warn('[agent] heartbeat failed', res.statusCode, res.data);
     } catch (err) {
       console.warn('[agent] heartbeat offline:', err.message);

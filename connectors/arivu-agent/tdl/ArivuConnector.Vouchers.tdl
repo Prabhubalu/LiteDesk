@@ -1,0 +1,60 @@
+;; ============================================================================
+;; ArivuConnector.Vouchers.tdl — Transaction collections with nested entries
+;; Critical: LedgerEntries.* / InventoryEntries.* must be Fetch'd or XML is header-only.
+;; Date window via SVFROMDATE / SVTODATE in agent XML. Incremental via AlterID/MasterID.
+;; Typed collections intentionally have NO Filter (avoids formula breakage across builds);
+;; agent/cloud filters by VoucherTypeName after export.
+;; ============================================================================
+
+[Collection: Arivu List of Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, BasicBuyerName, IRN, AckNo, AckDate, IsCancelled, IsOptional, IsInvoice, EffectiveDate, EnteredBy, Amount, GSTRegistration, GSTRegistrationType, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*, InventoryEntriesIn.*, InventoryEntriesOut.*, BillAllocations.*, CostCentreAllocations.*
+    Compute : ArivuVoucherKey : $GUID
+    Compute : ArivuVoucherMasterId : $MasterID
+    Compute : ArivuVoucherAlterId : $AlterID
+
+[Collection: Arivu Sales Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IRN, AckNo, AckDate, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*, BillAllocations.*
+
+[Collection: Arivu Purchase Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*, BillAllocations.*
+
+[Collection: Arivu Payment Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, BillAllocations.*
+
+[Collection: Arivu Receipt Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, BillAllocations.*
+
+[Collection: Arivu Journal Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, CostCentreAllocations.*
+
+[Collection: Arivu Contra Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*
+
+[Collection: Arivu Credit Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IRN, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*
+
+[Collection: Arivu Debit Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, PartyGSTIN, PlaceOfSupply, IsCancelled, Amount, LedgerEntries.*, AllLedgerEntries.*, InventoryEntries.*, AllInventoryEntries.*
+
+[Collection: Arivu Stock Journal Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, IsCancelled, InventoryEntries.*, AllInventoryEntries.*, InventoryEntriesIn.*, InventoryEntriesOut.*
+
+[Collection: Arivu Delivery Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, InventoryEntries.*, AllInventoryEntries.*, LedgerEntries.*
+
+[Collection: Arivu Receipt Note Vouchers]
+    Type : Voucher
+    Fetch : Date, VoucherTypeName, VoucherNumber, Reference, Narration, GUID, MasterID, AlterID, PartyLedgerName, IsCancelled, InventoryEntries.*, AllInventoryEntries.*, LedgerEntries.*
+
+;; End Vouchers

@@ -175,9 +175,11 @@ async function triggerBidirectionalSync({
     createdBy,
   });
 
-  // Inbound pulls — agent exports; cloud applies on ack (tallyInboundApplyService)
+  // Inbound pulls — full TDL pack catalog (see tallyTdlCatalog.js)
+  const { resolveInboundPulls, ARIVU_TDL_PACK_VERSION } = require('./tallyTdlCatalog');
   const pullJobs = [];
-  for (const masterType of ['Ledger', 'StockItem', 'Godown']) {
+  const pulls = resolveInboundPulls({ jobType, includeVouchers: true });
+  for (const pull of pulls) {
     // eslint-disable-next-line no-await-in-loop
     const { job } = await enqueueTallySyncJob({
       organizationId,
@@ -186,10 +188,12 @@ async function triggerBidirectionalSync({
       direction: 'inbound',
       createdBy,
       payload: {
-        masterType,
-        exportId: masterType,
+        masterType: pull.masterType,
+        exportId: pull.exportId,
         company: companyName,
         companyGuid: guid,
+        fromDate: pull.fromDate || null,
+        toDate: pull.toDate || null,
       },
     });
     pullJobs.push(String(job._id));
@@ -205,6 +209,8 @@ async function triggerBidirectionalSync({
       drainedOutbox: drain.drained,
       pullJobIds: pullJobs,
       company: companyName,
+      tdlPackVersion: ARIVU_TDL_PACK_VERSION,
+      pullCount: pullJobs.length,
     },
   });
 

@@ -1,0 +1,21 @@
+;; ============================================================================
+;; ArivuConnector.GST.tdl — India GST / HSN masters (TallyPrime Rel 3+ schema aware)
+;; Refs: TallyHelp GST schema, Rel 3.0 XML tag changes
+;; ============================================================================
+
+[Collection: Arivu List of GST Classifications]
+    Type : GST Classification
+    Fetch : Name, GUID, MasterID, AlterID, HSN, HSNCode, SupplyType, ReportingUOM, Taxability, GSTNatureOfTransaction, IsNonGSTGoods, GSTDetails, HSNDetails
+    Compute : ArivuGstClassName : $Name
+
+[Collection: Arivu List of Tax Units]
+    Type : Tax Unit
+    Fetch : Name, GUID, MasterID, AlterID, StateName
+    Compute : ArivuTaxUnitName : $Name
+
+;; Prefer full ledger pull; this is a convenience subset by name patterns via agent filter later
+[Collection: Arivu List of GST Duty Ledgers]
+    Type : Ledger
+    Fetch : Name, Parent, GUID, MasterID, AlterID, GSTDutyHead, GSTApplicable, GSTTypeofSupply, TaxType, GSTDetails, HSNDetails, ClosingBalance
+
+;; End GST

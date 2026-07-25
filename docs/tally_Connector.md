@@ -504,3 +504,36 @@ Make the connector feel like a consumer application rather than an enterprise in
 - The connector should be reusable so future integrations (SAP, QuickBooks, Zoho Books, Dynamics, Oracle NetSuite, REST APIs, etc.) can use the same onboarding, monitoring, health, AI assistance, and management experience.
 
 The final implementation should feel comparable to products from Apple, Stripe, Slack, Salesforce, and ClickUp—powerful internally but exceptionally simple for end users.
+
+---
+
+# TDL Pack v1.0.0 (shipped with Agent 0.3.0+)
+
+Production TallyPrime integration requires the Arivu TDL pack on the Windows PC.
+
+## Install paths
+
+- `C:\Program Files\Arivu\Connector\tdl\`
+- `%ProgramData%\Arivu\Connector\tdl\`
+
+## Load
+
+1. Prefer `ArivuConnector.tdl` (Includes Masters / Inventory / Vouchers / GST modules).
+2. Fallback: `ArivuConnector.All.tdl` (single file, no `#Include`).
+3. Restart Tally → Gateway → **Arivu Connector** must show pack **1.0.0**.
+4. F12 → enable HTTP/ODBC (port 9000).
+5. Keep **Desktop → Arivu Connector** open (user session; Session 0 service cannot see Tally).
+
+## Collections (31)
+
+Masters, inventory (incl. GodownEntries/BatchEntries), vouchers with nested LedgerEntries.*/InventoryEntries.*, GST classifications / tax units / duty ledgers, attendance types, Meta version probe.
+
+## Cloud sync
+
+- Orchestrator enqueues full inbound catalog via `tallyTdlCatalog.js` (dry_run uses a lighter subset).
+- Agent discovery probes Meta + Arivu company collection; heartbeat reports `tdlLoaded` / `tdlPackVersion`.
+- Inbound apply maps every masterType/exportId into `ConnectorExternalObject` pending rows (incl. vouchers by GUID).
+
+## Agent version
+
+Agent **0.3.0** + TDL pack **1.0.0**. Rebuild installer via Actions → **Tally Connector Installer**.

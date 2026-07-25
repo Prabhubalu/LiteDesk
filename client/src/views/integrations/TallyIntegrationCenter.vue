@@ -50,6 +50,13 @@
         {{ offlineBanner }}
       </div>
 
+      <div
+        v-if="discoveryHint"
+        class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200"
+      >
+        {{ discoveryHint }}
+      </div>
+
       <div v-if="error" class="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
         <p class="text-sm text-red-800 dark:text-red-300">{{ error }}</p>
       </div>
@@ -130,18 +137,152 @@
       </section>
 
       <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.tallyActivityTitle') }}</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.tallyActivityDesc') }}</p>
-        <ul v-if="activity.length" class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
-          <li v-for="row in activity" :key="row.id" class="flex flex-wrap items-start justify-between gap-2 py-3">
-            <div>
-              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ row.title }}</p>
-              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ row.detail }}</p>
-            </div>
-            <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDateTime(row.at) }}</span>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.tallyLogTitle') }}</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.tallyLogDesc') }}</p>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            {{ t('settings.tallyLogCount', { shown: logRows.length, total: logMeta.total }) }}
+          </p>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
+          <label class="block xl:col-span-2">
+            <span class="sr-only">{{ t('settings.tallyLogSearch') }}</span>
+            <input
+              v-model="logFilters.q"
+              type="search"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              :placeholder="t('settings.tallyLogSearch')"
+              @keydown.enter.prevent="applyLogFilters"
+            />
+          </label>
+          <label class="block">
+            <span class="sr-only">{{ t('settings.tallyLogSource') }}</span>
+            <select
+              v-model="logFilters.source"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              @change="applyLogFilters"
+            >
+              <option value="all">{{ t('settings.tallyLogSourceAll') }}</option>
+              <option value="event">{{ t('settings.tallyLogSourceEvents') }}</option>
+              <option value="job">{{ t('settings.tallyLogSourceJobs') }}</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="sr-only">{{ t('settings.tallyLogLevel') }}</span>
+            <select
+              v-model="logFilters.level"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              :disabled="logFilters.source === 'job'"
+              @change="applyLogFilters"
+            >
+              <option value="">{{ t('settings.tallyLogLevelAll') }}</option>
+              <option value="debug">debug</option>
+              <option value="info">info</option>
+              <option value="warn">warn</option>
+              <option value="error">error</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="sr-only">{{ t('settings.tallyLogJobStatus') }}</span>
+            <select
+              v-model="logFilters.jobStatus"
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              :disabled="logFilters.source === 'event'"
+              @change="applyLogFilters"
+            >
+              <option value="">{{ t('settings.tallyLogJobStatusAll') }}</option>
+              <option value="queued">queued</option>
+              <option value="running">running</option>
+              <option value="completed">completed</option>
+              <option value="failed">failed</option>
+              <option value="cancelled">cancelled</option>
+            </select>
+          </label>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              @click="applyLogFilters"
+            >
+              {{ t('settings.tallyLogApply') }}
+            </button>
+            <button
+              type="button"
+              class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              :title="t('settings.tallyLogReset')"
+              @click="resetLogFilters"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-3 flex flex-wrap gap-3">
+          <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+            <span>{{ t('settings.tallyLogFrom') }}</span>
+            <input
+              v-model="logFilters.from"
+              type="datetime-local"
+              class="rounded border border-gray-300 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              @change="applyLogFilters"
+            />
+          </label>
+          <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+            <span>{{ t('settings.tallyLogTo') }}</span>
+            <input
+              v-model="logFilters.to"
+              type="datetime-local"
+              class="rounded border border-gray-300 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              @change="applyLogFilters"
+            />
+          </label>
+        </div>
+
+        <div v-if="logLoading" class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.tallyLogLoading') }}</div>
+
+        <ul v-else-if="logRows.length" class="mt-4 max-h-[32rem] divide-y divide-gray-100 overflow-y-auto dark:divide-gray-700">
+          <li v-for="row in logRows" :key="row.id" class="py-3">
+            <button
+              type="button"
+              class="flex w-full flex-wrap items-start justify-between gap-2 text-left"
+              @click="toggleLogExpand(row.id)"
+            >
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span
+                    class="inline-flex rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                    :class="logBadgeClass(row)"
+                  >
+                    {{ row.badge }}
+                  </span>
+                  <span class="text-[10px] uppercase tracking-wide text-gray-400">{{ row.source }}</span>
+                  <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ row.title }}</p>
+                </div>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ row.detail }}</p>
+              </div>
+              <span class="shrink-0 text-xs text-gray-500 dark:text-gray-400">{{ formatDateTime(row.at) }}</span>
+            </button>
+            <pre
+              v-if="expandedLogId === row.id && row.payloadText"
+              class="mt-2 overflow-x-auto rounded-lg bg-gray-50 p-3 text-[11px] leading-relaxed text-gray-700 dark:bg-gray-900 dark:text-gray-300"
+            >{{ row.payloadText }}</pre>
           </li>
         </ul>
-        <p v-else class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.tallyActivityEmpty') }}</p>
+        <p v-else class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.tallyLogEmpty') }}</p>
+
+        <div v-if="logMeta.hasMore" class="mt-4">
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            :disabled="logLoading"
+            @click="loadMoreLogs"
+          >
+            {{ t('settings.tallyLogLoadMore') }}
+          </button>
+        </div>
       </section>
 
       <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
@@ -208,6 +349,19 @@ const conflicts = ref([]);
 const companies = ref([]);
 const pendingExternal = ref([]);
 const events = ref([]);
+const logRows = ref([]);
+const logLoading = ref(false);
+const logMeta = ref({ total: 0, hasMore: false, eventSkip: 0, jobSkip: 0 });
+const expandedLogId = ref(null);
+const logFilters = ref({
+  q: '',
+  source: 'all',
+  level: '',
+  jobStatus: '',
+  from: '',
+  to: '',
+});
+const LOG_PAGE = 100;
 let pollTimer = null;
 
 const counts = computed(() => ({
@@ -218,10 +372,30 @@ const counts = computed(() => ({
 
 const offlineBanner = computed(() => {
   const d = dashboard.value;
-  if (!d?.heartbeatAt) return t('settings.tallyOfflineNoAgent');
+  if (!d?.connectionStatus || d.connectionStatus === 'none' || d.connectionStatus === 'revoked') {
+    return t('settings.tallyOfflineNoAgent');
+  }
+  if (!d?.heartbeatAt) {
+    // Paired but never heartbeated yet
+    if (['paired', 'pending_pair'].includes(d.connectionStatus)) {
+      return t('settings.tallyOfflineNoAgent');
+    }
+    return '';
+  }
   const age = Date.now() - new Date(d.heartbeatAt).getTime();
-  if (age > 2 * 60 * 1000) return t('settings.tallyOfflineStale');
+  // Heartbeat is every 30s; allow clock skew + missed ticks (5 min)
+  if (age > 5 * 60 * 1000) return t('settings.tallyOfflineStale');
   return '';
+});
+
+const discoveryHint = computed(() => {
+  const d = dashboard.value || {};
+  if ((d.companyCount || 0) > 0 || companies.value.length > 0) return '';
+  return (
+    d.health?.hint ||
+    events.value.find((e) => e.payload?.hint)?.payload?.hint ||
+    t('settings.tallyZeroCompaniesHint')
+  );
 });
 
 const wizardSteps = computed(() => {
@@ -295,23 +469,177 @@ const healthCards = computed(() => {
   ];
 });
 
-const activity = computed(() => {
-  if (events.value.length) {
-    return events.value.slice(0, 20).map((ev) => ({
-      id: String(ev._id),
-      title: ev.code || ev.level || 'event',
-      detail: ev.message,
-      at: ev.createdAt,
-    }));
+function toIsoLocal(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+function buildLogQuery(skip = 0) {
+  const params = new URLSearchParams();
+  params.set('limit', String(LOG_PAGE));
+  params.set('skip', String(skip));
+  if (logFilters.value.q.trim()) params.set('q', logFilters.value.q.trim());
+  const from = toIsoLocal(logFilters.value.from);
+  const to = toIsoLocal(logFilters.value.to);
+  if (from) params.set('from', from);
+  if (to) params.set('to', to);
+  return params;
+}
+
+function mapEventRow(ev) {
+  let payloadText = '';
+  try {
+    payloadText = JSON.stringify(
+      {
+        code: ev.code,
+        level: ev.level,
+        jobId: ev.jobId,
+        runId: ev.runId,
+        payload: ev.payload || {},
+      },
+      null,
+      2
+    );
+  } catch {
+    payloadText = '';
   }
-  if (!jobs.value.length) return [];
-  return jobs.value.slice(0, 20).map((job) => ({
-    id: String(job._id),
+  return {
+    id: `event:${ev._id}`,
+    source: 'event',
+    badge: ev.level || 'info',
+    title: ev.code || ev.level || 'event',
+    detail: ev.message,
+    at: ev.createdAt,
+    payloadText,
+    sortAt: new Date(ev.createdAt || 0).getTime(),
+  };
+}
+
+function mapJobRow(job) {
+  let payloadText = '';
+  try {
+    payloadText = JSON.stringify(
+      {
+        jobType: job.jobType,
+        status: job.status,
+        direction: job.direction,
+        companyGuid: job.companyGuid,
+        lastError: job.lastError,
+        payload: job.payload || {},
+        result: job.result || null,
+      },
+      null,
+      2
+    );
+  } catch {
+    payloadText = '';
+  }
+  const level =
+    job.status === 'failed' ? 'error' : job.status === 'completed' ? 'info' : job.status === 'running' ? 'warn' : 'debug';
+  return {
+    id: `job:${job._id}`,
+    source: 'job',
+    badge: job.status || 'job',
     title: `${job.jobType || 'sync'} · ${job.status}`,
     detail: job.lastError || job.companyGuid || t('settings.tallyActivityJobDetail'),
     at: job.updatedAt || job.createdAt,
-  }));
-});
+    payloadText,
+    sortAt: new Date(job.updatedAt || job.createdAt || 0).getTime(),
+    _level: level,
+  };
+}
+
+function logBadgeClass(row) {
+  const key = String(row.badge || row._level || '').toLowerCase();
+  if (key === 'error' || key === 'failed') return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200';
+  if (key === 'warn' || key === 'running' || key === 'warning') {
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200';
+  }
+  if (key === 'debug' || key === 'queued' || key === 'cancelled') {
+    return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
+  }
+  return 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200';
+}
+
+function toggleLogExpand(id) {
+  expandedLogId.value = expandedLogId.value === id ? null : id;
+}
+
+async function fetchLogs({ append = false } = {}) {
+  logLoading.value = true;
+  try {
+    const source = logFilters.value.source;
+    const wantEvents = source === 'all' || source === 'event';
+    const wantJobs = source === 'all' || source === 'job';
+    const eventSkip = append ? logMeta.value.eventSkip || 0 : 0;
+    const jobSkip = append ? logMeta.value.jobSkip || 0 : 0;
+
+    const eventParams = buildLogQuery(eventSkip);
+    if (logFilters.value.level) eventParams.set('level', logFilters.value.level);
+
+    const jobParams = buildLogQuery(jobSkip);
+    if (logFilters.value.jobStatus) jobParams.set('status', logFilters.value.jobStatus);
+
+    const [evRes, jobRes] = await Promise.all([
+      wantEvents
+        ? apiClient(`/connectors/tally/events?${eventParams.toString()}`, { method: 'GET' }).catch(() => null)
+        : Promise.resolve(null),
+      wantJobs
+        ? apiClient(`/connectors/tally/sync/jobs?${jobParams.toString()}`, { method: 'GET' }).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+
+    const rawEvents = Array.isArray(evRes?.data) ? evRes.data : [];
+    const rawJobs = Array.isArray(jobRes?.data) ? jobRes.data : [];
+    const eventList = rawEvents.map(mapEventRow);
+    const jobList = rawJobs.map(mapJobRow);
+    if (wantEvents && !append) {
+      events.value = rawEvents;
+    }
+
+    let merged = [...eventList, ...jobList].sort((a, b) => b.sortAt - a.sortAt);
+    if (logFilters.value.level && source === 'all') {
+      const lvl = logFilters.value.level;
+      merged = merged.filter((r) => {
+        if (r.source === 'event') return r.badge === lvl;
+        return r._level === lvl;
+      });
+    }
+
+    if (append) {
+      const seen = new Set(logRows.value.map((r) => r.id));
+      logRows.value = [...logRows.value, ...merged.filter((r) => !seen.has(r.id))];
+    } else {
+      logRows.value = merged;
+    }
+
+    const evMeta = evRes?.meta || { total: 0, hasMore: false, limit: LOG_PAGE };
+    const jobMeta = jobRes?.meta || { total: 0, hasMore: false, limit: LOG_PAGE };
+    logMeta.value = {
+      total: (wantEvents ? evMeta.total || 0 : 0) + (wantJobs ? jobMeta.total || 0 : 0),
+      hasMore: Boolean((wantEvents && evMeta.hasMore) || (wantJobs && jobMeta.hasMore)),
+      eventSkip: wantEvents ? eventSkip + rawEvents.length : 0,
+      jobSkip: wantJobs ? jobSkip + rawJobs.length : 0,
+    };
+  } finally {
+    logLoading.value = false;
+  }
+}
+
+function applyLogFilters() {
+  expandedLogId.value = null;
+  fetchLogs({ append: false });
+}
+
+function resetLogFilters() {
+  logFilters.value = { q: '', source: 'all', level: '', jobStatus: '', from: '', to: '' };
+  applyLogFilters();
+}
+
+function loadMoreLogs() {
+  fetchLogs({ append: true });
+}
 
 const validationChecklist = computed(() => {
   const d = dashboard.value || {};
@@ -320,6 +648,11 @@ const validationChecklist = computed(() => {
     { key: 'agent', label: t('settings.tallyCheckAgent'), ok: Boolean(d.connectionStatus && d.connectionStatus !== 'none') },
     { key: 'tally', label: t('settings.tallyCheckTally'), ok: Boolean(checks.tallyRunning ?? d.health?.ok) },
     { key: 'xml', label: t('settings.tallyCheckXml'), ok: Boolean(checks.xmlEnabled ?? false) },
+    {
+      key: 'tdl',
+      label: t('settings.tallyCheckTdl'),
+      ok: Boolean(checks.tdlLoaded ?? d.health?.tdlLoaded ?? false),
+    },
     { key: 'company', label: t('settings.tallyCheckCompany'), ok: (d.companyCount || companies.value.length || 0) > 0 },
     { key: 'fy', label: t('settings.tallyCheckFy'), ok: Boolean(checks.financialYear ?? false) },
   ];
@@ -376,13 +709,12 @@ async function refreshAll() {
   refreshing.value = true;
   error.value = '';
   try {
-    const [dashRes, jobsRes, conflictsRes, connRes, extRes, evRes] = await Promise.all([
+    const [dashRes, jobsRes, conflictsRes, connRes, extRes] = await Promise.all([
       apiClient('/connectors/tally/dashboard', { method: 'GET' }).catch(() => null),
       apiClient('/connectors/tally/sync/jobs?limit=25', { method: 'GET' }).catch(() => null),
       apiClient('/connectors/tally/conflicts?status=open&limit=25', { method: 'GET' }).catch(() => null),
       apiClient('/connectors/tally/connection', { method: 'GET' }).catch(() => null),
       apiClient('/connectors/tally/external-objects?limit=50', { method: 'GET' }).catch(() => null),
-      apiClient('/connectors/tally/events?limit=30', { method: 'GET' }).catch(() => null),
     ]);
     dashboard.value = dashRes?.data || {
       connectionStatus: 'none',
@@ -396,7 +728,7 @@ async function refreshAll() {
     companies.value = Array.isArray(connRes?.data?.companies) ? connRes.data.companies : [];
     const ext = Array.isArray(extRes?.data) ? extRes.data : [];
     pendingExternal.value = ext.filter((r) => String(r.arivuId || '').startsWith('pending:'));
-    events.value = Array.isArray(evRes?.data) ? evRes.data : [];
+    await fetchLogs({ append: false });
   } catch (err) {
     error.value = err?.message || t('settings.tallyLoadFailed');
   } finally {

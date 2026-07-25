@@ -66,7 +66,20 @@ jobs:
           if ($len -lt 1MB) { throw "Agent EXE too small ($len bytes) — pkg likely failed" }
           if (-not (Test-Path $cfg)) { throw "Missing $cfg" }
           if (-not (Test-Path $vc)) { throw "Missing $vc (VC++ redist download step failed)" }
-          Write-Host "Preflight OK: agent=$len bytes, config+vc present"
+          $tdl = "tdl\ArivuConnector.tdl"
+          $tdlAll = "tdl\ArivuConnector.All.tdl"
+          if (-not (Test-Path $tdl)) { throw "Missing $tdl" }
+          if (-not (Test-Path $tdlAll)) { throw "Missing $tdlAll (single-file fallback)" }
+          $mods = @(
+            "tdl\ArivuConnector.Masters.tdl",
+            "tdl\ArivuConnector.Inventory.tdl",
+            "tdl\ArivuConnector.Vouchers.tdl",
+            "tdl\ArivuConnector.GST.tdl"
+          )
+          foreach ($m in $mods) {
+            if (-not (Test-Path $m)) { throw "Missing $m" }
+          }
+          Write-Host "Preflight OK: agent=$len bytes, config+vc+tdl pack present"
 
       - name: Install Inno Setup 6
         shell: pwsh

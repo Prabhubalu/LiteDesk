@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const mongoose = require('mongoose');
 const { protect } = require('../middleware/authMiddleware');
 const { organizationIsolation, checkTrialStatus } = require('../middleware/organizationMiddleware');
 const { requireAddonEntitlement } = require('../middleware/requireAddonEntitlementMiddleware');
@@ -165,18 +166,31 @@ router.get('/dashboard', async (req, res) => {
           mode: 'live',
           tallyVersion: null,
           tallyPort: meta.tallyPort || null,
+          tdlLoaded: Boolean(meta.tdlLoaded),
+          tdlPackVersion: meta.tdlPackVersion || null,
           checks: {
             internet: true,
             tallyRunning: Boolean(meta.tallyPort),
             xmlEnabled: Boolean(meta.tallyPort),
             companyAvailable: companyCount > 0,
             financialYear: false,
+            tdlLoaded: Boolean(meta.tdlLoaded),
           },
           message: heartbeatFresh
             ? 'Agent online — run Dry run to discover Tally companies'
             : 'Waiting for agent heartbeat',
         }
       : { ok: false, mode: 'disconnected' };
+
+    // Prefer nested lastHealth but surface top-level heartbeat TDL flags if present
+    if (health && meta.tdlLoaded != null && health.tdlLoaded == null) {
+      health.tdlLoaded = Boolean(meta.tdlLoaded);
+      health.tdlPackVersion = meta.tdlPackVersion || health.tdlPackVersion || null;
+      health.checks = {
+        ...(health.checks || {}),
+        tdlLoaded: Boolean(meta.tdlLoaded),
+      };
+    }
 
     return res.json({
       success: true,
@@ -288,18 +302,102 @@ router.post('/companies/bind', async (req, res) => {
 
 router.get('/events', async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit || '50', 10), 200);
-    const events = await ConnectorSyncEvent.find({
+    const limit = Math.min(parseInt(req.query.limit || '100', 10) || 100, 500);
+    const skip = Math.max(parseInt(req.query.skip || '0', 10) || 0, 0);
+    const level = String(req.query.level || '').trim().toLowerCase();
+    const code = String(req.query.code || '').trim();
+    const q = String(req.query.q || '').trim();
+    const jobId = String(req.query.jobId || '').trim();
+    const from = req.query.from ? new Date(String(req.query.from)) : null;
+    const to = req.query.to ? new Date(String(req.query.to)) : null;
+
+    const filter = {
       organizationId: req.user.organizationId,
       connectorKey: CONNECTOR_KEYS.TALLY,
-    })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
-    return res.json({ success: true, data: events });
+    };
+    if (level && ['debug', 'info', 'warn', 'error'].includes(level)) {
+      filter.level = level;
+    }
+    if (code) filter.code = code;
+    if (jobId && mongoose.Types.ObjectId.isValid(jobId)) {
+      filter.jobId = jobId;
+    }
+    if ((from && !Number.isNaN(from.getTime())) || (to && !Number.isNaN(to.getTime()))) {
+      filter.createdAt = {};
+      if (from && !Number.isNaN(from.getTime())) filter.createdAt.$gte = from;
+      if (to && !Number.isNaN(to.getTime())) filter.createdAt.$lte = to;
+    }
+    if (q) {
+      filter.$or = [
+        { message: { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } },
+        { code: { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' } },
+      ];
+    }
+
+    const [events, total] = await Promise.all([
+      ConnectorSyncEvent.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      ConnectorSyncEvent.countDocuments(filter),
+    ]);
+
+    return res.json({
+      success: true,
+      data: events,
+      meta: {
+        total,
+        limit,
+        skip,
+        hasMore: skip + events.length < total,
+      },
+    });
   } catch (error) {
     console.error('[tallyConnector] events', error);
     return res.status(500).json({ success: false, message: 'Failed to list events' });
+  }
+});
+
+router.get('/sync/jobs', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '100', 10) || 100, 500);
+    const skip = Math.max(parseInt(req.query.skip || '0', 10) || 0, 0);
+    const status = String(req.query.status || '').trim().toLowerCase();
+    const jobType = String(req.query.jobType || '').trim();
+    const q = String(req.query.q || '').trim();
+    const from = req.query.from ? new Date(String(req.query.from)) : null;
+    const to = req.query.to ? new Date(String(req.query.to)) : null;
+
+    const filter = {
+      organizationId: req.user.organizationId,
+      connectorKey: CONNECTOR_KEYS.TALLY,
+    };
+    if (status && status !== 'all') filter.status = status;
+    if (jobType) filter.jobType = jobType;
+    if ((from && !Number.isNaN(from.getTime())) || (to && !Number.isNaN(to.getTime()))) {
+      filter.createdAt = {};
+      if (from && !Number.isNaN(from.getTime())) filter.createdAt.$gte = from;
+      if (to && !Number.isNaN(to.getTime())) filter.createdAt.$lte = to;
+    }
+    if (q) {
+      const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      filter.$or = [
+        { jobType: { $regex: escaped, $options: 'i' } },
+        { lastError: { $regex: escaped, $options: 'i' } },
+        { companyGuid: { $regex: escaped, $options: 'i' } },
+      ];
+    }
+
+    const [jobs, total] = await Promise.all([
+      ConnectorSyncJob.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      ConnectorSyncJob.countDocuments(filter),
+    ]);
+
+    return res.json({
+      success: true,
+      data: jobs,
+      meta: { total, limit, skip, hasMore: skip + jobs.length < total },
+    });
+  } catch (error) {
+    console.error('[tallyConnector] sync/jobs', error);
+    return res.status(500).json({ success: false, message: 'Failed to list sync jobs' });
   }
 });
 
@@ -337,23 +435,6 @@ router.post('/unpair', async (req, res) => {
   } catch (error) {
     console.error('[tallyConnector] unpair', error);
     return res.status(500).json({ success: false, message: error.message || 'Unpair failed' });
-  }
-});
-
-router.get('/sync/jobs', async (req, res) => {
-  try {
-    const limit = Math.min(parseInt(req.query.limit || '50', 10), 200);
-    const jobs = await ConnectorSyncJob.find({
-      organizationId: req.user.organizationId,
-      connectorKey: CONNECTOR_KEYS.TALLY,
-    })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
-    return res.json({ success: true, data: jobs });
-  } catch (error) {
-    console.error('[tallyConnector] sync/jobs', error);
-    return res.status(500).json({ success: false, message: 'Failed to list sync jobs' });
   }
 });
 

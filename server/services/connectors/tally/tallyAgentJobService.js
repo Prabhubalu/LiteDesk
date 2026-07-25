@@ -234,6 +234,7 @@ async function acknowledgeAgentJob({
       mode: 'live',
       tallyVersion: discovery?.tallyVersion || result?.result?.tallyVersion || null,
       tallyPort: discovery?.tallyPort || null,
+      hint: result?.result?.hint || discovery?.hint || null,
       checks: checks || {
         internet: true,
         tallyRunning: Boolean(discovery?.tallyRunning),
@@ -245,6 +246,14 @@ async function acknowledgeAgentJob({
         ),
       },
       companyCount: bindings.length || companies.length || 0,
+      tdlLoaded: Boolean(
+        discovery?.tdlLoaded || result?.result?.tdlLoaded || checks?.tdlLoaded
+      ),
+      tdlPackVersion:
+        discovery?.tdlPackVersion ||
+        result?.result?.tdlPackVersion ||
+        result?.result?.discovery?.tdlPackVersion ||
+        null,
       lastJobId: String(job._id),
       lastJobType: job.jobType,
       updatedAt: new Date().toISOString(),
@@ -288,13 +297,22 @@ async function acknowledgeAgentJob({
     level: ok ? 'info' : 'error',
     code: ok ? 'JOB_ACKED' : 'JOB_FAILED',
     message: ok
-      ? `Agent completed ${job.jobType} (${bindings.length} companies)`
+      ? companies.length
+        ? `Agent completed ${job.jobType} (${bindings.length || companies.length} companies)`
+        : `Agent completed ${job.jobType} (0 companies)${
+            result?.result?.hint || result?.result?.discovery?.hint
+              ? ` — ${result?.result?.hint || result?.result?.discovery?.hint}`
+              : ''
+          }`
       : `Agent failed ${job.jobType}: ${job.lastError}`,
     payload: {
       status,
       companies: companies.length,
       bindings: bindings.length,
       checks,
+      hint: result?.result?.hint || result?.result?.discovery?.hint || null,
+      tallyPort: discovery?.tallyPort || null,
+      openPorts: discovery?.openPorts || null,
     },
   });
 

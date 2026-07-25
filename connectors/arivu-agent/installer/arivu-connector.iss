@@ -10,7 +10,7 @@
 ;   ISCC.exe installer\arivu-connector.iss
 
 #define MyAppName "Arivu Connector Agent"
-#define MyAppVersion "0.2.2"
+#define MyAppVersion "0.3.0"
 #define MyAppPublisher "Arivu"
 #define MyAppExeName "arivu-connector-agent.exe"
 #define MyServiceName "ArivuConnectorAgent"
@@ -46,6 +46,9 @@ Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "config.template.json"; DestDir: "{commonappdata}\Arivu\Connector"; DestName: "config.json"; Flags: onlyifdoesntexist
 ; Loose UI copy next to EXE (fallback if pkg asset path fails)
 Source: "..\src\ui\*"; DestDir: "{app}\ui"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Arivu Tally TDL pack — customer loads once in TallyPrime
+Source: "..\tdl\*"; DestDir: "{app}\tdl"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\tdl\*"; DestDir: "{commonappdata}\Arivu\Connector\tdl"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Optional VC++ redistributable
 Source: "redist\VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall skipifsourcedoesntexist
 
@@ -58,6 +61,7 @@ Name: "{commonappdata}\Arivu\Connector\updates"
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
 Name: "{group}\Arivu Connector (console)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--console"
+Name: "{group}\Tally TDL folder"; Filename: "{app}\tdl"
 Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
 Name: "{userdesktop}\Arivu Connector"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
@@ -83,8 +87,7 @@ Filename: "{sys}\sc.exe"; Parameters: "delete {#MyServiceName}"; Flags: runhidde
 procedure InitializeWizard;
 begin
   WizardForm.WelcomeLabel2.Caption :=
-    'This wizard installs the Arivu Connector Agent.'#13#10#13#10 +
-    'After install, open Desktop / Start Menu → Arivu Connector. A small console stays open and the pairing page loads at http://127.0.0.1:17932/'#13#10#13#10 +
-    'Paste the code from Arivu Integrations → Tally. Keep that window open while using the connector.'#13#10#13#10 +
-    'TallyPrime itself is not bundled — enable XML HTTP (port 9000).';
+    'This wizard installs the Arivu Connector Agent + Tally TDL.'#13#10#13#10 +
+    'After install: (1) Open Desktop → Arivu Connector. (2) In TallyPrime load ArivuConnector.tdl (or ArivuConnector.All.tdl) via F1 → TDL & Add-On → Manage Local TDLs. (3) Enable HTTP port 9000. (4) Dry run from Arivu.'#13#10#13#10 +
+    'TDL path: C:\Program Files\Arivu\Connector\tdl\';
 end;
