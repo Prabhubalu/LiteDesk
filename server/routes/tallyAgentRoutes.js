@@ -8,6 +8,10 @@
 const express = require('express');
 const tallyConnectionService = require('../services/connectors/tally/tallyConnectionService');
 const { handleAgentRpc } = require('../services/connectors/tally/tallyAgentProtocol');
+const {
+  claimJobsForAgent,
+  acknowledgeAgentJob,
+} = require('../services/connectors/tally/tallyAgentJobService');
 const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
 const TallyAgentBridge = require('../models/TallyAgentBridge');
 
@@ -157,21 +161,38 @@ router.post('/heartbeat', async (req, res) => {
 
 router.post('/poll', async (req, res) => {
   try {
-    await resolveBridgeFromAgentToken(req);
-    // Jobs come from outbox/queue — empty list is valid until sync is fully wired
-    return res.json({ success: true, data: { jobs: [] } });
+    const { bridge } = await resolveBridgeFromAgentToken(req);
+    const limit = Math.min(parseInt(req.body?.limit || '5', 10) || 5, 20);
+    const jobs = await runWithOrganizationTenantContext(bridge.organizationId, async () =>
+      claimJobsForAgent({ organizationId: bridge.organizationId, limit })
+    );
+    return res.json({ success: true, data: { jobs } });
   } catch (error) {
     const status = error.code === 'AGENT_UNAUTHORIZED' ? 401 : 500;
+    console.error('[tallyAgent] poll', error);
     return res.status(status).json({ success: false, message: error.message, code: error.code });
   }
 });
 
 router.post('/ack', async (req, res) => {
   try {
-    await resolveBridgeFromAgentToken(req);
-    return res.json({ success: true, data: { acked: true } });
+    const { bridge } = await resolveBridgeFromAgentToken(req);
+    const { jobId, status, result, error: jobError } = req.body || {};
+    const data = await runWithOrganizationTenantContext(bridge.organizationId, async () =>
+      acknowledgeAgentJob({
+        organizationId: bridge.organizationId,
+        connectionId: bridge.connectionId,
+        jobId,
+        status,
+        result,
+        error: jobError,
+      })
+    );
+    return res.json({ success: true, data: { acked: true, ...data } });
   } catch (error) {
-    const status = error.code === 'AGENT_UNAUTHORIZED' ? 401 : 500;
+    const status =
+      error.code === 'AGENT_UNAUTHORIZED' ? 401 : error.code === 'JOB_NOT_FOUND' ? 404 : 500;
+    console.error('[tallyAgent] ack', error);
     return res.status(status).json({ success: false, message: error.message, code: error.code });
   }
 });

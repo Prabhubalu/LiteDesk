@@ -8,10 +8,12 @@ const { ADDON_KEYS } = require('../constants/addonKeys');
 const tallyConnectionService = require('../services/connectors/tally/tallyConnectionService');
 const { handleAgentRpc } = require('../services/connectors/tally/tallyAgentProtocol');
 const { enqueueTallySyncJob } = require('../services/connectors/tally/tallySyncQueueService');
-const { getTallyConnectorAdapter } = require('../services/connectors/tally/tallyConnectorAdapterRegistry');
+const { triggerBidirectionalSync } = require('../services/connectors/tally/tallySyncOrchestrator');
 const { reconcileGodownBalances } = require('../services/connectors/tally/tallyInventorySyncService');
 const ConnectorSyncJob = require('../models/ConnectorSyncJob');
+const ConnectorSyncEvent = require('../models/ConnectorSyncEvent');
 const ConnectorConflict = require('../models/ConnectorConflict');
+const ConnectorExternalObject = require('../models/ConnectorExternalObject');
 const TallyCompanyBinding = require('../models/TallyCompanyBinding');
 const { CONNECTOR_KEYS, CONFLICT_STATUSES } = require('../services/connectors/connectorConstants');
 
@@ -151,9 +153,29 @@ router.get('/dashboard', async (req, res) => {
       TallyCompanyBinding.countDocuments({ organizationId, enabled: true }),
     ]);
 
-    const adapter = getTallyConnectorAdapter();
+    const meta = connection?.metadata || {};
+    const lastHealth = meta.lastHealth || null;
+    const heartbeatFresh =
+      connection?.heartbeatAt &&
+      Date.now() - new Date(connection.heartbeatAt).getTime() < 2 * 60 * 1000;
+
     const health = connection
-      ? await adapter.verifyConnection({ organizationId, companyGuid: null })
+      ? lastHealth || {
+          ok: Boolean(heartbeatFresh),
+          mode: 'live',
+          tallyVersion: null,
+          tallyPort: meta.tallyPort || null,
+          checks: {
+            internet: true,
+            tallyRunning: Boolean(meta.tallyPort),
+            xmlEnabled: Boolean(meta.tallyPort),
+            companyAvailable: companyCount > 0,
+            financialYear: false,
+          },
+          message: heartbeatFresh
+            ? 'Agent online — run Dry run to discover Tally companies'
+            : 'Waiting for agent heartbeat',
+        }
       : { ok: false, mode: 'disconnected' };
 
     return res.json({
@@ -162,11 +184,12 @@ router.get('/dashboard', async (req, res) => {
         connectionStatus: connection?.status || 'none',
         heartbeatAt: connection?.heartbeatAt || null,
         agentVersion: connection?.agentVersion || null,
+        agentHostname: connection?.agentHostname || meta.hostname || null,
         companyCount,
         openConflicts,
         queuedJobs,
         health,
-        stub: true,
+        stub: false,
       },
     });
   } catch (error) {
@@ -177,7 +200,34 @@ router.get('/dashboard', async (req, res) => {
 
 router.post('/sync/trigger', async (req, res) => {
   try {
-    const { companyGuid = null, jobType = 'incremental', direction = 'bidirectional', payload = {} } = req.body || {};
+    const {
+      companyGuid = null,
+      jobType = 'incremental',
+      direction = 'bidirectional',
+      payload = {},
+    } = req.body || {};
+
+    const dryRun = jobType === 'dry_run' || payload.dryRun === true;
+    if (dryRun || direction === 'bidirectional' || jobType === 'incremental' || jobType === 'full') {
+      const result = await triggerBidirectionalSync({
+        organizationId: req.user.organizationId,
+        companyGuid,
+        jobType: dryRun ? 'dry_run' : jobType,
+        createdBy: req.user._id,
+        dryRun,
+      });
+      return res.status(202).json({
+        success: true,
+        data: {
+          mode: result.mode,
+          jobId: String(result.job._id),
+          status: result.job.status,
+          drained: result.drained || 0,
+          pullJobs: result.pullJobs || [],
+        },
+      });
+    }
+
     const result = await enqueueTallySyncJob({
       organizationId: req.user.organizationId,
       companyGuid,
@@ -197,6 +247,96 @@ router.post('/sync/trigger', async (req, res) => {
   } catch (error) {
     console.error('[tallyConnector] sync/trigger', error);
     return res.status(500).json({ success: false, message: error.message || 'Failed to trigger sync' });
+  }
+});
+
+router.post('/companies/bind', async (req, res) => {
+  try {
+    const { companyGuid, companyName, financialYear = null, enabled = true } = req.body || {};
+    if (!companyGuid || !companyName) {
+      return res.status(400).json({ success: false, message: 'companyGuid and companyName required' });
+    }
+    const connection = await tallyConnectionService.getConnection(req.user.organizationId);
+    if (!connection) {
+      return res.status(400).json({ success: false, message: 'Pair the agent first' });
+    }
+    const binding = await TallyCompanyBinding.findOneAndUpdate(
+      { organizationId: req.user.organizationId, companyGuid },
+      {
+        $set: {
+          connectionId: connection._id,
+          companyName,
+          financialYear,
+          enabled: Boolean(enabled),
+          status: 'active',
+          lastSyncAt: new Date(),
+        },
+        $setOnInsert: {
+          organizationId: req.user.organizationId,
+          companyGuid,
+          sourceOfTruth: { stock: 'arivu', parties: 'arivu', vouchers: 'arivu' },
+        },
+      },
+      { upsert: true, new: true }
+    );
+    return res.json({ success: true, data: binding });
+  } catch (error) {
+    console.error('[tallyConnector] companies/bind', error);
+    return res.status(500).json({ success: false, message: error.message || 'Bind failed' });
+  }
+});
+
+router.get('/events', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '50', 10), 200);
+    const events = await ConnectorSyncEvent.find({
+      organizationId: req.user.organizationId,
+      connectorKey: CONNECTOR_KEYS.TALLY,
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+    return res.json({ success: true, data: events });
+  } catch (error) {
+    console.error('[tallyConnector] events', error);
+    return res.status(500).json({ success: false, message: 'Failed to list events' });
+  }
+});
+
+router.get('/external-objects', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '100', 10), 500);
+    const entityType = req.query.entityType || null;
+    const rows = await ConnectorExternalObject.find({
+      organizationId: req.user.organizationId,
+      connectorKey: CONNECTOR_KEYS.TALLY,
+      ...(entityType ? { entityType } : {}),
+    })
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .lean();
+    return res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('[tallyConnector] external-objects', error);
+    return res.status(500).json({ success: false, message: 'Failed to list external objects' });
+  }
+});
+
+router.post('/unpair', async (req, res) => {
+  try {
+    const connection = await tallyConnectionService.getConnection(req.user.organizationId);
+    if (!connection) {
+      return res.json({ success: true, data: { unpaired: true } });
+    }
+    connection.status = 'revoked';
+    connection.revokedAt = new Date();
+    connection.agentTokenHash = null;
+    connection.pairingCode = null;
+    await connection.save();
+    return res.json({ success: true, data: { unpaired: true } });
+  } catch (error) {
+    console.error('[tallyConnector] unpair', error);
+    return res.status(500).json({ success: false, message: error.message || 'Unpair failed' });
   }
 });
 

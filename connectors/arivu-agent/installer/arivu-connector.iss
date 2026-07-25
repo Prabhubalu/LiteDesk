@@ -10,7 +10,7 @@
 ;   ISCC.exe installer\arivu-connector.iss
 
 #define MyAppName "Arivu Connector Agent"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.2.0"
 #define MyAppPublisher "Arivu"
 #define MyAppExeName "arivu-connector-agent.exe"
 #define MyServiceName "ArivuConnectorAgent"
@@ -54,8 +54,9 @@ Name: "{commonappdata}\Arivu\Connector\logs"
 Name: "{commonappdata}\Arivu\Connector\updates"
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--console"
-Name: "{group}\Pair Connector"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--pair"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
+Name: "{group}\Arivu Connector (console)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--console"
+Name: "{userstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
 
 [Run]
@@ -67,7 +68,8 @@ Filename: "{sys}\sc.exe"; Parameters: "delete {#MyServiceName}"; Flags: runhidde
 Filename: "{sys}\sc.exe"; Parameters: "create {#MyServiceName} binPath= ""{app}\{#MyAppExeName}"" start= auto DisplayName= ""Arivu Connector Agent"""; Flags: runhidden; StatusMsg: "Registering Windows service..."
 Filename: "{sys}\sc.exe"; Parameters: "description {#MyServiceName} ""Bridges local Tally XML API to Arivu cloud."""; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "start {#MyServiceName}"; Flags: runhidden; StatusMsg: "Starting Arivu Connector Agent..."
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--pair"; Description: "Pair this PC with Arivu (device code)"; Flags: postinstall nowait skipifsilent unchecked
+; Customer UX: tray + local pairing UI (no terminal)
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--tray"; Description: "Open Arivu Connector (tray + pair)"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\sc.exe"; Parameters: "stop {#MyServiceName}"; Flags: runhidden; RunOnceId: "StopArivuSvc"
@@ -79,8 +81,6 @@ procedure InitializeWizard;
 begin
   WizardForm.WelcomeLabel2.Caption :=
     'This wizard installs the Arivu Connector Agent.'#13#10#13#10 +
-    'The installer includes the agent runtime (no separate Node.js install). ' +
-    'If bundled, the Visual C++ redistributable is installed automatically.'#13#10#13#10 +
-    'TallyPrime itself is not bundled — install Tally separately and enable XML HTTP (port 9000).'#13#10#13#10 +
-    'After install you can pair with a code from the Integration Center.';
+    'After install, a tray icon and pairing window open. Paste the code from Arivu Integrations → Tally.'#13#10#13#10 +
+    'TallyPrime itself is not bundled — install Tally separately and enable XML HTTP (port 9000).';
 end;

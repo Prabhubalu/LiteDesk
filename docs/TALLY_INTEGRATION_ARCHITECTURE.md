@@ -1,6 +1,6 @@
 # Tally Integration — Architecture (GTM Foundations)
 
-**Status:** Foundations in progress (GTM-3/4 runtime + agent skeleton). Policies below are locked for GA.  
+**Status:** Live agent path in progress (tray UI + poll/ack + bi-dir orchestrator). Policies below are locked for GA.  
 **Audience:** Engineering, integrations, support, security.  
 **Related:** `docs/tally_Connector.md` (UX target), `docs/TALLY_SUPPORT_MATRIX.md`, `docs/TALLY_PILOT_RUNBOOK.md`.
 

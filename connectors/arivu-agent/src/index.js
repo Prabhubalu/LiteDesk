@@ -6,7 +6,8 @@
  * Modes:
  *   node src/index.js              run service loop
  *   node src/index.js --console    same, foreground logs
- *   node src/index.js --pair       interactive device-code pairing
+ *   node src/index.js --tray       system tray + local pairing UI (customers)
+ *   node src/index.js --pair       CLI pairing (support/debug only)
  *   node src/index.js --discover   scan Tally ports 9000–9010
  */
 
@@ -19,6 +20,7 @@ const {
 const { discoverTally } = require('./discovery');
 const {
   buildExportMastersEnvelope,
+  buildExportEnvelope,
   buildImportVoucherEnvelope,
   postXml,
 } = require('./xmlClient');
@@ -26,19 +28,122 @@ const { OfflineQueue } = require('./offlineQueue');
 const { sendHeartbeat, pollJobs, ackJob } = require('./heartbeat');
 const { runPairingCli } = require('./pairing');
 const { maybeUpdate } = require('./updater');
+const { runTray } = require('./tray');
+
+async function runDiscoverAndHealth(cfg) {
+  const discovery = await discoverTally({
+    host: cfg.tallyHost,
+    portMin: cfg.tallyPortMin,
+    portMax: cfg.tallyPortMax,
+  });
+  if (discovery.tallyPort) cfg.tallyPort = discovery.tallyPort;
+  const companies = Array.isArray(discovery.companies) ? discovery.companies : [];
+  const checks = {
+    internet: true,
+    tallyRunning: Boolean(discovery.tallyRunning),
+    xmlEnabled: Boolean(discovery.tallyPort),
+    companyAvailable: companies.length > 0,
+    financialYear: companies.some((c) => Boolean(c.financialYear)),
+  };
+  return {
+    ok: Boolean(discovery.tallyRunning),
+    result: {
+      discovery,
+      companies,
+      checks,
+      tallyVersion: discovery.tallyVersion,
+      stats: {
+        companies: companies.length,
+        parties: 0,
+        items: 0,
+        vouchers: 0,
+      },
+    },
+  };
+}
 
 async function handleJob(cfg, job, queue) {
-  const type = job.type || job.method || '';
+  const type = job.type || job.method || job.jobType || '';
   const params = job.params || job.payload || {};
 
-  if (type === 'discover' || type === 'discoverTally') {
-    const discovery = await discoverTally({
-      host: cfg.tallyHost,
-      portMin: cfg.tallyPortMin,
-      portMax: cfg.tallyPortMax,
-    });
-    if (discovery.tallyPort) cfg.tallyPort = discovery.tallyPort;
-    return { ok: true, result: discovery };
+  if (type === 'discover' || type === 'discoverTally' || type === 'dry_run') {
+    const out = await runDiscoverAndHealth(cfg);
+    if (type === 'dry_run' || job.jobType === 'dry_run') {
+      out.result.dryRun = true;
+    }
+    return out;
+  }
+
+  // Sync / outbox jobs: execute XML payloads built by cloud mappers
+  if (
+    type === 'sync' ||
+    type === 'incremental' ||
+    type === 'full' ||
+    type === 'push_master' ||
+    type === 'push_voucher' ||
+    type === 'pull_masters' ||
+    type === 'pull_vouchers' ||
+    type === 'outbox'
+  ) {
+    const port = cfg.tallyPort || params.port;
+    if (!port && (params.xml || params.exportId)) {
+      const discovered = await runDiscoverAndHealth(cfg);
+      if (!cfg.tallyPort) {
+        return {
+          ok: false,
+          error: 'Tally not running',
+          result: discovered.result,
+        };
+      }
+    }
+
+    const xmlPort = cfg.tallyPort || params.port;
+    if (params.xml && xmlPort) {
+      try {
+        const res = await postXml({
+          host: cfg.tallyHost,
+          port: xmlPort,
+          xml: params.xml,
+          company: params.company || params.companyName || null,
+        });
+        return {
+          ok: res.ok,
+          result: {
+            statusCode: res.statusCode,
+            body: res.body?.slice?.(0, 50_000) || res.body,
+            stats: params.statsHint || { xmlPosted: 1 },
+          },
+        };
+      } catch (err) {
+        queue.enqueue('executeXml', { xml: params.xml, port: xmlPort });
+        throw err;
+      }
+    }
+
+    if (params.exportId && xmlPort) {
+      const xml =
+        params.masterType
+          ? buildExportMastersEnvelope(params.masterType, params.company || null)
+          : buildExportEnvelope({
+              id: params.exportId,
+              company: params.company || null,
+            });
+      const res = await postXml({ host: cfg.tallyHost, port: xmlPort, xml });
+      return {
+        ok: res.ok,
+        result: {
+          statusCode: res.statusCode,
+          body: res.body?.slice?.(0, 200_000) || res.body,
+          exportId: params.exportId || params.masterType,
+          stats: { exported: 1 },
+        },
+      };
+    }
+
+    // No XML payload — discover + health (dry progress for empty sync)
+    const out = await runDiscoverAndHealth(cfg);
+    out.result.stats = { ...(out.result.stats || {}), note: 'no_xml_payload' };
+    return out;
   }
 
   if (type === 'executeXml' || type === 'exportMasters') {
@@ -117,7 +222,7 @@ async function runLoop(cfg) {
 
   const tickHeartbeat = async () => {
     if (!cfg.agentToken || !cfg.connectionId) {
-      console.warn('[agent] not paired — skipping heartbeat (run with --pair)');
+      console.warn('[agent] not paired — open tray UI (--tray) to paste pairing code');
       return;
     }
     try {
@@ -201,6 +306,11 @@ async function main() {
   }
 
   ensureDataDir(cfg);
+
+  if (args.includes('--tray')) {
+    await runTray(cfg);
+    return;
+  }
 
   if (args.includes('--pair')) {
     await runPairingCli(cfg);
