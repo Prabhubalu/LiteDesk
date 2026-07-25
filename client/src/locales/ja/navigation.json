@@ -766,5 +766,9 @@
   "coreCategoryUtilities": {
     "message": "Utilities",
     "description": "Core drawer category — Import"
+  },
+  "astraStudio": {
+    "message": "Astra Studio",
+    "description": "Living canvas Astra Studio workspace navigation label"
   }
 }

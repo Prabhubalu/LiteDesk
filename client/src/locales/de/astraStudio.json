@@ -1,0 +1,506 @@
+{
+  "listTitle": {
+    "message": "Astra Studio",
+    "description": "Page title for the canvas list"
+  },
+  "listSubtitle": {
+    "message": "Living canvases for deals, accounts, and executive workflows.",
+    "description": "Subtitle on the canvas list page"
+  },
+  "createHeading": {
+    "message": "Create a canvas",
+    "description": "Heading for the create canvas form"
+  },
+  "createPromptPlaceholder": {
+    "message": "Describe what you want on this canvas…",
+    "description": "Placeholder for the create prompt textarea"
+  },
+  "templateLabel": {
+    "message": "Template",
+    "description": "Label for canvas template select"
+  },
+  "createCanvas": {
+    "message": "Create canvas",
+    "description": "Button to create a new canvas"
+  },
+  "creating": {
+    "message": "Astra erstellt Ihre Canvas.",
+    "description": "Living Canvas generating state"
+  },
+  "recentCanvases": {
+    "message": "Your canvases",
+    "description": "Heading for recent canvas list"
+  },
+  "noCanvases": {
+    "message": "No canvases yet. Create one above.",
+    "description": "Empty state when user has no canvases"
+  },
+  "open": {
+    "message": "Open",
+    "description": "Link label to open a canvas"
+  },
+  "untitledCanvas": {
+    "message": "Untitled canvas",
+    "description": "Default title for a new canvas"
+  },
+  "loadFailed": {
+    "message": "Could not load Astra Studio.",
+    "description": "Generic load failure message"
+  },
+  "createFailed": {
+    "message": "Could not create the canvas.",
+    "description": "Create canvas failure message"
+  },
+  "loading": {
+    "message": "Loading…",
+    "description": "Generic loading label"
+  },
+  "connected": {
+    "message": "Live",
+    "description": "Collaboration connection status when connected"
+  },
+  "disconnected": {
+    "message": "Offline",
+    "description": "Collaboration connection status when disconnected"
+  },
+  "canEdit": {
+    "message": "Editing",
+    "description": "User has edit access on the canvas"
+  },
+  "viewOnly": {
+    "message": "View only",
+    "description": "User has view-only access on the canvas"
+  },
+  "palette": {
+    "message": "Widgets",
+    "description": "Left palette heading in the editor"
+  },
+  "inspector": {
+    "message": "Inspector",
+    "description": "Right panel inspector heading"
+  },
+  "selectWidget": {
+    "message": "Select a widget on the canvas.",
+    "description": "Inspector empty state"
+  },
+  "suggestions": {
+    "message": "Suggestions",
+    "description": "AI suggestions panel heading"
+  },
+  "accept": {
+    "message": "Accept",
+    "description": "Accept a canvas suggestion"
+  },
+  "dismiss": {
+    "message": "Dismiss",
+    "description": "Dismiss a canvas suggestion"
+  },
+  "comments": {
+    "message": "Comments",
+    "description": "Comments panel heading"
+  },
+  "anonymous": {
+    "message": "Teammate",
+    "description": "Fallback comment author name"
+  },
+  "postComment": {
+    "message": "Post comment",
+    "description": "Submit a new canvas comment"
+  },
+  "revisions": {
+    "message": "Revisions",
+    "description": "Revision history heading"
+  },
+  "saveRevision": {
+    "message": "Save checkpoint",
+    "description": "Create a manual revision checkpoint"
+  },
+  "export": {
+    "message": "Export",
+    "description": "Export canvas menu action"
+  },
+  "askPanel": {
+    "message": "Ask Astra",
+    "description": "Side chat panel heading in the editor"
+  },
+  "askPlaceholder": {
+    "message": "Ask about this canvas…",
+    "description": "Placeholder for studio ask input"
+  },
+  "send": {
+    "message": "Send",
+    "description": "Send ask message"
+  },
+  "asking": {
+    "message": "Astra is thinking…",
+    "description": "Shown while studio ask is in flight"
+  },
+  "askFailed": {
+    "message": "Could not reach Astra.",
+    "description": "Studio ask failure message"
+  },
+  "refreshWidget": {
+    "message": "Refresh widget",
+    "description": "Widget frame refresh button tooltip"
+  },
+  "configureWidget": {
+    "message": "Configure",
+    "description": "Widget frame configure button tooltip"
+  },
+  "collapseWidget": {
+    "message": "Collapse",
+    "description": "Widget frame collapse button tooltip"
+  },
+  "expandWidget": {
+    "message": "Expand",
+    "description": "Widget frame expand button tooltip"
+  },
+  "deleteWidget": {
+    "message": "Remove widget",
+    "description": "Widget frame delete button tooltip"
+  },
+  "genericPlaceholder": {
+    "message": "Widget content will appear here.",
+    "description": "Placeholder in generic widget"
+  },
+  "moduleKey": {
+    "message": "Module",
+    "description": "CRM widget module label"
+  },
+  "recordId": {
+    "message": "Record",
+    "description": "CRM widget record id label"
+  },
+  "recordLoaded": {
+    "message": "Record loaded",
+    "description": "CRM widget when record fetch succeeded without name"
+  },
+  "recordUnavailable": {
+    "message": "Record unavailable",
+    "description": "CRM widget when record fetch failed"
+  },
+  "aiEmpty": {
+    "message": "No AI content yet. Ask Astra or refresh.",
+    "description": "Empty AI text widget"
+  },
+  "chartPlaceholder": {
+    "message": "Chart preview (ECharts integration planned)",
+    "description": "Analytics widget placeholder note"
+  },
+  "sampleMetric": {
+    "message": "Metric",
+    "description": "Sample analytics metric label"
+  },
+  "sampleTrend": {
+    "message": "Trend",
+    "description": "Sample analytics trend label"
+  },
+  "timelineSample": {
+    "message": "Sample event",
+    "description": "Default timeline event label"
+  },
+  "kanbanTodo": {
+    "message": "To do",
+    "description": "Default kanban column"
+  },
+  "kanbanDoing": {
+    "message": "In progress",
+    "description": "Default kanban column"
+  },
+  "kanbanDone": {
+    "message": "Done",
+    "description": "Default kanban column"
+  },
+  "processStart": {
+    "message": "Start",
+    "description": "Default process graph node"
+  },
+  "processStep": {
+    "message": "Step",
+    "description": "Default process graph node"
+  },
+  "processEnd": {
+    "message": "End",
+    "description": "Default process graph node"
+  },
+  "commsHeading": {
+    "message": "Communications",
+    "description": "Comms widget default title"
+  },
+  "commsEmpty": {
+    "message": "No messages linked yet.",
+    "description": "Comms widget empty body"
+  },
+  "exportDocx": {
+    "message": "Word",
+    "description": "Export canvas as DOCX"
+  },
+  "exportPptx": {
+    "message": "PowerPoint",
+    "description": "Export canvas as PPTX"
+  },
+  "typeMeetingPrep": {
+    "message": "Meeting preparation",
+    "description": "Canvas type label"
+  },
+  "typeExecutiveReport": {
+    "message": "Executive report",
+    "description": "Canvas type label"
+  },
+  "typeCustomer360": {
+    "message": "Customer 360",
+    "description": "Canvas type label"
+  },
+  "typeWarRoom": {
+    "message": "Opportunity war room",
+    "description": "Canvas type label"
+  },
+  "typeAccountPlan": {
+    "message": "Account planning",
+    "description": "Canvas type label"
+  },
+  "typeQbr": {
+    "message": "Quarterly business review",
+    "description": "Canvas type label"
+  },
+  "typeCsPlan": {
+    "message": "Customer success plan",
+    "description": "Canvas type label"
+  },
+  "typeRenewal": {
+    "message": "Renewal workspace",
+    "description": "Canvas type label"
+  },
+  "typeSupport": {
+    "message": "Support investigation",
+    "description": "Canvas type label"
+  },
+  "typeProject": {
+    "message": "Project workspace",
+    "description": "Canvas type label"
+  },
+  "typeWorkflow": {
+    "message": "Workflow design",
+    "description": "Canvas type label"
+  },
+  "typeBrainstorm": {
+    "message": "Brainstorming",
+    "description": "Canvas type label"
+  },
+  "typeStrategy": {
+    "message": "Strategy workspace",
+    "description": "Canvas type label"
+  },
+  "typeBlank": {
+    "message": "Blank canvas",
+    "description": "Canvas type label"
+  },
+  "deleteFailed": {
+    "message": "Could not remove the widget. Try again.",
+    "description": "Shown when widget delete fails"
+  },
+  "backToChat": {
+    "message": "Back to Astra chat",
+    "description": "Leave Living Canvas back to chat mode"
+  },
+  "livingSubtitle": {
+    "message": "Live workspace grounded in your Platform data. Collaborate, ask Astra, and act without leaving the board.",
+    "description": "Living Canvas hero subtitle"
+  },
+  "livingAskPlaceholder": {
+    "message": "Ask Astra about this canvas…",
+    "description": "Floating ask bar placeholder"
+  },
+  "livingAiDisclaimer": {
+    "message": "Astra uses generative AI. Review suggestions before acting.",
+    "description": "Disclaimer under Living Canvas ask bar"
+  },
+  "kpiWidgets": {
+    "message": "Widgets",
+    "description": "KPI label"
+  },
+  "kpiDeals": {
+    "message": "Deal cards",
+    "description": "KPI label"
+  },
+  "kpiRisks": {
+    "message": "Risks",
+    "description": "KPI label"
+  },
+  "kpiNotes": {
+    "message": "Notes",
+    "description": "KPI label"
+  },
+  "share": {
+    "message": "Share",
+    "description": "Share canvas button"
+  },
+  "addWidget": {
+    "message": "Add widget",
+    "description": "Add widget menu aria label"
+  },
+  "livingSubtitleFocused": {
+    "message": "Grounded on {focus}. Ask Astra to refine any panel.",
+    "description": "Living Canvas subtitle when CRM focus is bound"
+  },
+  "boardEmpty": {
+    "message": "No panels ready yet. Ask Astra to fill this workspace.",
+    "description": "Empty packed board after generate produced no renderable widgets"
+  },
+  "moreActions": {
+    "message": "More actions",
+    "description": "Widget overflow menu aria label"
+  },
+  "kpiFocus": {
+    "message": "Focus",
+    "description": "Business KPI: primary CRM focus module"
+  },
+  "kpiFocusNone": {
+    "message": "General",
+    "description": "KPI when no CRM focus resolved"
+  },
+  "kpiPanels": {
+    "message": "Panels",
+    "description": "KPI: count of contentful panels"
+  },
+  "kpiStatus": {
+    "message": "Sync",
+    "description": "KPI: collab connection"
+  },
+  "kpiLive": {
+    "message": "Live",
+    "description": "Connected status"
+  },
+  "kpiOffline": {
+    "message": "Offline",
+    "description": "Disconnected status"
+  },
+  "fieldStage": {
+    "message": "Stage",
+    "description": "CRM card field"
+  },
+  "fieldStatus": {
+    "message": "Status",
+    "description": "CRM card field"
+  },
+  "fieldAmount": {
+    "message": "Amount",
+    "description": "CRM card field"
+  },
+  "fieldOwner": {
+    "message": "Owner",
+    "description": "CRM card field"
+  },
+  "fieldEmail": {
+    "message": "Email",
+    "description": "CRM card field"
+  },
+  "fieldPhone": {
+    "message": "Phone",
+    "description": "CRM card field"
+  },
+  "fieldIndustry": {
+    "message": "Industry",
+    "description": "CRM card field"
+  },
+  "describeWorkspace": {
+    "message": "Describe the workspace to build",
+    "description": "Shimmer state when waiting for first Studio prompt"
+  },
+  "describeWorkspacePlaceholder": {
+    "message": "e.g. Prepare me for tomorrow’s meeting with Acme…",
+    "description": "Ask bar placeholder before first canvas create"
+  },
+  "checklistProgress": {
+    "message": "Fortschritt",
+    "description": "Checklist widget progress label"
+  },
+  "severityHigh": {
+    "message": "Hoch",
+    "description": "Risk severity high"
+  },
+  "severityMed": {
+    "message": "Mittel",
+    "description": "Risk severity medium"
+  },
+  "severityLow": {
+    "message": "Niedrig",
+    "description": "Risk severity low"
+  },
+  "severityRisk": {
+    "message": "Risiko",
+    "description": "Generic risk badge"
+  },
+  "badgeRole": {
+    "message": "Rolle",
+    "description": "Stakeholder role badge"
+  },
+  "widgetAlreadyOnCanvas": {
+    "message": "Dieses Panel ist bereits auf der Canvas",
+    "description": "Shown when adding a widget type that already exists"
+  },
+  "allWidgetsOnCanvas": {
+    "message": "Alle Schnellpanels sind bereits vorhanden",
+    "description": "Empty state in add-widget menu when all types present"
+  },
+  "editWidgetContent": {
+    "message": "Bearbeiten",
+    "description": "Edit button on AI widget content"
+  },
+  "saveWidgetContent": {
+    "message": "Speichern",
+    "description": "Save AI widget content edit"
+  },
+  "cancelWidgetEdit": {
+    "message": "Abbrechen",
+    "description": "Cancel AI widget content edit"
+  },
+  "addWidgetFailed": {
+    "message": "Panel konnte nicht hinzugefügt werden",
+    "description": "Error when add widget API fails"
+  },
+  "buildingCanvas": {
+    "message": "Astra erstellt Ihre Canvas.",
+    "description": "Full-screen building state under Astra logo"
+  },
+  "livingAskWidgetPlaceholder": {
+    "message": "Update “{title}”…",
+    "description": "Ask bar placeholder when a widget is selected as context"
+  },
+  "livingAskContextChip": {
+    "message": "Context: {title}",
+    "description": "Chip above ask bar showing selected widget"
+  },
+  "livingAskContextClear": {
+    "message": "Clear widget context",
+    "description": "Aria label to clear selected widget ask context"
+  },
+  "widgetFallbackTitle": {
+    "message": "Widget",
+    "description": "Fallback title when widget has no config.title"
+  },
+  "shareCopied": {
+    "message": "Link copied",
+    "description": "Share button feedback after clipboard copy"
+  },
+  "shareFailed": {
+    "message": "Couldn’t copy link",
+    "description": "Share button error feedback"
+  },
+  "shareNeedCanvas": {
+    "message": "Save canvas first",
+    "description": "Share blocked when canvas id missing"
+  },
+  "shareCopyManual": {
+    "message": "Copy this canvas link:",
+    "description": "Prompt title when clipboard API unavailable"
+  },
+  "timelineEmpty": {
+    "message": "No recent activity or meetings yet",
+    "description": "Empty timeline when CRM has no activities/events"
+  },
+  "processEmpty": {
+    "message": "No process steps yet",
+    "description": "Empty process graph"
+  }
+}

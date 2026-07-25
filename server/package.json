@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:role-permissions": "node --test utils/__tests__/rolePermissionProjection.test.js",
     "test:astra-intent": "node --test services/astra/eval/__tests__/astraV2.test.js",
+    "test:astra-studio": "node --test services/astraStudio/__tests__/astraStudio.test.js",
     "test:rbac": "node --test utils/__tests__/rbacV2Foundation.test.js utils/__tests__/rbacV2MigrationService.test.js utils/__tests__/sharingResolver.test.js utils/__tests__/sharingRuleService.test.js utils/__tests__/sharingSeedService.test.js utils/__tests__/roleProfileResolver.test.js utils/__tests__/fieldPermissionResolver.test.js utils/__tests__/recordAssignmentService.test.js utils/__tests__/roleHierarchyService.test.js utils/__tests__/rolePermissionProjection.test.js utils/__tests__/rolePermissionCatalogService.test.js",
     "test:people": "node --test utils/__tests__/peopleFieldRegistry.test.js utils/__tests__/warnDeprecatedPeopleTypeAlias.test.js utils/__tests__/normalizePeopleModuleConfig.test.js utils/__tests__/peopleTypeDefsFields.test.js utils/__tests__/collectAllowedPeopleParticipationFieldKeys.test.js",
     "test:communications-threads": "node --test --test-force-exit tests/communicationsThreadActions.controller.test.js tests/communicationsMarkThreadAndReplay.controller.test.js",
@@ -107,6 +108,7 @@
     "express-rate-limit": "^7.4.1",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
+    "lib0": "^0.2.117",
     "luxon": "^3.7.2",
     "mailparser": "^3.9.3",
     "moment": "^2.30.1",
@@ -121,7 +123,10 @@
     "redis": "^4.6.12",
     "stripe": "^22.2.0",
     "web-push": "^3.6.7",
-    "yaml": "^2.8.1"
+    "ws": "^8.21.1",
+    "y-protocols": "^1.0.7",
+    "yaml": "^2.8.1",
+    "yjs": "^13.6.31"
   },
   "devDependencies": {
     "mongodb-memory-server": "^11.2.0"

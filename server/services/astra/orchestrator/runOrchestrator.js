@@ -15,7 +15,10 @@ const modelRouter = require('../models/modelRouter');
 const { buildAnswerMessages, PROMPT_VERSION } = require('../prompts/promptLibrary');
 const { runWorkflowAgent } = require('../agents/workflowAgent');
 const { recordTurn } = require('../governance/audit');
-const { ensureBootstrapped } = require('../bootstrap');
+function ensureBootstrapped() {
+  // Call-time resolve — avoid circular bootstrap capturing undefined
+  require('../bootstrap').ensureBootstrapped();
+}
 const sessionMemory = require('../memory/sessionMemory');
 const { buildUiBlocks, wantsChartAsk } = require('../experience/buildUiBlocks');
 const { applyAskFidelity } = require('../experience/answerFidelity');
@@ -531,6 +534,7 @@ async function polishCoworkerAnswer({
   intent = null,
   situationText = '',
   agentSystemHint = '',
+  forcePolish = false,
 }) {
   const listMode = Boolean(list) || wantsListAnswer(query);
   const safeLead = (!write && toolResult && (intent === 'crm_search' || intent === 'knowledge'))
@@ -560,12 +564,19 @@ async function polishCoworkerAnswer({
     const polished = String(completion?.text || '').replace(/\*\*/g, '').trim();
     const usage = completion?.usage || {};
     const creditsDebited = Number(completion?.creditsDebited || 0);
-    if (!polished || looksLikeDbDump(polished, { allowList: listMode })) {
+    if (!polished) {
       return { answer: safeLead, polishedUsed: false, usage, creditsDebited };
+    }
+    // Studio panel fills: keep LLM bullets even when dump heuristic misfires on agendas.
+    if (looksLikeDbDump(polished, { allowList: listMode || forcePolish })) {
+      if (!forcePolish) {
+        return { answer: safeLead, polishedUsed: false, usage, creditsDebited };
+      }
     }
     const hitsExist = (claims || []).length > 0;
     const keepsFacts = !hitsExist || mentionsAnyClaim(polished, claims);
-    if (!keepsFacts) {
+    // Studio panel fills must keep LLM polish — claim mismatch often rejects valid coworker prose.
+    if (!keepsFacts && !forcePolish) {
       return { answer: safeLead, polishedUsed: false, usage, creditsDebited };
     }
     return {
@@ -699,6 +710,66 @@ async function runOrchestrator(request = {}, deps = {}) {
       : null)
     || null;
 
+  // Astra Studio surface: generate/mutate Living Canvas first, then narrate.
+  if (String(request.surface || '') === 'astra-studio' && query && request.organizationId) {
+    const canvasToolName = request.canvasId || request.flags?.canvasId
+      ? 'canvas.mutate'
+      : 'canvas.generate';
+    const tool = registry.getTool(canvasToolName) || registry.getTool('canvas.generate');
+    if (tool) {
+      const toolResult = await tool.run(
+        {
+          canvasId: request.canvasId || request.flags?.canvasId || null,
+          prompt: query,
+          title: query,
+          focus: focus?.moduleKey && focus?.recordId
+            ? [{ moduleKey: focus.moduleKey, recordId: focus.recordId }]
+            : request.focusRecords || [],
+          instruction: query,
+          ops: request.ops,
+          targetWidgetId: request.targetWidgetId || request.flags?.targetWidgetId || null,
+        },
+        {
+          organizationId: request.organizationId,
+          userId: request.userId,
+          query,
+          flags: {
+            ...(request.flags || {}),
+            canvasId: request.canvasId || request.flags?.canvasId,
+            targetWidgetId: request.targetWidgetId || request.flags?.targetWidgetId || null,
+          },
+          focus,
+        }
+      );
+      const answer = toolResult?.ok
+        ? (toolResult.claims?.[0]?.text
+          || `I've updated your Living Canvas (${toolResult.canvasType || 'workspace'}). ${
+            toolResult.summary?.widgetCount != null
+              ? `It now has ${toolResult.summary.widgetCount} widgets.`
+              : ''
+          }`)
+        : `I couldn't update the canvas: ${toolResult?.error || 'unknown error'}`;
+      return {
+        intent: 'workflow',
+        agentKey: 'mission-control',
+        agentName: 'Astra Mission Control',
+        confidence: 0.9,
+        conversationId,
+        grounded: true,
+        answer,
+        claims: toolResult?.claims || [],
+        blocks: [],
+        suggestions: [],
+        proposals: [],
+        canvas: toolResult?.ok
+          ? { canvasId: toolResult.canvasId, canvasType: toolResult.canvasType, summary: toolResult.summary }
+          : null,
+        tool: tool.name,
+        toolResult,
+      };
+    }
+  }
+
   // Quote-number fallback when home/history asks omit recordId.
   if ((!focus?.id && !focus?.recordId) && request.organizationId && deps.skipQuoteResolve !== true) {
     const fromQuote = await resolveQuoteFocusFromQuery(query, request.organizationId, deps);
@@ -810,8 +881,10 @@ async function runOrchestrator(request = {}, deps = {}) {
     }
   }
 
+  const forcePolish = Boolean(request.flags?.studioFill || request.flags?.forcePolish);
   const polishWithAgent = (opts) => polishCoworkerAnswer({
     ...opts,
+    forcePolish: opts.forcePolish ?? forcePolish,
     agentSystemHint: opts.agentSystemHint ?? agent?.systemHint ?? '',
   });
   const expectedTool = classification.tool || INTENT_TOOL_ROUTE[intent] || null;
@@ -918,29 +991,44 @@ async function runOrchestrator(request = {}, deps = {}) {
   }
 
   if (intent === 'playbook') {
-    const playbookKey = classification.playbookKey || request.playbook || 'qualify-research-outreach';
-    const pb = await runThinPlaybook({
-      playbookKey,
-      query,
-      ctx: { ...ctx, conversationId },
-      memory,
-      conversationId,
-      llm,
-      history: priorHistory,
-    });
-    return finish({
-      answer: pb.answer,
-      blocks: pb.blocks || [],
-      proposals: pb.proposals || [],
-      actions: pb.proposals || [],
-      suggestions: pb.suggestions || [],
-      claims: pb.focus?.name ? [{ type: 'record', id: pb.focus.id || 'focus', title: pb.focus.name }] : [],
-      tool: 'playbook.run',
-      toolResult: { seats: pb.seats, scratchpad: pb.scratchpad, playbookKey: pb.playbookKey },
-      seats: pb.seats,
-      playbookKey: pb.playbookKey,
-      agentKey: 'workflow',
-    });
+    // Explicit specialist seat (e.g. Living Canvas hydrate) must not run thin playbooks —
+    // studio-* playbooks only have stub seats ("no runner yet") and would pollute widget bodies.
+    const forcedAgent = String(request.agent || request.specialist || '').trim().toLowerCase();
+    const forceSpecialist = forcedAgent
+      && forcedAgent !== 'auto'
+      && !isMissionControlKey(forcedAgent)
+      && forcedAgent !== 'workflow';
+    if (!forceSpecialist) {
+      const playbookKey = classification.playbookKey || request.playbook || 'qualify-research-outreach';
+      const pb = await runThinPlaybook({
+        playbookKey,
+        query,
+        ctx: { ...ctx, conversationId },
+        memory,
+        conversationId,
+        llm,
+        history: priorHistory,
+      });
+      return finish({
+        answer: pb.answer,
+        blocks: pb.blocks || [],
+        proposals: pb.proposals || [],
+        actions: pb.proposals || [],
+        suggestions: pb.suggestions || [],
+        claims: pb.focus?.name ? [{ type: 'record', id: pb.focus.id || 'focus', title: pb.focus.name }] : [],
+        tool: 'playbook.run',
+        toolResult: { seats: pb.seats, scratchpad: pb.scratchpad, playbookKey: pb.playbookKey },
+        seats: pb.seats,
+        playbookKey: pb.playbookKey,
+        agentKey: 'workflow',
+      });
+    }
+    // Remap intent so meeting_prep / research specialist loops can run.
+    intent = classification.playbookKey?.startsWith('studio-meeting')
+      ? 'meeting_prep'
+      : classification.playbookKey?.startsWith('studio-war')
+        ? 'research'
+        : 'crm_search';
   }
 
   if (intent === 'clarify') {
@@ -2161,7 +2249,7 @@ async function runOrchestrator(request = {}, deps = {}) {
   }
 
   // If polish was skipped/failed, retry once with a short coworker prompt (still grounded).
-  if (!polishedUsed && (intent === 'crm_search' || intent === 'knowledge') && (toolResult?.hits?.length || 0) > 0) {
+  if (!polishedUsed && (forcePolish || intent === 'crm_search' || intent === 'knowledge') && (forcePolish || (toolResult?.hits?.length || 0) > 0)) {
     const retry = await polishCoworkerAnswer({
       llm,
       request,
@@ -2175,10 +2263,16 @@ async function runOrchestrator(request = {}, deps = {}) {
         : [
           lead || draft || '',
           '',
-          'Facts (UI will show cards — do not dump as a numbered list):',
-          ...(toolResult.hits || []).slice(0, 8).map((h) => `- ${h.title}${h.subtitle ? ` (${h.subtitle})` : ''}${h.amount != null ? ` · ${h.amount}` : ''}`),
+          forcePolish
+            ? 'Write 3–6 short bullets for this canvas panel. No preamble. No tool narration.'
+            : 'Facts (UI will show cards — do not dump as a numbered list):',
+          ...(forcePolish
+            ? []
+            : (toolResult?.hits || []).slice(0, 8).map((h) => `- ${h.title}${h.subtitle ? ` (${h.subtitle})` : ''}${h.amount != null ? ` · ${h.amount}` : ''}`)),
           '',
-          'Write 2–4 short sentences: overall picture, what needs attention, one next step.',
+          forcePolish
+            ? 'Ground only on the situation context and named party in the ask.'
+            : 'Write 2–4 short sentences: overall picture, what needs attention, one next step.',
         ].join('\n'),
       lead,
       toolResults: serializeToolResult(intent, toolResult, { list: listMode }),
@@ -2188,7 +2282,9 @@ async function runOrchestrator(request = {}, deps = {}) {
       list: listMode,
       toolResult,
       intent,
+      situationText: situation?.llmText || '',
       agentSystemHint: agent?.systemHint || '',
+      forcePolish,
     });
     if (retry.polishedUsed) {
       answer = retry.answer;
@@ -2199,10 +2295,10 @@ async function runOrchestrator(request = {}, deps = {}) {
     }
   }
 
-  if (polishedUsed && looksLikeDbDump(answer, { allowList: listMode }) && lead) {
+  if (polishedUsed && looksLikeDbDump(answer, { allowList: listMode || forcePolish }) && lead && !forcePolish) {
     answer = lead;
     polishedUsed = false;
-  } else if (polishedUsed && /open deals:\s*0|total organizations|found \d+ (organization|deal)/i.test(answer) && lead) {
+  } else if (polishedUsed && !forcePolish && /open deals:\s*0|total organizations|found \d+ (organization|deal)/i.test(answer) && lead) {
     answer = lead;
     polishedUsed = false;
   }

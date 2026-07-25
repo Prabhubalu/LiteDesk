@@ -52,6 +52,7 @@ try {
 const {
   buildContainsRegex,
   buildSearchOrConditions,
+  buildPeopleNameOrConditions,
   rankAndLimit
 } = require('../utils/searchRelevance');
 
@@ -136,7 +137,7 @@ class SearchService {
       const results = await People.find({
         organizationId,
         deletedAt: null,
-        $or: buildSearchOrConditions(query, ['first_name', 'last_name', 'email', 'phone', 'mobile']),
+        $or: buildPeopleNameOrConditions(query),
       })
         .select('first_name last_name email phone mobile avatar organization')
         .populate('organization', 'name')

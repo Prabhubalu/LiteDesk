@@ -38,11 +38,21 @@ function buildContextPacket(input = {}) {
       }
     : null;
 
+  const flags = input.flags && typeof input.flags === 'object' ? { ...input.flags } : {};
+  if (input.canvasId) {
+    flags.canvasId = String(input.canvasId);
+  }
+  if (input.targetWidgetId || flags.targetWidgetId) {
+    flags.targetWidgetId = String(input.targetWidgetId || flags.targetWidgetId);
+  }
+
   return {
     organizationId: String(input.organizationId || ''),
     userId: input.userId ? String(input.userId) : null,
     surface: String(input.surface || 'chat'),
     focus,
+    canvasId: input.canvasId ? String(input.canvasId) : flags.canvasId || null,
+    targetWidgetId: flags.targetWidgetId || null,
     query: String(input.query || '').trim(),
     history: Array.isArray(input.history) ? input.history.slice(-20) : [],
     memory: {
@@ -51,7 +61,7 @@ function buildContextPacket(input = {}) {
     },
     locale: String(input.locale || 'en'),
     now: Number.isFinite(input.now) ? input.now : Date.now(),
-    flags: input.flags || {},
+    flags,
   };
 }
 
