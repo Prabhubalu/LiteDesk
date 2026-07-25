@@ -18644,7 +18644,7 @@
     "description": "Tally pairing section title"
   },
   "addonsTallyPairingDesc": {
-    "message": "Generate a short-lived code and enter it in the connector agent.",
+    "message": "Generate a short-lived code. On the Tally PC, open the Arivu tray icon → Pair, then paste the code (no terminal).",
     "description": "Tally pairing section description"
   },
   "addonsTallyPairingNone": {
@@ -18664,7 +18664,7 @@
     "description": "Pairing code expiry label"
   },
   "addonsTallyPairingAfterHint": {
-    "message": "Default agent apiBase is https://api.arivusystems.com. If pairing fails with ENOTFOUND, edit %ProgramData%\\Arivu\\Connector\\config.json and set apiBase correctly, then generate a fresh code and run Pair Connector again.",
+    "message": "On the PC with Tally: click the Arivu Connector tray icon (or Start → Arivu Connector), paste this code, then click Pair. Keep TallyPrime running with XML HTTP enabled (port 9000).",
     "description": "Hint after generating pairing code"
   },
   "addonsTallyRefreshStatus": {
@@ -18910,5 +18910,90 @@
   "tallyLoadFailed": {
     "message": "Failed to load Integration Center",
     "description": "Integration Center load error"
+  },
+  "tallyWizardTitle": {
+    "message": "Connect Tally",
+    "description": "Four-step wizard title"
+  },
+  "tallyWizardStep1": {
+    "message": "1. Install",
+    "description": "Wizard step 1"
+  },
+  "tallyWizardStep1Hint": {
+    "message": "Download and install ArivuConnectorSetup.exe on the Tally PC.",
+    "description": "Wizard step 1 hint"
+  },
+  "tallyWizardStep2": {
+    "message": "2. Pair",
+    "description": "Wizard step 2"
+  },
+  "tallyWizardStep2Hint": {
+    "message": "Generate a code in Settings, then paste it in the tray Pair window.",
+    "description": "Wizard step 2 hint"
+  },
+  "tallyWizardStep2Done": {
+    "message": "Agent paired and reporting heartbeat.",
+    "description": "Wizard step 2 done"
+  },
+  "tallyWizardStep3": {
+    "message": "3. Discover",
+    "description": "Wizard step 3"
+  },
+  "tallyWizardStep3Hint": {
+    "message": "Run Dry run with TallyPrime open to discover companies.",
+    "description": "Wizard step 3 hint"
+  },
+  "tallyWizardStep3Done": {
+    "message": "Companies discovered from Tally.",
+    "description": "Wizard step 3 done"
+  },
+  "tallyWizardStep4": {
+    "message": "4. Sync",
+    "description": "Wizard step 4"
+  },
+  "tallyWizardStep4Hint": {
+    "message": "Bind a company, then Sync now for bi-directional masters and vouchers.",
+    "description": "Wizard step 4 hint"
+  },
+  "tallyWizardStep4Done": {
+    "message": "Connector healthy — live sync enabled.",
+    "description": "Wizard step 4 done"
+  },
+  "tallyWizardDownload": {
+    "message": "Open install settings",
+    "description": "Wizard download action"
+  },
+  "tallyWizardPair": {
+    "message": "Open pairing",
+    "description": "Wizard pair action"
+  },
+  "tallyCompaniesTitle": {
+    "message": "Discovered companies",
+    "description": "Company bind list title"
+  },
+  "tallyCompanyBind": {
+    "message": "Bind",
+    "description": "Bind company button"
+  },
+  "tallyCompanyActive": {
+    "message": "Active",
+    "description": "Active company badge"
+  },
+  "tallyCompanyBound": {
+    "message": "Company bound",
+    "description": "Company bind success toast"
+  },
+  "tallyMappingPending": {
+    "message": "Needs mapping",
+    "description": "Pending external object badge"
+  },
+  "tallyOfflineNoAgent": {
+    "message": "Agent offline — install the connector and pair from the tray icon on the Tally PC.",
+    "description": "Offline banner no heartbeat"
+  },
+  "tallyOfflineStale": {
+    "message": "Agent heartbeat is stale. Check the tray icon and that the Windows service is running.",
+    "description": "Offline banner stale heartbeat"
   }
 }
+

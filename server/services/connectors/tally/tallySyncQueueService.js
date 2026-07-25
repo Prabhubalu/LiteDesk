@@ -125,7 +125,9 @@ function runSyncInline(syncJobId) {
 }
 
 /**
- * Enqueue a sync job. Uses per-company jobId affinity when companyGuid is present.
+ * Enqueue a sync job for the Windows agent (poll/ack).
+ * Cloud never executes Tally XML — jobs stay queued until the agent claims them.
+ * Bull/inline mock processing is opt-in via TALLY_SYNC_CLOUD_PROCESS=1 (tests only).
  */
 async function enqueueTallySyncJob({
   organizationId,
@@ -147,6 +149,11 @@ async function enqueueTallySyncJob({
     payload,
     createdBy,
   });
+
+  const cloudProcess = String(process.env.TALLY_SYNC_CLOUD_PROCESS || '').trim() === '1';
+  if (!cloudProcess) {
+    return { mode: 'agent', job };
+  }
 
   const queue = initQueue();
   if (!queue) {

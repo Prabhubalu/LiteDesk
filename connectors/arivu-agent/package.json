@@ -1,7 +1,7 @@
 {
   "name": "@arivu/connector-agent",
-  "version": "0.1.0",
-  "description": "Arivu Connector Agent — Windows service that bridges local Tally XML API to Arivu cloud",
+  "version": "0.2.0",
+  "description": "Arivu Connector Agent — Windows service + tray that bridges local Tally XML API to Arivu cloud",
   "private": true,
   "main": "src/index.js",
   "bin": {
@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node src/index.js",
     "start:console": "node src/index.js --console",
+    "start:tray": "node src/index.js --tray",
     "mock-tally": "node scripts/mock-tally-server.js",
     "pair": "node src/index.js --pair",
     "discover": "node src/index.js --discover",
@@ -19,13 +20,17 @@
     "node": ">=18"
   },
   "pkg": {
-    "assets": [],
+    "assets": [
+      "src/ui/**/*",
+      "assets/**/*"
+    ],
     "targets": ["node18-win-x64"],
     "outputPath": "dist"
   },
   "dependencies": {},
   "optionalDependencies": {
-    "node-windows": "^1.0.0-beta.8"
+    "node-windows": "^1.0.0-beta.8",
+    "systray2": "^2.1.4"
   },
   "keywords": ["arivu", "tally", "connector", "windows-service"],
   "license": "UNLICENSED"

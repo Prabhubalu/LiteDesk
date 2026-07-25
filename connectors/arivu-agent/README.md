@@ -1,31 +1,30 @@
 # Arivu Connector Agent (GTM-4)
 
-Windows background service that bridges a local **Tally / TallyPrime XML API** to Arivu cloud.
+Windows **service + tray** that bridges a local **TallyPrime XML API** to Arivu cloud.
 
-This directory is a **production-shaped source scaffold**: Node/JS agent logic + Inno Setup installer scripts. CI packages a self-contained EXE (`pkg` / `nexe`) and compiles `ArivuConnectorSetup.exe`. This task does **not** require a compiled binary.
+Customers pair via the **tray / browser UI** (no terminal). Support can still use `--pair`.
 
 ## What it does
 
 | Capability | Module |
 |---|---|
-| Discover Tally on `localhost:9000–9010` | `src/discovery.js` |
-| POST Tally XML (export masters / import voucher stubs) | `src/xmlClient.js` |
+| System tray + localhost pairing UI (`127.0.0.1:17932`) | `src/tray.js`, `src/localUi.js`, `src/ui/` |
+| Discover Tally on `localhost:9000–9010` + companies | `src/discovery.js` |
+| POST Tally XML (export masters / import vouchers) | `src/xmlClient.js` |
 | Offline JSONL queue under ProgramData | `src/offlineQueue.js` |
 | Heartbeat + job poll / ack | `src/heartbeat.js` |
 | Device-code pairing | `src/pairing.js` |
 | Update check | `src/updater.js` |
-| Windows service hooks (`node-windows` / `sc.exe`) | `src/service.js` |
+| Windows service hooks | `src/service.js` |
 
-Cloud API base: `ARIVU_API_BASE` (default `https://api.arivu.app`)
+Cloud API base: `ARIVU_API_BASE` (default `https://api.arivusystems.com`)
 
-Agent endpoints (Bearer `agentToken` after pairing):
+Customer modes:
 
-- `POST /api/connectors/tally/agent/heartbeat`
-- `POST /api/connectors/tally/agent/poll`
-- `POST /api/connectors/tally/agent/ack`
-- `POST /api/connectors/tally/agent/rpc`
-- `POST /api/connectors/tally/agent/pair`
-- `GET  /api/connectors/tally/agent/update`
+- `arivu-connector-agent.exe --tray` — tray icon + pairing UI (default after install)
+- (no args / service) — silent sync loop (heartbeat, poll, XML)
+
+Support-only: `--pair`, `--discover`, `--console`
 
 ## Layout
 
