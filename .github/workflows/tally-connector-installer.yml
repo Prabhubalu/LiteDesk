@@ -55,21 +55,37 @@ jobs:
       - name: Package agent with pkg (win-x64)
         run: npx --yes pkg . --targets node18-win-x64 --output dist/arivu-connector-agent.exe
 
+      - name: Preflight (sources for Inno)
+        shell: pwsh
+        run: |
+          $agent = "dist\arivu-connector-agent.exe"
+          $cfg = "installer\config.template.json"
+          $vc = "installer\redist\VC_redist.x64.exe"
+          if (-not (Test-Path $agent)) { throw "Missing $agent" }
+          $len = (Get-Item $agent).Length
+          if ($len -lt 1MB) { throw "Agent EXE too small ($len bytes) — pkg likely failed" }
+          if (-not (Test-Path $cfg)) { throw "Missing $cfg" }
+          if (-not (Test-Path $vc)) { throw "Missing $vc (VC++ redist download step failed)" }
+          Write-Host "Preflight OK: agent=$len bytes, config+vc present"
+
       - name: Install Inno Setup 6
         shell: pwsh
         run: |
           choco install innosetup -y --no-progress
-          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
-            throw "ISCC.exe not found after Inno Setup install"
-          }
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe not found after Inno Setup install" }
+          & $iscc /? 2>&1 | Select-Object -First 5
+          Write-Host "ISCC path: $iscc"
 
       - name: Compile ArivuConnectorSetup.exe
         shell: pwsh
         run: |
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\arivu-connector.iss
-          if (-not (Test-Path "dist\installer\ArivuConnectorSetup.exe")) {
-            throw "ArivuConnectorSetup.exe was not produced"
-          }
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc /Q "installer\arivu-connector.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          $setup = "dist\installer\ArivuConnectorSetup.exe"
+          if (-not (Test-Path $setup)) { throw "ArivuConnectorSetup.exe was not produced" }
+          Write-Host "Setup OK: $((Get-Item $setup).Length) bytes → $setup"
 
       - name: Stage public connectors folder
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish_to_public }}
