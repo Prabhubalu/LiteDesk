@@ -299,9 +299,18 @@ async function postInventoryTransaction({
     }
   });
 
+  const postedTx = transaction.toObject();
+
+  try {
+    const { enqueueAfterInventoryPost } = require('./connectors/tally/tallyOutboxHooks');
+    await enqueueAfterInventoryPost({ organizationId, transaction: postedTx });
+  } catch (_err) {
+    // Non-blocking: Tally outbox must not break inventory post
+  }
+
   return {
     duplicate: false,
-    transaction: transaction.toObject(),
+    transaction: postedTx,
     ledgerEntries: ledgerEntries.map((e) => e.toObject()),
     balances
   };
@@ -502,9 +511,18 @@ async function postInventoryTransferTransaction({
     }
   });
 
+  const postedTx = transaction.toObject();
+
+  try {
+    const { enqueueAfterInventoryPost } = require('./connectors/tally/tallyOutboxHooks');
+    await enqueueAfterInventoryPost({ organizationId, transaction: postedTx });
+  } catch (_err) {
+    // Non-blocking: Tally outbox must not break inventory transfer post
+  }
+
   return {
     duplicate: false,
-    transaction: transaction.toObject(),
+    transaction: postedTx,
     ledgerEntries: ledgerEntries.map((e) => e.toObject()),
     balances
   };

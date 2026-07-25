@@ -12,6 +12,8 @@ const ADDON_KEYS = {
   AI: 'ai',
   /** Usage meter for platform-key mode only (not a capability package) */
   AI_CREDITS: 'ai_credits',
+  /** TallyPrime connector (Windows Agent + sync runtime) */
+  TALLY: 'tally',
   // Legacy capability keys (pre-unified AI). Still valid for entitlement alias checks.
   AI_ASSIST: 'ai_assist',
   AI_COMMERCIAL: 'ai_commercial',

@@ -14,6 +14,8 @@ const {
   restoreReservationConsumption
 } = require('./inventoryReservationService');
 const { isInventoryEnabled } = require('./inventoryCapabilityService');
+const { assertNoDeliveryNoteIssueForSoLine } = require('./inventoryStockIssueGuardService');
+const { resolveInventoryLocationUuid } = require('./inventoryLocationService');
 
 const DEDUCT_TYPES = new Set(INVENTORY_FULFILLMENT_DEDUCT_TYPES);
 
@@ -41,13 +43,19 @@ async function applyFulfillment({
   }
 
   const location = inventoryLocationId
-    ? { inventoryLocationId }
+    ? { inventoryLocationId: await resolveInventoryLocationUuid({ organizationId, locationRef: inventoryLocationId }) }
     : await getDefaultLocation(organizationId, userId);
 
   const inventoryLocation = location.inventoryLocationId;
   const expandedLines = [];
 
   for (const eventLine of eventLines) {
+    if (!isReversal) {
+      await assertNoDeliveryNoteIssueForSoLine({
+        organizationId,
+        salesOrderLineId: eventLine.salesOrderLineId
+      });
+    }
     const rows = await resolveInventoryDeductionLines({
       organizationId,
       salesOrderId,

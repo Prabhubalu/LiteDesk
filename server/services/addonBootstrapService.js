@@ -177,6 +177,12 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
       });
     }
 
+    if (normalized === ADDON_KEYS.TALLY && config && (!config.settings || Object.keys(config.settings).length === 0)) {
+      const { TALLY_DEFAULT_SETTINGS } = require('../constants/tallyAddonConstants');
+      config.settings = { ...TALLY_DEFAULT_SETTINGS };
+      await config.save();
+    }
+
     return {
       created: subscriptionCreated,
       subscription: existing,

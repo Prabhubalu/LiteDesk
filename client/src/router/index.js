@@ -631,6 +631,17 @@ const routes = [
     meta: { requiresAuth: true } // render with shell (internal tab, sidebar collapsed by default)
   },
   {
+    path: '/integrations/tally',
+    name: 'tally-integration-center',
+    component: () => import('@/views/integrations/TallyIntegrationCenter.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings/integrations/tally',
+    redirect: { name: 'tally-integration-center' },
+    meta: { requiresAuth: true }
+  },
+  {
     // The user menu's "Your profile" entry deep-links here. We surface the
     // profile screen inside the Settings shell so users keep the familiar
     // sidebar navigation between personal and workspace settings.

@@ -156,6 +156,11 @@ const SalesOrderSchema = new Schema(
     invoicedAmount: { type: Number, default: 0 },
     remainingBillableAmount: { type: Number, default: 0 },
 
+    // External sync triad (Tally / accounting connectors)
+    externalReferenceId: { type: String, trim: true, default: null, index: true },
+    syncStatus: { type: String, trim: true, default: 'not_synced', index: true },
+    lastSyncAt: { type: Date, default: null },
+
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     modifiedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
 

@@ -173,6 +173,21 @@ const ItemSchema = new Schema({
         max: 100,
         default: 0
     },
+    /** India GST (GTM-1) — HSN/SAC code */
+    hsnSac: {
+        type: String,
+        trim: true
+    },
+    gstTaxability: {
+        type: String,
+        enum: ['taxable', 'exempt', 'nil_rated', 'non_gst', 'zero_rated'],
+        trim: true
+    },
+    gstRatePercent: {
+        type: Number,
+        min: 0,
+        max: 100
+    },
     commission_rate: {
         type: Number,
         min: 0,

@@ -18598,5 +18598,309 @@
   "chargeDefaultItem": {
     "message": "Default item-level charges",
     "description": "Default item charges label"
+  },
+  "addonsTallySettingsTitle": {
+    "message": "Tally connector",
+    "description": "Tally addon settings page title"
+  },
+  "addonsTallySettingsDesc": {
+    "message": "Install the Windows agent, pair your company, and open the Integration Center.",
+    "description": "Tally addon settings page description"
+  },
+  "addonsTallyInstallTitle": {
+    "message": "Install agent",
+    "description": "Tally EXE download section title"
+  },
+  "addonsTallyInstallDesc": {
+    "message": "Download and install Arivu Connector on the Windows machine that runs Tally.",
+    "description": "Tally EXE download section description"
+  },
+  "addonsTallyDownloadExe": {
+    "message": "Download EXE",
+    "description": "Download Arivu Connector installer button"
+  },
+  "addonsTallyDownloadHint": {
+    "message": "Installer path: /static/connectors/ArivuConnectorSetup.exe",
+    "description": "Hint under download button when EXE may be a placeholder"
+  },
+  "addonsTallyDownloadReady": {
+    "message": "Self-contained Windows installer (agent runtime + VC++ redistributable when bundled). TallyPrime is not included.",
+    "description": "Shown when installer artifact is available for download"
+  },
+  "addonsTallyDownloadUnavailable": {
+    "message": "Installer not published yet. Build on Windows (build.ps1) or CI, then place ArivuConnectorSetup.exe in client/public/connectors/.",
+    "description": "Shown when installer EXE is missing on the server"
+  },
+  "addonsTallyDownloadStarted": {
+    "message": "Download started",
+    "description": "Toast after installer download begins"
+  },
+  "addonsTallyDownloadFailed": {
+    "message": "Could not download installer",
+    "description": "Toast when installer download fails"
+  },
+  "addonsTallyPairingTitle": {
+    "message": "Pairing code",
+    "description": "Tally pairing section title"
+  },
+  "addonsTallyPairingDesc": {
+    "message": "Generate a short-lived code and enter it in the connector agent.",
+    "description": "Tally pairing section description"
+  },
+  "addonsTallyPairingNone": {
+    "message": "————",
+    "description": "Placeholder when no pairing code is active"
+  },
+  "addonsTallyCopyCode": {
+    "message": "Copy",
+    "description": "Copy pairing code button"
+  },
+  "addonsTallyGenerateCode": {
+    "message": "Generate code",
+    "description": "Generate new Tally pairing code"
+  },
+  "addonsTallyPairingExpires": {
+    "message": "Expires {date}",
+    "description": "Pairing code expiry label"
+  },
+  "addonsTallyConnectionTitle": {
+    "message": "Connection",
+    "description": "Tally connection status section title"
+  },
+  "addonsTallyStatus": {
+    "message": "Status",
+    "description": "Connection status label"
+  },
+  "addonsTallyLastHeartbeat": {
+    "message": "Last heartbeat",
+    "description": "Last agent heartbeat label"
+  },
+  "addonsTallyAgentHost": {
+    "message": "Agent host",
+    "description": "Agent hostname label"
+  },
+  "addonsTallyAgentVersion": {
+    "message": "Agent version",
+    "description": "Agent version label"
+  },
+  "addonsTallyStatusNone": {
+    "message": "Not paired",
+    "description": "No Tally connection"
+  },
+  "addonsTallyStatusPending": {
+    "message": "Waiting for agent",
+    "description": "Pending pair status"
+  },
+  "addonsTallyStatusPaired": {
+    "message": "Paired",
+    "description": "Paired status"
+  },
+  "addonsTallyStatusOnline": {
+    "message": "Online",
+    "description": "Online status"
+  },
+  "addonsTallyStatusOffline": {
+    "message": "Offline",
+    "description": "Offline status"
+  },
+  "addonsTallyNever": {
+    "message": "Never",
+    "description": "Never heartbeat placeholder"
+  },
+  "addonsTallyCompanyTitle": {
+    "message": "Company & financial year",
+    "description": "Bound Tally companies section title"
+  },
+  "addonsTallyCompanyDesc": {
+    "message": "Companies discovered and bound for this workspace.",
+    "description": "Bound Tally companies section description"
+  },
+  "addonsTallyCompanyFy": {
+    "message": "FY {fy} · {guid}",
+    "description": "Company financial year and GUID summary"
+  },
+  "addonsTallyCompanyEmpty": {
+    "message": "No companies bound yet. Pair the agent to discover companies.",
+    "description": "Empty companies list"
+  },
+  "addonsTallyDryRun": {
+    "message": "Dry run",
+    "description": "Queue dry-run sync"
+  },
+  "addonsTallySyncNow": {
+    "message": "Sync now",
+    "description": "Queue incremental sync"
+  },
+  "addonsTallyOpenCenter": {
+    "message": "Open Integration Center",
+    "description": "Navigate to Tally Integration Center"
+  },
+  "addonsTallyLoadFailed": {
+    "message": "Failed to load Tally connection",
+    "description": "Connection load error"
+  },
+  "addonsTallyPairingCreated": {
+    "message": "Pairing code created",
+    "description": "Pairing start success toast"
+  },
+  "addonsTallyPairingFailed": {
+    "message": "Failed to create pairing code",
+    "description": "Pairing start error toast"
+  },
+  "addonsTallyCodeCopied": {
+    "message": "Pairing code copied",
+    "description": "Clipboard success toast"
+  },
+  "addonsTallyCopyFailed": {
+    "message": "Could not copy pairing code",
+    "description": "Clipboard error toast"
+  },
+  "addonsTallyDryRunQueued": {
+    "message": "Dry run queued",
+    "description": "Dry run sync queued toast"
+  },
+  "addonsTallySyncQueued": {
+    "message": "Sync queued",
+    "description": "Sync queued toast"
+  },
+  "addonsTallySyncFailed": {
+    "message": "Failed to queue sync",
+    "description": "Sync trigger error toast"
+  },
+  "tallyCenterTitle": {
+    "message": "Tally Integration Center",
+    "description": "Integration Center page title"
+  },
+  "tallyCenterDesc": {
+    "message": "Monitor health, queue, conflicts, mappings, and validation for your Tally connector.",
+    "description": "Integration Center page description"
+  },
+  "tallyBackSettings": {
+    "message": "Back to settings",
+    "description": "Return to Tally addon settings"
+  },
+  "tallyQueue": {
+    "message": "In queue",
+    "description": "Queued jobs count card"
+  },
+  "tallyFailed": {
+    "message": "Failed",
+    "description": "Failed jobs count card"
+  },
+  "tallyConflicts": {
+    "message": "Conflicts",
+    "description": "Open conflicts count card"
+  },
+  "tallyHealthConnection": {
+    "message": "Connection",
+    "description": "Health card connection status"
+  },
+  "tallyHealthNoHeartbeat": {
+    "message": "No heartbeat yet",
+    "description": "Missing heartbeat hint"
+  },
+  "tallyHealthAgent": {
+    "message": "Agent",
+    "description": "Health card agent version"
+  },
+  "tallyHealthCompanies": {
+    "message": "Companies",
+    "description": "Health card company count"
+  },
+  "tallyHealthOk": {
+    "message": "Health",
+    "description": "Health card overall status"
+  },
+  "tallyHealthOkValue": {
+    "message": "Healthy",
+    "description": "Healthy status value"
+  },
+  "tallyHealthDegradedValue": {
+    "message": "Needs attention",
+    "description": "Degraded status value"
+  },
+  "tallyActivityTitle": {
+    "message": "Activity",
+    "description": "Activity timeline section title"
+  },
+  "tallyActivityDesc": {
+    "message": "Recent sync jobs and connector events.",
+    "description": "Activity timeline section description"
+  },
+  "tallyActivityEmpty": {
+    "message": "No recent activity",
+    "description": "Empty activity list"
+  },
+  "tallyActivityStubReady": {
+    "message": "Integration Center ready",
+    "description": "Stub timeline title when no jobs"
+  },
+  "tallyActivityStubReadyDetail": {
+    "message": "Run a dry run or sync to populate this timeline.",
+    "description": "Stub timeline detail when no jobs"
+  },
+  "tallyActivityJobDetail": {
+    "message": "Sync job",
+    "description": "Default activity row detail"
+  },
+  "tallyMappingTitle": {
+    "message": "Mapping review",
+    "description": "Low-confidence mappings section title"
+  },
+  "tallyMappingDesc": {
+    "message": "Suggested mappings below confidence threshold need a quick review.",
+    "description": "Low-confidence mappings section description"
+  },
+  "tallyMappingConfidence": {
+    "message": "{value}% confidence",
+    "description": "Mapping confidence percent"
+  },
+  "tallyMappingReview": {
+    "message": "Review",
+    "description": "Review mapping button"
+  },
+  "tallyMappingEmpty": {
+    "message": "No low-confidence mappings",
+    "description": "Empty mapping review list"
+  },
+  "tallyMappingStubLabel": {
+    "message": "Sales Account → Sales Ledger (sample)",
+    "description": "Stub low-confidence mapping label"
+  },
+  "tallyMappingReviewSoon": {
+    "message": "Mapping review for “{label}” is coming soon",
+    "description": "Stub mapping review toast"
+  },
+  "tallyValidationTitle": {
+    "message": "Validation checklist",
+    "description": "Pre-sync validation section title"
+  },
+  "tallyValidationDesc": {
+    "message": "Confirm the connector is ready before the first live sync.",
+    "description": "Pre-sync validation section description"
+  },
+  "tallyCheckAgent": {
+    "message": "Agent paired",
+    "description": "Validation checklist item"
+  },
+  "tallyCheckTally": {
+    "message": "Tally running",
+    "description": "Validation checklist item"
+  },
+  "tallyCheckXml": {
+    "message": "XML API enabled",
+    "description": "Validation checklist item"
+  },
+  "tallyCheckCompany": {
+    "message": "Company bound",
+    "description": "Validation checklist item"
+  },
+  "tallyCheckFy": {
+    "message": "Financial year detected",
+    "description": "Validation checklist item"
+  },
+  "tallyLoadFailed": {
+    "message": "Failed to load Integration Center",
+    "description": "Integration Center load error"
   }
 }

@@ -11,6 +11,9 @@ const SalesOrderLine = require('../models/SalesOrderLine');
 const Invoice = require('../models/Invoice');
 const InvoiceLine = require('../models/InvoiceLine');
 const { postInventoryTransaction } = require('./inventoryTransactionService');
+const { resolveInventoryLocationUuid } = require('./inventoryLocationService');
+const { consumeReservation } = require('./inventoryReservationService');
+const { assertNoFulfillmentIssueForSoLine } = require('./inventoryStockIssueGuardService');
 // SalesOrderFulfillment bridge uses ledger posts + quantityFulfilled updates (Phase 3 MVP).
 
 const DN_STATUSES = ['draft', 'ready_for_dispatch', 'dispatched', 'partially_delivered', 'delivered', 'closed', 'cancelled'];
@@ -230,30 +233,58 @@ async function confirmDeliveryNote({ organizationId, id, userId }) {
   }
   const lines = await DeliveryNoteLine.find({ organizationId, deliveryNoteId: id });
 
+  for (const line of lines) {
+    await assertNoFulfillmentIssueForSoLine({
+      organizationId,
+      salesOrderLineId: line.salesOrderLineId
+    });
+  }
+
   // Ledger post (fulfillment bridge — quantityFulfilled updated for SO balance)
   const byLoc = new Map();
   for (const line of lines) {
-    const loc = String(line.inventoryLocationId);
-    if (!byLoc.has(loc)) byLoc.set(loc, []);
-    byLoc.get(loc).push({
+    const locUuid = await resolveInventoryLocationUuid({
+      organizationId,
+      locationRef: line.inventoryLocationId
+    });
+    if (!byLoc.has(locUuid)) byLoc.set(locUuid, []);
+    byLoc.get(locUuid).push({
       variantId: line.variantId,
       quantityDelta: -Number(line.quantityDelivered),
-      entryType: 'shipment',
+      entryType: 'fulfillment_deduct',
       lineId: String(line._id),
-      sourceRef: { moduleKey: 'delivery_notes', recordId: String(dn._id), lineId: String(line._id) }
+      sourceRef: { moduleKey: 'delivery_notes', recordId: String(dn._id), lineId: String(line._id) },
+      _salesOrderLineId: line.salesOrderLineId,
+      _qty: Number(line.quantityDelivered)
     });
   }
   for (const [loc, invLines] of byLoc) {
-    await postInventoryTransaction({
+    const result = await postInventoryTransaction({
       organizationId,
       userId,
       transactionType: 'shipment',
       inventoryLocationId: loc,
-      lines: invLines,
+      lines: invLines.map(({ _salesOrderLineId, _qty, ...rest }) => rest),
       sourceContext: 'delivery_note',
       sourceRef: { moduleKey: 'delivery_notes', recordId: String(dn._id), lineId: null },
       idempotent: true
     });
+
+    if (!result.duplicate) {
+      for (let i = 0; i < invLines.length; i += 1) {
+        const meta = invLines[i];
+        const ledgerEntryId = result.ledgerEntries?.[i]?.inventoryLedgerEntryId || null;
+        await consumeReservation({
+          organizationId,
+          salesOrderLineId: meta._salesOrderLineId,
+          variantId: meta.variantId,
+          inventoryLocationId: loc,
+          quantity: meta._qty,
+          userId,
+          ledgerEntryId
+        });
+      }
+    }
   }
   for (const line of lines) {
     await SalesOrderLine.updateOne(
@@ -266,7 +297,16 @@ async function confirmDeliveryNote({ organizationId, id, userId }) {
   dn.modifiedBy = userId;
   await dn.save();
   const outLines = await DeliveryNoteLine.find({ organizationId, deliveryNoteId: id }).lean();
-  return { deliveryNote: dn.toObject(), lines: outLines };
+  const deliveryNote = dn.toObject();
+
+  try {
+    const { enqueueAfterDnConfirm } = require('./connectors/tally/tallyOutboxHooks');
+    await enqueueAfterDnConfirm({ organizationId, deliveryNote });
+  } catch (_err) {
+    // Non-blocking: Tally outbox must not break DN confirm
+  }
+
+  return { deliveryNote, lines: outLines };
 }
 
 async function listDeliveryNotes({ organizationId, salesOrderId = null }) {
@@ -346,16 +386,20 @@ async function approveDeliveryReturn({ organizationId, id, userId }) {
     .map((l) => ({
       variantId: l.variantId,
       quantityDelta: Number(l.quantityReturned),
-      entryType: 'return',
+      entryType: 'fulfillment_restore',
       lineId: String(l._id),
       sourceRef: { moduleKey: 'delivery_returns', recordId: String(dr._id), lineId: String(l._id) }
     }));
   if (restoreLines.length) {
+    const locUuid = await resolveInventoryLocationUuid({
+      organizationId,
+      locationRef: dr.returnLocationId
+    });
     await postInventoryTransaction({
       organizationId,
       userId,
       transactionType: 'return',
-      inventoryLocationId: dr.returnLocationId,
+      inventoryLocationId: locUuid,
       lines: restoreLines,
       sourceContext: 'delivery_return',
       sourceRef: { moduleKey: 'delivery_returns', recordId: String(dr._id), lineId: null },
@@ -449,16 +493,20 @@ async function approveSalesReturn({ organizationId, id, userId }) {
     .map((l) => ({
       variantId: l.variantId,
       quantityDelta: Number(l.quantityReturned),
-      entryType: 'return',
+      entryType: 'fulfillment_restore',
       lineId: String(l._id),
       sourceRef: { moduleKey: 'sales_returns', recordId: String(sr._id), lineId: String(l._id) }
     }));
   if (restore.length) {
+    const locUuid = await resolveInventoryLocationUuid({
+      organizationId,
+      locationRef: sr.returnLocationId
+    });
     await postInventoryTransaction({
       organizationId,
       userId,
       transactionType: 'return',
-      inventoryLocationId: sr.returnLocationId,
+      inventoryLocationId: locUuid,
       lines: restore,
       sourceContext: 'sales_return',
       sourceRef: { moduleKey: 'sales_returns', recordId: String(sr._id), lineId: null },

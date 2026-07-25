@@ -174,6 +174,7 @@ const ADDON_DEFAULT_SETTINGS = {
     },
   },
   [ADDON_KEYS.ANNOUNCEMENTS]: require('./announcementConstants').ANNOUNCEMENT_DEFAULT_SETTINGS,
+  [ADDON_KEYS.TALLY]: require('./tallyAddonConstants').TALLY_DEFAULT_SETTINGS,
 };
 
 module.exports = {
