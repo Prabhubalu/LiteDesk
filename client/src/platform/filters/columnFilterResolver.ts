@@ -55,6 +55,7 @@ const PICKLIST_FIELD_KEYS = new Set([
   'pipeline',
   'priority',
   'type',
+  'tasktype',
   'documenttype',
   'salestype',
   'sales_type',
@@ -108,7 +109,7 @@ export function inferFilterTypeFromColumn(column: ColumnFilterSource): FilterCon
     return 'multi-select';
   }
   if (PICKLIST_FIELD_KEYS.has(keyNorm)) {
-    return 'select';
+    return 'multi-select';
   }
   if (keyNorm === 'folderid' || keyNorm === 'foldername') {
     return 'select';
@@ -126,12 +127,12 @@ export function inferFilterTypeFromColumn(column: ColumnFilterSource): FilterCon
     return 'boolean';
   }
   if (['entity', 'link', 'lookup'].includes(metadataType)) {
-    if (column.options?.length) return 'select';
+    if (column.options?.length) return 'multi-select';
     if (keyNorm === 'organization') return 'entity';
     return 'text';
   }
   if (['status', 'select', 'picklist', 'priority'].includes(metadataType)) {
-    return 'select';
+    return 'multi-select';
   }
   if (['multi-select', 'tags', 'multiselect'].includes(metadataType)) {
     return 'multi-select';
@@ -142,8 +143,17 @@ export function inferFilterTypeFromColumn(column: ColumnFilterSource): FilterCon
   return 'text';
 }
 
+/**
+ * Column filters treat picklist/`select` fields as multi-select so users can
+ * OR-match several values (compiled as `is_any_of` → `$in`). Folder pickers
+ * stay single-select. Explicit field-model `filterType: 'select'` is upgraded.
+ */
 export function resolveColumnFilterConfig(column: ColumnFilterSource): FilterConfig {
-  const filterType = inferFilterTypeFromColumn(column);
+  const inferred = inferFilterTypeFromColumn(column);
+  const keyNorm = normalizeKey(column.key);
+  const isFolderSelect = keyNorm === 'folderid' || keyNorm === 'foldername';
+  const filterType =
+    inferred === 'select' && !isFolderSelect ? 'multi-select' : inferred;
   return {
     key: column.key,
     label: column.label || column.key,

@@ -657,8 +657,8 @@ const fetchKanbanTasks = async () => {
     if (moduleListSearch?.trim()) params.search = moduleListSearch.trim();
     params.limit = 500;
     params.page = 1;
-    params.sortBy = 'status';
-    params.sortOrder = 'asc';
+    params.sortBy = 'createdAt';
+    params.sortOrder = 'desc';
 
     const response = await apiClient.get('/tasks', { params });
     if (response?.success) {
@@ -739,7 +739,7 @@ const handleTaskDrawerSaved = () => {
   refreshList();
 };
 
-// When switching back to this tab (keep-alive), refetch and sync URL to current view so session persists
+  // When switching back to this tab (keep-alive), refetch board; list soft-refetch via ModuleList dirty flag
 onActivated(() => {
   const view = currentView.value;
   if (route.query[VIEW_QUERY_KEY] !== view) {

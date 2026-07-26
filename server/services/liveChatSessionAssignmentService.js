@@ -35,7 +35,7 @@ async function assignWaitingSession({ organizationId, sessionId, triggeredBy = n
     return { assigned: false, reason: 'session_not_found' };
   }
 
-  if (session.assignedAgentId && ['assigned', 'active'].includes(String(session.lifecycleStatus || ''))) {
+  if (session.assignedAgentId) {
     return { assigned: false, reason: 'already_assigned' };
   }
 
@@ -110,7 +110,11 @@ async function claimSessionForAgent({ organizationId, sessionId, agentId }) {
   });
 
   if (!assignmentResult.applied && assignmentResult.reason !== 'already_assigned') {
-    const err = new Error('Failed to claim session');
+    const err = new Error(
+      assignmentResult.reason === 'assignment_conflict'
+        ? 'Session is already assigned to another agent'
+        : 'Failed to claim session',
+    );
     err.statusCode = 409;
     throw err;
   }
@@ -197,6 +201,51 @@ function canTransferSession(user, session) {
   return assignedId && assignedId === String(user._id);
 }
 
+/**
+ * Enforce single-agent ownership for handle actions.
+ * Unassigned sessions are claimed atomically by the acting agent.
+ */
+async function ensureAgentOwnsOrClaimsSession({ organizationId, sessionId, agentId }) {
+  if (!organizationId || !sessionId || !agentId) {
+    const err = new Error('Invalid session ownership request');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const session = await loadSessionScoped(sessionId, organizationId);
+  if (!session || String(session.status || '') === 'closed') {
+    const err = new Error('Session not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const assignedId = session.assignedAgentId ? String(session.assignedAgentId) : '';
+  const actorId = String(agentId);
+
+  if (assignedId && assignedId !== actorId) {
+    const err = new Error('Session is assigned to another agent');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  if (!assignedId) {
+    await claimSessionForAgent({ organizationId, sessionId, agentId });
+  }
+
+  return session;
+}
+
+/** Block mutate/typing when another agent already owns the session. */
+function assertAgentNotBlockedByAssignment(session, agentId) {
+  if (!session || !agentId) return;
+  const assignedId = session.assignedAgentId ? String(session.assignedAgentId) : '';
+  if (assignedId && assignedId !== String(agentId)) {
+    const err = new Error('Session is assigned to another agent');
+    err.statusCode = 403;
+    throw err;
+  }
+}
+
 async function bindSessionToDefaultQueue({ organizationId, sessionId }) {
   const queue = await getDefaultQueue(organizationId);
   if (!queue?._id) return null;
@@ -214,6 +263,8 @@ module.exports = {
   claimSessionForAgent,
   transferSessionToAgent,
   canTransferSession,
+  ensureAgentOwnsOrClaimsSession,
+  assertAgentNotBlockedByAssignment,
   bindSessionToDefaultQueue,
   resolveQueueForSession,
 };

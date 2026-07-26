@@ -1,7 +1,7 @@
 /**
  * Notify users and group members when they are @mentioned in a task comment.
- * Parses content for @[Name](user:id) and @[Name](group:id), creates in-app
- * notifications, and publishes to SSE.
+ * Parses content for @[Name](user:id), @[Name](group:id), and @[all](all:all),
+ * creates in-app notifications, and publishes to SSE.
  */
 
 const mongoose = require('mongoose');
@@ -12,8 +12,9 @@ const Task = require('../models/Task');
 const Event = require('../models/Event');
 const People = require('../models/People');
 const Organization = require('../models/Organization');
+const { getScopedUserModel } = require('./userInviteService');
 // Same format as CommentContent.vue and CommentInput.vue
-const MENTION_REGEX = /@\[([^\]]+)\]\((user|group):([^)]+)\)/g;
+const MENTION_REGEX = /@\[([^\]]+)\]\((user|group|all):([^)]+)\)/g;
 
 const MODULE_KEY_TO_ENTITY_TYPE = {
   deals: 'Deal',
@@ -90,22 +91,49 @@ async function resolveRecordTitle(organizationId, moduleKey, recordId) {
 /**
  * Parse comment content for @[Name](type:id) mentions.
  * @param {string} content - Raw comment content
- * @returns {{ userIds: Set<string>, groupIds: Set<string> }}
+ * @returns {{ userIds: Set<string>, groupIds: Set<string>, mentionAll: boolean }}
  */
 function parseMentionedIds(content) {
   const userIds = new Set();
   const groupIds = new Set();
-  if (!content || typeof content !== 'string') return { userIds, groupIds };
+  let mentionAll = false;
+  if (!content || typeof content !== 'string') return { userIds, groupIds, mentionAll };
   let match;
   MENTION_REGEX.lastIndex = 0;
   while ((match = MENTION_REGEX.exec(content)) !== null) {
     const type = match[2];
     const id = match[3].trim();
+    if (type === 'all') {
+      mentionAll = true;
+      continue;
+    }
     if (!id || !mongoose.Types.ObjectId.isValid(id)) continue;
     if (type === 'user') userIds.add(id);
     else if (type === 'group') groupIds.add(id);
   }
-  return { userIds, groupIds };
+  return { userIds, groupIds, mentionAll };
+}
+
+/**
+ * Resolve all active users in the tenant instance.
+ * @param {string} organizationId
+ * @returns {Promise<string[]>}
+ */
+async function resolveAllOrgUserIds(organizationId) {
+  if (!organizationId || !mongoose.Types.ObjectId.isValid(organizationId)) return [];
+  const organization = await Organization.findById(organizationId).select('database name').lean();
+  const ScopedUser = await getScopedUserModel(organization);
+  const scopeQuery =
+    organization?.database?.name && organization.database.initialized
+      ? {}
+      : { organizationId: new mongoose.Types.ObjectId(organizationId) };
+  const users = await ScopedUser.find({
+    ...scopeQuery,
+    status: 'active'
+  })
+    .select('_id')
+    .lean();
+  return users.map((u) => String(u._id));
 }
 
 /**
@@ -113,10 +141,16 @@ function parseMentionedIds(content) {
  * @param {string} organizationId - Organization ID
  * @param {Set<string>} userIds - Mentioned user IDs
  * @param {Set<string>} groupIds - Mentioned group IDs
+ * @param {boolean} [mentionAll=false] - When true, include all active org users
  * @returns {Promise<Set<string>>} All recipient user IDs
  */
-async function resolveRecipientUserIds(organizationId, userIds, groupIds) {
+async function resolveRecipientUserIds(organizationId, userIds, groupIds, mentionAll = false) {
   const recipientIds = new Set(userIds);
+
+  if (mentionAll) {
+    const allIds = await resolveAllOrgUserIds(organizationId);
+    allIds.forEach((id) => recipientIds.add(id));
+  }
 
   if (groupIds.size > 0) {
     const groups = await Group.find({
@@ -272,13 +306,14 @@ async function notifyMentionedUsers(opts) {
  */
 async function processCommentMentions(opts) {
   try {
-    const { userIds, groupIds } = parseMentionedIds(opts.commentContent);
-    if (userIds.size === 0 && groupIds.size === 0) return;
+    const { userIds, groupIds, mentionAll } = parseMentionedIds(opts.commentContent);
+    if (userIds.size === 0 && groupIds.size === 0 && !mentionAll) return;
 
     const mentionedUserIds = await resolveRecipientUserIds(
       opts.organizationId,
       userIds,
-      groupIds
+      groupIds,
+      mentionAll
     );
     if (mentionedUserIds.size === 0) return;
 
@@ -308,6 +343,7 @@ async function processCommentMentions(opts) {
 
 module.exports = {
   parseMentionedIds,
+  resolveAllOrgUserIds,
   resolveRecipientUserIds,
   contentToPlainSnippet,
   moduleKeyToEntityType,

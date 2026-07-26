@@ -27,13 +27,14 @@ export function buildQuoteDisplayLineRows(lines, bundleModeByParentId) {
     }));
 }
 
-export function buildBundleModeByParentId(lines) {
+export function buildBundleModeByParentId(lines, { lineIdField = 'quoteLineId' } = {}) {
   const map = new Map();
   for (const l of lines || []) {
     if (String(l?.lineType || '') !== 'bundle_parent') continue;
     const mode = String(l?.bundleSnapshot?.pricingMode || 'fixed').toLowerCase();
     if (l?._id) map.set(String(l._id), mode);
-    if (l?.quoteLineId) map.set(String(l.quoteLineId), mode);
+    const businessId = l?.[lineIdField];
+    if (businessId) map.set(String(businessId), mode);
   }
   return map;
 }
@@ -44,9 +45,17 @@ export function sortQuoteSections(sections) {
   );
 }
 
-export function buildQuoteSectionBlocks({ lines, sections, uncategorizedTitle }) {
+export function buildQuoteSectionBlocks({
+  lines,
+  sections,
+  uncategorizedTitle,
+  sectionFkKey = 'quoteSectionId',
+  sectionUuidField = 'quoteSectionId',
+  lineIdField = 'quoteLineId',
+  includeInTotalField = 'includeInQuoteTotal'
+} = {}) {
   const sorted = sortQuoteSections(sections);
-  const modeMap = buildBundleModeByParentId(lines);
+  const modeMap = buildBundleModeByParentId(lines, { lineIdField });
 
   if (!sorted.length) {
     return [
@@ -61,27 +70,27 @@ export function buildQuoteSectionBlocks({ lines, sections, uncategorizedTitle })
   const assignedIds = new Set(sorted.map((s) => String(s._id)));
   const blocks = sorted.map((section) => {
     const sid = String(section._id);
-    const sectionLines = (lines || []).filter((l) => String(l?.quoteSectionId || '') === sid);
+    const sectionLines = (lines || []).filter((l) => String(l?.[sectionFkKey] || '') === sid);
     return {
-      key: section.quoteSectionId || sid,
+      key: section[sectionUuidField] || sid,
       section,
       rows: buildQuoteDisplayLineRows(sectionLines, modeMap)
     };
   });
 
   const orphans = (lines || []).filter(
-    (l) => !l?.quoteSectionId || !assignedIds.has(String(l.quoteSectionId))
+    (l) => !l?.[sectionFkKey] || !assignedIds.has(String(l[sectionFkKey]))
   );
   if (orphans.length) {
     blocks.push({
       key: '__orphan__',
       section: {
         _id: null,
-        quoteSectionId: '__orphan__',
+        [sectionUuidField]: '__orphan__',
         sectionTitle: uncategorizedTitle,
         sectionType: 'standard',
         sectionTotal: 0,
-        includeInQuoteTotal: true
+        [includeInTotalField]: true
       },
       rows: buildQuoteDisplayLineRows(orphans, modeMap),
       isOrphan: true
@@ -132,7 +141,7 @@ export function groupLinesByQuoteSection({ lines, sections, uncategorizedTitle =
   return blocks;
 }
 
-export function sectionRef(section) {
+export function sectionRef(section, { sectionUuidField = 'quoteSectionId' } = {}) {
   if (!section) return null;
-  return section.quoteSectionId || section._id || null;
+  return section[sectionUuidField] || section._id || null;
 }

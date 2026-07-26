@@ -300,15 +300,14 @@
             <ComboboxOptions
               class="absolute z-10 mt-1 w-full overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
             >
-              <!-- Search input inside dropdown -->
+              <!-- Search input inside dropdown (ComboboxInput so ↑/↓/Enter navigate options) -->
               <div class="p-2 border-b border-gray-200 dark:border-gray-600" @click.stop @mousedown.stop>
                 <div class="relative">
                   <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
-                  <input
+                  <ComboboxInput
                     ref="picklistSearchInput"
-                    type="text"
-                    v-model="picklistSearchQuery"
-                    @keydown.enter.stop
+                    :display-value="() => picklistSearchQuery"
+                    @change="picklistSearchQuery = $event.target.value"
                     @keydown.escape.stop
                     @click.stop
                     @mousedown.stop
@@ -656,15 +655,14 @@
             <ComboboxOptions
               class="absolute z-10 mt-1 w-full overflow-hidden rounded-lg bg-white dark:bg-gray-700 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm"
             >
-              <!-- Search input inside dropdown -->
+              <!-- Search input inside dropdown (ComboboxInput so ↑/↓/Enter navigate options) -->
               <div class="p-2 border-b border-gray-200 dark:border-gray-600" @click.stop @mousedown.stop>
                 <div class="relative">
                   <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10" />
-                  <input
+                  <ComboboxInput
                     ref="lookupSearchInput"
-                    type="text"
-                    v-model="lookupSearchQuery"
-                    @keydown.enter.stop
+                    :display-value="() => lookupSearchQuery"
+                    @change="lookupSearchQuery = $event.target.value"
                     @keydown.escape.stop
                     @click.stop
                     @mousedown.stop
@@ -1918,30 +1916,37 @@ const removeImage = async () => {
   updateValue('');
 };
 
+/** Resolve DOM input from a native el or Headless UI ComboboxInput component ref. */
+function resolveSearchInputEl(refVal) {
+  if (!refVal) return null;
+  if (typeof refVal.focus === 'function' && refVal.nodeType === 1) return refVal;
+  const el = refVal.el ?? refVal.$el ?? null;
+  if (!el) return null;
+  if (typeof el.focus === 'function') return el;
+  return typeof el.querySelector === 'function' ? el.querySelector('input') : null;
+}
+
 // Focus functions for auto-focusing search inputs when Combobox opens
 const focusPicklistSearch = () => {
-  // Use requestAnimationFrame to ensure DOM is fully rendered
   requestAnimationFrame(() => {
-    // Multiple attempts to ensure focus works
     const attemptFocus = (delay = 0) => {
       window.setTimeout(() => {
-        if (picklistSearchInput.value) {
+        const inputEl = resolveSearchInputEl(picklistSearchInput.value);
+        if (inputEl) {
           try {
-            // Check if element is actually in the DOM
-            if (document.contains(picklistSearchInput.value)) {
-              picklistSearchInput.value.focus();
-              picklistSearchInput.value.select();
+            if (document.contains(inputEl)) {
+              inputEl.focus();
+              inputEl.select?.();
             }
           } catch (e) {
             console.warn('Failed to focus picklist search:', e);
           }
         } else if (delay < 300) {
-          // Retry if element not ready yet, with longer timeout
           attemptFocus(delay + 50);
         }
       }, delay);
     };
-    
+
     nextTick(() => {
       attemptFocus(0);
     });
@@ -1949,28 +1954,25 @@ const focusPicklistSearch = () => {
 };
 
 const focusLookupSearch = () => {
-  // Use requestAnimationFrame to ensure DOM is fully rendered
   requestAnimationFrame(() => {
-    // Multiple attempts to ensure focus works
     const attemptFocus = (delay = 0) => {
       window.setTimeout(() => {
-        if (lookupSearchInput.value) {
+        const inputEl = resolveSearchInputEl(lookupSearchInput.value);
+        if (inputEl) {
           try {
-            // Check if element is actually in the DOM
-            if (document.contains(lookupSearchInput.value)) {
-              lookupSearchInput.value.focus();
-              lookupSearchInput.value.select();
+            if (document.contains(inputEl)) {
+              inputEl.focus();
+              inputEl.select?.();
             }
           } catch (e) {
             console.warn('Failed to focus lookup search:', e);
           }
         } else if (delay < 300) {
-          // Retry if element not ready yet, with longer timeout
           attemptFocus(delay + 50);
         }
       }, delay);
     };
-    
+
     nextTick(() => {
       attemptFocus(0);
     });

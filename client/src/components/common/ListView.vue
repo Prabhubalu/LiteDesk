@@ -612,6 +612,7 @@
           :row-actions-gutter="rowActionsGutter"
           :sort-field="sortField"
           :sort-order="sortOrder"
+          :sorts="resolvedSorts"
           :mass-actions="massActions"
           :row-key="rowKey"
           :empty-title="emptyStateTitle"
@@ -1512,6 +1513,12 @@ import { useDefaultListFilters } from '@/composables/useDefaultListFilters';
 import { useListSelection } from '@/composables/useListSelection';
 import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
 import { normalizeListPagination } from '@/utils/normalizeListPagination';
+import {
+  normalizeSortSpecs,
+  parsePersistedSort,
+  persistSortPayload,
+  primarySort
+} from '@/utils/listMultiSort';
 import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import ListColumnFilter from '@/components/common/ListColumnFilter.vue';
 import ActiveFilterChipBar from '@/components/common/ActiveFilterChipBar.vue';
@@ -1734,6 +1741,10 @@ const props = defineProps({
   sortOrder: {
     type: String,
     default: 'desc'
+  },
+  sorts: {
+    type: Array,
+    default: null
   },
   resizableColumns: {
     type: Boolean,
@@ -3526,6 +3537,16 @@ const columnsStorageKey = computed(() => `${STORAGE_PREFIX}-${props.moduleKey}-c
 const kanbanOptionsStorageKey = computed(() => `${STORAGE_PREFIX}-${props.moduleKey}-kanban-options`);
 const kanbanFieldsStorageKey = computed(() => `${STORAGE_PREFIX}-${props.moduleKey}-kanban-fields`);
 
+const resolvedSorts = computed(() =>
+  normalizeSortSpecs(
+    Array.isArray(props.sorts) && props.sorts.length > 0
+      ? props.sorts
+      : props.sortField
+        ? [{ field: props.sortField, order: props.sortOrder }]
+        : []
+  )
+);
+
 const searchTerm = computed(() => searchQuery.value.trim());
 
 const activeFilterCount = computed(() => {
@@ -3677,9 +3698,17 @@ function normalizePeopleViewState(state) {
     normalizedFiltersObj[key] = normalizedFilters[key];
   });
 
+  const sortSpecs = normalizeSortSpecs(
+    state.sorts?.length
+      ? state.sorts
+      : { field: state.sortField, order: state.sortOrder },
+    { fallback: { field: 'createdAt', order: 'desc' } }
+  );
+  const primary = primarySort(sortSpecs);
   const normalizedSort = {
-    field: String(state.sortField || 'createdAt'),
-    order: String(state.sortOrder || 'desc'),
+    field: primary.field,
+    order: primary.order,
+    sorts: sortSpecs,
   };
 
   const normalizedColumns = (state.columns || [])
@@ -3783,11 +3812,11 @@ function viewStateMatches(view, normalizedState, currentUserId, currentSearch = 
       filters: viewFilters,
       sortField: viewConfig.sort?.field || 'createdAt',
       sortOrder: viewConfig.sort?.order || 'desc',
+      sorts: viewConfig.sort?.sorts,
       columns: viewConfig.columns || [],
     });
 
-    if (normalizedState.sort.field !== normalizedViewState.sort.field
-      || normalizedState.sort.order !== normalizedViewState.sort.order) {
+    if (JSON.stringify(normalizedState.sort.sorts) !== JSON.stringify(normalizedViewState.sort.sorts)) {
       return false;
     }
 
@@ -3827,6 +3856,7 @@ const normalizedCurrentViewState = computed(() => {
     filters: apiPayload,
     sortField: props.sortField,
     sortOrder: props.sortOrder,
+    sorts: resolvedSorts.value,
     columns: visibleColumns.value,
   });
 });
@@ -4287,10 +4317,14 @@ onMounted(async () => {
     if (savedSort) {
       try {
         const parsed = JSON.parse(savedSort);
-        const field = typeof parsed?.field === 'string' ? parsed.field : '';
-        const order = parsed?.order === 'desc' ? 'desc' : 'asc';
-        if (field) {
-          pendingSortEmit = { sortField: field, sortOrder: order };
+        const sorts = parsePersistedSort(parsed);
+        if (sorts.length > 0) {
+          const primary = primarySort(sorts);
+          pendingSortEmit = {
+            sortField: primary.field,
+            sortOrder: primary.order,
+            sorts
+          };
           shouldRefetch = true;
         }
       } catch (error) {
@@ -5253,17 +5287,23 @@ const handlePageChange = (page) => {
   emit('update:pagination', { ...props.pagination, currentPage: page });
 };
 
-const handleSort = ({ key, order }) => {
-  const sortField = order ? key : '';
-  const sortOrder = order || 'asc';
+const handleSort = ({ key, order, sorts: nextSorts }) => {
+  const sorts = normalizeSortSpecs(
+    Array.isArray(nextSorts) && nextSorts.length
+      ? nextSorts
+      : order
+        ? [{ field: key, order }]
+        : []
+  );
+  const primary = primarySort(sorts, { field: '', order: 'asc' });
+  const sortField = primary.field || '';
+  const sortOrder = primary.order || 'asc';
 
-  emit('update:sort', { sortField, sortOrder });
+  emit('update:sort', { sortField, sortOrder, sorts });
 
-  if (order) {
-    localStorage.setItem(
-      sortStorageKey.value,
-      JSON.stringify({ field: sortField, order })
-    );
+  const payload = persistSortPayload(sorts);
+  if (payload) {
+    localStorage.setItem(sortStorageKey.value, JSON.stringify(payload));
   } else {
     localStorage.removeItem(sortStorageKey.value);
   }
@@ -5434,10 +5474,14 @@ const getCurrentViewConfig = () => {
     query: JSON.parse(JSON.stringify(filterBuilderQuery.value)),
     filterQuery: filterQuery ? JSON.stringify(filterQuery) : undefined,
     search: searchQuery.value,
-    sort: {
-      field: props.sortField,
-      order: props.sortOrder
-    },
+    sort: (() => {
+      const payload = persistSortPayload(resolvedSorts.value);
+      return payload || {
+        field: props.sortField,
+        order: props.sortOrder,
+        sorts: resolvedSorts.value
+      };
+    })(),
     columns: visibleColumns.value.map(col => ({
       key: col.key,
       visible: col.visible,
@@ -5677,9 +5721,15 @@ const applyViewConfig = (config) => {
   
   // Apply sort
   if (config.sort) {
+    const sorts = parsePersistedSort(config.sort);
+    const primary = primarySort(sorts, {
+      field: config.sort.field || 'createdAt',
+      order: config.sort.order || 'desc'
+    });
     emit('update:sort', {
-      sortField: config.sort.field,
-      sortOrder: config.sort.order
+      sortField: primary.field,
+      sortOrder: primary.order,
+      sorts: sorts.length ? sorts : [primary]
     });
   }
   

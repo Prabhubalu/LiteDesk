@@ -12,7 +12,13 @@
       class="mb-2 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2"
     >
       {{ t('records.linesTotalsStaleHint') }}
-      <button type="button" class="ml-1 underline font-medium" :disabled="busy" @click="recalculate">
+      <button
+        v-if="caps.recalculate"
+        type="button"
+        class="ml-1 underline font-medium"
+        :disabled="busy"
+        @click="recalculate"
+      >
         {{ t('records.linesRecalculate') }}
       </button>
     </p>
@@ -44,8 +50,8 @@
           </button>
         </div>
         <div class="flex flex-wrap items-center gap-2 shrink-0 ml-auto">
-          <QuoteLinesColumnOptions />
-          <QuoteLinesHeaderActions :record="record" :context="context" />
+          <QuoteLinesColumnOptions v-if="caps.columnPrefs" />
+          <QuoteLinesHeaderActions v-if="caps.headerActions" :record="record" :context="context" />
         </div>
       </div>
       <div
@@ -100,13 +106,13 @@
                 {{ block.section.sectionTitle }}
               </h4>
               <span
-                v-if="sectionTypeBadgeKey(block.section.sectionType) === 'optional'"
+                v-if="caps.optionalSections && sectionTypeBadgeKey(block.section.sectionType) === 'optional'"
                 class="shrink-0 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
               >
                 {{ t('records.quoteSectionBadgeOptional') }}
               </span>
               <span
-                v-else-if="sectionTypeBadgeKey(block.section.sectionType) === 'future'"
+                v-else-if="caps.optionalSections && sectionTypeBadgeKey(block.section.sectionType) === 'future'"
                 class="shrink-0 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
               >
                 {{ t('records.quoteSectionBadgeFuture') }}
@@ -141,14 +147,14 @@
           </div>
 
           <div
-            v-if="block.section?.sectionType === 'optional' && linesEditable && !block.isOrphan"
+            v-if="block.section?.sectionType === 'optional' && linesEditable && caps.optionalSections && !block.isOrphan"
             class="sticky top-[2.625rem] z-[4] px-3 py-1.5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-sm"
           >
             <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
               <input
                 type="checkbox"
                 class="rounded"
-                :checked="block.section.includeInQuoteTotal === true"
+                :checked="block.section[linesAdapter.includeInTotalField] === true"
                 :disabled="busy"
                 @change="toggleSectionInclude(block.section, $event.target.checked)"
               />
@@ -204,7 +210,7 @@
             ghost-class="quote-line-sortable-ghost"
             chosen-class="quote-line-sortable-chosen"
             drag-class="quote-line-sortable-drag"
-            :disabled="!linesEditable || busy"
+            :disabled="!linesEditable || busy || !caps.lineReorder"
             class="divide-y divide-gray-200 dark:divide-gray-700"
             :class="{ 'quote-lines-tbody--empty': !getSectionRows(block.key).length }"
             @update:model-value="setSectionRows(block.key, $event)"
@@ -220,7 +226,7 @@
               <td :class="[stickyColClass('name'), 'quote-lines-col-name px-3 py-2.5 align-middle']">
                 <div class="flex items-start gap-1.5 min-w-0">
                   <button
-                    v-if="!isLineDragDisabled(line)"
+                    v-if="caps.lineReorder && !isLineDragDisabled(line)"
                     type="button"
                     class="quote-line-drag-handle inline-flex shrink-0 items-center justify-center p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing disabled:opacity-40"
                     :aria-label="canCrossSectionDrag ? t('records.linesDragHandleMoveAria') : t('records.linesDragHandleAria')"
@@ -237,7 +243,7 @@
                       {{ line.itemNameSnapshot || '—' }}
                     </div>
                     <button
-                      v-if="linesEditable && isBundleParent && bundleParentHasOptionals(line)"
+                      v-if="linesEditable && caps.bundles && isBundleParent && bundleParentHasOptionals(line)"
                       type="button"
                       class="mt-0.5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                       :disabled="busy"
@@ -329,7 +335,7 @@
                 <LineTaxPickerCell
                   :tax-snapshot="line.taxSnapshot"
                   :line-tax-total="line.lineTaxTotal"
-                  :disabled="busy"
+                  :disabled="busy || !caps.taxEdit"
                   @save="(taxIds) => patchLineTaxes(line, taxIds)"
                 />
               </td>
@@ -404,7 +410,7 @@
                           {{ t('states.loading') }}
                         </li>
                         <li
-                          v-else-if="!draftRow(block).searchResults.length && (draftRow(block).searchQuery.trim() || !canCreateQuoteItem)"
+                          v-else-if="!draftRow(block).searchResults.length && (draftRow(block).searchQuery.trim() || !showCreateCatalogItemAction)"
                           class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
                         >
                           {{ t('records.linesNoVariantsFound') }}
@@ -420,7 +426,7 @@
                           <span v-if="hit.variant_code" class="block text-xs text-gray-500 font-mono">{{ hit.variant_code }}</span>
                         </li>
                         <li
-                          v-if="canCreateQuoteItem"
+                          v-if="showCreateCatalogItemAction"
                           class="border-t border-gray-100 dark:border-gray-700 mt-1"
                         >
                           <button
@@ -544,6 +550,7 @@
                     {{ t('records.linesAdd') }}
                   </button>
                   <button
+                    v-if="caps.bundles"
                     type="button"
                     class="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
                     :disabled="busy"
@@ -571,7 +578,7 @@
               </span>
             </div>
             <div class="quote-lines-section-summary-discount px-3 py-2.5 flex items-center justify-end">
-              <div v-if="linesEditable" :class="discountGroupClass">
+              <div v-if="linesEditable && caps.sectionDiscounts" :class="discountGroupClass">
                 <input
                   :class="discountGroupInputClass"
                   type="text"
@@ -646,7 +653,7 @@
         <div class="flex items-center justify-between gap-2 text-sm">
           <span class="text-gray-600 dark:text-gray-400 shrink-0">{{ t('records.linesTotalsGlobalDiscount') }}</span>
           <div class="inline-flex items-center gap-2 ml-auto">
-            <div v-if="linesEditable" :class="discountGroupClass">
+            <div v-if="linesEditable && caps.globalDiscounts" :class="discountGroupClass">
               <input
                 :class="discountGroupInputClass"
                 type="text"
@@ -704,7 +711,7 @@
           <div class="flex min-w-0 items-center gap-2">
             <span class="shrink-0 text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsTax') }}</span>
             <button
-              v-if="linesEditable"
+              v-if="linesEditable && caps.taxEdit"
               type="button"
               class="shrink-0 text-xs text-indigo-600 hover:underline dark:text-indigo-400 disabled:opacity-50"
               :disabled="busy"
@@ -717,14 +724,14 @@
           <span class="shrink-0 font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.taxTotal) }}</span>
         </div>
         <div
-          v-if="totals.chargesTotal > 0 || linesEditable"
+          v-if="totals.chargesTotal > 0 || (linesEditable && caps.taxesCharges)"
           class="flex items-center justify-between gap-2 text-sm"
           data-doc-charge-root
         >
           <div class="flex min-w-0 items-center gap-2">
             <span class="shrink-0 text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsCharges') }}</span>
             <button
-              v-if="linesEditable"
+              v-if="linesEditable && caps.taxesCharges"
               type="button"
               class="shrink-0 text-xs text-indigo-600 hover:underline dark:text-indigo-400 disabled:opacity-50"
               :disabled="busy"
@@ -902,14 +909,14 @@
                         <div class="flex items-center gap-3">
                           <div class="relative flex-1 min-w-0">
                             <MagnifyingGlassIcon
-                              class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400"
+                              class="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400 dark:text-gray-500"
                               aria-hidden="true"
                             />
                             <input
                               ref="variantPickerSearchInputRef"
                               v-model="variantSearchQuery"
                               type="search"
-                              class="block w-full rounded-md bg-gray-100 dark:bg-gray-700 pl-9 pr-3 py-2 text-gray-900 dark:text-white text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10"
+                              class="block h-8 w-full pl-8 pr-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-xs sm:text-sm outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                               :placeholder="t('records.linesVariantSearchPlaceholder')"
                               :disabled="busy"
                               autocomplete="off"
@@ -963,7 +970,7 @@
                             }}
                           </p>
                           <button
-                            v-if="canCreateQuoteItem"
+                            v-if="showCreateCatalogItemAction"
                             type="button"
                             class="mt-4 inline-flex items-center gap-2 rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600"
                             @click="openAddNewItemFromPicker"
@@ -1033,7 +1040,7 @@
                       </p>
                       <div class="flex items-center gap-2">
                         <button
-                          v-if="canCreateQuoteItem"
+                          v-if="showCreateCatalogItemAction"
                           type="button"
                           class="inline-flex items-center gap-1.5 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-xs ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                           @click="openAddNewItemFromPicker"
@@ -1199,7 +1206,7 @@
     />
 
     <CreateRecordDrawer
-      v-if="canCreateQuoteItem"
+      v-if="showCreateCatalogItemAction"
       :isOpen="showItemCreateDrawer"
       moduleKey="items"
       :prefillText="itemCreatePrefillText"
@@ -1247,12 +1254,16 @@ import QuoteLinesColumnOptions from '@/components/record-page/sections/QuoteLine
 import QuoteSectionFormModal from '@/components/record-page/sections/QuoteSectionFormModal.vue';
 import LineTaxPickerCell from '@/components/record-page/sections/LineTaxPickerCell.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
-import { isCommerciallyLockedStatus } from '@/constants/quoteLifecycle';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import {
+  resolveCommercialLinesAdapter,
+  commercialLineId,
+  commercialLineSectionRef,
+  commercialSectionRef
+} from '@/platform/commercialLines/adapters';
 import { useQuoteLinesColumnPrefs } from '@/composables/useQuoteLinesColumnPrefs';
 import {
   buildQuoteSectionBlocks,
-  sectionRef as quoteSectionRef,
   sectionTypeBadgeKey,
   sortQuoteSections
 } from '@/utils/quoteSectionDisplay';
@@ -1266,6 +1277,15 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['updated']);
+
+const linesAdapter = computed(() => resolveCommercialLinesAdapter(props.adapter));
+const caps = computed(() => linesAdapter.value.capabilities);
+const apiBase = computed(() => linesAdapter.value.apiBase);
+const recordApiId = computed(() => props.record?._id);
+const documentRecordBase = computed(() => {
+  const id = recordApiId.value;
+  return id ? `${apiBase.value}/${id}` : '';
+});
 
 const isLinesExpanded = computed(() => props.context?.expandedLeftSection === 'lines');
 
@@ -1368,9 +1388,18 @@ const quoteId = computed(() => props.record?._id);
 const { busy, overrideLock } = useQuoteLinesSession(quoteId);
 const {
   showSkuColumn,
-  showDiscountColumn,
-  showPricingColumns
+  showDiscountColumn: columnPrefsShowDiscount,
+  showPricingColumns: columnPrefsShowPricing
 } = useQuoteLinesColumnPrefs();
+const showPricingColumns = computed(
+  () => columnPrefsShowPricing.value && caps.value.pricingColumns
+);
+const showDiscountColumn = computed(
+  () => columnPrefsShowDiscount.value && caps.value.discounts
+);
+const showCreateCatalogItemAction = computed(
+  () => canCreateQuoteItem.value && caps.value.createCatalogItem
+);
 
 const showDeleteLineModal = ref(false);
 const linePendingDelete = ref(null);
@@ -1380,13 +1409,18 @@ const lines = computed(() => (Array.isArray(props.record?.lines) ? props.record.
 const quoteSections = computed(() => sortQuoteSections(props.record?.sections));
 const hasSections = computed(() => quoteSections.value.length > 0);
 
-const sectionBlocks = computed(() =>
-  buildQuoteSectionBlocks({
+const sectionBlocks = computed(() => {
+  const adapter = linesAdapter.value;
+  return buildQuoteSectionBlocks({
     lines: lines.value,
     sections: quoteSections.value,
-    uncategorizedTitle: t('records.quoteSectionUncategorized')
-  })
-);
+    uncategorizedTitle: t('records.quoteSectionUncategorized'),
+    sectionFkKey: adapter.sectionIdField,
+    sectionUuidField: adapter.sectionUuidField,
+    lineIdField: adapter.lineIdField,
+    includeInTotalField: adapter.includeInTotalField || 'includeInQuoteTotal'
+  });
+});
 
 const movableSectionKeys = ref([]);
 
@@ -1418,7 +1452,10 @@ const displaySectionBlocks = computed(() => {
 });
 
 const canReorderSections = computed(
-  () => linesEditable.value && movableSectionKeys.value.length > 1
+  () =>
+    linesEditable.value &&
+    caps.value.sectionReorder &&
+    movableSectionKeys.value.length > 1
 );
 
 const { stickyColumnsActive } = useQuoteLinesStickyColumns(
@@ -1432,14 +1469,18 @@ function onQuoteLinesTableScroll(event) {
 
 const movableSections = computed(() => quoteSections.value.filter((s) => s?._id));
 function sectionRef(section) {
-  return quoteSectionRef(section);
+  return commercialSectionRef(linesAdapter.value, section);
 }
 
 function lineSectionRef(line) {
-  const sid = line?.quoteSectionId;
+  const sid = commercialLineSectionRef(linesAdapter.value, line);
   if (!sid) return '';
-  const match = quoteSections.value.find((s) => String(s._id) === String(sid));
-  return match ? quoteSectionRef(match) : String(sid);
+  const match = quoteSections.value.find(
+    (s) =>
+      String(s._id) === String(sid) ||
+      String(s[linesAdapter.value.sectionUuidField] || '') === String(sid)
+  );
+  return match ? sectionRef(match) : String(sid);
 }
 
 const draftRowsMap = ref({});
@@ -1519,7 +1560,11 @@ const dragStartSectionByLineId = ref({});
 const activeDropSectionKey = ref(null);
 
 const canCrossSectionDrag = computed(
-  () => linesEditable.value && hasSections.value && movableSections.value.length > 1
+  () =>
+    linesEditable.value &&
+    caps.value.lineReorder &&
+    hasSections.value &&
+    movableSections.value.length > 1
 );
 
 function dragGroupForBlock(block) {
@@ -1653,8 +1698,12 @@ function openCreateSection() {
 
 function openEditSection(section) {
   sectionModalMode.value = 'edit';
-  sectionModalInitial.value = section;
-  sectionModalEditingId.value = quoteSectionRef(section);
+  const includeField = linesAdapter.value.includeInTotalField || 'includeInQuoteTotal';
+  sectionModalInitial.value = {
+    ...section,
+    includeInQuoteTotal: section?.[includeField] !== false
+  };
+  sectionModalEditingId.value = sectionRef(section);
   showSectionModal.value = true;
 }
 
@@ -1682,18 +1731,19 @@ function isLastMovableSection(block) {
 }
 
 async function persistSectionOrder() {
-  if (!canReorderSections.value || !props.record?._id) return;
+  if (!canReorderSections.value || !recordApiId.value || !caps.value.sectionReorder) return;
   busy.value = true;
   try {
     const byKey = new Map(sectionBlocks.value.map((b) => [b.key, b]));
+    const sectionIdField = linesAdapter.value.sectionIdField;
     const orders = movableSectionKeys.value.map((key, idx) => {
       const block = byKey.get(key);
       return {
-        quoteSectionId: quoteSectionRef(block.section),
+        [sectionIdField]: sectionRef(block.section),
         sectionOrder: idx
       };
     });
-    const res = await apiClient.patch(`/quotes/${props.record._id}/sections/reorder`, {
+    const res = await apiClient.patch(`${documentRecordBase.value}/sections/reorder`, {
       orders,
       overridePricing: overrideLock.value === true
     });
@@ -1726,11 +1776,17 @@ async function submitSectionModal(form) {
   if (!props.record?._id) return;
   busy.value = true;
   try {
+    const includeField = linesAdapter.value.includeInTotalField || 'includeInQuoteTotal';
+    const body = {
+      sectionTitle: form.sectionTitle,
+      sectionType: form.sectionType,
+      [includeField]: form.includeInQuoteTotal !== false
+    };
+    if (linesAdapter.value.kind === 'quote') {
+      body.overridePricing = overrideLock.value === true;
+    }
     if (sectionModalMode.value === 'create') {
-      const res = await apiClient.post(`/quotes/${props.record._id}/sections`, {
-        ...form,
-        overridePricing: overrideLock.value === true
-      });
+      const res = await apiClient.post(`${documentRecordBase.value}/sections`, body);
       if (!res?.success) throw new Error(res?.message || t('records.quoteSectionCreateFailed'));
       const created = res?.data?.section;
       const merged = created
@@ -1742,10 +1798,7 @@ async function submitSectionModal(form) {
       });
     } else {
       const id = sectionModalEditingId.value;
-      const res = await apiClient.patch(`/quotes/${props.record._id}/sections/${id}`, {
-        ...form,
-        overridePricing: overrideLock.value === true
-      });
+      const res = await apiClient.patch(`${documentRecordBase.value}/sections/${id}`, body);
       if (!res?.success) throw new Error(res?.message || t('records.quoteSectionUpdateFailed'));
       emitSectionsUpdated({
         sections: res?.data?.sections ?? null,
@@ -1764,7 +1817,7 @@ async function deleteSection(section) {
   if (!props.record?._id || !section) return;
   busy.value = true;
   try {
-    const res = await apiClient.delete(`/quotes/${props.record._id}/sections/${quoteSectionRef(section)}`, {
+    const res = await apiClient.delete(`${documentRecordBase.value}/sections/${sectionRef(section)}`, {
       data: { overridePricing: overrideLock.value === true }
     });
     if (!res?.success) throw new Error(res?.message || t('records.quoteSectionDeleteFailed'));
@@ -1780,13 +1833,17 @@ async function deleteSection(section) {
 }
 
 async function toggleSectionInclude(section, checked) {
-  if (!props.record?._id || !section) return;
+  if (!recordApiId.value || !section || !caps.value.optionalSections) return;
   busy.value = true;
   try {
-    const res = await apiClient.patch(`/quotes/${props.record._id}/sections/${quoteSectionRef(section)}`, {
-      includeInQuoteTotal: checked === true,
-      overridePricing: overrideLock.value === true
-    });
+    const includeField = linesAdapter.value.includeInTotalField || 'includeInQuoteTotal';
+    const body = {
+      [includeField]: checked === true
+    };
+    if (linesAdapter.value.kind === 'quote') {
+      body.overridePricing = overrideLock.value === true;
+    }
+    const res = await apiClient.patch(`${documentRecordBase.value}/sections/${sectionRef(section)}`, body);
     if (!res?.success) throw new Error(res?.message || t('records.quoteSectionUpdateFailed'));
     emitSectionsUpdated({
       sections: res?.data?.sections ?? null,
@@ -1833,7 +1890,7 @@ function sanitizeDiscountInputEvent(event) {
 }
 
 async function saveSectionDiscount(section, patch = {}) {
-  if (!linesEditable.value || !props.record?._id || !section) return;
+  if (!linesEditable.value || !recordApiId.value || !section || !caps.value.sectionDiscounts) return;
   let nextType = patch.type !== undefined ? String(patch.type || '') : sectionDiscountType(section);
   let nextValue = patch.value !== undefined ? Number(patch.value) : sectionDiscountValue(section);
 
@@ -1855,7 +1912,7 @@ async function saveSectionDiscount(section, patch = {}) {
   busy.value = true;
   try {
     const res = await apiClient.patch(
-      `/quotes/${props.record._id}/sections/${quoteSectionRef(section)}/discounts`,
+      `${documentRecordBase.value}/sections/${sectionRef(section)}/discounts`,
       {
         sectionDiscountType: nextType || null,
         sectionDiscountValue: nextType ? nextValue : 0,
@@ -1875,18 +1932,26 @@ async function saveSectionDiscount(section, patch = {}) {
 }
 
 async function patchLineSection(line, targetSectionRef) {
-  const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
-    quoteSectionId: targetSectionRef,
+  const body = {
+    ...linesAdapter.value.buildPatchLineBody({ sectionRef: targetSectionRef }),
     overridePricing: overrideLock.value === true
-  });
+  };
+  const res = await apiClient.patch(
+    `${documentRecordBase.value}/lines/${lineApiId(line)}`,
+    body
+  );
   if (!res?.success || !res?.data?.line) {
     throw new Error(res?.message || t('records.linesUpdateFailed'));
   }
   return res.data;
 }
 
+function lineApiId(line) {
+  return commercialLineId(linesAdapter.value, line);
+}
+
 async function moveLineToSection(line, targetSectionRef) {
-  if (!linesEditable.value || !props.record?._id || !line?.quoteLineId || !targetSectionRef) return;
+  if (!linesEditable.value || !recordApiId.value || !lineApiId(line) || !targetSectionRef) return;
   if (lineSectionRef(line) === targetSectionRef) return;
 
   busy.value = true;
@@ -1919,7 +1984,7 @@ const discountTypeOptions = computed(() => [
 ]);
 
 function lineRowKey(line) {
-  return String(line?.quoteLineId || line?._id || '');
+  return commercialLineId(linesAdapter.value, line);
 }
 
 const tableColspan = computed(() => {
@@ -1982,7 +2047,7 @@ function lineDiscountInputValue(line) {
 }
 
 async function patchLineDiscount(line, patch = {}) {
-  if (!linesEditable.value || !props.record?._id || !line?.quoteLineId) return;
+  if (!linesEditable.value || !recordApiId.value || !lineApiId(line) || !caps.value.discounts) return;
 
   let nextType = patch.type !== undefined ? String(patch.type || '') : lineDiscountType(line);
   let nextValue = patch.value !== undefined ? Number(patch.value) : lineDiscountValue(line);
@@ -2005,11 +2070,13 @@ async function patchLineDiscount(line, patch = {}) {
   busy.value = true;
   try {
     const body = {
-      overridePricing: overrideLock.value === true,
-      discountType: nextType || null,
-      discountValue: nextType ? nextValue : 0
+      ...linesAdapter.value.buildPatchLineBody({
+        discountType: nextType || null,
+        discountValue: nextType ? nextValue : 0
+      }),
+      overridePricing: overrideLock.value === true
     };
-    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, body);
+    const res = await apiClient.patch(`${documentRecordBase.value}/lines/${lineApiId(line)}`, body);
     if (res?.success && res?.data?.line) {
       emit('updated', {
         type: 'line-updated',
@@ -2159,13 +2226,16 @@ const docChargesPreviewTotal = computed(() => {
 });
 
 async function patchLineTaxes(line, taxIds = []) {
-  if (!linesEditable.value || !props.record?._id || !line?.quoteLineId) return;
+  if (!linesEditable.value || !recordApiId.value || !lineApiId(line) || !caps.value.taxEdit) return;
   busy.value = true;
   try {
-    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
-      overridePricing: overrideLock.value === true,
-      taxIds: Array.isArray(taxIds) ? taxIds : []
-    });
+    const body = {
+      ...linesAdapter.value.buildPatchLineBody({
+        taxIds: Array.isArray(taxIds) ? taxIds : []
+      }),
+      overridePricing: overrideLock.value === true
+    };
+    const res = await apiClient.patch(`${documentRecordBase.value}/lines/${lineApiId(line)}`, body);
     if (res?.success && res?.data?.line) {
       emit('updated', {
         type: 'line-updated',
@@ -2183,10 +2253,10 @@ async function patchLineTaxes(line, taxIds = []) {
 }
 
 async function saveDocumentTaxesCharges({ transactionTaxIds, transactionChargeIds }) {
-  if (!linesEditable.value || !props.record?._id) return false;
+  if (!linesEditable.value || !recordApiId.value || !caps.value.taxesCharges) return false;
   busy.value = true;
   try {
-    const res = await apiClient.patch(`/quotes/${props.record._id}/taxes-charges`, {
+    const res = await apiClient.patch(`${documentRecordBase.value}/taxes-charges`, {
       overridePricing: overrideLock.value === true,
       transactionTaxIds,
       transactionChargeIds
@@ -2194,7 +2264,7 @@ async function saveDocumentTaxesCharges({ transactionTaxIds, transactionChargeId
     if (res?.success) {
       emit('updated', {
         type: 'quote-taxes-charges-updated',
-        quote: res?.data?.quote ?? null,
+        quote: res?.data?.quote ?? res?.data?.salesOrder ?? res?.data?.invoice ?? null,
         lines: res?.data?.lines ?? null,
         ...mutationPayload(res.data)
       });
@@ -2297,14 +2367,14 @@ async function persistDocCharges() {
 }
 
 async function saveGlobalDiscount() {
-  if (!linesEditable.value || !props.record?._id) return;
+  if (!linesEditable.value || !recordApiId.value || !caps.value.globalDiscounts) return;
   const value = Number(globalDiscountValue.value) || 0;
   const type = value > 0 ? globalDiscountType.value || 'percent' : null;
   if (type && value < 0) return;
 
   busy.value = true;
   try {
-    const res = await apiClient.patch(`/quotes/${props.record._id}/discounts`, {
+    const res = await apiClient.patch(`${documentRecordBase.value}/discounts`, {
       globalDiscountType: type,
       globalDiscountValue: type ? value : 0,
       overridePricing: overrideLock.value === true
@@ -2312,7 +2382,7 @@ async function saveGlobalDiscount() {
     if (res?.success) {
       emit('updated', {
         type: 'quote-discounts-updated',
-        quote: res?.data?.quote ?? null,
+        quote: res?.data?.quote ?? res?.data?.salesOrder ?? res?.data?.invoice ?? null,
         lines: res?.data?.lines ?? null,
         ...mutationPayload(res.data)
       });
@@ -2349,9 +2419,10 @@ function sortedAllLines() {
   );
 }
 
-function linesInDisplayGroup(quoteLineId) {
+function linesInDisplayGroup(lineId) {
   const all = sortedAllLines();
-  const line = all.find((l) => String(l?.quoteLineId || '') === String(quoteLineId || ''));
+  const adapter = linesAdapter.value;
+  const line = all.find((l) => lineApiId(l) === String(lineId || ''));
   if (!line) return [];
 
   if (String(line?.lineType || '') === 'bundle_parent') {
@@ -2379,7 +2450,7 @@ function buildOrdersFromVisibleSequence(visibleIds) {
 
   for (const id of visibleIds) {
     for (const line of linesInDisplayGroup(id)) {
-      const key = String(line?.quoteLineId || '');
+      const key = lineApiId(line);
       if (!key || used.has(key)) continue;
       used.add(key);
       reordered.push(line);
@@ -2387,15 +2458,16 @@ function buildOrdersFromVisibleSequence(visibleIds) {
   }
 
   for (const line of all) {
-    const key = String(line?.quoteLineId || '');
+    const key = lineApiId(line);
     if (key && !used.has(key)) {
       used.add(key);
       reordered.push(line);
     }
   }
 
+  const lineIdField = linesAdapter.value.lineIdField;
   return reordered.map((line, index) => ({
-    quoteLineId: String(line.quoteLineId),
+    [lineIdField]: lineApiId(line),
     lineOrder: index + 1
   }));
 }
@@ -2408,11 +2480,11 @@ function onLineOrderDragStart() {
 }
 
 async function persistDragChanges() {
-  if (!linesEditable.value || !props.record?._id) return;
+  if (!linesEditable.value || !recordApiId.value || !caps.value.lineReorder) return;
 
   const moves = collectSectionMoves();
   const visibleIds = sectionBlocks.value.flatMap((block) =>
-    (getSectionRows(block.key) || []).map((row) => String(row.line?.quoteLineId || '')).filter(Boolean)
+    (getSectionRows(block.key) || []).map((row) => lineApiId(row.line)).filter(Boolean)
   );
   const orders = buildOrdersFromVisibleSequence(visibleIds);
   if (!moves.length && !orders.length) return;
@@ -2423,7 +2495,7 @@ async function persistDragChanges() {
       await patchLineSection(move.line, move.targetSectionRef);
     }
 
-    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/reorder`, {
+    const res = await apiClient.patch(`${documentRecordBase.value}/lines/reorder`, {
       orders,
       overridePricing: overrideLock.value === true
     });
@@ -2553,11 +2625,13 @@ const canOverrideLock = computed(() => {
   return role === 'owner' || role === 'admin';
 });
 
-const quoteStatus = computed(() => String(props.record?.status || '').trim());
-const commerciallyLocked = computed(() => isCommerciallyLockedStatus(quoteStatus.value));
+
 const linesEditable = computed(() => {
-  if (!commerciallyLocked.value) return true;
-  return overrideLock.value && canOverrideLock.value;
+  if (linesAdapter.value.isEditable(props.record)) return true;
+  if (linesAdapter.value.kind === 'quote') {
+    return overrideLock.value && canOverrideLock.value;
+  }
+  return false;
 });
 
 /** Sticky anchor columns — name (left), total + actions (right). */
@@ -2611,7 +2685,7 @@ function formatVariantHitPrice(hit) {
 }
 
 function openAddNewItemFromPicker() {
-  if (!canCreateQuoteItem.value) return;
+  if (!showCreateCatalogItemAction.value) return;
   const blockKey = variantPickerBlockKey.value;
   const query = String(variantSearchQuery.value || '').trim();
   closeVariantPicker();
@@ -2856,7 +2930,7 @@ function openVariantPickerForDraft(block) {
 }
 
 function openBundlePickerForSection(block) {
-  if (!linesEditable.value) return;
+  if (!linesEditable.value || !caps.value.bundles) return;
   activeAddBlockKey.value = block?.key ?? '';
   bundlePickerBlockKey.value = block?.key ?? null;
   showBundlePicker.value = true;
@@ -2912,19 +2986,25 @@ async function runDraftSearch(block) {
 async function addLineFromHit(block, hit) {
   const key = block?.key;
   const variantId = String(hit?._id || '');
-  if (!key || !variantId || !linesEditable.value || !props.record?._id) return null;
+  if (!key || !variantId || !linesEditable.value || !recordApiId.value) return null;
   const commitKey = `${key}:${variantId}`;
   if (pendingDraftCommits.has(commitKey)) return null;
   pendingDraftCommits.add(commitKey);
   recordRecentVariant(hit);
   try {
-    const res = await apiClient.post(`/quotes/${props.record._id}/lines`, {
-      variantId,
-      quantity: 1,
-      priceBookId: selectedPriceBookId.value || null,
-      quoteSectionId: blockSectionRef(block) || null,
-      overridePricing: overrideLock.value === true
-    });
+    const body = {
+      ...linesAdapter.value.buildAddLineBody({
+        variantId,
+        quantity: 1,
+        sectionRef: blockSectionRef(block) || null,
+        priceBookId: selectedPriceBookId.value || null,
+        overridePricing: overrideLock.value === true
+      })
+    };
+    if (linesAdapter.value.kind === 'quote') {
+      body.overridePricing = overrideLock.value === true;
+    }
+    const res = await apiClient.post(`${documentRecordBase.value}/lines`, body);
     if (res?.success) {
       return { line: res?.data?.line || null, data: res.data };
     }
@@ -2967,7 +3047,7 @@ async function commitDraftFromHit(block, hit) {
 }
 
 function openAddNewItemFromDraft(block) {
-  if (!canCreateQuoteItem.value || !linesEditable.value || busy.value) return;
+  if (!showCreateCatalogItemAction.value || !linesEditable.value || busy.value) return;
   const state = draftRow(block);
   if (state) state.searchOpen = false;
   itemCreateBlockKey.value = block?.key ?? null;
@@ -3232,6 +3312,7 @@ function closeBundleOptionalModal() {
 }
 
 async function pickBundle(hit) {
+  if (!caps.value.bundles) return;
   showBundlePicker.value = false;
   busy.value = true;
   try {
@@ -3256,7 +3337,7 @@ async function pickBundle(hit) {
 }
 
 function openBundleOptionalConfig(parentLine) {
-  if (!linesEditable.value || !parentLine?.quoteLineId) return;
+  if (!linesEditable.value || !lineApiId(parentLine) || !caps.value.bundles) return;
   const choices = optionalChoicesForParent(parentLine);
   if (!choices.length) return;
   bundleOptionalModalMode.value = 'configure';
@@ -3277,12 +3358,12 @@ async function confirmBundleOptionalModal() {
   }
 
   const parent = bundleOptionalConfigureParent.value;
-  if (!parent?.quoteLineId || !props.record?._id) return;
+  if (!lineApiId(parent) || !recordApiId.value || !caps.value.bundles) return;
 
   busy.value = true;
   try {
     const res = await apiClient.patch(
-      `/quotes/${props.record._id}/bundles/${parent.quoteLineId}/optionals`,
+      `${documentRecordBase.value}/bundles/${lineApiId(parent)}/optionals`,
       {
         includedComponentVariantIds: [...bundleOptionalSelected.value],
         overridePricing: overrideLock.value === true
@@ -3306,17 +3387,19 @@ async function confirmBundleOptionalModal() {
 }
 
 async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
-  if (!props.record?._id) return;
+  if (!recordApiId.value || !caps.value.bundles) return;
   const blockKey = bundlePickerBlockKey.value;
+  const sectionField = linesAdapter.value.sectionIdField;
+  const sectionRefVal = quoteSectionIdForBlockKey(blockKey) || null;
   busy.value = true;
   try {
-    const res = await apiClient.post(`/quotes/${props.record._id}/bundles`, {
+    const res = await apiClient.post(`${documentRecordBase.value}/bundles`, {
       bundleVariantId: String(hit._id),
       priceBookId: selectedPriceBookId.value ? String(selectedPriceBookId.value) : null,
       quantity: 1,
-      asOfDate: props.record?.quoteDate ?? null,
+      asOfDate: props.record?.quoteDate ?? props.record?.orderDate ?? props.record?.invoiceDate ?? null,
       includedOptionalComponentVariantIds: includedOptionalComponentVariantIds,
-      quoteSectionId: quoteSectionIdForBlockKey(blockKey) || null,
+      [sectionField]: sectionRefVal,
       overridePricing: overrideLock.value === true
     });
     if (!res?.success) {
@@ -3353,15 +3436,18 @@ async function refresh() {
 }
 
 async function patchQty(line, raw) {
-  if (!linesEditable.value || !props.record?._id || !line?.quoteLineId) return;
+  if (!linesEditable.value || !recordApiId.value || !lineApiId(line)) return;
   const q = Number(raw);
   if (!Number.isFinite(q) || q <= 0) return;
   busy.value = true;
   try {
-    const res = await apiClient.patch(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
-      quantity: q,
-      overridePricing: overrideLock.value === true
-    });
+    const body = {
+      ...linesAdapter.value.buildPatchLineBody({ quantity: q })
+    };
+    if (linesAdapter.value.kind === 'quote') {
+      body.overridePricing = overrideLock.value === true;
+    }
+    const res = await apiClient.patch(`${documentRecordBase.value}/lines/${lineApiId(line)}`, body);
     if (res?.success) {
       const updatedLine = res?.data?.line;
       if (updatedLine) {
@@ -3392,10 +3478,10 @@ function requestRemoveLine(line) {
 async function confirmRemoveLine() {
   const line = linePendingDelete.value;
   showDeleteLineModal.value = false;
-  if (!props.record?._id || !line?.quoteLineId) return;
+  if (!recordApiId.value || !lineApiId(line)) return;
   busy.value = true;
   try {
-    const res = await apiClient.delete(`/quotes/${props.record._id}/lines/${line.quoteLineId}`, {
+    const res = await apiClient.delete(`${documentRecordBase.value}/lines/${lineApiId(line)}`, {
       data: { overridePricing: overrideLock.value === true }
     });
     if (res?.success) {
@@ -3416,10 +3502,10 @@ async function confirmRemoveLine() {
 }
 
 async function recalculate() {
-  if (!props.record?._id) return;
+  if (!recordApiId.value || !caps.value.recalculate) return;
   busy.value = true;
   try {
-    const res = await apiClient.post(`/quotes/${props.record._id}/recalculate`, {
+    const res = await apiClient.post(`${documentRecordBase.value}/recalculate`, {
       overridePricing: overrideLock.value === true
     });
     if (res?.success) {

@@ -12,6 +12,12 @@
         @{{ part.name }}
       </button>
       <span
+        v-else-if="part.type === 'mention' && part.entityType === 'all'"
+        class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+      >
+        @{{ part.name }}
+      </span>
+      <span
         v-else-if="part.type === 'mention'"
         class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200"
       >
@@ -44,7 +50,7 @@ const parsedParts = computed(() => {
   if (!props.content) return [];
   const normalizedContent = String(props.content).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const parts = [];
-  const mentionRegex = /@\[([^\]]+)\]\((user|group|agent):([^)]+)\)/g;
+  const mentionRegex = /@\[([^\]]+)\]\((user|group|agent|all):([^)]+)\)/g;
   let lastIndex = 0;
   let match;
 

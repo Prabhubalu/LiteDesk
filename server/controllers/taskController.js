@@ -494,9 +494,7 @@ const getTasks = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 20,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      limit = 20
     } = req.query;
 
     const query = buildTasksListQuery(req);
@@ -505,9 +503,12 @@ const getTasks = async (req, res) => {
     const limitNum = Math.min(Math.max(1, parseInt(limit, 10) || 20), 100);
     const skip = (pageNum - 1) * limitNum;
 
-    // Build sort object
-    const sortObject = {};
-    sortObject[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    const { parseListSort } = require('../utils/parseListSort');
+    const { sortObject } = parseListSort(req.query, {
+      defaultField: 'createdAt',
+      defaultOrder: 'desc',
+      tieBreaker: '_id'
+    });
 
     const taskPopulate = [
       { path: 'assignedTo', select: 'firstName lastName email avatar' },

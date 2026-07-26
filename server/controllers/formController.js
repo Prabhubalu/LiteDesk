@@ -349,10 +349,13 @@ exports.getForms = async (req, res) => {
         const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
         query = applyListFilterQueryParam(query, req.query, 'forms', { userId: req.user?._id });
         
-        // Sorting
-        const sortBy = req.query.sortBy || 'createdAt';
-        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-        const sort = { [sortBy]: sortOrder };
+        // Sorting (multi: sortBy=a,b&sortOrder=asc,desc)
+        const { parseListSort } = require('../utils/parseListSort');
+        const { sortObject: sort } = parseListSort(req.query, {
+            defaultField: 'createdAt',
+            defaultOrder: 'desc',
+            tieBreaker: '_id'
+        });
         
         const formPopulate = [
             { path: 'assignedTo', select: 'firstName lastName email' },

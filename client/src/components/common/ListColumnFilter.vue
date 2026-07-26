@@ -90,9 +90,9 @@
     <Listbox
       v-else
       :model-value="selectValue"
-      :multiple="filter.filterType === 'multi-select'"
+      :multiple="isMultiValueFilter"
       v-slot="{ open }"
-      @update:model-value="emitValue"
+      @update:model-value="onSelectUpdate"
     >
       <span v-show="false" aria-hidden="true">{{ syncListboxOpenState(open) }}</span>
       <div class="relative min-w-0">
@@ -123,8 +123,8 @@
               v-if="!teleportOptions || open"
               :style="teleportOptions ? teleportMenuStyle : undefined"
               :class="teleportOptions
-                ? 'fixed z-[10050] max-h-72 overflow-hidden rounded-lg border border-gray-200 bg-white text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800 flex flex-col'
-                : 'absolute left-0 z-[80] mt-1 max-h-72 w-full min-w-[10rem] overflow-hidden rounded-lg border border-gray-200 bg-white text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800 flex flex-col'"
+                ? 'fixed z-[10050] max-h-[min(24rem,70vh)] overflow-hidden rounded-lg border border-gray-200 bg-white text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800 flex flex-col'
+                : 'absolute left-0 z-[80] mt-1 max-h-[min(24rem,70vh)] w-full min-w-[12rem] overflow-hidden rounded-lg border border-gray-200 bg-white text-left text-sm shadow-lg dark:border-gray-600 dark:bg-gray-800 flex flex-col'"
               @vue:before-mount="syncTeleportPosition"
               @mousedown.stop
             >
@@ -143,13 +143,38 @@
                   class="w-full rounded-md border border-gray-200 bg-gray-50 py-1.5 pl-8 pr-2 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white"
                   autocomplete="off"
                   @click.stop
-                  @keydown.stop
+                  @keydown="onListboxSearchKeydown"
                 />
               </div>
             </div>
             <div class="min-h-0 flex-1 overflow-y-auto py-1">
+            <!-- Multi-select: clear-all is a button (not a ListboxOption value) -->
+            <li
+              v-if="isMultiValueFilter"
+              role="option"
+              :aria-selected="!isActive"
+              :class="[
+                'relative flex cursor-pointer select-none items-center gap-2.5 py-2 pl-3 pr-3 text-left',
+                !isActive
+                  ? 'bg-gray-50 font-medium text-gray-900 dark:bg-gray-700/60 dark:text-gray-100'
+                  : 'text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700'
+              ]"
+              @click="onClear"
+            >
+              <span
+                class="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border"
+                :class="!isActive
+                  ? 'border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-500'
+                  : 'border-gray-300 bg-white dark:border-gray-500 dark:bg-gray-900'"
+                aria-hidden="true"
+              >
+                <CheckIcon v-if="!isActive" class="h-3 w-3" />
+              </span>
+              <span class="block min-w-0 truncate text-left">{{ allLabel }}</span>
+            </li>
             <ListboxOption
-              :value="filter.filterType === 'multi-select' ? [] : ''"
+              v-else
+              value=""
               v-slot="{ active, selected }"
             >
               <li
@@ -175,15 +200,31 @@
             >
               <li
                 :class="[
-                  'relative cursor-pointer select-none py-2 pl-3 pr-8 text-left',
+                  'relative flex cursor-pointer select-none items-center gap-2.5 py-2 pl-3 pr-3 text-left',
                   active ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-100' : 'text-gray-900 dark:text-gray-100'
                 ]"
               >
-                <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate text-left']">
+                <span
+                  v-if="isMultiValueFilter"
+                  class="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border"
+                  :class="selected
+                    ? 'border-indigo-600 bg-indigo-600 text-white dark:border-indigo-500 dark:bg-indigo-500'
+                    : 'border-gray-300 bg-white dark:border-gray-500 dark:bg-gray-900'"
+                  aria-hidden="true"
+                >
+                  <CheckIcon v-if="selected" class="h-3 w-3" />
+                </span>
+                <span
+                  :class="[
+                    selected ? 'font-medium' : 'font-normal',
+                    'block min-w-0 flex-1 truncate text-left',
+                    isMultiValueFilter ? '' : 'pr-5'
+                  ]"
+                >
                   {{ option.label || option.value }}
                 </span>
                 <CheckIcon
-                  v-if="selected"
+                  v-if="!isMultiValueFilter && selected"
                   class="absolute inset-y-0 right-2 my-auto h-4 w-4 text-gray-600 dark:text-gray-300"
                 />
               </li>
@@ -280,10 +321,28 @@ function syncListboxOpenState(open: boolean) {
   return '';
 }
 
+function onListboxSearchKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') return;
+  if (
+    event.key === 'ArrowDown' ||
+    event.key === 'ArrowUp' ||
+    event.key === 'Home' ||
+    event.key === 'End' ||
+    event.key === 'Enter' ||
+    event.key === 'PageUp' ||
+    event.key === 'PageDown'
+  ) {
+    return;
+  }
+  event.stopPropagation();
+}
+
 const showListboxSearch = computed(() => {
   const optionCount = props.filter.options?.length || 0;
+  if (optionCount === 0) return false;
+  if (isMultiValueFilter.value) return true;
   const key = String(props.filter.key || '').toLowerCase();
-  if (key === 'folderid' || key === 'foldername') return optionCount > 0;
+  if (key === 'folderid' || key === 'foldername') return true;
   return optionCount > 6;
 });
 
@@ -335,6 +394,8 @@ onBeforeUnmount(() => {
 });
 
 const isActive = computed(() => isFilterValueActive(props.modelValue));
+
+const isMultiValueFilter = computed(() => props.filter.filterType === 'multi-select');
 
 const isInline = computed(() => props.inline || props.compact);
 
@@ -404,8 +465,10 @@ const inputClass = computed(() => {
 const textValue = computed(() => (props.modelValue == null ? '' : String(props.modelValue)));
 
 const selectValue = computed(() => {
-  if (props.filter.filterType === 'multi-select') {
-    return Array.isArray(props.modelValue) ? props.modelValue : [];
+  if (isMultiValueFilter.value) {
+    if (Array.isArray(props.modelValue)) return props.modelValue;
+    if (props.modelValue == null || props.modelValue === '') return [];
+    return [props.modelValue];
   }
   return props.modelValue || '';
 });
@@ -470,13 +533,28 @@ function emitValue(value: unknown) {
   emit('update:modelValue', value);
 }
 
+function onSelectUpdate(value: unknown) {
+  if (isMultiValueFilter.value) {
+    if (!Array.isArray(value)) {
+      emitValue(value == null || value === '' ? [] : [value]);
+      return;
+    }
+    const cleaned = value.filter(
+      (entry) => entry !== '' && entry != null && !(Array.isArray(entry) && entry.length === 0)
+    );
+    emitValue(cleaned);
+    return;
+  }
+  emitValue(value);
+}
+
 function onTextInput(event: Event) {
   const target = event.target as HTMLInputElement;
   emitValue(target.value);
 }
 
 function onClear() {
-  if (props.filter.filterType === 'multi-select') {
+  if (isMultiValueFilter.value) {
     emitValue([]);
     return;
   }

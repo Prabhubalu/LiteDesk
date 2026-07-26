@@ -283,13 +283,16 @@ const buildSidebar = async () => {
   }
 };
 
-// Rebuild when session identity or org context changes (login, logout, refreshUser).
+// Rebuild when session identity or app entitlements change (login, logout, refreshUser, enable app).
 watch(
   () => [
     authStore.user?._id,
     authStore.user?.token,
     authStore.organization?._id,
     authStore.user?.permissions,
+    authStore.user?.allowedApps,
+    authStore.user?.appAccess,
+    authStore.organization?.enabledApps,
   ],
   () => {
     if (authStore.user && authStore.isAuthenticated) {

@@ -1,15 +1,24 @@
 const { getProjection } = require('../moduleProjectionResolver');
 const { applyProjectionFilter } = require('../appProjectionQuery');
 
-function buildDueDateQuery(queryParams) {
+/**
+ * Build a Mongo date-range condition from list query params for a field prefix
+ * (e.g. dueDate → dueDatePreset / dueDateOp / dueDateFrom / …).
+ * @returns {object|'EMPTY'|null}
+ */
+function buildDateFieldQuery(fieldPrefix, queryParams) {
   const now = new Date();
-  const preset = queryParams.dueDatePreset;
-  const op = queryParams.dueDateOp;
-  const rawSingle = queryParams.dueDate;
+  const preset = queryParams[`${fieldPrefix}Preset`];
+  const op = queryParams[`${fieldPrefix}Op`];
+  const rawSingle = queryParams[fieldPrefix];
   const singleDate = (rawSingle && String(rawSingle) !== 'null') ? rawSingle : null;
-  const from = (queryParams.dueDateFrom && String(queryParams.dueDateFrom) !== 'null') ? queryParams.dueDateFrom : null;
-  const to = (queryParams.dueDateTo && String(queryParams.dueDateTo) !== 'null') ? queryParams.dueDateTo : null;
-  const days = parseInt(queryParams.dueDateDays, 10);
+  const from = (queryParams[`${fieldPrefix}From`] && String(queryParams[`${fieldPrefix}From`]) !== 'null')
+    ? queryParams[`${fieldPrefix}From`]
+    : null;
+  const to = (queryParams[`${fieldPrefix}To`] && String(queryParams[`${fieldPrefix}To`]) !== 'null')
+    ? queryParams[`${fieldPrefix}To`]
+    : null;
+  const days = parseInt(queryParams[`${fieldPrefix}Days`], 10);
 
   if (preset) {
     let start;
@@ -105,6 +114,26 @@ function buildDueDateQuery(queryParams) {
   return null;
 }
 
+function buildDueDateQuery(queryParams) {
+  return buildDateFieldQuery('dueDate', queryParams);
+}
+
+function appendDateFieldCondition(query, fieldName, queryParams, fieldPrefix = fieldName) {
+  const condition = buildDateFieldQuery(fieldPrefix, queryParams);
+  if (condition === 'EMPTY') {
+    return {
+      $and: [
+        query,
+        { $or: [{ [fieldName]: null }, { [fieldName]: { $exists: false } }] },
+      ],
+    };
+  }
+  if (condition) {
+    query[fieldName] = condition;
+  }
+  return query;
+}
+
 function buildTasksListQuery(req) {
   const {
     status,
@@ -113,12 +142,6 @@ function buildTasksListQuery(req) {
     projectId,
     contactId,
     organizationId,
-    dueDate,
-    dueDatePreset,
-    dueDateOp,
-    dueDateFrom,
-    dueDateTo,
-    dueDateDays,
     overdue,
     open,
     dueToday,
@@ -151,24 +174,10 @@ function buildTasksListQuery(req) {
     query['relatedTo.id'] = organizationId;
   }
 
-  const dueDateCondition = buildDueDateQuery({
-    dueDatePreset,
-    dueDateOp,
-    dueDate,
-    dueDateFrom,
-    dueDateTo,
-    dueDateDays,
-  });
-  if (dueDateCondition === 'EMPTY') {
-    query = {
-      $and: [
-        query,
-        { $or: [{ dueDate: null }, { dueDate: { $exists: false } }] },
-      ],
-    };
-  } else if (dueDateCondition && dueDateCondition !== 'EMPTY') {
-    query.dueDate = dueDateCondition;
-  }
+  query = appendDateFieldCondition(query, 'dueDate', req.query);
+  query = appendDateFieldCondition(query, 'createdAt', req.query);
+  query = appendDateFieldCondition(query, 'updatedAt', req.query);
+
   if (overdue === 'true') {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -213,6 +222,7 @@ function buildTasksListQuery(req) {
 }
 
 module.exports = {
+  buildDateFieldQuery,
   buildDueDateQuery,
   buildTasksListQuery,
 };

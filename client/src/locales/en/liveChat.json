@@ -483,6 +483,14 @@
     "message": "Failed to claim session.",
     "description": "Claim session error"
   },
+  "sessionAssignedViewOnly": {
+    "message": "Assigned to {agent}. View only — you cannot reply to this chat.",
+    "description": "Read-only banner when another agent owns the live chat session"
+  },
+  "assignedToAgent": {
+    "message": "Assigned to {agent}",
+    "description": "Queue list assignee label for open live chat sessions"
+  },
   "unassigned": {
     "message": "Unassigned",
     "description": "Session waiting for agent claim"

@@ -332,6 +332,12 @@ const handleEnable = async (app) => {
     });
 
     if (response.success) {
+      if (authStore.organization && Array.isArray(response.data?.enabledApps)) {
+        authStore.organization = {
+          ...authStore.organization,
+          enabledApps: response.data.enabledApps,
+        };
+      }
       await Promise.all([
         fetchApplications({ bypassCache: true }),
         fetchCapabilities(),
@@ -379,6 +385,12 @@ const handleDisable = async (app) => {
     });
 
     if (response.success) {
+      if (authStore.organization && Array.isArray(response.data?.enabledApps)) {
+        authStore.organization = {
+          ...authStore.organization,
+          enabledApps: response.data.enabledApps,
+        };
+      }
       await Promise.all([
         fetchApplications({ bypassCache: true }),
         fetchCapabilities(),

@@ -84,8 +84,11 @@ Every invoice line (future) MUST retain: `sourceSalesOrderLineId`, `sourceSalesO
 | **Activity-driven** | All mutations via `/api/sales-orders/*`; UI is a client |
 | **Multi-tenant** | Strict `organizationId` isolation on every collection |
 | **No SO revisions (SO0)** | One SO document = one execution contract; use split/cancel/amend later |
+| **Shared commercial Lines UI** | Draft Lines use the same workspace as Quotes (`QuoteLinesRecordSection` + `commercialLines` adapters). Capability matrix gates Quote-only workflow chrome; Draft APIs mirror quote commercial ops (lines, sections, discounts, taxes/charges, reorder, bundles). |
 
 **Forbidden:** Treating SO as "editable quote with different status." Price changes on SO require explicit override permission + audit, not quote-style revision.
+
+**Client contract:** `client/src/platform/commercialLines/adapters.js` — `salesOrderCommercialLinesAdapter`. Do not reintroduce a thin SO-only lines table.
 
 ---
 

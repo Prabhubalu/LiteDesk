@@ -836,7 +836,7 @@ import {
   liveChatIntentLabel,
   liveChatAiSentimentScoreLabel,
 } from '@/utils/liveChatSessionDisplay';
-import { canReplyLiveChatSessions, canAdminLiveChat } from '@/utils/liveChatPermissions';
+import { canAdminLiveChat, canHandleLiveChatSession } from '@/utils/liveChatPermissions';
 
 const DEFAULT_EXPANDED_SECTIONS = Object.freeze([
   'details',
@@ -895,7 +895,9 @@ const expandedModuleKeys = ref(new Set());
 const expandedSections = ref(new Set(DEFAULT_EXPANDED_SECTIONS));
 
 const currentUserId = computed(() => authStore.user?._id || null);
-const canReply = computed(() => canReplyLiveChatSessions(authStore.user));
+const canReply = computed(() =>
+  canHandleLiveChatSession(authStore.user, effectiveSession.value),
+);
 const canAdmin = computed(() => canAdminLiveChat(authStore.user));
 const visitorTypeOptions = VISITOR_TYPE_OPTIONS;
 const priorityOptions = PRIORITY_OPTIONS;

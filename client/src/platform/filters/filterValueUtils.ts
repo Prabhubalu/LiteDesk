@@ -20,8 +20,13 @@ export function resolveFilterDisplayLabel(
     return getDateFilterLabel(parseDateFilterValue(value)) || filter.label;
   }
 
-  if (filter.filterType === 'multi-select' && Array.isArray(value)) {
-    const labels = value
+  if (filter.filterType === 'multi-select') {
+    const values = Array.isArray(value)
+      ? value
+      : value != null && value !== ''
+        ? [value]
+        : [];
+    const labels = values
       .map((entry) => filter.options?.find((opt) => opt.value === entry)?.label || String(entry))
       .filter(Boolean);
     return labels.join(', ');

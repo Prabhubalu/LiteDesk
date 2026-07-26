@@ -18,17 +18,37 @@ const fingerprints = new Map();
 
 /** Known list routes → module identity (matches useTabs list-path whitelist). */
 const LIST_MODULE_ROUTE_PATHS = {
-  '/tasks': { moduleKey: 'tasks' },
-  '/deals': { moduleKey: 'deals' },
-  '/events': { moduleKey: 'events' },
-  '/people': { moduleKey: 'people' },
-  '/organizations': { moduleKey: 'organizations' },
+  '/tasks': { moduleKey: 'tasks', appKey: 'PLATFORM' },
+  '/deals': { moduleKey: 'deals', appKey: 'SALES' },
+  '/events': { moduleKey: 'events', appKey: 'PLATFORM' },
+  '/people': { moduleKey: 'people', appKey: 'PLATFORM' },
+  '/organizations': { moduleKey: 'organizations', appKey: 'PLATFORM' },
   '/forms': { moduleKey: 'forms' },
-  '/items': { moduleKey: 'items' },
+  '/items': { moduleKey: 'items', appKey: 'PLATFORM' },
   '/imports': { moduleKey: 'imports' },
   '/documents': { moduleKey: 'documents' },
   '/trash': { moduleKey: 'trash' },
+  '/quotes': { moduleKey: 'quotes', appKey: 'PLATFORM' },
   '/helpdesk/cases': { moduleKey: 'cases', appKey: 'HELPDESK' },
+};
+
+/**
+ * List views often use an appKey (e.g. tasks → PLATFORM) while producers may omit it.
+ * Alias so bare `tasks` and `PLATFORM:tasks` share dirty/recheck state.
+ */
+const MODULE_LIST_APP_KEY_ALIASES = {
+  tasks: ['PLATFORM'],
+  people: ['PLATFORM'],
+  organizations: ['PLATFORM'],
+  events: ['PLATFORM'],
+  items: ['PLATFORM'],
+  quotes: ['PLATFORM'],
+  deals: ['SALES'],
+  cases: ['HELPDESK'],
+  campaigns: ['MARKETING'],
+  dashboards: ['PLATFORM'],
+  widgets: ['PLATFORM'],
+  reports: ['PLATFORM'],
 };
 
 export function normalizeModuleListKey(moduleKey, appKey = '') {
@@ -37,22 +57,61 @@ export function normalizeModuleListKey(moduleKey, appKey = '') {
   return app ? `${app}:${mod}` : mod;
 }
 
+/** @returns {string[]} */
+function moduleListFreshnessKeys(moduleKey, appKey = '') {
+  const mod = resolveImportListModuleKey(moduleKey) || String(moduleKey || '').toLowerCase();
+  if (!mod) return [];
+  const keys = new Set();
+  const primary = normalizeModuleListKey(mod, appKey);
+  if (primary) keys.add(primary);
+  keys.add(mod);
+  for (const alias of MODULE_LIST_APP_KEY_ALIASES[mod] || []) {
+    keys.add(`${alias}:${mod}`);
+  }
+  return [...keys];
+}
+
 export function resolveListFreshnessFromRoutePath(routePath) {
   const pathBase = String(routePath || '').split('?')[0];
   return LIST_MODULE_ROUTE_PATHS[pathBase] ?? null;
 }
 
 export function markModuleListDirty(moduleKey, appKey = '') {
-  const key = normalizeModuleListKey(moduleKey, appKey);
-  if (!key) return;
-  dirtyModules.add(key);
-  recheckModules.delete(key);
+  const keys = moduleListFreshnessKeys(moduleKey, appKey);
+  if (keys.length === 0) return;
+  for (const key of keys) {
+    dirtyModules.add(key);
+    recheckModules.delete(key);
+  }
+}
+
+/**
+ * Notify list/board freshness that a record changed (keep-alive soft-refetch on next activate).
+ * @param {{ moduleKey: string, record?: object|null, recordId?: string|null, appKey?: string }} detail
+ */
+export function dispatchRecordUpdated(detail = {}) {
+  const moduleKey = detail.moduleKey;
+  if (!moduleKey || typeof window === 'undefined') return;
+  const aliases = MODULE_LIST_APP_KEY_ALIASES[
+    resolveImportListModuleKey(moduleKey) || String(moduleKey || '').toLowerCase()
+  ];
+  const appKey = detail.appKey || aliases?.[0] || '';
+  window.dispatchEvent(new CustomEvent('arivu:record-updated', {
+    detail: {
+      moduleKey,
+      record: detail.record ?? null,
+      recordId: detail.recordId ?? detail.record?._id ?? detail.record?.id ?? null,
+      appKey
+    }
+  }));
 }
 
 export function markModuleListRecheck(moduleKey, appKey = '') {
-  const key = normalizeModuleListKey(moduleKey, appKey);
-  if (!key || dirtyModules.has(key)) return;
-  recheckModules.add(key);
+  const keys = moduleListFreshnessKeys(moduleKey, appKey);
+  for (const key of keys) {
+    if (dirtyModules.has(key)) continue;
+    recheckModules.add(key);
+  }
 }
 
 export function markModuleListRecheckForRoutePath(routePath) {
@@ -62,21 +121,26 @@ export function markModuleListRecheckForRoutePath(routePath) {
 }
 
 export function consumeModuleListDirty(moduleKey, appKey = '') {
-  const key = normalizeModuleListKey(moduleKey, appKey);
-  if (!key || !dirtyModules.has(key)) return false;
-  dirtyModules.delete(key);
-  recheckModules.delete(key);
-  return true;
+  const keys = moduleListFreshnessKeys(moduleKey, appKey);
+  let hit = false;
+  for (const key of keys) {
+    if (dirtyModules.has(key)) {
+      dirtyModules.delete(key);
+      hit = true;
+    }
+    recheckModules.delete(key);
+  }
+  return hit;
 }
 
 export function peekModuleListRecheck(moduleKey, appKey = '') {
-  const key = normalizeModuleListKey(moduleKey, appKey);
-  return Boolean(key && recheckModules.has(key));
+  return moduleListFreshnessKeys(moduleKey, appKey).some((key) => recheckModules.has(key));
 }
 
 export function clearModuleListRecheck(moduleKey, appKey = '') {
-  const key = normalizeModuleListKey(moduleKey, appKey);
-  if (key) recheckModules.delete(key);
+  for (const key of moduleListFreshnessKeys(moduleKey, appKey)) {
+    recheckModules.delete(key);
+  }
 }
 
 export function recordModuleListFingerprint(moduleKey, appKey, snapshot = {}) {

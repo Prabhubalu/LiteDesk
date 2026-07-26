@@ -55,6 +55,14 @@
             >
               <ListBulletIcon class="w-4 h-4 shrink-0" />{{ t('forms.rbLayoutList') }}</button>
           </div>
+          <button
+            type="button"
+            class="inline-flex h-[34px] items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+            @click="showCalendarSyncModal = true"
+          >
+            <ArrowsRightLeftIcon class="h-4 w-4 shrink-0" />
+            <span>{{ t('events.calendarSyncButton') }}</span>
+          </button>
           <ModuleActions
             module="events"
             :create-label="t('events.eventsNewEvent')"
@@ -197,6 +205,8 @@
       @saved="handleEditDrawerSaved"
     />
 
+    <EventCalendarSyncModal v-model="showCalendarSyncModal" />
+
   </div>
 </template>
 
@@ -218,11 +228,13 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import ModuleActions from '@/components/common/ModuleActions.vue';
 import EventQuickCreateDrawer from '@/components/events/EventQuickCreateDrawer.vue';
+import EventCalendarSyncModal from '@/components/events/EventCalendarSyncModal.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import AppointmentsStatsBar from '@/components/appointments/AppointmentsStatsBar.vue';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
-import { CalendarIcon, CalendarDaysIcon, ListBulletIcon } from '@heroicons/vue/24/outline';
+import { CalendarIcon, CalendarDaysIcon, ListBulletIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
 import { appointmentSourceLabel, appointmentTypeLabel } from '@/utils/appointmentFormatters';
+import { useNotifications } from '@/composables/useNotifications';
 
 import { APP_NAME_KEYS } from '@/utils/navigationLabels';
 import { startBulkDelete } from '@/utils/runBulkDelete';
@@ -231,6 +243,8 @@ const router = useRouter();
 const route = useRoute();
 const calendarRef = ref(null);
 const moduleListRef = ref(null);
+const showCalendarSyncModal = ref(false);
+const notifications = useNotifications();
 
 // Initialize tabs composable
 const { openTab } = useTabs();
@@ -877,9 +891,65 @@ const handleEventCreated = () => {
   }
 };
 
+function consumeCalendarSyncQuery() {
+  const status = String(route.query.calendarSync || '');
+  if (status !== 'connected' && status !== 'error') return;
+
+  const provider = String(route.query.provider || '');
+  const rawMessage = route.query.message != null ? String(route.query.message) : '';
+  const decodedMessage = rawMessage ? decodeURIComponent(rawMessage.replace(/\+/g, ' ')) : '';
+
+  const isOAuthPopup =
+    typeof window !== 'undefined' &&
+    window.opener &&
+    window.opener !== window &&
+    !window.opener.closed;
+
+  if (isOAuthPopup) {
+    try {
+      const payload =
+        status === 'connected'
+          ? { type: 'user-calendar-oauth-result', status: 'connected', provider }
+          : {
+              type: 'user-calendar-oauth-result',
+              status: 'error',
+              provider,
+              message: decodedMessage || t('events.calendarSyncConnectFailed')
+            };
+      window.opener.postMessage(payload, window.location.origin);
+    } catch {
+      /* ignore */
+    }
+    try {
+      window.close();
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+
+  if (status === 'connected') {
+    notifications.success(
+      t('events.calendarSyncConnectedToast', {
+        provider: provider === 'microsoft' ? 'Microsoft 365' : 'Google'
+      })
+    );
+    showCalendarSyncModal.value = true;
+  } else {
+    notifications.error(decodedMessage || t('events.calendarSyncConnectFailed'));
+  }
+
+  const q = { ...route.query };
+  delete q.calendarSync;
+  delete q.provider;
+  delete q.message;
+  router.replace({ path: route.path, query: q });
+}
+
 onMounted(() => {
   checkDarkMode();
   initializeView();
+  consumeCalendarSyncQuery();
 
   // Apply view state after ModuleList renders
   nextTick(() => {

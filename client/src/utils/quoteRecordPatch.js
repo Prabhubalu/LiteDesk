@@ -20,12 +20,15 @@ export function applyQuoteSectionsToRecord(record, sections) {
   return true;
 }
 
-function mergeSectionsById(existing, incoming) {
+function mergeSectionsById(existing, incoming, { sectionUuidField = 'quoteSectionId' } = {}) {
   const byKey = new Map(
-    (Array.isArray(existing) ? existing : []).map((s) => [String(s?.quoteSectionId || s?._id || ''), s])
+    (Array.isArray(existing) ? existing : []).map((s) => [
+      String(s?.[sectionUuidField] || s?._id || ''),
+      s
+    ])
   );
   for (const section of incoming || []) {
-    const key = String(section?.quoteSectionId || section?._id || '');
+    const key = String(section?.[sectionUuidField] || section?._id || '');
     if (!key) continue;
     const prev = byKey.get(key);
     byKey.set(key, prev ? { ...prev, ...section } : { ...section });
@@ -37,15 +40,15 @@ function mergeSectionsById(existing, incoming) {
 
 export function applyQuoteLinesMutationToRecord(
   record,
-  { lines, line, totals, sections } = {}
+  { lines, line, totals, sections, lineIdField = 'quoteLineId', sectionUuidField = 'quoteSectionId' } = {}
 ) {
   if (!record) return false;
   let changed = false;
-  if (applyQuoteLinesUpdateToRecord(record, { lines, line, totals })) {
+  if (applyQuoteLinesUpdateToRecord(record, { lines, line, totals, lineIdField })) {
     changed = true;
   }
   if (Array.isArray(sections)) {
-    record.sections = mergeSectionsById(record.sections, sections);
+    record.sections = mergeSectionsById(record.sections, sections, { sectionUuidField });
     changed = true;
   }
   return changed;
@@ -102,7 +105,10 @@ function normalizeQuoteLine(line) {
 /**
  * Merge line updates by quoteLineId (patch qty, etc.).
  */
-export function applyQuoteLinesUpdateToRecord(record, { lines, line, totals } = {}) {
+export function applyQuoteLinesUpdateToRecord(
+  record,
+  { lines, line, totals, lineIdField = 'quoteLineId' } = {}
+) {
   if (!record) return false;
 
   const incoming = [
@@ -117,13 +123,13 @@ export function applyQuoteLinesUpdateToRecord(record, { lines, line, totals } = 
   if (incoming.length) {
     const byId = new Map(
       (Array.isArray(record.lines) ? record.lines : []).map((row) => [
-        String(row?.quoteLineId || ''),
+        String(row?.[lineIdField] || ''),
         row
       ])
     );
 
     for (const updated of incoming) {
-      const id = String(updated.quoteLineId || '');
+      const id = String(updated[lineIdField] || '');
       if (!id) continue;
       const prev = byId.get(id);
       byId.set(id, prev ? { ...prev, ...updated } : updated);
@@ -156,7 +162,10 @@ export function applyQuoteLinesRecalculateToRecord(record, { lines, totals, sect
 /**
  * Append quote lines from API response without refetching the record.
  */
-export function applyQuoteLinesAddToRecord(record, { lines, totals, sections } = {}) {
+export function applyQuoteLinesAddToRecord(
+  record,
+  { lines, totals, sections, lineIdField = 'quoteLineId' } = {}
+) {
   if (!record) return false;
 
   const incoming = (Array.isArray(lines) ? lines : [])
@@ -167,11 +176,11 @@ export function applyQuoteLinesAddToRecord(record, { lines, totals, sections } =
 
   const current = Array.isArray(record.lines) ? [...record.lines] : [];
   const existingIds = new Set(
-    current.map((line) => String(line?.quoteLineId || '')).filter(Boolean)
+    current.map((line) => String(line?.[lineIdField] || '')).filter(Boolean)
   );
 
   for (const line of incoming) {
-    const id = String(line.quoteLineId || '');
+    const id = String(line[lineIdField] || '');
     if (!id || existingIds.has(id)) continue;
     existingIds.add(id);
     current.push(line);
@@ -189,10 +198,13 @@ export function applyQuoteLinesAddToRecord(record, { lines, totals, sections } =
 /**
  * Apply quote line delete response to an in-memory record without refetching.
  */
-export function applyQuoteLineDeleteToRecord(record, { deletedLine, totals, sections } = {}) {
+export function applyQuoteLineDeleteToRecord(
+  record,
+  { deletedLine, totals, sections, lineIdField = 'quoteLineId' } = {}
+) {
   if (!record || !deletedLine) return false;
 
-  const deletedLineId = String(deletedLine.quoteLineId || '').trim();
+  const deletedLineId = String(deletedLine[lineIdField] || '').trim();
   const deletedMongoId = String(deletedLine._id || '').trim();
   const isBundleParent = String(deletedLine.lineType || '') === 'bundle_parent';
 
@@ -200,7 +212,7 @@ export function applyQuoteLineDeleteToRecord(record, { deletedLine, totals, sect
 
   const currentLines = Array.isArray(record.lines) ? record.lines : [];
   record.lines = currentLines.filter((line) => {
-    if (String(line?.quoteLineId || '') === deletedLineId) return false;
+    if (String(line?.[lineIdField] || '') === deletedLineId) return false;
     if (
       isBundleParent &&
       deletedMongoId &&

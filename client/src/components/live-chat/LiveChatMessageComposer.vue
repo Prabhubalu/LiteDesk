@@ -356,10 +356,11 @@ function onInput(event) {
 }
 
 function onKeydown(event) {
-  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-    event.preventDefault();
-    handleSend();
-  }
+  if (event.key !== 'Enter' || event.isComposing) return;
+  // Shift+Enter inserts a newline (default textarea behavior).
+  if (event.shiftKey) return;
+  event.preventDefault();
+  handleSend();
 }
 
 function insertAtCursor(text) {

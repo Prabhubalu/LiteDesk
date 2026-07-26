@@ -136,11 +136,16 @@ function applyPortalOnlySidebarFilters(
   structure.shell = structure.shell.filter((item) => !portalHiddenShellIds.has(item.id));
 }
 
+function isOwnerLikeUser(user: UserLike): boolean {
+  return user?.isOwner === true || String(user?.role || '').toLowerCase() === 'owner';
+}
+
 /**
  * Builds the locked SidebarStructure for the current session:
  * - Filters app registry by app entitlement (hasAppAccess)
  * - Keeps PLATFORM entry for internal module resolution
  * - Hides platform commercial modules unless Sales and/or Inventory is entitled
+ * - Owners follow hasAppAccess (org.enabledApps), not a stale allowedApps snapshot
  */
 export async function buildSidebarStructureForSession(
   user: UserLike,
@@ -150,13 +155,15 @@ export async function buildSidebarStructureForSession(
   const registry = await getAppRegistry();
   const { allowedAppKeys, hasExplicitUserAppAccessData } = normalizeUserAppAccess(user);
   const userType = user?.userType || 'INTERNAL';
+  // Owners inherit newly enabled org apps via hasAppAccess; do not freeze on allowedApps.
+  const useExplicitAllowedApps = hasExplicitUserAppAccessData && !isOwnerLikeUser(user);
 
   const entitlementScopedRegistry = Object.fromEntries(
     Object.entries(registry).filter(([appKey]) => {
       const normalizedAppKey = String(appKey).toUpperCase();
       if (normalizedAppKey === 'PLATFORM') return true;
       if (!validateUserTypeForApp(userType, normalizedAppKey)) return false;
-      if (hasExplicitUserAppAccessData) {
+      if (useExplicitAllowedApps) {
         return allowedAppKeys.has(normalizedAppKey);
       }
       return hasAppAccess(appKey);
@@ -171,7 +178,7 @@ export async function buildSidebarStructureForSession(
   applyCoreModuleEntitlementFilters(
     structure,
     allowedAppKeys,
-    hasExplicitUserAppAccessData,
+    useExplicitAllowedApps,
     hasAppAccess
   );
 

@@ -135,7 +135,7 @@
                   <Menu v-else-if="isColumnSortable(column)" as="div" class="relative h-full w-full">
                     <MenuButton
                       type="button"
-                      class="group flex h-full min-h-full w-full items-center justify-between gap-2 px-5 py-3.5 text-left text-xs uppercase tracking-wide transition-colors focus:outline-none relative z-10"
+                      class="group flex h-full min-h-full w-full items-center justify-between gap-2 px-5 py-3.5 text-left text-xs uppercase tracking-wide transition-colors focus:outline-none focus-visible:outline-none relative z-10"
                       :class="{
                         'cursor-pointer text-indigo-600 dark:text-indigo-300': isColumnFilterHighlighted(column),
                         'cursor-pointer bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300': isColumnSorted(column) && !isColumnFilterHighlighted(column),
@@ -144,27 +144,37 @@
                     >
                       <span class="flex items-center gap-2 truncate">
                         <span class="truncate">{{ columnLabel(column) }}</span>
-                        <span
-                          class="relative flex items-center justify-center rounded-md p-1 transition-opacity cursor-pointer"
-                          :class="{
-                            'opacity-100 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300': isColumnSorted(column),
-                            'opacity-0 text-gray-400 group-hover:opacity-100 hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300': !isColumnSorted(column)
-                          }"
-                          role="button"
-                          tabindex="-1"
-                          :aria-label="t('common.tableToggleSort', { column: columnLabel(column) })"
-                          @click.stop="toggleSort(column)"
+                        <HoverTooltip
+                          :content="sortIconTooltip(column)"
+                          :disabled="!sortIconTooltip(column)"
+                          :show-delay="0"
+                          :hide-delay="40"
+                          preferred-placement="above"
+                          :z-index="120"
                         >
-                          <template v-if="isColumnSorted(column)">
-                            <span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-1 text-[10px] font-semibold text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
-                              <span>{{ sortOrderValue === 'asc' ? '↑' : '↓' }}</span>
-                              <span>1</span>
-                            </span>
-                          </template>
-                          <template v-else>
-                            <ArrowsUpDownIcon class="h-3.5 w-3.5" />
-                          </template>
-                        </span>
+                          <span
+                            class="relative flex items-center justify-center rounded-md p-1 transition-opacity cursor-pointer outline-none"
+                            :class="{
+                              'opacity-100 bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300': isColumnSorted(column),
+                              'opacity-0 text-gray-400 group-hover:opacity-100 hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300': !isColumnSorted(column)
+                            }"
+                            role="button"
+                            tabindex="-1"
+                            :aria-label="t('common.tableToggleSort', { column: columnLabel(column) })"
+                            @mousedown.prevent.stop
+                            @click.stop="onSortIconClick(column, $event)"
+                          >
+                            <template v-if="isColumnSorted(column)">
+                              <span class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-1 text-[10px] font-semibold text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                <span>{{ columnSortOrder(column) === 'asc' ? '↑' : '↓' }}</span>
+                                <span v-if="showSortRanks">{{ columnSortRank(column) }}</span>
+                              </span>
+                            </template>
+                            <template v-else>
+                              <ArrowsUpDownIcon class="h-3.5 w-3.5" />
+                            </template>
+                          </span>
+                        </HoverTooltip>
                       </span>
                     </MenuButton>
                     <transition
@@ -188,9 +198,13 @@
                             <ChevronUpIcon class="h-4 w-4 text-gray-500 dark:text-gray-400" />
                             <span>{{ t('common.tableSortAscending') }}</span>
                             <CheckIcon
-                              v-if="isColumnSorted(column) && sortOrderValue === 'asc'"
+                              v-if="isColumnSorted(column) && columnSortOrder(column) === 'asc' && !showSortRanks"
                               class="ml-auto h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400"
                             />
+                            <span
+                              v-else-if="isColumnSorted(column) && columnSortOrder(column) === 'asc' && showSortRanks"
+                              class="ml-auto text-[10px] font-semibold text-indigo-600 dark:text-indigo-400"
+                            >{{ columnSortRank(column) }}</span>
                           </button>
                         </MenuItem>
                         <MenuItem v-slot="{ active }">
@@ -203,9 +217,13 @@
                             <ChevronDownIcon class="h-4 w-4 text-gray-500 dark:text-gray-400" />
                             <span>{{ t('common.tableSortDescending') }}</span>
                             <CheckIcon
-                              v-if="isColumnSorted(column) && sortOrderValue === 'desc'"
+                              v-if="isColumnSorted(column) && columnSortOrder(column) === 'desc' && !showSortRanks"
                               class="ml-auto h-4 w-4 flex-shrink-0 text-indigo-600 dark:text-indigo-400"
                             />
+                            <span
+                              v-else-if="isColumnSorted(column) && columnSortOrder(column) === 'desc' && showSortRanks"
+                              class="ml-auto text-[10px] font-semibold text-indigo-600 dark:text-indigo-400"
+                            >{{ columnSortRank(column) }}</span>
                           </button>
                         </MenuItem>
                         <MenuItem v-if="isColumnSorted(column)" v-slot="{ active }">
@@ -636,8 +654,19 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { ArrowsUpDownIcon, ChevronDownIcon, ChevronUpIcon, CheckIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import { formatRawValueForDisplay } from '@/utils/fieldDisplay'
 import { normalizeListPagination } from '@/utils/normalizeListPagination'
+import {
+  applyColumnSortClick,
+  applyExplicitColumnSort,
+  MAX_LIST_SORTS,
+  normalizeSortSpecs,
+  orderForField,
+  removeColumnSort,
+  sortRankForField,
+  type ListSortSpec
+} from '@/utils/listMultiSort'
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue'
 import ListColumnFilter from '@/components/common/ListColumnFilter.vue'
+import HoverTooltip from '@/components/common/HoverTooltip.vue'
 import { resolveColumnFilterConfig } from '@/platform/filters/columnFilterResolver'
 import type { FilterConfig } from '@/platform/filters/filterResolver'
 
@@ -687,7 +716,7 @@ const parseWidthValue = (value?: number | string) => {
 
 const emit = defineEmits<{
   (e: 'row-click', row: RowData, event: MouseEvent): void
-  (e: 'sort', payload: { key: string; order: SortState }): void
+  (e: 'sort', payload: { key: string; order: SortState; sorts: ListSortSpec[] }): void
   (e: 'select', selectedRows: RowData[]): void
   (e: 'bulk-action', payload: { action: string; selectedRows: RowData[] }): void
   (e: 'load-more'): void
@@ -709,6 +738,8 @@ const props = withDefaults(
     maxBodyHeight?: string | number
     sortField?: string
     sortOrder?: SortOrder
+    /** Multi-sort stack (primary first). When set, takes precedence over sortField/sortOrder. */
+    sorts?: ListSortSpec[]
     tableId?: string
     resizableColumns?: boolean
     loading?: boolean
@@ -753,6 +784,7 @@ const props = withDefaults(
     maxBodyHeight: undefined,
     sortField: '',
     sortOrder: 'asc',
+    sorts: () => [],
     tableId: '',
     resizableColumns: true,
     loading: false,
@@ -1577,42 +1609,91 @@ onActivated(() => {
   })
 })
 
-const sortFieldValue = computed(() => props.sortField ?? '')
-const sortOrderValue = computed(() => props.sortOrder ?? 'asc')
+const activeSorts = computed((): ListSortSpec[] => {
+  if (Array.isArray(props.sorts) && props.sorts.length > 0) {
+    return normalizeSortSpecs(props.sorts)
+  }
+  if (props.sortField) {
+    return normalizeSortSpecs([{ field: props.sortField, order: props.sortOrder ?? 'asc' }])
+  }
+  return []
+})
 
-const isColumnSorted = (column: ColumnDef) =>
-  isColumnSortable(column) && sortKeyForColumn(column) === sortFieldValue.value
+const showSortRanks = computed(() => activeSorts.value.length > 1)
+
+const isColumnSorted = (column: ColumnDef) => {
+  if (!isColumnSortable(column)) return false
+  const key = sortKeyForColumn(column)
+  return Boolean(key && orderForField(activeSorts.value, key))
+}
+
+const sortIconTooltip = (column: ColumnDef): string => {
+  if (activeSorts.value.length === 0) return ''
+  if (isColumnSorted(column)) return ''
+  if (activeSorts.value.length >= MAX_LIST_SORTS) return ''
+  return t('common.tableMultiSortAddHint')
+}
+
+const columnSortOrder = (column: ColumnDef): SortOrder | null => {
+  const key = sortKeyForColumn(column)
+  return key ? orderForField(activeSorts.value, key) : null
+}
+
+const columnSortRank = (column: ColumnDef): number | null => {
+  const key = sortKeyForColumn(column)
+  return key ? sortRankForField(activeSorts.value, key) : null
+}
 
 const ariaSortForColumn = (column: ColumnDef) => {
   if (!isColumnSortable(column)) return 'none'
-  if (!isColumnSorted(column)) return 'none'
-  return sortOrderValue.value === 'asc' ? 'ascending' : 'descending'
+  const order = columnSortOrder(column)
+  if (!order) return 'none'
+  return order === 'asc' ? 'ascending' : 'descending'
 }
 
-const toggleSort = (column: ColumnDef) => {
+const emitSorts = (sorts: ListSortSpec[]) => {
+  const primary = sorts[0]
+  emit('sort', {
+    key: primary?.field ?? '',
+    order: primary?.order ?? null,
+    sorts
+  })
+}
+
+const toggleSort = (column: ColumnDef, event?: MouseEvent) => {
   if (!isColumnSortable(column)) return
   const key = sortKeyForColumn(column)
   if (!key) return
 
-  const nextOrder: SortOrder = isColumnSorted(column)
-    ? (sortOrderValue.value === 'asc' ? 'desc' : 'asc')
-    : 'asc'
+  const next = applyColumnSortClick(activeSorts.value, key, {
+    additive: Boolean(event?.shiftKey)
+  })
+  emitSorts(next)
+}
 
-  emit('sort', { key, order: nextOrder })
+/** Sort icon is mouse-first; avoid sticky focus so Shift later doesn't paint a focus ring. */
+const onSortIconClick = (column: ColumnDef, event: MouseEvent) => {
+  toggleSort(column, event)
+  const target = event.currentTarget
+  if (target instanceof HTMLElement) target.blur()
+  const active = document.activeElement
+  if (active instanceof HTMLElement && active !== document.body) {
+    active.blur()
+  }
 }
 
 const applyExplicitSort = (column: ColumnDef, order: SortOrder) => {
   if (!isColumnSortable(column)) return
   const key = sortKeyForColumn(column)
   if (!key) return
-  emit('sort', { key, order })
+  emitSorts(applyExplicitColumnSort(activeSorts.value, key, order))
 }
 
 const clearSort = (column: ColumnDef) => {
   if (!isColumnSortable(column)) return
   const key = sortKeyForColumn(column)
   if (!key) return
-  emit('sort', { key, order: null })
+  emitSorts(removeColumnSort(activeSorts.value, key))
 }
 
 const rowKey = computed(() => props.rowKey)

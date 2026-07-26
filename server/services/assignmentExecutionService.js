@@ -997,10 +997,8 @@ async function runImmediateAssignmentForLiveChatSession({
   const moduleKey = 'live_chat_sessions';
   const recordId = toIdString(sessionRecord._id);
 
-  if (
-    sessionRecord.assignedAgentId
-    && ['assigned', 'active'].includes(String(sessionRecord.lifecycleStatus || ''))
-  ) {
+  // Any existing owner blocks auto-routing (including claim-on-reply races).
+  if (sessionRecord.assignedAgentId) {
     return { executed: false, reason: 'already_assigned', assigned: false };
   }
 
@@ -1072,28 +1070,50 @@ async function runImmediateAssignmentForLiveChatSession({
   const canAssign = state === 'assigned' && mongoose.Types.ObjectId.isValid(nextOwnerId);
   const ownerChanged = canAssign && previousOwnerId !== nextOwnerId;
 
+  let didAssign = false;
   if (ownerChanged) {
     const {
       LIVE_CHAT_ASSIGNED_BY,
       applySessionAgentAssignment,
     } = require('./liveChatSessionAssignmentTrackingService');
-    await applySessionAgentAssignment({
+    const applyResult = await applySessionAgentAssignment({
       organizationId,
       sessionId: sessionRecord._id,
       agentId: nextOwnerId,
       assignedBy: LIVE_CHAT_ASSIGNED_BY.QUEUE_ROUTING,
       performedByUserId: triggeredBy || actorId || null,
-      previousAgentId: previousOwnerId,
+      previousAgentId: null,
       lifecycleStatus: 'assigned',
       metadata: {
+        claimOnly: true,
         ruleId: simulation.ruleId,
         assignedGroupId,
         strategyDetail: simulation?.outcome?.reason || null,
       },
     });
-    adapter.setOwner(sessionRecord, nextOwnerId);
-    sessionRecord.lifecycleStatus = 'assigned';
-    sessionRecord.updatedAt = new Date();
+    if (applyResult.applied) {
+      didAssign = true;
+      adapter.setOwner(sessionRecord, nextOwnerId);
+      sessionRecord.lifecycleStatus = 'assigned';
+      sessionRecord.updatedAt = new Date();
+    } else if (
+      applyResult.reason === 'assignment_conflict'
+      || applyResult.reason === 'already_assigned'
+    ) {
+      return {
+        executed: true,
+        assigned: false,
+        ownerChanged: false,
+        previousOwnerId,
+        newOwnerId: previousOwnerId,
+        assignedGroupId: null,
+        ruleId: simulation.ruleId,
+        outcome: simulation.outcome,
+        reason: applyResult.reason,
+        agentId: null,
+        queueId: sessionRecord.queueId || null,
+      };
+    }
   } else if (simulation.matched && state === 'queued') {
     sessionRecord.lifecycleStatus = 'waiting';
     sessionRecord.updatedAt = new Date();
@@ -1112,10 +1132,10 @@ async function runImmediateAssignmentForLiveChatSession({
     triggerSource,
     ruleId: simulation.ruleId,
     previousOwnerId,
-    newOwnerId: canAssign ? nextOwnerId : previousOwnerId,
+    newOwnerId: didAssign ? nextOwnerId : previousOwnerId,
     assignedGroupId,
     status:
-      state === 'assigned' && ownerChanged
+      state === 'assigned' && didAssign
         ? 'assigned'
         : state === 'queued'
           ? 'queued'
@@ -1125,21 +1145,21 @@ async function runImmediateAssignmentForLiveChatSession({
       ruleSetVersion: ruleSet.version,
       trace: simulation.trace,
       outcome: simulation.outcome,
-      ownerChanged,
+      ownerChanged: didAssign,
     },
   });
 
   return {
     executed: true,
-    assigned: ownerChanged,
-    ownerChanged,
+    assigned: didAssign,
+    ownerChanged: didAssign,
     previousOwnerId,
-    newOwnerId: canAssign ? nextOwnerId : previousOwnerId,
+    newOwnerId: didAssign ? nextOwnerId : previousOwnerId,
     assignedGroupId,
     ruleId: simulation.ruleId,
     outcome: simulation.outcome,
-    reason: ownerChanged ? 'assigned' : state,
-    agentId: ownerChanged ? nextOwnerId : null,
+    reason: didAssign ? 'assigned' : state,
+    agentId: didAssign ? nextOwnerId : null,
     queueId: sessionRecord.queueId || null,
   };
 }

@@ -1276,6 +1276,7 @@ import {
   extractRecordUpdatedAtMs,
   recordRecordDetailFingerprint,
 } from '@/utils/recordDetailFreshness';
+import { dispatchRecordUpdated } from '@/utils/moduleListFreshness';
 import {
   normalizeSystemActivityEvent,
   normalizeCommentActivityEvent,
@@ -1472,6 +1473,7 @@ const persistRecordTagsForDeal = async (cleaned) => {
   } else {
     deal.value.tags = cleaned;
   }
+  dispatchRecordUpdated({ moduleKey: 'deals', recordId: deal.value._id, record: deal.value });
 };
 
 const { getTagChipClass: getDealTagChipClass } = useRecordTags(deal, {
@@ -1884,6 +1886,7 @@ const dealSectionContext = computed(() => ({
       amountMode: payload.deal.amountMode ?? deal.value.amountMode,
       linesGrandTotal: payload.deal.linesGrandTotal ?? deal.value.linesGrandTotal
     };
+    dispatchRecordUpdated({ moduleKey: 'deals', recordId: deal.value._id, record: deal.value });
   },
   openTagsEditor: (...args) => openTagPopoverFromField(...args),
   getTagChipClass: getDealTagChipClass,
@@ -1952,6 +1955,7 @@ const handleDealDescriptionSave = async (value) => {
     } else {
       await fetchDeal();
     }
+    dispatchRecordUpdated({ moduleKey: 'deals', recordId: deal.value?._id, record: deal.value });
   } catch (err) {
     console.error('Failed to save deal description:', err);
   }
@@ -1972,6 +1976,7 @@ const handleDealTitleSave = async (value) => {
     } else {
       await fetchDeal();
     }
+    dispatchRecordUpdated({ moduleKey: 'deals', recordId: deal.value?._id, record: deal.value });
   } catch (err) {
     console.error('Failed to save deal title:', err);
   }
@@ -2023,6 +2028,7 @@ const handleDealDetailFieldSave = async (fieldKey, value) => {
     } else {
       await fetchDeal();
     }
+    dispatchRecordUpdated({ moduleKey: 'deals', recordId: deal.value?._id, record: deal.value });
     await refreshRelatedRecordsAfterLookupFieldSave({
       moduleKey: 'deals',
       fieldKey,
@@ -3335,6 +3341,7 @@ const removeTagFromEmailThread = async ({ threadId, tag }) => {
 const handleDealUpdated = () => {
   showEditModal.value = false;
   fetchDeal();
+  dispatchRecordUpdated({ moduleKey: 'deals', recordId: deal.value?._id, record: deal.value });
 };
 
 const handleCopyUrl = async () => {
@@ -3665,6 +3672,7 @@ const commentMentionsCurrentUser = (event) => {
     const mentionByIdRegex = new RegExp(`@\\[[^\\]]+\\]\\(user:${escapeRegExp(userId)}\\)`, 'i');
     if (mentionByIdRegex.test(content)) return true;
   }
+  if (/@\[[^\]]+\]\(all:[^)]+\)/i.test(content)) return true;
   const names = [
     [authStore.user?.firstName, authStore.user?.lastName].filter(Boolean).join(' ').trim(),
     authStore.user?.username,

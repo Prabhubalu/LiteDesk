@@ -311,5 +311,62 @@ module.exports = {
   listSections,
   createSection,
   patchSection,
-  deleteSection
+  deleteSection,
+  reorderSalesOrderSectionsHandler,
+  patchSalesOrderSectionDiscountsHandler
 };
+
+function sectionDraftErrorStatus(err) {
+  if (
+    err?.code === 'VALIDATION' ||
+    err?.code === 'NOT_FOUND' ||
+    err?.code === 'SALES_ORDER_NOT_DRAFT' ||
+    err?.code === 'SECTION_NOT_FOUND' ||
+    err?.code === 'SECTION_LOCKED' ||
+    err?.code === 'SECTION_HAS_LINES'
+  ) {
+    return 400;
+  }
+  return 500;
+}
+
+async function reorderSalesOrderSectionsHandler(req, res) {
+  try {
+    const { reorderSalesOrderSections } = require('../services/salesOrderCommercialDraftService');
+    const result = await reorderSalesOrderSections({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      userId: req.user._id,
+      orders: req.body?.orders
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(sectionDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to reorder sales order sections',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}
+
+async function patchSalesOrderSectionDiscountsHandler(req, res) {
+  try {
+    const { patchSalesOrderSectionDiscounts } = require('../services/salesOrderCommercialDraftService');
+    const result = await patchSalesOrderSectionDiscounts({
+      organizationId: req.user.organizationId,
+      salesOrderRef: req.params.id,
+      sectionId: req.params.sectionId,
+      userId: req.user._id,
+      body: req.body
+    });
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    return res.status(sectionDraftErrorStatus(err)).json({
+      success: false,
+      message: err.message || 'Failed to update section discounts',
+      code: err?.code || 'UNKNOWN',
+      details: err?.details || null
+    });
+  }
+}

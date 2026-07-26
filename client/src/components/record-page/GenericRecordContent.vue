@@ -1128,6 +1128,7 @@ import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { getModuleRecordCrudPathBase, getModuleRecordDetailPath } from '@/utils/moduleRecordApiPath';
 import { resolveRecordDetailRefreshOnActivate } from '@/utils/recordDetailRefreshPolicy';
 import { extractRecordUpdatedAtMs, recordRecordDetailFingerprint } from '@/utils/recordDetailFreshness';
+import { dispatchRecordUpdated } from '@/utils/moduleListFreshness';
 import { canShowFormResponses } from '@/utils/engagementFormDisplay';
 import { canEditForm, canHardDeleteForm } from '@/utils/formEditPermissions';
 import {
@@ -1614,12 +1615,23 @@ const formResponsesPagination = ref({
   totalPages: 1
 });
 
+function notifyListRecordUpdated(updatedRecord = null) {
+  dispatchRecordUpdated({
+    moduleKey: moduleKeyLower.value || props.moduleKey,
+    recordId: props.recordId,
+    record: updatedRecord || record.value,
+    appKey: route.meta?.appKey || ''
+  });
+}
+
 async function updateRecordFields(payload) {
   const path = `${recordCrudPathBase.value}/${props.recordId}`;
-  if (moduleKeyLower.value === 'documents') {
-    return apiClient.patch(path, payload);
-  }
-  return apiClient.put(path, payload);
+  const response = moduleKeyLower.value === 'documents'
+    ? await apiClient.patch(path, payload)
+    : await apiClient.put(path, payload);
+  const updatedRecord = response?.data?.data ?? response?.data ?? null;
+  notifyListRecordUpdated(updatedRecord);
+  return response;
 }
 const isPeopleModule = computed(() => moduleKeyLower.value === 'people');
 
@@ -1987,6 +1999,9 @@ const persistRecordTags = async (cleaned) => {
       record.value.tags = Array.isArray(response.data.tags) ? response.data.tags : cleaned;
     } else {
       record.value.tags = cleaned;
+    }
+    if (supportsDedicatedTagsEndpoint) {
+      notifyListRecordUpdated(record.value);
     }
   } catch (e) {
     console.error('Save record tags error:', e);
@@ -2623,6 +2638,7 @@ const genericAdapter = computed(() => {
           record.value.salutation = next.salutation;
           if (fullName) record.value.name = fullName;
         }
+        notifyListRecordUpdated(record.value);
         await refreshRecordActivity();
         return;
       }
@@ -2654,6 +2670,7 @@ const genericAdapter = computed(() => {
           record.value.last_name = next.last_name;
           if (fullName) record.value.name = fullName;
         }
+        notifyListRecordUpdated(record.value);
         await refreshRecordActivity();
         return;
       }
@@ -2677,6 +2694,7 @@ const genericAdapter = computed(() => {
             Object.assign(record.value, updatedRecord);
           }
         }
+        notifyListRecordUpdated(record.value);
         await refreshRecordActivity();
         return;
       }
@@ -3589,6 +3607,16 @@ function handleSectionUpdated(event) {
       return;
     }
     if (payload?.type === 'line-deleted') {
+      if (
+        applyQuoteLineDeleteToRecord(record.value, {
+          deletedLine: payload.deletedLine || payload.deleted,
+          totals: payload.totals,
+          sections: payload.sections,
+          lineIdField: 'salesOrderLineId'
+        })
+      ) {
+        return;
+      }
       if (payload.totals) Object.assign(record.value, payload.totals);
       if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
       if (payload.deleted && Array.isArray(record.value.lines)) {
@@ -3601,15 +3629,23 @@ function handleSectionUpdated(event) {
       }
       return;
     }
+    if (payload?.type === 'lines-added') {
+      applyQuoteLinesAddToRecord(record.value, {
+        lines: payload.lines,
+        totals: payload.totals,
+        sections: payload.sections,
+        lineIdField: 'salesOrderLineId'
+      });
+      return;
+    }
     if (payload?.type === 'line-updated') {
-      if (payload.totals) Object.assign(record.value, payload.totals);
-      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
-      if (payload.line && Array.isArray(record.value.lines)) {
-        const idx = record.value.lines.findIndex(
-          (row) => String(row.salesOrderLineId) === String(payload.line.salesOrderLineId)
-        );
-        if (idx >= 0) record.value.lines[idx] = payload.line;
-      }
+      applyQuoteLinesMutationToRecord(record.value, {
+        line: payload.line,
+        totals: payload.totals,
+        sections: payload.sections,
+        lineIdField: 'salesOrderLineId',
+        sectionUuidField: 'salesOrderSectionId'
+      });
       return;
     }
     if (payload?.type === 'sections-updated') {
@@ -3630,6 +3666,16 @@ function handleSectionUpdated(event) {
       return;
     }
     if (payload?.type === 'line-deleted') {
+      if (
+        applyQuoteLineDeleteToRecord(record.value, {
+          deletedLine: payload.deletedLine || payload.deleted,
+          totals: payload.totals,
+          sections: payload.sections,
+          lineIdField: 'invoiceLineId'
+        })
+      ) {
+        return;
+      }
       if (payload.totals) Object.assign(record.value, payload.totals);
       if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
       if (payload.deleted && Array.isArray(record.value.lines)) {
@@ -3642,15 +3688,23 @@ function handleSectionUpdated(event) {
       }
       return;
     }
+    if (payload?.type === 'lines-added') {
+      applyQuoteLinesAddToRecord(record.value, {
+        lines: payload.lines,
+        totals: payload.totals,
+        sections: payload.sections,
+        lineIdField: 'invoiceLineId'
+      });
+      return;
+    }
     if (payload?.type === 'line-updated') {
-      if (payload.totals) Object.assign(record.value, payload.totals);
-      if (Array.isArray(payload.sections)) record.value.sections = payload.sections;
-      if (payload.line && Array.isArray(record.value.lines)) {
-        const idx = record.value.lines.findIndex(
-          (row) => String(row.invoiceLineId) === String(payload.line.invoiceLineId)
-        );
-        if (idx >= 0) record.value.lines[idx] = payload.line;
-      }
+      applyQuoteLinesMutationToRecord(record.value, {
+        line: payload.line,
+        totals: payload.totals,
+        sections: payload.sections,
+        lineIdField: 'invoiceLineId',
+        sectionUuidField: 'invoiceSectionId'
+      });
       return;
     }
     if (payload?.type === 'sections-updated') {
@@ -4546,6 +4600,7 @@ function handleTitleSave(value) {
       record.value.name = title;
       if (firstName !== undefined) record.value.first_name = firstName;
       if (lastName !== undefined) record.value.last_name = lastName;
+      notifyListRecordUpdated(record.value);
     }).catch((e) => console.error('Save people title error:', e));
     return;
   }
@@ -4555,6 +4610,7 @@ function handleTitleSave(value) {
       .put(`${recordCrudPathBase.value}/${props.recordId}`, { title })
       .then(() => {
         if (record.value) record.value.title = title;
+        notifyListRecordUpdated(record.value);
       })
       .catch((e) => console.error('Save case title error:', e));
     return;
@@ -4572,6 +4628,7 @@ function handleTitleSave(value) {
   // Other modules: only update the generic name/title field.
   apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, { name: title }).then(() => {
     if (record.value) record.value.name = title;
+    notifyListRecordUpdated(record.value);
   }).catch((e) => console.error('Save title error:', e));
 }
 
@@ -4789,6 +4846,7 @@ async function handleArchiveForm() {
     } else if (record.value) {
       record.value.status = 'Archived';
     }
+    notifyListRecordUpdated(record.value);
     formAnalytics.value = null;
     formResponses.value = [];
   } catch (err) {

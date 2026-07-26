@@ -17,7 +17,12 @@ export function useLiveChatRealtimeSync({
 
   function shouldRefreshList(detail) {
     const eventType = String(detail?.eventType || '');
-    return eventType === 'LIVE_CHAT_SESSION_STARTED' || eventType === 'LIVE_CHAT_MESSAGE_RECEIVED';
+    return (
+      eventType === 'LIVE_CHAT_SESSION_STARTED'
+      || eventType === 'LIVE_CHAT_MESSAGE_RECEIVED'
+      || eventType === 'LIVE_CHAT_SESSION_ASSIGNED'
+      || eventType === 'LIVE_CHAT_SESSION_ENDED'
+    );
   }
 
   function scheduleSessionsReload() {

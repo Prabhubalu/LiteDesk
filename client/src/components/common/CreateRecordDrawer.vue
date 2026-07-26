@@ -136,17 +136,19 @@
                                   v-else-if="isQuoteModule && commercialFormRecord"
                                   :record="commercialFormRecord"
                                   :context="commercialLinesFormContext"
-                                  @updated="handleQuoteLinesUpdated"
+                                  @updated="handleCommercialLinesUpdated"
                                 />
                                 <InvoiceLinesRecordSection
                                   v-else-if="isInvoiceModule && commercialFormRecord"
                                   :record="commercialFormRecord"
                                   :context="commercialLinesFormContext"
+                                  @updated="handleCommercialLinesUpdated"
                                 />
                                 <SalesOrderLinesRecordSection
                                   v-else-if="isSalesOrderModule && commercialFormRecord"
                                   :record="commercialFormRecord"
                                   :context="commercialLinesFormContext"
+                                  @updated="handleCommercialLinesUpdated"
                                 />
                                 <p
                                   v-else
@@ -1312,7 +1314,17 @@ function mergeCommercialFormRecordIntoFormData(record) {
   applyOrgCurrencyToCreateForm();
 }
 
-function handleQuoteLinesUpdated(payload) {
+function commercialLinesPatchFields() {
+  if (isSalesOrderModule.value) {
+    return { lineIdField: 'salesOrderLineId', sectionUuidField: 'salesOrderSectionId' };
+  }
+  if (isInvoiceModule.value) {
+    return { lineIdField: 'invoiceLineId', sectionUuidField: 'invoiceSectionId' };
+  }
+  return { lineIdField: 'quoteLineId', sectionUuidField: 'quoteSectionId' };
+}
+
+function handleCommercialLinesUpdated(payload) {
   const record = commercialFormRecord.value;
   if (!record) return;
   if (payload?.type && payload.type !== 'soft-refresh') {
@@ -1320,9 +1332,9 @@ function handleQuoteLinesUpdated(payload) {
   }
 
   const bumpRecord = () => {
-    // New object identity so totals / discount watchers re-run in the lines section
     commercialFormRecord.value = { ...record };
   };
+  const patchFields = commercialLinesPatchFields();
 
   if (payload?.type === 'soft-refresh') {
     void handleCommercialLinesSectionUpdated(payload);
@@ -1333,6 +1345,7 @@ function handleQuoteLinesUpdated(payload) {
       deletedLine: payload.deletedLine,
       totals: payload.totals,
       sections: payload.sections,
+      lineIdField: patchFields.lineIdField
     });
     bumpRecord();
     return;
@@ -1342,6 +1355,7 @@ function handleQuoteLinesUpdated(payload) {
       lines: payload.lines,
       totals: payload.totals,
       sections: payload.sections,
+      lineIdField: patchFields.lineIdField
     });
     bumpRecord();
     return;
@@ -1351,6 +1365,8 @@ function handleQuoteLinesUpdated(payload) {
       line: payload.line,
       totals: payload.totals,
       sections: payload.sections,
+      lineIdField: patchFields.lineIdField,
+      sectionUuidField: patchFields.sectionUuidField
     });
     bumpRecord();
     return;
@@ -1359,7 +1375,7 @@ function handleQuoteLinesUpdated(payload) {
     applyQuoteLinesRecalculateToRecord(record, {
       lines: payload.lines,
       totals: payload.totals,
-      sections: payload.sections,
+      sections: payload.sections
     });
     bumpRecord();
     return;
@@ -1371,7 +1387,7 @@ function handleQuoteLinesUpdated(payload) {
       quote: payload.quote,
       lines: payload.lines,
       totals: payload.totals,
-      sections: payload.sections,
+      sections: payload.sections
     })
   ) {
     bumpRecord();
@@ -1385,7 +1401,7 @@ function handleQuoteLinesUpdated(payload) {
       applyQuoteLinesRecalculateToRecord(record, {
         lines: payload.lines,
         totals: payload.totals,
-        sections: payload.sections,
+        sections: payload.sections
       });
     }
     bumpRecord();
@@ -2489,9 +2505,10 @@ const handleSubmit = async () => {
         }));
       }
       
-      // Dispatch global event to refresh list views for all modules
+        // Dispatch global event to refresh list views for all modules
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('arivu:record-created', {
+        const eventName = isEditing.value ? 'arivu:record-updated' : 'arivu:record-created';
+        window.dispatchEvent(new CustomEvent(eventName, {
           detail: { moduleKey: props.moduleKey, record: savedRecord }
         }));
       }

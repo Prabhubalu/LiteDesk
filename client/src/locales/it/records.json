@@ -4234,5 +4234,9 @@
   "linesDocChargesPreview": {
     "message": "Selected charges: {amount}",
     "description": "Live preview of selected document charges before save"
+  },
+  "commentMentionAll": {
+    "message": "Everyone",
+    "description": "Mention item @all badge — notifies all users in the instance"
   }
 }

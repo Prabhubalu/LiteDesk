@@ -145,13 +145,16 @@ async function getInvoices(req, res) {
       'invoiceDate',
       'postedAt'
     ]);
-    const sortBy = allowedSortFields.has(String(req.query?.sortBy || ''))
-      ? String(req.query.sortBy)
-      : 'updatedAt';
-    const sortOrder = req.query?.sortOrder === 'asc' ? 1 : -1;
+    const { parseListSort } = require('../utils/parseListSort');
+    const { sortObject } = parseListSort(req.query, {
+      allowedFields: allowedSortFields,
+      defaultField: 'updatedAt',
+      defaultOrder: 'desc',
+      tieBreaker: '_id'
+    });
 
     const [rows, total, statusBreakdown] = await Promise.all([
-      Invoice.find(q).sort({ [sortBy]: sortOrder }).skip(skip).limit(limit).lean(),
+      Invoice.find(q).sort(sortObject).skip(skip).limit(limit).lean(),
       Invoice.countDocuments(q),
       computeInvoiceListStatistics(q)
     ]);

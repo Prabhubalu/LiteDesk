@@ -53,6 +53,11 @@ export function compileOperatorValueForApi(
     if (filter.filterType === 'entity' && filter.key === 'organization') return 'has';
     return '__not_empty__';
   }
+  if (operator === 'is_any_of') {
+    if (Array.isArray(value)) return value;
+    if (value == null || value === '') return [];
+    return [value];
+  }
   return value;
 }
 

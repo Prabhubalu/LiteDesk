@@ -32,9 +32,10 @@ function onRecordCreated(event) {
 
 function onRecordUpdated(event) {
   const moduleKey = event?.detail?.moduleKey;
+  const appKey = event?.detail?.appKey || '';
   const record = event?.detail?.record;
   const recordId = record?._id || record?.id || event?.detail?.recordId;
-  markDirtyFromModuleKey(moduleKey);
+  markDirtyFromModuleKey(moduleKey, appKey);
   if (moduleKey && recordId) {
     markRecordDetailDirty(moduleKey, recordId);
   }

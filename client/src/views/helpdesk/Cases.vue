@@ -463,8 +463,8 @@ const fetchKanbanCases = async () => {
     if (moduleListSearch?.trim()) params.search = moduleListSearch.trim();
     params.limit = 500;
     params.page = 1;
-    params.sortBy = 'status';
-    params.sortOrder = 'asc';
+    params.sortBy = 'createdAt';
+    params.sortDir = 'desc';
 
     const response = await apiClient.get('/helpdesk/cases', { params });
     if (response?.success) {

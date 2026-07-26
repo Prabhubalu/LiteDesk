@@ -94,6 +94,12 @@
                   <p class="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
                     {{ messagePreview(session) }}
                   </p>
+                  <p
+                    v-if="section.showAssignee"
+                    class="mt-0.5 truncate text-[11px] text-gray-400 dark:text-gray-500"
+                  >
+                    {{ assigneeLabel(session) }}
+                  </p>
                 </div>
 
                 <span
@@ -157,7 +163,7 @@ const waitingInQueue = computed(() =>
 
 const allOpenSessions = computed(() => [...openSessions.value]);
 
-const myQueueCount = computed(() => myQueueSessions.value.length);
+const myQueueCount = computed(() => myQueueSessions.value.length + waitingInQueue.value.length);
 const allQueueCount = computed(() => allOpenSessions.value.length);
 
 const queueTabs = computed(() => [
@@ -179,17 +185,27 @@ const visibleSections = computed(() => {
         id: 'all-open',
         label: t('liveChat.sectionAllOpen'),
         sessions: allOpenSessions.value,
+        showAssignee: true,
       });
     }
     return sections;
   }
 
   const sections = [];
+  if (waitingInQueue.value.length) {
+    sections.push({
+      id: 'waiting',
+      label: t('liveChat.sectionWaitingInQueue'),
+      sessions: waitingInQueue.value,
+      showAssignee: false,
+    });
+  }
   if (myQueueSessions.value.length) {
     sections.push({
       id: 'my-queue',
-      label: '',
+      label: t('liveChat.sectionAssignedToMe'),
       sessions: myQueueSessions.value,
+      showAssignee: false,
     });
   }
   return sections;
@@ -232,6 +248,17 @@ function lifecycleLabel(session) {
     return t('liveChat.unassigned');
   }
   return t(`liveChat.lifecycle.${status}`, status);
+}
+
+function assigneeLabel(session) {
+  if (!session?.assignedAgentId) {
+    return t('liveChat.unassigned');
+  }
+  const agent = session?.assignedAgent;
+  const name = String(agent?.displayName || '').trim()
+    || [agent?.firstName, agent?.lastName].filter(Boolean).join(' ').trim()
+    || String(agent?.email || '').trim();
+  return t('liveChat.assignedToAgent', { agent: name || t('liveChat.agent') });
 }
 
 function visitorPresenceDotClass(session) {

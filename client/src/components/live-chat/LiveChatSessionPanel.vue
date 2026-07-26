@@ -73,7 +73,7 @@
             {{ t('liveChat.openLinkedCase') }}
           </RouterLink>
           <button
-            v-if="helpdeskEnabled && canReply && sessionOpen && !hasLinkedCase"
+            v-if="helpdeskEnabled && canHandleSession && sessionOpen && !hasLinkedCase"
             type="button"
             class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
             :disabled="linkingCase"
@@ -82,7 +82,7 @@
             {{ t('liveChat.linkCase') }}
           </button>
           <button
-            v-if="helpdeskEnabled && canReply && sessionOpen && !hasLinkedCase"
+            v-if="helpdeskEnabled && canHandleSession && sessionOpen && !hasLinkedCase"
             type="button"
             class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
             :disabled="creatingCase"
@@ -91,7 +91,7 @@
             {{ t('liveChat.createCase') }}
           </button>
           <button
-            v-if="salesEnabled && canReply && sessionOpen && !hasLinkedPerson"
+            v-if="salesEnabled && canHandleSession && sessionOpen && !hasLinkedPerson"
             type="button"
             class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
             :disabled="linkingPerson"
@@ -100,7 +100,7 @@
             {{ t('liveChat.linkPerson') }}
           </button>
           <button
-            v-if="salesEnabled && canReply && sessionOpen && !hasLinkedPerson"
+            v-if="salesEnabled && canHandleSession && sessionOpen && !hasLinkedPerson"
             type="button"
             class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
             :disabled="creatingLead"
@@ -109,7 +109,7 @@
             {{ t('liveChat.createLead') }}
           </button>
           <button
-            v-if="canReply && sessionOpen"
+            v-if="canHandleSession && sessionOpen"
             type="button"
             class="rounded-lg border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 dark:border-rose-900/50 dark:text-rose-300 dark:hover:bg-rose-950/30"
             @click="openEndSessionDialog"
@@ -201,14 +201,21 @@
     </div>
 
     <div
-      v-if="canReply && !sessionOpen"
+      v-if="isAssignedToOther && sessionOpen"
+      class="border-t border-gray-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-gray-800 dark:bg-amber-950/40 dark:text-amber-200 sm:px-6"
+    >
+      {{ t('liveChat.sessionAssignedViewOnly', { agent: assignedAgentDisplayName || t('liveChat.agent') }) }}
+    </div>
+
+    <div
+      v-else-if="canHandleSession && !sessionOpen"
       class="border-t border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300 sm:px-6"
     >
       {{ t('liveChat.sessionClosedHint') }}
     </div>
 
     <div
-      v-else-if="canReply && sessionOpen"
+      v-else-if="canHandleSession && sessionOpen"
       class="shrink-0 border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900 sm:px-6"
     >
       <LiveChatMessageComposer
@@ -453,8 +460,9 @@ import {
   liveChatVisitorTypeLabel,
   liveChatSessionPriorityLabel,
   liveChatSessionPriorityBadgeVariant,
+  liveChatAgentLabel,
 } from '@/utils/liveChatSessionDisplay';
-import { canTransferLiveChatSession } from '@/utils/liveChatPermissions';
+import { canHandleLiveChatSession, canTransferLiveChatSession } from '@/utils/liveChatPermissions';
 
 const props = defineProps({
   sessionId: { type: String, required: true },
@@ -517,6 +525,29 @@ const assignedAgentId = computed(() => {
   return id ? String(id) : '';
 });
 
+const sessionForOwnership = computed(() => ({
+  ...(props.session || {}),
+  ...(sessionMeta.value || {}),
+}));
+
+const canHandleSession = computed(() => {
+  if (!props.canReply || !sessionOpen.value) return false;
+  return canHandleLiveChatSession(authStore.user, sessionForOwnership.value);
+});
+
+const isAssignedToOther = computed(() => {
+  if (!assignedAgentId.value) return false;
+  return assignedAgentId.value !== String(currentUserId.value || '');
+});
+
+const assignedAgentDisplayName = computed(() => {
+  const agent = sessionMeta.value?.assignedAgent || props.session?.assignedAgent;
+  const name = String(agent?.displayName || '').trim()
+    || [agent?.firstName, agent?.lastName].filter(Boolean).join(' ').trim()
+    || String(agent?.email || '').trim();
+  return name || liveChatAgentLabel(agent, t);
+});
+
 const canClaimSession = computed(() => {
   if (!props.canReply || !sessionOpen.value) return false;
   if (assignedAgentId.value) return false;
@@ -525,8 +556,8 @@ const canClaimSession = computed(() => {
 });
 
 const canTransferSession = computed(() => {
-  if (!props.canReply || !sessionOpen.value) return false;
-  const session = sessionMeta.value || props.session || {};
+  if (!canHandleSession.value || !sessionOpen.value) return false;
+  const session = sessionForOwnership.value;
   return canTransferLiveChatSession(authStore.user, session);
 });
 
@@ -1252,7 +1283,7 @@ function cancelTypingPing() {
 }
 
 function pingTyping() {
-  if (!props.sessionId || !props.canReply) return;
+  if (!props.sessionId || !canHandleSession.value) return;
   if (typingTimer) clearTimeout(typingTimer);
   typingTimer = setTimeout(() => {
     typingTimer = null;
@@ -1292,9 +1323,13 @@ async function uploadComposerFiles(files) {
 
 function onComposerSendError(err) {
   const message = err?.response?.data?.message || err?.message || t('liveChat.sendFailed');
+  const status = Number(err?.response?.status || err?.status || 0);
   const timedOut = err?.name === 'AbortError' || /aborted/i.test(String(err?.message || ''));
   sendError.value = timedOut ? t('liveChat.sendFailed') : message;
-  if (err?.status === 409 && /closed/i.test(String(message))) {
+  if (status === 403 && /assigned to another agent/i.test(String(message))) {
+    void loadSessionMeta();
+  }
+  if (status === 409 && /closed/i.test(String(message))) {
     sessionMeta.value = {
       ...(sessionMeta.value || {}),
       status: 'closed',
@@ -1337,6 +1372,14 @@ async function sendReplyPayload(payload, { signal } = {}) {
 
   if (!res?.success) {
     throw new Error(res?.message || t('liveChat.sendFailed'));
+  }
+
+  if (!assignedAgentId.value && currentUserId.value) {
+    sessionMeta.value = {
+      ...(sessionMeta.value || {}),
+      assignedAgentId: currentUserId.value,
+      lifecycleStatus: 'active',
+    };
   }
 
   if (res.data) {
