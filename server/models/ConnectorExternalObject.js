@@ -32,11 +32,11 @@ const ConnectorExternalObjectSchema = new Schema(
 );
 
 ConnectorExternalObjectSchema.index(
-  { organizationId: 1, connectorKey: 1, entityType: 1, externalId: 1 },
+  { organizationId: 1, connectorKey: 1, entityType: 1, companyGuid: 1, externalId: 1 },
   { unique: true }
 );
 ConnectorExternalObjectSchema.index(
-  { organizationId: 1, connectorKey: 1, entityType: 1, arivuId: 1 },
+  { organizationId: 1, connectorKey: 1, entityType: 1, companyGuid: 1, arivuId: 1 },
   { unique: true }
 );
 

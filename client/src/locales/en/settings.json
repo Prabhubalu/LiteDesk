@@ -18928,12 +18928,12 @@
     "description": "Default activity row detail"
   },
   "tallyMappingTitle": {
-    "message": "Mapping review",
-    "description": "Low-confidence mappings section title"
+    "message": "Mapping Center",
+    "description": "Mapping center section title"
   },
   "tallyMappingDesc": {
-    "message": "Suggested mappings below confidence threshold need a quick review.",
-    "description": "Low-confidence mappings section description"
+    "message": "Link Tally masters to Arivu records per company. Review pending, browse linked, edit field maps, or ignore system objects.",
+    "description": "Mapping center description"
   },
   "tallyMappingConfidence": {
     "message": "{value}% confidence",
@@ -18944,8 +18944,8 @@
     "description": "Review mapping button"
   },
   "tallyMappingEmpty": {
-    "message": "No low-confidence mappings",
-    "description": "Empty mapping review list"
+    "message": "No rows for this tab/filters",
+    "description": "Empty mapping list"
   },
   "tallyMappingStubLabel": {
     "message": "Sales Account → Sales Ledger (sample)",
@@ -19066,6 +19066,170 @@
   "tallyMappingPending": {
     "message": "Needs mapping",
     "description": "Pending external object badge"
+  },
+  "tallyMappingSearch": {
+    "message": "Search name or external id…",
+    "description": "Mapping search"
+  },
+  "tallyMappingEntityAll": {
+    "message": "All entity types",
+    "description": "Entity filter all"
+  },
+  "tallyCompanySwitcher": {
+    "message": "Company",
+    "description": "Company switcher label"
+  },
+  "tallyCompanySelect": {
+    "message": "Select company…",
+    "description": "Company switcher placeholder"
+  },
+  "tallyCompanyRequired": {
+    "message": "Select a Tally company first",
+    "description": "Company required error"
+  },
+  "tallySyncItems": {
+    "message": "Sync items → Tally",
+    "description": "Push stock items button"
+  },
+  "tallySyncItemsQueued": {
+    "message": "Item sync queued for the selected company",
+    "description": "Item sync success"
+  },
+  "tallySyncParties": {
+    "message": "Sync parties → Tally",
+    "description": "Push parties button"
+  },
+  "tallySyncPartiesQueued": {
+    "message": "Party sync queued for the selected company",
+    "description": "Party sync success"
+  },
+  "tallyFanOutLinked": {
+    "message": "Auto-outbox to all linked companies",
+    "description": "Fan-out setting label"
+  },
+  "tallyFanOutLinkedHint": {
+    "message": "Off = only explicit company pushes (Sync items/parties). On = fan-out on party/item save to every linked company.",
+    "description": "Fan-out setting hint"
+  },
+  "tallySettingsSaved": {
+    "message": "Tally settings saved",
+    "description": "Settings save toast"
+  },
+  "tallyReconcileStock": {
+    "message": "Reconcile stock",
+    "description": "Stock reconcile button"
+  },
+  "tallyReconcileDone": {
+    "message": "Stock reconcile finished ({count} drift rows)",
+    "description": "Stock reconcile toast"
+  },
+  "tallyMapTabPending": {
+    "message": "Needs review",
+    "description": "Mapping tab"
+  },
+  "tallyMapTabLinked": {
+    "message": "Linked",
+    "description": "Mapping tab"
+  },
+  "tallyMapTabIgnored": {
+    "message": "Ignored",
+    "description": "Mapping tab"
+  },
+  "tallyMapTabFields": {
+    "message": "Field maps",
+    "description": "Mapping tab"
+  },
+  "tallyMapCreate": {
+    "message": "Create in Arivu",
+    "description": "Create action"
+  },
+  "tallyMapLink": {
+    "message": "Link",
+    "description": "Link action"
+  },
+  "tallyMapIgnore": {
+    "message": "Ignore",
+    "description": "Ignore action"
+  },
+  "tallyMapCreateOk": {
+    "message": "Created in Arivu and linked",
+    "description": "Create success"
+  },
+  "tallyMapLinkOk": {
+    "message": "Linked to Arivu record",
+    "description": "Link success"
+  },
+  "tallyMapLinkPrompt": {
+    "message": "Paste Arivu record id (party / variant / location ObjectId)",
+    "description": "Link prompt"
+  },
+  "tallyFieldMapArivu": {
+    "message": "Arivu field",
+    "description": "Field map column"
+  },
+  "tallyFieldMapTally": {
+    "message": "Tally XML tag",
+    "description": "Field map column"
+  },
+  "tallyFieldMapConfidence": {
+    "message": "Match",
+    "description": "Field map confidence"
+  },
+  "tallyFieldMapSave": {
+    "message": "Save field map",
+    "description": "Save field maps"
+  },
+  "tallyFieldMapSaved": {
+    "message": "Field map saved for this company",
+    "description": "Field map saved"
+  },
+  "tallyConflictsTitle": {
+    "message": "Conflicts",
+    "description": "Conflicts section"
+  },
+  "tallyConflictUseArivu": {
+    "message": "Keep Arivu",
+    "description": "Conflict resolve"
+  },
+  "tallyConflictUseTally": {
+    "message": "Keep Tally",
+    "description": "Conflict resolve"
+  },
+  "tallyConflictMerge": {
+    "message": "Merge",
+    "description": "Conflict resolve"
+  },
+  "tallyConflictResolved": {
+    "message": "Conflict updated",
+    "description": "Conflict resolved toast"
+  },
+  "tallyTdlGateMissing": {
+    "message": "Arivu TDL pack not detected. Load ArivuConnector.tdl (v1.0.0) in Tally before Sync now.",
+    "description": "TDL version gate"
+  },
+  "tallyAgentVersionGate": {
+    "message": "Agent {version} is outdated. Install Arivu Connector 0.3.0+ for full TDL pack support.",
+    "description": "Agent version gate"
+  },
+  "tallyE2eTitle": {
+    "message": "Verify setup (E2E)",
+    "description": "E2E checklist title"
+  },
+  "tallyE2eStep1": {
+    "message": "Bind a company and select it in the switcher",
+    "description": "E2E step"
+  },
+  "tallyE2eStep2": {
+    "message": "Sync now → Create/Link an item in Mapping Center",
+    "description": "E2E step"
+  },
+  "tallyE2eStep3": {
+    "message": "Confirm Linked tab shows Arivu id ↔ Tally external id",
+    "description": "E2E step"
+  },
+  "tallyE2eStep4": {
+    "message": "Optional: Sync items → Tally, then post an invoice and check Tally daybook",
+    "description": "E2E step"
   },
   "tallyOfflineNoAgent": {
     "message": "Agent offline — install the connector and pair from the tray icon on the Tally PC.",

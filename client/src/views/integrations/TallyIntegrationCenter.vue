@@ -6,7 +6,20 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.tallyCenterTitle') }}</h1>
           <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.tallyCenterDesc') }}</p>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+            <span class="whitespace-nowrap">{{ t('settings.tallyCompanySwitcher') }}</span>
+            <select
+              v-model="selectedCompanyGuid"
+              class="min-w-[12rem] rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              @change="onCompanyChange"
+            >
+              <option value="">{{ t('settings.tallyCompanySelect') }}</option>
+              <option v-for="c in activeCompanies" :key="c.companyGuid" :value="c.companyGuid">
+                {{ c.companyName }}
+              </option>
+            </select>
+          </label>
           <button
             type="button"
             class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -17,7 +30,7 @@
           <button
             type="button"
             class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-700 dark:text-indigo-300"
-            :disabled="syncBusy"
+            :disabled="syncBusy || syncBlocked"
             @click="runSync('dry_run')"
           >
             {{ t('settings.addonsTallyDryRun') }}
@@ -25,10 +38,34 @@
           <button
             type="button"
             class="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            :disabled="syncBusy || refreshing"
+            :disabled="syncBusy || refreshing || syncBlocked"
             @click="runSync('incremental')"
           >
             {{ syncBusy ? t('states.loading') : t('settings.addonsTallySyncNow') }}
+          </button>
+          <button
+            type="button"
+            class="rounded-lg border border-emerald-300 px-3 py-1.5 text-sm text-emerald-800 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-700 dark:text-emerald-200"
+            :disabled="syncBusy || syncBlocked || !selectedCompanyGuid"
+            @click="syncItemsToTally"
+          >
+            {{ t('settings.tallySyncItems') }}
+          </button>
+          <button
+            type="button"
+            class="rounded-lg border border-teal-300 px-3 py-1.5 text-sm text-teal-800 hover:bg-teal-50 disabled:opacity-50 dark:border-teal-700 dark:text-teal-200"
+            :disabled="syncBusy || syncBlocked || !selectedCompanyGuid"
+            @click="syncPartiesToTally"
+          >
+            {{ t('settings.tallySyncParties') }}
+          </button>
+          <button
+            type="button"
+            class="rounded-lg border border-sky-300 px-3 py-1.5 text-sm text-sky-800 hover:bg-sky-50 disabled:opacity-50 dark:border-sky-700 dark:text-sky-200"
+            :disabled="syncBusy || !selectedCompanyGuid"
+            @click="runReconcile"
+          >
+            {{ t('settings.tallyReconcileStock') }}
           </button>
           <button
             type="button"
@@ -43,6 +80,29 @@
     </div>
 
     <div class="mx-auto w-full max-w-6xl space-y-6 px-6 py-6">
+      <div
+        v-if="tdlGateMessage"
+        class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200"
+      >
+        {{ tdlGateMessage }}
+      </div>
+
+      <div
+        class="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-700 dark:bg-gray-800"
+      >
+        <label class="inline-flex items-center gap-2 text-gray-800 dark:text-gray-200">
+          <input
+            v-model="autoOutboxFanOut"
+            type="checkbox"
+            class="rounded border-gray-300"
+            :disabled="settingsSaving"
+            @change="saveFanOutSetting"
+          />
+          {{ t('settings.tallyFanOutLinked') }}
+        </label>
+        <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.tallyFanOutLinkedHint') }}</span>
+      </div>
+
       <div
         v-if="offlineBanner"
         class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200"
@@ -286,24 +346,211 @@
       </section>
 
       <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.tallyMappingTitle') }}</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.tallyMappingDesc') }}</p>
-        <ul v-if="pendingExternal.length" class="mt-4 space-y-3">
-          <li
-            v-for="row in pendingExternal.slice(0, 15)"
-            :key="row._id"
-            class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20"
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.tallyMappingTitle') }}</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.tallyMappingDesc') }}</p>
+          </div>
+          <p class="text-xs text-gray-500">{{ t('settings.tallyLogCount', { shown: mappingRows.length, total: mappingMeta.total }) }}</p>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2 border-b border-gray-100 pb-3 dark:border-gray-700">
+          <button
+            v-for="tab in mappingTabs"
+            :key="tab.id"
+            type="button"
+            class="rounded-lg px-3 py-1.5 text-xs font-medium"
+            :class="mappingTab === tab.id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'"
+            @click="setMappingTab(tab.id)"
           >
-            <div>
+            {{ tab.label }}
+          </button>
+        </div>
+
+        <div v-if="mappingTab !== 'fields'" class="mt-3 flex flex-wrap gap-2">
+          <input
+            v-model="mappingFilters.q"
+            type="search"
+            class="min-w-[12rem] flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            :placeholder="t('settings.tallyMappingSearch')"
+            @keydown.enter.prevent="loadMappingRows"
+          />
+          <select
+            v-model="mappingFilters.entityType"
+            class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+            @change="loadMappingRows"
+          >
+            <option value="">{{ t('settings.tallyMappingEntityAll') }}</option>
+            <option value="party">party</option>
+            <option value="item">item</option>
+            <option value="godown">godown</option>
+            <option value="voucher">voucher</option>
+            <option value="voucher_type">voucher_type</option>
+          </select>
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600"
+            @click="loadMappingRows"
+          >
+            {{ t('settings.tallyLogApply') }}
+          </button>
+        </div>
+
+        <div v-if="mappingTab === 'fields'" class="mt-4 space-y-3">
+          <div class="flex flex-wrap gap-2">
+            <select
+              v-model="fieldMapEntity"
+              class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+              @change="loadFieldMaps"
+            >
+              <option v-for="et in fieldMapEntities" :key="et" :value="et">{{ et }}</option>
+            </select>
+            <button
+              type="button"
+              class="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+              :disabled="!selectedCompanyGuid || fieldMapSaving"
+              @click="saveFieldMaps"
+            >
+              {{ t('settings.tallyFieldMapSave') }}
+            </button>
+          </div>
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 text-xs uppercase text-gray-500 dark:border-gray-700">
+                <th class="py-2">{{ t('settings.tallyFieldMapArivu') }}</th>
+                <th class="py-2">{{ t('settings.tallyFieldMapTally') }}</th>
+                <th class="py-2">{{ t('settings.tallyFieldMapConfidence') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="rule in fieldMapRules" :key="rule.arivuFieldKey" class="border-b border-gray-50 dark:border-gray-800">
+                <td class="py-2 font-mono text-xs">{{ rule.arivuFieldKey }}</td>
+                <td class="py-2">
+                  <select
+                    v-model="rule.externalFieldKey"
+                    class="w-full rounded border border-gray-300 px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-900"
+                  >
+                    <option :value="null">—</option>
+                    <option v-for="ext in fieldMapExternalOptions" :key="ext" :value="ext">{{ ext }}</option>
+                  </select>
+                </td>
+                <td class="py-2 text-xs text-gray-500">{{ rule.confidence != null ? Math.round(rule.confidence * 100) + '%' : '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ul v-else-if="mappingRows.length" class="mt-4 max-h-[28rem] space-y-2 overflow-y-auto">
+          <li
+            v-for="row in mappingRows"
+            :key="row._id"
+            class="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3"
+            :class="row.mappingStatus === 'pending'
+              ? 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20'
+              : row.mappingStatus === 'ignored'
+                ? 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/40'
+                : 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'"
+          >
+            <div class="min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-white">
-                {{ row.entityType }} · {{ row.metadata?.remotePayload?.name || row.externalId }}
+                {{ row.entityType }} · {{ row.displayName || row.metadata?.remotePayload?.name || row.externalId }}
               </p>
-              <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">{{ row.externalId }}</p>
+              <p class="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                {{ row.externalId }}
+                <span v-if="row.mappingStatus === 'linked'"> · Arivu {{ row.arivuId }}</span>
+              </p>
             </div>
-            <span class="text-xs text-amber-800 dark:text-amber-200">{{ t('settings.tallyMappingPending') }}</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs capitalize text-gray-600 dark:text-gray-300">{{ row.mappingStatus }}</span>
+              <template v-if="row.mappingStatus === 'pending'">
+                <button
+                  type="button"
+                  class="rounded border border-indigo-300 px-2 py-1 text-xs text-indigo-700 dark:border-indigo-700 dark:text-indigo-300"
+                  :disabled="mappingBusyId === row._id"
+                  @click="mapCreate(row)"
+                >
+                  {{ t('settings.tallyMapCreate') }}
+                </button>
+                <button
+                  type="button"
+                  class="rounded border border-gray-300 px-2 py-1 text-xs dark:border-gray-600"
+                  :disabled="mappingBusyId === row._id"
+                  @click="mapLinkPrompt(row)"
+                >
+                  {{ t('settings.tallyMapLink') }}
+                </button>
+                <button
+                  type="button"
+                  class="rounded border border-gray-300 px-2 py-1 text-xs dark:border-gray-600"
+                  :disabled="mappingBusyId === row._id"
+                  @click="mapIgnore(row)"
+                >
+                  {{ t('settings.tallyMapIgnore') }}
+                </button>
+              </template>
+            </div>
           </li>
         </ul>
         <p v-else class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.tallyMappingEmpty') }}</p>
+
+        <div v-if="mappingMeta.hasMore && mappingTab !== 'fields'" class="mt-3">
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600"
+            @click="loadMoreMapping"
+          >
+            {{ t('settings.tallyLogLoadMore') }}
+          </button>
+        </div>
+      </section>
+
+      <section
+        v-if="conflicts.length"
+        class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800"
+      >
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.tallyConflictsTitle') }}</h2>
+        <ul class="mt-4 space-y-3">
+          <li
+            v-for="c in conflicts"
+            :key="c._id"
+            class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 px-3 py-2 dark:border-amber-800"
+          >
+            <div>
+              <p class="text-sm font-medium">{{ c.entityType }} · {{ c.reason || c.externalId }}</p>
+              <p class="text-xs text-gray-500">{{ c.arivuId }} ↔ {{ c.externalId }}</p>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              <button
+                type="button"
+                class="rounded border px-2 py-1 text-xs"
+                @click="resolveConflict(c, 'use_arivu')"
+              >
+                {{ t('settings.tallyConflictUseArivu') }}
+              </button>
+              <button
+                type="button"
+                class="rounded border px-2 py-1 text-xs"
+                @click="resolveConflict(c, 'use_external')"
+              >
+                {{ t('settings.tallyConflictUseTally') }}
+              </button>
+              <button
+                type="button"
+                class="rounded border px-2 py-1 text-xs"
+                @click="resolveConflict(c, 'merge')"
+              >
+                {{ t('settings.tallyConflictMerge') }}
+              </button>
+              <button
+                type="button"
+                class="rounded border px-2 py-1 text-xs"
+                @click="resolveConflict(c, 'ignore')"
+              >
+                {{ t('settings.tallyMapIgnore') }}
+              </button>
+            </div>
+          </li>
+        </ul>
       </section>
 
       <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
@@ -324,6 +571,15 @@
             <span class="text-sm text-gray-800 dark:text-gray-200">{{ item.label }}</span>
           </li>
         </ul>
+        <div class="mt-4 rounded-lg border border-dashed border-gray-300 p-3 text-xs text-gray-600 dark:border-gray-600 dark:text-gray-400">
+          <p class="font-medium text-gray-800 dark:text-gray-200">{{ t('settings.tallyE2eTitle') }}</p>
+          <ol class="mt-2 list-decimal space-y-1 pl-4">
+            <li>{{ t('settings.tallyE2eStep1') }}</li>
+            <li>{{ t('settings.tallyE2eStep2') }}</li>
+            <li>{{ t('settings.tallyE2eStep3') }}</li>
+            <li>{{ t('settings.tallyE2eStep4') }}</li>
+          </ol>
+        </div>
       </section>
     </div>
   </div>
@@ -347,7 +603,18 @@ const dashboard = ref(null);
 const jobs = ref([]);
 const conflicts = ref([]);
 const companies = ref([]);
-const pendingExternal = ref([]);
+const selectedCompanyGuid = ref('');
+const autoOutboxFanOut = ref(true);
+const settingsSaving = ref(false);
+const mappingRows = ref([]);
+const mappingMeta = ref({ total: 0, hasMore: false, skip: 0 });
+const mappingTab = ref('pending');
+const mappingFilters = ref({ q: '', entityType: '' });
+const mappingBusyId = ref(null);
+const fieldMapEntity = ref('item');
+const fieldMapRules = ref([]);
+const fieldMapExternalOptions = ref([]);
+const fieldMapSaving = ref(false);
 const events = ref([]);
 const logRows = ref([]);
 const logLoading = ref(false);
@@ -363,6 +630,50 @@ const logFilters = ref({
 });
 const LOG_PAGE = 100;
 let pollTimer = null;
+
+const activeCompanies = computed(() =>
+  companies.value.filter((c) => c.enabled !== false && (c.status === 'active' || c.status === 'discovered' || !c.status))
+);
+
+const mappingTabs = computed(() => [
+  { id: 'pending', label: t('settings.tallyMapTabPending') },
+  { id: 'linked', label: t('settings.tallyMapTabLinked') },
+  { id: 'ignored', label: t('settings.tallyMapTabIgnored') },
+  { id: 'fields', label: t('settings.tallyMapTabFields') },
+]);
+
+const fieldMapEntities = [
+  'party',
+  'item',
+  'godown',
+  'invoice',
+  'payment',
+  'receipt',
+  'purchase',
+  'credit_note',
+  'debit_note',
+  'stock_journal',
+];
+
+const syncBlocked = computed(() => {
+  if (!selectedCompanyGuid.value && activeCompanies.value.length !== 1) return true;
+  if (tdlGateMessage.value) return true;
+  return false;
+});
+
+const tdlGateMessage = computed(() => {
+  const d = dashboard.value || {};
+  const health = d.health || {};
+  const tdlLoaded = health.tdlLoaded ?? health.checks?.tdlLoaded;
+  const agentVer = String(d.agentVersion || '');
+  if (tdlLoaded === false) {
+    return t('settings.tallyTdlGateMissing');
+  }
+  if (agentVer && !/^0\.(3|[4-9])|^[1-9]/.test(agentVer) && agentVer.startsWith('0.2')) {
+    return t('settings.tallyAgentVersionGate', { version: agentVer });
+  }
+  return null;
+});
 
 const counts = computed(() => ({
   queued: dashboard.value?.queuedJobs ?? jobs.value.filter((j) => ['queued', 'running'].includes(j.status)).length,
@@ -672,12 +983,22 @@ function goSettings() {
 }
 
 async function runSync(jobType) {
+  const companyGuid = selectedCompanyGuid.value || (activeCompanies.value.length === 1 ? activeCompanies.value[0].companyGuid : '');
+  if (!companyGuid) {
+    notifications.error(t('settings.tallyCompanyRequired'));
+    return;
+  }
+  if (syncBlocked.value && tdlGateMessage.value) {
+    notifications.error(tdlGateMessage.value);
+    return;
+  }
   syncBusy.value = true;
   try {
     await apiClient.post('/connectors/tally/sync/trigger', {
       jobType,
       direction: 'bidirectional',
-      payload: { dryRun: jobType === 'dry_run' },
+      companyGuid,
+      payload: { dryRun: jobType === 'dry_run', companyGuid },
     });
     notifications.success(
       jobType === 'dry_run' ? t('settings.addonsTallyDryRunQueued') : t('settings.addonsTallySyncQueued')
@@ -687,6 +1008,218 @@ async function runSync(jobType) {
     notifications.error(err?.message || t('settings.tallyLoadFailed'));
   } finally {
     syncBusy.value = false;
+  }
+}
+
+async function syncItemsToTally() {
+  const companyGuid = selectedCompanyGuid.value;
+  if (!companyGuid) {
+    notifications.error(t('settings.tallyCompanyRequired'));
+    return;
+  }
+  syncBusy.value = true;
+  try {
+    await apiClient.post('/connectors/tally/masters/sync-items', { companyGuid, limit: 100 });
+    notifications.success(t('settings.tallySyncItemsQueued'));
+    await refreshAll();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    syncBusy.value = false;
+  }
+}
+
+async function syncPartiesToTally() {
+  const companyGuid = selectedCompanyGuid.value;
+  if (!companyGuid) {
+    notifications.error(t('settings.tallyCompanyRequired'));
+    return;
+  }
+  syncBusy.value = true;
+  try {
+    await apiClient.post('/connectors/tally/masters/sync-parties', { companyGuid, limit: 100 });
+    notifications.success(t('settings.tallySyncPartiesQueued'));
+    await refreshAll();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    syncBusy.value = false;
+  }
+}
+
+async function saveFanOutSetting() {
+  settingsSaving.value = true;
+  try {
+    await apiClient.patch('/connectors/tally/settings', {
+      autoOutboxFanOutToAllLinkedCompanies: autoOutboxFanOut.value,
+    });
+    notifications.success(t('settings.tallySettingsSaved'));
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    settingsSaving.value = false;
+  }
+}
+
+async function runReconcile() {
+  const companyGuid = selectedCompanyGuid.value;
+  if (!companyGuid) {
+    notifications.error(t('settings.tallyCompanyRequired'));
+    return;
+  }
+  syncBusy.value = true;
+  try {
+    const res = await apiClient(
+      `/connectors/tally/inventory/reconcile?companyGuid=${encodeURIComponent(companyGuid)}`,
+      { method: 'GET' }
+    );
+    const drift = res?.data?.drift?.length ?? res?.data?.rows?.length ?? 0;
+    notifications.success(t('settings.tallyReconcileDone', { count: drift }));
+    await refreshAll();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    syncBusy.value = false;
+  }
+}
+
+function onCompanyChange() {
+  loadMappingRows();
+  if (mappingTab.value === 'fields') loadFieldMaps();
+}
+
+function setMappingTab(id) {
+  mappingTab.value = id;
+  if (id === 'fields') loadFieldMaps();
+  else loadMappingRows();
+}
+
+async function loadMappingRows({ append = false } = {}) {
+  if (mappingTab.value === 'fields') return;
+  const status = mappingTab.value;
+  const skip = append ? mappingRows.value.length : 0;
+  const params = new URLSearchParams();
+  params.set('limit', '50');
+  params.set('skip', String(skip));
+  params.set('status', status);
+  if (selectedCompanyGuid.value) params.set('companyGuid', selectedCompanyGuid.value);
+  if (mappingFilters.value.q) params.set('q', mappingFilters.value.q);
+  if (mappingFilters.value.entityType) params.set('entityType', mappingFilters.value.entityType);
+  const res = await apiClient(`/connectors/tally/external-objects?${params}`, { method: 'GET' }).catch(() => null);
+  const rows = Array.isArray(res?.data) ? res.data : [];
+  if (append) {
+    const seen = new Set(mappingRows.value.map((r) => r._id));
+    mappingRows.value = [...mappingRows.value, ...rows.filter((r) => !seen.has(r._id))];
+  } else {
+    mappingRows.value = rows;
+  }
+  mappingMeta.value = {
+    total: res?.meta?.total || rows.length,
+    hasMore: Boolean(res?.meta?.hasMore),
+    skip,
+  };
+}
+
+function loadMoreMapping() {
+  loadMappingRows({ append: true });
+}
+
+async function mapCreate(row) {
+  mappingBusyId.value = row._id;
+  try {
+    await apiClient.post(`/connectors/tally/external-objects/${row._id}/create`, {});
+    notifications.success(t('settings.tallyMapCreateOk'));
+    await loadMappingRows();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    mappingBusyId.value = null;
+  }
+}
+
+async function mapLinkPrompt(row) {
+  const arivuId = window.prompt(t('settings.tallyMapLinkPrompt'));
+  if (!arivuId) return;
+  mappingBusyId.value = row._id;
+  try {
+    await apiClient.post(`/connectors/tally/external-objects/${row._id}/link`, { arivuId: arivuId.trim() });
+    notifications.success(t('settings.tallyMapLinkOk'));
+    await loadMappingRows();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    mappingBusyId.value = null;
+  }
+}
+
+async function mapIgnore(row) {
+  mappingBusyId.value = row._id;
+  try {
+    await apiClient.post(`/connectors/tally/external-objects/${row._id}/ignore`, {});
+    await loadMappingRows();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    mappingBusyId.value = null;
+  }
+}
+
+async function loadFieldMaps() {
+  if (!selectedCompanyGuid.value && activeCompanies.value.length !== 1) {
+    fieldMapRules.value = [];
+    return;
+  }
+  const companyGuid = selectedCompanyGuid.value || activeCompanies.value[0]?.companyGuid;
+  const res = await apiClient(
+    `/connectors/tally/field-mappings?entityType=${encodeURIComponent(fieldMapEntity.value)}&companyGuid=${encodeURIComponent(companyGuid || '')}`,
+    { method: 'GET' }
+  ).catch(() => null);
+  const suggestions = res?.data?.suggestions || [];
+  const saved = res?.data?.saved?.rules || [];
+  fieldMapExternalOptions.value = res?.data?.catalog?.external || [];
+  if (saved.length) {
+    fieldMapRules.value = saved.map((r) => ({
+      arivuFieldKey: r.arivuFieldKey,
+      externalFieldKey: r.externalFieldKey,
+      confidence: r.confidence,
+    }));
+  } else {
+    fieldMapRules.value = suggestions.map((s) => ({
+      arivuFieldKey: s.arivuFieldKey,
+      externalFieldKey: s.externalFieldKey,
+      confidence: s.confidence,
+    }));
+  }
+}
+
+async function saveFieldMaps() {
+  const companyGuid = selectedCompanyGuid.value || activeCompanies.value[0]?.companyGuid;
+  if (!companyGuid) {
+    notifications.error(t('settings.tallyCompanyRequired'));
+    return;
+  }
+  fieldMapSaving.value = true;
+  try {
+    await apiClient.post('/connectors/tally/field-mappings/accept', {
+      entityType: fieldMapEntity.value,
+      companyGuid,
+      rules: fieldMapRules.value.filter((r) => r.externalFieldKey),
+    });
+    notifications.success(t('settings.tallyFieldMapSaved'));
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
+  } finally {
+    fieldMapSaving.value = false;
+  }
+}
+
+async function resolveConflict(conflict, resolution) {
+  try {
+    await apiClient.post(`/connectors/tally/conflicts/${conflict._id}/resolve`, { resolution });
+    notifications.success(t('settings.tallyConflictResolved'));
+    await refreshAll();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.tallyLoadFailed'));
   }
 }
 
@@ -709,12 +1242,12 @@ async function refreshAll() {
   refreshing.value = true;
   error.value = '';
   try {
-    const [dashRes, jobsRes, conflictsRes, connRes, extRes] = await Promise.all([
+    const [dashRes, jobsRes, conflictsRes, connRes, settingsRes] = await Promise.all([
       apiClient('/connectors/tally/dashboard', { method: 'GET' }).catch(() => null),
       apiClient('/connectors/tally/sync/jobs?limit=25', { method: 'GET' }).catch(() => null),
       apiClient('/connectors/tally/conflicts?status=open&limit=25', { method: 'GET' }).catch(() => null),
       apiClient('/connectors/tally/connection', { method: 'GET' }).catch(() => null),
-      apiClient('/connectors/tally/external-objects?limit=50', { method: 'GET' }).catch(() => null),
+      apiClient('/connectors/tally/settings', { method: 'GET' }).catch(() => null),
     ]);
     dashboard.value = dashRes?.data || {
       connectionStatus: 'none',
@@ -726,9 +1259,23 @@ async function refreshAll() {
     jobs.value = Array.isArray(jobsRes?.data) ? jobsRes.data : [];
     conflicts.value = Array.isArray(conflictsRes?.data) ? conflictsRes.data : [];
     companies.value = Array.isArray(connRes?.data?.companies) ? connRes.data.companies : [];
-    const ext = Array.isArray(extRes?.data) ? extRes.data : [];
-    pendingExternal.value = ext.filter((r) => String(r.arivuId || '').startsWith('pending:'));
-    await fetchLogs({ append: false });
+    if (typeof settingsRes?.data?.autoOutboxFanOutToAllLinkedCompanies === 'boolean') {
+      autoOutboxFanOut.value = settingsRes.data.autoOutboxFanOutToAllLinkedCompanies;
+    }
+    const active = companies.value.filter(
+      (c) => c.enabled !== false && (c.status === 'active' || c.status === 'discovered' || !c.status)
+    );
+    if (!selectedCompanyGuid.value && active.length === 1) {
+      selectedCompanyGuid.value = active[0].companyGuid;
+    }
+    if (
+      selectedCompanyGuid.value &&
+      !active.some((c) => c.companyGuid === selectedCompanyGuid.value)
+    ) {
+      selectedCompanyGuid.value = active.length === 1 ? active[0].companyGuid : '';
+    }
+    await Promise.all([fetchLogs({ append: false }), loadMappingRows()]);
+    if (mappingTab.value === 'fields') await loadFieldMaps();
   } catch (err) {
     error.value = err?.message || t('settings.tallyLoadFailed');
   } finally {
