@@ -6,7 +6,7 @@
  * is not loaded; prefer loading the file pack for Fetch-rich definitions.
  */
 
-const ARIVU_TDL_PACK_VERSION = '1.0.0';
+const ARIVU_TDL_PACK_VERSION = '1.0.1';
 
 const ARIVU_COLLECTIONS = Object.freeze({
   META: 'Arivu Connector Meta',
@@ -146,18 +146,27 @@ function formatTallyDate(value) {
 
 /**
  * @param {string} collectionId
- * @param {{ company?: string|null, fromDate?: string|Date|null, toDate?: string|Date|null, extraNative?: string[], explode?: boolean }} [opts]
+ * @param {{ company?: string|null, fromDate?: string|Date|null, toDate?: string|Date|null, extraNative?: string[], explode?: boolean, sinceAlterId?: string|number|null }} [opts]
  */
 function collectionExport(collectionId, opts = {}) {
   const company = opts.company || null;
   const fromDate = opts.fromDate ? formatTallyDate(opts.fromDate) : null;
   const toDate = opts.toDate ? formatTallyDate(opts.toDate) : null;
+  const sinceAlterId =
+    opts.sinceAlterId != null && String(opts.sinceAlterId).trim() !== ''
+      ? String(opts.sinceAlterId).trim()
+      : null;
   const type = COLLECTION_TYPE[collectionId] || 'Company';
   const natives = (
     opts.extraNative && opts.extraNative.length
       ? opts.extraNative
       : FALLBACK_NATIVES[collectionId] || ['Name', 'GUID']
   ).filter((v, i, a) => a.indexOf(v) === i);
+
+  // Ensure AlterID is fetched for incremental sync
+  if (!natives.some((n) => String(n).toLowerCase() === 'alterid')) {
+    natives.push('AlterID');
+  }
 
   const staticVars = [
     company ? `        <SVCURRENTCOMPANY>${escapeXml(company)}</SVCURRENTCOMPANY>` : null,
@@ -172,6 +181,17 @@ function collectionExport(collectionId, opts = {}) {
   const nativeXml = natives
     .map((m) => `            <NATIVEMETHOD>${escapeXml(m)}</NATIVEMETHOD>`)
     .join('\n');
+
+  // Filter: only objects with AlterID greater than watermark (Tally Collection FILTER)
+  const filterXml = sinceAlterId
+    ? [
+        '            <FILTERS>ArivuAlterIdFilter</FILTERS>',
+        '          </COLLECTION>',
+        `          <SYSTEM TYPE="Formulae" NAME="ArivuAlterIdFilter">$AlterID &gt; ${escapeXml(sinceAlterId)}</SYSTEM>`,
+      ].join('\n')
+    : '          </COLLECTION>';
+
+  const collectionOpen = `          <COLLECTION NAME="${escapeXml(collectionId)}" ISMODIFY="No" ISFIXED="No" ISINITIALIZE="Yes" ISOPTION="No" ISINTERNAL="No">`;
 
   return [
     '<ENVELOPE>',
@@ -188,10 +208,12 @@ function collectionExport(collectionId, opts = {}) {
     '      </STATICVARIABLES>',
     '      <TDL>',
     '        <TDLMESSAGE>',
-    `          <COLLECTION NAME="${escapeXml(collectionId)}" ISMODIFY="No" ISFIXED="No" ISINITIALIZE="Yes" ISOPTION="No" ISINTERNAL="No">`,
+    collectionOpen,
     `            <TYPE>${escapeXml(type)}</TYPE>`,
     nativeXml,
-    '          </COLLECTION>',
+    sinceAlterId
+      ? filterXml
+      : '          </COLLECTION>',
     '        </TDLMESSAGE>',
     '      </TDL>',
     '    </DESC>',

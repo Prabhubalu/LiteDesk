@@ -106,10 +106,12 @@ cd connectors/arivu-agent
 |---|---|
 | Node.js runtime | Embedded in agent via `pkg` — **no separate Node install** |
 | Visual C++ 2015–2022 x64 | Optional: put `installer/redist/VC_redist.x64.exe` before compile — installer runs it quietly |
-| Windows service registration | `sc.exe create/start` during setup |
-| Config + queue folders | `%ProgramData%\Arivu\Connector\` |
+| User-session startup | Desktop + Startup folder launch `--tray` (no Windows service) |
+| Config + queue folders | `%LOCALAPPDATA%\Arivu\Connector\` (no admin for daily use) |
 
 **Not bundled (by design):** TallyPrime itself (customer license).
+
+**Do not "Run as administrator"** — the agent must stay in your Windows user session so it can reach Tally’s XML port. Installer may ask for admin once; after that, never elevate.
 
 ## Local development
 
@@ -128,7 +130,7 @@ npm run pair
 
 Config + queue directory:
 
-- Windows: `%ProgramData%\Arivu\Connector\`
+- Windows: `%LOCALAPPDATA%\Arivu\Connector\` (migrates from ProgramData if needed)
 - Other: `~/.arivu/connector/`
 
 Override with `ARIVU_CONFIG_PATH` / `ARIVU_API_BASE` / `ARIVU_AGENT_TOKEN`.
@@ -136,15 +138,19 @@ Override with `ARIVU_CONFIG_PATH` / `ARIVU_API_BASE` / `ARIVU_AGENT_TOKEN`.
 ## Install UX (end user)
 
 1. In Arivu: **Download EXE** (entitled API → `ArivuConnectorSetup.exe`)
-2. Run installer (admin) → installs VC++ if bundled, agent binary, service, ProgramData folders
-3. Pair with device code from Integration Center
-4. Agent discovers Tally, heartbeats, polls jobs
+2. Run installer **once** (admin only for Program Files) → agent binary, TDL, user Startup shortcut
+3. Desktop → **Arivu Connector** (normal user — not Run as admin)
+4. Open TallyPrime + load TDL + enable HTTP 9000 — agent auto-detects within ~15s
+5. Paste pairing code — sync starts immediately (no restart)
+
+Upgrade from older agents: `sc stop/delete ArivuConnectorAgent`, then install 0.3.1. Do not re-register the Windows service — user-session `--tray` is the supported path.
 
 ## Build (CI)
 
 ```bash
 # macOS/Linux — agent EXE only
 ./installer/build.sh
+# or: npx pkg . --targets node18-win-x64 --output dist/arivu-connector-agent.exe
 
 # Windows — full Setup EXE
 .\installer\build.ps1
@@ -157,20 +163,19 @@ Or set `TALLY_CONNECTOR_INSTALLER_PATH` on the API server to the absolute path o
 
 Outputs:
 
-- `dist/arivu-connector-agent.exe` — packaged Node binary (Mac or Windows)
+- `dist/arivu-connector-agent.exe` — packaged Node binary (Mac or Windows) — **0.3.1 built**
 - `dist/installer/ArivuConnectorSetup.exe` — Inno Setup installer (**Windows ISCC required**)
 
-## Service registration (manual)
+## Legacy service (not recommended)
+
+Session-0 Windows services cannot reliably reach Tally in the user desktop. Prefer Startup `--tray` only. If you must clean up an old service:
 
 ```powershell
-sc create ArivuConnectorAgent binPath= "C:\Program Files\Arivu\Connector\arivu-connector-agent.exe" start= auto
-sc start ArivuConnectorAgent
+sc stop ArivuConnectorAgent
+sc delete ArivuConnectorAgent
 ```
-
-Or: `node src/service.js install` (uses optional `node-windows` when present).
 
 ## Notes
 
-- Runtime is **plain Node 18+ JS** (no TypeScript compile step) so `pkg`/`nexe` packaging stays simple. Structure is ready to migrate to `.ts` later if desired.
-- Go was considered for native Windows services; Node was chosen for faster iteration and shared XML/JSON tooling with the Arivu stack.
-- Cloud routes for `/agent/poll`, `/agent/ack`, `/agent/pair`, `/agent/update` may be thin wrappers over existing `/api/connectors/tally/*` handlers — agent already targets the `/agent/*` surface.
+- Runtime is **plain Node 18+ JS** (no TypeScript compile step) so `pkg`/`nexe` packaging stays simple.
+- Cloud routes for `/agent/poll`, `/agent/ack`, `/agent/pair`, `/agent/update` target the `/agent/*` surface.

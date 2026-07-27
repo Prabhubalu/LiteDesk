@@ -17,7 +17,6 @@ const ConnectorConflict = require('../models/ConnectorConflict');
 const ConnectorExternalObject = require('../models/ConnectorExternalObject');
 const TallyCompanyBinding = require('../models/TallyCompanyBinding');
 const { CONNECTOR_KEYS, CONFLICT_STATUSES, CONFLICT_RESOLUTIONS } = require('../services/connectors/connectorConstants');
-const { TALLY_DEFAULT_SETTINGS } = require('../constants/tallyAddonConstants');
 
 const router = express.Router();
 
@@ -68,6 +67,16 @@ router.post('/pair/complete', async (req, res) => {
 router.get('/connection', async (req, res) => {
   try {
     const connection = await tallyConnectionService.getConnection(req.user.organizationId);
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    let settings = null;
+    let defaultOwnerUserId = null;
+    if (connection) {
+      defaultOwnerUserId = await tallyModuleMappingService.ensureDefaultOwnerUserId(
+        req.user.organizationId,
+        req.user._id
+      );
+      settings = await tallyModuleMappingService.getMergedSettings(req.user.organizationId);
+    }
     const bindings = connection
       ? await TallyCompanyBinding.find({
         organizationId: req.user.organizationId,
@@ -89,6 +98,14 @@ router.get('/connection', async (req, res) => {
           }
           : null,
         companies: bindings,
+        settings: settings
+          ? {
+            defaultOwnerUserId: settings.defaultOwnerUserId || defaultOwnerUserId || null,
+            scheduledSyncEnabled: Boolean(settings.scheduledSyncEnabled),
+            syncIntervalMinutes: settings.syncIntervalMinutes ?? 5,
+            dryRunDefault: settings.dryRunDefault !== false,
+          }
+          : null,
       },
     });
   } catch (error) {
@@ -141,7 +158,7 @@ router.get('/dashboard', async (req, res) => {
   try {
     const organizationId = req.user.organizationId;
     const connection = await tallyConnectionService.getConnection(organizationId);
-    const [openConflicts, queuedJobs, companyCount] = await Promise.all([
+    const [openConflicts, queuedJobs, companyCount, companies] = await Promise.all([
       ConnectorConflict.countDocuments({
         organizationId,
         connectorKey: CONNECTOR_KEYS.TALLY,
@@ -153,6 +170,9 @@ router.get('/dashboard', async (req, res) => {
         status: { $in: ['queued', 'running'] },
       }),
       TallyCompanyBinding.countDocuments({ organizationId, enabled: true }),
+      TallyCompanyBinding.find({ organizationId, enabled: true })
+        .sort({ companyName: 1 })
+        .lean(),
     ]);
 
     const meta = connection?.metadata || {};
@@ -201,6 +221,7 @@ router.get('/dashboard', async (req, res) => {
         agentVersion: connection?.agentVersion || null,
         agentHostname: connection?.agentHostname || meta.hostname || null,
         companyCount,
+        companies,
         openConflicts,
         queuedJobs,
         health,
@@ -268,23 +289,33 @@ router.post('/sync/trigger', async (req, res) => {
 router.post('/companies/bind', async (req, res) => {
   try {
     const { companyGuid, companyName, financialYear = null, enabled = true } = req.body || {};
-    if (!companyGuid || !companyName) {
-      return res.status(400).json({ success: false, message: 'companyGuid and companyName required' });
+    if (!companyGuid) {
+      return res.status(400).json({ success: false, message: 'companyGuid required' });
     }
     const connection = await tallyConnectionService.getConnection(req.user.organizationId);
     if (!connection) {
       return res.status(400).json({ success: false, message: 'Pair the agent first' });
     }
+    const existing = await TallyCompanyBinding.findOne({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    });
+    const name = companyName || existing?.companyName;
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'companyName required' });
+    }
+    const shouldEnable = enabled !== false;
     const binding = await TallyCompanyBinding.findOneAndUpdate(
       { organizationId: req.user.organizationId, companyGuid },
       {
         $set: {
           connectionId: connection._id,
-          companyName,
-          financialYear,
-          enabled: Boolean(enabled),
-          status: 'active',
-          lastSyncAt: new Date(),
+          companyName: name,
+          financialYear: financialYear != null ? financialYear : existing?.financialYear || null,
+          enabled: shouldEnable,
+          status: shouldEnable ? 'active' : 'paused',
+          boundAt: shouldEnable ? new Date() : null,
+          healthState: shouldEnable ? 'metadata_pending' : 'found',
         },
         $setOnInsert: {
           organizationId: req.user.organizationId,
@@ -294,10 +325,57 @@ router.post('/companies/bind', async (req, res) => {
       },
       { upsert: true, new: true }
     );
-    return res.json({ success: true, data: binding });
+
+    let metadataJob = null;
+    if (shouldEnable) {
+      try {
+        const { metadataEngine } = require('../services/connectors/tally/engines');
+        metadataJob = await metadataEngine.enqueueMetadataDiscovery({
+          organizationId: req.user.organizationId,
+          companyGuid,
+          requestedBy: req.user._id,
+        });
+      } catch (err) {
+        console.warn('[tallyConnector] metadata enqueue on bind failed', err.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: binding,
+      metadataJob: metadataJob
+        ? { mode: metadataJob.mode, jobId: metadataJob.job ? String(metadataJob.job._id) : null }
+        : null,
+    });
   } catch (error) {
     console.error('[tallyConnector] companies/bind', error);
     return res.status(500).json({ success: false, message: error.message || 'Bind failed' });
+  }
+});
+
+router.post('/companies/unbind', async (req, res) => {
+  try {
+    const { companyGuid } = req.body || {};
+    if (!companyGuid) {
+      return res.status(400).json({ success: false, message: 'companyGuid required' });
+    }
+    const binding = await TallyCompanyBinding.findOneAndUpdate(
+      { organizationId: req.user.organizationId, companyGuid },
+      {
+        $set: {
+          enabled: false,
+          status: 'paused',
+        },
+      },
+      { new: true }
+    );
+    if (!binding) {
+      return res.status(404).json({ success: false, message: 'Company binding not found' });
+    }
+    return res.json({ success: true, data: binding });
+  } catch (error) {
+    console.error('[tallyConnector] companies/unbind', error);
+    return res.status(500).json({ success: false, message: error.message || 'Unbind failed' });
   }
 });
 
@@ -483,7 +561,7 @@ router.get('/field-mappings', async (req, res) => {
   try {
     const tallyFieldMappingService = require('../services/connectors/tally/tallyFieldMappingService');
     const ConnectorFieldMapping = require('../models/ConnectorFieldMapping');
-    const entityType = String(req.query.entityType || 'item').toLowerCase();
+    const entityType = String(req.query.entityType || 'party').toLowerCase();
     const companyGuid = req.query.companyGuid || null;
     const existing = await ConnectorFieldMapping.findOne({
       organizationId: req.user.organizationId,
@@ -499,12 +577,51 @@ router.get('/field-mappings', async (req, res) => {
       entityType,
       companyGuid,
     });
+    const arivuFields = suggested.arivuFields || tallyFieldMappingService.listArivuFieldsForEntity(entityType);
+    const arivuFieldMeta = tallyFieldMappingService.listArivuFieldMetaForEntity(entityType);
+    const arivuFieldLabels = Object.fromEntries(arivuFieldMeta.map((m) => [m.key, m.label]));
+    const requiredKeys = new Set(arivuFieldMeta.filter((m) => m.required).map((m) => m.key));
+    const tallyFields = suggested.tallyFields || tallyFieldMappingService.listTallyFieldsForEntity(entityType);
+    // Prefer saved rules when present; merge so every Arivu field still has a row
+    const savedByArivu = new Map((existing?.rules || []).map((r) => [r.arivuFieldKey, r]));
+    const rows = arivuFields.map((arivuFieldKey) => {
+      const saved = savedByArivu.get(arivuFieldKey);
+      if (saved) {
+        return {
+          arivuFieldKey,
+          arivuFieldLabel: arivuFieldLabels[arivuFieldKey] || arivuFieldKey,
+          required: requiredKeys.has(arivuFieldKey),
+          externalFieldKey: saved.externalFieldKey,
+          confidence: saved.confidence ?? 1,
+          approved: true,
+        };
+      }
+      const sug = (suggested.suggestions || []).find((s) => s.arivuFieldKey === arivuFieldKey);
+      return {
+        arivuFieldKey,
+        arivuFieldLabel: arivuFieldLabels[arivuFieldKey] || arivuFieldKey,
+        required: requiredKeys.has(arivuFieldKey),
+        externalFieldKey: sug?.externalFieldKey || null,
+        confidence: sug?.confidence || 0,
+        approved: false,
+      };
+    });
+    const unmappedRequired = tallyFieldMappingService.getUnmappedRequiredFields(entityType, rows);
     return res.json({
       success: true,
       data: {
         saved: existing,
-        catalog: tallyFieldMappingService.DEFAULT_FIELD_CATALOGS[entityType] || null,
-        suggestions: suggested.suggestions,
+        catalog: {
+          arivu: arivuFields,
+          external: tallyFields,
+        },
+        arivuFields,
+        arivuFieldLabels,
+        arivuFieldMeta,
+        unmappedRequired,
+        tallyFields,
+        entityOptions: tallyFieldMappingService.getEntityOptions(),
+        suggestions: rows,
       },
     });
   } catch (error) {
@@ -525,7 +642,13 @@ router.post('/field-mappings/accept', async (req, res) => {
     });
     return res.json({ success: true, data: doc });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    const status = error.code === 'MANDATORY_FIELDS_UNMAPPED' ? 422 : 400;
+    return res.status(status).json({
+      success: false,
+      message: error.message,
+      code: error.code || 'VALIDATION',
+      unmappedRequired: error.unmappedRequired || [],
+    });
   }
 });
 
@@ -621,15 +744,21 @@ router.post('/conflicts/:id/resolve', async (req, res) => {
 
 router.get('/settings', async (req, res) => {
   try {
-    const connection = await tallyConnectionService.getConnection(req.user.organizationId);
-    const settings = {
-      ...TALLY_DEFAULT_SETTINGS,
-      ...(connection?.metadata?.settings || {}),
-    };
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const settings = await tallyModuleMappingService.getMergedSettings(req.user.organizationId);
     return res.json({
       success: true,
       data: {
         autoOutboxFanOutToAllLinkedCompanies: settings.autoOutboxFanOutToAllLinkedCompanies !== false,
+        migrationMode: Boolean(settings.migrationMode),
+        preventProductTaxUpdate: Boolean(settings.preventProductTaxUpdate),
+        recordsPerSyncCycle: settings.recordsPerSyncCycle ?? 200,
+        recordsPerSyncCycleMin: settings.recordsPerSyncCycleMin ?? 50,
+        recordsPerSyncCycleMax: settings.recordsPerSyncCycleMax ?? 500,
+        dryRunDefault: settings.dryRunDefault !== false,
+        scheduledSyncEnabled: Boolean(settings.scheduledSyncEnabled),
+        syncIntervalMinutes: settings.syncIntervalMinutes ?? 5,
+        defaultOwnerUserId: settings.defaultOwnerUserId || null,
       },
     });
   } catch (error) {
@@ -640,26 +769,192 @@ router.get('/settings', async (req, res) => {
 
 router.patch('/settings', async (req, res) => {
   try {
-    const connection = await tallyConnectionService.getConnection(req.user.organizationId);
-    if (!connection) {
-      return res.status(404).json({ success: false, message: 'No Tally connection' });
-    }
-    const next = { ...(connection.metadata?.settings || {}) };
-    if (typeof req.body?.autoOutboxFanOutToAllLinkedCompanies === 'boolean') {
-      next.autoOutboxFanOutToAllLinkedCompanies = req.body.autoOutboxFanOutToAllLinkedCompanies;
-    }
-    connection.metadata = { ...(connection.metadata || {}), settings: next };
-    connection.markModified('metadata');
-    await connection.save();
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const settings = await tallyModuleMappingService.patchSettings(req.user.organizationId, req.body || {});
     return res.json({
       success: true,
       data: {
-        autoOutboxFanOutToAllLinkedCompanies: next.autoOutboxFanOutToAllLinkedCompanies !== false,
+        autoOutboxFanOutToAllLinkedCompanies: settings.autoOutboxFanOutToAllLinkedCompanies !== false,
+        migrationMode: Boolean(settings.migrationMode),
+        preventProductTaxUpdate: Boolean(settings.preventProductTaxUpdate),
+        recordsPerSyncCycle: settings.recordsPerSyncCycle ?? 200,
+        dryRunDefault: settings.dryRunDefault !== false,
+        scheduledSyncEnabled: Boolean(settings.scheduledSyncEnabled),
+        syncIntervalMinutes: settings.syncIntervalMinutes ?? 5,
+        defaultOwnerUserId: settings.defaultOwnerUserId || null,
       },
     });
   } catch (error) {
+    const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'VALIDATION' ? 400 : 500;
     console.error('[tallyConnector] settings patch', error);
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/module-mappings', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const companyGuid = req.query.companyGuid || null;
+    const data = await tallyModuleMappingService.listModuleMappings({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    });
+    await tallyModuleMappingService.seedDefaultFieldMaps({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] module-mappings get', error);
     return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.patch('/module-mappings/:tallyModuleKey', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const row = await tallyModuleMappingService.updateModuleMapping({
+      organizationId: req.user.organizationId,
+      companyGuid: req.body?.companyGuid || req.query.companyGuid || null,
+      tallyModuleKey: req.params.tallyModuleKey,
+      patch: req.body || {},
+    });
+    return res.json({ success: true, data: row });
+  } catch (error) {
+    const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'VALIDATION' ? 400 : 500;
+    console.error('[tallyConnector] module-mappings patch', error);
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.put('/module-mappings', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const rows = await tallyModuleMappingService.bulkUpdateModuleMappings({
+      organizationId: req.user.organizationId,
+      companyGuid: req.body?.companyGuid || null,
+      rows: req.body?.rows || [],
+    });
+    return res.json({ success: true, data: rows });
+  } catch (error) {
+    const status = error.code === 'VALIDATION' ? 400 : 500;
+    console.error('[tallyConnector] module-mappings put', error);
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/tax-mappings', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const rows = await tallyModuleMappingService.listTaxMappings({
+      organizationId: req.user.organizationId,
+      companyGuid: req.query.companyGuid || null,
+    });
+    return res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('[tallyConnector] tax-mappings get', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/tax-mappings', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const row = await tallyModuleMappingService.upsertTaxMapping({
+      organizationId: req.user.organizationId,
+      companyGuid: req.body?.companyGuid || null,
+      mapping: req.body || {},
+    });
+    return res.json({ success: true, data: row });
+  } catch (error) {
+    const status = error.code === 'VALIDATION' ? 400 : 500;
+    console.error('[tallyConnector] tax-mappings post', error);
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.delete('/tax-mappings/:id', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    await tallyModuleMappingService.deleteTaxMapping({
+      organizationId: req.user.organizationId,
+      companyGuid: req.query.companyGuid || null,
+      id: req.params.id,
+    });
+    return res.json({ success: true, data: { deleted: true } });
+  } catch (error) {
+    console.error('[tallyConnector] tax-mappings delete', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/reset/module', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const data = await tallyModuleMappingService.resetModule({
+      organizationId: req.user.organizationId,
+      companyGuid: req.body?.companyGuid || null,
+      tallyModuleKey: req.body?.tallyModuleKey,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    const status = error.code === 'NOT_FOUND' ? 404 : 500;
+    console.error('[tallyConnector] reset/module', error);
+    return res.status(status).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/reset/full', async (req, res) => {
+  try {
+    const tallyModuleMappingService = require('../services/connectors/tally/tallyModuleMappingService');
+    const data = await tallyModuleMappingService.resetFullConfiguration({
+      organizationId: req.user.organizationId,
+      companyGuid: req.body?.companyGuid || null,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] reset/full', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/sync-logs', async (req, res) => {
+  try {
+    const tallySyncLogService = require('../services/connectors/tally/tallySyncLogService');
+    const data = await tallySyncLogService.listRunLogs({
+      organizationId: req.user.organizationId,
+      companyGuid: req.query.companyGuid || null,
+      moduleKey: req.query.moduleKey || null,
+      limit: parseInt(req.query.limit || '50', 10),
+      skip: parseInt(req.query.skip || '0', 10),
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] sync-logs', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get('/sync-logs/:id/records', async (req, res) => {
+  try {
+    const tallySyncLogService = require('../services/connectors/tally/tallySyncLogService');
+    const data = await tallySyncLogService.getRunLogRecords({
+      organizationId: req.user.organizationId,
+      logId: req.params.id,
+      action: req.query.action || null,
+      side: req.query.side || null,
+    });
+    if (req.query.download === 'csv') {
+      const csv = tallySyncLogService.recordsToCsv(data.records);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="tally-sync-${req.params.id}.csv"`);
+      return res.send(csv);
+    }
+    return res.json({ success: true, data });
+  } catch (error) {
+    const status = error.code === 'NOT_FOUND' ? 404 : 500;
+    console.error('[tallyConnector] sync-logs records', error);
+    return res.status(status).json({ success: false, message: error.message });
   }
 });
 
@@ -746,6 +1041,182 @@ router.get('/agent/download', async (req, res) => {
   } catch (error) {
     console.error('[tallyConnector] agent/download', error);
     return res.status(500).json({ success: false, message: error.message || 'Download failed' });
+  }
+});
+
+// ─── ATIP platform routes ───────────────────────────────────────────
+
+router.get('/atip/wizard', async (req, res) => {
+  try {
+    const { connectionEngine } = require('../services/connectors/tally/engines');
+    const data = await connectionEngine.getWizardState({ organizationId: req.user.organizationId });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/wizard', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to load wizard' });
+  }
+});
+
+router.get('/atip/dashboard', async (req, res) => {
+  try {
+    const { monitoringEngine } = require('../services/connectors/tally/engines');
+    const data = await monitoringEngine.getDashboard({ organizationId: req.user.organizationId });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/dashboard', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to load ATIP dashboard' });
+  }
+});
+
+router.post('/atip/metadata/discover', async (req, res) => {
+  try {
+    const { companyGuid } = req.body || {};
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { metadataEngine } = require('../services/connectors/tally/engines');
+    const job = await metadataEngine.enqueueMetadataDiscovery({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      requestedBy: req.user._id,
+    });
+    return res.json({ success: true, data: job });
+  } catch (error) {
+    console.error('[tallyConnector] atip/metadata/discover', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to enqueue metadata discovery' });
+  }
+});
+
+router.get('/atip/metadata/objects', async (req, res) => {
+  try {
+    const { companyGuid } = req.query;
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { metadataEngine } = require('../services/connectors/tally/engines');
+    const objects = await metadataEngine.listObjectSchemas({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    });
+    return res.json({ success: true, data: objects });
+  } catch (error) {
+    console.error('[tallyConnector] atip/metadata/objects', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to list object schemas' });
+  }
+});
+
+router.post('/atip/schema/generate', async (req, res) => {
+  try {
+    const { companyGuid } = req.body || {};
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { schemaGenerator } = require('../services/connectors/tally/engines');
+    const data = await schemaGenerator.generateForBinding({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/schema/generate', error);
+    return res.status(500).json({ success: false, message: error.message || 'Schema generation failed' });
+  }
+});
+
+router.post('/atip/mappings/draft', async (req, res) => {
+  try {
+    const { companyGuid } = req.body || {};
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { mappingEngine } = require('../services/connectors/tally/engines');
+    const data = await mappingEngine.createDraftFromSchemas({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/mappings/draft', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to create mapping draft' });
+  }
+});
+
+router.post('/atip/mappings/:versionId/activate', async (req, res) => {
+  try {
+    const { companyGuid } = req.body || {};
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { mappingEngine } = require('../services/connectors/tally/engines');
+    const data = await mappingEngine.activateVersion({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      versionId: req.params.versionId,
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/mappings/activate', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to activate mapping' });
+  }
+});
+
+router.get('/atip/mappings/active', async (req, res) => {
+  try {
+    const { companyGuid } = req.query;
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { mappingEngine } = require('../services/connectors/tally/engines');
+    const data = await mappingEngine.getActiveMappingVersion({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/mappings/active', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to load mapping' });
+  }
+});
+
+router.get('/atip/audit', async (req, res) => {
+  try {
+    const { auditEngine } = require('../services/connectors/tally/engines');
+    const data = await auditEngine.searchEvents({
+      organizationId: req.user.organizationId,
+      q: req.query.q || null,
+      level: req.query.level || null,
+      moduleKey: req.query.moduleKey || null,
+      correlationId: req.query.correlationId || null,
+      limit: Number(req.query.limit) || 50,
+      skip: Number(req.query.skip) || 0,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/audit', error);
+    return res.status(500).json({ success: false, message: error.message || 'Audit search failed' });
+  }
+});
+
+router.post('/atip/assistant', async (req, res) => {
+  try {
+    const aiSyncAssistant = require('../services/connectors/tally/engines/aiSyncAssistant');
+    const data = await aiSyncAssistant.ask({
+      organizationId: req.user.organizationId,
+      question: req.body?.question,
+      companyGuid: req.body?.companyGuid || null,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/assistant', error);
+    return res.status(500).json({ success: false, message: error.message || 'Assistant failed' });
+  }
+});
+
+router.post('/atip/onboarding/complete-metadata', async (req, res) => {
+  try {
+    const { companyGuid, rawPayload } = req.body || {};
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { synchronisationEngine } = require('../services/connectors/tally/engines');
+    const data = await synchronisationEngine.completeMetadataOnboarding({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      rawPayload: rawPayload || {},
+      userId: req.user._id,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/onboarding/complete-metadata', error);
+    return res.status(500).json({ success: false, message: error.message || 'Onboarding metadata failed' });
   }
 });
 

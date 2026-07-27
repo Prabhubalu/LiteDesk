@@ -1,10 +1,11 @@
 # Build Arivu Connector Agent for Windows (pkg + Inno Setup).
-# Run from an elevated PowerShell on a Windows build agent.
+# Prefer GitHub Actions: .github/workflows/tally-connector-installer.yml
 #
 # Bundles:
 #   - Node runtime inside arivu-connector-agent.exe (pkg)
 #   - Optional VC++ redistributable from installer\redist\VC_redist.x64.exe
-#   - Service registration + ProgramData folders
+#   - User-session --tray startup (no Windows service)
+#   - LocalAppData config + TDL pack
 $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $PSScriptRoot

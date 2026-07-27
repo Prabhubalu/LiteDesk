@@ -230,4 +230,32 @@ router.post('/rpc', async (req, res) => {
   }
 });
 
+/**
+ * GET /update — signed installer auto-update check (ATIP Phase 9).
+ */
+router.get('/update', async (req, res) => {
+  try {
+    await resolveBridgeFromAgentToken(req);
+    const current = String(req.query.version || '').trim();
+    const published = process.env.TALLY_AGENT_PUBLISHED_VERSION || null;
+    const downloadUrl = process.env.TALLY_AGENT_DOWNLOAD_URL || null;
+    const updateAvailable = Boolean(
+      published && current && published !== current && downloadUrl
+    );
+    return res.json({
+      success: true,
+      data: {
+        updateAvailable,
+        version: published,
+        downloadUrl: updateAvailable ? downloadUrl : null,
+        current,
+        signed: Boolean(process.env.TALLY_AGENT_UPDATE_SIGNED === '1'),
+      },
+    });
+  } catch (error) {
+    const status = error.code === 'AGENT_UNAUTHORIZED' ? 401 : 500;
+    return res.status(status).json({ success: false, message: error.message, code: error.code });
+  }
+});
+
 module.exports = router;

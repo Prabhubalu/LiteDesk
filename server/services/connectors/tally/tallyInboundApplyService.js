@@ -1,33 +1,36 @@
 'use strict';
 
 /**
- * Apply inbound Tally export XML (from agent ack) into Arivu external-object catalog.
- * Creates pending links (arivuId = pending:…) until mapping review binds them.
+ * Apply inbound Tally export XML into ConnectorExternalObject catalog
+ * with full field extraction (not NAME-only).
  */
 
 const ConnectorExternalObject = require('../../../models/ConnectorExternalObject');
 const { CONNECTOR_KEYS } = require('../connectorConstants');
 const partyMapper = require('./mappers/partyMapper');
+const stockItemMapper = require('./mappers/stockItemMapper');
+const godownMapper = require('./mappers/godownMapper');
+const stockGroupMapper = require('./mappers/stockGroupMapper');
 
-/** Exact masterType → catalog entity (order matters — avoid /stock/ catching StockGroup). */
+/** Exact masterType → catalog entity */
 const MASTER_ENTITY = Object.freeze({
   Ledger: { entityType: 'party', idPrefix: 'tally:ledger', limit: 500, mapParty: true },
   GstDutyLedger: { entityType: 'party', idPrefix: 'tally:ledger', limit: 500, mapParty: true },
-  Group: { entityType: 'group', idPrefix: 'tally:group', limit: 500 },
-  Currency: { entityType: 'currency', idPrefix: 'tally:currency', limit: 100 },
-  VoucherType: { entityType: 'voucher_type', idPrefix: 'tally:vouchertype', limit: 200 },
-  CostCategory: { entityType: 'cost_category', idPrefix: 'tally:costcategory', limit: 200 },
-  CostCentre: { entityType: 'cost_centre', idPrefix: 'tally:costcentre', limit: 500 },
-  Unit: { entityType: 'unit', idPrefix: 'tally:unit', limit: 200 },
-  AttendanceType: { entityType: 'attendance_type', idPrefix: 'tally:attendance', limit: 100 },
+  Group: { entityType: 'group', idPrefix: 'tally:group', limit: 500, referenceOnly: true },
+  Currency: { entityType: 'currency', idPrefix: 'tally:currency', limit: 100, referenceOnly: true },
+  VoucherType: { entityType: 'voucher_type', idPrefix: 'tally:vouchertype', limit: 200, referenceOnly: true },
+  CostCategory: { entityType: 'cost_category', idPrefix: 'tally:costcategory', limit: 200, referenceOnly: true },
+  CostCentre: { entityType: 'cost_centre', idPrefix: 'tally:costcentre', limit: 500, referenceOnly: true },
+  Unit: { entityType: 'unit', idPrefix: 'tally:unit', limit: 200, referenceOnly: true },
+  AttendanceType: { entityType: 'attendance_type', idPrefix: 'tally:attendance', limit: 100, referenceOnly: true },
   StockGroup: { entityType: 'stock_group', idPrefix: 'tally:stockgroup', limit: 300 },
   StockCategory: { entityType: 'stock_category', idPrefix: 'tally:stockcategory', limit: 300 },
-  StockItem: { entityType: 'item', idPrefix: 'tally:item', limit: 500 },
-  StockSummary: { entityType: 'item', idPrefix: 'tally:item', limit: 500 },
-  Godown: { entityType: 'godown', idPrefix: 'tally:godown', limit: 200 },
-  Batch: { entityType: 'batch', idPrefix: 'tally:batch', limit: 500 },
-  GSTClassification: { entityType: 'gst_classification', idPrefix: 'tally:gstclass', limit: 300 },
-  TaxUnit: { entityType: 'tax_unit', idPrefix: 'tally:taxunit', limit: 100 },
+  StockItem: { entityType: 'item', idPrefix: 'tally:item', limit: 500, mapItem: true },
+  StockSummary: { entityType: 'item', idPrefix: 'tally:item', limit: 500, mapItem: true },
+  Godown: { entityType: 'godown', idPrefix: 'tally:godown', limit: 200, mapGodown: true },
+  Batch: { entityType: 'batch', idPrefix: 'tally:batch', limit: 500, referenceOnly: true },
+  GSTClassification: { entityType: 'gst_classification', idPrefix: 'tally:gstclass', limit: 300, referenceOnly: true },
+  TaxUnit: { entityType: 'tax_unit', idPrefix: 'tally:taxunit', limit: 100, referenceOnly: true },
   Voucher: { entityType: 'voucher', idPrefix: 'tally:voucher', limit: 1000, voucher: true },
 });
 
@@ -42,12 +45,119 @@ function extractTagValues(xml, tag) {
   return values;
 }
 
+function firstTag(xml, tag) {
+  const values = extractTagValues(xml, tag);
+  return values[0] || null;
+}
+
+function parseAddress(block) {
+  const parts = extractTagValues(block, 'ADDRESS');
+  return parts.length ? parts.join(', ') : null;
+}
+
+/**
+ * Split XML into top-level object blocks for a given tag (LEDGER, STOCKITEM, …).
+ */
+function splitObjectBlocks(xml, tagName) {
+  const re = new RegExp(`<${tagName}\\b[^>]*>[\\s\\S]*?<\\/${tagName}>`, 'gi');
+  return String(xml || '').match(re) || [];
+}
+
+function parseMasterObject(block) {
+  const name =
+    firstTag(block, 'NAME') ||
+    (block.match(/\bNAME="([^"]+)"/i) || [])[1] ||
+    null;
+  return {
+    name,
+    NAME: name,
+    PARENT: firstTag(block, 'PARENT'),
+    parent: firstTag(block, 'PARENT'),
+    GUID: firstTag(block, 'GUID'),
+    MASTERID: firstTag(block, 'MASTERID'),
+    ALTERID: firstTag(block, 'ALTERID'),
+    PARTYGSTIN: firstTag(block, 'PARTYGSTIN') || firstTag(block, 'GSTIN'),
+    GSTIN: firstTag(block, 'GSTIN') || firstTag(block, 'PARTYGSTIN'),
+    GSTREGISTRATIONTYPE: firstTag(block, 'GSTREGISTRATIONTYPE'),
+    LEDGERSTATENAME: firstTag(block, 'LEDGERSTATENAME') || firstTag(block, 'STATECODE'),
+    STATECODE: firstTag(block, 'STATECODE') || firstTag(block, 'LEDGERSTATENAME'),
+    LEDGERPHONE: firstTag(block, 'LEDGERPHONE') || firstTag(block, 'PHONE'),
+    EMAIL: firstTag(block, 'EMAIL'),
+    WEBSITE: firstTag(block, 'WEBSITE'),
+    INCOMETAXNUMBER: firstTag(block, 'INCOMETAXNUMBER'),
+    ADDRESS: parseAddress(block),
+    address: parseAddress(block),
+    BASEUNITS: firstTag(block, 'BASEUNITS'),
+    HSNCODE: firstTag(block, 'HSNCODE') || firstTag(block, 'HSN'),
+    GSTRATE: firstTag(block, 'GSTRATE'),
+    GSTAPPLICABLE: firstTag(block, 'GSTAPPLICABLE'),
+    RATE: firstTag(block, 'RATE'),
+    BARCODE: firstTag(block, 'BARCODE'),
+    COSTINGMETHOD: firstTag(block, 'COSTINGMETHOD'),
+    OPENINGBALANCE: firstTag(block, 'OPENINGBALANCE'),
+    CLOSINGBALANCE: firstTag(block, 'CLOSINGBALANCE'),
+    ORIGINALNAME: firstTag(block, 'ORIGINALNAME'),
+    ISSIMPLEUNIT: firstTag(block, 'ISSIMPLEUNIT'),
+    DECIMALPLACES: firstTag(block, 'DECIMALPLACES'),
+    ISOCURRENCYCODE: firstTag(block, 'ISOCURRENCYCODE'),
+    SYMBOL: firstTag(block, 'SYMBOL'),
+    CATEGORY: firstTag(block, 'CATEGORY'),
+  };
+}
+
+function parseVoucherBlock(block) {
+  const inventoryBlocks = splitObjectBlocks(block, 'ALLINVENTORYENTRIES.LIST').concat(
+    splitObjectBlocks(block, 'INVENTORYENTRIES.LIST')
+  );
+  const inventoryEntries = inventoryBlocks.map((ib) => ({
+    stockItemName: firstTag(ib, 'STOCKITEMNAME'),
+    quantity: firstTag(ib, 'ACTUALQTY') || firstTag(ib, 'BILLEDQTY'),
+    rate: firstTag(ib, 'RATE'),
+    amount: firstTag(ib, 'AMOUNT'),
+    godownName: firstTag(ib, 'GODOWNNAME'),
+  }));
+
+  return {
+    guid: firstTag(block, 'GUID'),
+    voucherNumber: firstTag(block, 'VOUCHERNUMBER'),
+    voucherType: firstTag(block, 'VOUCHERTYPENAME'),
+    date: firstTag(block, 'DATE'),
+    reference: firstTag(block, 'REFERENCE'),
+    narration: firstTag(block, 'NARRATION'),
+    partyLedgerName: firstTag(block, 'PARTYLEDGERNAME'),
+    partyGstin: firstTag(block, 'PARTYGSTIN'),
+    placeOfSupply: firstTag(block, 'PLACEOFSUPPLY'),
+    irn: firstTag(block, 'IRN'),
+    amount: firstTag(block, 'AMOUNT'),
+    isCancelled: firstTag(block, 'ISCANCELLED'),
+    MASTERID: firstTag(block, 'MASTERID'),
+    ALTERID: firstTag(block, 'ALTERID'),
+    inventoryEntries,
+    companyGuid: null,
+  };
+}
+
 function parseNames(xml) {
   const names = extractTagValues(xml, 'NAME');
   return [...new Set(names)].filter((n) => n.length > 1 && n.length < 200);
 }
 
 function parseVoucherKeys(xml) {
+  const blocks = splitObjectBlocks(xml, 'VOUCHER');
+  if (blocks.length) {
+    const keys = [];
+    const seen = new Set();
+    for (const block of blocks) {
+      const v = parseVoucherBlock(block);
+      const key = (v.guid || (v.voucherNumber ? `${v.voucherType || 'vch'}:${v.voucherNumber}` : null) || '')
+        .toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      keys.push({ key, ...v });
+    }
+    return keys;
+  }
+  // Fallback legacy
   const guids = extractTagValues(xml, 'GUID');
   const numbers = extractTagValues(xml, 'VOUCHERNUMBER');
   const types = extractTagValues(xml, 'VOUCHERTYPENAME');
@@ -58,16 +168,8 @@ function parseVoucherKeys(xml) {
     const voucherNumber = numbers[i] || null;
     const voucherType = types[i] || null;
     const key = guid || (voucherNumber ? `${voucherType || 'vch'}:${voucherNumber}` : null);
-    if (key) {
-      keys.push({
-        key: String(key).toLowerCase(),
-        guid,
-        voucherNumber,
-        voucherType,
-      });
-    }
+    if (key) keys.push({ key: String(key).toLowerCase(), guid, voucherNumber, voucherType });
   }
-  // De-dupe by key
   const seen = new Set();
   return keys.filter((k) => {
     if (seen.has(k.key)) return false;
@@ -80,7 +182,6 @@ function resolveMasterSpec(masterType) {
   const mt = String(masterType || '').trim();
   if (MASTER_ENTITY[mt]) return { key: mt, spec: MASTER_ENTITY[mt] };
 
-  // Collection ID fallbacks (exportId passed as masterType)
   const byExport = {
     'Arivu List of Ledgers': 'Ledger',
     'Arivu List of GST Duty Ledgers': 'GstDutyLedger',
@@ -100,28 +201,55 @@ function resolveMasterSpec(masterType) {
     'Arivu List of GST Classifications': 'GSTClassification',
     'Arivu List of Tax Units': 'TaxUnit',
     'Arivu List of Vouchers': 'Voucher',
-    'Arivu Sales Vouchers': 'Voucher',
-    'Arivu Purchase Vouchers': 'Voucher',
-    'Arivu Payment Vouchers': 'Voucher',
-    'Arivu Receipt Vouchers': 'Voucher',
-    'Arivu Journal Vouchers': 'Voucher',
-    'Arivu Contra Vouchers': 'Voucher',
-    'Arivu Credit Note Vouchers': 'Voucher',
-    'Arivu Debit Note Vouchers': 'Voucher',
-    'Arivu Stock Journal Vouchers': 'Voucher',
-    'Arivu Delivery Note Vouchers': 'Voucher',
-    'Arivu Receipt Note Vouchers': 'Voucher',
   };
-  if (byExport[mt]) {
-    const key = byExport[mt];
-    return { key, spec: MASTER_ENTITY[key] };
-  }
+  if (byExport[mt]) return { key: byExport[mt], spec: MASTER_ENTITY[byExport[mt]] };
 
-  if (/voucher/i.test(mt)) return { key: 'Voucher', spec: MASTER_ENTITY.Voucher };
   if (/ledger/i.test(mt)) return { key: 'Ledger', spec: MASTER_ENTITY.Ledger };
-  if (/godown/i.test(mt)) return { key: 'Godown', spec: MASTER_ENTITY.Godown };
+  if (/stock\s*group/i.test(mt)) return { key: 'StockGroup', spec: MASTER_ENTITY.StockGroup };
   if (/stock\s*item|stockitem/i.test(mt)) return { key: 'StockItem', spec: MASTER_ENTITY.StockItem };
+  if (/godown/i.test(mt)) return { key: 'Godown', spec: MASTER_ENTITY.Godown };
+  if (/voucher/i.test(mt)) return { key: 'Voucher', spec: MASTER_ENTITY.Voucher };
   return null;
+}
+
+function tagForMaster(key) {
+  const map = {
+    Ledger: 'LEDGER',
+    GstDutyLedger: 'LEDGER',
+    Group: 'GROUP',
+    Currency: 'CURRENCY',
+    VoucherType: 'VOUCHERTYPE',
+    CostCategory: 'COSTCATEGORY',
+    CostCentre: 'COSTCENTRE',
+    Unit: 'UNIT',
+    AttendanceType: 'ATTENDANCETYPE',
+    StockGroup: 'STOCKGROUP',
+    StockCategory: 'STOCKCATEGORY',
+    StockItem: 'STOCKITEM',
+    StockSummary: 'STOCKITEM',
+    Godown: 'GODOWN',
+    Batch: 'BATCH',
+    GSTClassification: 'GSTCLASSIFICATION',
+    TaxUnit: 'TAXUNIT',
+  };
+  return map[key] || null;
+}
+
+function mapRemotePayload(spec, raw) {
+  if (spec.mapParty) return partyMapper.fromTally(raw);
+  if (spec.mapItem) return stockItemMapper.fromTally(raw);
+  if (spec.mapGodown) return godownMapper.fromTally(raw);
+  if (spec.entityType === 'stock_group' || spec.entityType === 'stock_category') {
+    return stockGroupMapper.fromTally(raw);
+  }
+  return {
+    name: raw.name || raw.NAME,
+    parent: raw.PARENT || raw.parent,
+    guid: raw.GUID,
+    masterId: raw.MASTERID,
+    alterId: raw.ALTERID,
+    ...raw,
+  };
 }
 
 async function upsertExternal({
@@ -131,32 +259,24 @@ async function upsertExternal({
   companyGuid,
   remotePayload,
   jobId,
+  referenceOnly = false,
 }) {
-  const pendingArivuId = `pending:${externalId}`;
   const existing = await ConnectorExternalObject.findOne({
     organizationId,
     connectorKey: CONNECTOR_KEYS.TALLY,
     entityType,
     externalId,
-    companyGuid: companyGuid || null,
   });
   if (existing) {
-    existing.lastSyncedAt = new Date();
-    existing.lastDirection = 'inbound';
     existing.metadata = {
       ...(existing.metadata || {}),
       remotePayload,
-      lastJobId: jobId,
+      lastInboundJobId: jobId ? String(jobId) : existing.metadata?.lastInboundJobId,
+      referenceOnly: referenceOnly || existing.metadata?.referenceOnly,
+      companyGuid: companyGuid || existing.metadata?.companyGuid,
     };
+    existing.markModified('metadata');
     await existing.save();
-    const { postProcessInboundRow } = require('./tallyMappingService');
-    await postProcessInboundRow({
-      organizationId,
-      row: existing,
-      name: remotePayload?.name || remotePayload?.NAME,
-      entityType,
-      companyGuid,
-    });
     return { upserted: false, row: existing };
   }
 
@@ -164,20 +284,16 @@ async function upsertExternal({
     organizationId,
     connectorKey: CONNECTOR_KEYS.TALLY,
     entityType,
-    arivuId: pendingArivuId,
     externalId,
+    arivuId: referenceOnly ? `ref:${externalId}` : `pending:${externalId}`,
     companyGuid: companyGuid || null,
-    lastSyncedAt: new Date(),
     lastDirection: 'inbound',
-    metadata: { remotePayload, source: 'inbound_export', jobId },
-  });
-  const { postProcessInboundRow } = require('./tallyMappingService');
-  await postProcessInboundRow({
-    organizationId,
-    row,
-    name: remotePayload?.name || remotePayload?.NAME,
-    entityType,
-    companyGuid,
+    metadata: {
+      remotePayload,
+      lastInboundJobId: jobId ? String(jobId) : null,
+      referenceOnly: Boolean(referenceOnly),
+      companyGuid,
+    },
   });
   return { upserted: true, row };
 }
@@ -188,6 +304,8 @@ async function applyInboundExport({
   masterType = 'Ledger',
   body = '',
   jobId = null,
+  limitOverride = null,
+  sinceAlterId = null,
 } = {}) {
   const xml = String(body || '');
   if (!xml || xml.length < 20) {
@@ -200,11 +318,14 @@ async function applyInboundExport({
   }
 
   const { key, spec } = resolved;
+  const limit = limitOverride || spec.limit || 500;
   let applied = 0;
   let created = 0;
+  let updated = 0;
 
   if (spec.voucher) {
-    for (const row of parseVoucherKeys(xml).slice(0, spec.limit)) {
+    const vouchers = [];
+    for (const row of parseVoucherKeys(xml).slice(0, limit)) {
       const externalId = `${spec.idPrefix}:${row.key}`;
       // eslint-disable-next-line no-await-in-loop
       const r = await upsertExternal({
@@ -212,24 +333,51 @@ async function applyInboundExport({
         entityType: spec.entityType,
         externalId,
         companyGuid,
-        remotePayload: {
-          guid: row.guid,
-          voucherNumber: row.voucherNumber,
-          voucherType: row.voucherType,
-        },
+        remotePayload: row,
         jobId,
       });
       applied += 1;
       if (r.upserted) created += 1;
+      else updated += 1;
+      vouchers.push({ ...row, _externalObjectId: String(r.row._id) });
     }
-    return { applied, created, masterType: key };
+
+    let materialize = null;
+    try {
+      const { maybeMaterializeInboundVouchers } = require('./engines/inboundVoucherMaterialize');
+      materialize = await maybeMaterializeInboundVouchers({
+        organizationId,
+        companyGuid,
+        vouchers,
+        jobId,
+      });
+    } catch (err) {
+      console.warn('[tallyInboundApply] voucher materialize failed', err.message);
+    }
+
+    return { applied, created, updated, masterType: key, vouchers, materialize };
   }
 
-  for (const name of parseNames(xml).slice(0, spec.limit)) {
-    const externalId = `${spec.idPrefix}:${name.toLowerCase()}`;
-    const remotePayload = spec.mapParty
-      ? partyMapper.fromTally({ name, NAME: name })
-      : { name };
+  const tag = tagForMaster(key);
+  const blocks = tag ? splitObjectBlocks(xml, tag) : [];
+  const objects = blocks.length
+    ? blocks.map(parseMasterObject).filter((o) => o.name)
+    : parseNames(xml).map((name) => ({ name, NAME: name }));
+
+  for (const raw of objects.slice(0, limit)) {
+    const alterNum = Number(raw.ALTERID || raw.alterId);
+    if (
+      sinceAlterId != null &&
+      String(sinceAlterId).trim() !== '' &&
+      !Number.isNaN(alterNum) &&
+      alterNum <= Number(sinceAlterId)
+    ) {
+      continue;
+    }
+    const nameKey = String(raw.name || raw.NAME || '').toLowerCase();
+    if (!nameKey) continue;
+    const externalId = `${spec.idPrefix}:${nameKey}`;
+    const remotePayload = mapRemotePayload(spec, raw);
     // eslint-disable-next-line no-await-in-loop
     const r = await upsertExternal({
       organizationId,
@@ -238,18 +386,59 @@ async function applyInboundExport({
       companyGuid,
       remotePayload,
       jobId,
+      referenceOnly: Boolean(spec.referenceOnly),
     });
     applied += 1;
     if (r.upserted) created += 1;
+    else updated += 1;
+
+    try {
+      const { postProcessInboundRow } = require('./tallyMappingService');
+      // eslint-disable-next-line no-await-in-loop
+      await postProcessInboundRow({
+        organizationId,
+        row: r.row,
+        name: raw.name || raw.NAME,
+        entityType: spec.entityType,
+        companyGuid,
+      });
+    } catch {
+      /* non-fatal */
+    }
   }
 
-  return { applied, created, masterType: key };
+  // Advance AlterID watermark for change detection
+  try {
+    const maxAlter = objects.reduce((max, o) => {
+      const n = Number(o.ALTERID || o.alterId);
+      if (!Number.isNaN(n) && (max == null || n > max)) return n;
+      return max;
+    }, null);
+    if (maxAlter != null && companyGuid) {
+      const changeDetectionEngine = require('./engines/changeDetectionEngine');
+      const moduleKey = String(spec.entityType || key || '')
+        .toLowerCase()
+        .replace(/^party$/, 'ledger')
+        .replace(/^item$/, 'stock_item');
+      await changeDetectionEngine.advanceWatermark({
+        organizationId,
+        companyGuid,
+        tallyModuleKey: moduleKey,
+        lastAlterId: String(maxAlter),
+      });
+    }
+  } catch {
+    /* non-fatal */
+  }
+
+  return { applied, created, updated, masterType: key };
 }
 
 module.exports = {
   applyInboundExport,
   parseNames,
   parseVoucherKeys,
+  parseMasterObject,
   resolveMasterSpec,
   MASTER_ENTITY,
 };

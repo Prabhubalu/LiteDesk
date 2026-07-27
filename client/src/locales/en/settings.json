@@ -18715,12 +18715,32 @@
     "message": "Never",
     "description": "Never heartbeat placeholder"
   },
+  "addonsTallyOwnerTitle": {
+    "message": "Default owner for Tally records",
+    "description": "Owner section title"
+  },
+  "addonsTallyOwnerDesc": {
+    "message": "Created by and Assigned to for records created from Tally. Defaults to who installed the addon. Source is set to Tally.",
+    "description": "Owner section description"
+  },
+  "addonsTallyOwnerPlaceholder": {
+    "message": "Select user…",
+    "description": "Owner select placeholder"
+  },
+  "addonsTallyOwnerSaved": {
+    "message": "Default owner saved",
+    "description": "Toast"
+  },
+  "addonsTallyOwnerSaveFailed": {
+    "message": "Could not save default owner",
+    "description": "Toast error"
+  },
   "addonsTallyCompanyTitle": {
-    "message": "Company & financial year",
+    "message": "Tally companies",
     "description": "Bound Tally companies section title"
   },
   "addonsTallyCompanyDesc": {
-    "message": "Companies discovered and bound for this workspace.",
+    "message": "Discovered companies appear here. Bind only the companies you want to sync — binding is saved and not reset by rediscovery.",
     "description": "Bound Tally companies section description"
   },
   "addonsTallyCompanyFy": {
@@ -18728,8 +18748,52 @@
     "description": "Company financial year and GUID summary"
   },
   "addonsTallyCompanyEmpty": {
-    "message": "No companies bound yet. Pair the agent to discover companies.",
+    "message": "No companies discovered yet. Pair the agent, open a company in Tally, then click Discover companies.",
     "description": "Empty companies list"
+  },
+  "addonsTallyCompanyBound": {
+    "message": "Bound",
+    "description": "Company binding status badge"
+  },
+  "addonsTallyCompanyDiscovered": {
+    "message": "Discovered",
+    "description": "Company discovered but not bound badge"
+  },
+  "addonsTallyDiscoverCompanies": {
+    "message": "Discover companies",
+    "description": "Trigger Tally company discovery"
+  },
+  "addonsTallyDiscoverQueued": {
+    "message": "Company discovery queued",
+    "description": "Toast after discover job queued"
+  },
+  "addonsTallyDiscoverFailed": {
+    "message": "Could not start company discovery",
+    "description": "Toast on discover failure"
+  },
+  "addonsTallyBindCompany": {
+    "message": "Bind",
+    "description": "Bind discovered Tally company"
+  },
+  "addonsTallyUnbindCompany": {
+    "message": "Unbind",
+    "description": "Unbind Tally company"
+  },
+  "addonsTallyBindSuccess": {
+    "message": "Company bound",
+    "description": "Toast after bind"
+  },
+  "addonsTallyBindFailed": {
+    "message": "Could not bind company",
+    "description": "Toast on bind failure"
+  },
+  "addonsTallyUnbindSuccess": {
+    "message": "Company unbound",
+    "description": "Toast after unbind"
+  },
+  "addonsTallyUnbindFailed": {
+    "message": "Could not unbind company",
+    "description": "Toast on unbind failure"
   },
   "addonsTallyDryRun": {
     "message": "Dry run",
@@ -19242,6 +19306,289 @@
   "tallyZeroCompaniesHint": {
     "message": "No Tally companies yet. Load TDL pack v1.0.0: F1 → TDL & Add-On → Manage Local TDLs → add C:\\Program Files\\Arivu\\Connector\\tdl\\ArivuConnector.tdl (or ArivuConnector.All.tdl if Includes fail). Sibling modules must stay in that folder. Restart Tally until Gateway shows Arivu Connector. Enable HTTP 9000, keep Desktop → Arivu Connector open, then Dry run.",
     "description": "Shown when companies count is zero"
+  },
+  "tallyTabSyncSettings": {
+    "message": "Sync settings",
+    "description": "Primary tab"
+  },
+  "tallyTabSyncLogs": {
+    "message": "Sync logs",
+    "description": "Logs tab"
+  },
+  "tallyTabAdvanced": {
+    "message": "Advanced",
+    "description": "Advanced tab"
+  },
+  "tallyModuleMappingTitle": {
+    "message": "Module mapping",
+    "description": "Table title"
+  },
+  "tallyModuleMappingDesc": {
+    "message": "Map each Tally module to an Arivu module, choose sync direction, and optional filters.",
+    "description": "Table desc"
+  },
+  "tallyColTallyModule": {
+    "message": "Tally module",
+    "description": "Column"
+  },
+  "tallyColArivuModule": {
+    "message": "Arivu module",
+    "description": "Column"
+  },
+  "tallyColSyncWay": {
+    "message": "Sync way",
+    "description": "Column"
+  },
+  "tallyColFilter": {
+    "message": "Filter",
+    "description": "Column"
+  },
+  "tallyColSyncFrom": {
+    "message": "Sync From",
+    "description": "Migration column"
+  },
+  "tallySyncWayDisabled": {
+    "message": "Disabled",
+    "description": "Sync way"
+  },
+  "tallySyncWayTallyToArivu": {
+    "message": "Tally → Arivu",
+    "description": "Sync way"
+  },
+  "tallySyncWayArivuToTally": {
+    "message": "Arivu → Tally",
+    "description": "Sync way"
+  },
+  "tallySyncWayBidirectional": {
+    "message": "Bidirectional",
+    "description": "Sync way"
+  },
+  "tallyMigrationMode": {
+    "message": "Migration mode",
+    "description": "Toggle"
+  },
+  "tallyMigrationModeDesc": {
+    "message": "Shows Sync From for mass backfill. After migration, turn off to use incremental watermarks.",
+    "description": "Toggle help"
+  },
+  "tallyRecordsPerCycle": {
+    "message": "Records per sync cycle",
+    "description": "Batch limit"
+  },
+  "tallyRecordsPerCycleDesc": {
+    "message": "Limits how many records process each run to keep Tally and Arivu responsive.",
+    "description": "Help"
+  },
+  "tallyPreventProductTax": {
+    "message": "Prevent product tax update",
+    "description": "Toggle"
+  },
+  "tallyPreventProductTaxDesc": {
+    "message": "Inbound item sync will not overwrite GST rate or taxability on products.",
+    "description": "Help"
+  },
+  "tallyTaxMappingTitle": {
+    "message": "Custom tax mapping",
+    "description": "Section"
+  },
+  "tallyTaxMappingDesc": {
+    "message": "Map Tally tax/duty ledgers to Arivu tax codes and rates.",
+    "description": "Section desc"
+  },
+  "tallyTaxLedger": {
+    "message": "Tally ledger",
+    "description": "Field"
+  },
+  "tallyTaxCode": {
+    "message": "Arivu tax code",
+    "description": "Field"
+  },
+  "tallyTaxRate": {
+    "message": "Rate %",
+    "description": "Field"
+  },
+  "tallyTaxAdd": {
+    "message": "Add tax map",
+    "description": "Button"
+  },
+  "tallyResetModule": {
+    "message": "Reset module",
+    "description": "Button"
+  },
+  "tallyResetFull": {
+    "message": "Reset all Tally config",
+    "description": "Button"
+  },
+  "tallyResetFullConfirm": {
+    "message": "Reset all module maps, field maps, tax maps, and links for this company?",
+    "description": "Confirm"
+  },
+  "tallySaveMappings": {
+    "message": "Save mappings",
+    "description": "Button"
+  },
+  "tallyFilterPostedOnly": {
+    "message": "Posted only",
+    "description": "Filter"
+  },
+  "tallyFilterDateDays": {
+    "message": "Days window",
+    "description": "Filter"
+  },
+  "tallyFilterParents": {
+    "message": "Parent groups (comma-separated)",
+    "description": "Filter"
+  },
+  "tallySyncLogDate": {
+    "message": "Date",
+    "description": "Log col"
+  },
+  "tallySyncLogTime": {
+    "message": "Time",
+    "description": "Log col"
+  },
+  "tallySyncLogModule": {
+    "message": "Module",
+    "description": "Log col"
+  },
+  "tallySyncLogCompany": {
+    "message": "Company",
+    "description": "Log col"
+  },
+  "tallySyncLogArivu": {
+    "message": "Arivu",
+    "description": "Log col"
+  },
+  "tallySyncLogTally": {
+    "message": "Tally",
+    "description": "Log col"
+  },
+  "tallySyncLogCreated": {
+    "message": "Created",
+    "description": "Count"
+  },
+  "tallySyncLogUpdated": {
+    "message": "Updated",
+    "description": "Count"
+  },
+  "tallySyncLogSkipped": {
+    "message": "Skipped",
+    "description": "Count"
+  },
+  "tallySyncLogEmpty": {
+    "message": "No sync runs yet",
+    "description": "Empty"
+  },
+  "tallySyncLogRecordsTitle": {
+    "message": "Records",
+    "description": "Drawer title"
+  },
+  "tallySyncLogDownload": {
+    "message": "Download CSV",
+    "description": "Button"
+  },
+  "tallySyncLogReason": {
+    "message": "Reason",
+    "description": "Col"
+  },
+  "tallySyncLogRecordName": {
+    "message": "Record",
+    "description": "Col"
+  },
+  "tallyOpenRecord": {
+    "message": "Open",
+    "description": "Link"
+  },
+  "tallyFilterEdit": {
+    "message": "Edit filter",
+    "description": "Button"
+  },
+  "tallyNoneOption": {
+    "message": "— (none / reference)",
+    "description": "Dropdown"
+  },
+  "tallyDiscoverOnlyHint": {
+    "message": "Discover-only until mapped",
+    "description": "Hint under payroll-style modules"
+  },
+  "tallyCenterDescSimple": {
+    "message": "Map Tally modules to Arivu, control sync direction and filters, then review sync logs.",
+    "description": "Updated page desc"
+  },
+  "tallyKeepArivu": {
+    "message": "Keep Arivu",
+    "description": "Conflict resolution"
+  },
+  "tallyKeepTally": {
+    "message": "Keep Tally",
+    "description": "Conflict resolution"
+  },
+  "tallyMerge": {
+    "message": "Merge",
+    "description": "Conflict resolution"
+  },
+  "tallyIgnore": {
+    "message": "Ignore",
+    "description": "Conflict resolution"
+  },
+  "tallyFieldArivu": {
+    "message": "Arivu field",
+    "description": "Field map col"
+  },
+  "tallyFieldTally": {
+    "message": "Tally field",
+    "description": "Field map col"
+  },
+  "tallyFieldMatch": {
+    "message": "Match",
+    "description": "Field map col"
+  },
+  "tallyFieldMapHint": {
+    "message": "Tally Ledger maps to Arivu Organizations. Pick fields from both dropdowns.",
+    "description": "Advanced field map help"
+  },
+  "tallyMandatoryBannerTitle": {
+    "message": "Mandatory fields need mapping",
+    "description": "Banner title when required Arivu fields lack Tally mapping"
+  },
+  "tallyMandatoryBannerBody": {
+    "message": "Map these required fields before saving: {fields}",
+    "description": "Banner body listing unmapped mandatory field labels"
+  },
+  "tallyMandatoryMarkerTitle": {
+    "message": "Mandatory field",
+    "description": "Tooltip on required field asterisk"
+  },
+  "tallyMandatorySaveFailed": {
+    "message": "Could not save field mappings. Map all mandatory fields and try again.",
+    "description": "Fallback save error"
+  },
+  "tallyScheduledSync": {
+    "message": "Scheduled sync",
+    "description": "Enable cloud scheduler for Tally incremental sync"
+  },
+  "tallyScheduledSyncDesc": {
+    "message": "Automatically sync bound companies on your interval. Requires agent online and dry-run default off.",
+    "description": "Scheduled sync help"
+  },
+  "tallySyncInterval": {
+    "message": "Sync interval (minutes)",
+    "description": "How often each bound company syncs"
+  },
+  "tallySyncIntervalDesc": {
+    "message": "1–1440. Worker checks every 60 seconds; sync runs at most once per this interval.",
+    "description": "Sync interval help"
+  },
+  "tallyDryRunDefault": {
+    "message": "Dry-run default",
+    "description": "Keep scheduled sync from writing until ready"
+  },
+  "tallyDryRunDefaultDesc": {
+    "message": "When on, scheduled live sync stays paused. Turn off after a clean dry run.",
+    "description": "Dry-run default help"
+  },
+  "tallyScheduledBlockedByDryRun": {
+    "message": "Scheduled sync is enabled but dry-run default is still on — no live scheduled sync will run until you turn dry-run default off.",
+    "description": "Banner when schedule blocked by dry-run"
   }
 }
-

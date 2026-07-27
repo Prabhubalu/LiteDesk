@@ -25,14 +25,40 @@ const TallyCompanyBindingSchema = new Schema(
     port: { type: Number, default: 9000 },
     /** Per-module source-of-truth map, e.g. { stock: 'tally', parties: 'arivu' }. */
     sourceOfTruth: { type: Schema.Types.Mixed, default: {} },
-    enabled: { type: Boolean, default: true, index: true },
+    enabled: { type: Boolean, default: false, index: true },
     status: {
       type: String,
       enum: ['discovered', 'active', 'paused', 'error'],
       default: 'discovered',
       index: true,
     },
+    /** Set when the user explicitly binds; never cleared by rediscovery. */
+    boundAt: { type: Date, default: null },
     lastSyncAt: { type: Date, default: null },
+    lastDiscoveredAt: { type: Date, default: null },
+    /** Last time the cloud scheduler enqueued an incremental sync for this binding. */
+    lastScheduledSyncAt: { type: Date, default: null },
+    /** ATIP: active metadata snapshot driving schemas/mappings (1B). */
+    activeMetadataSnapshotId: {
+      type: Schema.Types.ObjectId,
+      ref: 'TallyMetadataSnapshot',
+      default: null,
+    },
+    schemaVersion: { type: Number, default: null },
+    activeMappingVersionId: {
+      type: Schema.Types.ObjectId,
+      ref: 'TallyMappingVersion',
+      default: null,
+    },
+    multiGstin: { type: Boolean, default: false },
+    gstins: { type: [String], default: [] },
+    healthState: {
+      type: String,
+      enum: ['searching', 'found', 'metadata_pending', 'ready', 'degraded', 'offline'],
+      default: 'searching',
+      index: true,
+    },
+    validationChecklist: { type: Schema.Types.Mixed, default: {} },
     metadata: { type: Schema.Types.Mixed, default: {} },
   },
   { timestamps: true }

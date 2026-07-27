@@ -157,9 +157,40 @@ Only **Posted / Approved** commercial states sync. Never push Arivu Draft. Fail 
 
 ---
 
-## 12. Explicit non-goals (GTM v1)
+## 13. ATIP platform decisions (locked)
+
+**ATIP** = Arivu Tally Integration Platform. Engines live under `server/services/connectors/tally/engines/`.
+
+### 1B — Fully dynamic metadata
+
+- Runtime field/object schemas come from **live Tally metadata discovery** stored as `TallyMetadataSnapshot` + `TallyObjectSchema` + `TallyGeneratedSchema`.
+- Static catalogs (`tallyFieldCatalog.js`, `TALLY_VERIFIED_FIELD_SCHEMA.md`) are **CI golden fixtures / bootstrap hints only**, not sync SoT.
+- Sync transforms are driven by versioned `TallyMappingVersion` / `ConnectorFieldMapping` rules via the Transformation Engine.
+
+### 2C — Configurable inbound vouchers
+
+- Defaults: masters = bidirectional; vouchers = `arivu_to_tally`.
+- Per-module `inboundCreatePolicy`: `draft` | `posted_if_valid` | `review_only`.
+- When `syncWay` is `tally_to_arivu` or `bidirectional` and policy ≠ `review_only`, inbound voucher **create/update into CRM is first-class**.
+
+### Engine boundaries
+
+Connection → Metadata → Schema Generator → Mapping (+ AI) → Validation → Transformation → Synchronisation (Change Detection, Queue, Conflict) → Audit / Monitoring / Error Intelligence.
+
+Cloud never opens customer `:9000`. Agent is sole XML client. Cancel ≠ delete. Arivu number → Tally `REFERENCE`. Preserve IRN. Stock SoT via canonical inventory path.
+
+### Future ERP readiness
+
+Engine interfaces are connector-agnostic with `connectorKey='tally'` adapters. Additional ERPs reuse queue/audit/mapping surfaces without redesign.
+
+---
+
+## 14. Explicit non-goals
 
 - Replacing Tally as GST return filing UI
 - ClearTax-class IRP/GSP product (preserve IRN only)
 - Bank statement OCR / Account Aggregator
-- Second ERP connectors beyond shell reuse
+- Building SAP / Dynamics / NetSuite connectors in this program (interfaces only)
+- Dual stock deduction paths
+- Hard-delete of synced vouchers via connector
+- Cloud direct-to-Tally XML

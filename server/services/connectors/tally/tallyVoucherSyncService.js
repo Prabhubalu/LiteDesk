@@ -28,6 +28,8 @@ const receiptVoucherMapper = require('./mappers/receiptVoucherMapper');
 const paymentVoucherMapper = require('./mappers/paymentVoucherMapper');
 const { mapJournalToTallyPayload } = require('./mappers/journalVoucherMapper');
 const { mapContraToTallyPayload } = require('./mappers/contraVoucherMapper');
+const creditNoteVoucherMapper = require('./mappers/creditNoteVoucherMapper');
+const debitNoteVoucherMapper = require('./mappers/debitNoteVoucherMapper');
 const JournalEntry = require('../../../models/JournalEntry');
 const ContraEntry = require('../../../models/ContraEntry');
 
@@ -49,9 +51,34 @@ async function enqueueVoucher({
   companyGuid = null,
   dryRun = false,
   idempotencyKey = null,
+  arivuRecord = null,
 }) {
+  const { prepareOutboundPayload, normalizeOutboxOperation } = require('./engines/ruleOverlayService');
+  const prepared = await prepareOutboundPayload({
+    organizationId,
+    companyGuid,
+    entityType,
+    arivuRecord,
+    tallyPayload: payload,
+  });
+  const finalPayload = {
+    ...prepared.payload,
+    _atip: {
+      ruleCount: prepared.ruleCount || 0,
+      taxRuleCount: prepared.taxRuleCount || 0,
+      source: prepared.source,
+    },
+  };
+  const normalizedOp = normalizeOutboxOperation(operation);
+
   if (dryRun) {
-    return { dryRun: true, entityType, arivuId, operation, payload };
+    return {
+      dryRun: true,
+      entityType,
+      arivuId,
+      operation: normalizedOp,
+      payload: finalPayload,
+    };
   }
 
   const outbox = await connectorOutboxService.enqueueOutbox({
@@ -59,20 +86,20 @@ async function enqueueVoucher({
     connectorKey: CONNECTOR_KEYS.TALLY,
     entityType,
     arivuId,
-    operation,
+    operation: normalizedOp,
     companyGuid,
-    payload,
+    payload: finalPayload,
     idempotencyKey,
-    metadata: { source: 'tallyVoucherSyncService' },
+    metadata: { source: 'tallyVoucherSyncService', atip: finalPayload._atip },
   });
 
   return {
     dryRun: false,
     entityType,
     arivuId,
-    operation,
+    operation: normalizedOp,
     outboxId: String(outbox._id),
-    payload,
+    payload: finalPayload,
   };
 }
 
@@ -303,6 +330,72 @@ async function pushContra({
   return result;
 }
 
+async function pushCreditNote({
+  organizationId,
+  invoiceId,
+  companyGuid = null,
+  dryRun = false,
+  cancel = false,
+  partyLedgerName = null,
+} = {}) {
+  if (!organizationId || !invoiceId) throw new Error('organizationId and invoiceId required');
+  const invoice = await Invoice.findOne({ _id: invoiceId, organizationId }).lean();
+  if (!invoice) throw new Error('Invoice not found');
+  const lines = await InvoiceLine.find({ organizationId, invoiceId }).lean();
+  let resolvedParty = partyLedgerName;
+  if (!resolvedParty && invoice.organizationRefId) {
+    const party = await Organization.findById(invoice.organizationRefId).select('name').lean();
+    resolvedParty = party?.name || null;
+  }
+  const payload = creditNoteVoucherMapper.toTally(invoice, lines, { partyLedgerName: resolvedParty });
+  const operation = cancel ? 'cancel' : 'push';
+  const result = await enqueueVoucher({
+    organizationId,
+    entityType: 'credit_note',
+    arivuId: String(invoice._id),
+    operation,
+    payload: cancel ? { ...payload, cancelOnly: true } : payload,
+    companyGuid,
+    dryRun,
+    idempotencyKey: `tally:credit_note:${invoice._id}:${operation}:${payload.reference || ''}`,
+  });
+  if (!dryRun) await markSyncPending(Invoice, invoice);
+  return result;
+}
+
+async function pushDebitNote({
+  organizationId,
+  invoiceId,
+  companyGuid = null,
+  dryRun = false,
+  cancel = false,
+  partyLedgerName = null,
+} = {}) {
+  if (!organizationId || !invoiceId) throw new Error('organizationId and invoiceId required');
+  const invoice = await Invoice.findOne({ _id: invoiceId, organizationId }).lean();
+  if (!invoice) throw new Error('Invoice not found');
+  const lines = await InvoiceLine.find({ organizationId, invoiceId }).lean();
+  let resolvedParty = partyLedgerName;
+  if (!resolvedParty && invoice.organizationRefId) {
+    const party = await Organization.findById(invoice.organizationRefId).select('name').lean();
+    resolvedParty = party?.name || null;
+  }
+  const payload = debitNoteVoucherMapper.toTally(invoice, lines, { partyLedgerName: resolvedParty });
+  const operation = cancel ? 'cancel' : 'push';
+  const result = await enqueueVoucher({
+    organizationId,
+    entityType: 'debit_note',
+    arivuId: String(invoice._id),
+    operation,
+    payload: cancel ? { ...payload, cancelOnly: true } : payload,
+    companyGuid,
+    dryRun,
+    idempotencyKey: `tally:debit_note:${invoice._id}:${operation}:${payload.reference || ''}`,
+  });
+  if (!dryRun) await markSyncPending(Invoice, invoice);
+  return result;
+}
+
 /**
  * After agent ack: store Tally MASTERID on Arivu sync triad.
  */
@@ -338,6 +431,151 @@ async function linkVoucherExternal({
   }
 }
 
+async function pushSalesOrder({
+  organizationId,
+  salesOrderId,
+  companyGuid = null,
+  dryRun = false,
+  cancel = false,
+} = {}) {
+  if (!organizationId || !salesOrderId) throw new Error('organizationId and salesOrderId required');
+  const SalesOrder = require('../../../models/SalesOrder');
+  const SalesOrderLine = require('../../../models/SalesOrderLine');
+  const { salesOrderToTally } = require('./mappers/commercialDocMapper');
+
+  const order = await SalesOrder.findOne({ _id: salesOrderId, organizationId, deletedAt: null }).lean();
+  if (!order) throw new Error('SalesOrder not found');
+  const lines = await SalesOrderLine.find({ organizationId, salesOrderId: order._id })
+    .sort({ lineOrder: 1 })
+    .lean();
+  const partyLedgerName = await resolvePartyLedgerName(order.organizationRefId || order.customerId);
+  const payload = salesOrderToTally(order, lines, { partyLedgerName });
+  const operation = cancel ? 'cancel' : 'upsert';
+  const result = await enqueueVoucher({
+    organizationId,
+    entityType: 'sales_order',
+    arivuId: String(order._id),
+    operation,
+    payload: cancel ? { ...payload, cancelOnly: true } : payload,
+    companyGuid,
+    dryRun,
+    arivuRecord: order,
+    idempotencyKey: `tally:sales_order:${order._id}:${operation}:${payload.reference || ''}`,
+  });
+  if (!dryRun) await markSyncPending(SalesOrder, order);
+  return result;
+}
+
+async function pushPurchaseOrder({
+  organizationId,
+  purchaseOrderId,
+  companyGuid = null,
+  dryRun = false,
+  cancel = false,
+} = {}) {
+  if (!organizationId || !purchaseOrderId) {
+    throw new Error('organizationId and purchaseOrderId required');
+  }
+  const { PurchaseOrder, PurchaseOrderLine } = require('../../../models/PurchaseOrder');
+  const { purchaseOrderToTally } = require('./mappers/commercialDocMapper');
+
+  const order = await PurchaseOrder.findOne({
+    _id: purchaseOrderId,
+    organizationId,
+    deletedAt: null,
+  }).lean();
+  if (!order) throw new Error('PurchaseOrder not found');
+  const lines = await PurchaseOrderLine.find({ organizationId, purchaseOrderId: order._id })
+    .sort({ lineOrder: 1 })
+    .lean();
+  const partyLedgerName = await resolvePartyLedgerName(order.vendorId);
+  const payload = purchaseOrderToTally(order, lines, { partyLedgerName });
+  const operation = cancel ? 'cancel' : 'upsert';
+  const result = await enqueueVoucher({
+    organizationId,
+    entityType: 'purchase_order',
+    arivuId: String(order._id),
+    operation,
+    payload: cancel ? { ...payload, cancelOnly: true } : payload,
+    companyGuid,
+    dryRun,
+    arivuRecord: order,
+    idempotencyKey: `tally:purchase_order:${order._id}:${operation}:${payload.reference || ''}`,
+  });
+  if (!dryRun) await markSyncPending(PurchaseOrder, order);
+  return result;
+}
+
+async function pushDeliveryNote({
+  organizationId,
+  deliveryNoteId,
+  companyGuid = null,
+  dryRun = false,
+  cancel = false,
+} = {}) {
+  if (!organizationId || !deliveryNoteId) {
+    throw new Error('organizationId and deliveryNoteId required');
+  }
+  const fulfillmentDocs = require('../../fulfillmentDocsService');
+  const { DeliveryNote, DeliveryNoteLine } = fulfillmentDocs;
+  const { deliveryNoteToTally } = require('./mappers/commercialDocMapper');
+
+  const note = await DeliveryNote.findOne({ _id: deliveryNoteId, organizationId, deletedAt: null }).lean();
+  if (!note) throw new Error('DeliveryNote not found');
+  const lines = await DeliveryNoteLine.find({ organizationId, deliveryNoteId: note._id }).lean();
+  const partyLedgerName = await resolvePartyLedgerName(note.organizationRefId || note.customerId);
+  const payload = deliveryNoteToTally(note, lines, { partyLedgerName });
+  const operation = cancel ? 'cancel' : 'upsert';
+  return enqueueVoucher({
+    organizationId,
+    entityType: 'delivery_note',
+    arivuId: String(note._id),
+    operation,
+    payload: cancel ? { ...payload, cancelOnly: true } : payload,
+    companyGuid,
+    dryRun,
+    arivuRecord: note,
+    idempotencyKey: `tally:delivery_note:${note._id}:${operation}:${payload.reference || ''}`,
+  });
+}
+
+async function pushReceiptNote({
+  organizationId,
+  receiptNoteId,
+  companyGuid = null,
+  dryRun = false,
+  cancel = false,
+} = {}) {
+  if (!organizationId || !receiptNoteId) {
+    throw new Error('organizationId and receiptNoteId required');
+  }
+  const { ReceiptNote, ReceiptNoteLine } = require('../../../models/ReceiptNote');
+  const { receiptNoteToTally } = require('./mappers/commercialDocMapper');
+  const note = await ReceiptNote.findOne({
+    _id: receiptNoteId,
+    organizationId,
+    deletedAt: null,
+  }).lean();
+  if (!note) throw new Error('ReceiptNote not found');
+  const lines = await ReceiptNoteLine.find({ organizationId, receiptNoteId: note._id }).lean();
+  const partyLedgerName = await resolvePartyLedgerName(note.vendorId);
+  const payload = receiptNoteToTally(note, lines, { partyLedgerName });
+  const operation = cancel ? 'cancel' : 'upsert';
+  const result = await enqueueVoucher({
+    organizationId,
+    entityType: 'receipt_note',
+    arivuId: String(note._id),
+    operation,
+    payload: cancel ? { ...payload, cancelOnly: true } : payload,
+    companyGuid,
+    dryRun,
+    arivuRecord: note,
+    idempotencyKey: `tally:receipt_note:${note._id}:${operation}:${payload.reference || ''}`,
+  });
+  if (!dryRun) await markSyncPending(ReceiptNote, note);
+  return result;
+}
+
 module.exports = {
   pushInvoice,
   pushPurchaseBill,
@@ -345,6 +583,12 @@ module.exports = {
   pushVendorPayment,
   pushJournal,
   pushContra,
+  pushCreditNote,
+  pushDebitNote,
+  pushSalesOrder,
+  pushPurchaseOrder,
+  pushDeliveryNote,
+  pushReceiptNote,
   linkVoucherExternal,
   enqueueVoucher,
 };

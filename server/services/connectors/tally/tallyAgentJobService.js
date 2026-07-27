@@ -10,8 +10,10 @@ const { CONNECTOR_KEYS, SYNC_JOB_STATUSES } = require('../connectorConstants');
 function mapJobTypeToAgentType(jobType) {
   const t = String(jobType || '').toLowerCase();
   if (t === 'dry_run' || t === 'discover' || t === 'discover_companies') return 'discover';
+  if (t === 'discover_metadata') return 'discover_metadata';
   if (t === 'push_voucher' || t === 'push_master' || t === 'outbox') return 'push_voucher';
   if (t === 'pull_masters' || t === 'pull_vouchers') return 'pull_masters';
+  if (t === 'selective_sync') return 'sync';
   if (t === 'full' || t === 'incremental' || t === 'sync') return 'sync';
   return t || 'sync';
 }
@@ -107,35 +109,54 @@ function normalizeCompany(raw, fallbackPort = 9000) {
 async function upsertCompaniesFromResult({ organizationId, connectionId, companies = [], port }) {
   const list = Array.isArray(companies) ? companies : [];
   const upserted = [];
+  const now = new Date();
 
   for (const raw of list) {
     const company = normalizeCompany(raw, port);
     if (!company) continue;
 
-    const doc = await TallyCompanyBinding.findOneAndUpdate(
-      { organizationId, companyGuid: company.companyGuid },
-      {
-        $set: {
-          connectionId,
-          companyName: company.companyName,
-          financialYear: company.financialYear,
-          port: company.port,
-          status: 'discovered',
-          enabled: true,
-          lastSyncAt: new Date(),
-          metadata: {
-            ...(typeof raw === 'object' ? raw : {}),
-            source: 'agent_discover',
-          },
-        },
-        $setOnInsert: {
-          organizationId,
-          companyGuid: company.companyGuid,
-          sourceOfTruth: { stock: 'arivu', parties: 'arivu', vouchers: 'arivu' },
-        },
-      },
-      { upsert: true, new: true }
-    );
+    // Discovery only: never auto-bind. Preserve user bind/unbind across rediscovery.
+    const existing = await TallyCompanyBinding.findOne({
+      organizationId,
+      companyGuid: company.companyGuid,
+    });
+
+    const discoveryMeta = {
+      ...(typeof raw === 'object' && raw ? raw : {}),
+      source: 'agent_discover',
+      lastDiscoveredAt: now.toISOString(),
+    };
+
+    let doc;
+    if (existing) {
+      existing.connectionId = connectionId;
+      existing.companyName = company.companyName;
+      existing.financialYear = company.financialYear;
+      existing.port = company.port;
+      existing.lastDiscoveredAt = now;
+      existing.metadata = {
+        ...(existing.metadata && typeof existing.metadata === 'object' ? existing.metadata : {}),
+        ...discoveryMeta,
+      };
+      // Keep enabled / status / boundAt as the user left them
+      await existing.save();
+      doc = existing;
+    } else {
+      doc = await TallyCompanyBinding.create({
+        organizationId,
+        connectionId,
+        companyGuid: company.companyGuid,
+        companyName: company.companyName,
+        financialYear: company.financialYear,
+        port: company.port,
+        enabled: false,
+        status: 'discovered',
+        boundAt: null,
+        lastDiscoveredAt: now,
+        sourceOfTruth: { stock: 'arivu', parties: 'arivu', vouchers: 'arivu' },
+        metadata: discoveryMeta,
+      });
+    }
     upserted.push(doc);
   }
 
@@ -212,9 +233,47 @@ async function acknowledgeAgentJob({
         masterType: job.payload?.masterType || job.payload?.exportId || 'Ledger',
         body,
         jobId: String(job._id),
+        limitOverride: job.payload?.limit || null,
+        sinceAlterId: job.payload?.sinceAlterId || null,
       });
     } catch (err) {
       console.warn('[tallyAgentJob] inbound apply failed', err.message);
+    }
+  }
+
+  // ATIP 1B: metadata discovery result → snapshot + schemas
+  let metadataResult = null;
+  if (ok && job.jobType === 'discover_metadata') {
+    try {
+      const metadataEngine = require('./engines/metadataEngine');
+      const synchronisationEngine = require('./engines/synchronisationEngine');
+      const rawPayload =
+        result?.result?.metadata ||
+        result?.metadata ||
+        result?.result?.bodyParsed ||
+        {
+          tallyVersion: discovery?.tallyVersion || result?.result?.tallyVersion,
+          tdlPackVersion: discovery?.tdlPackVersion || result?.result?.tdlPackVersion,
+          financialYear: discovery?.financialYear || null,
+          features: result?.result?.features || {},
+          objects: result?.result?.objects || [],
+        };
+      metadataResult = await synchronisationEngine.completeMetadataOnboarding({
+        organizationId,
+        companyGuid: job.companyGuid || job.payload?.companyGuid,
+        rawPayload,
+      });
+      // Ensure bootstrap if agent returned empty objects
+      if (!rawPayload.objects?.length) {
+        await metadataEngine.applyDiscoveryResult({
+          organizationId,
+          companyGuid: job.companyGuid || job.payload?.companyGuid,
+          connectionId,
+          rawPayload,
+        });
+      }
+    } catch (err) {
+      console.warn('[tallyAgentJob] metadata apply failed', err.message);
     }
   }
 

@@ -13,6 +13,16 @@ const TALLY_CONNECTION_STATUSES = [
   'revoked',
 ];
 
+/** ATIP Connection Engine health state machine. */
+const TALLY_HEALTH_STATES = [
+  'searching',
+  'found',
+  'metadata_pending',
+  'ready',
+  'degraded',
+  'offline',
+];
+
 const TallyConnectionSchema = new Schema(
   {
     organizationId: {
@@ -38,6 +48,14 @@ const TallyConnectionSchema = new Schema(
     /** Opaque encrypted agent secrets / tokens (ciphertext blobs). */
     encryptedSecrets: { type: Schema.Types.Mixed, default: null },
     agentTokenHash: { type: String, trim: true, default: null },
+    healthState: {
+      type: String,
+      enum: TALLY_HEALTH_STATES,
+      default: 'searching',
+      index: true,
+    },
+    validationChecklist: { type: Schema.Types.Mixed, default: {} },
+    lastCompanyFingerprint: { type: String, trim: true, default: null },
     metadata: { type: Schema.Types.Mixed, default: {} },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     revokedAt: { type: Date, default: null },
@@ -53,3 +71,4 @@ TallyConnectionSchema.index(
 
 module.exports = wrapTenantModel(mongoose.model('TallyConnection', TallyConnectionSchema));
 module.exports.TALLY_CONNECTION_STATUSES = TALLY_CONNECTION_STATUSES;
+module.exports.TALLY_HEALTH_STATES = TALLY_HEALTH_STATES;

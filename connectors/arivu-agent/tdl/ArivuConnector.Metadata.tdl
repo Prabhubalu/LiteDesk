@@ -1,0 +1,35 @@
+;; ============================================================================
+;; Arivu Connector — Metadata introspection (ATIP 1B)
+;; Soft probe report; agent may also bootstrap catalogue server-side when Tally
+;; does not expose full schema via XML. Collection ID must stay stable.
+;; ============================================================================
+
+[Collection: Arivu Metadata Introspect]
+    Type : Company
+    Fetch : Name, Guid, StartingFrom, BooksFrom
+
+[Report: Arivu Metadata Introspect]
+    Form : Arivu Metadata Introspect
+    Title : $$LocaleString:"Arivu Metadata"
+
+[Form: Arivu Metadata Introspect]
+    Parts : Arivu Metadata Introspect
+    Width : 60% Screen
+    Height : 40% Screen
+
+[Part: Arivu Metadata Introspect]
+    Lines : AMI Title, AMI Ver
+    Scroll : Vertical
+
+[Line: AMI Title]
+    Fields : AMI Medium
+    Local : Field : AMI Medium : Set as : $$LocaleString:"Arivu metadata probe (ATIP)"
+
+[Line: AMI Ver]
+    Fields : AMI Medium
+    Local : Field : AMI Medium : Set as : $$LocaleString:"Pack exports company identity for discovery fingerprint"
+
+[Field: AMI Medium]
+    Use : Name Field
+    Align : Left
+    Full Width : Yes
