@@ -17,7 +17,8 @@ const RECORD_SOURCE_VALUES = Object.freeze([
   'LinkedIn',
   'Referral',
   'Campaign',
-  'Integration'
+  'Integration',
+  'Tally',
 ]);
 
 const DEFAULT_RECORD_SOURCE = 'Direct';

@@ -54,12 +54,13 @@ async function enqueue({
   metadata = {},
 }) {
   const connectorOutboxService = require('../connectorOutboxService');
+  const { normalizeOutboxOperation } = require('./engines/ruleOverlayService');
   return connectorOutboxService.enqueueOutbox({
     organizationId,
     connectorKey: CONNECTOR_KEYS.TALLY,
     entityType,
     arivuId: String(arivuId),
-    operation,
+    operation: normalizeOutboxOperation(operation),
     payload,
     companyGuid,
     idempotencyKey,

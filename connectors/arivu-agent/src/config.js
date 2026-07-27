@@ -4,17 +4,55 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const AGENT_VERSION = '0.3.0';
+const AGENT_VERSION = '0.3.1';
 
 /**
- * ProgramData on Windows; fallback to ~/.arivu/connector elsewhere.
+ * Prefer LocalAppData (user-writable, no admin). Fall back to ProgramData only
+ * when explicitly requested or when an existing ProgramData install is present
+ * and LocalAppData has no config yet (migration).
  */
-function defaultDataDir() {
+function programDataDir() {
   if (process.platform === 'win32') {
     const programData = process.env.PROGRAMDATA || 'C:\\ProgramData';
     return path.join(programData, 'Arivu', 'Connector');
   }
   return path.join(os.homedir(), '.arivu', 'connector');
+}
+
+function localAppDataDir() {
+  if (process.platform === 'win32') {
+    const local = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    return path.join(local, 'Arivu', 'Connector');
+  }
+  return path.join(os.homedir(), '.arivu', 'connector');
+}
+
+function defaultDataDir() {
+  if (process.env.ARIVU_DATA_DIR) return process.env.ARIVU_DATA_DIR;
+  // Session-0 Windows service may still use ProgramData
+  if (String(process.env.ARIVU_USE_PROGRAMDATA || '').trim() === '1') {
+    return programDataDir();
+  }
+  const local = localAppDataDir();
+  const program = programDataDir();
+  try {
+    const localCfg = path.join(local, 'config.json');
+    const programCfg = path.join(program, 'config.json');
+    if (fs.existsSync(localCfg)) return local;
+    if (fs.existsSync(programCfg) && !fs.existsSync(localCfg)) {
+      // Migrate once: copy config into LocalAppData so daily use needs no admin
+      try {
+        fs.mkdirSync(local, { recursive: true });
+        fs.copyFileSync(programCfg, localCfg);
+        return local;
+      } catch (_) {
+        return program;
+      }
+    }
+  } catch (_) {
+    /* prefer local */
+  }
+  return local;
 }
 
 function defaultConfigPath() {
@@ -31,11 +69,17 @@ const DEFAULTS = {
   tallyPortMin: 9000,
   tallyPortMax: 9010,
   tallyPort: null,
+  /** Heartbeat to cloud */
   heartbeatIntervalMs: 30_000,
+  /** Job poll */
   pollIntervalMs: 5_000,
+  /** When Tally is offline, re-probe this often (user opens Tally later) */
+  tallyOfflineDiscoverMs: 15_000,
+  /** When Tally is online, full re-probe this often */
+  tallyOnlineDiscoverMs: 60_000,
   updateCheckIntervalMs: 6 * 60 * 60 * 1000,
   queueFlushIntervalMs: 10_000,
-  dataDir: defaultDataDir(),
+  dataDir: null,
 };
 
 function loadConfig(configPath = process.env.ARIVU_CONFIG_PATH || defaultConfigPath()) {
@@ -48,11 +92,12 @@ function loadConfig(configPath = process.env.ARIVU_CONFIG_PATH || defaultConfigP
     console.warn('[config] failed to read config:', err.message);
   }
 
+  const dataDir = fileConfig.dataDir || defaultDataDir();
   const merged = {
     ...DEFAULTS,
     ...fileConfig,
-    dataDir: fileConfig.dataDir || DEFAULTS.dataDir,
-    configPath,
+    dataDir,
+    configPath: configPath || path.join(dataDir, 'config.json'),
   };
 
   if (!merged.agentDeviceId) {
@@ -85,6 +130,8 @@ function writeConfigTemplate(targetPath = defaultConfigPath()) {
     tallyPort: null,
     heartbeatIntervalMs: 30000,
     pollIntervalMs: 5000,
+    tallyOfflineDiscoverMs: 15000,
+    tallyOnlineDiscoverMs: 60000,
     updateCheckIntervalMs: 21600000,
   };
   if (!fs.existsSync(targetPath)) {
@@ -105,6 +152,8 @@ module.exports = {
   DEFAULTS,
   defaultDataDir,
   defaultConfigPath,
+  programDataDir,
+  localAppDataDir,
   loadConfig,
   ensureDataDir,
   writeConfigTemplate,

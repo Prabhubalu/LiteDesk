@@ -10,5 +10,7 @@
   "tallyPort": null,
   "heartbeatIntervalMs": 30000,
   "pollIntervalMs": 5000,
+  "tallyOfflineDiscoverMs": 15000,
+  "tallyOnlineDiscoverMs": 60000,
   "updateCheckIntervalMs": 21600000
 }

@@ -1,7 +1,7 @@
 {
   "name": "@arivu/connector-agent",
-  "version": "0.3.0",
-  "description": "Arivu Connector Agent — Windows service + tray that bridges local Tally XML API to Arivu cloud",
+  "version": "0.3.1",
+  "description": "Arivu Connector Agent — user-session tray that bridges local Tally XML API to Arivu cloud (no admin for daily use)",
   "private": true,
   "main": "src/index.js",
   "bin": {

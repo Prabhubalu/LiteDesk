@@ -19,6 +19,17 @@ class OfflineQueue {
   }
 
   enqueue(type, payload) {
+    const MAX_PENDING = 5000;
+    if (this.length() >= MAX_PENDING) {
+      // Drop oldest into dead-letter file to keep agent healthy
+      const items = this.list();
+      const dropped = items.slice(0, Math.max(1, items.length - MAX_PENDING + 1));
+      const dlq = path.join(this.queueDir, 'dead-letter.jsonl');
+      for (const d of dropped) {
+        fs.appendFileSync(dlq, `${JSON.stringify({ ...d, deadLetteredAt: new Date().toISOString() })}\n`);
+      }
+      this._rewrite(items.slice(dropped.length));
+    }
     const item = {
       id: crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'),
       type: String(type),

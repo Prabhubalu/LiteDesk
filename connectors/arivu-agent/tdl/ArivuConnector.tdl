@@ -17,6 +17,7 @@
 [#Include: ArivuConnector.Inventory.tdl]
 [#Include: ArivuConnector.Vouchers.tdl]
 [#Include: ArivuConnector.GST.tdl]
+[#Include: ArivuConnector.Metadata.tdl]
 
 ;; ---------------------------------------------------------------------------
 ;; Gateway entry + version probe

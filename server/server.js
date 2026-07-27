@@ -697,6 +697,8 @@ connectMasterWithRetry(masterUri)
         analyticsScheduleQueueService.startWorker();
         const { startAnalyticsAlertScheduler } = require('./services/analytics/analyticsAlertScheduler');
         startAnalyticsAlertScheduler();
+        const { startTallySyncScheduler } = require('./services/connectors/tally/tallySyncScheduler');
+        startTallySyncScheduler();
         const {
           startMailroomFailureRetryWorker
         } = require('./platform/mailroom/workers/processingFailureRetryWorker');

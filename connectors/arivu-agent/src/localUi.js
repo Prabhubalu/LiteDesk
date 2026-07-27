@@ -22,19 +22,25 @@ function integrationCenterUrl(cfg) {
   return `${api.replace('://api.', '://app.')}/integrations/tally`;
 }
 
+/**
+ * @deprecated Do not call from UI — sc.exe triggers UAC and Session-0 services
+ * cannot reliably talk to Tally. Sync runs in the user-session tray process.
+ */
 function restartWindowsService() {
-  if (process.platform !== 'win32') {
-    return Promise.resolve({ ok: false, skipped: true });
-  }
-  return new Promise((resolve) => {
-    const ps = spawn('sc.exe', ['stop', 'ArivuConnectorAgent'], { windowsHide: true });
-    ps.on('close', () => {
-      const start = spawn('sc.exe', ['start', 'ArivuConnectorAgent'], { windowsHide: true });
-      start.on('close', (code) => resolve({ ok: code === 0, code }));
-      start.on('error', (err) => resolve({ ok: false, error: err.message }));
-    });
-    ps.on('error', (err) => resolve({ ok: false, error: err.message }));
-  });
+  return Promise.resolve({ ok: false, skipped: true, reason: 'user_session_agent' });
+}
+
+/** Optional in-process hooks (tray registers these so pair starts sync without restart). */
+const uiHooks = {
+  onPaired: null,
+  onUnpaired: null,
+  onDiscovery: null,
+};
+
+function setUiHooks(hooks = {}) {
+  if (typeof hooks.onPaired === 'function') uiHooks.onPaired = hooks.onPaired;
+  if (typeof hooks.onUnpaired === 'function') uiHooks.onUnpaired = hooks.onUnpaired;
+  if (typeof hooks.onDiscovery === 'function') uiHooks.onDiscovery = hooks.onDiscovery;
 }
 
 function readBody(req) {
@@ -165,10 +171,21 @@ function startLocalUi(cfg, opts = {}) {
             return sendJson(res, 400, { success: false, message: 'pairingCode required' });
           }
           const result = await completePairing(cfg, code);
-          const restart = await restartWindowsService();
+          // Do NOT restart Windows service (UAC + Session 0). Notify tray to start sync loop.
+          if (typeof uiHooks.onPaired === 'function') {
+            try {
+              await uiHooks.onPaired(cfg);
+            } catch (hookErr) {
+              console.warn('[localUi] onPaired hook:', hookErr.message);
+            }
+          }
           return sendJson(res, 200, {
             success: true,
-            data: { ...result, serviceRestart: restart },
+            data: {
+              ...result,
+              serviceRestart: { skipped: true },
+              message: 'Paired. Sync starts in this window — keep Arivu Connector running. No admin needed.',
+            },
           });
         }
 
@@ -182,6 +199,15 @@ function startLocalUi(cfg, opts = {}) {
         if (discovery.tallyPort) {
           cfg.tallyPort = discovery.tallyPort;
           saveConfig(cfg);
+        } else {
+          cfg.tallyPort = null;
+        }
+        if (typeof uiHooks.onDiscovery === 'function') {
+          try {
+            uiHooks.onDiscovery(discovery);
+          } catch (_) {
+            /* ignore */
+          }
         }
         // Persist diagnostics for support
         try {
@@ -203,7 +229,13 @@ function startLocalUi(cfg, opts = {}) {
           cfg.connectionId = null;
           cfg.organizationId = null;
           saveConfig(cfg);
-          await restartWindowsService();
+          if (typeof uiHooks.onUnpaired === 'function') {
+            try {
+              await uiHooks.onUnpaired(cfg);
+            } catch (_) {
+              /* ignore */
+            }
+          }
           return sendJson(res, 200, { success: true, data: { unpaired: true } });
         }
 
@@ -285,4 +317,5 @@ module.exports = {
   openInBrowser,
   integrationCenterUrl,
   restartWindowsService,
+  setUiHooks,
 };

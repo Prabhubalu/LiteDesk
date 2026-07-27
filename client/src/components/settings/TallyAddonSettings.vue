@@ -110,17 +110,81 @@
       </div>
 
       <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsTallyCompanyTitle') }}</h3>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsTallyCompanyDesc') }}</p>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsTallyOwnerTitle') }}</h3>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsTallyOwnerDesc') }}</p>
+        <div class="mt-4 max-w-md">
+          <HeadlessSelect
+            v-model="defaultOwnerUserId"
+            :options="ownerUserOptions"
+            :teleport="true"
+            :searchable="true"
+            :placeholder="t('settings.addonsTallyOwnerPlaceholder')"
+            @update:model-value="saveDefaultOwner"
+          />
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.addonsTallyCompanyTitle') }}</h3>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ t('settings.addonsTallyCompanyDesc') }}</p>
+          </div>
+          <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            :disabled="discoverBusy || syncBusy"
+            @click="discoverCompanies"
+          >
+            {{ discoverBusy ? t('states.loading') : t('settings.addonsTallyDiscoverCompanies') }}
+          </button>
+        </div>
         <ul v-if="companies.length" class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
-          <li v-for="company in companies" :key="company.companyGuid" class="py-3">
-            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ company.companyName }}</p>
-            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-              {{ t('settings.addonsTallyCompanyFy', {
-                fy: company.financialYear || '—',
-                guid: company.companyGuid,
-              }) }}
-            </p>
+          <li
+            v-for="company in companies"
+            :key="company.companyGuid"
+            class="flex flex-wrap items-center justify-between gap-3 py-3"
+          >
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ company.companyName }}</p>
+                <span
+                  :class="isCompanyBound(company)
+                    ? 'rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                    : 'rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300'"
+                >
+                  {{ isCompanyBound(company)
+                    ? t('settings.addonsTallyCompanyBound')
+                    : t('settings.addonsTallyCompanyDiscovered') }}
+                </span>
+              </div>
+              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                {{ t('settings.addonsTallyCompanyFy', {
+                  fy: company.financialYear || '—',
+                  guid: company.companyGuid,
+                }) }}
+              </p>
+            </div>
+            <div class="flex shrink-0 gap-2">
+              <button
+                v-if="!isCompanyBound(company)"
+                type="button"
+                class="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                :disabled="bindBusyGuid === company.companyGuid"
+                @click="bindCompany(company)"
+              >
+                {{ bindBusyGuid === company.companyGuid ? t('states.loading') : t('settings.addonsTallyBindCompany') }}
+              </button>
+              <button
+                v-else
+                type="button"
+                class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                :disabled="bindBusyGuid === company.companyGuid"
+                @click="unbindCompany(company)"
+              >
+                {{ bindBusyGuid === company.companyGuid ? t('states.loading') : t('settings.addonsTallyUnbindCompany') }}
+              </button>
+            </div>
           </li>
         </ul>
         <p v-else class="mt-4 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.addonsTallyCompanyEmpty') }}</p>
@@ -160,6 +224,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import apiClient from '@/utils/apiClient';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -176,12 +241,17 @@ const loading = ref(true);
 const error = ref('');
 const pairingBusy = ref(false);
 const syncBusy = ref(false);
+const discoverBusy = ref(false);
+const bindBusyGuid = ref('');
 const downloadBusy = ref(false);
 const installerAvailable = ref(false);
 const pairingCode = ref('');
 const pairingExpiresAt = ref(null);
 const connection = ref(null);
 const companies = ref([]);
+const defaultOwnerUserId = ref('');
+const ownerUserOptions = ref([]);
+const savingOwner = ref(false);
 
 const connectionStatus = computed(() => connection.value?.status || 'none');
 const heartbeatAt = computed(() => connection.value?.heartbeatAt || null);
@@ -220,13 +290,53 @@ function formatDateTime(value) {
   }
 }
 
+function isCompanyBound(company) {
+  return Boolean(company?.enabled);
+}
+
+async function loadUsers() {
+  try {
+    const res = await apiClient.get('/users?limit=500&page=1&sortBy=firstName&sortOrder=asc');
+    const list = Array.isArray(res?.data) ? res.data : (res?.data?.users || res?.users || []);
+    ownerUserOptions.value = list.map((u) => {
+      const id = String(u._id || u.id || '');
+      const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim() || u.email || id;
+      return { value: id, label: u.email ? `${name} (${u.email})` : name };
+    }).filter((o) => o.value);
+  } catch {
+    ownerUserOptions.value = [];
+  }
+}
+
+async function saveDefaultOwner() {
+  if (!defaultOwnerUserId.value || savingOwner.value) return;
+  savingOwner.value = true;
+  try {
+    await apiClient.patch('/connectors/tally/settings', {
+      defaultOwnerUserId: defaultOwnerUserId.value,
+    });
+    notifications.success(t('settings.addonsTallyOwnerSaved'));
+  } catch (err) {
+    notifications.error(err?.message || t('settings.addonsTallyOwnerSaveFailed'));
+  } finally {
+    savingOwner.value = false;
+  }
+}
+
 async function loadConnection() {
   loading.value = true;
   error.value = '';
   try {
+    await loadUsers();
     const res = await apiClient('/connectors/tally/connection', { method: 'GET' });
     connection.value = res?.data?.connection || null;
     companies.value = Array.isArray(res?.data?.companies) ? res.data.companies : [];
+    const owner =
+      res?.data?.settings?.defaultOwnerUserId ||
+      authStore.user?._id ||
+      authStore.user?.id ||
+      '';
+    defaultOwnerUserId.value = owner ? String(owner) : '';
   } catch (err) {
     error.value = err?.message || t('settings.addonsTallyLoadFailed');
   } finally {
@@ -256,6 +366,61 @@ async function copyPairingCode() {
     notifications.success(t('settings.addonsTallyCodeCopied'));
   } catch {
     notifications.error(t('settings.addonsTallyCopyFailed'));
+  }
+}
+
+async function discoverCompanies() {
+  discoverBusy.value = true;
+  try {
+    await apiClient.post('/connectors/tally/sync/trigger', {
+      jobType: 'discover',
+      direction: 'inbound',
+      payload: {},
+    });
+    notifications.success(t('settings.addonsTallyDiscoverQueued'));
+    // Agent ack may take a moment; refresh shortly
+    window.setTimeout(() => {
+      loadConnection();
+    }, 2500);
+  } catch (err) {
+    notifications.error(err?.message || t('settings.addonsTallyDiscoverFailed'));
+  } finally {
+    discoverBusy.value = false;
+  }
+}
+
+async function bindCompany(company) {
+  if (!company?.companyGuid) return;
+  bindBusyGuid.value = company.companyGuid;
+  try {
+    await apiClient.post('/connectors/tally/companies/bind', {
+      companyGuid: company.companyGuid,
+      companyName: company.companyName,
+      financialYear: company.financialYear || null,
+      enabled: true,
+    });
+    notifications.success(t('settings.addonsTallyBindSuccess'));
+    await loadConnection();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.addonsTallyBindFailed'));
+  } finally {
+    bindBusyGuid.value = '';
+  }
+}
+
+async function unbindCompany(company) {
+  if (!company?.companyGuid) return;
+  bindBusyGuid.value = company.companyGuid;
+  try {
+    await apiClient.post('/connectors/tally/companies/unbind', {
+      companyGuid: company.companyGuid,
+    });
+    notifications.success(t('settings.addonsTallyUnbindSuccess'));
+    await loadConnection();
+  } catch (err) {
+    notifications.error(err?.message || t('settings.addonsTallyUnbindFailed'));
+  } finally {
+    bindBusyGuid.value = '';
   }
 }
 

@@ -74,7 +74,8 @@ jobs:
             "tdl\ArivuConnector.Masters.tdl",
             "tdl\ArivuConnector.Inventory.tdl",
             "tdl\ArivuConnector.Vouchers.tdl",
-            "tdl\ArivuConnector.GST.tdl"
+            "tdl\ArivuConnector.GST.tdl",
+            "tdl\ArivuConnector.Metadata.tdl"
           )
           foreach ($m in $mods) {
             if (-not (Test-Path $m)) { throw "Missing $m" }

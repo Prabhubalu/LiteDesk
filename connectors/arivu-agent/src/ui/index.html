@@ -184,7 +184,7 @@
         });
         const json = await res.json();
         if (!res.ok || !json.success) throw new Error(json.message || 'Pairing failed');
-        setMsg('Paired. Restarting agent service…', true);
+        setMsg('Paired. Sync starts now — keep this window running. No admin needed.', true);
         await refresh();
       } catch (err) {
         setMsg(err.message || String(err), false);

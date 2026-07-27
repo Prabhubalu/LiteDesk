@@ -35,6 +35,21 @@ const ConnectorSyncEventSchema = new Schema(
     code: { type: String, trim: true, default: null },
     message: { type: String, required: true, trim: true },
     payload: { type: Schema.Types.Mixed, default: {} },
+    /** ATIP Audit Engine extensions */
+    correlationId: { type: String, trim: true, default: null, index: true },
+    moduleKey: { type: String, trim: true, default: null, index: true },
+    recordId: { type: String, trim: true, default: null },
+    operation: { type: String, trim: true, default: null },
+    beforeValue: { type: Schema.Types.Mixed, default: null },
+    afterValue: { type: Schema.Types.Mixed, default: null },
+    source: { type: String, trim: true, default: null },
+    destination: { type: String, trim: true, default: null },
+    durationMs: { type: Number, default: null },
+    worker: { type: String, trim: true, default: null },
+    problemCode: { type: String, trim: true, default: null },
+    causeCode: { type: String, trim: true, default: null },
+    resolutionCode: { type: String, trim: true, default: null },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   },
   { timestamps: true }
 );

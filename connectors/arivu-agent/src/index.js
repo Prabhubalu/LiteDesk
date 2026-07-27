@@ -35,6 +35,27 @@ const { runPairingCli } = require('./pairing');
 const { maybeUpdate } = require('./updater');
 const { runTray } = require('./tray');
 
+/** Single-flight XML write sequencer — one in-flight write per company GUID (ATIP). */
+const companyWriteLocks = new Map();
+
+async function withCompanyWriteLock(companyKey, fn) {
+  const key = String(companyKey || '_default');
+  const prev = companyWriteLocks.get(key) || Promise.resolve();
+  let release;
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  const next = prev.then(() => gate);
+  companyWriteLocks.set(key, next);
+  await prev;
+  try {
+    return await fn();
+  } finally {
+    release();
+    if (companyWriteLocks.get(key) === next) companyWriteLocks.delete(key);
+  }
+}
+
 async function runDiscoverAndHealth(cfg) {
   const discovery = await discoverTally({
     host: cfg.tallyHost,
@@ -86,6 +107,44 @@ async function handleJob(cfg, job, queue) {
     return out;
   }
 
+  // ATIP 1B — metadata introspection (agent returns structured catalogue; cloud versions it)
+  if (type === 'discover_metadata') {
+    const out = await runDiscoverAndHealth(cfg);
+    const port = cfg.tallyPort || params.port;
+    let body = null;
+    if (port && params.exportId) {
+      try {
+        const xml = buildExportEnvelope({
+          id: params.exportId || 'Arivu.Metadata.Introspect',
+          company: params.company || null,
+        });
+        const res = await postXml({ host: cfg.tallyHost, port, xml });
+        body = res.body?.slice?.(0, 200_000) || res.body;
+      } catch (err) {
+        // Fall through — cloud will bootstrap from empty objects + discovery health
+        out.result.metadataProbeError = err.message;
+      }
+    }
+    out.result.metadata = {
+      tallyVersion: out.result.tallyVersion || out.result.discovery?.tallyVersion || null,
+      tdlPackVersion: ARIVU_TDL_PACK_VERSION,
+      tdlFingerprint: ARIVU_TDL_PACK_VERSION,
+      financialYear: out.result.discovery?.companies?.[0]?.financialYear || null,
+      features: {
+        gst: true,
+        inventory: true,
+        multiCurrency: Boolean(out.result.discovery?.multiCurrency),
+        payroll: Boolean(out.result.discovery?.payroll),
+      },
+      // Empty objects → cloud Metadata Engine applies BOOTSTRAP_OBJECTS (still stored dynamically)
+      objects: out.result.objects || [],
+      body,
+    };
+    out.result.objects = out.result.metadata.objects;
+    out.result.tdlPackVersion = ARIVU_TDL_PACK_VERSION;
+    return out;
+  }
+
   // Sync / outbox jobs: execute XML payloads built by cloud mappers
   if (
     type === 'sync' ||
@@ -111,13 +170,16 @@ async function handleJob(cfg, job, queue) {
 
     const xmlPort = cfg.tallyPort || params.port;
     if (params.xml && xmlPort) {
+      const companyKey = params.companyGuid || params.company || params.companyName || '_default';
       try {
-        const res = await postXml({
-          host: cfg.tallyHost,
-          port: xmlPort,
-          xml: params.xml,
-          company: params.company || params.companyName || null,
-        });
+        const res = await withCompanyWriteLock(companyKey, () =>
+          postXml({
+            host: cfg.tallyHost,
+            port: xmlPort,
+            xml: params.xml,
+            company: params.company || params.companyName || null,
+          })
+        );
         return {
           ok: res.ok,
           result: {
@@ -127,7 +189,7 @@ async function handleJob(cfg, job, queue) {
           },
         };
       } catch (err) {
-        queue.enqueue('executeXml', { xml: params.xml, port: xmlPort });
+        queue.enqueue('executeXml', { xml: params.xml, port: xmlPort, companyGuid: companyKey });
         throw err;
       }
     }
@@ -144,6 +206,7 @@ async function handleJob(cfg, job, queue) {
             company: params.company || null,
             fromDate: params.fromDate || null,
             toDate: params.toDate || null,
+            sinceAlterId: params.sinceAlterId || params.incrementalFilter?.sinceAlterId || null,
           });
         } else if (params.masterType) {
           xml = buildExportMastersEnvelope(params.masterType, params.company || null);
@@ -163,7 +226,8 @@ async function handleJob(cfg, job, queue) {
           exportId: params.exportId || params.masterType,
           collection: params.masterType || params.exportId,
           tdlPackVersion: ARIVU_TDL_PACK_VERSION,
-          stats: { exported: 1 },
+          sinceAlterId: params.sinceAlterId || null,
+          stats: { exported: 1, incremental: Boolean(params.sinceAlterId || params.incremental) },
         },
       };
     }
@@ -251,7 +315,39 @@ async function runLoop(cfg) {
   }
 
   let lastUpdateCheck = 0;
-  let discoveryTicks = 0;
+  let lastDiscoverAt = 0;
+  let tallyOnline = Boolean(lastDiscovery?.tallyPort || cfg.tallyPort);
+
+  const refreshDiscovery = async (force = false) => {
+    const interval = tallyOnline
+      ? cfg.tallyOnlineDiscoverMs || 60_000
+      : cfg.tallyOfflineDiscoverMs || 15_000;
+    const now = Date.now();
+    if (!force && now - lastDiscoverAt < interval) return lastDiscovery;
+    lastDiscoverAt = now;
+    try {
+      const next = await discoverTally({
+        host: cfg.tallyHost,
+        portMin: cfg.tallyPortMin,
+        portMax: cfg.tallyPortMax,
+      });
+      const wasOnline = tallyOnline;
+      tallyOnline = Boolean(next.tallyPort);
+      lastDiscovery = next;
+      if (tallyOnline) {
+        cfg.tallyPort = next.tallyPort;
+        if (!wasOnline) {
+          console.log(`[agent] Tally came online on port ${cfg.tallyPort}`);
+        }
+      } else {
+        if (wasOnline) console.warn('[agent] Tally went offline — will keep probing');
+        cfg.tallyPort = null;
+      }
+    } catch (_) {
+      /* keep lastDiscovery */
+    }
+    return lastDiscovery;
+  };
 
   const tickHeartbeat = async () => {
     if (!cfg.agentToken || !cfg.connectionId) {
@@ -259,20 +355,7 @@ async function runLoop(cfg) {
       return;
     }
     try {
-      discoveryTicks += 1;
-      // Re-probe Tally/TDL every ~5 heartbeats (~2.5 min if 30s interval)
-      if (discoveryTicks === 1 || discoveryTicks % 5 === 0) {
-        try {
-          lastDiscovery = await discoverTally({
-            host: cfg.tallyHost,
-            portMin: cfg.tallyPortMin,
-            portMax: cfg.tallyPortMax,
-          });
-          if (lastDiscovery.tallyPort) cfg.tallyPort = lastDiscovery.tallyPort;
-        } catch (_) {
-          /* keep lastDiscovery */
-        }
-      }
+      await refreshDiscovery(false);
       const res = await sendHeartbeat(cfg, {
         queueLength: queue.length(),
         tallyPort: cfg.tallyPort || lastDiscovery?.tallyPort || null,
@@ -280,7 +363,7 @@ async function runLoop(cfg) {
         tdlPackVersion: lastDiscovery?.tdlPackVersion || ARIVU_TDL_PACK_VERSION,
         companyCount: Array.isArray(lastDiscovery?.companies) ? lastDiscovery.companies.length : 0,
         lastHealth: {
-          ok: Boolean(lastDiscovery?.tallyRunning),
+          ok: Boolean(lastDiscovery?.tallyRunning || cfg.tallyPort),
           mode: 'live',
           tdlLoaded: Boolean(lastDiscovery?.tdlLoaded),
           tdlPackVersion: lastDiscovery?.tdlPackVersion || ARIVU_TDL_PACK_VERSION,
@@ -288,8 +371,8 @@ async function runLoop(cfg) {
           hint: lastDiscovery?.hint || null,
           checks: {
             internet: true,
-            tallyRunning: Boolean(lastDiscovery?.tallyRunning),
-            xmlEnabled: Boolean(lastDiscovery?.tallyPort),
+            tallyRunning: Boolean(lastDiscovery?.tallyRunning || cfg.tallyPort),
+            xmlEnabled: Boolean(lastDiscovery?.tallyPort || cfg.tallyPort),
             companyAvailable: (lastDiscovery?.companies || []).length > 0,
             tdlLoaded: Boolean(lastDiscovery?.tdlLoaded),
           },
@@ -353,6 +436,11 @@ async function runLoop(cfg) {
 
   await tickHeartbeat();
   await tickPoll();
+
+  // Dedicated Tally watchdog — faster cadence while offline so opening Tally is detected
+  setInterval(() => {
+    refreshDiscovery(false).catch(() => {});
+  }, Math.min(cfg.tallyOfflineDiscoverMs || 15_000, 15_000));
 
   setInterval(tickHeartbeat, cfg.heartbeatIntervalMs || 30_000);
   setInterval(tickPoll, cfg.pollIntervalMs || 5_000);

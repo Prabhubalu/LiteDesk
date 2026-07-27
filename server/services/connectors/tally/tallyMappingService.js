@@ -38,7 +38,8 @@ const SYSTEM_LEDGER_NAMES = new Set(
   ].map((s) => s.toLowerCase())
 );
 
-const IGNORE_ENTITY_TYPES = new Set([
+/** Reference / cache entity types — catalogued but not Create-in-Arivu. */
+const REFERENCE_ENTITY_TYPES = new Set([
   'voucher_type',
   'tax_unit',
   'cost_category',
@@ -48,10 +49,11 @@ const IGNORE_ENTITY_TYPES = new Set([
   'gst_classification',
   'group',
   'unit',
-  'stock_group',
-  'stock_category',
   'batch',
 ]);
+
+/** Legacy name kept for callers; no longer auto-ignores reference masters. */
+const IGNORE_ENTITY_TYPES = new Set([]);
 
 function normalizeName(value) {
   return String(value || '')
@@ -71,14 +73,18 @@ function isSystemLedgerName(name) {
 
 function shouldAutoIgnore({ entityType, name }) {
   const et = String(entityType || '').toLowerCase();
-  if (IGNORE_ENTITY_TYPES.has(et)) return true;
   if ((et === 'party' || et === 'ledger') && isSystemLedgerName(name)) return true;
   return false;
+}
+
+function isReferenceEntity(entityType) {
+  return REFERENCE_ENTITY_TYPES.has(String(entityType || '').toLowerCase());
 }
 
 function mappingStatusOf(row) {
   if (!row) return 'unknown';
   if (row.metadata?.ignored) return 'ignored';
+  if (row.metadata?.referenceOnly || String(row.arivuId || '').startsWith('ref:')) return 'reference';
   if (String(row.arivuId || '').startsWith('pending:')) return 'pending';
   return 'linked';
 }
@@ -108,7 +114,14 @@ async function listExternalObjects({
     filter.arivuId = { $regex: /^pending:/ };
     filter['metadata.ignored'] = { $ne: true };
   } else if (status === 'linked') {
-    filter.arivuId = { $not: { $regex: /^pending:/ } };
+    filter.arivuId = { $not: { $regex: /^(pending:|ref:)/ } };
+    filter['metadata.ignored'] = { $ne: true };
+    filter['metadata.referenceOnly'] = { $ne: true };
+  } else if (status === 'reference') {
+    filter.$or = [
+      { arivuId: { $regex: /^ref:/ } },
+      { 'metadata.referenceOnly': true },
+    ];
     filter['metadata.ignored'] = { $ne: true };
   } else if (status === 'ignored') {
     filter['metadata.ignored'] = true;
@@ -208,6 +221,9 @@ async function materializeParty({ organizationId, payload, createdBy }) {
   }).lean();
   if (existing) return existing;
 
+  const { resolveTallyOwnerUserId } = require('./tallyModuleMappingService');
+  const ownerId = await resolveTallyOwnerUserId(organizationId, createdBy);
+
   const doc = await Organization.create({
     name,
     isTenant: false,
@@ -217,16 +233,22 @@ async function materializeParty({ organizationId, payload, createdBy }) {
     website: patch.website || undefined,
     taxId: patch.taxId || undefined,
     types: patch.types?.length ? patch.types : ['Customer'],
-    createdBy: createdBy || undefined,
-    assignedTo: createdBy || undefined,
+    source: 'Tally',
+    createdBy: ownerId || undefined,
+    assignedTo: ownerId || undefined,
   });
   return doc.toObject ? doc.toObject() : doc;
 }
 
-async function materializeItem({ organizationId, payload }) {
+async function materializeItem({ organizationId, payload, createdBy = null }) {
   const patch = stockItemMapper.fromTally(payload || {});
   const itemName = patch.itemName || patch.variant_code || payload?.name;
   if (!itemName) throw new Error('Item name required');
+
+  const { getMergedSettings, resolveTallyOwnerUserId } = require('./tallyModuleMappingService');
+  const settings = await getMergedSettings(organizationId);
+  const preventTax = Boolean(settings.preventProductTaxUpdate);
+  const ownerId = await resolveTallyOwnerUserId(organizationId, createdBy);
 
   let item = await Item.findOne({
     organizationId,
@@ -239,6 +261,12 @@ async function materializeItem({ organizationId, payload }) {
       item_type: 'Product',
       category: patch.parentGroup || undefined,
       unit_of_measure: patch.unit_of_measure || 'Nos',
+      hsnSac: patch.hsnSac || undefined,
+      gstRatePercent: preventTax ? undefined : patch.gstRatePercent != null ? patch.gstRatePercent : undefined,
+      gstTaxability: preventTax ? undefined : patch.gstTaxability || undefined,
+      source: 'Tally',
+      createdBy: ownerId || undefined,
+      assignedTo: ownerId || undefined,
     });
   }
 
@@ -257,20 +285,34 @@ async function materializeItem({ organizationId, payload }) {
       cost_price: 0,
       barcode: patch.barcode || undefined,
       hsnSac: patch.hsnSac || undefined,
-      gstRatePercent: patch.gstRatePercent != null ? patch.gstRatePercent : undefined,
+      gstRatePercent: preventTax ? undefined : patch.gstRatePercent != null ? patch.gstRatePercent : undefined,
+      gstTaxability: preventTax ? undefined : patch.gstTaxability || undefined,
       is_default: true,
-      tax_type: patch.gstRatePercent != null ? 'GST' : 'None',
-      tax_percentage: patch.gstRatePercent || 0,
+      tax_type: !preventTax && patch.gstRatePercent != null ? 'GST' : 'None',
+      tax_percentage: preventTax ? 0 : patch.gstRatePercent || 0,
     });
     if (!item.defaultVariantId) {
       item.defaultVariantId = variant._id;
       await item.save();
     }
+  } else if (!preventTax) {
+    let dirty = false;
+    if (patch.gstRatePercent != null && variant.gstRatePercent !== patch.gstRatePercent) {
+      variant.gstRatePercent = patch.gstRatePercent;
+      variant.tax_percentage = patch.gstRatePercent;
+      variant.tax_type = 'GST';
+      dirty = true;
+    }
+    if (patch.gstTaxability && variant.gstTaxability !== patch.gstTaxability) {
+      variant.gstTaxability = patch.gstTaxability;
+      dirty = true;
+    }
+    if (dirty) await variant.save();
   }
   return { item, variant };
 }
 
-async function materializeGodown({ organizationId, payload }) {
+async function materializeGodown({ organizationId, payload, createdBy = null }) {
   const patch = godownMapper.fromTally(payload || {});
   const name = patch.name || payload?.name;
   if (!name) throw new Error('Godown name required');
@@ -279,6 +321,9 @@ async function materializeGodown({ organizationId, payload }) {
     .replace(/[^A-Z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 40) || 'GODOWN';
+
+  const { resolveTallyOwnerUserId } = require('./tallyModuleMappingService');
+  const ownerId = await resolveTallyOwnerUserId(organizationId, createdBy);
 
   let loc = await InventoryLocation.findOne({
     organizationId,
@@ -293,6 +338,7 @@ async function materializeGodown({ organizationId, payload }) {
       locationCode,
       description: patch.description || undefined,
       locationType: 'warehouse',
+      createdBy: ownerId || undefined,
     });
   }
   return loc;
@@ -310,6 +356,20 @@ function classifyVoucherKind(entityType, payload = {}) {
   return 'voucher';
 }
 
+function resolveInboundModuleKey(payload = {}) {
+  const vt = String(payload.voucherType || payload.VOUCHERTYPENAME || '').toLowerCase();
+  if (vt.includes('purchase order')) return 'purchase_order';
+  if (vt.includes('sales order')) return 'sales_order';
+  if (vt.includes('purchase')) return 'purchase';
+  if (vt.includes('receipt note')) return 'receipt_note';
+  if (vt.includes('delivery')) return 'delivery_note';
+  if (vt.includes('receipt')) return 'receipt';
+  if (vt.includes('payment')) return 'payment';
+  if (vt.includes('journal')) return 'journal';
+  if (vt.includes('contra')) return 'contra';
+  return 'sales';
+}
+
 async function materializeVoucherDraft({
   organizationId,
   entityType,
@@ -325,9 +385,12 @@ async function materializeVoucherDraft({
     externalId ||
     'Tally voucher';
 
+  const { resolveTallyOwnerUserId } = require('./tallyModuleMappingService');
+  const ownerId = await resolveTallyOwnerUserId(organizationId, createdBy);
+
   if (kind === 'credit_note' || kind === 'debit_note') {
-    if (!createdBy) {
-      const err = new Error('createdBy required to materialize voucher draft');
+    if (!ownerId) {
+      const err = new Error('Default Tally owner (addon installer) required to materialize voucher draft');
       err.code = 'VALIDATION';
       throw err;
     }
@@ -338,7 +401,7 @@ async function materializeVoucherDraft({
       invoiceDate: payload?.date ? new Date(payload.date) : new Date(),
       status: INVOICE_STATUS_DEFAULT,
       currency: payload?.currency || 'INR',
-      assignedTo: createdBy,
+      assignedTo: ownerId,
       organizationRefId: null,
       sourceType: 'api',
       sourceContext: 'tally_inbound_draft',
@@ -351,8 +414,8 @@ async function materializeVoucherDraft({
         tallyVoucherType: payload?.voucherType || null,
         tallyImport: true,
       },
-      createdBy: createdBy || null,
-      modifiedBy: createdBy || null,
+      createdBy: ownerId,
+      modifiedBy: ownerId,
     });
     await ensureDefaultInvoiceSection({ organizationId, invoiceId: invoice._id });
     return {
@@ -365,7 +428,7 @@ async function materializeVoucherDraft({
 
   if (kind === 'stock_journal') {
     const { getDefaultLocation } = require('../../inventoryLocationService');
-    const location = await getDefaultLocation(organizationId, createdBy);
+    const location = await getDefaultLocation(organizationId, ownerId);
     const adj = await InventoryAdjustment.create({
       organizationId,
       inventoryLocationId: location.inventoryLocationId,
@@ -373,7 +436,7 @@ async function materializeVoucherDraft({
       status: 'draft',
       lines: [],
       notes: `Tally stock journal draft: ${title}`,
-      createdBy: createdBy || null,
+      createdBy: ownerId || null,
     });
     return {
       entityType: 'stock_journal',
@@ -383,16 +446,35 @@ async function materializeVoucherDraft({
     };
   }
 
-  const allowDrafts = process.env.TALLY_INBOUND_VOUCHER_DRAFTS === '1';
-  if (!allowDrafts) {
+  const allowEnv = process.env.TALLY_INBOUND_VOUCHER_DRAFTS === '1';
+  let allowPolicy = false;
+  try {
+    const synchronisationEngine = require('./engines/synchronisationEngine');
+    const companyGuid = payload?.companyGuid || null;
+    const tallyModuleKey = synchronisationEngine.isVoucherModule(kind)
+      ? kind
+      : resolveInboundModuleKey(payload);
+    if (companyGuid && tallyModuleKey) {
+      const gate = await synchronisationEngine.canInboundCreate({
+        organizationId,
+        companyGuid,
+        tallyModuleKey,
+      });
+      allowPolicy = Boolean(gate.allowed);
+    }
+  } catch {
+    allowPolicy = false;
+  }
+
+  if (!allowEnv && !allowPolicy) {
     const err = new Error(
-      'Sales/purchase voucher Create is disabled (SoT arivu_to_tally). Credit/debit notes and stock journals Create without this flag. Set TALLY_INBOUND_VOUCHER_DRAFTS=1 for generic voucher stubs, or use Ignore/Link.'
+      'Sales/purchase voucher Create is disabled. Enable inboundCreatePolicy (draft|posted_if_valid) on the module mapping, set syncWay to tally_to_arivu or bidirectional, or set TALLY_INBOUND_VOUCHER_DRAFTS=1.'
     );
     err.code = 'UNSUPPORTED';
     throw err;
   }
-  if (!createdBy) {
-    const err = new Error('createdBy required to materialize voucher draft');
+  if (!ownerId) {
+    const err = new Error('Default Tally owner (addon installer) required to materialize voucher draft');
     err.code = 'VALIDATION';
     throw err;
   }
@@ -403,7 +485,7 @@ async function materializeVoucherDraft({
     invoiceDate: payload?.date ? new Date(payload.date) : new Date(),
     status: INVOICE_STATUS_DEFAULT,
     currency: payload?.currency || 'INR',
-    assignedTo: createdBy,
+    assignedTo: ownerId,
     sourceType: 'api',
     sourceContext: 'tally_inbound_draft',
     sourceRef: { moduleKey: 'tally', recordId: String(externalId || '') },
@@ -412,8 +494,8 @@ async function materializeVoucherDraft({
       tallyVoucherType: payload?.voucherType || null,
       tallyImport: true,
     },
-    createdBy,
-    modifiedBy: createdBy,
+    createdBy: ownerId,
+    modifiedBy: ownerId,
   });
   await ensureDefaultInvoiceSection({ organizationId, invoiceId: invoice._id });
   return {
@@ -445,25 +527,59 @@ async function createFromExternal({
   let arivuId = null;
   let created = null;
 
+  const { resolveTallyOwnerUserId } = require('./tallyModuleMappingService');
+  const ownerId = await resolveTallyOwnerUserId(organizationId, createdBy);
+
   if (et === 'party' || et === 'ledger') {
-    const org = await materializeParty({ organizationId, payload, createdBy });
+    const org = await materializeParty({ organizationId, payload, createdBy: ownerId });
     arivuId = String(org._id);
     created = { entityType: 'party', record: org };
   } else if (et === 'item') {
-    const { variant, item } = await materializeItem({ organizationId, payload });
+    const { variant, item } = await materializeItem({ organizationId, payload, createdBy: ownerId });
     arivuId = String(variant._id);
     created = { entityType: 'item', record: variant, item };
   } else if (et === 'godown') {
-    const loc = await materializeGodown({ organizationId, payload });
+    const loc = await materializeGodown({ organizationId, payload, createdBy: ownerId });
     arivuId = String(loc._id);
     created = { entityType: 'godown', record: loc };
+  } else if (et === 'stock_group' || et === 'stock_category') {
+    const CatalogCategory = require('../../../models/CatalogCategory');
+    const stockGroupMapper = require('./mappers/stockGroupMapper');
+    const patch = stockGroupMapper.fromTally(payload || {});
+    const name = patch.name || payload?.name;
+    if (!name) {
+      const err = new Error('Stock group name required');
+      err.code = 'VALIDATION';
+      throw err;
+    }
+    let cat = await CatalogCategory.findOne({
+      organizationId,
+      name: new RegExp(`^${String(name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+    });
+    if (!cat) {
+      const slug = String(name)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 80);
+      cat = await CatalogCategory.create({
+        organizationId,
+        name,
+        slug: slug || `tally-${Date.now()}`,
+        path: `/${slug || Date.now()}`,
+        isActive: true,
+        createdBy: ownerId || undefined,
+      });
+    }
+    arivuId = String(cat._id);
+    created = { entityType: et, record: cat };
   } else if (et === 'voucher' || et === 'credit_note' || et === 'debit_note' || et === 'stock_journal') {
     const draft = await materializeVoucherDraft({
       organizationId,
       entityType: et,
       payload,
       externalId: row.externalId,
-      createdBy,
+      createdBy: ownerId,
     });
     arivuId = draft.arivuId;
     created = draft;
@@ -480,7 +596,7 @@ async function createFromExternal({
     ...(row.metadata || {}),
     ignored: false,
     createdInArivuAt: new Date().toISOString(),
-    createdBy: createdBy ? String(createdBy) : null,
+    createdBy: ownerId ? String(ownerId) : null,
   };
   await row.save();
   return { row, created };
@@ -580,8 +696,10 @@ module.exports = {
   postProcessInboundRow,
   shouldAutoIgnore,
   isSystemLedgerName,
+  isReferenceEntity,
   mappingStatusOf,
   displayNameFromRow,
-  SYSTEM_LEDGER_NAMES,
+  REFERENCE_ENTITY_TYPES,
   IGNORE_ENTITY_TYPES,
+  SYSTEM_LEDGER_NAMES,
 };
