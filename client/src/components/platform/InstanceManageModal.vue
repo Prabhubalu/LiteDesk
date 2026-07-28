@@ -152,6 +152,7 @@ import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   instance: {
     type: Object,
@@ -162,6 +163,8 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved']);
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const authStore = useAuthStore();
 
 const saving = ref(false);
@@ -285,7 +288,7 @@ const handleSave = async () => {
     updateLocalInstance(latestInstance);
   } catch (error) {
     console.error('Error saving instance:', error);
-    alert(error.message || t('platform.instanceManagementSaveFailed'));
+    notifications.error(error.message || t('platform.instanceManagementSaveFailed'));
   } finally {
     saving.value = false;
   }
@@ -309,7 +312,7 @@ const handleTerminate = async () => {
     emit('close');
   } catch (error) {
     console.error('Error terminating instance:', error);
-    alert(error.message || t('platform.instanceManagementTerminateFailed'));
+    notifications.error(error.message || t('platform.instanceManagementTerminateFailed'));
   } finally {
     terminating.value = false;
   }

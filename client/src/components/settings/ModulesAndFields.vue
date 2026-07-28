@@ -1011,18 +1011,13 @@
                 </div>
                 <div v-if="!orgCustomFieldIsCoreScope" class="space-y-1">
                   <label class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ t('settings.modFieldsApplication') }}</label>
-                  <select
+                  <HeadlessSelect
                     v-model="orgCustomAppContextToken"
-                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm text-gray-900 dark:text-white"
-                  >
-                    <option
-                      v-for="opt in customFieldAppScopeOptions"
-                      :key="opt.value"
-                      :value="opt.value"
-                    >
-                      {{ opt.label }}
-                    </option>
-                  </select>
+                    :options="customFieldAppScopeOptions"
+                    teleport
+                    :teleport-match-width="true"
+                    button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-800 dark:!border-gray-600"
+                  />
                 </div>
               </div>
               <!-- Form Type Editor (Forms module only) -->
@@ -1040,21 +1035,20 @@
                 <div class="space-y-3">
                   <div>
                     <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsSelectFormType') }}</label>
-                    <select 
+                    <HeadlessSelect
                       v-model="currentField.defaultValue"
+                      :options="formTypeSelectOptions"
+                      :placeholder="t('settings.modFieldsSelectFormTypePh')"
+                      allow-empty
+                      :empty-label="t('settings.modFieldsSelectFormTypePh')"
+                      empty-value=""
                       :disabled="false"
-                      class="w-full px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 text-sm cursor-pointer"
+                      teleport
+                      :teleport-match-width="true"
+                      button-class="!py-2 !rounded !bg-white dark:!bg-gray-800 dark:!border-white/10"
                       @focus="loadFieldSettings()"
-                    >
-                      <option value="">{{ t('settings.modFieldsSelectFormTypePh') }}</option>
-                      <option 
-                        v-for="type in getFormTypeDefinitions()" 
-                        :key="type.key" 
-                        :value="type.key"
-                      >
-                        {{ type.label }} {{ type.builtIn ? t('settings.modFieldsFormTypeBuiltIn') : t('settings.modFieldsFormTypeCustom') }}
-                      </option>
-                    </select>
+                      @click="loadFieldSettings()"
+                    />
                   </div>
                   
                   <!-- Custom Form Types List (with remove option) -->
@@ -1141,13 +1135,15 @@
                 </div>
                 <div>
                   <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsType') }}</label>
-                  <select 
-                    v-model="currentField.dataType" 
-                    :disabled="!canChangeFieldType(currentField) || isSystemField(currentField) || isCoreField(currentField, selectedModule?.key) || (isPeopleModule && (getPeopleFieldMetadata(currentField.key)?.owner === 'system' || getPeopleFieldMetadata(currentField.key)?.owner === 'core'))" 
-                    class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-                  >
-                    <option v-for="t in fieldTypes" :key="t" :value="t">{{ t }}</option>
-                  </select>
+                  <HeadlessSelect
+                    v-model="currentField.dataType"
+                    :options="fieldTypeSelectOptions"
+                    :disabled="!canChangeFieldType(currentField) || isSystemField(currentField) || isCoreField(currentField, selectedModule?.key) || (isPeopleModule && (getPeopleFieldMetadata(currentField.key)?.owner === 'system' || getPeopleFieldMetadata(currentField.key)?.owner === 'core'))"
+                    teleport
+                    :teleport-match-width="true"
+                    :truncate-options="false"
+                    button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                  />
                   <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreIdentityType') }}</p>
                   <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintSystemType') }}</p>
                   <p v-if="isCoreField(currentField, selectedModule?.key) && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreType') }}</p>
@@ -1284,23 +1280,37 @@
                   <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDefaultValue') }}</label>
                   <template v-if="!isSystemField(currentField) && currentField.dataType !== 'Auto-Number' && currentField.dataType !== 'Formula' && currentField.dataType !== 'Rollup Summary'">
                     <!-- Picklist, Radio Button: dropdown -->
-                    <select
+                    <HeadlessSelect
                       v-if="['Picklist', 'Radio Button'].includes(currentField.dataType)"
                       v-model="currentField.defaultValue"
-                      class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-                    >
-                      <option value="">{{ t('settings.modFieldsNoDefault') }}</option>
-                      <option v-for="opt in normalizedOptions" :key="getOptionValue(opt)" :value="getOptionValue(opt)">{{ getOptionDisplayLabel(opt) }}</option>
-                    </select>
-                    <!-- Multi-Picklist: multi-select dropdown -->
+                      :options="defaultPicklistSelectOptions"
+                      :placeholder="t('settings.modFieldsNoDefault')"
+                      allow-empty
+                      :empty-label="t('settings.modFieldsNoDefault')"
+                      empty-value=""
+                      teleport
+                      :teleport-match-width="true"
+                      button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                    />
+                    <!-- Multi-Picklist: checkbox list (HeadlessSelect is single-select) -->
                     <template v-else-if="currentField.dataType === 'Multi-Picklist'">
-                      <select
-                        v-model="defaultValueMultiPicklist"
-                        multiple
-                        class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 min-h-[80px]"
-                      >
-                        <option v-for="opt in normalizedOptions" :key="getOptionValue(opt)" :value="getOptionValue(opt)">{{ getOptionDisplayLabel(opt) }}</option>
-                      </select>
+                      <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-white/10 rounded-lg p-2 bg-gray-50 dark:bg-white/5">
+                        <div v-if="!normalizedOptions.length" class="text-xs text-gray-500 dark:text-gray-400 py-2 text-center">
+                          {{ t('settings.modFieldsNoOptionsAvailable') }}
+                        </div>
+                        <label
+                          v-for="opt in normalizedOptions"
+                          :key="getOptionValue(opt)"
+                          class="flex items-center gap-2 p-1.5 hover:bg-white/60 dark:hover:bg-white/5 rounded cursor-pointer"
+                        >
+                          <HeadlessCheckbox
+                            :checked="defaultValueMultiPicklist.includes(getOptionValue(opt))"
+                            @change="toggleDefaultMultiPicklistOption(getOptionValue(opt))"
+                            checkbox-class="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">{{ getOptionDisplayLabel(opt) }}</span>
+                        </label>
+                      </div>
                       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMultiPicklistHint') }}</p>
                     </template>
                     <!-- Checkbox: checkbox -->
@@ -1545,11 +1555,13 @@
                   </div>
                   <div v-if="currentField.dataType === 'Currency'">
                     <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsCurrencyFormat') }}</label>
-                    <select v-model="numberSettings.currencyCode" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option v-for="currency in currencySelectOptions" :key="currency.value" :value="currency.value">
-                        {{ currency.label }}
-                      </option>
-                    </select>
+                    <HeadlessSelect
+                      v-model="numberSettings.currencyCode"
+                      :options="currencySelectOptions"
+                      teleport
+                      :teleport-match-width="true"
+                      button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                    />
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       {{ t('settings.modFieldsCurrencyPreview', { preview: getCurrencyFormatPreview() }) }}
                     </p>
@@ -1578,19 +1590,22 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDateFormat') }}</label>
-                    <select v-model="dateSettings.format" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                      <option value="MMM DD, YYYY">MMM DD, YYYY</option>
-                    </select>
+                    <HeadlessSelect
+                      v-model="dateSettings.format"
+                      :options="dateFormatSelectOptions"
+                      teleport
+                      :teleport-match-width="true"
+                      button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                    />
                   </div>
                   <div v-if="currentField.dataType === 'Date-Time'">
                     <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsTimeFormat') }}</label>
-                    <select v-model="dateSettings.timeFormat" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option value="12h">{{ t('settings.modFieldsTime12h') }}</option>
-                      <option value="24h">{{ t('settings.modFieldsTime24h') }}</option>
-                    </select>
+                    <HeadlessSelect
+                      v-model="dateSettings.timeFormat"
+                      :options="timeFormatSelectOptions"
+                      teleport
+                      button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                    />
                   </div>
                 </div>
               </div>
@@ -1605,12 +1620,12 @@
                 </div>
                 <div class="mt-3">
                   <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsReturnType') }}</label>
-                  <select v-model="formulaSettings.returnType" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                    <option value="Text">{{ t('settings.modFieldsReturnTypeText') }}</option>
-                    <option value="Number">{{ t('settings.modFieldsReturnTypeNumber') }}</option>
-                    <option value="Date">{{ t('settings.modFieldsReturnTypeDate') }}</option>
-                    <option value="Checkbox">{{ t('settings.modFieldsReturnTypeCheckbox') }}</option>
-                  </select>
+                  <HeadlessSelect
+                    v-model="formulaSettings.returnType"
+                    :options="formulaReturnTypeSelectOptions"
+                    teleport
+                    button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                  />
                 </div>
               </div>
 
@@ -1620,17 +1635,32 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsTargetModule') }}</label>
-                    <select v-model="lookupSettings.targetModule" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option value="">{{ t('settings.modFieldsSelectModulePh') }}</option>
-                      <option v-for="m in modules" :key="m.key" :value="m.key">{{ m.name }}</option>
-                    </select>
+                    <HeadlessSelect
+                      v-model="lookupSettings.targetModule"
+                      :options="lookupModuleSelectOptions"
+                      :placeholder="t('settings.modFieldsSelectModulePh')"
+                      allow-empty
+                      :empty-label="t('settings.modFieldsSelectModulePh')"
+                      empty-value=""
+                      teleport
+                      :teleport-match-width="true"
+                      :truncate-options="false"
+                      button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                    />
                   </div>
                   <div>
                     <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDisplayField') }}</label>
-                    <select v-model="lookupSettings.displayField" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
-                      <option value="">{{ t('settings.modFieldsDisplayFieldAuto') }}</option>
-                      <option v-for="f in lookupTargetFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
-                    </select>
+                    <HeadlessSelect
+                      v-model="lookupSettings.displayField"
+                      :options="lookupDisplayFieldSelectOptions"
+                      :placeholder="t('settings.modFieldsDisplayFieldAuto')"
+                      allow-empty
+                      :empty-label="t('settings.modFieldsDisplayFieldAuto')"
+                      empty-value=""
+                      teleport
+                      :teleport-match-width="true"
+                      button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                    />
                   </div>
                 </div>
               </div>
@@ -1741,18 +1771,14 @@
                         </div>
                         <div>
                           <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsType') }}</label>
-                          <select 
-                            v-model="v.type" 
+                          <HeadlessSelect
+                            v-model="v.type"
+                            :options="validationTypeSelectOptions"
                             :disabled="isValidationDisabled()"
-                            class="w-full px-2 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <option value="regex">{{ t('settings.modFieldsValidationRegex') }}</option>
-                            <option value="length">{{ t('settings.modFieldsValidationLength') }}</option>
-                            <option value="range">{{ t('settings.modFieldsValidationRange') }}</option>
-                            <option value="picklist_single">{{ t('settings.modFieldsValidationPicklistSingle') }}</option>
-                            <option value="picklist_multi">{{ t('settings.modFieldsValidationPicklistMulti') }}</option>
-                            <option value="email">{{ t('settings.modFieldsValidationEmail') }}</option>
-                          </select>
+                            teleport
+                            :teleport-match-width="true"
+                            button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                          />
                         </div>
                       </div>
 
@@ -1915,24 +1941,27 @@
                         </div>
                         <div>
                           <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDependencyType') }}</label>
-                          <select v-model="d.type" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                            <option value="visibility">{{ t('settings.modFieldsDepVisibility') }}</option>
-                            <option value="readonly">{{ t('settings.modFieldsDepReadonly') }}</option>
-                            <option value="required">{{ t('settings.modFieldsDepRequired') }}</option>
-                            <option value="picklist">{{ t('settings.modFieldsDepPicklistFilter') }}</option>
-                            <option value="popup">{{ t('settings.modFieldsDepPopup') }}</option>
-                            <option value="label">{{ t('settings.modFieldsDepLabelOverride') }}</option>
-                          </select>
+                          <HeadlessSelect
+                            v-model="d.type"
+                            :options="dependencyTypeSelectOptions"
+                            :placeholder="t('settings.modFieldsDependencyType')"
+                            teleport
+                            :teleport-match-width="true"
+                            button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                          />
                         </div>
                       </div>
 
                       <!-- Logic for multiple conditions (show when 2+ conditions or always for clarity) -->
                       <div v-if="getConditionCount(d) > 1">
                         <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsLogic') }}</label>
-                        <select v-model="d.logic" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                          <option value="AND">{{ t('settings.modFieldsLogicAnd') }}</option>
-                          <option value="OR">{{ t('settings.modFieldsLogicOr') }}</option>
-                        </select>
+                        <HeadlessSelect
+                          v-model="d.logic"
+                          :options="dependencyLogicSelectOptions"
+                          :truncate-button-label="false"
+                          teleport
+                          button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                        />
                       </div>
 
                       <!-- Conditions list - always show conditions array mode -->
@@ -1958,25 +1987,29 @@
                           <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                             <div class="md:col-span-5">
                               <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsField') }}</label>
-                              <select v-model="c.fieldKey" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="">{{ t('settings.modFieldsSelectFieldPh') }}</option>
-                                <option v-for="f in otherFields" :key="f.key" :value="f.key">{{ f.label || f.key }}</option>
-                              </select>
+                              <HeadlessSelect
+                                v-model="c.fieldKey"
+                                :options="dependencyControllingFieldOptions"
+                                :placeholder="t('settings.modFieldsSelectFieldPh')"
+                                allow-empty
+                                :empty-label="t('settings.modFieldsSelectFieldPh')"
+                                empty-value=""
+                                teleport
+                                :teleport-match-width="true"
+                                :truncate-options="false"
+                                button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                              />
                             </div>
                             <div class="md:col-span-3">
                               <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsOperator') }}</label>
-                              <select v-model="c.operator" @change="onDependencyOperatorChange(di, ci)" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="equals">{{ t('settings.modFieldsOpEquals') }}</option>
-                                <option value="not_equals">{{ t('settings.modFieldsOpNotEquals') }}</option>
-                                <option value="in">{{ t('settings.modFieldsOpIn') }}</option>
-                                <option value="not_in">{{ t('settings.modFieldsOpNotIn') }}</option>
-                                <option value="exists">{{ t('settings.modFieldsOpExists') }}</option>
-                                <option value="gt">{{ t('settings.modFieldsOpGt') }}</option>
-                                <option value="lt">{{ t('settings.modFieldsOpLt') }}</option>
-                                <option value="gte">{{ t('settings.modFieldsOpGte') }}</option>
-                                <option value="lte">{{ t('settings.modFieldsOpLte') }}</option>
-                                <option value="contains">{{ t('settings.modFieldsOpContains') }}</option>
-                              </select>
+                              <HeadlessSelect
+                                v-model="c.operator"
+                                :options="dependencyOperatorSelectOptions"
+                                teleport
+                                :teleport-match-width="true"
+                                button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                                @update:model-value="onDependencyOperatorChange(di, ci)"
+                              />
                             </div>
                             <div class="md:col-span-3">
                               <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsValue') }}</label>
@@ -2044,16 +2077,30 @@
                                 </div>
                               </div>
                               <!-- Single-select Picklist dropdown (for non-in/not_in operators) -->
-                              <select v-else-if="getDependencyFieldType(c.fieldKey) === 'Picklist' || getDependencyFieldType(c.fieldKey) === 'Multi-Picklist'" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="">{{ t('settings.modFieldsSelectOptionPh') }}</option>
-                                <option v-for="opt in getDependencyFieldOptions(c.fieldKey)" :key="opt" :value="opt">{{ opt }}</option>
-                              </select>
+                              <HeadlessSelect
+                                v-else-if="getDependencyFieldType(c.fieldKey) === 'Picklist' || getDependencyFieldType(c.fieldKey) === 'Multi-Picklist'"
+                                v-model="c.value"
+                                :options="dependencyPicklistValueOptions(c.fieldKey)"
+                                :placeholder="t('settings.modFieldsSelectOptionPh')"
+                                allow-empty
+                                :empty-label="t('settings.modFieldsSelectOptionPh')"
+                                empty-value=""
+                                teleport
+                                :teleport-match-width="true"
+                                button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                              />
                               <!-- Checkbox -->
-                              <select v-else-if="getDependencyFieldType(c.fieldKey) === 'Checkbox'" v-model="c.value" class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm">
-                                <option value="">{{ t('settings.modFieldsSelectValuePh') }}</option>
-                                <option value="true">true</option>
-                                <option value="false">false</option>
-                              </select>
+                              <HeadlessSelect
+                                v-else-if="getDependencyFieldType(c.fieldKey) === 'Checkbox'"
+                                v-model="c.value"
+                                :options="dependencyCheckboxValueOptions"
+                                :placeholder="t('settings.modFieldsSelectValuePh')"
+                                allow-empty
+                                :empty-label="t('settings.modFieldsSelectValuePh')"
+                                empty-value=""
+                                teleport
+                                button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                              />
                               <!-- Date -->
                               <DatePicker v-else-if="getDependencyFieldType(c.fieldKey) === 'Date'" v-model="c.value" input-class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                               <!-- Date-Time -->
@@ -2225,19 +2272,18 @@
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {{ t('settings.modFieldsParentField') }} <span class="text-red-500">*</span>
                         </label>
-                        <select 
+                        <HeadlessSelect
                           v-model="rule.parentFieldKey"
-                          class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="">{{ t('settings.modFieldsSelectPicklistFieldPh') }}</option>
-                          <option 
-                            v-for="field in editFields.filter(f => (f.dataType === 'Picklist' || f.dataType === 'Multi-Picklist') && f.key !== currentField.key)" 
-                            :key="field.key" 
-                            :value="field.key"
-                          >
-                            {{ field.label || field.key }}
-                          </option>
-                        </select>
+                          :options="picklistValueParentFieldOptions"
+                          :placeholder="t('settings.modFieldsSelectPicklistFieldPh')"
+                          allow-empty
+                          :empty-label="t('settings.modFieldsSelectPicklistFieldPh')"
+                          empty-value=""
+                          teleport
+                          :teleport-match-width="true"
+                          :truncate-options="false"
+                          button-class="!py-2 !rounded-lg !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                        />
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           {{ t('settings.modFieldsParentFieldHelp') }}
                         </p>
@@ -2261,19 +2307,17 @@
                             <!-- Parent Value -->
                             <div class="md:col-span-4">
                               <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsParentValue') }}</label>
-                              <select 
+                              <HeadlessSelect
                                 v-model="mapping.parentValue"
-                                class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm"
-                              >
-                                <option value="">{{ t('settings.modFieldsSelectValueEllipsisPh') }}</option>
-                                <option 
-                                  v-for="opt in getPicklistFieldOptions(rule.parentFieldKey)" 
-                                  :key="opt" 
-                                  :value="opt"
-                                >
-                                  {{ opt }}
-                                </option>
-                              </select>
+                                :options="dependencyPicklistValueOptions(rule.parentFieldKey)"
+                                :placeholder="t('settings.modFieldsSelectValueEllipsisPh')"
+                                allow-empty
+                                :empty-label="t('settings.modFieldsSelectValueEllipsisPh')"
+                                empty-value=""
+                                teleport
+                                :teleport-match-width="true"
+                                button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+                              />
                             </div>
                             
                             <!-- Arrow -->
@@ -3907,9 +3951,14 @@
                       </div>
                       <div>
                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsStatusLabel') }}</label>
-                        <select v-model="stage.status" @change="onStageStatusChange(stage)" class="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-sm">
-                          <option v-for="option in pipelineStageStatusOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                        </select>
+                        <HeadlessSelect
+                          v-model="stage.status"
+                          :options="pipelineStageStatusOptions"
+                          teleport
+                          :teleport-match-width="true"
+                          button-class="!py-2 !rounded-lg !bg-gray-50 dark:!bg-white/5 dark:!border-gray-700"
+                          @update:model-value="onStageStatusChange(stage)"
+                        />
                       </div>
                     </div>
                   </div>
@@ -4448,12 +4497,13 @@
                 </div>
                 <div>
                   <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsActionTypeLabel') }}</label>
-                  <select
+                  <HeadlessSelect
                     v-model="actionModalAction.actionType"
-                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                  >
-                    <option v-for="option in playbookActionTypes" :key="option.value" :value="option.value">{{ option.label }}</option>
-                  </select>
+                    :options="playbookActionTypes"
+                    teleport
+                    :teleport-match-width="true"
+                    button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                  />
                 </div>
                 <div>
                   <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDueDaysLabel') }}</label>
@@ -4467,12 +4517,13 @@
                 </div>
                 <div>
                   <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAssignmentLabel') }}</label>
-                  <select
+                  <HeadlessSelect
                     v-model="actionModalAction.assignment.type"
-                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                  >
-                    <option v-for="option in playbookAssignmentOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                  </select>
+                    :options="playbookAssignmentOptions"
+                    teleport
+                    :teleport-match-width="true"
+                    button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                  />
                   <input
                     v-if="['specific_user', 'role', 'team'].includes(actionModalAction.assignment.type)"
                     v-model="actionModalAction.assignment.targetName"
@@ -4510,25 +4561,28 @@
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsTriggerTypeLabel') }}</label>
-                  <select
+                  <HeadlessSelect
                     v-model="actionModalAction.trigger.type"
-                    @change="handleTriggerTypeChange(actionModalAction)"
-                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                  >
-                    <option v-for="option in playbookTriggerOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                  </select>
+                    :options="playbookTriggerOptions"
+                    teleport
+                    :teleport-match-width="true"
+                    button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                    @update:model-value="handleTriggerTypeChange(actionModalAction)"
+                  />
                 </div>
                 <div v-if="actionModalAction.trigger.type === 'after_action'">
                   <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsWaitForActivity') }}</label>
-                  <select
+                  <HeadlessSelect
                     v-model="actionModalAction.trigger.sourceActionKey"
-                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                  >
-                    <option value="">{{ t('settings.modFieldsSelectActivityPh') }}</option>
-                    <option v-for="option in getActionOptions(actionModalStage, actionModalAction)" :key="option.value" :value="option.value">
-                      {{ option.label }}
-                    </option>
-                  </select>
+                    :options="getActionOptions(actionModalStage, actionModalAction)"
+                    :placeholder="t('settings.modFieldsSelectActivityPh')"
+                    allow-empty
+                    :empty-label="t('settings.modFieldsSelectActivityPh')"
+                    empty-value=""
+                    teleport
+                    :teleport-match-width="true"
+                    button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                  />
                   <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsUnlockAfterCompleteHint') }}</p>
                 </div>
               </div>
@@ -4545,13 +4599,13 @@
                 </div>
                 <div>
                   <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsDelayUnit') }}</label>
-                  <select
-                    :value="actionModalAction.trigger.delay?.unit || 'hours'"
-                    @change="updateTriggerDelayUnit(actionModalAction, $event.target.value)"
-                    class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                  >
-                    <option v-for="option in playbookDelayUnitOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                  </select>
+                  <HeadlessSelect
+                    :model-value="actionModalAction.trigger.delay?.unit || 'hours'"
+                    :options="playbookDelayUnitOptions"
+                    teleport
+                    button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                    @update:model-value="updateTriggerDelayUnit(actionModalAction, $event)"
+                  />
                 </div>
               </div>
               <div v-if="actionModalAction.trigger.type === 'custom'" class="space-y-2">
@@ -4635,12 +4689,13 @@
                   <div class="grid gap-4 md:grid-cols-2">
                     <div>
                       <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsAlertTypeLabel') }}</label>
-                      <select
+                      <HeadlessSelect
                         v-model="alert.type"
-                        class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                      >
-                        <option v-for="option in playbookAlertTypeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                      </select>
+                        :options="playbookAlertTypeOptions"
+                        teleport
+                        :teleport-match-width="true"
+                        button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                      />
                     </div>
                     <div>
                       <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsSendOffset') }}</label>
@@ -4652,13 +4707,14 @@
                           @input="updateAlertOffsetAmount(alert, $event.target.value)"
                           class="w-24 px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
                         />
-                        <select
-                          :value="alert.offset?.unit || 'hours'"
-                          @change="updateAlertOffsetUnit(alert, $event.target.value)"
-                          class="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                        >
-                          <option v-for="option in playbookDelayUnitOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                        </select>
+                        <HeadlessSelect
+                          :model-value="alert.offset?.unit || 'hours'"
+                          :options="playbookDelayUnitOptions"
+                          teleport
+                          wrapper-class="flex-1 min-w-0"
+                          button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                          @update:model-value="updateAlertOffsetUnit(alert, $event)"
+                        />
                       </div>
                     </div>
                   </div>
@@ -4726,12 +4782,13 @@
                     </div>
                     <div>
                       <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsType') }}</label>
-                      <select
+                      <HeadlessSelect
                         v-model="resource.type"
-                        class="w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-sm"
-                      >
-                        <option v-for="option in playbookResourceTypes" :key="option.value" :value="option.value">{{ option.label }}</option>
-                      </select>
+                        :options="playbookResourceTypes"
+                        teleport
+                        :teleport-match-width="true"
+                        button-class="!py-2 !rounded-lg !bg-white dark:!bg-gray-900/80 dark:!border-gray-700"
+                      />
                     </div>
                     <div class="md:col-span-2">
                       <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">{{ t('settings.modFieldsUrlAttachmentRef') }}</label>
@@ -4831,6 +4888,9 @@
 </template>
 
 <script setup>
+import { useNotifications } from '@/composables/useNotifications';
+
+import { confirmAction } from '@/composables/useConfirmAction';
 // See docs/architecture/form-settings-doctrine.md
 // Form Settings are configuration-only and must respect domain boundaries
 
@@ -4880,6 +4940,7 @@ import {
 import AddCustomFieldDrawer from './AddCustomFieldDrawer.vue';
 import RelationshipFormDrawer from './RelationshipFormDrawer.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 import {
@@ -5091,6 +5152,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 function dependencyOptionCountLabel(count) {
   return count === 1
@@ -5301,6 +5364,71 @@ const editingOptionIdx = ref(-1);
 const editOptionValue = ref('');
 const allowedValuesBuffers = ref({});
 const fieldTypes = PLATFORM_MODULE_FIELD_TYPES;
+const fieldTypeSelectOptions = fieldTypes.map((ft) => ({ value: ft, label: ft }));
+
+const dateFormatSelectOptions = [
+  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+  { value: 'MMM DD, YYYY', label: 'MMM DD, YYYY' },
+];
+
+const timeFormatSelectOptions = computed(() => [
+  { value: '12h', label: t('settings.modFieldsTime12h') },
+  { value: '24h', label: t('settings.modFieldsTime24h') },
+]);
+
+const formulaReturnTypeSelectOptions = computed(() => [
+  { value: 'Text', label: t('settings.modFieldsReturnTypeText') },
+  { value: 'Number', label: t('settings.modFieldsReturnTypeNumber') },
+  { value: 'Date', label: t('settings.modFieldsReturnTypeDate') },
+  { value: 'Checkbox', label: t('settings.modFieldsReturnTypeCheckbox') },
+]);
+
+const validationTypeSelectOptions = computed(() => [
+  { value: 'regex', label: t('settings.modFieldsValidationRegex') },
+  { value: 'length', label: t('settings.modFieldsValidationLength') },
+  { value: 'range', label: t('settings.modFieldsValidationRange') },
+  { value: 'picklist_single', label: t('settings.modFieldsValidationPicklistSingle') },
+  { value: 'picklist_multi', label: t('settings.modFieldsValidationPicklistMulti') },
+  { value: 'email', label: t('settings.modFieldsValidationEmail') },
+]);
+
+const formTypeSelectOptions = computed(() =>
+  (getFormTypeDefinitions() || []).map((type) => ({
+    value: type.key,
+    label: `${type.label} ${type.builtIn ? t('settings.modFieldsFormTypeBuiltIn') : t('settings.modFieldsFormTypeCustom')}`,
+  }))
+);
+
+const lookupModuleSelectOptions = computed(() =>
+  (modules.value || []).map((m) => ({
+    value: m.key,
+    label: m.name || m.key,
+  }))
+);
+
+const lookupDisplayFieldSelectOptions = computed(() =>
+  (lookupTargetFields.value || []).map((f) => ({
+    value: f.key,
+    label: f.label || f.key,
+  }))
+);
+
+const defaultPicklistSelectOptions = computed(() =>
+  (normalizedOptions.value || []).map((opt) => ({
+    value: getOptionValue(opt),
+    label: getOptionDisplayLabel(opt),
+  }))
+);
+
+function toggleDefaultMultiPicklistOption(optValue) {
+  const current = [...defaultValueMultiPicklist.value];
+  const idx = current.indexOf(optValue);
+  if (idx >= 0) current.splice(idx, 1);
+  else current.push(optValue);
+  defaultValueMultiPicklist.value = current;
+}
 const selectedModule = computed(() => modules.value.find(m => m._id === selectedModuleId.value));
 
 // Form Settings Permissions (explanatory only, not enforcement)
@@ -5998,11 +6126,11 @@ function removePipeline(pipelineKey) {
   const pipeline = pipelineSettings.value.find(p => p.key === pipelineKey);
   if (!pipeline) return;
   if (pipeline.isDefault) {
-    alert(t('settings.modFieldsPipelineRemoveDefaultFirst'));
+    notifications.error(t('settings.modFieldsPipelineRemoveDefaultFirst'));
     return;
   }
   if (pipelineSettings.value.length <= 1) {
-    alert(t('settings.modFieldsPipelineMinOne'));
+    notifications.warning(t('settings.modFieldsPipelineMinOne'));
     return;
   }
   const index = pipelineSettings.value.findIndex(p => p.key === pipelineKey);
@@ -6056,7 +6184,7 @@ function addStageToPipeline(pipeline) {
 function removeStageFromPipeline(pipeline, stageIndex) {
   if (!pipeline) return;
   if (pipeline.stages.length <= 1) {
-    alert(t('settings.modFieldsPipelineMinOneStage'));
+    notifications.warning(t('settings.modFieldsPipelineMinOneStage'));
     return;
   }
   pipeline.stages.splice(stageIndex, 1);
@@ -9419,10 +9547,10 @@ const handleModuleSaved = async (savedModule) => {
 };
 
 const deleteModule = async (mod) => {
-  if (!confirm(t('settings.modFieldsConfirmDeleteModule', { name: mod.name }))) return;
+  if (!await confirmAction(t('settings.modFieldsConfirmDeleteModule', { name: mod.name }))) return;
   try {
     const data = await apiClient.delete(`/modules/${mod._id}`);
-    if (!data.success) return alert(data.message || t('settings.modFieldsDeleteModuleFailed'));
+    if (!data.success) return notifications.error(data.message || t('settings.modFieldsDeleteModuleFailed'));
     await fetchModules({ cache: 'no-store' });
     if (modules.value.length) selectModule(modules.value[0]); else selectedModuleId.value = null;
   } catch (e) {
@@ -9494,19 +9622,19 @@ const openDeleteFieldConfirm = () => {
   const mod = selectedModule.value;
   const owner = field?.owner || 'platform';
   if (owner === 'platform') {
-    alert(t('settings.modFieldsErrPlatformFieldDelete'));
+    notifications.error(t('settings.modFieldsErrPlatformFieldDelete'));
     return;
   }
   if (owner === 'app') {
-    alert(t('settings.modFieldsErrAppFieldDelete'));
+    notifications.error(t('settings.modFieldsErrAppFieldDelete'));
     return;
   }
   if (isSystemField(field)) {
-    alert(t('settings.modFieldsErrSystemFieldDelete'));
+    notifications.error(t('settings.modFieldsErrSystemFieldDelete'));
     return;
   }
   if (isCoreField(field, mod?.key)) {
-    alert(t('settings.modFieldsErrCoreFieldDelete'));
+    notifications.error(t('settings.modFieldsErrCoreFieldDelete'));
     return;
   }
   showDeleteFieldConfirm.value = true;
@@ -9529,24 +9657,24 @@ const removeField = (idx) => {
   const owner = field?.owner || 'platform'; // Default to platform if not set
   
   if (owner === 'platform') {
-    alert(t('settings.modFieldsErrPlatformFieldDelete'));
+    notifications.error(t('settings.modFieldsErrPlatformFieldDelete'));
     return;
   }
   
   if (owner === 'app') {
-    alert(t('settings.modFieldsErrAppFieldDelete'));
+    notifications.error(t('settings.modFieldsErrAppFieldDelete'));
     return;
   }
   
   // Prevent deletion of system fields (legacy check)
   if (isSystemField(field)) {
-    alert(t('settings.modFieldsErrSystemFieldDelete'));
+    notifications.error(t('settings.modFieldsErrSystemFieldDelete'));
     return;
   }
   
   // Prevent deletion of core fields (legacy check)
   if (isCoreField(field, mod?.key)) {
-    alert(t('settings.modFieldsErrCoreFieldDelete'));
+    notifications.error(t('settings.modFieldsErrCoreFieldDelete'));
     return;
   }
   
@@ -9701,14 +9829,14 @@ const saveModule = async () => {
       const errData = err.response?.data;
       if (errData?.code === 'FIELD_MUTATION_NOT_ALLOWED' && errData.violations?.length > 0) {
         const violationMessages = errData.violations.map(v => `• ${v.field}: ${v.reason}`).join('\n');
-        alert(`${errData.message}\n\n${t('settings.modFieldsErrSaveViolationsSuffix', { violations: violationMessages })}`);
+        notifications.error(`${errData.message}\n\n${t('settings.modFieldsErrSaveViolationsSuffix', { violations: violationMessages })}`);
       } else {
-        alert(errData?.message || err.message || t('settings.modFieldsErrSaveFailed'));
+        notifications.error(errData?.message || err.message || t('settings.modFieldsErrSaveFailed'));
       }
       return;
     }
     if (!data.success) {
-      alert(data.message || t('settings.modFieldsErrSaveFailed'));
+      notifications.error(data.message || t('settings.modFieldsErrSaveFailed'));
       return;
     }
     invalidateTenantSchemaCaches();
@@ -9736,7 +9864,7 @@ const saveModule = async () => {
     console.log('Module saved successfully, relationships updated');
   } catch (e) {
     console.error('Save module failed', e);
-    alert(t('settings.modFieldsErrSaveFailedWithReason', {
+    notifications.error(t('settings.modFieldsErrSaveFailedWithReason', {
       reason: e.message || t('settings.modFieldsUnknownError')
     }));
   } finally {
@@ -9877,17 +10005,17 @@ function handleAddCustomFormType() {
     newFormTypeLabel.value = '';
   } catch (error) {
     console.error('[Form Type] Failed to add custom form type:', error);
-    alert(`Failed to add form type: ${error.message}`);
+    notifications.error(`Failed to add form type: ${error.message}`);
   }
 }
 
-function handleRemoveCustomFormType(key) {
+async function handleRemoveCustomFormType(key) {
   if (!key) return;
   
   // Prevent removing built-in types (safety check)
   // Built-in types: Audit, Survey, Feedback
   if (isBuiltInFormType(key)) {
-    alert('Built-in form types (Audit, Survey, Feedback) cannot be removed.');
+    notifications.warning('Built-in form types (Audit, Survey, Feedback) cannot be removed.');
     return;
   }
   
@@ -9895,12 +10023,12 @@ function handleRemoveCustomFormType(key) {
   const normalizedKey = String(key).toLowerCase();
   const protectedTypes = ['audit', 'survey', 'feedback'];
   if (protectedTypes.includes(normalizedKey)) {
-    alert('Built-in form types (Audit, Survey, Feedback) cannot be removed.');
+    notifications.warning('Built-in form types (Audit, Survey, Feedback) cannot be removed.');
     return;
   }
   
   // Confirm removal
-  if (!confirm(`Are you sure you want to remove the custom form type "${key}"?`)) {
+  if (!await confirmAction(`Are you sure you want to remove the custom form type "${key}"?`)) {
     return;
   }
   
@@ -9915,7 +10043,7 @@ function handleRemoveCustomFormType(key) {
     }
   } catch (error) {
     console.error('[Form Type] Failed to remove custom form type:', error);
-    alert(`Failed to remove form type: ${error.message}`);
+    notifications.error(`Failed to remove form type: ${error.message}`);
   }
 }
 
@@ -9988,6 +10116,66 @@ function handleRemoveCustomFormType(key) {
     });
   }
 const otherFields = computed(() => editFields.value.filter((_, i) => i !== selectedFieldIdx.value));
+
+const dependencyControllingFieldOptions = computed(() =>
+  otherFields.value.map((f) => ({
+    value: f.key,
+    label: f.label || f.key,
+  }))
+);
+
+const dependencyTypeSelectOptions = computed(() => [
+  { value: 'visibility', label: t('settings.modFieldsDepVisibility') },
+  { value: 'readonly', label: t('settings.modFieldsDepReadonly') },
+  { value: 'required', label: t('settings.modFieldsDepRequired') },
+  { value: 'picklist', label: t('settings.modFieldsDepPicklistFilter') },
+  { value: 'popup', label: t('settings.modFieldsDepPopup') },
+  { value: 'label', label: t('settings.modFieldsDepLabelOverride') },
+]);
+
+const dependencyLogicSelectOptions = computed(() => [
+  { value: 'AND', label: t('settings.modFieldsLogicAnd') },
+  { value: 'OR', label: t('settings.modFieldsLogicOr') },
+]);
+
+const dependencyOperatorSelectOptions = computed(() => [
+  { value: 'equals', label: t('settings.modFieldsOpEquals') },
+  { value: 'not_equals', label: t('settings.modFieldsOpNotEquals') },
+  { value: 'in', label: t('settings.modFieldsOpIn') },
+  { value: 'not_in', label: t('settings.modFieldsOpNotIn') },
+  { value: 'exists', label: t('settings.modFieldsOpExists') },
+  { value: 'gt', label: t('settings.modFieldsOpGt') },
+  { value: 'lt', label: t('settings.modFieldsOpLt') },
+  { value: 'gte', label: t('settings.modFieldsOpGte') },
+  { value: 'lte', label: t('settings.modFieldsOpLte') },
+  { value: 'contains', label: t('settings.modFieldsOpContains') },
+]);
+
+const dependencyCheckboxValueOptions = [
+  { value: 'true', label: 'true' },
+  { value: 'false', label: 'false' },
+];
+
+function dependencyPicklistValueOptions(fieldKey) {
+  return getDependencyFieldOptions(fieldKey).map((opt) => ({
+    value: opt,
+    label: opt,
+  }));
+}
+
+const picklistValueParentFieldOptions = computed(() => {
+  const currentKey = currentField.value?.key;
+  return editFields.value
+    .filter(
+      (f) =>
+        (f.dataType === 'Picklist' || f.dataType === 'Multi-Picklist') &&
+        f.key !== currentKey
+    )
+    .map((f) => ({
+      value: f.key,
+      label: f.label || f.key,
+    }));
+});
 
 // Track if user manually edited field key to prevent auto-generation
 const fieldKeyManuallyEdited = ref(new Set());
@@ -10327,8 +10515,8 @@ function onRelationshipSave({ relationship, editIndex }) {
   }
   closeRelationshipDrawer();
 }
-function removeRelationship(idx) {
-  if (confirm('Are you sure you want to remove this relationship?')) {
+async function removeRelationship(idx) {
+  if (await confirmAction('Are you sure you want to remove this relationship?')) {
     relationships.value.splice(idx, 1);
   }
 }
@@ -11738,12 +11926,12 @@ async function saveQuickCreate() {
       data = await apiClient.put(url, payload);
     } catch (err) {
       console.error('Save Quick Create failed:', err);
-      alert(err.message || t('settings.modFieldsErrQuickCreateSaveFailed'));
+      notifications.error(err.message || t('settings.modFieldsErrQuickCreateSaveFailed'));
       return;
     }
     if (!data.success) {
       console.error('Save Quick Create failed:', data);
-      alert(data.message || t('settings.modFieldsErrQuickCreateSaveFailed'));
+      notifications.error(data.message || t('settings.modFieldsErrQuickCreateSaveFailed'));
       return;
     }
     
@@ -11801,7 +11989,7 @@ async function saveQuickCreate() {
     try { window.dispatchEvent(new CustomEvent('arivu:core-modules-updated')); } catch (e) {}
   } catch (e) {
     console.error('Save quick create failed', e);
-    alert(t('settings.modFieldsErrQuickCreateSettingsFailed'));
+    notifications.error(t('settings.modFieldsErrQuickCreateSettingsFailed'));
   } finally {
     isSavingQuickCreate.value = false;
   }
@@ -12541,7 +12729,7 @@ async function saveItemStatusTypes() {
     itemStatusTypesOriginalSnapshot.value = JSON.stringify(payload);
   } catch (err) {
     console.error('Failed to save item status/types:', err);
-    alert(err.message || t('settings.modFieldsErrItemStatusTypesSaveFailed'));
+    notifications.error(err.message || t('settings.modFieldsErrItemStatusTypesSaveFailed'));
   } finally {
     savingItemStatusTypes.value = false;
   }
@@ -13170,7 +13358,7 @@ async function saveStatusTypes() {
     }
   } catch (err) {
     console.error('Failed to save status types:', err);
-    alert(err.message || t('settings.modFieldsErrStatusTypesSaveFailed'));
+    notifications.error(err.message || t('settings.modFieldsErrStatusTypesSaveFailed'));
   } finally {
     savingStatusTypes.value = false;
   }

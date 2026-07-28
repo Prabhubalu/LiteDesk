@@ -314,7 +314,10 @@ import {
   buildProcessScopeSentence
 } from '@/utils/processDesignerConstants';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   process: { type: Object, required: true },
@@ -554,7 +557,7 @@ async function rotateSecret() {
     });
     local.value.coreTrigger = 'webhook';
   } catch (e) {
-    alert(e.message || t('process.settingsRotateSecretFailed'));
+    notifications.error(e.message || t('process.settingsRotateSecretFailed'));
   } finally {
     rotating.value = false;
   }

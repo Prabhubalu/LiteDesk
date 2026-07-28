@@ -156,6 +156,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '../../utils/apiClient';
 import DatePicker from '@/components/common/DatePicker.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   task: {
     type: Object,
@@ -164,6 +165,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const emit = defineEmits(['close', 'save']);
 
@@ -241,7 +244,7 @@ const handleSubmit = async () => {
     emit('save');
   } catch (error) {
     console.error('Error saving task:', error);
-    alert(t('tasks.taskFormModalToastErrorSavingTaskPleaseTry'));
+    notifications.error(t('tasks.taskFormModalToastErrorSavingTaskPleaseTry'));
   } finally {
     saving.value = false;
   }

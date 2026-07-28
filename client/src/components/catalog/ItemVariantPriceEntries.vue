@@ -108,6 +108,7 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiList } from '@/utils/catalogApi';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   variantId: { type: String, default: '' },
   canEdit: { type: Boolean, default: false }
@@ -212,7 +213,7 @@ async function saveEntry() {
 }
 
 async function removeEntry(row) {
-  if (!confirm(t('platform.catalogConfirmDeletePriceEntry'))) return;
+  if (!await confirmAction(t('platform.catalogConfirmDeletePriceEntry'))) return;
   entryError.value = '';
   try {
     await apiClient.delete(`/catalog/price-books/${row.priceBookId}/entries/${row._id}`);

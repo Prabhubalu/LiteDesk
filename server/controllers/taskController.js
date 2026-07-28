@@ -762,6 +762,26 @@ const updateTask = async (req, res) => {
           violations: fieldViolations
         });
       }
+
+      const { validatePicklistDependencyValues } = require('../utils/dependencyEvaluation');
+      const taskObj = task.toObject ? task.toObject() : { ...task };
+      const mergedForPicklist = {
+        ...taskObj,
+        ...req.body,
+        customFields: {
+          ...(taskObj.customFields || {}),
+          ...(req.body.customFields || {})
+        }
+      };
+      const picklistErrors = validatePicklistDependencyValues(moduleDef.fields, mergedForPicklist);
+      if (picklistErrors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed.',
+          code: 'PICKLIST_DEPENDENCY_VIOLATION',
+          validationErrors: picklistErrors
+        });
+      }
     }
 
     // Fast path: tags-only update should not be blocked by unrelated task

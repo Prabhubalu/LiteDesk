@@ -850,6 +850,9 @@ function computeEventsStatistics(
 function normalizeEventsFilters(filters: Record<string, any>, currentUserId?: string): Record<string, any> {
   const normalized = { ...filters };
 
+  // Client-only marker for dynamic date system views — never send to API
+  delete normalized._special;
+
   // Normalize assignedTo (similar to assignedTo)
   if ('assignedTo' in normalized) {
     if (normalized.assignedTo === 'me' && currentUserId) {
@@ -859,12 +862,22 @@ function normalizeEventsFilters(filters: Record<string, any>, currentUserId?: st
     }
   }
 
-  // Normalize date range filters
-  if ('startDateTime' in normalized && normalized.startDateTime === '') {
-    delete normalized.startDateTime;
-  }
-  if ('endDateTime' in normalized && normalized.endDateTime === '') {
-    delete normalized.endDateTime;
+  // Expand date filter objects into *Op/*Preset API params (leave plain ISO for system views)
+  const dateFieldKeys = ['startDateTime', 'endDateTime', 'createdAt', 'updatedAt'] as const;
+  for (const fieldKey of dateFieldKeys) {
+    const value = normalized[fieldKey];
+    if (value === '') {
+      delete normalized[fieldKey];
+    } else if (
+      value != null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      (value.preset != null || value.op != null || value.quick != null)
+    ) {
+      const params = dateFilterValueToParams(fieldKey, value);
+      delete normalized[fieldKey];
+      Object.assign(normalized, params);
+    }
   }
 
   // Normalize eventType filter

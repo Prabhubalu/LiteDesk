@@ -376,6 +376,16 @@
                                 <option value="false">{{ t('settings.assignRulesNo') }}</option>
                               </select>
 
+                              <DateFilterDropdown
+                                v-else-if="clauseFieldDataType(clause) === 'date' || clauseFieldDataType(clause) === 'datetime'"
+                                :model-value="normalizeDateFilterModel(clause.value)"
+                                :filter-key="clause.field || 'date'"
+                                :filter-label="clauseValuePlaceholder(clause)"
+                                button-class="w-full rounded border border-gray-300 bg-white px-2 py-1.5 text-xs dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                teleport-options
+                                @update:model-value="(v) => { clause.value = v; }"
+                              />
+
                               <input
                                 v-else
                                 v-model.trim="clause.value"
@@ -674,8 +684,10 @@ import AssignmentRuleSetList from '@/components/settings/AssignmentRuleSetList.v
 import AssignmentRuleUsersDrawer from '@/components/settings/AssignmentRuleUsersDrawer.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
+import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import { SETTINGS_HEADER_CONTENT_GAP_CLASS, SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 import { parseDateTimeLocal, toDateTimeLocal } from '@/utils/datePickerUtils';
+import { parseDateFilterValue } from '@/utils/dateFilterOptions';
 import { formatDate } from '@/utils/localeFormat';
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
@@ -1272,9 +1284,14 @@ function normalizeClauseValueForFieldAndOperator(clause) {
 function clauseValueInputType(clause) {
   const dt = clauseFieldDataType(clause);
   if (dt === 'number' || dt === 'currency' || dt === 'percent') return 'number';
-  if (dt === 'date') return 'date';
-  if (dt === 'datetime') return 'datetime-local';
+  // date/datetime use DateFilterDropdown — keep text fallback type for safety
   return 'text';
+}
+
+function normalizeDateFilterModel(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'object') return parseDateFilterValue(v) || v;
+  return parseDateFilterValue(v);
 }
 
 function inferClauseFieldSelect(field) {

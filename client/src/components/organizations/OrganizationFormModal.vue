@@ -31,6 +31,8 @@
           />
           <!-- Debug: Log props being passed -->
           <script>
+import { useNotifications } from '@/composables/useNotifications';
+
             console.log('[OrganizationFormModal] Props being passed to DynamicForm:', {
               isEditing: isEditing.value,
               showAllFields: isEditing.value,
@@ -79,6 +81,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const authStore = useAuthStore();
 
 const emit = defineEmits(['close', 'saved']);
@@ -249,7 +253,7 @@ const handleSubmit = async (formData) => {
     }
   } catch (error) {
     console.error('Error saving organization:', error);
-    alert(error.message || t('organizations.organizationFormModalToastFailedToSaveOrganization'));
+    notifications.error(error.message || t('organizations.organizationFormModalToastFailedToSaveOrganization'));
   } finally {
     saving.value = false;
   }

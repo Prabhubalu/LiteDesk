@@ -178,6 +178,17 @@ async function bulkUpdateRecords(params) {
     throw error;
   }
 
+  const { validatePicklistDependencyValues } = require('../utils/dependencyEvaluation');
+  // Bulk payloads are partial — only enforce when controlling + dependent values are both present
+  // or when a dependent value is set without any parent key (treated as empty parent → reject).
+  const picklistErrors = validatePicklistDependencyValues(moduleFields, allowed);
+  if (picklistErrors.length > 0) {
+    const error = new Error('Picklist dependency validation failed');
+    error.code = 'PICKLIST_DEPENDENCY_VIOLATION';
+    error.validationErrors = picklistErrors;
+    throw error;
+  }
+
   let targetIds = normalizeIds(ids);
   const limit = Math.min(Math.max(Number(batchSize) || DEFAULT_BATCH_SIZE, 1), 5000);
 

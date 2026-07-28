@@ -173,6 +173,47 @@ function compileRuleToMongo(rule, moduleKey, context = {}) {
   if (operator === 'is' || operator === 'is_not') {
     const userClause = compileUserFilterClause(fieldKey, value, operator, context);
     if (userClause) return userClause;
+
+    // Date Quick Filters / Specific Date objects from DateFilterDropdown
+    if (isPlainObject(value) && (value.preset || value.op || value.quick)) {
+      const { buildDateFieldQuery } = require('./listQueryBuilders/tasksListQuery');
+      const fakeParams = {};
+      if (value.quick === 'fromNow' || value.preset === 'fromNow') {
+        fakeParams[`${fieldKey}Preset`] = 'fromNow';
+      } else if (value.quick === 'beforeNow' || value.preset === 'beforeNow') {
+        fakeParams[`${fieldKey}Preset`] = 'beforeNow';
+      } else if (value.preset) {
+        fakeParams[`${fieldKey}Preset`] = value.preset;
+      } else if (value.op === 'empty') {
+        fakeParams[`${fieldKey}Op`] = 'empty';
+      } else if (value.op === 'notEmpty') {
+        fakeParams[`${fieldKey}Op`] = 'notEmpty';
+      } else if (value.op === 'lastDays' || value.op === 'nextDays') {
+        fakeParams[`${fieldKey}Op`] = value.op;
+        fakeParams[`${fieldKey}Days`] = value.days;
+      } else if (value.op === 'on') {
+        fakeParams[`${fieldKey}Op`] = 'on';
+        fakeParams[fieldKey] = value.date;
+      } else if (value.op === 'before') {
+        fakeParams[`${fieldKey}Op`] = 'before';
+        fakeParams[`${fieldKey}To`] = value.date;
+      } else if (value.op === 'after') {
+        fakeParams[`${fieldKey}Op`] = 'after';
+        fakeParams[`${fieldKey}From`] = value.date;
+      } else if (value.op === 'between') {
+        fakeParams[`${fieldKey}Op`] = 'between';
+        fakeParams[`${fieldKey}From`] = value.from;
+        fakeParams[`${fieldKey}To`] = value.to;
+      }
+      const condition = buildDateFieldQuery(fieldKey, fakeParams);
+      if (condition === 'EMPTY') {
+        return compileIsEmptyClause(fieldKey, null);
+      }
+      if (condition) {
+        const clause = { [fieldKey]: condition };
+        return operator === 'is_not' ? { $nor: [clause] } : clause;
+      }
+    }
   }
 
   if (operator === 'contains' && typeof value === 'string') {
@@ -190,7 +231,11 @@ function compileRuleToMongo(rule, moduleKey, context = {}) {
         ? []
         : [value];
     if (values.length === 0) return null;
-    return { [fieldKey]: { $in: values } };
+    const resolved = values.map((v) => {
+      if (v === 'me' && context.userId) return context.userId;
+      return v;
+    });
+    return { [fieldKey]: { $in: resolved } };
   }
 
   if (operator === 'is_not') {

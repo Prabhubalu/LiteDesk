@@ -147,6 +147,7 @@ import apiClient from '@/utils/apiClient';
 import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -163,6 +164,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const authStore = useAuthStore();
 
 const emit = defineEmits(['close', 'created']);
@@ -259,11 +262,11 @@ const handleSubmit = async () => {
       emit('created', response.data);
       close();
     } else {
-      alert(response.message || t('events.orderCreationModalToastFailedToCreateOrder'));
+      notifications.error(response.message || t('events.orderCreationModalToastFailedToCreateOrder'));
     }
   } catch (error) {
     console.error('Error creating order:', error);
-    alert(t('events.orderCreationModalToastFailedToCreateOrder2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.orderCreationModalToastFailedToCreateOrder2') + (error.message || 'Unknown error'));
   } finally {
     saving.value = false;
   }

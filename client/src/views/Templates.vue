@@ -68,6 +68,28 @@
       <template #cell-updatedAt="{ value }">
         <span>{{ formatDate(value) }}</span>
       </template>
+
+      <template #actions="{ row }">
+        <div class="inline-flex items-center gap-1">
+          <button
+            v-if="canCreate"
+            type="button"
+            class="inline-flex items-center h-8 gap-1.5 px-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors text-sm"
+            :title="t('actions.duplicate')"
+            :disabled="duplicatingId === (row?._id || row?.id)"
+            @click.stop="handleDuplicate(row)"
+          >
+            <DocumentDuplicateIcon class="w-4 h-4" />
+          </button>
+          <RowActions
+            :row="row"
+            module="templates"
+            @view="openTemplate(row)"
+            @edit="openTemplateBuilder(row)"
+            @delete="handleDelete(row)"
+          />
+        </div>
+      </template>
     </ListView>
 
     <CreateTemplateDrawer
@@ -90,7 +112,9 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
 import ListView from '@/components/common/ListView.vue';
+import RowActions from '@/components/common/RowActions.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import TemplatesModuleNav from '@/components/templates/TemplatesModuleNav.vue';
 import CreateTemplateDrawer from '@/components/templates/CreateTemplateDrawer.vue';
@@ -99,6 +123,7 @@ import { useTemplates } from '@/composables/useTemplates';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import { openRecordInTab } from '@/utils/tabNavigation';
+import { confirmAction } from '@/composables/useConfirmAction';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -112,12 +137,14 @@ const {
   fetchTemplates,
   fetchTemplateSummary,
   createTemplate,
-  deleteTemplate
+  deleteTemplate,
+  cloneTemplate
 } = useTemplates();
 
 const showCreateDrawer = ref(false);
 const showImportWizard = ref(false);
 const importMetadata = ref({});
+const duplicatingId = ref(null);
 const searchQuery = ref('');
 const statusFilter = ref('');
 
@@ -305,12 +332,30 @@ function handleImportHtmlStart(metadata) {
 async function handleDelete(row) {
   const id = row?._id || row?.id;
   if (!id) return;
+  const name = String(row?.name || '').trim() || t('templates.detailTitle');
+  if (!await confirmAction(t('templates.confirmDelete', { name }))) return;
   try {
     await deleteTemplate(id);
     notifications.success(t('templates.deleteSuccess'));
     await refreshPage();
   } catch (error) {
     notifications.error(error?.message || t('templates.deleteFailed'));
+  }
+}
+
+async function handleDuplicate(row) {
+  const id = row?._id || row?.id;
+  if (!id || duplicatingId.value) return;
+  duplicatingId.value = id;
+  try {
+    const created = await cloneTemplate(id);
+    notifications.success(t('templates.duplicateSuccess'));
+    await refreshPage();
+    openTemplateBuilder(created, created?.name);
+  } catch (error) {
+    notifications.error(error?.message || t('templates.duplicateFailed'));
+  } finally {
+    duplicatingId.value = null;
   }
 }
 

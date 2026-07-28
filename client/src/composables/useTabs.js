@@ -64,6 +64,7 @@ import { createLiveChatTabAlertController } from '@/utils/liveChatTabAlerts';
 import { clearListSessionsForRoutePath } from '@/utils/listScrollSession';
 import { markModuleListRecheckForRoutePath } from '@/utils/moduleListFreshness';
 import { markRecordDetailRecheckForRoutePath } from '@/utils/recordDetailFreshness';
+import { clearTabDrawerDraftsForTab } from '@/composables/useTabDrawerDrafts';
 import {
   normalizeLiveChatPath,
   isLiveChatSessionsRoute,
@@ -2752,6 +2753,8 @@ export function useTabs() {
     markModuleListRecheckForRoutePath(tab.path);
     markRecordDetailRecheckForRoutePath(tab.path);
 
+    clearTabDrawerDraftsForTab(tab.id);
+
     // Remove tab
     tabs.value.splice(index, 1);
     
@@ -2795,7 +2798,10 @@ export function useTabs() {
   const closeOtherTabs = (keepTabId) => {
     tabs.value
       .filter((tab) => tab.id !== keepTabId && tab.closable)
-      .forEach((tab) => clearListSessionsForRoutePath(tab.path));
+      .forEach((tab) => {
+        clearListSessionsForRoutePath(tab.path);
+        clearTabDrawerDraftsForTab(tab.id);
+      });
 
     tabs.value = tabs.value.filter(tab => 
       tab.id === keepTabId || !tab.closable
@@ -2828,7 +2834,10 @@ export function useTabs() {
   const closeAllTabs = () => {
     tabs.value
       .filter((tab) => tab.closable)
-      .forEach((tab) => clearListSessionsForRoutePath(tab.path));
+      .forEach((tab) => {
+        clearListSessionsForRoutePath(tab.path);
+        clearTabDrawerDraftsForTab(tab.id);
+      });
 
     tabs.value = tabs.value.filter(tab => !tab.closable);
     

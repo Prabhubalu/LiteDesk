@@ -1,35 +1,17 @@
 <template>
-  <TransitionRoot as="template" :show="isOpen">
-    <Dialog class="relative z-50" @close="emit('close')">
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-200"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="ease-in duration-150"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
-      >
-        <div class="fixed inset-0 bg-gray-900/40" />
-      </TransitionChild>
-
-      <div class="fixed inset-0 overflow-hidden">
-        <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-            <TransitionChild
-              as="template"
-              enter="transform transition ease-out duration-200"
-              enter-from="translate-x-full"
-              enter-to="translate-x-0"
-              leave="transform transition ease-in duration-150"
-              leave-from="translate-x-0"
-              leave-to="translate-x-full"
-            >
-              <DialogPanel class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-screen max-w-lg flex-col bg-white shadow-xl dark:bg-gray-900">
+  <WorkspaceScopedDrawerShell
+    :is-open="isOpen"
+    panel-offset-class="pl-10"
+    draft-module-key="campaigns"
+    :draft-record-id="campaignId || ''"
+    @backdrop="emit('close')"
+    @escape="emit('close')"
+  >
+              <div class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-screen max-w-lg flex-col bg-white shadow-xl dark:bg-gray-900">
                 <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                  <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ t('marketing.campaignsSendDrawerTitle') }}
-                  </DialogTitle>
+                  </h2>
                   <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     {{ drawerDescription }}
                   </p>
@@ -275,13 +257,9 @@
                     </button>
                   </div>
                 </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
+              </div>
+
+  </WorkspaceScopedDrawerShell>
 
   <CampaignTestSendModal
     :is-open="showTestModal"
@@ -293,11 +271,11 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import CampaignTestSendModal from '@/components/marketing/CampaignTestSendModal.vue';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },

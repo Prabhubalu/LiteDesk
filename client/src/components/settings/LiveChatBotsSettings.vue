@@ -264,6 +264,7 @@ import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const emit = defineEmits(['back', 'open-website-content']);
 const { t } = useI18n();
 const notifications = useNotifications();
@@ -363,7 +364,7 @@ async function saveEditor() {
 
 async function removeBot(bot) {
   if (!bot?._id) return;
-  if (!window.confirm(t('settings.addonsLiveChatBotDeleteConfirm'))) return;
+  if (!await confirmAction(t('settings.addonsLiveChatBotDeleteConfirm'))) return;
   try {
     await apiClient.delete(`/live-chat/bots/${bot._id}`);
     notifications.success(t('settings.addonsLiveChatBotDeleted'));

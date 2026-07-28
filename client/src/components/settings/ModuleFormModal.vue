@@ -82,7 +82,10 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { fetchModulesListCached, parseModulesListResponse } from '@/utils/tenantSchemaApiCache';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   module: {
@@ -264,7 +267,7 @@ const handleSubmit = async () => {
         formErrors.value.name = message;
       }
     } else {
-      alert(error.message || t('settings.settingsModFormCreateFailed'));
+      notifications.error(error.message || t('settings.settingsModFormCreateFailed'));
     }
     saving.value = false;
   }

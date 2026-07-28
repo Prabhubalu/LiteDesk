@@ -125,6 +125,7 @@ import {
   captureAnalyticsDashboardDuplicated,
 } from '@/config/posthogAnalytics';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -201,7 +202,7 @@ async function duplicateRow(id) {
 }
 
 async function archiveRow(row) {
-  if (!window.confirm(t('analytics.dashboardArchiveConfirm', { name: row.name }))) return;
+  if (!await confirmAction(t('analytics.dashboardArchiveConfirm', { name: row.name }))) return;
   const res = await archiveDashboard(String(row._id));
   if (res?.success) {
     captureAnalyticsDashboardArchived({ dashboard_id: row._id });

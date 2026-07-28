@@ -235,6 +235,8 @@ import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { CalendarIcon, CalendarDaysIcon, ListBulletIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
 import { appointmentSourceLabel, appointmentTypeLabel } from '@/utils/appointmentFormatters';
 import { useNotifications } from '@/composables/useNotifications';
+import { useBusinessHours } from '@/composables/useBusinessHours';
+import { toDateTimeLocal } from '@/utils/datePickerUtils';
 
 import { APP_NAME_KEYS } from '@/utils/navigationLabels';
 import { startBulkDelete } from '@/utils/runBulkDelete';
@@ -245,6 +247,12 @@ const calendarRef = ref(null);
 const moduleListRef = ref(null);
 const showCalendarSyncModal = ref(false);
 const notifications = useNotifications();
+const { resolveSchedule, fetchSet, fetchSets } = useBusinessHours();
+/** Cached availability schedule for calendar create defaults (future-day start). */
+const calendarBusinessHourSet = ref(null);
+let calendarBusinessHourSetPromise = null;
+const DEFAULT_EVENT_DURATION_MS = 30 * 60 * 1000;
+const DEFAULT_BUSINESS_START = { hours: 9, minutes: 0 };
 
 // Initialize tabs composable
 const { openTab } = useTabs();
@@ -268,7 +276,26 @@ const showAppointmentsScope = ref(false);
 // Calendar data state
 const calendarEvents = ref([]);
 const calendarLoading = ref(false);
+/** After first paint, keep FullCalendar mounted across refetches (unmount during drawer close collapses the day grid). */
+const calendarMountedOnce = ref(false);
 let calendarFetchPromise = null;
+
+function resizeCalendarSoon(delayMs = 0) {
+  const run = () => {
+    try {
+      calendarRef.value?.getApi()?.updateSize();
+    } catch (_) {
+      /* calendar may be mid-unmount on view switch */
+    }
+  };
+  nextTick(() => {
+    if (delayMs > 0) {
+      setTimeout(run, delayMs);
+      return;
+    }
+    requestAnimationFrame(run);
+  });
+}
 
 function scheduleCalendarFetch() {
   if (currentView.value !== 'calendar') {
@@ -407,8 +434,11 @@ const toggleTableView = (showTable) => {
 // Fetch calendar events (same data as ModuleList)
 const fetchCalendarEvents = async () => {
   if (currentView.value !== 'calendar') return;
-  
-  calendarLoading.value = true;
+
+  const showLoadingShell = !calendarMountedOnce.value;
+  if (showLoadingShell) {
+    calendarLoading.value = true;
+  }
   try {
     // Get filters and search from ModuleList
     // Use stored search query if available, otherwise get from ModuleList
@@ -465,7 +495,11 @@ const fetchCalendarEvents = async () => {
     console.error('[Events] Error fetching calendar events:', error);
     calendarEvents.value = [];
   } finally {
-    calendarLoading.value = false;
+    if (showLoadingShell) {
+      calendarLoading.value = false;
+    }
+    calendarMountedOnce.value = true;
+    resizeCalendarSoon();
   }
 };
 
@@ -518,11 +552,18 @@ const handleSearchChanged = (searchQuery) => {
 watch(currentView, (newView, oldView) => {
   if (newView === 'calendar' && oldView !== undefined) {
     currentSearchQuery.value = moduleListRef.value?.getSearchQuery?.() || '';
+    // Remount path (v-if calendar container) — allow loading shell only when FC was torn down
+    if (oldView !== 'calendar') {
+      calendarMountedOnce.value = false;
+    }
     scheduleCalendarFetch();
   }
 
   nextTick(() => {
     toggleTableView(isListView(newView));
+    if (newView === 'calendar') {
+      resizeCalendarSoon(50);
+    }
   });
 });
 
@@ -612,12 +653,15 @@ const convertEventsToCalendarFormat = (events) => {
   });
 };
 
+// Stable plugin list — recreating plugins on every events refetch can corrupt FC layout
+const calendarPlugins = [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin];
+
 // FullCalendar Options
 const calendarOptions = computed(() => {
   const events = convertEventsToCalendarFormat(calendarEvents.value);
 
   return {
-    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+    plugins: calendarPlugins,
     initialView: 'dayGridMonth',
     headerToolbar: {
       left: 'prev,next today',
@@ -645,6 +689,7 @@ const calendarOptions = computed(() => {
     eventClick: handleEventClick,
     eventDidMount: handleEventDidMount,
     select: handleDateSelect,
+    dateClick: handleDateClick,
     eventDrop: handleEventDrop,
     eventResize: handleEventResize,
     themeSystem: 'standard',
@@ -663,26 +708,140 @@ const handleEventClick = (info) => {
   }
 };
 
-const handleDateSelect = (selectInfo) => {
-  const toDateTimeLocalValue = (dateValue) => {
-    if (!dateValue) return '';
-    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return '';
-    const pad = (value) => String(value).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  };
+function isSameCalendarDay(a, b) {
+  return (
+    a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate()
+  );
+}
 
-  openEventModal({
-    startDateTime: toDateTimeLocalValue(selectInfo.start),
-    endDateTime: toDateTimeLocalValue(selectInfo.end)
-  });
-  
-  if (calendarRef.value) {
-    const calendarApi = calendarRef.value.getApi();
-    if (calendarApi) {
-      calendarApi.unselect();
+/** Strictly next 15-minute boundary (1:30 → 1:45, 1:31 → 1:45, 1:00 → 1:15). */
+function nextQuarterHour(from = new Date()) {
+  const d = new Date(from);
+  d.setSeconds(0, 0);
+  const minutes = d.getMinutes();
+  const rem = minutes % 15;
+  if (rem === 0) {
+    d.setMinutes(minutes + 15);
+  } else {
+    d.setMinutes(minutes + (15 - rem));
+  }
+  return d;
+}
+
+async function ensureCalendarBusinessHourSet() {
+  if (calendarBusinessHourSet.value) return calendarBusinessHourSet.value;
+  if (calendarBusinessHourSetPromise) return calendarBusinessHourSetPromise;
+  calendarBusinessHourSetPromise = (async () => {
+    try {
+      const userId = authStore.user?._id || authStore.user?.id;
+      const resolved = await resolveSchedule(userId ? String(userId) : undefined);
+      if (resolved?.setId) {
+        calendarBusinessHourSet.value = await fetchSet(resolved.setId);
+      } else {
+        const sets = await fetchSets();
+        calendarBusinessHourSet.value =
+          (Array.isArray(sets) && (sets.find((s) => s.isDefault) || sets[0])) || null;
+      }
+    } catch (err) {
+      console.warn('[Events] Failed to load business hours for calendar create:', err);
+      calendarBusinessHourSet.value = null;
+    } finally {
+      calendarBusinessHourSetPromise = null;
+    }
+    return calendarBusinessHourSet.value;
+  })();
+  return calendarBusinessHourSetPromise;
+}
+
+function getBusinessStartForDate(date, set) {
+  const day = date.getDay();
+  const weekDay = Array.isArray(set?.week)
+    ? set.week.find((entry) => Number(entry?.day) === day && entry?.enabled !== false)
+    : null;
+  const windowStart = weekDay?.windows?.[0]?.start;
+  if (typeof windowStart === 'string' && /^\d{1,2}:\d{2}/.test(windowStart)) {
+    const [hours, minutes] = windowStart.split(':').map((part) => parseInt(part, 10));
+    if (Number.isFinite(hours) && Number.isFinite(minutes)) {
+      return { hours, minutes };
     }
   }
+  return { ...DEFAULT_BUSINESS_START };
+}
+
+function atBusinessStartOnDay(dayDate, set) {
+  const { hours, minutes } = getBusinessStartForDate(dayDate, set);
+  return new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), hours, minutes, 0, 0);
+}
+
+/**
+ * Month / all-day: today → next quarter-hour from now; other days → business-hours start.
+ * Week / Day timed: use selected range; if start is today and already past, bump to next quarter-hour.
+ */
+async function resolveCalendarCreateDateTimes(selectInfo) {
+  const now = new Date();
+  const rawStart = selectInfo?.start instanceof Date
+    ? selectInfo.start
+    : new Date(selectInfo?.start);
+  const rawEnd = selectInfo?.end instanceof Date
+    ? selectInfo.end
+    : (selectInfo?.end ? new Date(selectInfo.end) : null);
+  const allDay = Boolean(selectInfo?.allDay)
+    || selectInfo?.view?.type === 'dayGridMonth'
+    || (rawStart instanceof Date && !Number.isNaN(rawStart.getTime())
+      && rawStart.getHours() === 0 && rawStart.getMinutes() === 0
+      && rawEnd instanceof Date && !Number.isNaN(rawEnd.getTime())
+      && (rawEnd - rawStart) >= 20 * 60 * 60 * 1000);
+
+  let startDt;
+  if (allDay) {
+    const dayAnchor = Number.isNaN(rawStart.getTime()) ? now : rawStart;
+    if (isSameCalendarDay(dayAnchor, now)) {
+      startDt = nextQuarterHour(now);
+    } else {
+      const set = await ensureCalendarBusinessHourSet();
+      startDt = atBusinessStartOnDay(dayAnchor, set);
+    }
+  } else {
+    startDt = Number.isNaN(rawStart.getTime()) ? nextQuarterHour(now) : new Date(rawStart);
+    if (isSameCalendarDay(startDt, now) && startDt.getTime() <= now.getTime()) {
+      startDt = nextQuarterHour(now);
+    }
+  }
+
+  let endDt;
+  if (!allDay && rawEnd && !Number.isNaN(rawEnd.getTime()) && rawEnd.getTime() > rawStart.getTime()) {
+    const durationMs = rawEnd.getTime() - rawStart.getTime();
+    endDt = new Date(startDt.getTime() + durationMs);
+  } else {
+    endDt = new Date(startDt.getTime() + DEFAULT_EVENT_DURATION_MS);
+  }
+
+  return {
+    startDateTime: toDateTimeLocal(startDt),
+    endDateTime: toDateTimeLocal(endDt),
+  };
+}
+
+/** Prevent select + dateClick double-open on the same gesture. */
+let calendarCreateGateUntil = 0;
+
+const handleDateSelect = async (selectInfo) => {
+  await openEventModalWithCalendarSlot(selectInfo);
+};
+
+/** Single-click create (month/week/day) when a simple click is used instead of drag-select. */
+const handleDateClick = async (clickInfo) => {
+  const start = clickInfo?.date instanceof Date ? clickInfo.date : new Date(clickInfo?.date);
+  if (Number.isNaN(start.getTime())) return;
+  const end = new Date(start.getTime() + (clickInfo?.allDay ? 24 * 60 * 60 * 1000 : DEFAULT_EVENT_DURATION_MS));
+  await openEventModalWithCalendarSlot({
+    start,
+    end,
+    allDay: Boolean(clickInfo?.allDay),
+    view: clickInfo?.view,
+  });
 };
 
 const handleEventDrop = async (info) => {
@@ -746,7 +905,7 @@ const handleBulkAction = async (action, rows) => {
     }
   } catch (error) {
     console.error('Error performing bulk action:', error);
-    alert(t('common.eventsToastErrorPerformingBulkActionPlease'));
+    notifications.error(t('common.eventsToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -767,7 +926,7 @@ const handleInlineDelete = async (row) => {
           return;
         }
         if (outcome.failedCount > 0) {
-          alert(t('common.eventsToastErrorPerformingBulkActionPlease'));
+          notifications.error(t('common.eventsToastErrorPerformingBulkActionPlease'));
           return;
         }
         await fetchCalendarEvents();
@@ -776,7 +935,7 @@ const handleInlineDelete = async (row) => {
     },
     onError: (error) => {
       console.error('Error deleting event:', error);
-      alert(t('common.eventsToastErrorPerformingBulkActionPlease'));
+      notifications.error(t('common.eventsToastErrorPerformingBulkActionPlease'));
     },
   });
 };
@@ -802,7 +961,7 @@ const exportEvents = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting events:', error);
-    alert(t('common.eventsToastErrorExportingEventsPleaseTry'));
+    notifications.error(t('common.eventsToastErrorExportingEventsPleaseTry'));
   }
 };
 
@@ -821,6 +980,28 @@ const openEventModal = (initialData = {}) => {
   showEventQuickCreate.value = true;
 };
 
+/** Open create drawer only after slot times are resolved (avoids racing empty initialData). */
+const openEventModalWithCalendarSlot = async (selectInfo) => {
+  const gateNow = Date.now();
+  if (gateNow < calendarCreateGateUntil) return;
+  calendarCreateGateUntil = gateNow + 500;
+  let slot = {};
+  try {
+    slot = await resolveCalendarCreateDateTimes(selectInfo);
+  } catch (err) {
+    console.warn('[Events] Calendar create slot resolve failed:', err);
+    slot = {};
+  }
+  openEventModal(slot);
+  if (calendarRef.value) {
+    try {
+      calendarRef.value.getApi()?.unselect();
+    } catch (_) {
+      /* ignore */
+    }
+  }
+};
+
 const closeEventQuickCreate = () => {
   showEventQuickCreate.value = false;
   eventQuickCreateInitialData.value = {};
@@ -832,6 +1013,8 @@ const handleEventQuickCreateSaved = async () => {
   if (moduleListRef.value && moduleListRef.value.refresh) {
     moduleListRef.value.refresh();
   }
+  // WorkspaceScopedDrawerShell leave transition is 300ms — remount/refetch mid-close collapses FC columns
+  resizeCalendarSoon(350);
 };
 
 const editEventFromList = (row) => {
@@ -851,6 +1034,7 @@ const handleEditDrawerSaved = async () => {
   if (moduleListRef.value?.refresh) {
     moduleListRef.value.refresh();
   }
+  resizeCalendarSoon(350);
 };
 
 // Watch for dark mode changes
@@ -950,6 +1134,7 @@ onMounted(() => {
   checkDarkMode();
   initializeView();
   consumeCalendarSyncQuery();
+  void ensureCalendarBusinessHourSet();
 
   // Apply view state after ModuleList renders
   nextTick(() => {
@@ -987,6 +1172,9 @@ onActivated(() => {
     setTimeout(() => {
       toggleTableView(isListView(currentView.value));
       syncAppointmentsScopeFromFilters();
+      if (currentView.value === 'calendar') {
+        resizeCalendarSoon();
+      }
     }, 80);
   });
 });

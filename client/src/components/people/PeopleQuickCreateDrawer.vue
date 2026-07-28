@@ -24,36 +24,14 @@
 -->
 
 <template>
-  <Teleport to="body">
-  <TransitionRoot as="template" :show="isOpen">
-    <Dialog class="relative z-[10000]" @close="handleDialogClose">
-      <!-- Background overlay -->
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-200"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="ease-in duration-200"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
-      >
-        <div class="fixed inset-0 bg-black/25 dark:bg-black/50" />
-      </TransitionChild>
-
-      <div class="fixed inset-0 overflow-hidden">
-        <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
-            <TransitionChild 
-              as="template" 
-              enter="transform transition ease-out duration-300 sm:duration-300" 
-              enter-from="translate-x-full" 
-              enter-to="translate-x-0" 
-              leave="transform transition ease-in duration-250 sm:duration-250" 
-              leave-from="translate-x-0" 
-              leave-to="translate-x-full"
-            >
-              <div class="pointer-events-auto h-full flex max-w-full">
-              <DialogPanel
+  <WorkspaceScopedDrawerShell
+    :is-open="isOpen"
+    draft-module-key="people"
+    :draft-record-id="editPersonId"
+    @backdrop="handleDialogClose"
+    @escape="handleDialogClose"
+  >
+              <div
                 :class="[
                   'rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 w-screen max-w-full overflow-x-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width]',
                   drawerPanelClass
@@ -63,7 +41,7 @@
                   <!-- Header -->
                   <div class="relative flex shrink-0 items-center gap-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
                     <div class="min-w-0 shrink-0 pr-2">
-                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ drawerTitle }}</DialogTitle>
+                      <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ drawerTitle }}</h2>
                     </div>
                     <div
                       v-if="fullMode"
@@ -371,15 +349,8 @@
                     </div>
                   </div>
                 </form>
-              </DialogPanel>
               </div>
-            </TransitionChild>
-          </div>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
-  </Teleport>
+  </WorkspaceScopedDrawerShell>
 </template>
 
 <script setup lang="ts">
@@ -392,15 +363,9 @@ declare const process: {
 };
 
 import { ref, computed, watch, toRef, nextTick, onUnmounted, defineComponent, h, type PropType, type Component } from 'vue';
-import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  TransitionChild,
-  TransitionRoot
-} from '@headlessui/vue';
 import { XMarkIcon, BriefcaseIcon, LifebuoyIcon, CheckCircleIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import { FORM_FIELD_SEARCH_CONTROL_CLASS } from '@/utils/formFieldControlClasses';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import AppSection, { type AppSectionModelValue } from '@/components/people/AppSection.vue';

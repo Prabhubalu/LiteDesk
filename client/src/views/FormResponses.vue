@@ -218,7 +218,11 @@ import Avatar from '@/components/common/Avatar.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
 import FormRecordResultsSummarySection from '@/components/forms/results/FormRecordResultsSummarySection.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 function formatHubSectionCount(count) {
   return t(count === 1 ? 'forms.hubSectionCountOne' : 'forms.hubSectionCountOther', { count });
@@ -512,7 +516,7 @@ const viewResponseDetail = (response) => {
 };
 
 const approveResponse = async (response) => {
-  if (!confirm(t('forms.hubConfirmApprove'))) {
+  if (!await confirmAction(t('forms.hubConfirmApprove'))) {
     return;
   }
 
@@ -526,12 +530,12 @@ const approveResponse = async (response) => {
     }
   } catch (error) {
     console.error('Error approving response:', error);
-    alert(t('forms.hubApproveFailed'));
+    notifications.error(t('forms.hubApproveFailed'));
   }
 };
 
 const rejectResponse = async (response) => {
-  if (!confirm(t('forms.hubConfirmReject'))) {
+  if (!await confirmAction(t('forms.hubConfirmReject'))) {
     return;
   }
 
@@ -545,12 +549,12 @@ const rejectResponse = async (response) => {
     }
   } catch (error) {
     console.error('Error rejecting response:', error);
-    alert(t('forms.hubRejectFailed'));
+    notifications.error(t('forms.hubRejectFailed'));
   }
 };
 
 const handleDelete = async (response) => {
-  if (!confirm(t('forms.hubConfirmDeleteResponse'))) {
+  if (!await confirmAction(t('forms.hubConfirmDeleteResponse'))) {
     return;
   }
 
@@ -564,7 +568,7 @@ const handleDelete = async (response) => {
     }
   } catch (error) {
     console.error('Error deleting response:', error);
-    alert(t('forms.hubDeleteResponseFailed'));
+    notifications.error(t('forms.hubDeleteResponseFailed'));
   }
 };
 
@@ -594,11 +598,11 @@ const exportResponses = async () => {
     } else {
       const errorData = await response.json();
       console.error('Error exporting responses:', errorData);
-      alert(t('forms.hubExportResponsesError', { detail: errorData.message || response.statusText }));
+      notifications.error(t('forms.hubExportResponsesError', { detail: errorData.message || response.statusText }));
     }
   } catch (error) {
     console.error('Error exporting responses:', error);
-    alert(t('forms.hubExportResponsesFailed'));
+    notifications.error(t('forms.hubExportResponsesFailed'));
   }
 };
 

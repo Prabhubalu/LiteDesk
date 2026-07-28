@@ -423,6 +423,7 @@ import {
   emptyReleaseItem
 } from '@/constants/releaseNoteAdmin';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   id: { type: String, required: true }
 });
@@ -635,7 +636,7 @@ async function saveDraft() {
 }
 
 async function publishNow() {
-  if (!window.confirm(t('releaseNotes.adminPublishConfirm'))) return;
+  if (!await confirmAction(t('releaseNotes.adminPublishConfirm'))) return;
   saving.value = true;
   error.value = '';
   try {
@@ -674,7 +675,7 @@ async function scheduleRelease() {
 }
 
 async function archiveNote() {
-  if (!window.confirm(t('releaseNotes.adminArchiveConfirm'))) return;
+  if (!await confirmAction(t('releaseNotes.adminArchiveConfirm'))) return;
   archiving.value = true;
   error.value = '';
   try {

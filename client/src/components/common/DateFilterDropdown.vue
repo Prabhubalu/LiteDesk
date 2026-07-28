@@ -145,7 +145,9 @@ import { ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/outline';
 import {
   DATE_FILTER_OPTION_GROUPS,
   parseDateFilterValue,
-  getDateFilterLabel
+  getDateFilterLabel,
+  buildQuickDateFilterValue,
+  resolveQuickDateFilter
 } from '@/utils/dateFilterOptions';
 import DatePicker from '@/components/common/DatePicker.vue';
 
@@ -263,6 +265,10 @@ const displayLabel = computed(() => getDateFilterLabel(parsed.value));
 
 function findOptionByValue(parsedVal) {
   if (!parsedVal) return null;
+  const quick = resolveQuickDateFilter(parsedVal);
+  if (quick) {
+    return DATE_FILTER_OPTION_GROUPS.flatMap(g => g.options).find(o => o.value === `quick:${quick}`) ?? null;
+  }
   if (parsedVal.preset) {
     return DATE_FILTER_OPTION_GROUPS.flatMap(g => g.options).find(o => o.value === `preset:${parsedVal.preset}`) ?? null;
   }
@@ -304,6 +310,10 @@ const toDateInput = ref(parsed.value?.to ?? '');
 
 function getCurrentOptionFromParsed(v) {
   if (!v) return null;
+  const quick = resolveQuickDateFilter(v);
+  if (quick) {
+    return { quick, op: v.op };
+  }
   if (v.preset) return { preset: v.preset };
   if (v.op) return { op: v.op, needsInput: v.op === 'lastDays' || v.op === 'nextDays' ? 'days' : v.op === 'between' ? 'between' : ['on', 'before', 'after'].includes(v.op) ? 'date' : null };
   return null;
@@ -315,6 +325,7 @@ const showDaysInput = computed(() => {
 });
 const showSingleDateInput = computed(() => {
   const o = currentOption.value;
+  if (o?.quick) return false;
   return o?.needsInput === 'date' || (o?.op && ['on', 'before', 'after'].includes(o.op));
 });
 const showBetweenInputs = computed(() => {
@@ -334,6 +345,13 @@ function onSelectOption(option) {
   if (!option) {
     currentOption.value = null;
     emit('update:modelValue', null);
+    return;
+  }
+  if (option.value?.startsWith('quick:')) {
+    const quick = option.value.replace('quick:', '');
+    const value = buildQuickDateFilterValue(quick);
+    currentOption.value = { quick, op: value.op };
+    emit('update:modelValue', value);
     return;
   }
   if (option.value?.startsWith('preset:')) {

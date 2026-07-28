@@ -150,6 +150,7 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiData } from '@/utils/catalogApi';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   variantId: { type: String, required: true },
   canEdit: { type: Boolean, default: false }
@@ -276,8 +277,8 @@ function addComponent(hit) {
   saveBundle();
 }
 
-function removeAt(index) {
-  if (!confirm(t('platform.catalogConfirmRemoveBundleComponent'))) return;
+async function removeAt(index) {
+  if (!await confirmAction(t('platform.catalogConfirmRemoveBundleComponent'))) return;
   components.value.splice(index, 1);
   scheduleSaveBundle();
 }

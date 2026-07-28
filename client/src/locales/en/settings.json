@@ -435,6 +435,14 @@
     "message": "Inherit · Write · Read-only · Hidden",
     "description": "Field permissions module hint"
   },
+  "fieldPermsSearchPh": {
+    "message": "Search modules or fields…",
+    "description": "Field permissions search placeholder"
+  },
+  "fieldPermsNoMatches": {
+    "message": "No modules or fields match your search.",
+    "description": "Field permissions empty search results"
+  },
   "fieldPermsInherit": {
     "message": "Inherit",
     "description": "Field permission inherit option"
@@ -17983,6 +17991,10 @@
     "message": "Separator",
     "description": "Separator between ID parts"
   },
+  "moduleNumberingSepNone": {
+    "message": "None",
+    "description": "No separator option for module numbering"
+  },
   "moduleNumberingSepDash": {
     "message": "Dash (-)",
     "description": "Dash separator option"
@@ -17990,6 +18002,10 @@
   "moduleNumberingSepSlash": {
     "message": "Slash (/)",
     "description": "Slash separator option"
+  },
+  "moduleNumberingSepHelp": {
+    "message": "Joins prefix, date parts, and sequence. Choose None for IDs like ART000001.",
+    "description": "Help text under separator control"
   },
   "moduleNumberingShowCustom": {
     "message": "Advanced: edit format manually",

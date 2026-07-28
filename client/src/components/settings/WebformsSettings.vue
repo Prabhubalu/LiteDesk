@@ -190,6 +190,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { canManageWebforms } from '@/utils/settingsTabAccess';
 import { captureWebformsSettingsViewed } from '@/config/posthogWebforms';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
@@ -322,7 +323,7 @@ function openSubmissions(row) {
 }
 
 async function deleteWebform(row) {
-  if (!window.confirm(t('webforms.confirmDelete'))) return;
+  if (!await confirmAction(t('webforms.confirmDelete'))) return;
   try {
     await apiClient.delete(`/webforms/${row._id}`);
     await fetchWebforms();

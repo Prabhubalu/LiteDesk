@@ -107,6 +107,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { useAuthStore } from '@/stores/authRegistry';
 import { getSalesOrderFulfillmentEventTypes } from '@/utils/inventoryCapability';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   record: { type: Object, default: null },
   context: { type: Object, default: () => ({}) }
@@ -247,7 +248,7 @@ function emitSoftRefresh(data) {
 async function reverseEvent(event) {
   const fulfillmentId = event?.salesOrderFulfillmentId || event?._id;
   if (!props.record?._id || !fulfillmentId) return;
-  if (!window.confirm(t('records.salesOrderFulfillmentReverseConfirm'))) return;
+  if (!await confirmAction(t('records.salesOrderFulfillmentReverseConfirm'))) return;
 
   busyReverseId.value = fulfillmentId;
   try {

@@ -463,6 +463,7 @@ import { computed, ref, toRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { usePlaybookAssignmentTargets } from '@/composables/usePlaybookAssignmentTargets';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   open: { type: Boolean, default: false },
   isNew: { type: Boolean, default: false },
@@ -499,8 +500,8 @@ const emit = defineEmits([
 
 const { t } = useI18n();
 
-function requestClose() {
-  if (isLocallyDirty.value && !window.confirm(t('settings.roleDrawerCloseConfirm'))) {
+async function requestClose() {
+  if (isLocallyDirty.value && !await confirmAction(t('settings.roleDrawerCloseConfirm'))) {
     return;
   }
   emit('discard');

@@ -406,7 +406,7 @@ import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
 import TaskSubtasksField from '@/components/tasks/TaskSubtasksField.vue';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
-import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
+import { getFieldDependencyState, applyPicklistDependencyValueClears } from '@/utils/dependencyEvaluation';
 import {
   mergeOrgContactLookupForField,
   resolveOrgContactPair,
@@ -1477,20 +1477,23 @@ function updateCurrencyCodeForField(field, currencyCode) {
 // Generic dependency-driven value enforcement:
 // If a field becomes readonly + required, ensure its value is set to a safe default.
 // (Used to keep audit GEO UI accurate without event-type hardcoding.)
+// Also clears dependent picklist values that fall outside allowedOptions (multi-level chains).
 watch(
   () => [moduleDefinition.value?.fields, localFormData.value, authStore.user?.organizationId, authStore.organization?._id, authStore.organization?.id],
   () => {
     const fields = moduleDefinition.value?.fields || [];
     if (!Array.isArray(fields) || fields.length === 0) return;
 
+    const depContext = {
+      currentUser: authStore.user,
+      organization: authStore.organization,
+      moduleKey: props.moduleKey,
+    };
+
     let changed = false;
     for (const field of fields) {
       if (!field?.key) continue;
-      const depState = getFieldDependencyState(field, localFormData.value, fields, {
-        currentUser: authStore.user,
-        organization: authStore.organization,
-        moduleKey: props.moduleKey,
-      });
+      const depState = getFieldDependencyState(field, localFormData.value, fields, depContext);
 
       // 1) Forced values (dependency-driven)
       if (depState && depState.setValue !== null && depState.setValue !== undefined) {
@@ -1531,6 +1534,13 @@ watch(
           changed = true;
         }
       }
+    }
+
+    // 3) Clear invalid dependent picklist values (Country → State → City cascades)
+    const cleared = applyPicklistDependencyValueClears(fields, localFormData.value, depContext);
+    if (cleared) {
+      localFormData.value = cleared;
+      changed = true;
     }
 
     if (changed) {
@@ -1607,7 +1617,9 @@ const fetchModule = async () => {
       moduleKey: props.moduleOverride?.key,
       quickCreateLength: props.moduleOverride?.quickCreate?.length
     });
-    applyModule(props.moduleOverride, { emitReady: false });
+    // Emit ready once on mount so parents (CreateRecordDrawer) can seed formData/initialData.
+    // Override *updates* keep emitReady:false to avoid re-init loops.
+    applyModule(props.moduleOverride, { emitReady: true });
     return;
   }
   loading.value = true;

@@ -280,7 +280,10 @@ import {
 } from '@/utils/webformBranding';
 import { resolveWebformImageUrl } from '@/utils/webformFormatters';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   form: {
@@ -482,7 +485,7 @@ const handleSubmit = () => {
   }
   
   if (!validateEvidence()) {
-    alert(t('forms.evidenceAddRequiredHint'));
+    notifications.warning(t('forms.evidenceAddRequiredHint'));
     return;
   }
   

@@ -1,3 +1,4 @@
+import { useNotifications } from '@/composables/useNotifications';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -28,6 +29,7 @@ export const useRecordHeaderActions = ({
   onCopySuccess
 }) => {
   const { t } = useI18n();
+  const notifications = useNotifications();
   const isFollowing = ref(false);
   const showDeleteModal = ref(false);
   const deleting = ref(false);
@@ -67,7 +69,7 @@ export const useRecordHeaderActions = ({
       if (typeof onCopySuccess === 'function') {
         onCopySuccess();
       } else {
-        alert(t('records.useRecordHeaderActionsToastUrlCopiedToClipboard'));
+        notifications.success(t('records.useRecordHeaderActionsToastUrlCopiedToClipboard'));
       }
     } catch (err) {
       console.error('Error copying URL:', err);
@@ -111,7 +113,7 @@ export const useRecordHeaderActions = ({
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Error exporting record:', err);
-      alert(t('records.useRecordHeaderActionsToastErrorExportingRecordPleaseTry'));
+      notifications.error(t('records.useRecordHeaderActionsToastErrorExportingRecordPleaseTry'));
     }
   };
 
@@ -129,7 +131,7 @@ export const useRecordHeaderActions = ({
       showDeleteModal.value = false;
     } catch (err) {
       console.error('Error deleting record:', err);
-      alert(t('records.useRecordHeaderActionsToastErrorDeletingRecordPleaseTry'));
+      notifications.error(t('records.useRecordHeaderActionsToastErrorDeletingRecordPleaseTry'));
     } finally {
       deleting.value = false;
     }

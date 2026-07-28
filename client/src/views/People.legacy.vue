@@ -260,6 +260,9 @@ import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import Avatar from '@/components/common/Avatar.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
+
+const notifications = useNotifications();
 const router = useRouter();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
@@ -419,7 +422,7 @@ const deleteContact = async (contactId) => {
     refreshList();
   } catch (error) {
     console.error('Error deleting contact:', error);
-    alert('Failed to delete contact');
+    notifications.error('Failed to delete contact');
   }
 };
 
@@ -432,7 +435,7 @@ const bulkDelete = async (selectedRows) => {
     refreshList();
   } catch (error) {
     console.error('Error bulk deleting contacts:', error);
-    alert('Failed to delete contacts');
+    notifications.error('Failed to delete contacts');
   }
 };
 
@@ -462,7 +465,7 @@ const exportContacts = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting contacts:', error);
-    alert('Error exporting contacts. Please try again.');
+    notifications.error('Error exporting contacts. Please try again.');
   }
 };
 

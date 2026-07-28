@@ -182,6 +182,14 @@
         <span class="w-px h-5 bg-gray-200 dark:bg-gray-600 mx-0.5" />
         <button
           type="button"
+          class="p-2 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+          :title="t('records.descriptionImagePreview')"
+          @click="expandSelectedImage"
+        >
+          <MagnifyingGlassPlusIcon class="w-4 h-4" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
           class="p-2 rounded text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
           :title="t('records.taskDescriptionEditorRemoveImage')"
           @click="removeSelectedImage"
@@ -195,7 +203,7 @@
     <!-- Editor content -->
     <EditorContent
       :editor="editor"
-      class="[&_.tiptap]:min-h-[120px] [&_.tiptap]:text-md [&_.tiptap]:leading-[1.75] [&_.tiptap_p]:mb-2 [&_.tiptap_p:last-child]:mb-0 [&_.tiptap_p]:leading-[1.75] [&_.tiptap_h1]:text-2xl [&_.tiptap_h1]:font-bold [&_.tiptap_h1]:my-4 [&_.tiptap_h1]:mb-2 [&_.tiptap_h2]:text-xl [&_.tiptap_h2]:font-semibold [&_.tiptap_h2]:my-4 [&_.tiptap_h2]:mb-2 [&_.tiptap_h3]:text-lg [&_.tiptap_h3]:font-semibold [&_.tiptap_h3]:my-4 [&_.tiptap_h3]:mb-2 [&_.tiptap_ul]:pl-6 [&_.tiptap_ol]:pl-6 [&_.tiptap_ul]:list-disc [&_.tiptap_ol]:list-decimal [&_.tiptap_a]:text-indigo-600 [&_.tiptap_a]:underline dark:[&_.tiptap_a]:text-indigo-400 [&_.tiptap_blockquote]:border-l-4 [&_.tiptap_blockquote]:border-gray-300 [&_.tiptap_blockquote]:bg-gray-50 [&_.tiptap_blockquote]:px-3 [&_.tiptap_blockquote]:py-2 [&_.tiptap_blockquote]:my-2 dark:[&_.tiptap_blockquote]:border-gray-600 dark:[&_.tiptap_blockquote]:bg-gray-800/60 [&_.tiptap_img]:max-w-full [&_.tiptap_img]:h-auto [&_.tiptap_img]:rounded-md [&_.tiptap_img]:my-2 [&_.tiptap_img]:block"
+      class="[&_.tiptap]:min-h-[120px] [&_.tiptap]:text-md [&_.tiptap]:leading-[1.75] [&_.tiptap_p]:mb-2 [&_.tiptap_p:last-child]:mb-0 [&_.tiptap_p]:leading-[1.75] [&_.tiptap_h1]:text-2xl [&_.tiptap_h1]:font-bold [&_.tiptap_h1]:my-4 [&_.tiptap_h1]:mb-2 [&_.tiptap_h2]:text-xl [&_.tiptap_h2]:font-semibold [&_.tiptap_h2]:my-4 [&_.tiptap_h2]:mb-2 [&_.tiptap_h3]:text-lg [&_.tiptap_h3]:font-semibold [&_.tiptap_h3]:my-4 [&_.tiptap_h3]:mb-2 [&_.tiptap_ul]:pl-6 [&_.tiptap_ol]:pl-6 [&_.tiptap_ul]:list-disc [&_.tiptap_ol]:list-decimal [&_.tiptap_a]:text-indigo-600 [&_.tiptap_a]:underline dark:[&_.tiptap_a]:text-indigo-400 [&_.tiptap_blockquote]:border-l-4 [&_.tiptap_blockquote]:border-gray-300 [&_.tiptap_blockquote]:bg-gray-50 [&_.tiptap_blockquote]:px-3 [&_.tiptap_blockquote]:py-2 [&_.tiptap_blockquote]:my-2 dark:[&_.tiptap_blockquote]:border-gray-600 dark:[&_.tiptap_blockquote]:bg-gray-800/60 [&_.tiptap_img]:max-w-full [&_.tiptap_img]:h-auto [&_.tiptap_img]:rounded-md [&_.tiptap_img]:my-2 [&_.tiptap_img]:block [&_.tiptap_img.description-inline-image]:cursor-zoom-in"
     />
     <!-- Cmd/Ctrl+K link panel: fixed positioning (no Teleport — avoids TipTap init-order issues in production) -->
     <div
@@ -232,6 +240,11 @@
         </div>
       </div>
     </div>
+    <RichDescriptionImageLightbox
+      :open="showImagePreview"
+      :src="previewImageSrc"
+      @close="closeImagePreview"
+    />
   </div>
 </template>
 
@@ -247,6 +260,7 @@ import Heading from '@tiptap/extension-heading';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { MagnifyingGlassPlusIcon } from '@heroicons/vue/24/outline';
 import {
   SlashCommands,
   registerDescriptionImageUploadTrigger,
@@ -256,7 +270,10 @@ import { createDocumentSlashCommands } from '@/components/documents/documentSlas
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
+import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   modelValue: {
     type: String,
@@ -281,6 +298,14 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
+const {
+  showImagePreview,
+  previewImageSrc,
+  closeImagePreview,
+  openImagePreview
+} = useRichDescriptionImagePreview();
 
 const emit = defineEmits(['update:modelValue', 'blur', 'cancel', 'image-uploaded', 'inline-comment-request']);
 
@@ -456,6 +481,14 @@ function removeSelectedImage() {
   editorInstance.current?.chain().focus().deleteSelection().run();
 }
 
+function expandSelectedImage() {
+  const ed = editorInstance.current;
+  if (!ed?.isActive('image')) return;
+  const src = String(ed.getAttributes('image')?.src || '').trim();
+  if (!src) return;
+  openImagePreview(src);
+}
+
 function insertText(text) {
   const value = String(text || '');
   if (!value || !editorInstance.current) return;
@@ -528,7 +561,7 @@ function isImageUploadFile(file) {
 async function insertUploadedImage(file) {
   if (!isImageUploadFile(file)) return;
   if (file.size > MAX_IMAGE_BYTES) {
-    window.alert(t('validation.imageMaxSize'));
+    notifications.error(t('validation.imageMaxSize'));
     return;
   }
   const ed = editorInstance.current;
@@ -543,7 +576,7 @@ async function insertUploadedImage(file) {
     emit('image-uploaded', url);
   } catch (error) {
     console.error('Description image upload error:', error);
-    window.alert(t('validation.imageUploadFailed'));
+    notifications.error(t('validation.imageUploadFailed'));
   } finally {
     imageUploading.value = false;
     suppressBlurForImagePicker.value = false;
@@ -730,6 +763,11 @@ const editor = useEditor({
     handleClick: (view, pos, event) => {
       const target = event?.target;
       if (!(target instanceof Element)) return false;
+      if (target instanceof HTMLImageElement && event.detail >= 2) {
+        event.preventDefault();
+        openImagePreview(target);
+        return true;
+      }
       const quoteEl = target.closest('blockquote[data-reply-quote]');
       if (!quoteEl) return false;
       const quotePos = view.posAtDOM(quoteEl, 0);

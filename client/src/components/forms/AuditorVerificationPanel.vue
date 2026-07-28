@@ -130,7 +130,10 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const auditorManagerStatusVariantMap = computed(() => ({
   [t('forms.auditorStatusResolved')]: 'success',
@@ -238,7 +241,7 @@ const verifyAction = async (questionId, approved) => {
     }
   } catch (error) {
     console.error('Error verifying action:', error);
-    alert(t('forms.auditorVerifyFailed'));
+    notifications.error(t('forms.auditorVerifyFailed'));
   } finally {
     verifying.value = false;
   }

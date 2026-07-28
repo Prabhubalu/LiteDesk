@@ -137,7 +137,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/authRegistry';
@@ -361,7 +364,7 @@ async function refreshAfterBulkDelete(outcome) {
       outcome.firstError?.response?.data?.message ||
       outcome.firstError?.message ||
       t('common.listBulkDeleteIncomplete', { deleted: outcome.deletedCount, total: outcome.requestedCount });
-    alert(errorMessage);
+    notifications.error(errorMessage);
     if (outcome.deletedCount > 0) {
       await fetchImports();
       await fetchStats();
@@ -380,7 +383,7 @@ const handleDelete = async (row) => {
     onComplete: refreshAfterBulkDelete,
     onError: (error) => {
       console.error('Error deleting import:', error);
-      alert(error?.response?.data?.message || error?.message || t('common.listBulkDeleteIncomplete', { deleted: 0, total: 1 }));
+      notifications.error(error?.response?.data?.message || error?.message || t('common.listBulkDeleteIncomplete', { deleted: 0, total: 1 }));
     },
   });
 };
@@ -412,7 +415,7 @@ const handleBulkAction = async (actionId, payloadOrRows) => {
     onComplete: refreshAfterBulkDelete,
     onError: (error) => {
       console.error('Error deleting imports:', error);
-      alert(error?.response?.data?.message || error?.message || t('common.listBulkDeleteIncomplete', { deleted: 0, total: 1 }));
+      notifications.error(error?.response?.data?.message || error?.message || t('common.listBulkDeleteIncomplete', { deleted: 0, total: 1 }));
     },
   });
 };

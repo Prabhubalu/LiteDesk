@@ -87,6 +87,7 @@ import { useI18n } from 'vue-i18n';
 import { useBusinessHours } from '@/composables/useBusinessHours';
 import { useNotifications } from '@/composables/useNotifications';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 
 function holidayCountLabel(count) {
@@ -138,7 +139,7 @@ async function submitImport() {
 }
 
 async function remove(id) {
-  if (!confirm(t('settings.settingsBhDeleteHolidayConfirm'))) return;
+  if (!await confirmAction(t('settings.settingsBhDeleteHolidayConfirm'))) return;
   try {
     await deleteHolidayCalendar(id);
     success(t('settings.settingsBhCalendarDeleted'));

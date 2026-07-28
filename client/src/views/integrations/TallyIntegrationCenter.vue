@@ -738,6 +738,7 @@ import TallyAtipMappingPanel from '@/components/integrations/tally/TallyAtipMapp
 import TallyAtipConflictsPanel from '@/components/integrations/tally/TallyAtipConflictsPanel.vue';
 import TallyAtipAssistantPanel from '@/components/integrations/tally/TallyAtipAssistantPanel.vue';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 
@@ -1049,7 +1050,7 @@ async function resetModule(tallyModuleKey) {
 }
 
 async function resetFull() {
-  if (!window.confirm(t('settings.tallyResetFullConfirm'))) return;
+  if (!await confirmAction(t('settings.tallyResetFullConfirm'))) return;
   await apiClient.post('/connectors/tally/reset/full', { companyGuid: companyGuid.value });
   await refreshAll();
 }

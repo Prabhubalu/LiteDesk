@@ -187,7 +187,10 @@ import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const loading = ref(false);
 const saving = ref(false);
@@ -318,7 +321,7 @@ async function confirmDelete() {
     pendingDelete.value = null;
     await load();
   } catch (err) {
-    window.alert(err?.response?.data?.message || err?.message || t('states.error'));
+    notifications.error(err?.response?.data?.message || err?.message || t('states.error'));
   } finally {
     deleting.value = false;
   }

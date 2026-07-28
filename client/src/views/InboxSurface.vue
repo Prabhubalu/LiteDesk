@@ -461,6 +461,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
@@ -1579,7 +1580,7 @@ async function onGmailFolderModalSaved() {
 async function disconnectGmail() {
   const mb = selectedMailbox.value || gmailSidebarMailbox.value;
   if (!mb?.id) return;
-  if (typeof window !== 'undefined' && !window.confirm('Disconnect Gmail from this mailbox?')) return;
+  if (typeof window !== 'undefined' && !await confirmAction('Disconnect Gmail from this mailbox?')) return;
   gmailSyncLoading.value = true;
   try {
     const res = await apiClient.post(`/mailboxes/${mb.id}/inbox-sync/google/disconnect`, {});
@@ -2107,12 +2108,12 @@ const deletePersonalMailbox = async () => {
   if (!mb?.id || !mailboxFlags.value.canDeletePersonal) return;
   const confirmed =
     typeof window !== 'undefined'
-    && window.confirm(t('inbox.mailboxDetailsRemovePersonalConfirm'));
+    && await confirmAction(t('inbox.mailboxDetailsRemovePersonalConfirm'));
   if (!confirmed) return;
 
   const deleteEmails =
     typeof window !== 'undefined'
-    && window.confirm(t('inbox.mailboxDetailsRemovePersonalDeleteEmailsConfirm'));
+    && await confirmAction(t('inbox.mailboxDetailsRemovePersonalDeleteEmailsConfirm'));
 
   mailboxActionLoading.value = true;
   try {
@@ -2152,7 +2153,7 @@ const deleteGroupMailbox = async (mb) => {
   if (!mb?.id || mb.kind !== 'group' || !mailboxFlags.value.canCreateGroup) return;
   const confirmed =
     typeof window !== 'undefined'
-    && window.confirm(t('inbox.mailboxDetailsRemoveGroupConfirm'));
+    && await confirmAction(t('inbox.mailboxDetailsRemoveGroupConfirm'));
   if (!confirmed) return;
 
   mailboxActionLoading.value = true;

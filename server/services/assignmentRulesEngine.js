@@ -45,6 +45,11 @@ function evaluateClause(clause, data) {
   const leftRaw = getValueByPath(data, clause.field);
   const rightRaw = clause.value;
   const operator = String(clause.operator || 'equals').toLowerCase();
+
+  const { evaluateDateFilterAwareCompare } = require('../utils/dateFilterValueResolve');
+  const dateAware = evaluateDateFilterAwareCompare(leftRaw, operator, rightRaw);
+  if (dateAware !== null) return dateAware;
+
   const leftValues = normalizeMultiValue(leftRaw);
   const rightValues = normalizeMultiValue(rightRaw);
   const leftIsMulti = Array.isArray(leftRaw) || leftValues.length > 1

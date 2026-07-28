@@ -1,42 +1,20 @@
 <template>
-  <Teleport to="body">
-    <TransitionRoot as="template" :show="modelValue">
-      <Dialog class="relative z-[10000]" @close="close">
-        <TransitionChild
-          as="template"
-          enter="ease-out duration-200"
-          enter-from="opacity-0"
-          enter-to="opacity-100"
-          leave="ease-in duration-200"
-          leave-from="opacity-100"
-          leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-black/25 dark:bg-black/50" aria-hidden="true" />
-        </TransitionChild>
-
-        <div class="fixed inset-0 overflow-hidden">
-          <div class="absolute inset-0 overflow-hidden">
-            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
-              <TransitionChild
-                as="template"
-                enter="transform transition ease-out duration-300"
-                enter-from="translate-x-full"
-                enter-to="translate-x-0"
-                leave="transform transition ease-in duration-250"
-                leave-from="translate-x-0"
-                leave-to="translate-x-full"
-              >
-                <div class="pointer-events-auto flex h-full max-w-full">
-                  <DialogPanel
+  <WorkspaceScopedDrawerShell
+    :is-open="modelValue"
+    draft-module-key="events"
+    @backdrop="close"
+    @escape="close"
+  >
+                  <div
                     class="flex h-full w-screen max-w-full flex-col overflow-hidden rounded-tl-xl bg-white shadow-2xl ring-1 ring-black/5 dark:bg-gray-900 dark:ring-white/10 sm:w-[28rem]"
                     aria-describedby="event-calendar-sync-desc"
                   >
                     <!-- Header -->
                     <div class="flex shrink-0 items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
                       <div class="min-w-0">
-                        <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+                        <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                           {{ t('events.calendarSyncTitle') }}
-                        </DialogTitle>
+                        </h2>
                         <p
                           id="event-calendar-sync-desc"
                           class="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400"
@@ -162,28 +140,15 @@
                         </li>
                       </ul>
                     </div>
-                  </DialogPanel>
-                </div>
-              </TransitionChild>
-            </div>
-          </div>
-        </div>
-      </Dialog>
-    </TransitionRoot>
-  </Teleport>
+                  </div>
+  </WorkspaceScopedDrawerShell>
 </template>
 
 <script setup>
 import { computed, defineComponent, h, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
-import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  TransitionChild,
-  TransitionRoot
-} from '@headlessui/vue';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import { useUserCalendarConnect } from '@/composables/useUserCalendarConnect';
 import { useNotifications } from '@/composables/useNotifications';
 

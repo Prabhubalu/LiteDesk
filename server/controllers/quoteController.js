@@ -180,10 +180,12 @@ function quotesQueryAnd(baseQuery, clause) {
 async function computeQuotesListStatistics(query, userId) {
   const uid =
     mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+  const { castMatchQueryForAggregate } = require('../utils/searchRelevance');
+  const matchQuery = castMatchQueryForAggregate(Quote, query);
 
   const [aggRows, myQuotes] = await Promise.all([
     Quote.aggregate([
-      { $match: query },
+      { $match: matchQuery },
       {
         $group: {
           _id: null,
@@ -286,16 +288,19 @@ async function getQuotes(req, res) {
       tieBreaker: '_id'
     });
 
+    const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+    const listQuery = applyListFilterQueryParam(q, req.query, 'quotes', { userId: req.user?._id });
+
     const [rows, total, listCardBreakdown] = await Promise.all([
-      Quote.find(q)
+      Quote.find(listQuery)
         .sort(sortObject)
         .skip(skip)
         .limit(limit)
         .populate({ path: 'assignedTo', select: 'firstName lastName email username avatar' })
         .populate({ path: 'organizationRefId', select: 'name' })
         .lean(),
-      Quote.countDocuments(q),
-      computeQuotesListStatistics(q, req.user._id)
+      Quote.countDocuments(listQuery),
+      computeQuotesListStatistics(listQuery, req.user._id)
     ]);
 
     return res.json({

@@ -468,6 +468,7 @@ import {
   sectionTypeBadgeKey
 } from '@/utils/quoteSectionDisplay';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const route = useRoute();
 const token = computed(() => String(route.params.token || '').trim());
 
@@ -799,7 +800,7 @@ async function submitAcceptance() {
   const msg = partial
     ? 'Accept the selected lines? This is a partial acceptance.'
     : 'Accept this quote in full?';
-  if (!window.confirm(msg)) return;
+  if (!await confirmAction(msg)) return;
 
   busy.value = true;
   try {

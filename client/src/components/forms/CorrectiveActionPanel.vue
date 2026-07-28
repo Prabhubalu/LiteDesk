@@ -235,7 +235,10 @@ import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const failBadgeVariantMap = computed(() => ({
   [t('forms.correctivePassFailFail')]: 'danger',
@@ -406,7 +409,7 @@ const saveCorrectiveAction = async (questionId) => {
   const actionData = getCorrectiveActionData(questionId);
   
   if (!actionData.comment.trim()) {
-    alert(t('forms.correctiveTitleRequired'));
+    notifications.warning(t('forms.correctiveTitleRequired'));
     return;
   }
 
@@ -462,7 +465,7 @@ const saveCorrectiveAction = async (questionId) => {
     }
   } catch (error) {
     console.error('Error saving corrective action:', error);
-    alert(error?.message || t('forms.correctiveSaveFailedRetry'));
+    notifications.error(error?.message || t('forms.correctiveSaveFailedRetry'));
   } finally {
     saving.value = false;
   }

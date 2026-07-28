@@ -307,7 +307,8 @@ exports.getForms = async (req, res) => {
             query.status = req.query.status;
         }
         if (req.query.assignedTo) {
-            query.assignedTo = req.query.assignedTo;
+            query.assignedTo =
+                req.query.assignedTo === 'me' ? req.user._id : req.query.assignedTo;
         }
         if (req.query.visibility) {
             query.visibility = req.query.visibility;

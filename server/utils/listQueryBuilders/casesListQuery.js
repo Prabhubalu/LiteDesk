@@ -8,7 +8,11 @@ const {
 } = require('../../constants/caseLifecycle');
 
 function buildCasesListQuery(req) {
-  const parsedQuery = parseCaseListQuery(req.query || {}, {
+  const queryParams = { ...(req.query || {}) };
+  if (queryParams.assignedTo === 'me') {
+    queryParams.assignedTo = req.user?._id;
+  }
+  const parsedQuery = parseCaseListQuery(queryParams, {
     CASE_STATUSES: Case.CASE_STATUSES || [],
     CASE_PRIORITIES,
     CASE_TYPES,
@@ -32,7 +36,8 @@ function buildCasesListQuery(req) {
   };
   const { applyListSharingToQuery } = require('../sharingQueryUtils');
   applyListSharingToQuery(query, req, 'cases');
-  return query;
+  const { applyListFilterQueryParam } = require('../listFilterQuery');
+  return applyListFilterQueryParam(query, req.query, 'cases', { userId: req.user?._id });
 }
 
 module.exports = {

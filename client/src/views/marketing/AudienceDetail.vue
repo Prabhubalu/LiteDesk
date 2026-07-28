@@ -378,6 +378,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { captureMarketingAudienceImported } from '@/config/posthogMarketing';
 import { PROCESS_INPUT_CLASS } from '@/utils/processDesignerConstants';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   audienceId: {
     type: String,
@@ -537,7 +538,7 @@ async function handleSave() {
 }
 
 async function handleDelete() {
-  if (!window.confirm(t('marketing.audiencesDeleteConfirm'))) return;
+  if (!await confirmAction(t('marketing.audiencesDeleteConfirm'))) return;
   try {
     await deleteAudience(resolvedId.value);
     notifications.success(t('marketing.audiencesDeleteSuccess'));

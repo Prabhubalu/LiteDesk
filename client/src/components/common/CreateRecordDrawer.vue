@@ -1,34 +1,14 @@
 <template>
-  <Teleport to="body">
-    <TransitionRoot as="template" :show="isOpen">
-      <Dialog :initialFocus="closeButtonRef" class="relative z-[10000]" @close="handleDialogClose">
-      <!-- Background overlay -->
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-200"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="ease-in duration-200"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
-      >
-        <div class="fixed inset-0 bg-black/25 dark:bg-black/50" />
-      </TransitionChild>
-
-      <div class="fixed inset-0 overflow-hidden">
-        <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
-            <TransitionChild 
-              as="template" 
-              enter="transform transition ease-out duration-300 sm:duration-300" 
-              enter-from="translate-x-full" 
-              enter-to="translate-x-0" 
-              leave="transform transition ease-in duration-250 sm:duration-250" 
-              leave-from="translate-x-0" 
-              leave-to="translate-x-full"
-            >
-              <div class="pointer-events-auto h-full flex max-w-full">
-                <DialogPanel
+  <WorkspaceScopedDrawerShell
+    :is-open="isOpen"
+    :title-id="drawerTitleId"
+    :draft-module-key="moduleKey"
+    :draft-record-id="draftRecordIdForShell"
+    @backdrop="handleDialogClose"
+    @escape="handleDialogClose"
+    @park="persistOwnerDraft"
+  >
+                <div
                   :class="[
                     'rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 w-screen max-w-full overflow-x-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width]',
                     isCommercialLinesForm ? 'sm:w-[80rem]' : panelWide ? 'sm:w-[60rem]' : 'sm:w-[30rem]'
@@ -39,7 +19,7 @@
                 <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col">
                   <!-- Header: fixed at top -->
                   <div class="relative flex shrink-0 items-center gap-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
-                    <DialogTitle class="min-w-0 shrink-0 pr-2 text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ computedTitle }}</DialogTitle>
+                    <h2 :id="drawerTitleId" class="min-w-0 shrink-0 pr-2 text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ computedTitle }}</h2>
                     <div
                       v-if="showFieldSearch"
                       class="pointer-events-none absolute inset-x-5 top-1/2 z-10 flex -translate-y-1/2 justify-center sm:inset-x-6"
@@ -221,15 +201,8 @@
                     </div>
                   </div>
                 </form>
-              </DialogPanel>
               </div>
-            </TransitionChild>
-          </div>
-        </div>
-      </div>
-      </Dialog>
-    </TransitionRoot>
-  </Teleport>
+  </WorkspaceScopedDrawerShell>
 </template>
 
 <script setup>
@@ -237,11 +210,17 @@ import { ref, watch, computed, nextTick, onUnmounted, defineAsyncComponent } fro
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from './DynamicForm.vue';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import { FORM_FIELD_SEARCH_CONTROL_CLASS } from '@/utils/formFieldControlClasses';
 import DealRelationshipEditor from '@/components/deals/DealRelationshipEditor.vue';
+import {
+  tabDrawerDraftKey,
+  saveTabDrawerDraft,
+  getTabDrawerDraft,
+  clearTabDrawerDraft,
+} from '@/composables/useTabDrawerDrafts';
 // Lazy-load to avoid circular chunk ↔ record-activity init (production TDZ).
 const DealLinesSection = defineAsyncComponent(
   () => import('@/components/record-page/sections/DealLinesSection.vue')
@@ -389,7 +368,76 @@ const emit = defineEmits(['close', 'saved']);
 
 const authStore = useAuthStore();
 const route = useRoute();
-const { openTab, activeTab } = useTabs();
+const { openTab, activeTab, activeTabId } = useTabs();
+
+const ownerTabId = ref(null);
+const pendingDraftRestore = ref(false);
+const drawerTitleId = 'create-record-drawer-title';
+const draftRecordIdForShell = computed(() => {
+  const id = props.record?._id || props.record?.id || null;
+  return id != null ? String(id) : null;
+});
+
+function currentDraftKey(tabId = ownerTabId.value || activeTabId.value) {
+  const recordId = props.record?._id || props.record?.id || null;
+  return tabDrawerDraftKey(tabId, props.moduleKey, recordId);
+}
+
+function snapshotDraftPayload() {
+  return {
+    formData: formData.value || {},
+    fullMode: fullMode.value,
+    panelWide: panelWide.value,
+    fieldSearch: fieldSearch.value,
+    userHasEdited: userHasEdited.value,
+    hasUnsavedChanges: hasUnsavedChanges.value,
+    dealRelationships: dealRelationships.value,
+    dealLinesDraft: dealLinesDraft.value,
+    commercialFormRecord: commercialFormRecord.value,
+    commercialCreateDraftId: commercialCreateDraftId.value,
+    commercialCreateSaved: commercialCreateSaved.value,
+  };
+}
+
+function persistOwnerDraft() {
+  if (!ownerTabId.value || !props.isOpen) return;
+  if (!hasUnsavedChanges.value && !userHasEdited.value && !commercialCreateDraftId.value) {
+    if (!Object.keys(formData.value || {}).length) return;
+  }
+  saveTabDrawerDraft(currentDraftKey(ownerTabId.value), snapshotDraftPayload());
+}
+
+function applyDraft(draft) {
+  if (!draft) return;
+  if (draft.formData && typeof draft.formData === 'object') {
+    formData.value = { ...draft.formData };
+  }
+  fullMode.value = Boolean(draft.fullMode);
+  panelWide.value = Boolean(draft.panelWide ?? draft.fullMode);
+  fieldSearch.value = draft.fieldSearch || '';
+  userHasEdited.value = Boolean(draft.userHasEdited);
+  hasUnsavedChanges.value = Boolean(draft.hasUnsavedChanges);
+  if (draft.dealRelationships) {
+    dealRelationships.value = draft.dealRelationships;
+  }
+  if (draft.dealLinesDraft !== undefined) {
+    dealLinesDraft.value = draft.dealLinesDraft;
+  }
+  if (draft.commercialFormRecord) {
+    commercialFormRecord.value = draft.commercialFormRecord;
+  }
+  if (draft.commercialCreateDraftId) {
+    commercialCreateDraftId.value = draft.commercialCreateDraftId;
+    commercialCreateSaved.value = Boolean(draft.commercialCreateSaved);
+  }
+  pendingDraftRestore.value = true;
+}
+
+function clearOwnerDraft() {
+  if (!ownerTabId.value) return;
+  clearTabDrawerDraft(currentDraftKey(ownerTabId.value));
+}
+
 // Omit override = infer from route + activeApp on /people (null would mean explicit global-only)
 const { isSalesContext } = useCreationContext();
 const { typeDefs: organizationTypeDefs } = useOrganizationTypes();
@@ -1163,6 +1211,10 @@ const closeDrawer = () => {
         ? commercialCreateDraftId.value
         : null;
 
+    clearOwnerDraft();
+    ownerTabId.value = null;
+    pendingDraftRestore.value = false;
+
     setDrawerMode(false, { animate: false });
     commercialFormRecord.value = null;
     commercialFormLoading.value = false;
@@ -1646,6 +1698,15 @@ const onFormReady = (module) => {
   // the user's pipeline selection.
   const isFirstLoad = !moduleDefinition.value;
   moduleDefinition.value = module;
+  if (pendingDraftRestore.value) {
+    pendingDraftRestore.value = false;
+    // Calendar / context seeds must win over parked draft for provided keys
+    if (!isEditing.value) {
+      applyInitialDataOverlay();
+      nextTick(() => applyOrgCurrencyToCreateForm());
+    }
+    return;
+  }
   if (isFirstLoad || isEditing.value) {
     initializeForm(module);
     if (!isEditing.value) applySearchPrefill(module);
@@ -1656,12 +1717,39 @@ const onFormReady = (module) => {
     if (!isEditing.value) {
       nextTick(() => applyOrgCurrencyToCreateForm());
     }
+  } else if (!isEditing.value) {
+    // Module already loaded from a prior open — still apply fresh calendar seed
+    applyInitialDataOverlay();
   }
 };
 
+function applyInitialDataOverlay() {
+  if (props.record) return;
+  const seed = props.initialData;
+  if (!seed || typeof seed !== 'object') return;
+  const entries = Object.entries(seed).filter(([, v]) => v !== undefined && v !== null && v !== '');
+  if (!entries.length) return;
+  formData.value = { ...formData.value, ...Object.fromEntries(entries) };
+}
+
 watch(moduleOverrideFromSettings, (mod) => {
-  if (mod && props.isOpen && isEditing.value) {
+  if (!mod || !props.isOpen) return;
+  if (isEditing.value) {
     initializeForm(mod);
+    return;
+  }
+  // Create: DynamicForm used to skip @ready when mounted with moduleOverride, leaving
+  // calendar/context initialData unapplied. Seed here as a belt-and-suspenders path.
+  if (pendingDraftRestore.value) {
+    applyInitialDataOverlay();
+    return;
+  }
+  if (!moduleDefinition.value) {
+    moduleDefinition.value = mod;
+    initializeForm(mod);
+    if (!isEditing.value) applySearchPrefill(mod);
+  } else {
+    applyInitialDataOverlay();
   }
 });
 
@@ -1704,16 +1792,19 @@ watch(() => [props.isOpen, props.moduleKey], ([open, key]) => {
 // Fetch people and organizations when opening deal form
 watch(() => [props.isOpen, props.moduleKey], async ([open, key]) => {
   if (!open || key !== 'deals') return;
-  dealRelationships.value = { dealPeople: [], dealOrganizations: [] };
-  if (props.record) {
-    const r = props.record;
-    dealRelationships.value = normalizeDealRelationships({
-      dealPeople: Array.isArray(r.dealPeople) ? r.dealPeople.map((p) => ({ ...p })) : [],
-      dealOrganizations: Array.isArray(r.dealOrganizations) ? r.dealOrganizations.map((o) => ({ ...o })) : []
-    }, {
-      preferredPersonId: normalizeRelationshipId(r.contactId),
-      preferredOrganizationId: normalizeRelationshipId(r.accountId)
-    });
+  const restoring = pendingDraftRestore.value;
+  if (!restoring) {
+    dealRelationships.value = { dealPeople: [], dealOrganizations: [] };
+    if (props.record) {
+      const r = props.record;
+      dealRelationships.value = normalizeDealRelationships({
+        dealPeople: Array.isArray(r.dealPeople) ? r.dealPeople.map((p) => ({ ...p })) : [],
+        dealOrganizations: Array.isArray(r.dealOrganizations) ? r.dealOrganizations.map((o) => ({ ...o })) : []
+      }, {
+        preferredPersonId: normalizeRelationshipId(r.contactId),
+        preferredOrganizationId: normalizeRelationshipId(r.accountId)
+      });
+    }
   }
   try {
     const [peopleRes, orgRes] = await Promise.all([
@@ -2637,26 +2728,54 @@ function handleBeforeUnload(event) {
   event.returnValue = '';
 }
 
+// Persist while editing so keep-alive eviction / remount can restore.
+watch(
+  () => [formData.value, hasUnsavedChanges.value, userHasEdited.value, fullMode.value],
+  () => {
+    if (!props.isOpen || !ownerTabId.value || ownerTabId.value !== activeTabId.value) return;
+    if (!hasUnsavedChanges.value && !userHasEdited.value) return;
+    persistOwnerDraft();
+  },
+  { deep: true },
+);
+
 // Reset form when drawer opens/closes
 watch(() => props.isOpen, (isOpen, wasOpen) => {
   if (!isOpen && wasOpen) {
     const draftId = commercialCreateDraftId.value;
     if (isCommercialLinesCreate.value && draftId && !commercialCreateSaved.value) {
-      discardCommercialCreateDraft(draftId);
+      // Parent flipped isOpen without closeDrawer (rare) — discard server draft unless we parked.
+      if (!ownerTabId.value || !getTabDrawerDraft(currentDraftKey(ownerTabId.value))) {
+        discardCommercialCreateDraft(draftId);
+      }
     }
     window.removeEventListener('beforeunload', handleBeforeUnload);
     window.removeEventListener('pagehide', handleCommercialCreatePageHide);
   }
   if (isOpen) {
-    userHasEdited.value = false;
-    hasUnsavedChanges.value = false;
-    commercialCreateDraftId.value = null;
-    commercialCreateSaved.value = false;
-    setDrawerMode(isCommercialLinesForm.value, { animate: false });
+    ownerTabId.value = activeTabId.value;
+    const existingDraft = getTabDrawerDraft(currentDraftKey(ownerTabId.value));
     errors.value = {};
-    moduleDefinition.value = null;
+    if (existingDraft?.formData && Object.keys(existingDraft.formData).length) {
+      applyDraft(existingDraft);
+      if (!props.record) {
+        applyInitialDataOverlay();
+      }
+      setDrawerMode(Boolean(existingDraft.fullMode) || isCommercialLinesForm.value, { animate: false });
+      // Keep moduleDefinition null so DynamicForm still fires ready; onFormReady skips re-seed.
+      moduleDefinition.value = null;
+    } else {
+      userHasEdited.value = false;
+      hasUnsavedChanges.value = false;
+      commercialCreateDraftId.value = null;
+      commercialCreateSaved.value = false;
+      pendingDraftRestore.value = false;
+      setDrawerMode(isCommercialLinesForm.value, { animate: false });
+      moduleDefinition.value = null;
+    }
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handleCommercialCreatePageHide);
+    nextTick(() => closeButtonRef.value?.focus?.());
     // Form seeds from record in onFormReady / moduleOverride watch after module loads
   } else {
     commercialFormRecord.value = null;
@@ -2664,6 +2783,8 @@ watch(() => props.isOpen, (isOpen, wasOpen) => {
     commercialFormEnsurePromise.value = null;
     commercialCreateDraftId.value = null;
     commercialCreateSaved.value = false;
+    ownerTabId.value = null;
+    pendingDraftRestore.value = false;
     // Reset when closed so the next open re-seeds from record via onFormReady
     setTimeout(() => {
       formData.value = {};
@@ -2674,6 +2795,9 @@ watch(() => props.isOpen, (isOpen, wasOpen) => {
 });
 
 onUnmounted(() => {
+  if (props.isOpen && ownerTabId.value) {
+    persistOwnerDraft();
+  }
   clearModeAnimTimer();
   window.removeEventListener('beforeunload', handleBeforeUnload);
   window.removeEventListener('pagehide', handleCommercialCreatePageHide);

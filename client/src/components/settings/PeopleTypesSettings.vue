@@ -26,13 +26,15 @@
         <label for="people-types-app" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {{ t('settings.peopleTypesAppLabel') }}
         </label>
-        <select
+        <HeadlessSelect
           id="people-types-app"
           v-model="selectedAppKey"
-          class="w-full max-w-md px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option v-for="opt in appOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-        </select>
+          :options="appOptions"
+          teleport
+          :teleport-match-width="true"
+          wrapper-class="w-full max-w-md"
+          button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+        />
       </div>
     </div>
 
@@ -52,15 +54,15 @@
         <label for="people-types-default" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {{ t('settings.peopleTypesDefaultRoleLabel') }}
         </label>
-        <select
+        <HeadlessSelect
           id="people-types-default"
           v-model="defaultRole"
-          class="w-full max-w-md px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option v-for="r in roleOptionsForDefault" :key="r" :value="r">
-            {{ r }}
-          </option>
-        </select>
+          :options="peopleTypesDefaultRoleOptions"
+          teleport
+          :teleport-match-width="true"
+          wrapper-class="w-full max-w-md"
+          button-class="!py-2 !rounded !bg-gray-50 dark:!bg-white/5 dark:!border-white/10"
+        />
       </div>
 
       <!-- Match ModulesAndFields picklist options block -->
@@ -228,11 +230,10 @@
                   :key="opt.key"
                   class="inline-flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 cursor-pointer select-none"
                 >
-                  <input
-                    type="checkbox"
-                    class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
+                  <HeadlessCheckbox
                     :checked="isFieldSelectedForRow(index, opt.key)"
-                    @change="toggleRowField(index, opt.key, ($event.target as HTMLInputElement).checked)"
+                    @change="toggleRowField(index, opt.key, $event.target.checked)"
+                    checkbox-class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
                   />
                   <span>{{ opt.label }}</span>
                 </label>
@@ -387,6 +388,8 @@ defineProps({
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { invalidatePeopleTypesCache } from '@/utils/peopleTypesInvalidate';
@@ -655,6 +658,10 @@ const roleOptionsForDefault = computed(() => {
   }
   return out;
 });
+
+const peopleTypesDefaultRoleOptions = computed(() =>
+  roleOptionsForDefault.value.map((r) => ({ value: r, label: r }))
+);
 
 const isDirty = computed(() => snapshotFromState() !== snapshotJson.value);
 

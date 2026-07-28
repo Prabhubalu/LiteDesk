@@ -151,7 +151,17 @@ const filteredOptions = computed(() => {
 
 const groupedFiltered = computed(() => {
   const groups = {};
-  const order = ['Current selection', 'UTC', 'Popular', 'Africa', 'America'];
+  const order = [
+    'Current selection',
+    'UTC',
+    'Popular',
+    'Africa',
+    'America',
+    'Asia',
+    'Europe',
+    'Pacific',
+    'Other'
+  ];
   for (const opt of filteredOptions.value) {
     const key = opt.group || 'Other';
     if (!groups[key]) groups[key] = [];

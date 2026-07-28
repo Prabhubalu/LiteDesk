@@ -166,6 +166,78 @@ export function evaluateDependency(dependency, formData, allFields = [], context
 }
 
 /**
+ * Resolve allowed child picklist options from a picklistValue dependency rule.
+ * Returns [] when parent is empty or unmapped (restrict options).
+ * Returns null when the rule is incomplete (ignore rule).
+ */
+export function resolvePicklistValueAllowedOptions(dep, formData, allFields = [], context = {}) {
+  if (!dep?.parentFieldKey || !Array.isArray(dep.mappings)) return null;
+
+  const parentKey = resolveDependencyFieldKey(dep.parentFieldKey, context);
+  const parentFld = findFieldByKey(allFields, parentKey);
+  const parentValueRaw = getFormFieldValue(formData, parentKey, parentFld, {
+    moduleKey: context.moduleKey,
+  });
+  const parentValue = toComparableString(parentValueRaw);
+  if (!parentValue) return [];
+
+  const matchingMapping = dep.mappings.find(
+    (m) => toComparableString(m?.parentValue) === parentValue
+  );
+  if (!matchingMapping || !Array.isArray(matchingMapping.allowedOptions)) return [];
+  return matchingMapping.allowedOptions.map((opt) => String(opt || '')).filter(Boolean);
+}
+
+/**
+ * Clear / filter picklist values that are no longer allowed under dependency rules.
+ * Supports multi-level chains (Country → State → City) by iterating until stable.
+ * Mutates a shallow copy of formData and returns it when changed; otherwise returns null.
+ */
+export function applyPicklistDependencyValueClears(fields, formData, context = {}) {
+  if (!formData || !Array.isArray(fields) || fields.length === 0) return null;
+
+  let next = formData;
+  let changed = false;
+  // Bound iterations to field count (worst-case chain length)
+  const maxPasses = Math.max(fields.length, 1);
+  for (let pass = 0; pass < maxPasses; pass++) {
+    let passChanged = false;
+    for (const field of fields) {
+      if (!field?.key) continue;
+      const dt = String(field.dataType || '');
+      if (dt !== 'Picklist' && dt !== 'Multi-Picklist') continue;
+
+      const depState = getFieldDependencyState(field, next, fields, context);
+      if (!Array.isArray(depState.allowedOptions)) continue;
+
+      const allowed = new Set(depState.allowedOptions.map((o) => toComparableString(o)));
+      const current = getFormFieldValue(next, field.key, field, { moduleKey: context.moduleKey });
+
+      if (dt === 'Multi-Picklist' && Array.isArray(current)) {
+        const filtered = current.filter((v) => allowed.has(toComparableString(v)));
+        if (filtered.length !== current.length) {
+          if (!changed) next = { ...next };
+          next[field.key] = filtered;
+          changed = true;
+          passChanged = true;
+        }
+        continue;
+      }
+
+      if (current === null || current === undefined || current === '') continue;
+      if (!allowed.has(toComparableString(current))) {
+        if (!changed) next = { ...next };
+        next[field.key] = dt === 'Multi-Picklist' ? [] : '';
+        changed = true;
+        passChanged = true;
+      }
+    }
+    if (!passChanged) break;
+  }
+  return changed ? next : null;
+}
+
+/**
  * Get the effective state of a field based on dependencies
  * @param {Object} field - The field definition
  * @param {Object} formData - Current form data
@@ -249,11 +321,21 @@ export function getFieldDependencyState(field, formData, allFields = [], context
 
   // Handle other dependency types (readonly, required, picklist)
   for (const dep of otherDeps) {
+    const depType = String(dep?.type || '').toLowerCase();
+
+    // picklistValue rules are mapping-driven (parentFieldKey + mappings), not condition-driven.
+    // Do not gate on evaluateDependency — those rules typically have no fieldKey/conditions.
+    if (depType === 'picklistvalue') {
+      const resolved = resolvePicklistValueAllowedOptions(dep, formData, allFields, context);
+      if (resolved !== null) {
+        allowedOptions = resolved;
+      }
+      continue;
+    }
+
     const conditionMet = evaluateDependency(dep, formData, allFields, context);
-    
     if (!conditionMet) continue;
 
-    const depType = String(dep?.type || '').toLowerCase();
     switch (depType) {
       case 'readonly':
         readonly = conditionMet; // Override readonly state when condition is met
@@ -265,43 +347,8 @@ export function getFieldDependencyState(field, formData, allFields = [], context
       
       case 'picklist':
         // For picklist, only apply filter if condition is met
-        if (conditionMet && dep.allowedOptions && Array.isArray(dep.allowedOptions) && dep.allowedOptions.length > 0) {
-          // Normalize allowedOptions to strings to ensure consistent comparison
+        if (dep.allowedOptions && Array.isArray(dep.allowedOptions) && dep.allowedOptions.length > 0) {
           allowedOptions = dep.allowedOptions.map(opt => String(opt || '')).filter(Boolean);
-          console.log('📋 Picklist dependency active:', {
-            fieldKey: field.key,
-            dependencyName: dep.name,
-            allowedOptionsCount: allowedOptions.length,
-            allowedOptions: allowedOptions
-          });
-        }
-        break;
-      
-      case 'picklistvalue':
-        // For picklistValue, filter options based on parent field value
-        if (dep.parentFieldKey && dep.mappings && Array.isArray(dep.mappings)) {
-          const parentFld = findFieldByKey(allFields, dep.parentFieldKey);
-          const parentValue = getFormFieldValue(formData, dep.parentFieldKey, parentFld, {
-            moduleKey: context.moduleKey,
-          });
-          if (parentValue !== null && parentValue !== undefined && parentValue !== '') {
-            // Find matching mapping for current parent value
-            const matchingMapping = dep.mappings.find(m => 
-              m.parentValue === String(parentValue) || m.parentValue === parentValue
-            );
-            
-            if (matchingMapping && matchingMapping.allowedOptions && Array.isArray(matchingMapping.allowedOptions)) {
-              // Normalize allowedOptions to strings
-              allowedOptions = matchingMapping.allowedOptions.map(opt => String(opt || '')).filter(Boolean);
-              console.log('📋 Picklist value rule active:', {
-                fieldKey: field.key,
-                parentFieldKey: dep.parentFieldKey,
-                parentValue: parentValue,
-                allowedOptionsCount: allowedOptions.length,
-                allowedOptions: allowedOptions
-              });
-            }
-          }
         }
         break;
 

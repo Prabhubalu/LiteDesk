@@ -252,8 +252,9 @@ exports.getItems = async (req, res) => {
         const total = await Item.countDocuments(query);
 
         // Full-query KPIs for ModuleList cards (same filter as list rows).
+        const { castMatchQueryForAggregate } = require('../utils/searchRelevance');
         const listCardBreakdown = await Item.aggregate([
-            { $match: query },
+            { $match: castMatchQueryForAggregate(Item, query) },
             {
                 $group: {
                     _id: null,

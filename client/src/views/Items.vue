@@ -120,7 +120,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -194,7 +197,7 @@ const handleBulkAction = async (actionId, selectedRows) => {
     }
   } catch (error) {
     console.error('Error performing bulk action:', error);
-    alert('Error performing bulk action. Please try again.');
+    notifications.error('Error performing bulk action. Please try again.');
   }
 };
 
@@ -225,7 +228,7 @@ const exportItems = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting items:', error);
-    alert('Error exporting items. Please try again.');
+    notifications.error('Error exporting items. Please try again.');
   }
 };
 

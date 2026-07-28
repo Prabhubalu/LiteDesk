@@ -269,6 +269,7 @@ import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   deal: {
     type: Object,
@@ -277,6 +278,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const emit = defineEmits(['close', 'saved']);
 const authStore = useAuthStore();
@@ -444,7 +447,7 @@ const handleSubmit = async () => {
     }
   } catch (error) {
     console.error('Error saving deal:', error);
-    alert(error.message || t('deals.dealFormModalToastFailedToSaveDeal'));
+    notifications.error(error.message || t('deals.dealFormModalToastFailedToSaveDeal'));
   } finally {
     saving.value = false;
   }

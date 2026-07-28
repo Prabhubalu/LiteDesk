@@ -4238,5 +4238,25 @@
   "commentMentionAll": {
     "message": "Everyone",
     "description": "Mention item @all badge — notifies all users in the instance"
+  },
+  "descriptionImagePreview": {
+    "message": "Expanded description image",
+    "description": "Lightbox title/alt when expanding an inline description image"
+  },
+  "descriptionImageZoomIn": {
+    "message": "Zoom in",
+    "description": "Zoom in control for description image lightbox"
+  },
+  "descriptionImageZoomOut": {
+    "message": "Zoom out",
+    "description": "Zoom out control for description image lightbox"
+  },
+  "activityDescriptionImageAdded": {
+    "message": "Image added",
+    "description": "Activity feed label when a description image was added"
+  },
+  "activityDescriptionImageRemoved": {
+    "message": "Image removed",
+    "description": "Activity feed label when a description image was removed"
   }
 }

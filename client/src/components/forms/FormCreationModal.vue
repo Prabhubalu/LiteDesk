@@ -276,7 +276,10 @@ import SectionsBuilder from '@/components/forms/SectionsBuilder.vue';
 import FormSettingsTab from '@/components/forms/FormSettingsTab.vue';
 import FormPreview from '@/components/forms/FormPreview.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   isOpen: {
@@ -561,9 +564,9 @@ const goToStep = (index) => {
   // Before allowing navigation to next step, validate current step
   if (index > currentStepIndex.value && !canProceed.value) {
     if (currentStepIndex.value === 0) {
-      alert(t('forms.wizardStep0RequiredAlert'));
+      notifications.warning(t('forms.wizardStep0RequiredAlert'));
     } else if (currentStepIndex.value === 1) {
-      alert(t('forms.wizardStep1RequiredAlert'));
+      notifications.warning(t('forms.wizardStep1RequiredAlert'));
     }
     return;
   }
@@ -579,9 +582,9 @@ const nextStep = () => {
   if (!canProceed.value) {
     // Show a message to the user about what's missing
     if (currentStepIndex.value === 0) {
-      alert(t('forms.wizardStep0RequiredAlert'));
+      notifications.warning(t('forms.wizardStep0RequiredAlert'));
     } else if (currentStepIndex.value === 1) {
-      alert(t('forms.wizardStep1RequiredAlert'));
+      notifications.warning(t('forms.wizardStep1RequiredAlert'));
     }
     return;
   }
@@ -639,11 +642,11 @@ const handleSubmit = async () => {
       
       handleClose();
     } else {
-      alert(response.message || t('forms.saveFormFailed'));
+      notifications.error(response.message || t('forms.saveFormFailed'));
     }
   } catch (error) {
     console.error('Error saving form:', error);
-    alert(error.message || t('forms.saveFormFailed'));
+    notifications.error(error.message || t('forms.saveFormFailed'));
   } finally {
     saving.value = false;
   }

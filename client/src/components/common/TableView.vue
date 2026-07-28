@@ -1,10 +1,17 @@
 <template>
-  <div class="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-    <div class="w-full py-2 align-middle">
+  <div
+    class="-mx-4 sm:-mx-6 lg:-mx-8"
+    :class="fillsParentHeight ? 'flex h-full min-h-0 flex-1 flex-col' : '-my-2'"
+  >
+    <div
+      class="w-full align-middle"
+      :class="fillsParentHeight ? 'flex h-full min-h-0 flex-col py-0' : 'py-2'"
+    >
       <div
         class="table-view-shell"
         :class="[
           showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]',
+          fillsParentHeight ? 'flex h-full min-h-0 flex-col' : '',
           isMobileCardLayout
             ? 'overflow-x-hidden overflow-y-visible rounded-none !border-0 bg-transparent shadow-none'
             : 'overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-900'
@@ -951,13 +958,22 @@ function onRowContextMenu(event: MouseEvent) {
   }
 }
 
-const scrollContainerClass = computed(() => ({
-  'flex-1 min-h-0': showEmptyOverlay.value,
-  'overflow-x-auto': !isMobileCardLayout.value,
-  'overflow-x-hidden': isMobileCardLayout.value,
-  'overflow-y-auto': props.internalScroll && !showEmptyOverlay.value,
-  'overflow-y-hidden': showEmptyOverlay.value
-}))
+const scrollContainerClass = computed(() => {
+  const maxBody = props.maxBodyHeight
+  const fillsParent =
+    props.internalScroll &&
+    maxBody !== undefined &&
+    maxBody !== null &&
+    String(maxBody).trim().endsWith('%')
+
+  return {
+    'flex-1 min-h-0': showEmptyOverlay.value || fillsParent,
+    'overflow-x-auto': !isMobileCardLayout.value,
+    'overflow-x-hidden': isMobileCardLayout.value,
+    'overflow-y-auto': props.internalScroll && !showEmptyOverlay.value,
+    'overflow-y-hidden': showEmptyOverlay.value
+  }
+})
 
 const storageKey = computed(() =>
   props.tableId ? `table-column-widths-${props.tableId}` : ''
@@ -1852,6 +1868,14 @@ const selectionFilterCellStyle = computed(() => ({
 
 const enableInternalScroll = computed(() => props.internalScroll)
 
+/** Percentage maxBodyHeight (e.g. 100%): fill parent flex height instead of viewport calc. */
+const fillsParentHeight = computed(() => {
+  if (!enableInternalScroll.value || props.maxBodyHeight === undefined || props.maxBodyHeight === null) {
+    return false
+  }
+  return String(props.maxBodyHeight).trim().endsWith('%')
+})
+
 const maxHeightStyle = computed(() => {
   if (!enableInternalScroll.value) {
     return undefined
@@ -1871,7 +1895,13 @@ const scrollContainerStyles = computed(() => {
   const styles: Record<string, string | undefined> = {}
 
   if (enableInternalScroll.value && !showEmptyOverlay.value) {
-    styles.maxHeight = maxHeightStyle.value
+    if (fillsParentHeight.value) {
+      // Parent flex chain owns height; avoid 100vh calc that overflows nested panels.
+      styles.height = '100%'
+      styles.maxHeight = '100%'
+    } else {
+      styles.maxHeight = maxHeightStyle.value
+    }
     styles.overflowY = 'auto'
   }
 

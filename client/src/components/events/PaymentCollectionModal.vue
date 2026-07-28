@@ -120,6 +120,7 @@ import { useI18n } from 'vue-i18n';
 import { ref, watch } from 'vue';
 import apiClient from '@/utils/apiClient';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -136,6 +137,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const emit = defineEmits(['close', 'collected']);
 
@@ -209,11 +212,11 @@ const handleSubmit = async () => {
       emit('collected', response.data);
       close();
     } else {
-      alert(response.message || t('events.paymentCollectionModalToastFailedToCollectPayment'));
+      notifications.error(response.message || t('events.paymentCollectionModalToastFailedToCollectPayment'));
     }
   } catch (error) {
     console.error('Error collecting payment:', error);
-    alert(t('events.paymentCollectionModalToastFailedToCollectPayment2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.paymentCollectionModalToastFailedToCollectPayment2') + (error.message || 'Unknown error'));
   } finally {
     saving.value = false;
   }

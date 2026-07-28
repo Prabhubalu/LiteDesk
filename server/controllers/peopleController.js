@@ -227,6 +227,29 @@ exports.create = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid email format.' });
     }
 
+    {
+      const ModuleDefinition = require('../models/ModuleDefinition');
+      const { validatePicklistDependencyValues } = require('../utils/dependencyEvaluation');
+      const moduleDef = await ModuleDefinition.findOne({
+        organizationId: req.user.organizationId,
+        key: 'people'
+      }).lean();
+      if (moduleDef && Array.isArray(moduleDef.fields)) {
+        const picklistErrors = validatePicklistDependencyValues(moduleDef.fields, {
+          ...body,
+          ...customFieldsSet
+        });
+        if (picklistErrors.length > 0) {
+          return res.status(400).json({
+            success: false,
+            message: 'Validation failed.',
+            code: 'PICKLIST_DEPENDENCY_VIOLATION',
+            validationErrors: picklistErrors
+          });
+        }
+      }
+    }
+
     const { validateRecordAssignmentRequest } = require('../services/recordAssignmentService');
     const assignCheck = await validateRecordAssignmentRequest(req, body.assignedTo, { skipSelf: true });
     if (assignCheck) {
@@ -463,7 +486,7 @@ exports.list = async (req, res) => {
           ]
         };
       } else {
-        assignedToFilter = buildAssignedToUserFilter(req.query.assignedTo);
+        assignedToFilter = buildAssignedToUserFilter(req.query.assignedTo, req.user?._id);
       }
       delete query.assignedTo;
     }
@@ -614,8 +637,10 @@ exports.list = async (req, res) => {
           .skip(skip)
           .lean();
 
+    const { castMatchQueryForAggregate } = require('../utils/searchRelevance');
+    const statsMatchQuery = castMatchQueryForAggregate(People, query);
     const statisticsQuery = People.aggregate([
-      { $match: query },
+      { $match: statsMatchQuery },
       {
         $group: {
           _id: null,
@@ -1027,6 +1052,27 @@ exports.update = async (req, res) => {
     const previous = await People.findOne(
       { _id: req.params.id, organizationId: req.user.organizationId, deletedAt: null }
     ).lean();
+
+    if (moduleDef && Array.isArray(moduleDef.fields)) {
+      const { validatePicklistDependencyValues } = require('../utils/dependencyEvaluation');
+      const mergedForPicklist = {
+        ...(previous || {}),
+        ...updateData,
+        customFields: {
+          ...((previous && previous.customFields) || {}),
+          ...(updateData.customFields || {})
+        }
+      };
+      const picklistErrors = validatePicklistDependencyValues(moduleDef.fields, mergedForPicklist);
+      if (picklistErrors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed.',
+          code: 'PICKLIST_DEPENDENCY_VIOLATION',
+          validationErrors: picklistErrors
+        });
+      }
+    }
 
     if (
       previous

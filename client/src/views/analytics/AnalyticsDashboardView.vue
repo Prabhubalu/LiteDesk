@@ -116,7 +116,10 @@ import {
 } from '@/config/posthogAnalytics';
 import { useAnalyticsEmbed } from '@/composables/useAnalyticsEmbed';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const route = useRoute();
 const router = useRouter();
 const { effectiveDark } = useColorMode();
@@ -222,7 +225,7 @@ async function createEmbedLink() {
     const origin = window.location.origin;
     const url = `${origin}${res.embedPath || `/analytics/embed/dashboard?token=${encodeURIComponent(res.token)}`}`;
     await navigator.clipboard.writeText(url);
-    window.alert(t('analytics.embedLinkCopied'));
+    notifications.success(t('analytics.embedLinkCopied'));
   }
 }
 

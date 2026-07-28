@@ -149,6 +149,7 @@ import {
 import { useNotifications } from '@/composables/useNotifications';
 import ScheduleEditorForm from '@/components/business-hours/ScheduleEditorForm.vue';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const open = defineModel('open', { type: Boolean, default: false });
 
 const props = defineProps({
@@ -307,7 +308,7 @@ async function save() {
 }
 
 async function remove() {
-  if (!isEdit.value || !confirm(t('settings.settingsBhDeleteScheduleConfirm'))) return;
+  if (!isEdit.value || !await confirmAction(t('settings.settingsBhDeleteScheduleConfirm'))) return;
   saving.value = true;
   try {
     await deleteSet(props.scheduleId);

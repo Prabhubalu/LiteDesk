@@ -164,6 +164,7 @@ import { unwrapCatalogApiData, unwrapCatalogApiList } from '@/utils/catalogApi';
 import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const authStore = useAuthStore();
 const orgCurrency = computed(() => resolveOrgCurrencyCode(authStore.organization));
@@ -285,7 +286,7 @@ async function saveBook() {
 }
 
 async function removeBook(id) {
-  if (!confirm(t('settings.catalogConfirmDeletePriceBook'))) return;
+  if (!await confirmAction(t('settings.catalogConfirmDeletePriceBook'))) return;
   await apiClient.delete(`/catalog/price-books/${id}`);
   if (selectedBookId.value === id) {
     selectedBookId.value = '';

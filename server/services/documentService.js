@@ -287,7 +287,17 @@ function buildListQuery(organizationId, filters = {}) {
 
   if (filters.status) query.status = filters.status;
   if (filters.documentType) query.documentType = filters.documentType;
-  if (filters.assignedTo) query.assignedTo = filters.assignedTo;
+  if (filters.assignedTo) {
+    const raw = filters.assignedTo;
+    if (raw === 'unassigned' || raw === 'null') {
+      query.$and = [
+        ...(query.$and || []),
+        { $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }] },
+      ];
+    } else {
+      query.assignedTo = raw === 'me' ? filters.userId : raw;
+    }
+  }
   if (filters.fileType) query.fileType = filters.fileType;
   if (filters.tag) {
     const tag = String(filters.tag).trim();

@@ -319,6 +319,7 @@ import { invalidateAddonNavigationCache } from '@/utils/addonNavigation';
 import { captureArticlesAddonInstalled } from '@/config/posthogArticles';
 import { captureBlogAddonInstalled } from '@/config/posthogBlog';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -596,7 +597,7 @@ async function enableAddon(addonKey) {
 }
 
 async function uninstallAddon(addonKey) {
-  if (!window.confirm(t('settings.addonsUninstallConfirm'))) return;
+  if (!await confirmAction(t('settings.addonsUninstallConfirm'))) return;
   try {
     await apiClient.post(`/settings/addons/${addonKey}/uninstall`);
     notifications.success(t('settings.addonsUninstallSuccess'));

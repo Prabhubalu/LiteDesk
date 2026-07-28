@@ -477,7 +477,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -971,7 +974,7 @@ const handleDelete = async (row) => {
     if (moduleListRef.value?.refresh) moduleListRef.value.refresh();
   } catch (err) {
     console.error('Delete deal error:', err);
-    alert(err?.response?.data?.message || t('common.dealsToastErrorDeletingDealPleaseTry'));
+    notifications.error(err?.response?.data?.message || t('common.dealsToastErrorDeletingDealPleaseTry'));
   }
 };
 
@@ -993,7 +996,7 @@ const handleBulkAction = async (action, rows) => {
     }
   } catch (err) {
     console.error('Bulk action error:', err);
-    alert(t('common.dealsToastErrorPerformingBulkActionPlease'));
+    notifications.error(t('common.dealsToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -1044,7 +1047,7 @@ const exportDeals = async () => {
     document.body.removeChild(a);
   } catch (err) {
     console.error('Export error:', err);
-    alert(t('common.dealsToastFailedToExportDeals'));
+    notifications.error(t('common.dealsToastFailedToExportDeals'));
   }
 };
 
@@ -1073,7 +1076,7 @@ const handleKanbanUpdate = async ({ item, newStage, newIndex, previousStage }) =
   } catch (err) {
     console.error('Error updating stage:', err);
     const msg = err?.response?.data?.message || err?.message || t('deals.dealsStageUpdateFailed');
-    alert(msg);
+    notifications.error(msg);
   }
 };
 

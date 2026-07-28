@@ -1,5 +1,8 @@
 <template>
-  <div class="mx-auto w-full">
+  <div
+    class="mx-auto w-full"
+    :class="fillHeight ? 'flex h-full min-h-0 flex-1 flex-col overflow-hidden' : ''"
+  >
     <!-- Header -->
     <div v-if="!hidePageHeader" class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-4">
       <div class="flex-1 min-w-0">
@@ -263,6 +266,7 @@
     <div
       v-if="showStats && statsConfig && statsConfig.length > 0 && statsPanelVisible"
       class="mb-4"
+      :class="fillHeight ? 'shrink-0' : ''"
     >
       <div
         v-if="statsBarSkeleton"
@@ -307,7 +311,11 @@
     </div>
 
     <!-- Search and Filters -->
-    <div v-if="!hideSearchToolbar" class="flex flex-col gap-4 mb-4 relative">
+    <div
+      v-if="!hideSearchToolbar"
+      class="flex flex-col gap-4 mb-4 relative"
+      :class="fillHeight ? 'shrink-0' : ''"
+    >
       <!-- Mobile, Tablet & Small Desktop: Search, Filters Button, Columns Button in a single row -->
       <div class="flex items-center gap-2.5 lg:hidden">
         <div class="flex-1 min-w-0">
@@ -598,12 +606,17 @@
       </div>
     </div>
 
-    <div class="mt-4 px-4 sm:px-6 lg:px-8" style="isolation: auto;">
+    <div
+      class="mt-4 px-4 sm:px-6 lg:px-8"
+      :class="fillHeight ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
+      style="isolation: auto;"
+    >
       <!-- Stable key: must not depend on row data or count — remounting resets scroll and inline filter focus. -->
       <TableView
           v-if="computedColumns.length > 0"
           :key="`table-${tableId}`"
           internal-scroll
+          :max-body-height="fillHeight ? '100%' : undefined"
           :data="data"
           :columns="computedColumns"
           :loading="tableLoading"
@@ -1523,7 +1536,7 @@ import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import ListColumnFilter from '@/components/common/ListColumnFilter.vue';
 import ActiveFilterChipBar from '@/components/common/ActiveFilterChipBar.vue';
 import FilterBuilderPanel from '@/components/filters/FilterBuilderPanel.vue';
-import { parseDateFilterValue, getDateFilterLabel } from '@/utils/dateFilterOptions';
+import { parseDateFilterValue, getDateFilterLabel, expandEventsSpecialViewFilters } from '@/utils/dateFilterOptions';
 import { useListColumnFilters } from '@/composables/useListColumnFilters';
 import { useFilterFieldOptions } from '@/composables/useFilterFieldOptions';
 import { getDefaultOperatorForFilter, operatorRequiresValue } from '@/platform/filters/filterOperators';
@@ -1654,6 +1667,11 @@ const props = defineProps({
   },
   /** Hides title, description, customize, and header action row (embedded list layouts) */
   hidePageHeader: {
+    type: Boolean,
+    default: false
+  },
+  /** Fill parent height; stats/toolbar stay fixed and only the table body scrolls */
+  fillHeight: {
     type: Boolean,
     default: false
   },
@@ -4464,7 +4482,15 @@ watch(
       return;
     }
 
-    if (Object.keys(newExternalFilters).length === 0) {
+    let incomingFilters = newExternalFilters;
+    if (props.moduleKey === 'events') {
+      incomingFilters = expandEventsSpecialViewFilters(
+        { ...newExternalFilters },
+        props.activeSavedViewId
+      );
+    }
+
+    if (Object.keys(incomingFilters).length === 0) {
       Object.keys(filters).forEach((key) => {
         delete filters[key];
       });
@@ -4476,7 +4502,7 @@ watch(
       return;
     }
 
-    if (isFilterQueryOnlyPayload(newExternalFilters)) {
+    if (isFilterQueryOnlyPayload(incomingFilters)) {
       const activeView = props.activeSavedViewId
         ? props.savedViews?.find((view) => view.id === props.activeSavedViewId)
         : null;
@@ -4510,10 +4536,10 @@ watch(
       }
     });
 
-    if (Object.keys(newExternalFilters).length > 0) {
-      Object.keys(newExternalFilters).forEach((key) => {
+    if (Object.keys(incomingFilters).length > 0) {
+      Object.keys(incomingFilters).forEach((key) => {
         if (key === 'filterQuery') return;
-        const value = newExternalFilters[key];
+        const value = incomingFilters[key];
         if (value !== undefined) {
           filters[key] = value;
         }
@@ -4526,7 +4552,7 @@ watch(
     });
 
     filterBuilderQuery.value = syncRootGroupFromActiveFilters(
-      filterBuilderQuery.value,
+      createDefaultRootGroup(),
       builderFilterConfigList.value,
       filters,
       filterOperatorsMap.value
@@ -4833,7 +4859,7 @@ const toggleFieldVisibility = async (fieldKey) => {
     }
     if (!column || column.visible) {
       // Trying to hide - prevent it
-      alert('The "name" field must always be visible in table and detail views for Forms.');
+      notifications.error('The "name" field must always be visible in table and detail views for Forms.');
       return;
     }
   }
@@ -5618,8 +5644,9 @@ function applyFilterBuilderState(config) {
     if (!viewConfigHasActiveFilters(config)) {
       filterBuilderQuery.value = createDefaultRootGroup();
     } else {
+      // Start from a clean root so incomplete empty rows from a prior session are dropped
       filterBuilderQuery.value = syncRootGroupFromActiveFilters(
-        filterBuilderQuery.value,
+        createDefaultRootGroup(),
         builderFilterConfigList.value,
         filters,
         filterOperatorsMap.value
@@ -5632,7 +5659,14 @@ const lastAppliedSavedViewSignature = ref('');
 
 function applySavedViewFromRecord(view, options = {}) {
   if (!view) return;
-  const config = resolveSavedViewConfig(view) || { filters: {} };
+  const rawConfig = resolveSavedViewConfig(view) || { filters: {} };
+  const config = {
+    ...rawConfig,
+    filters:
+      props.moduleKey === 'events'
+        ? expandEventsSpecialViewFilters({ ...(rawConfig.filters || {}) }, view.id)
+        : { ...(rawConfig.filters || {}) },
+  };
 
   const signature = `${view.id}:${JSON.stringify(config)}`;
   if (!options.force && signature === lastAppliedSavedViewSignature.value) return;

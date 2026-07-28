@@ -6,8 +6,9 @@
         <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <div
             v-if="selectedHasContent"
-            class="text-md text-gray-900 dark:text-white px-6 py-4 leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:border-gray-200 [&_blockquote]:pl-4 [&_blockquote]:my-2 [&_blockquote]:text-gray-500 dark:[&_blockquote]:border-gray-600 dark:[&_blockquote]:text-gray-400 [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-2 [&_img]:block [&_pre]:rounded-lg [&_pre]:bg-gray-100 [&_pre]:p-3 dark:[&_pre]:bg-gray-800"
+            class="text-md text-gray-900 dark:text-white px-6 py-4 leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:border-gray-200 [&_blockquote]:pl-4 [&_blockquote]:my-2 [&_blockquote]:text-gray-500 dark:[&_blockquote]:border-gray-600 dark:[&_blockquote]:text-gray-400 [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-2 [&_img]:block [&_img]:cursor-zoom-in [&_pre]:rounded-lg [&_pre]:bg-gray-100 [&_pre]:p-3 dark:[&_pre]:bg-gray-800"
             v-html="selectedContent"
+            @click="handleRichHtmlClick"
           />
           <p v-else class="px-6 py-4 text-sm text-gray-400 dark:text-gray-500 italic m-0">
             {{ t('records.genericNoDescInVersion') }}
@@ -75,6 +76,12 @@
         </div>
       </div>
     </div>
+
+    <RichDescriptionImageLightbox
+      :open="showImagePreview"
+      :src="previewImageSrc"
+      @close="closeImagePreview"
+    />
   </div>
 </template>
 
@@ -82,6 +89,8 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Avatar from '@/components/common/Avatar.vue';
+import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
+import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
 import {
   formatContentVersionDate,
   getSelectedVersionContent
@@ -99,6 +108,12 @@ const props = defineProps({
 defineEmits(['update:selectedIndex', 'restore']);
 
 const { t } = useI18n();
+const {
+  showImagePreview,
+  previewImageSrc,
+  closeImagePreview,
+  handleRichHtmlClick
+} = useRichDescriptionImagePreview();
 
 const selectedContent = computed(() => getSelectedVersionContent(props.versions, props.selectedIndex));
 

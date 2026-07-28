@@ -764,7 +764,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -1295,14 +1299,14 @@ const handleEventUpdated = async () => {
 };
 
 const deleteEvent = async () => {
-  if (!confirm('Are you sure you want to delete this event?')) return;
+  if (!await confirmAction('Are you sure you want to delete this event?')) return;
   
   try {
     await apiClient.delete(`/events/${route.params.id}`);
     router.push('/events');
   } catch (err) {
     console.error('Error deleting event:', err);
-    alert(t('common.eventDetailToastFailedToDeleteEvent'));
+    notifications.error(t('common.eventDetailToastFailedToDeleteEvent'));
   }
 };
 
@@ -1321,7 +1325,7 @@ const addNote = async () => {
     }
   } catch (err) {
     console.error('Error adding note:', err);
-    alert(t('common.eventDetailToastFailedToAddNote'));
+    notifications.error(t('common.eventDetailToastFailedToAddNote'));
   }
 };
 

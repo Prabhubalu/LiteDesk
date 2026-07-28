@@ -409,7 +409,10 @@ import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } fro
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   rule: {
@@ -615,7 +618,7 @@ async function previewRule() {
   const data = buildFormData();
   try {
     const res = await apiClient.post('/admin/automation-rules/preview', { rule: data });
-    alert(t('process.ruleFormPreviewAlert', { count: res.data.data.plan.length }));
+    notifications.error(t('process.ruleFormPreviewAlert', { count: res.data.data.plan.length }));
     // Could emit preview event to show in a modal
   } catch (err) {
     validationError.value = err.response?.data?.message || t('process.ruleFormPreviewFailed');

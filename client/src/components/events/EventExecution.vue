@@ -263,6 +263,8 @@ import EventMapView from './EventMapView.vue';
 import { useEventOffline } from '@/composables/useEventOffline';
 import { useEventNotifications } from '@/composables/useEventNotifications';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   event: {
     type: Object,
@@ -271,6 +273,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const emit = defineEmits(['updated']);
 
@@ -438,11 +442,11 @@ const startEvent = async () => {
         startWatchingLocation();
       }
     } else {
-      alert(response.message || t('events.eventExecutionToastFailedToStartEvent'));
+      notifications.error(response.message || t('events.eventExecutionToastFailedToStartEvent'));
     }
   } catch (error) {
     console.error('Error starting event:', error);
-    alert(t('events.eventExecutionToastFailedToStartEvent2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.eventExecutionToastFailedToStartEvent2') + (error.message || 'Unknown error'));
   } finally {
     starting.value = false;
   }
@@ -494,11 +498,11 @@ const checkIn = async () => {
         window.location.href = formUrl;
       } else if (!response.hasForm) {
         // Show message if no form is assigned
-        alert(t('events.eventExecutionToastNoFormIsAssignedTo'));
+        notifications.error(t('events.eventExecutionToastNoFormIsAssignedTo'));
       }
       
       if (response.warning) {
-        alert(response.warning);
+        notifications.warning(response.warning);
       }
     } else {
       // Queue for offline retry
@@ -508,14 +512,14 @@ const checkIn = async () => {
           eventId: props.event.eventId || props.event._id,
           data: { location: currentLocation.value }
         });
-        alert(t('events.eventExecutionToastYouAreOfflineCheckIn'));
+        notifications.warning(t('events.eventExecutionToastYouAreOfflineCheckIn'));
       } else {
-        alert(response.message || t('events.eventExecutionToastFailedToCheckIn'));
+        notifications.error(response.message || t('events.eventExecutionToastFailedToCheckIn'));
       }
     }
   } catch (error) {
     console.error('Error checking in:', error);
-    alert(t('events.eventExecutionToastFailedToCheckIn2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.eventExecutionToastFailedToCheckIn2') + (error.message || 'Unknown error'));
   } finally {
     checkingIn.value = false;
   }
@@ -566,14 +570,14 @@ const checkInOrg = async (orgSequence) => {
         window.location.href = formUrl;
       } else if (!response.hasForm) {
         // Show message if no form is assigned
-        alert(t('events.eventExecutionToastNoFormIsAssignedTo2'));
+        notifications.error(t('events.eventExecutionToastNoFormIsAssignedTo2'));
       }
     } else {
-      alert(response.message || t('events.eventExecutionToastFailedToCheckIn3'));
+      notifications.error(response.message || t('events.eventExecutionToastFailedToCheckIn3'));
     }
   } catch (error) {
     console.error('Error checking in:', error);
-    alert(t('events.eventExecutionToastFailedToCheckIn4') + (error.message || 'Unknown error'));
+    notifications.error(t('events.eventExecutionToastFailedToCheckIn4') + (error.message || 'Unknown error'));
   } finally {
     checkingIn.value = false;
   }
@@ -595,7 +599,7 @@ const checkOut = async () => {
           // Allow checkout without location if form is submitted
           console.log('[EventExecution] Proceeding with checkout without location (form submitted)');
         } else {
-          alert(t('events.eventExecutionToastCouldNotGetLocationFor'));
+          notifications.error(t('events.eventExecutionToastCouldNotGetLocationFor'));
           checkingOut.value = false;
           return;
         }
@@ -619,14 +623,14 @@ const checkOut = async () => {
           eventId: props.event.eventId || props.event._id,
           data: { location: location }
         });
-        alert(t('events.eventExecutionToastYouAreOfflineCheckOut'));
+        notifications.warning(t('events.eventExecutionToastYouAreOfflineCheckOut'));
       } else {
-        alert(response.message || t('events.eventExecutionToastFailedToCheckOut'));
+        notifications.error(response.message || t('events.eventExecutionToastFailedToCheckOut'));
       }
     }
   } catch (error) {
     console.error('Error checking out:', error);
-    alert(t('events.eventExecutionToastFailedToCheckOut2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.eventExecutionToastFailedToCheckOut2') + (error.message || 'Unknown error'));
   } finally {
     checkingOut.value = false;
   }
@@ -637,7 +641,7 @@ const submitAudit = async () => {
     submitting.value = true;
     
     if (!formResponseId.value) {
-      alert(t('events.eventExecutionToastPleaseFillAndSubmitThe'));
+      notifications.error(t('events.eventExecutionToastPleaseFillAndSubmitThe'));
       return;
     }
     
@@ -654,9 +658,9 @@ const submitAudit = async () => {
       formResponseStatus.value = 'Submitted';
       // Note: Event is automatically checked out on form submission
       if (response.requiresCorrective) {
-        alert(t('events.eventExecutionToastAuditSubmittedAndCheckedOut'));
+        notifications.success(t('events.eventExecutionToastAuditSubmittedAndCheckedOut'));
       } else {
-        alert(t('events.eventExecutionToastAuditSubmittedSuccessfullyAndYou'));
+        notifications.success(t('events.eventExecutionToastAuditSubmittedSuccessfullyAndYou'));
       }
     } else {
       // Queue for offline retry
@@ -666,14 +670,14 @@ const submitAudit = async () => {
           eventId: props.event.eventId || props.event._id,
           data: { formResponseId: formResponseId.value }
         });
-        alert(t('events.eventExecutionToastYouAreOfflineAuditSubmission'));
+        notifications.warning(t('events.eventExecutionToastYouAreOfflineAuditSubmission'));
       } else {
-        alert(response.message || t('events.eventExecutionToastFailedToSubmitAudit'));
+        notifications.error(response.message || t('events.eventExecutionToastFailedToSubmitAudit'));
       }
     }
   } catch (error) {
     console.error('Error submitting audit:', error);
-    alert(t('events.eventExecutionToastFailedToSubmitAudit2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.eventExecutionToastFailedToSubmitAudit2') + (error.message || 'Unknown error'));
   } finally {
     submitting.value = false;
   }
@@ -702,11 +706,11 @@ const moveToNextOrg = async () => {
     if (response.success) {
       emit('updated', response.data);
     } else {
-      alert(response.message || t('events.eventExecutionToastFailedToMoveToNext'));
+      notifications.error(response.message || t('events.eventExecutionToastFailedToMoveToNext'));
     }
   } catch (error) {
     console.error('Error moving to next org:', error);
-    alert(t('events.eventExecutionToastFailedToMoveToNext2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.eventExecutionToastFailedToMoveToNext2') + (error.message || 'Unknown error'));
   } finally {
     moving.value = false;
   }
@@ -736,7 +740,7 @@ const handlePaymentCollected = (payment) => {
 const openAuditForm = () => {
   // Disable form reopening after checkout
   if (props.event.status === 'CHECKED_OUT') {
-    alert(t('events.eventExecutionToastThisEventHasBeenChecked'));
+    notifications.error(t('events.eventExecutionToastThisEventHasBeenChecked'));
     return;
   }
   
@@ -835,7 +839,7 @@ const fetchEvent = async () => {
 };
 
 const completeEvent = async () => {
-  if (!confirm('Are you sure you want to complete this event?')) return;
+  if (!await confirmAction('Are you sure you want to complete this event?')) return;
 
   try {
     completing.value = true;
@@ -846,7 +850,7 @@ const completeEvent = async () => {
       emit('updated', response.data);
       cacheEvent(response.data);
       notifyEvent(response.data, NotifTypes.EVENT_COMPLETED, `Event "${response.data.eventName}" has been completed`);
-      alert(t('events.eventExecutionToastEventCompletedSuccessfully'));
+      notifications.success(t('events.eventExecutionToastEventCompletedSuccessfully'));
     } else {
       // Queue for offline retry
       if (!isOnline.value) {
@@ -855,14 +859,14 @@ const completeEvent = async () => {
           eventId: props.event.eventId || props.event._id,
           data: {}
         });
-        alert(t('events.eventExecutionToastYouAreOfflineEventCompletion'));
+        notifications.warning(t('events.eventExecutionToastYouAreOfflineEventCompletion'));
       } else {
-        alert(response.message || t('events.eventExecutionToastFailedToCompleteEvent'));
+        notifications.error(response.message || t('events.eventExecutionToastFailedToCompleteEvent'));
       }
     }
   } catch (error) {
     console.error('Error completing event:', error);
-    alert(t('events.eventExecutionToastFailedToCompleteEvent2') + (error.message || 'Unknown error'));
+    notifications.error(t('events.eventExecutionToastFailedToCompleteEvent2') + (error.message || 'Unknown error'));
   } finally {
     completing.value = false;
   }

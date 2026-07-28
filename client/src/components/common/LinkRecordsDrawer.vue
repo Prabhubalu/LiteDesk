@@ -1,15 +1,12 @@
 <template>
-  <TransitionRoot as="template" :show="isOpen">
-    <Dialog class="relative z-[10000]" @close="handleDialogClose">
-      <TransitionChild as="template" enter="ease-out duration-200" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-        <div class="fixed inset-0 bg-gray-500/75 dark:bg-black/75" />
-      </TransitionChild>
-
-      <div class="fixed inset-0 overflow-hidden">
-        <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
-            <TransitionChild as="template" enter="transform transition ease-in-out duration-300 sm:duration-300" enter-from="translate-x-full" enter-to="translate-x-0" leave="transform transition ease-in-out duration-300 sm:duration-300" leave-from="translate-x-0" leave-to="translate-x-full">
-              <DialogPanel class="pointer-events-auto w-screen max-w-3xl">
+  <WorkspaceScopedDrawerShell
+    :is-open="isOpen"
+    panel-offset-class="pl-10 sm:pl-16"
+    :draft-module-key="effectiveModuleKey || 'link-records'"
+    @backdrop="handleDialogClose"
+    @escape="handleDialogClose"
+  >
+              <div class="pointer-events-auto w-screen max-w-3xl">
                 <div class="rounded-tl-xl overflow-hidden relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800 shadow-xl">
                   <!-- Header -->
                   <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
@@ -23,7 +20,7 @@
                       >
                         <ChevronLeftIcon class="size-5" />
                       </button>
-                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white truncate">{{ computedTitle }}</DialogTitle>
+                      <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white truncate">{{ computedTitle }}</h2>
                     </div>
                     <button type="button" class="rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 shrink-0" @click="closeDrawer">
                       <span class="sr-only">{{ t('common.closePanel') }}</span>
@@ -36,7 +33,7 @@
                     <!-- Record type selector (when no moduleKey and no type selected yet) -->
                     <div v-if="showTypeSelector && !effectiveModuleKey" class="flex-1 overflow-auto p-4">
                       <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ typeSelectorPrompt }}</p>
-                      <div v-if="linkableTargetsLoading && recordTypeOptions.length === 0" class="flex items-center justify-center py-8">
+                      <div v-if="linkableTargetsLoading" class="flex items-center justify-center py-8">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
                       </div>
                       <div v-else-if="recordTypeOptions.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
@@ -139,13 +136,8 @@
                     </div>
                   </div>
                 </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
+              </div>
+  </WorkspaceScopedDrawerShell>
 </template>
 
 <script setup>
@@ -153,8 +145,8 @@ import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import apiClient from '@/utils/apiClient';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -262,12 +254,14 @@ function mergeRecordTypeOptions(primary, supplement) {
 
 const recordTypeOptions = computed(() => {
   if (props.recordTypes && props.recordTypes.length) return props.recordTypes;
-  const fromApi = useLinkableTargetsFromApi.value && linkableTargets.value.length
-    ? linkableTargets.value
-    : [];
-  const merged = mergeRecordTypeOptions(fromApi, props.supplementRecordTypes);
-  if (merged.length) return merged;
-  if (useLinkableTargetsFromApi.value) return [];
+  // Wait for relationships API so supplement types (e.g. Related Documents) don't flash alone
+  if (useLinkableTargetsFromApi.value) {
+    if (linkableTargetsLoading.value) return [];
+    return mergeRecordTypeOptions(linkableTargets.value, props.supplementRecordTypes);
+  }
+  if (props.supplementRecordTypes?.length) {
+    return mergeRecordTypeOptions([], props.supplementRecordTypes);
+  }
   return RECORD_TYPE_OPTIONS_DEFAULT;
 });
 

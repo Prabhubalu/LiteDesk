@@ -153,7 +153,11 @@ import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   isOpen: Boolean,
@@ -241,7 +245,7 @@ const changeUserRole = (user) => {
 
 // Remove/deactivate user
 const removeUser = async (user) => {
-  if (!confirm(t('settings.roleUsersDeactivateConfirm', { name: userDisplayName(user) }))) {
+  if (!await confirmAction(t('settings.roleUsersDeactivateConfirm', { name: userDisplayName(user) }))) {
     return;
   }
   
@@ -253,11 +257,11 @@ const removeUser = async (user) => {
       await fetchUsers();
       emit('refresh');
     } else {
-      alert(t('settings.roleUsersDeactivateFailed'));
+      notifications.error(t('settings.roleUsersDeactivateFailed'));
     }
   } catch (error) {
     console.error('Error deactivating user:', error);
-    alert(t('settings.roleUsersDeactivateFailed'));
+    notifications.error(t('settings.roleUsersDeactivateFailed'));
   }
 };
 </script>

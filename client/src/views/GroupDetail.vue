@@ -175,7 +175,11 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -201,7 +205,7 @@ const fetchGroup = async () => {
     }
   } catch (error) {
     console.error('Error fetching group:', error);
-    alert(t('common.groupDetailToastFailedToLoadGroup'));
+    notifications.error(t('common.groupDetailToastFailedToLoadGroup'));
   } finally {
     loading.value = false;
   }
@@ -247,12 +251,12 @@ const addMember = async () => {
     }
   } catch (error) {
     console.error('Error adding member:', error);
-    alert(t('common.groupDetailToastFailedToAddMember'));
+    notifications.error(t('common.groupDetailToastFailedToAddMember'));
   }
 };
 
 const removeMember = async (userId) => {
-  if (!confirm('Remove this member from the group?')) return;
+  if (!await confirmAction('Remove this member from the group?')) return;
   
   try {
     const data = await apiClient.delete(`/api/groups/${route.params.id}/members`, {
@@ -263,19 +267,19 @@ const removeMember = async (userId) => {
     }
   } catch (error) {
     console.error('Error removing member:', error);
-    alert(t('common.groupDetailToastFailedToRemoveMember'));
+    notifications.error(t('common.groupDetailToastFailedToRemoveMember'));
   }
 };
 
 const deleteGroup = async () => {
-  if (!confirm(`Are you sure you want to delete "${group.value.name}"? This action cannot be undone.`)) return;
+  if (!await confirmAction(`Are you sure you want to delete "${group.value.name}"? This action cannot be undone.`)) return;
   
   try {
     await apiClient.delete(`/api/groups/${route.params.id}`);
     router.push('/groups');
   } catch (error) {
     console.error('Error deleting group:', error);
-    alert(t('common.groupDetailToastFailedToDeleteGroup'));
+    notifications.error(t('common.groupDetailToastFailedToDeleteGroup'));
   }
 };
 

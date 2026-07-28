@@ -200,7 +200,11 @@ import apiClient from '@/utils/apiClient';
 import AutomationRuleForm from '@/components/admin/AutomationRuleForm.vue';
 import AutomationRulePreview from '@/components/admin/AutomationRulePreview.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const rules = ref([]);
 const loading = ref(false);
@@ -259,17 +263,17 @@ async function toggleRule(rule) {
     await apiClient.post(`/admin/automation-rules/${rule._id}/toggle`);
     await loadRules();
   } catch (err) {
-    alert(err.response?.data?.message || t('process.rulesToggleFailed'));
+    notifications.error(err.response?.data?.message || t('process.rulesToggleFailed'));
   }
 }
 
 async function deleteRule(rule) {
-  if (!confirm(t('process.rulesDeleteConfirm', { name: rule.name }))) return;
+  if (!await confirmAction(t('process.rulesDeleteConfirm', { name: rule.name }))) return;
   try {
     await apiClient.delete(`/admin/automation-rules/${rule._id}`);
     await loadRules();
   } catch (err) {
-    alert(err.response?.data?.message || t('process.rulesDeleteFailed'));
+    notifications.error(err.response?.data?.message || t('process.rulesDeleteFailed'));
   }
 }
 

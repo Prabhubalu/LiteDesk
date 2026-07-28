@@ -468,6 +468,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -703,14 +704,14 @@ const handleDealUpdated = () => {
 };
 
 const deleteDeal = async () => {
-  if (!confirm('Are you sure you want to delete this deal?')) return;
+  if (!await confirmAction('Are you sure you want to delete this deal?')) return;
   
   try {
     await apiClient.delete(`/deals/${route.params.id}`);
     router.push('/deals');
   } catch (err) {
     console.error('Error deleting deal:', err);
-    alert(t('common.dealDetailToastFailedToDeleteDeal'));
+    notifications.error(t('common.dealDetailToastFailedToDeleteDeal'));
   }
 };
 
@@ -729,7 +730,7 @@ const addNote = async () => {
     }
   } catch (err) {
     console.error('Error adding note:', err);
-    alert(t('common.dealDetailToastFailedToAddNote'));
+    notifications.error(t('common.dealDetailToastFailedToAddNote'));
   }
 };
 

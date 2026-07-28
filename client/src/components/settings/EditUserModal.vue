@@ -633,6 +633,7 @@ import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import { useNotifications } from '@/composables/useNotifications';
 import { isRbacV2Enabled } from '@/utils/rbacFeatureFlags';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const { success: notifySuccess, error: notifyError } = useNotifications();
 
@@ -978,7 +979,7 @@ const confirmAssignPortalRoles = async () => {
 
 const removePortalRole = async (roleId) => {
   if (!peopleId.value) return;
-  if (!confirm(t('settings.editUserPortalRemoveConfirm'))) return;
+  if (!await confirmAction(t('settings.editUserPortalRemoveConfirm'))) return;
 
   portalActionLoading.value = true;
   error.value = '';
@@ -1198,7 +1199,7 @@ const handleSubmit = async () => {
 };
 
 const resetPassword = async () => {
-  if (!confirm(t('settings.editUserResetConfirm'))) return;
+  if (!await confirmAction(t('settings.editUserResetConfirm'))) return;
 
   try {
     const response = await apiClient.post(`/users/${props.user._id}/reset-password`);
@@ -1215,7 +1216,7 @@ const resetPassword = async () => {
 };
 
 const resendInvite = async () => {
-  if (!confirm(t('settings.editUserResendInviteConfirm'))) return;
+  if (!await confirmAction(t('settings.editUserResendInviteConfirm'))) return;
 
   resendingInvite.value = true;
   try {

@@ -502,7 +502,10 @@ import { Transition } from 'vue';
 import apiClient from '@/utils/apiClient';
 import clickOutside from '@/directives/clickOutside';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const vClickOutside = clickOutside;
 
@@ -789,7 +792,7 @@ const handleSubmit = async () => {
     if (error.response?.data?.errors) {
       formErrors.value = error.response.data.errors;
     } else {
-      alert(error.message || t('settings.groupFormSaveFailed'));
+      notifications.error(error.message || t('settings.groupFormSaveFailed'));
     }
   } finally {
     saving.value = false;

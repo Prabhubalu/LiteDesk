@@ -29,7 +29,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
@@ -172,7 +175,7 @@ const deleteOrganization = async () => {
     }
   } catch (err) {
     console.error('Error deleting organization:', err);
-    alert(err.message || t('common.organizationDetailToastFailedToDeleteOrganizationPlease'));
+    notifications.error(err.message || t('common.organizationDetailToastFailedToDeleteOrganizationPlease'));
   } finally {
     deleting.value = false;
   }

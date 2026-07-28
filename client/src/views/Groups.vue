@@ -245,7 +245,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, reactive, computed, onMounted, watch, onActivated } from 'vue';
 import { useRouter } from 'vue-router';
 import { useBulkActions } from '@/composables/useBulkActions';
@@ -443,7 +446,7 @@ const handleBulkAction = async (actionId, selectedRows) => {
     }
   } catch (error) {
     console.error('Error performing bulk action:', error);
-    alert(t('common.groupsToastErrorPerformingBulkActionPlease'));
+    notifications.error(t('common.groupsToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -455,7 +458,7 @@ const handleDelete = async (group) => {
     fetchGroups();
   } catch (error) {
     console.error('Error deleting group:', error);
-    alert(t('common.groupsToastErrorDeletingGroupPleaseTry'));
+    notifications.error(t('common.groupsToastErrorDeletingGroupPleaseTry'));
   }
 };
 

@@ -12,6 +12,9 @@ const PlatformShell = defineAsyncComponent(() => import('@/components/PlatformSh
 const NotificationContainer = defineAsyncComponent(() =>
   import('@/components/NotificationContainer.vue')
 );
+const ConfirmActionHost = defineAsyncComponent(() =>
+  import('@/components/common/ConfirmActionHost.vue')
+);
 const NotificationSheet = defineAsyncComponent(() =>
   import('@/components/notifications/NotificationSheet.vue')
 );
@@ -700,6 +703,8 @@ watch(
 
   <!-- Global Notification Container (authenticated only — keeps login lean) -->
   <NotificationContainer v-if="isAuthenticated" />
+  <!-- Shared confirm modal (public + authenticated — replaces window.confirm) -->
+  <ConfirmActionHost />
 
   <ImportProgressBanner v-if="isAuthenticated" />
   <BulkDeleteProgressBanner v-if="isAuthenticated" />

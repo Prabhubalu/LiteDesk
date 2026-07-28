@@ -163,6 +163,7 @@ import {
   parsePersistedSort,
   serializeSortsForApi
 } from '@/utils/listMultiSort';
+import { expandEventsSpecialViewFilters, expandAllDateFilterObjects } from '@/utils/dateFilterOptions';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { allSettledWithConcurrency } from '@/utils/allSettledWithConcurrency';
 import { startBulkDelete } from '@/utils/runBulkDelete';
@@ -185,6 +186,7 @@ import {
   saveActiveSavedViewId,
 } from '@/utils/listViewSavedViewsStorage';
 
+import { useNotifications } from '@/composables/useNotifications';
 /**
  * Check if a person participates in an app.
  * For SALES: use getParticipation abstraction (never person.type).
@@ -646,6 +648,8 @@ function resolveModuleListConfig(moduleKey = props.moduleKey) {
 }
 const { openTab } = useTabs();
 const { t, te } = useI18n();
+const notifications = useNotifications();
+
 
 const loading = ref(true);
 const dataLoading = ref(false);
@@ -1242,6 +1246,13 @@ function shouldRefreshStatisticsFromListFetch(ctx) {
     : {};
   const currentFilters = ctx.normalizedFilters ?? {};
 
+  // Dynamic date views regenerate ISO bounds each resolve — compare keys, not exact timestamps.
+  if (isEventsDynamicDateSystemView(activeView)) {
+    return filtersMatchView(currentFilters, viewFilters, authStore.user?._id, {
+      looseDateKeys: EVENTS_DYNAMIC_DATE_FILTER_KEYS,
+    });
+  }
+
   return filtersPayloadSignature(currentFilters) === filtersPayloadSignature(viewFilters);
 }
 
@@ -1329,6 +1340,15 @@ function applyListStatisticsFromResponse(response, totalRecords, ctx, rowsForCom
   }
 }
 
+const EVENTS_DYNAMIC_DATE_FILTER_KEYS = ['startDateTime', 'endDateTime'];
+
+function isEventsDynamicDateSystemView(view) {
+  if (!view || props.moduleKey !== 'events') return false;
+  if (view.id === 'past' || view.id === 'upcoming') return true;
+  const raw = view.config?.filters ?? view.filters ?? {};
+  return raw?._special === 'past' || raw?._special === 'upcoming';
+}
+
 /** System views (My People, etc.) must always scope list GETs — search cannot drop assignedTo. */
 function applyActiveSystemViewScope(normalizedFilters, moduleConfig) {
   const viewId = activeSavedViewId.value;
@@ -1338,12 +1358,9 @@ function applyActiveSystemViewScope(normalizedFilters, moduleConfig) {
   const activeView = savedViews.value.find((v) => v.id === viewId);
   if (!activeView) return normalizedFilters;
 
-  const rawViewFilters = activeView.config?.filters ?? activeView.filters ?? {};
-  if (!rawViewFilters || typeof rawViewFilters !== 'object') return normalizedFilters;
-
-  const viewFilters = moduleConfig?.normalizeViewFilters
-    ? moduleConfig.normalizeViewFilters({ ...rawViewFilters }, authStore.user?._id)
-    : { ...rawViewFilters };
+  // Resolve dynamic markers (_special past/upcoming, me → userId, etc.) — never re-merge raw _special.
+  const viewFilters = resolveSavedViewFilters(activeView, authStore.user?._id);
+  if (!viewFilters || typeof viewFilters !== 'object') return normalizedFilters;
 
   const merged = { ...normalizedFilters };
   for (const [key, value] of Object.entries(viewFilters)) {
@@ -1379,6 +1396,9 @@ function buildListFetchContext(requestedPage, options = {}) {
   if (moduleConfig?.normalizeFilters) {
     normalizedFilters = moduleConfig.normalizeFilters(normalizedFilters, authStore.user?._id);
   }
+
+  // Product-wide: DateFilterValue objects → {field}Preset / {field}Op / … for every module
+  normalizedFilters = expandAllDateFilterObjects(normalizedFilters);
 
   const hasAdvancedFilterQuery = Boolean(
     normalizedFilters.filterQuery && String(normalizedFilters.filterQuery).trim()
@@ -1928,7 +1948,9 @@ const handleSearchQueryUpdate = (query) => {
 
 // Helper function to check if filters match a saved view (with normalization)
 // Shared between handleFiltersUpdate and handleStatClick
-function filtersMatchView(currentFilters, viewFilters, currentUserId) {
+function filtersMatchView(currentFilters, viewFilters, currentUserId, options = {}) {
+  const looseDateKeys = new Set(options.looseDateKeys || []);
+
   // Get filter keys for both - include null and boolean values as they are valid filter values
   const viewFilterKeys = Object.keys(viewFilters).filter(k => {
     const v = viewFilters[k];
@@ -1961,6 +1983,11 @@ function filtersMatchView(currentFilters, viewFilters, currentUserId) {
   return viewFilterKeys.every(key => {
     const viewValue = viewFilters[key];
     const currentValue = currentFilters[key];
+
+    // Dynamic date system views regenerate ISO bounds — presence is enough
+    if (looseDateKeys.has(key)) {
+      return Boolean(viewValue) && Boolean(currentValue);
+    }
 
     // Normalize assignedTo for comparison
     // 'me' should match currentUserId
@@ -2015,8 +2042,11 @@ function viewMatchesFilters(view, currentFilters, currentUserId) {
     return savedFilterQuery === incomingFilterQuery;
   }
 
-  const viewFilters = view.config?.filters || view.filters || {};
-  return filtersMatchView(currentFilters, viewFilters, currentUserId);
+  // Use resolved filters (expands _special) so Past/Upcoming stay matched after refetch
+  const viewFilters = resolveSavedViewFilters(view, currentUserId);
+  return filtersMatchView(currentFilters, viewFilters, currentUserId, {
+    looseDateKeys: isEventsDynamicDateSystemView(view) ? EVENTS_DYNAMIC_DATE_FILTER_KEYS : [],
+  });
 }
 
 const handleFiltersUpdate = async (newFilters, options = {}) => {
@@ -2356,15 +2386,7 @@ function resolveSavedViewFilters(view, currentUserId) {
   }
 
   if (props.moduleKey === 'events') {
-    if (view.id === 'upcoming') {
-      viewFilters = { startDateTime: new Date().toISOString() };
-    } else if (view.id === 'past') {
-      const now = new Date();
-      now.setSeconds(now.getSeconds() - 1);
-      viewFilters = { endDateTime: now.toISOString() };
-    } else if (viewFilters._special) {
-      delete viewFilters._special;
-    }
+    viewFilters = expandEventsSpecialViewFilters(viewFilters, view.id);
   }
 
   const moduleConfig = resolveModuleListConfig(props.moduleKey);
@@ -2522,7 +2544,7 @@ const handleDelete = async (row) => {
   } catch (error) {
     console.error(`[ModuleList] Failed to delete ${props.moduleKey} record:`, error);
     const errorMessage = error?.response?.data?.message || error?.message || 'Delete failed';
-    alert(errorMessage);
+    notifications.error(errorMessage);
   }
 };
 
@@ -2538,7 +2560,7 @@ const handleBulkAction = async (action, payloadOrRows) => {
     const payload = isBulkSelectionPayload(payloadOrRows) ? payloadOrRows : null;
     const updates = payload?.updates && typeof payload.updates === 'object' ? payload.updates : null;
     if (!updates || Object.keys(updates).length === 0) {
-      alert(t('common.massEditSelectFieldHint'));
+      notifications.warning(t('common.massEditSelectFieldHint'));
       return;
     }
 
@@ -2568,11 +2590,11 @@ const handleBulkAction = async (action, payloadOrRows) => {
           const hadSelection = Number(requestedCount || 0) > 0;
 
           if (!props.moduleKey || (totalAttempted === 0 && !hadSelection)) {
-            alert(t('common.massEditNoSelection'));
+            notifications.warning(t('common.massEditNoSelection'));
             return;
           }
           if (totalAttempted === 0 && hadSelection) {
-            alert(t('common.massEditNoMatches'));
+            notifications.error(t('common.massEditNoMatches'));
             return;
           }
           if (failedCount > 0) {
@@ -2580,16 +2602,14 @@ const handleBulkAction = async (action, payloadOrRows) => {
               firstError?.response?.data?.message ||
               firstError?.message ||
               t('common.massEditFailed');
-            alert(
-              failedCount === totalAttempted
+            notifications.warning(failedCount === totalAttempted
                 ? errorMessage
-                : t('common.massEditPartialFailed', { failed: failedCount, total: totalAttempted, message: errorMessage })
-            );
+                : t('common.massEditPartialFailed', { failed: failedCount, total: totalAttempted, message: errorMessage }));
             if (updatedCount > 0) await fetchData();
             return;
           }
           if (skippedCount > 0) {
-            alert(t('common.massEditPartialSkipped', { updated: updatedCount, skipped: skippedCount }));
+            notifications.warning(t('common.massEditPartialSkipped', { updated: updatedCount, skipped: skippedCount }));
           }
           await fetchData();
         })();
@@ -2599,7 +2619,7 @@ const handleBulkAction = async (action, payloadOrRows) => {
           error?.response?.data?.message ||
           error?.message ||
           t('common.massEditFailed');
-        alert(errorMessage);
+        notifications.error(errorMessage);
       },
     });
     return;
@@ -2624,24 +2644,20 @@ const handleBulkAction = async (action, payloadOrRows) => {
           const totalAttempted = deletedCount + failedCount;
           const hadSelection = Number(requestedCount || 0) > 0;
           if (!props.moduleKey || (totalAttempted === 0 && !hadSelection)) {
-            alert(t('common.listBulkDeleteNoSelection'));
+            notifications.warning(t('common.listBulkDeleteNoSelection'));
             return;
           }
           if (totalAttempted === 0 && hadSelection) {
-            alert(
-              t('common.listBulkDeleteNoMatches') ||
-              'No records matched your selection for deletion. Refresh the list and try again.'
-            );
+            notifications.warning(t('common.listBulkDeleteNoMatches') ||
+              'No records matched your selection for deletion. Refresh the list and try again.');
             return;
           }
           if (requestedCount > 0 && deletedCount + failedCount < requestedCount) {
-            alert(
-              t('common.listBulkDeleteIncomplete', {
+            notifications.warning(t('common.listBulkDeleteIncomplete', {
                 deleted: deletedCount,
                 total: requestedCount
               }) ||
-              `Deleted ${deletedCount} of ${requestedCount} selected records. Refresh the list or retry.`
-            );
+              `Deleted ${deletedCount} of ${requestedCount} selected records. Refresh the list or retry.`);
           }
           if (failedCount > 0) {
             const errorMessage =
@@ -2649,11 +2665,9 @@ const handleBulkAction = async (action, payloadOrRows) => {
               firstError?.message ||
               'Bulk delete failed';
             console.error(`[ModuleList] Failed bulk delete for ${props.moduleKey}:`, firstError);
-            alert(
-              failedCount === totalAttempted
+            notifications.error(failedCount === totalAttempted
                 ? errorMessage
-                : `Failed to delete ${failedCount} of ${totalAttempted} records. ${errorMessage}`
-            );
+                : `Failed to delete ${failedCount} of ${totalAttempted} records. ${errorMessage}`);
             if (deletedCount > 0) await fetchData();
             return;
           }

@@ -47,6 +47,10 @@ function buildDateFieldQuery(fieldPrefix, queryParams) {
     } else if (preset === 'thisYear') {
       start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
       end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    } else if (preset === 'fromNow') {
+      return { $gte: now };
+    } else if (preset === 'beforeNow') {
+      return { $lte: new Date(now.getTime() - 1000) };
     } else {
       return null;
     }
@@ -153,7 +157,7 @@ function buildTasksListQuery(req) {
   if (status) query.status = status;
   if (priority) query.priority = priority;
   if (assignedTo) {
-    if (assignedTo === 'unassigned') {
+    if (assignedTo === 'unassigned' || assignedTo === 'null') {
       query = {
         $and: [
           query,

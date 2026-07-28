@@ -1,6 +1,7 @@
 import { LIVE_CHAT_CLOSED_PICKLIST_VALUES } from '@/constants/liveChatClosedSessionPicklists';
 import { isFilterValueActive } from '@/platform/filters/filterValueUtils';
 import {
+  getTodayRange,
   getThisMonthRange,
   getThisQuarterRange,
   getThisWeekRange,
@@ -99,17 +100,14 @@ export function buildLiveChatClosedColumnFilterOptions(columnKey, t, { outcomes 
   }));
 }
 
-function getTodayRange() {
-  const from = new Date();
-  from.setHours(0, 0, 0, 0);
-  const to = new Date(from);
-  to.setDate(to.getDate() + 1);
-  to.setMilliseconds(-1);
-  return { from, to };
-}
-
 function resolveDateRange(parsed) {
   if (!parsed) return null;
+  if (parsed.quick === 'fromNow' || parsed.preset === 'fromNow') {
+    return { from: new Date(), to: new Date(8640000000000000) };
+  }
+  if (parsed.quick === 'beforeNow' || parsed.preset === 'beforeNow') {
+    return { from: new Date(0), to: new Date(Date.now() - 1000) };
+  }
   if (parsed.preset === 'today') return getTodayRange();
   if (parsed.preset === 'thisWeek') return getThisWeekRange();
   if (parsed.preset === 'thisMonth') return getThisMonthRange();

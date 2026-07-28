@@ -1531,7 +1531,10 @@ import {
 } from '@/utils/formEditPermissions';
 import { collapseSurveyDefaultWrapper, flattenFeedbackFormStructure } from '@/utils/engagementFormDisplay';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const INSPECTOR_LABEL_CLASS = 'block text-sm/6 font-medium text-gray-900 dark:text-white';
 const INSPECTOR_INPUT_CLASS = PROCESS_INPUT_CLASS.replace('block w-full', 'block w-full mt-2');
@@ -3788,7 +3791,7 @@ const addSection = () => {
     } else {
       const message = getBlockingMessage(formStatus.value);
       if (message) {
-        alert(message);
+        notifications.error(message);
       }
     }
     return;
@@ -4097,7 +4100,7 @@ const removeSection = (index) => {
     } else {
       const message = getBlockingMessage(formStatus.value);
       if (message) {
-        alert(message);
+        notifications.error(message);
       }
     }
     return;
@@ -4346,7 +4349,7 @@ const addQuestion = (sectionIndex, subsectionIndex, explicitType) => {
     } else {
       const message = getBlockingMessage(formStatus.value);
       if (message) {
-        alert(message);
+        notifications.error(message);
       }
     }
     return;
@@ -4423,7 +4426,7 @@ const removeQuestion = (sectionIndex, subsectionIndex, questionIndex) => {
     } else {
       const message = getBlockingMessage(formStatus.value);
       if (message) {
-        alert(message);
+        notifications.error(message);
       }
     }
     return;

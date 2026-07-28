@@ -158,7 +158,11 @@ import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import ProcessExecutionLogs from '@/components/admin/ProcessExecutionLogs.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t, te } = useI18n();
+const notifications = useNotifications();
+
 const router = useRouter();
 
 const processes = ref([]);
@@ -346,7 +350,7 @@ const duplicateProcess = async (process) => {
       }
     }
   } catch (err) {
-    alert(err.message || t('process.processDuplicateFailed'));
+    notifications.error(err.message || t('process.processDuplicateFailed'));
   }
 };
 
@@ -357,10 +361,10 @@ const activateProcess = async (process) => {
     });
     if (response.success) {
       await loadProcesses();
-      alert(t('process.processActivateSuccess'));
+      notifications.success(t('process.processActivateSuccess'));
     }
   } catch (err) {
-    alert(err.message || t('process.processActivateFailed'));
+    notifications.error(err.message || t('process.processActivateFailed'));
   }
 };
 
@@ -371,20 +375,20 @@ const deactivateProcess = async (process) => {
     });
     if (response.success) {
       await loadProcesses();
-      alert(t('process.processDeactivateSuccess'));
+      notifications.success(t('process.processDeactivateSuccess'));
     }
   } catch (err) {
-    alert(err.message || t('process.processDeactivateFailed'));
+    notifications.error(err.message || t('process.processDeactivateFailed'));
   }
 };
 
 const deleteProcess = async (process) => {
   const status = String(process?.status || '').toLowerCase();
   if (status === 'active') {
-    alert(t('process.processDeleteActiveBlocked'));
+    notifications.warning(t('process.processDeleteActiveBlocked'));
     return;
   }
-  const ok = window.confirm(t('process.processDeleteConfirm', { name: process.name || '' }));
+  const ok = await confirmAction(t('process.processDeleteConfirm', { name: process.name || '' }));
   if (!ok) return;
   try {
     const response = await apiClient.delete(`/admin/processes/${process._id}`);
@@ -392,9 +396,9 @@ const deleteProcess = async (process) => {
       await loadProcesses();
       return;
     }
-    alert(response?.message || t('process.processDeleteFailed'));
+    notifications.error(response?.message || t('process.processDeleteFailed'));
   } catch (err) {
-    alert(err?.response?.data?.message || err.message || t('process.processDeleteFailed'));
+    notifications.error(err?.response?.data?.message || err.message || t('process.processDeleteFailed'));
   }
 };
 

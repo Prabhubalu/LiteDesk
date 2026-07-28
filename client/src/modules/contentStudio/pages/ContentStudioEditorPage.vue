@@ -193,6 +193,7 @@ import '../editor/contentStudioFaq.css';
 import '../editor/contentStudioSteps.css';
 import '../editor/contentStudioRelatedArticles.css';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   mode: {
     type: String,
@@ -409,9 +410,9 @@ function handleInsertComponent(component) {
   markDirty();
 }
 
-function handleApplyTemplate(template) {
+async function handleApplyTemplate(template) {
   const hasContent = hasDocumentBodyContent() || String(title.value || '').trim().length > 0;
-  if (hasContent && !window.confirm(t('contentStudio.applyTemplateConfirm'))) return;
+  if (hasContent && !await confirmAction(t('contentStudio.applyTemplateConfirm'))) return;
 
   const meta = applyTemplate(template);
   if (meta) {
@@ -505,9 +506,7 @@ async function handleSave() {
 
 async function handlePublish() {
   if ((props.mode === 'articles' || props.mode === 'blog') && visibility.value !== 'public') {
-    const proceed = window.confirm(
-      blogOrArticleCopy('contentStudio.publishNonPublicHeadlessConfirm', 'contentStudio.publishNonPublicHeadlessConfirmPost'),
-    );
+    const proceed = await confirmAction(blogOrArticleCopy('contentStudio.publishNonPublicHeadlessConfirm', 'contentStudio.publishNonPublicHeadlessConfirmPost'));
     if (!proceed) return;
   }
 
@@ -551,7 +550,7 @@ async function handleArchive() {
 }
 
 async function handleDelete() {
-  if (!window.confirm(blogOrArticleCopy('contentStudio.deleteConfirm', 'contentStudio.deleteConfirmPost'))) return;
+  if (!await confirmAction(blogOrArticleCopy('contentStudio.deleteConfirm', 'contentStudio.deleteConfirmPost'))) return;
   try {
     await remove();
     notifications.success(blogOrArticleCopy('contentStudio.deleteSuccess', 'contentStudio.deleteSuccessPost'));

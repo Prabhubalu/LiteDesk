@@ -696,6 +696,7 @@ import {
   captureMarketingCampaignTestSent
 } from '@/config/posthogMarketing';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -1390,7 +1391,7 @@ async function handleDuplicate() {
 }
 
 async function handleDelete() {
-  if (!window.confirm(t('marketing.campaignsDeleteConfirm'))) return;
+  if (!await confirmAction(t('marketing.campaignsDeleteConfirm'))) return;
   try {
     await deleteCampaign(route.params.id);
     notifications.success(t('marketing.campaignsDeleteSuccess'));

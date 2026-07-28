@@ -202,6 +202,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { useTabs } from '@/composables/useTabs';
 import { captureDocumentLinkedToRecord, captureDocumentUploaded } from '@/config/posthogDocuments';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   moduleKey: { type: String, required: true },
   recordId: { type: String, required: true },
@@ -409,7 +410,7 @@ async function handleDownload(doc) {
 
 async function handleDetach(doc) {
   if (!doc?._id || !doc?.relationshipId) return;
-  if (!window.confirm(t('documents.detachConfirm'))) return;
+  if (!await confirmAction(t('documents.detachConfirm'))) return;
   try {
     const result = await unlinkDocument(doc._id, doc.relationshipId);
     if (result?.success) {

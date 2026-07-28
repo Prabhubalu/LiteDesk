@@ -414,7 +414,11 @@ import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const loading = ref(true);
 const saving = ref(false);
@@ -545,7 +549,7 @@ const handleSubmit = async () => {
     form.value.loginRestrictions.blockFailedAttempts !== originalForm.value.loginRestrictions.blockFailedAttempts;
 
   if (requiresConfirmation) {
-    const confirmed = confirm(t('settings.secConfirmRisk'));
+    const confirmed = await confirmAction(t('settings.secConfirmRisk'));
     if (!confirmed) return;
   }
 
@@ -584,7 +588,7 @@ const handleSubmit = async () => {
 
     if (data && data.success) {
       originalForm.value = JSON.parse(JSON.stringify(form.value));
-      alert(t('settings.secSaveSuccess'));
+      notifications.success(t('settings.secSaveSuccess'));
     } else {
       error.value = new Error(data.message || t('settings.secLoadFailed'));
     }

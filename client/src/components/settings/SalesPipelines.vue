@@ -373,7 +373,10 @@ import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 function stageCountLabel(count) {
   return count === 1
@@ -635,7 +638,7 @@ async function savePipelines() {
       : `/api/modules/${dealsModule.value._id}`;
     const data = await apiClient.put(url, { pipelineSettings: normalized });
     if (!data.success) {
-      alert(data.message || t('settings.salesPipeAlertSaveFailed'));
+      notifications.error(data.message || t('settings.salesPipeAlertSaveFailed'));
       return;
     }
     const savedPipelines = data.data?.pipelineSettings;
@@ -645,10 +648,10 @@ async function savePipelines() {
       applyPipelineSettingsFromSource(normalized, preferredPipelineKey);
     }
     highlightedStageKey.value = null;
-    alert(t('settings.salesPipeAlertSaveSuccess'));
+    notifications.success(t('settings.salesPipeAlertSaveSuccess'));
   } catch (e) {
     console.error('Save pipelines failed', e);
-    alert(t('settings.salesPipeAlertSaveError', { message: e.message || t('settings.salesPipeUnknownError') }));
+    notifications.error(t('settings.salesPipeAlertSaveError', { message: e.message || t('settings.salesPipeUnknownError') }));
   } finally {
     isSaving.value = false;
   }
@@ -678,11 +681,11 @@ function removePipeline(pipelineKey) {
   const pipeline = pipelineSettings.value.find(p => p.key === pipelineKey);
   if (!pipeline) return;
   if (pipeline.isDefault) {
-    alert(t('settings.salesPipeAlertSetDefaultFirst'));
+    notifications.error(t('settings.salesPipeAlertSetDefaultFirst'));
     return;
   }
   if (pipelineSettings.value.length <= 1) {
-    alert(t('settings.salesPipeAlertMinOnePipeline'));
+    notifications.warning(t('settings.salesPipeAlertMinOnePipeline'));
     return;
   }
   const index = pipelineSettings.value.findIndex(p => p.key === pipelineKey);
@@ -774,7 +777,7 @@ function addStageToPipeline(pipeline) {
 function removeStageFromPipeline(pipeline, stageIndex) {
   if (!pipeline) return;
   if (pipeline.stages.length <= 1) {
-    alert(t('settings.salesPipeAlertMinOneStage'));
+    notifications.warning(t('settings.salesPipeAlertMinOneStage'));
     return;
   }
   pipeline.stages.splice(stageIndex, 1);

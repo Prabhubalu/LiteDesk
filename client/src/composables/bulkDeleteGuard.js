@@ -1,3 +1,4 @@
+import { confirmAction } from '@/composables/useConfirmAction';
 import router from '@/router';
 import { i18n } from '@/i18n';
 
@@ -30,19 +31,15 @@ export function installBulkDeleteGuard(activeSource) {
   };
   window.addEventListener('beforeunload', beforeUnloadHandler);
 
-  removeRouterGuard = router.beforeEach((to, from, next) => {
+  removeRouterGuard = router.beforeEach(async (to, from) => {
     const isActive = typeof activeSource?.value === 'boolean'
       ? activeSource.value
       : !!activeSource?.isActive;
-    if (!isActive) {
-      next();
-      return;
+    if (!isActive) return true;
+    if (await confirmAction(leaveConfirmMessage(activeSource))) {
+      return true;
     }
-    if (window.confirm(leaveConfirmMessage(activeSource))) {
-      next();
-      return;
-    }
-    next(false);
+    return false;
   });
 }
 
@@ -60,8 +57,10 @@ export function uninstallBulkDeleteGuard() {
   }
 }
 
-/** @returns {boolean} true if caller should abort the close/navigation */
-export function confirmBulkDeleteInterrupt(isActive, activeSource = null) {
+/**
+ * @returns {Promise<boolean>} true if caller should abort the close/navigation
+ */
+export async function confirmBulkDeleteInterrupt(isActive, activeSource = null) {
   if (!isActive) return false;
-  return !window.confirm(leaveConfirmMessage(activeSource));
+  return !(await confirmAction(leaveConfirmMessage(activeSource)));
 }

@@ -66,6 +66,7 @@ import { useI18n } from 'vue-i18n';
 import { useAnalyticsHome } from '@/composables/useAnalyticsHome';
 import { captureAnalyticsModuleVisited } from '@/config/posthogAnalytics';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const { folders, loading, saving, fetchFolders, createFolder, deleteFolder } = useAnalyticsHome();
@@ -87,7 +88,7 @@ async function create() {
 }
 
 async function remove(folder) {
-  if (!window.confirm(t('analytics.foldersDeleteConfirm', { name: folder.name }))) return;
+  if (!await confirmAction(t('analytics.foldersDeleteConfirm', { name: folder.name }))) return;
   await deleteFolder(folder._id);
   await fetchFolders();
 }

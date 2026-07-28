@@ -262,6 +262,26 @@ exports.createDeal = async (req, res) => {
             return res.status(ownerAssignCheck.status).json(ownerAssignCheck.body);
         }
 
+        {
+            const ModuleDefinition = require('../models/ModuleDefinition');
+            const { validatePicklistDependencyValues } = require('../utils/dependencyEvaluation');
+            const moduleDef = await ModuleDefinition.findOne({
+                organizationId: req.user.organizationId,
+                key: 'deals'
+            }).lean();
+            if (moduleDef && Array.isArray(moduleDef.fields)) {
+                const picklistErrors = validatePicklistDependencyValues(moduleDef.fields, payload);
+                if (picklistErrors.length > 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Validation failed.',
+                        code: 'PICKLIST_DEPENDENCY_VIOLATION',
+                        validationErrors: picklistErrors
+                    });
+                }
+            }
+        }
+
         // Status is platform-owned — strip client-supplied values; derivation sets Open|Won|Lost
         delete payload.status;
         delete payload.probability;
@@ -512,10 +532,12 @@ function dealsQueryAnd(baseQuery, clause) {
 async function computeDealsListStatistics(query, userId) {
     const uid =
         mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
+    const { castMatchQueryForAggregate } = require('../utils/searchRelevance');
+    const matchQuery = castMatchQueryForAggregate(Deal, query);
 
     const [aggRows, myDeals] = await Promise.all([
         Deal.aggregate([
-            { $match: query },
+            { $match: matchQuery },
             {
                 $group: {
                     _id: null,
@@ -779,6 +801,28 @@ exports.updateDeal = async (req, res) => {
                     message: 'Field access denied',
                     code: 'FIELD_ACCESS_DENIED',
                     violations: fieldViolations
+                });
+            }
+
+            const { validatePicklistDependencyValues } = require('../utils/dependencyEvaluation');
+            const previousForPicklist = await Deal.findOne(
+                { _id: req.params.id, organizationId: req.user.organizationId, deletedAt: null }
+            ).lean();
+            const mergedForPicklist = {
+                ...(previousForPicklist || {}),
+                ...fieldsToUpdate,
+                customFields: {
+                    ...((previousForPicklist && previousForPicklist.customFields) || {}),
+                    ...(fieldsToUpdate.customFields || {})
+                }
+            };
+            const picklistErrors = validatePicklistDependencyValues(moduleDef.fields, mergedForPicklist);
+            if (picklistErrors.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Validation failed.',
+                    code: 'PICKLIST_DEPENDENCY_VIOLATION',
+                    validationErrors: picklistErrors
                 });
             }
         }

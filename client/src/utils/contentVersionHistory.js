@@ -108,11 +108,72 @@ function normalizeActivityLogDisplayValue(value) {
  * @returns {string|null}
  */
 export function buildDescriptionActivityDiffHtml(fromValue, toValue) {
+  return buildDescriptionActivityDiff(fromValue, toValue).diffHtml;
+}
+
+/**
+ * @param {*} html
+ * @returns {string[]}
+ */
+export function extractDescriptionImageSrcs(html) {
+  const raw = normalizeActivityLogDisplayValue(html);
+  if (!raw) return [];
+  const srcs = [];
+  const re = /<img\b[^>]*\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+  let match = re.exec(raw);
+  while (match) {
+    const src = String(match[1] || match[2] || match[3] || '').trim();
+    if (src) srcs.push(src);
+    match = re.exec(raw);
+  }
+  return srcs;
+}
+
+/**
+ * @param {*} fromValue
+ * @param {*} toValue
+ * @returns {{ type: 'added'|'removed', src: string }[]}
+ */
+export function buildDescriptionImageChanges(fromValue, toValue) {
+  const fromSrcs = extractDescriptionImageSrcs(fromValue);
+  const toSrcs = extractDescriptionImageSrcs(toValue);
+  const fromCounts = new Map();
+  fromSrcs.forEach((src) => fromCounts.set(src, (fromCounts.get(src) || 0) + 1));
+  const toCounts = new Map();
+  toSrcs.forEach((src) => toCounts.set(src, (toCounts.get(src) || 0) + 1));
+
+  const changes = [];
+  const allSrcs = new Set([...fromCounts.keys(), ...toCounts.keys()]);
+  allSrcs.forEach((src) => {
+    const fromCount = fromCounts.get(src) || 0;
+    const toCount = toCounts.get(src) || 0;
+    for (let i = 0; i < toCount - fromCount; i += 1) {
+      changes.push({ type: 'added', src });
+    }
+    for (let i = 0; i < fromCount - toCount; i += 1) {
+      changes.push({ type: 'removed', src });
+    }
+  });
+  return changes;
+}
+
+/**
+ * @param {*} fromValue
+ * @param {*} toValue
+ * @returns {{ diffHtml: string|null, imageChanges: { type: 'added'|'removed', src: string }[] }}
+ */
+export function buildDescriptionActivityDiff(fromValue, toValue) {
   const fromPlain = getPlainTextFromHtml(normalizeActivityLogDisplayValue(fromValue));
   const toPlain = getPlainTextFromHtml(normalizeActivityLogDisplayValue(toValue));
-  const diffHtml = diffWordsToHtml(fromPlain, toPlain);
-  if (!diffHtml) return null;
-  return DOMPurify.sanitize(diffHtml, { ALLOWED_TAGS: ['ins', 'del'], ALLOWED_ATTR: ['class'] });
+  const rawDiffHtml = diffWordsToHtml(fromPlain, toPlain);
+  const diffHtml = rawDiffHtml
+    ? DOMPurify.sanitize(rawDiffHtml, { ALLOWED_TAGS: ['ins', 'del'], ALLOWED_ATTR: ['class'] })
+    : null;
+  const imageChanges = buildDescriptionImageChanges(fromValue, toValue);
+  return {
+    diffHtml: diffHtml || null,
+    imageChanges
+  };
 }
 
 /**
@@ -121,5 +182,16 @@ export function buildDescriptionActivityDiffHtml(fromValue, toValue) {
  * @returns {boolean}
  */
 export function isDescriptionActivityFieldChange(action, details) {
-  return action === 'field_changed' && String(details?.field || '').toLowerCase() === 'description';
+  if (action !== 'field_changed') return false;
+  const field = String(details?.field || '')
+    .toLowerCase()
+    .replace(/[_-]/g, '');
+  return (
+    field === 'description'
+    || field === 'body'
+    || field === 'content'
+    || field === 'richcontent'
+    || field === 'notes'
+    || field === 'message'
+  );
 }

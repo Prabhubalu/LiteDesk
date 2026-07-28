@@ -371,7 +371,11 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, computed, onMounted, onActivated, onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
@@ -602,13 +606,13 @@ const viewResponseDetail = (response) => {
 };
 
 const approveResponse = async (response) => {
-  if (!confirm('Are you sure you want to approve this response?')) {
+  if (!await confirmAction('Are you sure you want to approve this response?')) {
     return;
   }
 
   const formId = getFormId(response);
   if (!formId) {
-    alert(t('common.responsesToastFormIdNotFoundPlease'));
+    notifications.error(t('common.responsesToastFormIdNotFoundPlease'));
     return;
   }
 
@@ -622,18 +626,18 @@ const approveResponse = async (response) => {
     }
   } catch (error) {
     console.error('Error approving response:', error);
-    alert(t('common.responsesToastFailedToApproveResponsePlease'));
+    notifications.error(t('common.responsesToastFailedToApproveResponsePlease'));
   }
 };
 
 const rejectResponse = async (response) => {
-  if (!confirm('Are you sure you want to reject this response?')) {
+  if (!await confirmAction('Are you sure you want to reject this response?')) {
     return;
   }
 
   const formId = getFormId(response);
   if (!formId) {
-    alert(t('common.responsesToastFormIdNotFoundPlease2'));
+    notifications.error(t('common.responsesToastFormIdNotFoundPlease2'));
     return;
   }
 
@@ -647,7 +651,7 @@ const rejectResponse = async (response) => {
     }
   } catch (error) {
     console.error('Error rejecting response:', error);
-    alert(t('common.responsesToastFailedToRejectResponsePlease'));
+    notifications.error(t('common.responsesToastFailedToRejectResponsePlease'));
   }
 };
 
@@ -678,7 +682,7 @@ const handleArchiveInvalidate = async () => {
 
   const formId = getFormId(selectedResponse.value);
   if (!formId) {
-    alert(t('common.responsesToastFormIdNotFoundPlease3'));
+    notifications.error(t('common.responsesToastFormIdNotFoundPlease3'));
     return;
   }
 
@@ -700,19 +704,19 @@ const handleArchiveInvalidate = async () => {
     }
   } catch (error) {
     console.error(`Error ${archiveInvalidateAction.value}ing response:`, error);
-    alert(`Failed to ${archiveInvalidateAction.value} response. Please try again.`);
+    notifications.error(`Failed to ${archiveInvalidateAction.value} response. Please try again.`);
   }
 };
 
 // Restore archived/invalidated response
 const restoreResponse = async (response) => {
-  if (!confirm(`Are you sure you want to restore this response?`)) {
+  if (!await confirmAction(`Are you sure you want to restore this response?`)) {
     return;
   }
 
   const formId = getFormId(response);
   if (!formId) {
-    alert(t('common.responsesToastFormIdNotFoundPlease4'));
+    notifications.error(t('common.responsesToastFormIdNotFoundPlease4'));
     return;
   }
 
@@ -726,7 +730,7 @@ const restoreResponse = async (response) => {
     }
   } catch (error) {
     console.error('Error restoring response:', error);
-    alert(t('common.responsesToastFailedToRestoreResponsePlease'));
+    notifications.error(t('common.responsesToastFailedToRestoreResponsePlease'));
   }
 };
 
@@ -740,18 +744,18 @@ const handleDelete = async (response) => {
 
   // For non-audit responses, check if submitted
   if (response.executionStatus === 'Submitted') {
-    alert(t('common.responsesToastSubmittedResponsesCannotBeDeleted'));
+    notifications.error(t('common.responsesToastSubmittedResponsesCannotBeDeleted'));
     return;
   }
 
-  if (!confirm(`Are you sure you want to delete this response?`)) {
+  if (!await confirmAction(`Are you sure you want to delete this response?`)) {
     return;
   }
 
   const formId = getFormId(response);
   if (!formId) {
     console.error('Form ID not found in response:', response);
-    alert(t('common.responsesToastFormIdNotFoundPlease5'));
+    notifications.error(t('common.responsesToastFormIdNotFoundPlease5'));
     return;
   }
 
@@ -772,7 +776,7 @@ const handleDelete = async (response) => {
     if (error.response?.data?.code === 'AUDIT_DELETE_FORBIDDEN' || error.response?.data?.code === 'SUBMITTED_DELETE_FORBIDDEN') {
       showArchiveInvalidateModalFn(response);
     } else {
-      alert(t('common.responsesToastFailedToDeleteResponsePlease'));
+      notifications.error(t('common.responsesToastFailedToDeleteResponsePlease'));
     }
   }
 };
@@ -785,10 +789,10 @@ const exportResponses = async () => {
     });
     
     // Note: This would need a new export endpoint for all responses
-    alert(t('common.responsesToastExportFunctionalityForAllResponses'));
+    notifications.error(t('common.responsesToastExportFunctionalityForAllResponses'));
   } catch (error) {
     console.error('Error exporting responses:', error);
-    alert(t('common.responsesToastAnErrorOccurredDuringExport'));
+    notifications.error(t('common.responsesToastAnErrorOccurredDuringExport'));
   }
 };
 

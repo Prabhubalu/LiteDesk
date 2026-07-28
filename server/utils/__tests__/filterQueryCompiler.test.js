@@ -72,6 +72,18 @@ test('compileNode: is me resolves to user id', () => {
   assert.deepEqual(clause, { assignedTo: userId });
 });
 
+test('compileNode: is_any_of resolves me token to user id', () => {
+  const userId = '507f1f77bcf86cd799439011';
+  const clause = compileNode(
+    { fieldKey: 'assignedTo', operator: 'is_any_of', value: ['me', '507f1f77bcf86cd799439012'] },
+    'events',
+    { userId }
+  );
+  assert.deepEqual(clause, {
+    assignedTo: { $in: [userId, '507f1f77bcf86cd799439012'] },
+  });
+});
+
 test('compileNode: people name contains searches first_name and last_name', () => {
   const clause = compileNode(
     { fieldKey: 'name', operator: 'contains', value: 'te' },

@@ -576,6 +576,8 @@ import { usePlaybookStageActions } from '@/composables/usePlaybookStageActions';
 import { SETTINGS_SAVE_BAR_CONTENT_CLASS } from '@/components/settings/settingsSaveBar';
 import { collectPlaybookConfigWarnings } from '@/utils/playbookConfigValidation';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 defineProps({
   onNavigateToPipelines: {
     type: Function,
@@ -584,6 +586,8 @@ defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -856,9 +860,7 @@ async function savePlaybooks() {
     const lines = playbookConfigWarnings.value.map((warning) =>
       t(warning.messageKey, warning.messageParams)
     );
-    const proceed = window.confirm(
-      `${t('settings.salesPlaySaveWithWarningsConfirm')}\n\n${lines.join('\n')}`
-    );
+    const proceed = await confirmAction(`${t('settings.salesPlaySaveWithWarningsConfirm')}\n\n${lines.join('\n')}`);
     if (!proceed) return;
   }
   isSaving.value = true;
@@ -873,14 +875,14 @@ async function savePlaybooks() {
     });
     const data = await res.json();
     if (!res.ok || !data.success) {
-      alert(data.message || t('settings.salesPlaySaveFailed'));
+      notifications.error(data.message || t('settings.salesPlaySaveFailed'));
       return;
     }
     await fetchDealsModule();
-    alert(t('settings.salesPlaySaveSuccess'));
+    notifications.success(t('settings.salesPlaySaveSuccess'));
   } catch (e) {
     console.error('Save playbooks failed', e);
-    alert(t('settings.salesPlaySaveFailedWithReason', { reason: e.message || t('settings.salesPlayUnknownError') }));
+    notifications.error(t('settings.salesPlaySaveFailedWithReason', { reason: e.message || t('settings.salesPlayUnknownError') }));
   } finally {
     isSaving.value = false;
   }

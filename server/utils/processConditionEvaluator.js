@@ -71,6 +71,10 @@ function evaluateLeaf(leaf, event, dataBag) {
   const value = resolveLeafCompareValue(leaf, event, dataBag);
   const operator = String(leaf.operator);
 
+  const { evaluateDateFilterAwareCompare } = require('./dateFilterValueResolve');
+  const dateAware = evaluateDateFilterAwareCompare(fieldValue, operator, value);
+  if (dateAware !== null) return dateAware;
+
   // People.participations is an object keyed by app (SALES, HELPDESK, …)
   if (isParticipationsField(leaf.field)) {
     const apps = participationAppKeys(fieldValue);
@@ -181,6 +185,31 @@ function leafToMongoClause(leaf, context = {}) {
   if (!key || !leaf?.operator) return null;
   const operator = String(leaf.operator);
   const value = resolveLeafCompareValue(leaf, context.event || {}, context.dataBag || {});
+
+  const { isDateFilterValue, dateFilterValueToMongoCondition } = require('./dateFilterValueResolve');
+  if (isDateFilterValue(value)) {
+    const cond = dateFilterValueToMongoCondition(value);
+    if (cond === 'EMPTY') {
+      return {
+        $and: [
+          { $or: [{ [key]: null }, { [key]: { $exists: false } }, { [key]: '' }] },
+        ],
+      };
+    }
+    if (!cond) return null;
+    if (operator === 'not_equals' || operator === '!==') {
+      return { $nor: [{ [key]: cond }] };
+    }
+    if (
+      operator === 'equals' ||
+      operator === '===' ||
+      operator === 'greater_than' ||
+      operator === 'less_than'
+    ) {
+      // Range / open-ended presets already encode the comparison
+      return { [key]: cond };
+    }
+  }
 
   switch (operator) {
     case 'equals':

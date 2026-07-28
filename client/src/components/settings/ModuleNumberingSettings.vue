@@ -4,21 +4,21 @@
       <div>
         <button
           type="button"
-          class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-2"
+          class="mb-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           @click="onBack"
         >
           {{ t('actions.back') }}
         </button>
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
           {{ view === 'edit' ? (form.label || form.moduleKey) : t('settings.automationModuleNumbering') }}
         </h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {{ view === 'edit' ? t('settings.moduleNumberingEditDesc') : t('settings.automationModuleNumberingDesc') }}
         </p>
       </div>
     </template>
 
-    <div v-if="loadError" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+    <div v-if="loadError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
       {{ loadError }}
     </div>
 
@@ -86,167 +86,235 @@
     </ListView>
 
     <!-- Edit -->
-    <form v-else class="space-y-6" @submit.prevent="save">
-      <section class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 space-y-4">
+    <form v-else class="w-full space-y-5" @submit.prevent="save">
+      <!-- Module + auto toggle -->
+      <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div class="min-w-0">
+            <p class="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              {{ t('settings.moduleNumberingModule') }}
+            </p>
+            <p class="mt-1 truncate text-lg font-semibold text-gray-900 dark:text-white">
+              {{ form.label || form.moduleKey }}
+            </p>
+            <p v-if="form.numberFieldLabel || form.numberFieldKey" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ t('settings.moduleNumberingColField') }}:
+              <span class="font-medium text-gray-700 dark:text-gray-200">{{ form.numberFieldLabel || humanizeFieldKey(form.numberFieldKey) }}</span>
+            </p>
+          </div>
+          <SwitchGroup as="div" class="flex shrink-0 items-center gap-3">
+            <SwitchLabel class="text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer">
+              {{ t('settings.moduleNumberingAuto') }}
+            </SwitchLabel>
+            <HeadlessSwitch v-model="form.enabled" />
+          </SwitchGroup>
+        </div>
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+          {{ t('settings.moduleNumberingAutoHint') }}
+        </p>
+      </section>
+
+      <!-- Pattern builder -->
+      <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 space-y-5">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingModule') }}</label>
-          <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ form.label || form.moduleKey }}</p>
-          <p v-if="form.numberFieldLabel || form.numberFieldKey" class="mt-1 text-sm text-gray-600 dark:text-gray-300">
-            {{ t('settings.moduleNumberingColField') }}:
-            <span class="font-medium text-gray-900 dark:text-white">{{ form.numberFieldLabel || humanizeFieldKey(form.numberFieldKey) }}</span>
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.moduleNumberingPatternTitle') }}</h3>
+          <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingPatternHelp') }}</p>
+        </div>
+
+        <RadioGroup
+          :model-value="activePresetId"
+          class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4"
+          @update:model-value="applyPreset"
+        >
+          <RadioGroupOption
+            v-for="preset in formatPresets"
+            :key="preset.id"
+            v-slot="{ checked }"
+            :value="preset.id"
+            as="template"
+          >
+            <button
+              type="button"
+              class="rounded-xl border px-3.5 py-3 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800"
+              :class="checked
+                ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500/40 dark:border-indigo-400 dark:bg-indigo-950/40'
+                : 'border-gray-200 bg-gray-50/80 hover:border-gray-300 hover:bg-white dark:border-gray-600 dark:bg-gray-900/40 dark:hover:border-gray-500'"
+            >
+              <span
+                class="block text-sm font-medium"
+                :class="checked ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-white'"
+              >
+                {{ t(preset.labelKey) }}
+              </span>
+              <span
+                class="mt-1 block font-mono text-xs"
+                :class="checked ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-500 dark:text-gray-400'"
+              >
+                {{ presetExample(preset.id) }}
+              </span>
+            </button>
+          </RadioGroupOption>
+        </RadioGroup>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingPrefix') }}</label>
+            <input
+              v-model="form.prefix"
+              type="text"
+              maxlength="32"
+              class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500"
+              :placeholder="t('settings.moduleNumberingPrefixPh')"
+              @input="onBuilderFieldChange"
+            />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingSuffix') }}</label>
+            <input
+              v-model="form.suffix"
+              type="text"
+              maxlength="32"
+              class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500"
+              :placeholder="t('settings.moduleNumberingSuffixPh')"
+              @input="onBuilderFieldChange"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingSeparator') }}</label>
+          <RadioGroup
+            :model-value="builder.separator"
+            :disabled="builder.mode === 'custom'"
+            class="inline-flex w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50 p-0.5 dark:border-gray-600 dark:bg-gray-900/60 sm:w-auto"
+            @update:model-value="onSeparatorChange"
+          >
+            <RadioGroupOption
+              v-for="opt in separatorOptions"
+              :key="opt.value === '' ? 'none' : opt.value"
+              v-slot="{ checked }"
+              :value="opt.value"
+              :disabled="builder.mode === 'custom'"
+              as="template"
+            >
+              <button
+                type="button"
+                class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:min-w-[5.5rem]"
+                :class="checked
+                  ? 'bg-white text-gray-900 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:text-white dark:ring-white/10'
+                  : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'"
+              >
+                {{ opt.label }}
+              </button>
+            </RadioGroupOption>
+          </RadioGroup>
+          <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingSepHelp') }}</p>
+        </div>
+
+        <div class="rounded-xl border border-dashed border-indigo-300/80 bg-indigo-50/60 px-4 py-3 dark:border-indigo-700/60 dark:bg-indigo-950/30">
+          <p class="text-xs font-medium uppercase tracking-wide text-indigo-500 dark:text-indigo-400">
+            {{ t('settings.moduleNumberingPreview') }}
+          </p>
+          <p class="mt-1 font-mono text-base font-semibold tracking-wide text-indigo-700 dark:text-indigo-200">
+            {{ livePreview }}
           </p>
         </div>
 
-        <label class="flex items-start gap-3 cursor-pointer">
-          <input v-model="form.enabled" type="checkbox" class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-          <span class="text-sm text-gray-700 dark:text-gray-200">
-            <span class="font-medium text-gray-900 dark:text-white block">{{ t('settings.moduleNumberingAuto') }}</span>
-            <span class="text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingAutoHint') }}</span>
-          </span>
-        </label>
-
-        <!-- Easy format builder -->
-        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-900/40 space-y-4">
-          <div>
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.moduleNumberingPatternTitle') }}</h3>
-            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingPatternHelp') }}</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              v-for="preset in formatPresets"
-              :key="preset.id"
-              type="button"
-              class="rounded-lg border px-3 py-2.5 text-left transition-colors"
-              :class="activePresetId === preset.id
-                ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500 dark:border-indigo-400 dark:bg-indigo-950/40'
-                : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-600 dark:bg-gray-800'"
-              @click="applyPreset(preset.id)"
-            >
-              <span class="block text-sm font-medium text-gray-900 dark:text-white">{{ t(preset.labelKey) }}</span>
-              <span class="mt-0.5 block font-mono text-xs text-indigo-600 dark:text-indigo-300">{{ presetExample(preset.id) }}</span>
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingPrefix') }}</label>
-              <input
-                v-model="form.prefix"
-                type="text"
-                maxlength="32"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                :placeholder="t('settings.moduleNumberingPrefixPh')"
-                @input="onBuilderFieldChange"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingSuffix') }}</label>
-              <input
-                v-model="form.suffix"
-                type="text"
-                maxlength="32"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                :placeholder="t('settings.moduleNumberingSuffixPh')"
-                @input="onBuilderFieldChange"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingSeparator') }}</label>
-              <select
-                v-model="builder.separator"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                :disabled="builder.mode === 'custom'"
-                @change="onBuilderFieldChange"
+        <div>
+          <button
+            type="button"
+            class="text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            @click="toggleCustomFormat"
+          >
+            {{ showCustomFormat ? t('settings.moduleNumberingHideCustom') : t('settings.moduleNumberingShowCustom') }}
+          </button>
+          <div v-if="showCustomFormat" class="mt-3 space-y-2.5 rounded-xl border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-600 dark:bg-gray-900/40">
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingCustomHelp') }}</p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="token in formatTokens"
+                :key="token.value"
+                type="button"
+                class="rounded-lg border border-gray-200 bg-white px-2.5 py-1 font-mono text-xs text-gray-700 transition-colors hover:border-indigo-400 hover:text-indigo-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-indigo-400"
+                :title="t(token.hintKey)"
+                @click="insertToken(token.value)"
               >
-                <option value="-">{{ t('settings.moduleNumberingSepDash') }}</option>
-                <option value="/">{{ t('settings.moduleNumberingSepSlash') }}</option>
-              </select>
+                {{ token.value }}
+              </button>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingPreview') }}</label>
-              <p class="rounded-lg border border-dashed border-indigo-300 bg-white px-3 py-2 font-mono text-sm text-indigo-700 dark:border-indigo-700 dark:bg-gray-900 dark:text-indigo-300">
-                {{ livePreview }}
-              </p>
-            </div>
+            <input
+              ref="formatInputRef"
+              v-model="form.format"
+              type="text"
+              class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-mono text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white"
+              @input="onCustomFormatInput"
+            />
           </div>
-
-          <div>
-            <button
-              type="button"
-              class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-              @click="toggleCustomFormat"
-            >
-              {{ showCustomFormat ? t('settings.moduleNumberingHideCustom') : t('settings.moduleNumberingShowCustom') }}
-            </button>
-            <div v-if="showCustomFormat" class="mt-3 space-y-2">
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingCustomHelp') }}</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="token in formatTokens"
-                  :key="token.value"
-                  type="button"
-                  class="rounded-md border border-gray-300 bg-white px-2 py-1 font-mono text-xs text-gray-700 hover:border-indigo-400 hover:text-indigo-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
-                  :title="t(token.hintKey)"
-                  @click="insertToken(token.value)"
-                >
-                  {{ token.value }}
-                </button>
-              </div>
-              <input
-                ref="formatInputRef"
-                v-model="form.format"
-                type="text"
-                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                @input="onCustomFormatInput"
-              />
-            </div>
-            <p v-else class="mt-2 font-mono text-xs text-gray-500 dark:text-gray-400">
-              {{ t('settings.moduleNumberingFormatLabel') }}: {{ form.format }}
-            </p>
-          </div>
+          <p v-else class="mt-2 font-mono text-xs text-gray-500 dark:text-gray-400">
+            {{ t('settings.moduleNumberingFormatLabel') }}: {{ form.format }}
+          </p>
         </div>
+      </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Sequence -->
+      <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingSeqLength') }}</label>
-            <input v-model.number="form.sequenceLength" type="number" min="1" max="15" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            <p class="mt-1 text-xs text-gray-500">{{ t('settings.moduleNumberingSeqLengthHint') }}</p>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingSeqLength') }}</label>
+            <input
+              v-model.number="form.sequenceLength"
+              type="number"
+              min="1"
+              max="15"
+              class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white"
+            />
+            <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingSeqLengthHint') }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingStarting') }}</label>
-            <input v-model.number="form.startingSequence" type="number" min="1" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingStarting') }}</label>
+            <input
+              v-model.number="form.startingSequence"
+              type="number"
+              min="1"
+              class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white"
+            />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingCurrent') }}</label>
-            <p class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingCurrent') }}</label>
+            <p class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-900/60 dark:text-white">
               {{ form.currentSequence ?? 0 }}
             </p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">{{ t('settings.moduleNumberingReset') }}</label>
-            <select v-model="form.resetRule" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-              <option value="never">{{ t('settings.moduleNumberingResetNever') }}</option>
-              <option value="daily">{{ t('settings.moduleNumberingResetDaily') }}</option>
-              <option value="monthly">{{ t('settings.moduleNumberingResetMonthly') }}</option>
-              <option value="yearly">{{ t('settings.moduleNumberingResetYearly') }}</option>
-            </select>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.moduleNumberingReset') }}</label>
+            <HeadlessSelect
+              v-model="form.resetRule"
+              :options="resetRuleOptions"
+              :teleport="true"
+            />
           </div>
         </div>
+      </section>
 
-        <label class="flex items-start gap-3 cursor-pointer">
-          <input v-model="form.allowManualEdit" type="checkbox" class="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-          <span class="text-sm text-gray-700 dark:text-gray-200">
-            <span class="font-medium text-gray-900 dark:text-white block">{{ t('settings.moduleNumberingManual') }}</span>
-            <span class="text-gray-500 dark:text-gray-400">{{ t('settings.moduleNumberingManualHint') }}</span>
-          </span>
-        </label>
+      <!-- Manual edit -->
+      <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <SwitchGroup as="div" class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <SwitchLabel class="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
+              {{ t('settings.moduleNumberingManual') }}
+            </SwitchLabel>
+            <SwitchDescription class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {{ t('settings.moduleNumberingManualHint') }}
+            </SwitchDescription>
+          </div>
+          <HeadlessSwitch v-model="form.allowManualEdit" class="mt-0.5" />
+        </SwitchGroup>
       </section>
 
       <div>
         <button
           type="button"
-          class="rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-600 disabled:opacity-50"
+          class="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           :disabled="resyncing || hasChanges"
           :title="hasChanges ? t('settings.moduleNumberingResyncSaveFirst') : undefined"
           @click="resync"
@@ -270,9 +338,18 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PencilSquareIcon } from '@heroicons/vue/24/outline';
+import {
+  RadioGroup,
+  RadioGroupOption,
+  SwitchGroup,
+  SwitchLabel,
+  SwitchDescription,
+} from '@headlessui/vue';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import ListView from '@/components/common/ListView.vue';
+import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import apiClient from '@/utils/apiClient';
 
 const emit = defineEmits(['back']);
@@ -329,6 +406,19 @@ const formatTokens = [
   { value: '{SEQ}', hintKey: 'settings.moduleNumberingTokenSeq' },
   { value: '{SUFFIX}', hintKey: 'settings.moduleNumberingTokenSuffix' },
 ];
+
+const separatorOptions = computed(() => [
+  { value: '', label: t('settings.moduleNumberingSepNone') },
+  { value: '-', label: t('settings.moduleNumberingSepDash') },
+  { value: '/', label: t('settings.moduleNumberingSepSlash') },
+]);
+
+const resetRuleOptions = computed(() => [
+  { value: 'never', label: t('settings.moduleNumberingResetNever') },
+  { value: 'daily', label: t('settings.moduleNumberingResetDaily') },
+  { value: 'monthly', label: t('settings.moduleNumberingResetMonthly') },
+  { value: 'yearly', label: t('settings.moduleNumberingResetYearly') },
+]);
 
 const activePresetId = computed(() => (
   builder.value.mode === 'custom' ? null : builder.value.mode
@@ -498,8 +588,15 @@ const livePreview = computed(() => {
   }
 });
 
+/** @param {unknown} separator */
+function normalizeSeparator(separator) {
+  if (separator === '/') return '/';
+  if (separator === '') return '';
+  return '-';
+}
+
 function buildFormatFromParts(mode, separator, prefix, suffix) {
-  const sep = separator === '/' ? '/' : '-';
+  const sep = normalizeSeparator(separator);
   const parts = [];
   if (prefix || mode !== 'custom') parts.push('{PREFIX}');
   if (mode === 'year') parts.push('{YYYY}');
@@ -511,28 +608,34 @@ function buildFormatFromParts(mode, separator, prefix, suffix) {
 }
 
 function detectBuilderFromFormat(format, prefix, suffix) {
-  const sep = String(format || '').includes('/') ? '/' : '-';
   const candidates = ['simple', 'year', 'yearMonth', 'yearMonthDay'];
-  for (const mode of candidates) {
-    if (buildFormatFromParts(mode, sep, prefix, suffix) === format) {
-      return { mode, separator: sep };
-    }
-  }
-  // Also match literal prefix baked into format (e.g. ITM-{SEQ})
-  const literalPrefix = String(prefix || '').trim();
-  if (literalPrefix) {
+  const seps = ['-', '/', ''];
+  for (const sep of seps) {
     for (const mode of candidates) {
-      const withToken = buildFormatFromParts(mode, sep, prefix, suffix);
-      const withLiteral = withToken.replace('{PREFIX}', literalPrefix);
-      if (withLiteral === format) {
+      if (buildFormatFromParts(mode, sep, prefix, suffix) === format) {
         return { mode, separator: sep };
       }
     }
   }
-  return { mode: 'custom', separator: sep };
+  // Also match literal prefix baked into format (e.g. ITM-{SEQ} or ITM{SEQ})
+  const literalPrefix = String(prefix || '').trim();
+  if (literalPrefix) {
+    for (const sep of seps) {
+      for (const mode of candidates) {
+        const withToken = buildFormatFromParts(mode, sep, prefix, suffix);
+        const withLiteral = withToken.replace('{PREFIX}', literalPrefix);
+        if (withLiteral === format) {
+          return { mode, separator: sep };
+        }
+      }
+    }
+  }
+  const fallbackSep = String(format || '').includes('/') ? '/' : (String(format || '').includes('-') ? '-' : '');
+  return { mode: 'custom', separator: fallbackSep };
 }
 
 function applyPreset(mode) {
+  if (!mode) return;
   builder.value.mode = mode;
   showCustomFormat.value = false;
   form.value.format = buildFormatFromParts(
@@ -551,6 +654,11 @@ function onBuilderFieldChange() {
     form.value.prefix,
     form.value.suffix
   );
+}
+
+function onSeparatorChange(value) {
+  builder.value.separator = normalizeSeparator(value);
+  onBuilderFieldChange();
 }
 
 function onCustomFormatInput() {
@@ -585,7 +693,7 @@ function insertToken(token) {
 function presetExample(mode) {
   const prefix = form.value.prefix || 'ITM';
   const suffix = form.value.suffix || '';
-  const sep = builder.value.separator === '/' ? '/' : '-';
+  const sep = normalizeSeparator(builder.value.separator);
   const now = new Date();
   const yyyy = String(now.getUTCFullYear());
   const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
@@ -751,10 +859,8 @@ async function resync() {
     const encoded = encodeURIComponent(form.value.moduleKey);
     const res = await apiClient.post(`/settings/module-numbering/${encoded}/resync-sequence`, {});
     form.value.currentSequence = Number(res?.currentSequence) || 0;
-    // Keep snapshot in sync so resync alone does not trip dirty state
     const snap = savedSnapshot.value ? JSON.parse(savedSnapshot.value) : null;
     if (snap) {
-      // currentSequence is display-only / server-owned; refresh snapshot after resync
       savedSnapshot.value = serializeForm();
     }
   } catch (e) {

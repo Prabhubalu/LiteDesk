@@ -345,7 +345,7 @@ const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const { openTab, closeTab, findTabByPath, activeTabId, findTabById, activeTab } = useTabs();
-const { success } = useNotifications();
+const notifications = useNotifications();
 const authStore = useAuthStore();
 const getDefaultAssignedTo = () => authStore.user?._id || null;
 
@@ -1496,7 +1496,7 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Error loading form for editing:', error);
-      alert(t('forms.hubCreateLoadEditFailed'));
+      notifications.error(t('forms.hubCreateLoadEditFailed'));
     }
   }
   
@@ -1601,7 +1601,7 @@ onMounted(async () => {
       }
     } catch (error) {
       console.error('Error loading form for duplication:', error);
-      alert(t('forms.hubCreateLoadDuplicateFailed'));
+      notifications.error(t('forms.hubCreateLoadDuplicateFailed'));
     }
   }
   
@@ -1955,17 +1955,17 @@ const handleEngagementSettingsUpdate = (updatedForm) => {
 
 const showStepValidationAlert = () => {
   if (currentStepKey.value === 'details') {
-    alert(t('forms.wizardStep0RequiredAlert'));
+    notifications.warning(t('forms.wizardStep0RequiredAlert'));
     return;
   }
   if (currentStepKey.value === 'questions') {
-    alert(isEngagementForm.value
+    notifications.warning(isEngagementForm.value
       ? t('forms.engagementQuestionsRequiredAlert')
       : t('forms.hubCreateStep1RequiredAlert'));
     return;
   }
   if (currentStepKey.value === 'outcomes' && isAuditForm.value) {
-    alert(t('forms.hubCreateAuditRuleRequired'));
+    notifications.warning(t('forms.hubCreateAuditRuleRequired'));
   }
 };
 
@@ -2114,7 +2114,7 @@ const handleSubmit = async () => {
     if (previewAndSaveRef.value && previewAndSaveRef.value.validationErrors) {
       const errors = previewAndSaveRef.value.validationErrors;
       if (errors.length > 0) {
-        alert(t('forms.hubCreateValidationFixPrefix', { issues: errors.join('\n') }));
+        notifications.error(t('forms.hubCreateValidationFixPrefix', { issues: errors.join('\n') }));
         return;
       }
     }
@@ -2225,7 +2225,7 @@ const handleSubmit = async () => {
         }
       }
     } else {
-      alert(response.message || t('forms.saveFormFailed'));
+      notifications.error(response.message || t('forms.saveFormFailed'));
     }
   } catch (error) {
     console.error('Error saving form:', error);
@@ -2262,7 +2262,7 @@ const handleSubmit = async () => {
       message: errorMessage
     });
     
-    alert(t('forms.hubCreateSaveError', { detail: errorMessage }));
+    notifications.error(t('forms.hubCreateSaveError', { detail: errorMessage }));
   } finally {
     saving.value = false;
   }

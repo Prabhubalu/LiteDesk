@@ -31,17 +31,23 @@
         canEdit ? 'cursor-text' : '',
         !hasContent && canEdit ? 'transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40' : ''
       ]"
-      @click="startEdit"
+      @click="onContentAreaClick"
     >
       <div
         v-if="hasContent"
-        class="min-h-[320px] px-6 py-4 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:text-lg [&_h3]:font-semibold [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:rounded-md"
+        class="min-h-[320px] px-6 py-4 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-semibold [&_h3]:text-lg [&_h3]:font-semibold [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:rounded-md [&_img]:cursor-zoom-in"
         v-html="sanitizedContent"
       />
       <p v-else class="min-h-[320px] px-6 py-4 text-sm text-gray-500 dark:text-gray-400 italic m-0">
         {{ canEdit ? t('documents.editorEmptyHint') : t('records.descriptionEmptyReadonly') }}
       </p>
     </div>
+
+    <RichDescriptionImageLightbox
+      :open="showImagePreview"
+      :src="previewImageSrc"
+      @close="closeImagePreview"
+    />
   </section>
 </template>
 
@@ -54,6 +60,8 @@ import {
   deleteOrphanSessionUploads,
   deleteRemovedInlineUploads
 } from '@/utils/inlineUploadStorage';
+import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
+import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
 import DocumentEditor from '@/components/documents/DocumentEditor.vue';
 
 const props = defineProps({
@@ -63,6 +71,12 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const {
+  showImagePreview,
+  previewImageSrc,
+  closeImagePreview,
+  handleRichHtmlClick
+} = useRichDescriptionImagePreview();
 
 const title = computed(() => props.adapter?.getRichContentTitle?.(props.record, props.context) || t('documents.editorSectionTitle'));
 const contentHtml = computed(() => props.adapter?.getRichContent?.(props.record, props.context) || '');
@@ -95,6 +109,10 @@ function startEdit() {
   sessionUploadedUrls.value = [];
   isEditing.value = true;
   editingValue.value = String(contentHtml.value || '');
+}
+
+function onContentAreaClick(event) {
+  handleRichHtmlClick(event, { onNonImage: startEdit });
 }
 
 function onImageUploaded(url) {

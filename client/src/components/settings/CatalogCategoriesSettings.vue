@@ -109,6 +109,8 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { CATALOG_ATTRIBUTE_DATA_TYPES, CATALOG_ATTRIBUTE_TYPE_LABEL_KEYS } from '@/constants/catalogAttributeTypes';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 defineProps({
   embedded: { type: Boolean, default: false }
 });
@@ -116,6 +118,8 @@ defineProps({
 defineEmits(['back']);
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const loading = ref(false);
 const flatCategories = ref([]);
@@ -197,7 +201,7 @@ const saveNewCategory = async () => {
 };
 
 const removeCategory = async (id) => {
-  if (!confirm(t('settings.catalogConfirmDeleteCategory'))) return;
+  if (!await confirmAction(t('settings.catalogConfirmDeleteCategory'))) return;
   await apiClient.delete(`/catalog/categories/${id}`);
   if (selectedCategoryId.value === id) {
     selectedCategoryId.value = '';
@@ -227,7 +231,7 @@ const addAttribute = async () => {
     if (res.success) await loadAttributes();
   } catch (err) {
     console.error('addAttribute error:', err);
-    alert(err?.message || t('settings.catalogAddAttributeFailed'));
+    notifications.error(err?.message || t('settings.catalogAddAttributeFailed'));
   }
 };
 
@@ -248,7 +252,7 @@ const saveAttribute = async (attr) => {
 };
 
 const removeAttribute = async (attrId) => {
-  if (!confirm(t('settings.catalogConfirmDeleteAttribute'))) return;
+  if (!await confirmAction(t('settings.catalogConfirmDeleteAttribute'))) return;
   await apiClient.delete(`/catalog/categories/${selectedCategoryId.value}/attributes/${attrId}`);
   await loadAttributes();
 };
