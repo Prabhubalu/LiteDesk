@@ -1703,7 +1703,10 @@ import {
 } from '@heroicons/vue/24/outline';
 import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/solid';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 // Props
 const props = defineProps({
@@ -4157,7 +4160,7 @@ const confirmResetLayout = async () => {
     window.location.reload();
   } catch (error) {
     console.error('Error resetting layout to default:', error);
-    alert(t('common.summaryResetLayoutFailed'));
+    notifications.error(t('common.summaryResetLayoutFailed'));
   }
 };
 
@@ -4429,7 +4432,7 @@ const toggleFollow = () => {
 const copyUrl = () => {
   const url = window.location.href;
   navigator.clipboard.writeText(url).then(() => {
-    alert(t('common.summaryUrlCopied'));
+    notifications.success(t('common.summaryUrlCopied'));
   });
 };
 
@@ -5045,7 +5048,7 @@ const handlePopupSave = async (updatedData) => {
       // Revert local changes on error
       // Note: We'd need to store original values to properly revert
       // For now, just show an error - the parent component should handle refresh
-      alert(t('common.summarySaveFieldsFailed'));
+      notifications.error(t('common.summarySaveFieldsFailed'));
       return;
     }
   }

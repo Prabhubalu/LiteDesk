@@ -1251,7 +1251,7 @@ import DocumentEditorPage from '@/components/documents/DocumentEditorPage.vue';
 import ContentVersionHistoryView from '@/components/record-page/ContentVersionHistoryView.vue';
 import {
   buildContentVersionHistoryList,
-  buildDescriptionActivityDiffHtml,
+  buildDescriptionActivityDiff,
   getPlainTextFromHtml,
   isDescriptionActivityFieldChange
 } from '@/utils/contentVersionHistory';
@@ -1282,6 +1282,7 @@ import { PEOPLE_PERMISSIONS } from '@/platform/permissions/peoplePermissions';
 import EventRecordExecutionPanel from '@/components/events/EventRecordExecutionPanel.vue';
 import 'emoji-picker-element';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t, te } = useI18n();
 
 const formatAppLabel = (appKey) => getAppLabel(appKey) || appKey || 'App';
@@ -2287,7 +2288,7 @@ async function handleUnlinkGenericRelated(item, group, rec) {
       }
     }
     console.error('Error unlinking related record:', err);
-    alert(err?.response?.data?.message || t('records.genericUnlinkFailed'));
+    notifications.error(err?.response?.data?.message || t('records.genericUnlinkFailed'));
   }
 }
 
@@ -2781,6 +2782,11 @@ const genericAdapter = computed(() => {
       try {
         await updateRecordFields({ description: value });
         if (record.value) record.value.description = value;
+        await refreshRecordActivity();
+        await nextTick();
+        requestAnimationFrame(() => {
+          activitySectionRef.value?.scrollToBottom?.({ behavior: 'smooth' });
+        });
       } catch (e) {
         console.error('Save description error:', e);
       }
@@ -3337,9 +3343,9 @@ const activityEvents = computed(() => {
     if (e.type === 'system') {
       const details = e.payload?.details || {};
       const action = e.payload?.action;
-      const descriptionDiffHtml = isDescriptionActivityFieldChange(action, details)
-        ? buildDescriptionActivityDiffHtml(details.from ?? details.oldValue, details.to ?? details.newValue)
-        : null;
+      const descriptionDiff = isDescriptionActivityFieldChange(action, details)
+        ? buildDescriptionActivityDiff(details.from ?? details.oldValue, details.to ?? details.newValue)
+        : { diffHtml: null, imageChanges: [] };
       return normalizeSystemActivityEvent({
         _id: e.id,
         action,
@@ -3347,7 +3353,11 @@ const activityEvents = computed(() => {
         details,
         user: e.actorProfile || e.actor,
         timestamp: e.createdAt
-      }, { recordRef, descriptionDiffHtml });
+      }, {
+        recordRef,
+        descriptionDiffHtml: descriptionDiff.diffHtml,
+        descriptionImageChanges: descriptionDiff.imageChanges
+      });
     }
     if (e.type === 'comment') {
       const author = e.actorProfile && typeof e.actorProfile === 'object' ? e.actorProfile : e.actor;
@@ -3529,7 +3539,7 @@ watch(
 
 async function cancelAppointment() {
   if (!record.value?._id) return;
-  if (!window.confirm(t('records.genericConfirmCancelAppt'))) return;
+  if (!await confirmAction(t('records.genericConfirmCancelAppt'))) return;
   try {
     const res = await apiClient.post(`/appointments/events/${record.value._id}/cancel`, {
       reason: 'Cancelled from event record'
@@ -3547,7 +3557,7 @@ async function cancelAppointment() {
 
 async function completeAppointment() {
   if (!record.value?._id) return;
-  if (!window.confirm(t('records.genericConfirmCompleteAppt'))) return;
+  if (!await confirmAction(t('records.genericConfirmCompleteAppt'))) return;
   try {
     const res = await apiClient.post(`/appointments/events/${record.value._id}/complete`);
     if (res.success) {
@@ -3563,7 +3573,7 @@ async function completeAppointment() {
 
 async function markAppointmentNoShow() {
   if (!record.value?._id) return;
-  if (!window.confirm(t('records.genericConfirmNoShowAppt'))) return;
+  if (!await confirmAction(t('records.genericConfirmNoShowAppt'))) return;
   try {
     const res = await apiClient.post(`/appointments/events/${record.value._id}/no-show`, {
       reason: 'Marked from event record'
@@ -3902,9 +3912,9 @@ async function fetchRecord(options = {}) {
     record.value = null;
   } finally {
     if (runId === fetchRecordRunId) {
-      if (!soft) {
-        loading.value = false;
-      }
+      // Always clear when this is the latest run. Soft refreshes that supersede an
+      // in-flight hard load (onMounted + onActivated) must not leave loading stuck.
+      loading.value = false;
       if (record.value?._id) {
         loadDeferredRecordData(runId, record.value).catch((deferredErr) => {
           console.warn('Deferred record data load failed:', deferredErr);
@@ -4851,7 +4861,7 @@ async function handleArchiveForm() {
     formResponses.value = [];
   } catch (err) {
     console.error('Error archiving form:', err);
-    alert(err?.response?.data?.message || err?.message || t('records.genericErrorTitle', { module: t('navigation.moduleForms') }));
+    notifications.error(err?.response?.data?.message || err?.message || t('records.genericErrorTitle', { module: t('navigation.moduleForms') }));
   }
 }
 
@@ -4970,7 +4980,7 @@ async function handleLinkRecordDrawerLinked({ moduleKey: targetModuleKey, ids, c
           appKey: sourceAppKey
         });
         if (!linkRes?.success) {
-          alert(linkRes?.message || t('documents.linkFailed'));
+          notifications.error(linkRes?.message || t('documents.linkFailed'));
           return;
         }
         const linkedDoc = linkRes.data?.document || linkRes.document;
@@ -5013,7 +5023,7 @@ async function handleLinkRecordDrawerLinked({ moduleKey: targetModuleKey, ids, c
       const detailedMessage = validationErrors.length > 0
         ? `${responseMessage || 'Failed to link record.'}\n\n${validationErrors.join('\n')}`
         : (responseMessage || 'Failed to link record.');
-      alert(detailedMessage);
+      notifications.error(detailedMessage);
       return;
     }
   }
@@ -5071,7 +5081,7 @@ async function confirmDelete() {
     emit('close');
   } catch (e) {
     if (e?.response?.data?.code === 'FORM_HAS_SUBMITTED_RESPONSES') {
-      alert(t('forms.deleteBlockedSubmittedResponses.message'));
+      notifications.warning(t('forms.deleteBlockedSubmittedResponses.message'));
     } else {
       error.value = e?.message || 'Failed to delete';
     }
@@ -5175,13 +5185,17 @@ onMounted(() => {
 onActivated(async () => {
   const recordId = props.recordId;
   if (recordId && recordId !== 'new') {
-    const decision = await resolveRecordDetailRefreshOnActivate({
-      moduleKey: props.moduleKey,
-      appKey: route.meta?.appKey || '',
-      getUpdatedAtMs: () => extractRecordUpdatedAtMs(record.value),
-    }, recordId);
-    if (decision === 'refresh') {
-      await fetchRecord({ soft: true });
+    // Skip soft refresh while initial hard load is in flight (keep-alive remount
+    // runs onMounted + onActivated; a soft supersede used to leave loading stuck).
+    if (!loading.value) {
+      const decision = await resolveRecordDetailRefreshOnActivate({
+        moduleKey: props.moduleKey,
+        appKey: route.meta?.appKey || '',
+        getUpdatedAtMs: () => extractRecordUpdatedAtMs(record.value),
+      }, recordId);
+      if (decision === 'refresh') {
+        await fetchRecord({ soft: true });
+      }
     }
   }
   attachRecordGlobalListeners();

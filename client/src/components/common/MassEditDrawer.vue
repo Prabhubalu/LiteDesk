@@ -1,38 +1,18 @@
 <template>
-  <Teleport to="body">
-    <TransitionRoot as="template" :show="isOpen">
-      <Dialog :initialFocus="closeButtonRef" class="relative z-[10000]" @close="handleDialogClose">
-        <TransitionChild
-          as="template"
-          enter="ease-out duration-200"
-          enter-from="opacity-0"
-          enter-to="opacity-100"
-          leave="ease-in duration-200"
-          leave-from="opacity-100"
-          leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-gray-500/50 dark:bg-black/60" />
-        </TransitionChild>
-
-        <div class="fixed inset-0 overflow-hidden">
-          <div class="absolute inset-0 overflow-hidden">
-            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
-              <TransitionChild
-                as="template"
-                enter="transform transition ease-in-out duration-300"
-                enter-from="translate-x-full"
-                enter-to="translate-x-0"
-                leave="transform transition ease-in-out duration-300"
-                leave-from="translate-x-0"
-                leave-to="translate-x-full"
-              >
-                <DialogPanel class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-[32rem] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800">
+  <WorkspaceScopedDrawerShell
+    :is-open="isOpen"
+    panel-offset-class="pl-10 sm:pl-16"
+    :draft-module-key="moduleKey || 'mass-edit'"
+    @backdrop="handleDialogClose"
+    @escape="handleDialogClose"
+  >
+                <div class="rounded-tl-xl overflow-hidden pointer-events-auto flex h-full w-[32rem] max-w-[95vw] flex-col bg-white shadow-xl dark:bg-gray-800">
                   <form class="flex h-full flex-col" @submit.prevent="handleSubmit">
                     <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6">
                       <div class="flex items-center justify-between">
-                        <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+                        <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                           {{ drawerTitle }}
-                        </DialogTitle>
+                        </h2>
                         <button
                           ref="closeButtonRef"
                           type="button"
@@ -139,29 +119,17 @@
                       </div>
                     </div>
                   </form>
-                </DialogPanel>
-              </TransitionChild>
-            </div>
-          </div>
-        </div>
-      </Dialog>
-    </TransitionRoot>
-  </Teleport>
+                </div>
+  </WorkspaceScopedDrawerShell>
 </template>
 
 <script setup>
 import { ref, computed, watch, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  TransitionChild,
-  TransitionRoot,
-} from '@headlessui/vue';
 import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import DynamicFormField from '@/components/common/DynamicFormField.vue';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getMassEditableFields } from '@/utils/massEditFieldPolicy';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';

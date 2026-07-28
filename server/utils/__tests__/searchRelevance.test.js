@@ -81,12 +81,21 @@ test('sortBySearchRelevance: multi-term ranks best matching term', () => {
 
 test('fetchRankedSearchPage: active search builds relevance pipeline without error', async () => {
   const pipelines = [];
+  const castedAssignedTo = { casted: true };
+  let castCalled = false;
   const Model = {
     aggregate: async (pipeline) => {
       pipelines.push(pipeline);
       return [];
     },
-    find: () => ({
+    find: (matchQuery) => ({
+      cast() {
+        castCalled = true;
+      },
+      getFilter: () => ({
+        ...matchQuery,
+        assignedTo: castCalled ? castedAssignedTo : matchQuery.assignedTo,
+      }),
       populate: () => ({
         lean: async () => []
       }),
@@ -101,7 +110,10 @@ test('fetchRankedSearchPage: active search builds relevance pipeline without err
   };
 
   await fetchRankedSearchPage(Model, {
-    matchQuery: { organizationId: '507f1f77bcf86cd799439011' },
+    matchQuery: {
+      organizationId: '507f1f77bcf86cd799439011',
+      assignedTo: '507f1f77bcf86cd799439012',
+    },
     searchTerm: 'John',
     fieldSpecs: SEARCH_FIELD_PRESETS.people,
     limit: 10
@@ -109,6 +121,9 @@ test('fetchRankedSearchPage: active search builds relevance pipeline without err
 
   assert.equal(pipelines.length, 1);
   assert.ok(pipelines[0][1].$addFields._searchScore);
+  assert.equal(castCalled, true);
+  // Aggregate must use casted ObjectIds — raw strings miss assignee-scoped search.
+  assert.equal(pipelines[0][0].$match.assignedTo, castedAssignedTo);
 });
 
 test('resolveListSearchTerm: prefers direct search over column filterQuery', () => {

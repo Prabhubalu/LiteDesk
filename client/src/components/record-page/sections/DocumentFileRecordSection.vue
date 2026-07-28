@@ -184,6 +184,7 @@ import { useDocuments } from '@/composables/useDocuments';
 import { useNotifications } from '@/composables/useNotifications';
 import { captureDocumentVersionCompared } from '@/config/posthogDocuments';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   record: { type: Object, default: null },
   adapter: { type: Object, default: () => ({}) },
@@ -368,7 +369,7 @@ async function handleConflictForceUpload() {
 
 async function handleRestore(versionNumber) {
   if (!props.record?._id) return;
-  if (!window.confirm(t('documents.restoreVersionConfirm'))) return;
+  if (!await confirmAction(t('documents.restoreVersionConfirm'))) return;
   restoringVersion.value = versionNumber;
   try {
     const result = await restoreVersion(props.record._id, versionNumber);

@@ -11,7 +11,10 @@ function buildDealsListQuery(req) {
   if (req.query.stage) query.stage = req.query.stage;
   if (req.query.status) query.status = req.query.status;
   if (req.query.priority) query.priority = req.query.priority;
-  if (req.query.assignedTo) query.assignedTo = req.query.assignedTo;
+  if (req.query.assignedTo) {
+    query.assignedTo =
+      req.query.assignedTo === 'me' ? req.user._id : req.query.assignedTo;
+  }
   if (req.query.contactId) query.contactId = req.query.contactId;
   if (req.query.accountId) {
     if (mongoose.Types.ObjectId.isValid(req.query.accountId)) {

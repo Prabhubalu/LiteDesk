@@ -3,7 +3,6 @@
 const ContentTemplate = require('../../models/ContentTemplate');
 const ContentTemplateVersion = require('../../models/ContentTemplateVersion');
 const ContentValidationReport = require('../../models/ContentValidationReport');
-const { createBlankTemplateDefinition } = require('../../constants/contentTemplateModuleDefaults');
 const {
   createBlankGrapesTemplateDefinition,
   isGrapesTemplateDefinition,
@@ -208,27 +207,35 @@ async function getTemplateById(params) {
   let draftDefinition = draftVersion?.jsonDefinition || null;
   let healedDefinition = null;
 
+  let publishedDefinition = null;
+  if (template.latestPublishedVersion) {
+    const published = await ContentTemplateVersion.findOne({
+      organizationId,
+      templateId: template._id,
+      version: Number(template.latestPublishedVersion),
+      published: true
+    }).lean();
+    if (published?.jsonDefinition) {
+      publishedDefinition = published.jsonDefinition;
+    }
+  }
+
+  // After publish, draftVersionId is cleared — expose published definition as the editable baseline.
+  if (!draftDefinition && publishedDefinition) {
+    draftDefinition = publishedDefinition;
+  }
+
   // Recover draft emptied or flattened by a canvas serialize race.
   if (isGrapesTemplateDefinition(draftDefinition)) {
     const needsEmptyHeal = !hasRenderableGrapesTemplateContent(draftDefinition);
-    let publishedDefinition = null;
-
-    if (template.latestPublishedVersion) {
-      const published = await ContentTemplateVersion.findOne({
-        organizationId,
-        templateId: template._id,
-        version: Number(template.latestPublishedVersion),
-        published: true
-      }).lean();
-      if (isGrapesTemplateDefinition(published?.jsonDefinition)) {
-        publishedDefinition = published.jsonDefinition;
-      }
-    }
+    const publishedGrapes = isGrapesTemplateDefinition(publishedDefinition)
+      ? publishedDefinition
+      : null;
 
     const needsFlattenHeal =
-      Boolean(publishedDefinition)
-      && hasRenderableGrapesTemplateContent(publishedDefinition)
-      && isGrapesDefinitionDegraded(draftDefinition, publishedDefinition);
+      Boolean(publishedGrapes)
+      && hasRenderableGrapesTemplateContent(publishedGrapes)
+      && isGrapesDefinitionDegraded(draftDefinition, publishedGrapes);
 
     if (needsEmptyHeal || needsFlattenHeal) {
       const snapshotHtml = String(draftDefinition.importSnapshot?.html || '').trim();
@@ -239,18 +246,20 @@ async function getTemplateById(params) {
           css: String(draftDefinition.importSnapshot.css || draftDefinition.css || '')
         };
       } else if (
-        publishedDefinition
-        && hasRenderableGrapesTemplateContent(publishedDefinition)
+        publishedGrapes
+        && hasRenderableGrapesTemplateContent(publishedGrapes)
       ) {
-        healedDefinition = publishedDefinition;
+        healedDefinition = publishedGrapes;
       }
 
-      if (healedDefinition && draftVersion?._id) {
+      if (healedDefinition) {
         draftDefinition = healedDefinition;
-        await ContentTemplateVersion.updateOne(
-          { _id: draftVersion._id, organizationId },
-          { $set: { jsonDefinition: healedDefinition } }
-        );
+        if (draftVersion?._id) {
+          await ContentTemplateVersion.updateOne(
+            { _id: draftVersion._id, organizationId },
+            { $set: { jsonDefinition: healedDefinition } }
+          );
+        }
       }
     }
   }
@@ -748,6 +757,10 @@ async function cloneTemplate(params) {
   const { organizationId, templateId, userId, name, ipAddress = null } = params;
   const source = await getTemplateById({ organizationId, templateId });
 
+  const sourceDefinition = source.draftDefinition
+    ? JSON.parse(JSON.stringify(source.draftDefinition))
+    : createBlankGrapesTemplateDefinition();
+
   return createTemplate({
     organizationId,
     userId,
@@ -769,7 +782,7 @@ async function cloneTemplate(params) {
       currency: source.currency,
       currencyDisplay: source.currencyDisplay,
       tags: source.tags,
-      jsonDefinition: source.draftDefinition || createBlankTemplateDefinition()
+      jsonDefinition: sourceDefinition
     }
   });
 }

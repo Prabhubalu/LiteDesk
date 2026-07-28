@@ -37,34 +37,15 @@
 -->
 
 <template>
-  <TransitionRoot as="template" :show="isOpen">
-    <Dialog class="relative z-50" @close="handleDialogClose">
-      <!-- Background overlay -->
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-200"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="ease-in duration-200"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
-      >
-        <div class="fixed inset-0 bg-black/25 dark:bg-black/50" />
-      </TransitionChild>
-
-      <div class="fixed inset-0 overflow-hidden">
-        <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
-            <TransitionChild 
-              enter="transform transition ease-out duration-300 sm:duration-300" 
-              enter-from="translate-x-full" 
-              enter-to="translate-x-0" 
-              leave="transform transition ease-in duration-250 sm:duration-250" 
-              leave-from="translate-x-0" 
-              leave-to="translate-x-full"
-            >
+  <WorkspaceScopedDrawerShell
+    :is-open="isOpen"
+    draft-module-key="organizations"
+    :draft-record-id="orgDraftRecordId"
+    @backdrop="handleDialogClose"
+    @escape="handleDialogClose"
+  >
               <!-- Drawer width behavior aligned with shared create drawers -->
-              <DialogPanel
+              <div
                 :class="[
                   'rounded-tl-xl overflow-hidden pointer-events-auto h-full flex flex-col bg-white dark:bg-gray-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 w-screen max-w-full overflow-x-hidden transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width]',
                   drawerWidthClass
@@ -74,9 +55,9 @@
                   <!-- Fixed Header -->
                   <div class="flex-shrink-0 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
                     <div class="flex items-center justify-between gap-3">
-                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+                      <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
                         {{ isEditMode ? 'Edit Organization' : 'New Organization' }}
-                      </DialogTitle>
+                      </h2>
                       <div class="ml-3 flex h-7 items-center">
                         <button 
                           type="button" 
@@ -222,21 +203,16 @@
                     </div>
                   </div>
                 </form>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
+              </div>
+  </WorkspaceScopedDrawerShell>
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import OrganizationTypesSection from '@/components/organizations/OrganizationTypesSection.vue';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
@@ -296,6 +272,9 @@ const createMode = ref('quick');
 
 // Edit mode: true if organizationId is provided
 const isEditMode = computed(() => !!props.organizationId);
+const orgDraftRecordId = computed(() =>
+  props.organizationId != null ? String(props.organizationId) : null,
+);
 
 // Mode state: 'quick' | 'full' (default: 'quick')
 // ARCHITECTURAL INTENT: Quick Create unblocks flow. Full Form is intentional completion.

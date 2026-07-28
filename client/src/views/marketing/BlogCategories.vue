@@ -131,7 +131,11 @@ import {
   updateContentCollection,
 } from '@/modules/contentStudio/services/contentStudioApi';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const router = useRouter();
 const MODE = 'blog';
 
@@ -213,14 +217,14 @@ async function handleSubmit() {
     resetForm();
     await loadCategories();
   } catch (error) {
-    window.alert(error?.message || 'Failed to save category');
+    notifications.error(error?.message || 'Failed to save category');
   } finally {
     saving.value = false;
   }
 }
 
 async function handleDelete(category) {
-  if (!window.confirm(t('contentStudio.blogDeleteCategoryConfirm', { name: category.name }))) return;
+  if (!await confirmAction(t('contentStudio.blogDeleteCategoryConfirm', { name: category.name }))) return;
   saving.value = true;
   try {
     await deleteContentCollection(MODE, category._id);

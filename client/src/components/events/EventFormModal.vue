@@ -424,6 +424,7 @@ import { useTabs } from '@/composables/useTabs';
 import { useProjectionCreate } from '@/composables/useProjectionCreate';
 import { isAuditEventType, filterNonAuditEventTypes, filterFormsForEventLinkedForm, NON_AUDIT_EVENT_TYPES, isEventLocationGeoValid, resolveEventGeoRequired } from '@/utils/eventUtils';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   isOpen: {
     type: Boolean,
@@ -436,6 +437,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -937,7 +940,7 @@ const handleSubmit = async (e) => {
   // Phase 2B: Validate type against projection metadata
   if (!isEditing.value && isPlatformOwned.value && form.value.eventType) {
     if (!isTypeAllowed(form.value.eventType)) {
-      alert(`Event type "${form.value.eventType}" is not allowed in this app`);
+      notifications.error(`Event type "${form.value.eventType}" is not allowed in this app`);
       saving.value = false;
       return;
     }
@@ -945,22 +948,22 @@ const handleSubmit = async (e) => {
   
   // Validate required fields
   if (!form.value.eventName || !form.value.eventName.trim()) {
-    alert(t('events.eventFormModalToastEventNameIsRequired'));
+    notifications.warning(t('events.eventFormModalToastEventNameIsRequired'));
     return;
   }
   
   if (!form.value.startDateTime) {
-    alert(t('events.eventFormModalToastStartDateTimeIsRequired'));
+    notifications.warning(t('events.eventFormModalToastStartDateTimeIsRequired'));
     return;
   }
   
   if (!form.value.endDateTime) {
-    alert(t('events.eventFormModalToastEndDateTimeIsRequired'));
+    notifications.warning(t('events.eventFormModalToastEndDateTimeIsRequired'));
     return;
   }
   
   if (!form.value.assignedTo && !currentUser.value._id) {
-    alert(t('events.eventFormModalToastEventOwnerIsRequired'));
+    notifications.warning(t('events.eventFormModalToastEventOwnerIsRequired'));
     return;
   }
 
@@ -969,7 +972,7 @@ const handleSubmit = async (e) => {
     form.value.geoLocation,
     effectiveGeoRequired.value
   )) {
-    alert(t('events.eventLocationGeoRequiredHint'));
+    notifications.warning(t('events.eventLocationGeoRequiredHint'));
     return;
   }
   
@@ -984,7 +987,7 @@ const handleSubmit = async (e) => {
         throw new Error('Invalid start date/time');
       }
     } catch (error) {
-      alert(t('events.eventFormModalToastInvalidStartDateTimePlease'));
+      notifications.error(t('events.eventFormModalToastInvalidStartDateTimePlease'));
       saving.value = false;
       return;
     }
@@ -995,13 +998,13 @@ const handleSubmit = async (e) => {
         throw new Error('Invalid end date/time');
       }
     } catch (error) {
-      alert(t('events.eventFormModalToastInvalidEndDateTimePlease'));
+      notifications.error(t('events.eventFormModalToastInvalidEndDateTimePlease'));
       saving.value = false;
       return;
     }
     
     if (endDate <= startDate) {
-      alert(t('events.eventFormModalToastEndDateTimeMustBe'));
+      notifications.error(t('events.eventFormModalToastEndDateTimeMustBe'));
       saving.value = false;
       return;
     }
@@ -1138,7 +1141,7 @@ const handleSubmit = async (e) => {
       if (response.validationErrors) {
         errorMessage += '\nValidation errors:\n' + response.validationErrors.map(e => `- ${e.field}: ${e.message}`).join('\n');
       }
-      alert(errorMessage);
+      notifications.error(errorMessage);
     }
   } catch (error) {
     console.error('Error saving event - Full error:', error);
@@ -1190,7 +1193,7 @@ const handleSubmit = async (e) => {
       errorMessage = error.message;
     }
     
-    alert(errorMessage);
+    notifications.error(errorMessage);
   } finally {
     saving.value = false;
   }

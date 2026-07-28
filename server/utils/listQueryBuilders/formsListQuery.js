@@ -6,7 +6,10 @@ function buildFormsListQuery(req) {
 
   if (req.query.formType) query.formType = req.query.formType;
   if (req.query.status) query.status = req.query.status;
-  if (req.query.assignedTo) query.assignedTo = req.query.assignedTo;
+  if (req.query.assignedTo) {
+    query.assignedTo =
+      req.query.assignedTo === 'me' ? req.user._id : req.query.assignedTo;
+  }
   if (req.query.visibility) query.visibility = req.query.visibility;
 
   const { buildSearchOrConditions } = require('../searchRelevance');

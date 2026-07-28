@@ -281,7 +281,7 @@ import {
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const { success: notifySuccess, error: notifyError } = useNotifications();
+const { success: notifySuccess, error: notifyError, info: notifyInfo } = useNotifications();
 const { activeTabId, updateTabTitle, findTabById } = useTabs();
 
 const processId = computed(() => route.params.id);
@@ -461,7 +461,7 @@ const moduleLabel = computed(() => {
 });
 
 function onWebhookSecret(secret) {
-  alert(t('process.designerWebhookSecret', { secret }));
+  notifyInfo(t('process.designerWebhookSecret', { secret }));
 }
 
 function focusTriggerSetup() {
@@ -561,7 +561,7 @@ function clearValidationHighlights() {
 }
 
 function onConnectionRejected(message) {
-  alert(message || t('process.designerInvalidConnection'));
+  notifyError(message || t('process.designerInvalidConnection'));
 }
 
 function tidyLayout() {
@@ -648,7 +648,7 @@ async function loadExecutionOverlay(executionId) {
       }
     }
   } catch (e) {
-    alert(e.message || t('process.designerLoadExecutionFailed'));
+    notifyError(e.message || t('process.designerLoadExecutionFailed'));
   }
 }
 
@@ -663,7 +663,7 @@ async function runTestSimulation(payload) {
     syncFlowFromProcess();
     applyInsightOverlay();
   } catch (e) {
-    alert(e.message || t('process.designerTestFailed'));
+    notifyError(e.message || t('process.designerTestFailed'));
   } finally {
     testing.value = false;
   }
@@ -916,7 +916,7 @@ async function duplicateAndEdit() {
     ensureTriggerNodeOnCanvas();
     resetSavedSnapshot();
   } catch (e) {
-    alert(e.message || t('process.designerDuplicateFailed'));
+    notifyError(e.message || t('process.designerDuplicateFailed'));
   }
 }
 

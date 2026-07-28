@@ -225,7 +225,10 @@ import {
   getScoreRingColor,
 } from '@/utils/formScoringUtils';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   form: {
@@ -364,7 +367,7 @@ const generateReport = async () => {
     }
   } catch (error) {
     console.error('Error generating report:', error);
-    alert(t('forms.reportFailedGenerate'));
+    notifications.error(t('forms.reportFailedGenerate'));
   } finally {
     generating.value = false;
   }
@@ -396,14 +399,14 @@ const generateComprehensiveReport = async () => {
         }
         window.open(comprehensiveReportUrl.value, '_blank');
       }
-      alert(t('forms.reportComprehensiveSuccess'));
+      notifications.success(t('forms.reportComprehensiveSuccess'));
     } else {
-      alert(result.message || t('forms.reportFailedComprehensive'));
+      notifications.error(result.message || t('forms.reportFailedComprehensive'));
     }
   } catch (error) {
     console.error('Error generating comprehensive report:', error);
     const message = error?.message || t('forms.reportFailedComprehensive');
-    alert(message);
+    notifications.error(message);
   } finally {
     generatingComprehensive.value = false;
   }
@@ -425,11 +428,11 @@ const exportToExcel = async () => {
     if (result.success && result.data.excelUrl) {
       window.open(result.data.excelUrl, '_blank');
     } else {
-      alert(t('forms.reportFailedExport'));
+      notifications.error(t('forms.reportFailedExport'));
     }
   } catch (error) {
     console.error('Error exporting Excel:', error);
-    alert(t('forms.reportFailedExport'));
+    notifications.error(t('forms.reportFailedExport'));
   } finally {
     exportingExcel.value = false;
   }

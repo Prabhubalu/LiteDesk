@@ -465,6 +465,8 @@ import ReportBlock from './report-blocks/ReportBlock.vue';
 import BlockSettings from './report-blocks/BlockSettings.vue';
 import { evaluateBlockVisibility, hasSystemVisibilityRule } from '../../utils/blockVisibility';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   form: {
     type: Object,
@@ -475,6 +477,8 @@ const props = defineProps({
 const emit = defineEmits(['update']);
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 // Generate a unique ID for blocks/templates
 const generateId = () => `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -924,7 +928,7 @@ const deleteBlock = (index) => {
   
   // Prevent deletion of mandatory blocks
   if (block.mandatory) {
-    alert(t('forms.rtCannotDeleteCore'));
+    notifications.error(t('forms.rtCannotDeleteCore'));
     return;
   }
   
@@ -1043,19 +1047,19 @@ const cancelEditTemplateName = () => {
   editingTemplateName.value = '';
 };
 
-const deleteTemplate = (id) => {
+const deleteTemplate = async (id) => {
   if (templates.value.length <= 1) {
-    alert(t('forms.rtCannotDeleteLast'));
+    notifications.error(t('forms.rtCannotDeleteLast'));
     return;
   }
   
   const template = templates.value.find(t => t.id === id);
   if (template && template.isDefault) {
-    alert(t('forms.rtCannotDeleteDefault'));
+    notifications.error(t('forms.rtCannotDeleteDefault'));
     return;
   }
   
-  if (confirm(t('forms.rtConfirmDeleteTemplate', { name: template.name }))) {
+  if (await confirmAction(t('forms.rtConfirmDeleteTemplate', { name: template.name }))) {
     const index = templates.value.findIndex(t => t.id === id);
     templates.value.splice(index, 1);
     

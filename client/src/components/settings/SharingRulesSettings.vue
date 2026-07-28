@@ -124,11 +124,15 @@ import { getAppNameKey, getModuleLabelKey } from '@/utils/navigationLabels';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import SharingRuleFormModal from './SharingRuleFormModal.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 defineProps({
   embedded: { type: Boolean, default: false }
 });
 
 const { t, te } = useI18n();
+const notifications = useNotifications();
+
 
 const defaults = ref([]);
 const rules = ref([]);
@@ -529,7 +533,7 @@ const updateMode = async (row, mode) => {
     for (const target of targets) {
       const response = await apiClient.put(`/sharing/defaults/${target.appKey}/${target.moduleKey}`, { mode });
       if (!response.success) {
-        window.alert(response.message || t('settings.sharingSaveFailed'));
+        notifications.error(response.message || t('settings.sharingSaveFailed'));
         await fetchAll();
         return;
       }
@@ -537,7 +541,7 @@ const updateMode = async (row, mode) => {
     }
     row.mode = mode;
   } catch (err) {
-    window.alert(err.message || t('settings.sharingSaveFailed'));
+    notifications.error(err.message || t('settings.sharingSaveFailed'));
     await fetchAll();
   } finally {
     savingKey.value = '';
@@ -568,13 +572,13 @@ const handleRuleSaved = async () => {
 };
 
 const deleteRule = async (rule) => {
-  if (!window.confirm(t('settings.sharingRuleDeleteConfirm', { name: rule.name }))) return;
+  if (!await confirmAction(t('settings.sharingRuleDeleteConfirm', { name: rule.name }))) return;
   try {
     const response = await apiClient.delete(`/sharing/rules/${rule._id}`);
     if (response.success) await fetchAll();
-    else window.alert(response.message || t('settings.sharingRuleDeleteFailed'));
+    else notifications.error(response.message || t('settings.sharingRuleDeleteFailed'));
   } catch (err) {
-    window.alert(err.message || t('settings.sharingRuleDeleteFailed'));
+    notifications.error(err.message || t('settings.sharingRuleDeleteFailed'));
   }
 };
 

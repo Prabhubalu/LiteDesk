@@ -2598,5 +2598,13 @@
   "createFailed": {
     "message": "Failed to create template",
     "description": "Template create error toast"
+  },
+  "duplicateSuccess": {
+    "message": "Template duplicated",
+    "description": "Template duplicate success toast"
+  },
+  "duplicateFailed": {
+    "message": "Failed to duplicate template",
+    "description": "Template duplicate error toast"
   }
 }

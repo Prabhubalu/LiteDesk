@@ -508,6 +508,8 @@ import RelatedRecordsPanel from '@/components/relationships/RelatedRecordsPanel.
 import EngagementResponseContent from '@/components/forms/EngagementResponseContent.vue';
 import { isAuditFormType, isEngagementFormType } from '@/utils/engagementFormDisplay';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   embed: { type: Boolean, default: false },
   recordId: { type: String, default: null },
@@ -517,6 +519,8 @@ const props = defineProps({
 defineEmits(['close']);
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const { goBackToModuleList } = useRecordModuleBack();
 
 const REVIEW_STATUS_VARIANTS = {
@@ -923,7 +927,7 @@ const formatDate = (date) => {
 };
 
 const approveResponse = async () => {
-  if (!confirm(t('forms.hubConfirmApprove'))) return;
+  if (!await confirmAction(t('forms.hubConfirmApprove'))) return;
   try {
     const result = await apiClient(
       `${formsApiBase.value}/${effectiveFormId.value}/responses/${effectiveResponseId.value}/approve`,
@@ -931,18 +935,18 @@ const approveResponse = async () => {
     );
     if (result.success) {
       await fetchResponse();
-      alert(result.message || t('forms.hubResponseDetailApproved'));
+      notifications.error(result.message || t('forms.hubResponseDetailApproved'));
     } else {
-      alert(result.message || t('forms.hubApproveFailed'));
+      notifications.error(result.message || t('forms.hubApproveFailed'));
     }
   } catch (err) {
     console.error('Error approving response:', err);
-    alert(err?.message || t('forms.hubApproveFailed'));
+    notifications.error(err?.message || t('forms.hubApproveFailed'));
   }
 };
 
 const rejectResponse = async () => {
-  if (!confirm(t('forms.hubConfirmReject'))) return;
+  if (!await confirmAction(t('forms.hubConfirmReject'))) return;
   try {
     const result = await apiClient(
       `${formsApiBase.value}/${effectiveFormId.value}/responses/${effectiveResponseId.value}/reject`,
@@ -950,16 +954,16 @@ const rejectResponse = async () => {
     );
     if (result.success) {
       await fetchResponse();
-      alert(result.message || t('forms.hubResponseDetailRejected'));
+      notifications.error(result.message || t('forms.hubResponseDetailRejected'));
     }
   } catch (err) {
     console.error('Error rejecting response:', err);
-    alert(t('forms.hubRejectFailed'));
+    notifications.error(t('forms.hubRejectFailed'));
   }
 };
 
 const sendBackForCorrection = async () => {
-  if (!confirm(t('forms.hubResponseDetailSendBackConfirm'))) return;
+  if (!await confirmAction(t('forms.hubResponseDetailSendBackConfirm'))) return;
   await rejectResponse();
 };
 
@@ -975,21 +979,21 @@ const scrollToCorrectiveActions = () => {
 
 const closeResponse = async () => {
   if (!canCloseResponse.value) {
-    alert(t('forms.hubResponseDetailCannotClose'));
+    notifications.error(t('forms.hubResponseDetailCannotClose'));
     return;
   }
-  if (!confirm(t('forms.hubResponseDetailCloseConfirm'))) return;
+  if (!await confirmAction(t('forms.hubResponseDetailCloseConfirm'))) return;
   try {
     await fetchResponse();
     const currentStatus = response.value?.reviewStatus || response.value?.status;
     if (currentStatus === 'Closed') {
-      alert(t('forms.hubResponseDetailClosedSuccess'));
+      notifications.success(t('forms.hubResponseDetailClosedSuccess'));
     } else {
-      alert(t('forms.hubResponseDetailNotClosedYet'));
+      notifications.error(t('forms.hubResponseDetailNotClosedYet'));
     }
   } catch (err) {
     console.error('Error closing response:', err);
-    alert(t('forms.hubResponseDetailCloseFailed'));
+    notifications.error(t('forms.hubResponseDetailCloseFailed'));
   }
 };
 

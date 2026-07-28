@@ -54,6 +54,7 @@ import { buildRecordDetailFromRegistry } from '@/utils/buildRecordDetailFromRegi
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   moduleKey: {
     type: String,
@@ -66,6 +67,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const emit = defineEmits(['record-updated', 'record-deleted']);
 
@@ -321,7 +324,7 @@ const confirmDelete = async () => {
     emit('record-deleted');
   } catch (err) {
     console.error('[RecordDetail] Error deleting record:', err);
-    alert(err.message || t('records.recordDetailToastFailedToDeleteRecordPlease'));
+    notifications.error(err.message || t('records.recordDetailToastFailedToDeleteRecordPlease'));
   } finally {
     deleting.value = false;
   }

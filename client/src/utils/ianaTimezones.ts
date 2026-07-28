@@ -18,8 +18,7 @@ const COMMON_TIMEZONES = [
   'Australia/Sydney'
 ];
 
-/** Regions included in the business-hours timezone picker. */
-const PICKER_REGION_PREFIXES = ['Africa/', 'America/'] as const;
+const REGION_ORDER = ['UTC', 'Popular', 'Africa', 'America', 'Asia', 'Europe', 'Pacific', 'Other'] as const;
 
 export interface TimezonePickerOption {
   value: string;
@@ -49,52 +48,39 @@ function regionGroup(timezone: string): string {
 }
 
 /**
- * Options for the business-hours timezone picker: Popular, Africa, America,
- * plus the currently selected zone if it falls outside those regions.
+ * Full IANA timezone options for the business-hours picker:
+ * Popular shortcuts first, then every supported zone grouped by region.
  */
 export function buildTimezonePickerOptions(selectedTimezone?: string | null): TimezonePickerOption[] {
-  const zoneSet = new Set<string>(['UTC']);
-
+  const zoneSet = new Set<string>(getAllIanaTimezones());
+  zoneSet.add('UTC');
   for (const tz of COMMON_TIMEZONES) {
     zoneSet.add(tz);
   }
-
-  for (const tz of getAllIanaTimezones()) {
-    if (PICKER_REGION_PREFIXES.some((prefix) => tz.startsWith(prefix))) {
-      zoneSet.add(tz);
-    }
-  }
-
   if (selectedTimezone?.trim()) {
     zoneSet.add(selectedTimezone.trim());
   }
 
-  const popular = COMMON_TIMEZONES.filter(
-    (z) =>
-      zoneSet.has(z) &&
-      (z === 'UTC' || z.startsWith('Africa/') || z.startsWith('America/'))
-  );
-  const africa = [...zoneSet].filter((z) => z.startsWith('Africa/')).sort();
-  const america = [...zoneSet].filter((z) => z.startsWith('America/')).sort();
+  const popularSet = new Set(COMMON_TIMEZONES.filter((z) => zoneSet.has(z)));
+  const byRegion = new Map<string, string[]>();
 
-  const selected = selectedTimezone?.trim();
-  const showCurrentGroup =
-    selected &&
-    selected !== 'UTC' &&
-    !selected.startsWith('Africa/') &&
-    !selected.startsWith('America/');
+  for (const value of zoneSet) {
+    if (popularSet.has(value) && value !== 'UTC') continue;
+    const group = regionGroup(value);
+    if (group === 'UTC' && popularSet.has('UTC')) continue;
+    const list = byRegion.get(group) || [];
+    list.push(value);
+    byRegion.set(group, list);
+  }
+
+  for (const list of byRegion.values()) {
+    list.sort();
+  }
 
   const options: TimezonePickerOption[] = [];
 
-  if (showCurrentGroup) {
-    options.push({ value: selected, label: selected, group: 'Current selection' });
-  }
-
-  if (zoneSet.has('UTC') && !popular.includes('UTC')) {
-    options.push({ value: 'UTC', label: 'UTC', group: 'UTC' });
-  }
-
-  for (const value of popular) {
+  for (const value of COMMON_TIMEZONES) {
+    if (!zoneSet.has(value)) continue;
     options.push({
       value,
       label: value,
@@ -102,14 +88,14 @@ export function buildTimezonePickerOptions(selectedTimezone?: string | null): Ti
     });
   }
 
-  for (const value of africa) {
-    if (popular.includes(value)) continue;
-    options.push({ value, label: value, group: 'Africa' });
-  }
-
-  for (const value of america) {
-    if (popular.includes(value)) continue;
-    options.push({ value, label: value, group: 'America' });
+  for (const group of REGION_ORDER) {
+    if (group === 'UTC' || group === 'Popular') continue;
+    const list = byRegion.get(group);
+    if (!list?.length) continue;
+    for (const value of list) {
+      if (popularSet.has(value)) continue;
+      options.push({ value, label: value, group });
+    }
   }
 
   return options;

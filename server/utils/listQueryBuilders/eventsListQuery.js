@@ -57,6 +57,21 @@ function buildEventsListQuery(req) {
 
   if (relatedId) query.relatedToId = relatedId;
 
+  // Flat assignedTo from list filters / My Events system view (client may send userId or "me")
+  const assignedTo = req.query.assignedTo;
+  if (assignedTo !== undefined && assignedTo !== '') {
+    if (assignedTo === 'unassigned' || assignedTo === 'null') {
+      query = {
+        $and: [
+          query,
+          { $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }] },
+        ],
+      };
+    } else {
+      query.assignedTo = assignedTo === 'me' ? req.user._id : assignedTo;
+    }
+  }
+
   if (scope === 'mine') {
     const currentUserId = req.user._id;
     query.$or = [

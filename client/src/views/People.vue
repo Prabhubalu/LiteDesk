@@ -314,8 +314,11 @@ import {
 } from '@/utils/peopleModuleFieldUtils';
 import { startBulkDelete } from '@/utils/runBulkDelete';
 
+import { useNotifications } from '@/composables/useNotifications';
 const router = useRouter();
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const authStore = useAuthStore();
 const { openTab } = useTabs();
 
@@ -654,9 +657,9 @@ const bulkDeletePeople = async (selectedRows) => {
             firstError?.message ||
             'Failed to delete some people';
           if (firstError?.response?.status === 403) {
-            alert(`Permission denied: ${errorMessage}`);
+            notifications.error(`Permission denied: ${errorMessage}`);
           } else {
-            alert(`Failed to delete ${failedCount} of ${idsToDelete.length} people. ${errorMessage}`);
+            notifications.error(`Failed to delete ${failedCount} of ${idsToDelete.length} people. ${errorMessage}`);
           }
           if (deletedCount > 0 && moduleListRef.value?.refresh) {
             moduleListRef.value.refresh();
@@ -670,7 +673,7 @@ const bulkDeletePeople = async (selectedRows) => {
     },
     onError: (error) => {
       console.error('Error bulk deleting people:', error);
-      alert(`Error deleting people: ${error.message || t('common.peopleToastUnknownError')}`);
+      notifications.error(`Error deleting people: ${error.message || t('common.peopleToastUnknownError')}`);
     },
   });
 };
@@ -730,7 +733,7 @@ const bulkExportPeople = async (selectedRows) => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error bulk exporting people:', error);
-    alert(t('common.peopleToastErrorExportingPeoplePleaseTry'));
+    notifications.error(t('common.peopleToastErrorExportingPeoplePleaseTry'));
   }
 };
 
@@ -766,7 +769,7 @@ const exportContacts = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting contacts:', error);
-    alert(t('common.peopleToastErrorExportingContactsPleaseTry'));
+    notifications.error(t('common.peopleToastErrorExportingContactsPleaseTry'));
   }
 };
 

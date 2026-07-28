@@ -183,7 +183,10 @@ import CaseResponseSlaListCell from '@/components/cases/CaseResponseSlaListCell.
 import { useTabs } from '@/composables/useTabs';
 import { ListBulletIcon, ViewColumnsIcon, PlusIcon, HashtagIcon, FlagIcon, UserIcon } from '@heroicons/vue/24/outline';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const router = useRouter();
 const route = useRoute();
 const { openTab } = useTabs();
@@ -521,7 +524,7 @@ async function handleBulkAction(action, rows) {
     refreshList();
     if (currentView.value === 'kanban') fetchKanbanCases();
   } catch (err) {
-    alert(err?.response?.data?.message || err?.message || 'Bulk update failed');
+    notifications.error(err?.response?.data?.message || err?.message || 'Bulk update failed');
   }
 }
 
@@ -534,7 +537,7 @@ const handleKanbanUpdate = async ({ item, newStage }) => {
     refreshList();
   } catch (err) {
     console.error('Error updating case status:', err);
-    alert(err?.response?.data?.message || err?.message || t('cases.casesToastFailedToUpdateStatus'));
+    notifications.error(err?.response?.data?.message || err?.message || t('cases.casesToastFailedToUpdateStatus'));
   }
 };
 

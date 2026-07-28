@@ -98,6 +98,7 @@ import {
   captureAnalyticsReportExecuted,
 } from '@/config/posthogAnalytics';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -200,7 +201,7 @@ async function exportRow(id) {
 }
 
 async function archiveRow(row) {
-  if (!window.confirm(t('analytics.archiveConfirm', { name: row.name }))) return;
+  if (!await confirmAction(t('analytics.archiveConfirm', { name: row.name }))) return;
   const res = await archiveReport(String(row._id));
   if (res?.success) {
     captureAnalyticsReportArchived({ report_id: row._id });

@@ -663,6 +663,7 @@ import {
   shouldShowModuleActionEditor
 } from '@/utils/rolePermissionEditorUtils';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const authStore = useAuthStore();
 const rbacV2 = computed(() => isRbacV2Enabled(authStore.organization));
@@ -1579,9 +1580,9 @@ watch(
   }
 );
 
-const requestClose = () => {
+const requestClose = async () => {
   if (saving.value) return;
-  if (isDirty.value && !confirm(t('settings.roleDrawerCloseConfirm'))) return;
+  if (isDirty.value && !await confirmAction(t('settings.roleDrawerCloseConfirm'))) return;
   emit('close');
 };
 

@@ -376,7 +376,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { TrashIcon, ArrowPathIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, ChevronUpDownIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline';
@@ -616,14 +619,14 @@ async function restore(item) {
     const res = await apiClient(`/trash/${item.moduleKey}/${item.recordId}/restore`, { method: 'POST' });
     if (res?.success) {
       if (res.orphanedReferences?.length) {
-        alert(t('common.trashToastRestoredSomeParentRecordsWere'));
+        notifications.error(t('common.trashToastRestoredSomeParentRecordsWere'));
       }
       await Promise.all([loadItems(pagination.value?.page || 1), loadStats()]);
     } else {
-      alert(res?.message || t('common.trashToastFailedToRestore'));
+      notifications.error(res?.message || t('common.trashToastFailedToRestore'));
     }
   } catch (e) {
-    alert(e.message || t('common.trashToastFailedToRestore2'));
+    notifications.error(e.message || t('common.trashToastFailedToRestore2'));
   }
 }
 
@@ -684,13 +687,13 @@ async function confirmPurge() {
         const parts = [];
         if (failed > 0) parts.push(`${failed} failed`);
         if (skipped > 0) parts.push(`${skipped} skipped (legal hold)`);
-        alert(parts.join(', '));
+        notifications.error(parts.join(', '));
       }
     } else {
-      alert(res?.message || t('common.trashToastFailedToDelete'));
+      notifications.error(res?.message || t('common.trashToastFailedToDelete'));
     }
   } catch (e) {
-    alert(e.message || t('common.trashToastFailedToDelete2'));
+    notifications.error(e.message || t('common.trashToastFailedToDelete2'));
   } finally {
     purging.value = false;
   }
@@ -723,13 +726,13 @@ async function confirmEmptyTrash() {
       await Promise.all([loadItems(1), loadStats()]);
       const skipped = Number(res.skipped || 0);
       if (skipped > 0) {
-        alert(`${skipped} item(s) on legal hold were not deleted.`);
+        notifications.warning(`${skipped} item(s) on legal hold were not deleted.`);
       }
     } else {
-      alert(res?.message || t('common.trashToastFailedToDelete'));
+      notifications.error(res?.message || t('common.trashToastFailedToDelete'));
     }
   } catch (e) {
-    alert(e.message || t('common.trashToastFailedToDelete2'));
+    notifications.error(e.message || t('common.trashToastFailedToDelete2'));
   } finally {
     emptying.value = false;
   }

@@ -78,6 +78,7 @@ import {
   resolveCurrentUserId
 } from '@/utils/recordCreateOwnerDefaults';
 
+import { useNotifications } from '@/composables/useNotifications';
 const props = defineProps({
   contact: {
     type: Object,
@@ -86,6 +87,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const emit = defineEmits(['close', 'saved']);
 
@@ -323,7 +326,7 @@ const handleSubmit = async (event) => {
       response: error.response,
       stack: error.stack
     });
-    alert(error.message || t('people.contactFormModalToastFailedToSaveContactPlease'));
+    notifications.error(error.message || t('people.contactFormModalToastFailedToSaveContactPlease'));
   } finally {
     saving.value = false;
   }

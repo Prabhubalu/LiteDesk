@@ -145,6 +145,7 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { formatSlotTime, formatSlotDate } from '@/utils/appointmentFormatters';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 
 const route = useRoute();
@@ -244,7 +245,7 @@ async function submitReschedule() {
 }
 
 async function confirmCancel() {
-  if (!confirm(t('appointments.publicCancelConfirm'))) return;
+  if (!await confirmAction(t('appointments.publicCancelConfirm'))) return;
   actionError.value = null;
   cancelling.value = true;
   try {

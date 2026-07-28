@@ -22,6 +22,10 @@ function evaluateClause(clause, data) {
   const right = clause.value;
   const operator = String(clause.operator || 'equals').toLowerCase();
 
+  const { evaluateDateFilterAwareCompare } = require('./dateFilterValueResolve');
+  const dateAware = evaluateDateFilterAwareCompare(left, operator, right);
+  if (dateAware !== null) return dateAware;
+
   switch (operator) {
     case 'equals':
     case '==':

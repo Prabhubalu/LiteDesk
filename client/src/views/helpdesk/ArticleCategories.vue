@@ -263,7 +263,11 @@ import {
   updateArticleCollection,
 } from '@/modules/contentStudio/services/contentStudioApi';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const router = useRouter();
 
 const inputClass = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900';
@@ -394,7 +398,7 @@ async function handleImageUpload(event) {
     formHeroIconKey.value = '';
     iconMode.value = 'custom';
   } catch (error) {
-    window.alert(error?.message || t('contentStudio.categoryImageUploadFailed'));
+    notifications.error(error?.message || t('contentStudio.categoryImageUploadFailed'));
   } finally {
     uploadingImage.value = false;
   }
@@ -453,7 +457,7 @@ async function handleSubmit() {
 }
 
 async function handleDelete(category) {
-  if (!window.confirm(t('contentStudio.deleteCategoryConfirm', { name: category.name }))) return;
+  if (!await confirmAction(t('contentStudio.deleteCategoryConfirm', { name: category.name }))) return;
   saving.value = true;
   try {
     await deleteArticleCollection(category._id);

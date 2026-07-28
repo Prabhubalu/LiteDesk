@@ -339,7 +339,10 @@
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '../utils/apiClient';
 
@@ -432,7 +435,7 @@ const updateStatus = async () => {
     }
   } catch (err) {
     console.error('Error updating status:', err);
-    alert(t('common.demoRequestsToastFailedToUpdateStatus'));
+    notifications.error(t('common.demoRequestsToastFailedToUpdateStatus'));
   } finally {
     updatingStatus.value = false;
   }
@@ -466,11 +469,11 @@ const convertRequest = async () => {
     if (data.success) {
       const payload = data.data || {};
       if (payload.activationEmailSent) {
-        alert(t('common.demoRequestsToastConvertedActivationSent'));
+        notifications.error(t('common.demoRequestsToastConvertedActivationSent'));
       } else if (payload.activationUrl) {
-        alert(t('common.demoRequestsToastConvertedActivationLink', { url: payload.activationUrl }));
+        notifications.error(t('common.demoRequestsToastConvertedActivationLink', { url: payload.activationUrl }));
       } else {
-        alert(t('common.demoRequestsToastSuccessfullyConvertedToOrganization'));
+        notifications.success(t('common.demoRequestsToastSuccessfullyConvertedToOrganization'));
       }
       closeConvertModal();
       await fetchDemoRequests();
@@ -478,7 +481,7 @@ const convertRequest = async () => {
     }
   } catch (err) {
     console.error('Error converting request:', err);
-    alert(err.message || t('common.demoRequestsToastFailedToConvertRequest'));
+    notifications.error(err.message || t('common.demoRequestsToastFailedToConvertRequest'));
   } finally {
     converting.value = false;
   }
@@ -495,16 +498,16 @@ const resendActivation = async (request) => {
     if (data.success) {
       const payload = data.data || {};
       if (payload.activationEmailSent) {
-        alert(t('common.demoRequestsToastActivationResent'));
+        notifications.error(t('common.demoRequestsToastActivationResent'));
       } else if (payload.activationUrl) {
-        alert(t('common.demoRequestsToastActivationLink', { url: payload.activationUrl }));
+        notifications.error(t('common.demoRequestsToastActivationLink', { url: payload.activationUrl }));
       } else {
-        alert(data.message || t('common.demoRequestsToastActivationResent'));
+        notifications.error(data.message || t('common.demoRequestsToastActivationResent'));
       }
     }
   } catch (err) {
     console.error('Error resending activation:', err);
-    alert(err.message || t('common.demoRequestsToastFailedToResendActivation'));
+    notifications.error(err.message || t('common.demoRequestsToastFailedToResendActivation'));
   } finally {
     resendingId.value = null;
   }

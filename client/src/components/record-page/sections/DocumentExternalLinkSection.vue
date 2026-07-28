@@ -51,6 +51,7 @@ import { useDocuments } from '@/composables/useDocuments';
 import { useNotifications } from '@/composables/useNotifications';
 import { resolveExternalProvider } from '@/utils/documentExternalProviders';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   record: { type: Object, default: null },
   context: { type: Object, default: () => ({}) }
@@ -97,11 +98,11 @@ async function handleCheckLink() {
   }
 }
 
-function openExternal() {
+async function openExternal() {
   const url = String(props.record?.externalUrl || '').trim();
   if (!url) return;
   if (props.record?.externalLinkStatus === 'unavailable') {
-    const proceed = window.confirm(t('documents.externalLinkUnavailableConfirm'));
+    const proceed = await confirmAction(t('documents.externalLinkUnavailableConfirm'));
     if (!proceed) return;
   }
   window.open(url, '_blank', 'noopener,noreferrer');

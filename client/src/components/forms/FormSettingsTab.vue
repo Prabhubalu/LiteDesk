@@ -211,7 +211,10 @@ import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   form: {
@@ -314,7 +317,7 @@ onMounted(() => {
 const copyPublicLink = () => {
   if (localForm.value.publicLink?.url) {
     navigator.clipboard.writeText(localForm.value.publicLink.url);
-    alert(t('forms.settingsPublicLinkCopied'));
+    notifications.success(t('forms.settingsPublicLinkCopied'));
   }
 };
 </script>

@@ -1113,7 +1113,10 @@ import { filterFormsForEventLinkedForm, resolveEventGeoRequired } from '@/utils/
 import { createEmptyGeoLocation } from '@/types/eventLocation.types';
 import { isModuleRegistered } from '@/platform/fields/FieldRegistry';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const { defaultPhoneCountry } = useDefaultPhoneCountry(computed(() => props.formContext));
 
@@ -1435,19 +1438,20 @@ const filteredPicklistOptions = computed(() => {
   }
   
   const allowedOptions = props.dependencyState?.allowedOptions;
-  if (!allowedOptions || !Array.isArray(allowedOptions) || allowedOptions.length === 0) {
+  // null/undefined = no restriction; [] = restrict to none (controlling value unset/unmapped)
+  if (allowedOptions == null || !Array.isArray(allowedOptions)) {
     return mergedPicklistSourceOptions.value;
   }
-  
+
   // Normalize allowedOptions to strings for comparison
   const normalizedAllowed = allowedOptions.map(opt => String(opt || ''));
-  
+
   // Filter options to only show allowed ones
   const filtered = mergedPicklistSourceOptions.value.filter(option => {
     const optionValue = String(getPicklistOptionValue(option) || '');
     return normalizedAllowed.includes(optionValue);
   });
-  
+
   if (filtered.length === 0 && normalizedAllowed.length > 0) {
     console.warn('⚠️ No picklist options matched dependency filter:', {
       fieldKey: props.field.key,
@@ -1455,7 +1459,7 @@ const filteredPicklistOptions = computed(() => {
       allOptions: mergedPicklistSourceOptions.value.map(opt => getPicklistOptionValue(opt))
     });
   }
-  
+
   return filtered;
 });
 
@@ -1850,13 +1854,13 @@ const handleImageUpload = async (event) => {
 
   // Validate file type
   if (!file.type.startsWith('image/')) {
-    alert(t('validation.imageFileRequired'));
+    notifications.warning(t('validation.imageFileRequired'));
     return;
   }
 
   // Validate file size (10MB limit)
   if (file.size > 10 * 1024 * 1024) {
-    alert(t('validation.imageMaxSize'));
+    notifications.error(t('validation.imageMaxSize'));
     return;
   }
 
@@ -1894,7 +1898,7 @@ const handleImageUpload = async (event) => {
     }
   } catch (error) {
     console.error('Image upload error:', error);
-    alert(t('validation.imageUploadFailed'));
+    notifications.error(t('validation.imageUploadFailed'));
   } finally {
     uploading.value = false;
     // Reset input to allow re-uploading the same file

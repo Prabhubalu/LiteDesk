@@ -210,6 +210,31 @@ function isSearchActive(searchTerm) {
 }
 
 /**
+ * Aggregate $match does not cast string ObjectIds the way Model.find() does.
+ * Without casting, filters like assignedTo=<userId string> return zero hits while
+ * countDocuments (which casts) still reports matches — search appears broken under
+ * My Tasks / assignee filters but works on All.
+ */
+function castMatchQueryForAggregate(Model, matchQuery) {
+  if (!matchQuery || typeof matchQuery !== 'object') return matchQuery || {};
+  if (!Model || typeof Model.find !== 'function') return matchQuery;
+  try {
+    const query = Model.find(matchQuery);
+    if (typeof query.cast === 'function') {
+      query.cast(Model);
+    } else if (typeof query._castConditions === 'function') {
+      query._castConditions();
+    }
+    if (typeof query.getFilter === 'function') {
+      return query.getFilter();
+    }
+  } catch {
+    /* keep raw matchQuery */
+  }
+  return matchQuery;
+}
+
+/**
  * Ranked page fetch: aggregate for relevance order, then hydrate with populate.
  */
 async function fetchRankedSearchPage(Model, options) {
@@ -233,9 +258,10 @@ async function fetchRankedSearchPage(Model, options) {
     return q.sort(fallbackSort).skip(skip).limit(limit).lean(lean);
   }
 
+  const castedMatch = castMatchQueryForAggregate(Model, matchQuery);
   const sort = buildSearchAwareSort(searchTerm, fallbackSort);
   const pipeline = [
-    { $match: matchQuery },
+    { $match: castedMatch },
     { $addFields: { _searchScore: buildMongoRelevanceScoreExpr(searchTerm, fieldSpecs) } },
     { $sort: sort },
     { $skip: skip },
@@ -390,6 +416,7 @@ module.exports = {
   buildPeopleNameOrConditions,
   buildMongoRelevanceScoreExpr,
   buildSearchAwareSort,
+  castMatchQueryForAggregate,
   fetchRankedSearchPage,
   isSearchActive,
   extractSearchTermFromFilterQuery,

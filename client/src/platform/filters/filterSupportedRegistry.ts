@@ -5,15 +5,15 @@
  */
 const SUPPORTED_BY_MODULE: Record<string, ReadonlySet<string>> = {
   people: new Set(['name', 'assignedTo', 'organization', 'sales_type', 'helpdesk_role', 'email', 'phone']),
-  tasks: new Set(['status', 'priority', 'assignedTo', 'dueDate', 'projectId', 'contactId', 'organizationId']),
-  deals: new Set(['stage', 'status', 'priority', 'assignedTo', 'contactId', 'accountId', 'pipeline']),
-  organizations: new Set(['assignedTo', 'type', 'industry', 'email']),
-  events: new Set(['eventType', 'status', 'assignedTo', 'startDateTime']),
-  items: new Set(['status', 'itemType', 'category']),
-  quotes: new Set(['status', 'assignedTo', 'validUntil']),
-  sales_orders: new Set(['status', 'assignedTo', 'fulfillmentStatus', 'sourceType']),
-  invoices: new Set(['status', 'assignedTo', 'sourceType']),
-  cases: new Set(['status', 'priority', 'caseType', 'channel', 'assignedTo']),
+  tasks: new Set(['status', 'priority', 'assignedTo', 'dueDate', 'createdAt', 'projectId', 'contactId', 'organizationId']),
+  deals: new Set(['stage', 'status', 'priority', 'assignedTo', 'contactId', 'accountId', 'pipeline', 'expectedCloseDate', 'createdAt']),
+  organizations: new Set(['assignedTo', 'type', 'industry', 'email', 'createdAt']),
+  events: new Set(['eventType', 'status', 'assignedTo', 'startDateTime', 'endDateTime']),
+  items: new Set(['status', 'itemType', 'category', 'createdAt']),
+  quotes: new Set(['status', 'assignedTo', 'validUntil', 'quoteDate', 'createdAt']),
+  sales_orders: new Set(['status', 'assignedTo', 'fulfillmentStatus', 'sourceType', 'orderDate', 'createdAt']),
+  invoices: new Set(['status', 'assignedTo', 'sourceType', 'invoiceDate', 'createdAt']),
+  cases: new Set(['status', 'priority', 'caseType', 'channel', 'assignedTo', 'createdAt']),
 };
 
 export function isFilterSupportedByServer(moduleKey: string, fieldKey: string): boolean {

@@ -1202,6 +1202,7 @@ import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/auth';
 import { useNotifications } from '@/composables/useNotifications';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -1933,7 +1934,7 @@ const removeSuppressedRecipient = async (email) => {
     notifications.error(t('settings.integrationsNotifyOwnerOnlyRemoveSuppression'));
     return;
   }
-  const ok = confirm(t('settings.integrationsConfirmRemoveSuppression', { email }));
+  const ok = await confirmAction(t('settings.integrationsConfirmRemoveSuppression', { email }));
   if (!ok) return;
   removingSuppressionEmail.value = email;
   try {
@@ -2584,14 +2585,14 @@ const saveEmailConfig = async (includeGmailOAuthApp = false) => {
 
 const confirmEnable = async () => {
   if (!selectedIntegration.value) return;
-  const ok = confirm(t('settings.integrationsConfirmEnable'));
+  const ok = await confirmAction(t('settings.integrationsConfirmEnable'));
   if (!ok) return;
   await enableIntegration(selectedIntegration.value.key);
 };
 
 const confirmDisable = async () => {
   if (!selectedIntegration.value) return;
-  const ok = confirm(t('settings.integrationsConfirmDisable'));
+  const ok = await confirmAction(t('settings.integrationsConfirmDisable'));
   if (!ok) return;
   await disableIntegration(selectedIntegration.value.key);
 };

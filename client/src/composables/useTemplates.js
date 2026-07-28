@@ -155,6 +155,15 @@ export function useTemplates() {
     return response.data;
   }
 
+  async function cloneTemplate(id, name) {
+    const payload = name ? { name } : {};
+    const response = await apiClient.post(`/templates/${id}/clone`, payload);
+    if (!response?.success) {
+      throw new Error(response?.message || 'Failed to duplicate template');
+    }
+    return response.data;
+  }
+
   async function listVersions(id) {
     const response = await apiClient.get(`/templates/${id}/versions`, { cache: 'no-store' });
     if (!response?.success) {
@@ -253,6 +262,7 @@ export function useTemplates() {
     publishTemplate,
     archiveTemplate,
     deleteTemplate,
+    cloneTemplate,
     listVersions,
     validateTemplate,
     restoreVersion,

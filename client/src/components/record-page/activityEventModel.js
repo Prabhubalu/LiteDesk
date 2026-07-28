@@ -113,7 +113,11 @@ export const normalizeSystemActivityEvent = (log, options = {}) => {
   const message = options.message || log?.message || '';
 
   const capabilities = [];
-  if (options?.descriptionDiffHtml || details?.descriptionDiffHtml) {
+  if (
+    options?.descriptionDiffHtml
+    || details?.descriptionDiffHtml
+    || (Array.isArray(options?.descriptionImageChanges) && options.descriptionImageChanges.length > 0)
+  ) {
     capabilities.push(ActivityCapability.DIFF);
   }
 
@@ -139,7 +143,10 @@ export const normalizeSystemActivityEvent = (log, options = {}) => {
       author: log?.user || log?.userId,
       message,
       details,
-      descriptionDiffHtml: options?.descriptionDiffHtml || details?.descriptionDiffHtml || null
+      descriptionDiffHtml: options?.descriptionDiffHtml || details?.descriptionDiffHtml || null,
+      descriptionImageChanges: Array.isArray(options?.descriptionImageChanges)
+        ? options.descriptionImageChanges
+        : []
     }
   });
 };

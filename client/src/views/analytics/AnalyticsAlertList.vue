@@ -158,6 +158,7 @@ import {
   captureAnalyticsAlertUpdated,
 } from '@/config/posthogAnalytics';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -283,7 +284,7 @@ async function resume(id) {
 }
 
 async function remove(id) {
-  if (!window.confirm(t('analytics.alertsDeleteConfirm'))) return;
+  if (!await confirmAction(t('analytics.alertsDeleteConfirm'))) return;
   const res = await deleteAlert(id);
   if (res?.success) {
     captureAnalyticsAlertDeleted({ alert_id: id });

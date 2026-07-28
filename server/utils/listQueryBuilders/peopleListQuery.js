@@ -62,7 +62,7 @@ async function buildPeopleListQuery(req) {
         ],
       };
     } else {
-      assignedToFilter = buildAssignedToUserFilter(req.query.assignedTo);
+      assignedToFilter = buildAssignedToUserFilter(req.query.assignedTo, req.user?._id);
     }
     delete query.assignedTo;
   }

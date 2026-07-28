@@ -144,6 +144,7 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import { useGenericEventExecution } from '@/composables/useGenericEventExecution';
 import { isAuditEventType } from '@/utils/eventUtils';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   event: { type: Object, required: true },
   eventId: { type: String, required: true }
@@ -236,12 +237,12 @@ async function handleStart() {
 }
 
 async function handleComplete() {
-  if (!window.confirm(t('events.recordConfirmCompleteEvent'))) return;
+  if (!await confirmAction(t('events.recordConfirmCompleteEvent'))) return;
   await completeEvent(() => emit('updated'));
 }
 
 async function handleCancel() {
-  if (!window.confirm(t('events.recordConfirmCancelEvent'))) return;
+  if (!await confirmAction(t('events.recordConfirmCancelEvent'))) return;
   await cancelEvent(() => emit('updated'));
 }
 

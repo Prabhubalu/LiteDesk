@@ -44,7 +44,10 @@ import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import ProcessRecordPicker from '@/components/process-flow/ProcessRecordPicker.vue';
 import { getModuleOptions, PROCESS_SELECT_BUTTON_CLASS } from '@/utils/processDesignerConstants';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   defaultEntityType: { type: String, default: 'deal' }
@@ -66,7 +69,7 @@ function submit() {
     try {
       sampleEventState = JSON.parse(form.value.stateJson);
     } catch {
-      alert(t('process.testModalInvalidJson'));
+      notifications.error(t('process.testModalInvalidJson'));
       return;
     }
   }

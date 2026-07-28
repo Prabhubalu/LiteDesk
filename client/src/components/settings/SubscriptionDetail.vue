@@ -266,7 +266,10 @@ import {
   usageBarWidthPercent,
 } from '@/utils/subscriptionLimits';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 function daysRemainingLabel(count) {
   return count === 1
@@ -338,7 +341,7 @@ const goBack = () => {
 };
 
 const handleUpgrade = () => {
-  alert(t('settings.settingsSubDetailUpgradeAlert', { app: subscription.value?.appName }));
+  notifications.error(t('settings.settingsSubDetailUpgradeAlert', { app: subscription.value?.appName }));
 };
 
 const formatSubscriptionDate = (dateString) => {

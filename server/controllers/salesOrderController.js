@@ -51,7 +51,14 @@ function buildSalesOrderListQuery(req) {
   if (assignedTo === 'me') {
     assignedTo = req.user._id;
   }
-  if (assignedTo) q.assignedTo = assignedTo;
+  if (assignedTo === 'unassigned' || assignedTo === 'null') {
+    q.$and = [
+      ...(q.$and || []),
+      { $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }] },
+    ];
+  } else if (assignedTo) {
+    q.assignedTo = assignedTo;
+  }
   if (sourceQuoteId) q.sourceQuoteId = sourceQuoteId;
   if (sourceType) q.sourceType = String(sourceType).trim();
 
@@ -74,12 +81,14 @@ function buildSalesOrderListQuery(req) {
     ];
   }
 
-  return q;
+  const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+  return applyListFilterQueryParam(q, req.query, 'sales_orders', { userId: req.user?._id });
 }
 
 async function computeSalesOrderListStatistics(matchQuery) {
+  const { castMatchQueryForAggregate } = require('../utils/searchRelevance');
   const statusCounts = await SalesOrder.aggregate([
-    { $match: matchQuery },
+    { $match: castMatchQueryForAggregate(SalesOrder, matchQuery) },
     { $group: { _id: '$status', count: { $sum: 1 } } }
   ]);
 

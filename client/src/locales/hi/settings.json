@@ -19482,5 +19482,133 @@
   "tallyFieldMapHint": {
     "message": "Tally Ledger maps to Arivu Organizations. Pick fields from both dropdowns.",
     "description": "Advanced field map help"
+  },
+  "addonsTallyOwnerTitle": {
+    "message": "Default owner for Tally records",
+    "description": "Owner section title"
+  },
+  "addonsTallyOwnerDesc": {
+    "message": "Created by and Assigned to for records created from Tally. Defaults to who installed the addon. Source is set to Tally.",
+    "description": "Owner section description"
+  },
+  "addonsTallyOwnerPlaceholder": {
+    "message": "Select user…",
+    "description": "Owner select placeholder"
+  },
+  "addonsTallyOwnerSaved": {
+    "message": "Default owner saved",
+    "description": "Toast"
+  },
+  "addonsTallyOwnerSaveFailed": {
+    "message": "Could not save default owner",
+    "description": "Toast error"
+  },
+  "addonsTallyCompanyBound": {
+    "message": "Bound",
+    "description": "Company binding status badge"
+  },
+  "addonsTallyCompanyDiscovered": {
+    "message": "Discovered",
+    "description": "Company discovered but not bound badge"
+  },
+  "addonsTallyDiscoverCompanies": {
+    "message": "Discover companies",
+    "description": "Trigger Tally company discovery"
+  },
+  "addonsTallyDiscoverQueued": {
+    "message": "Company discovery queued",
+    "description": "Toast after discover job queued"
+  },
+  "addonsTallyDiscoverFailed": {
+    "message": "Could not start company discovery",
+    "description": "Toast on discover failure"
+  },
+  "addonsTallyBindCompany": {
+    "message": "Bind",
+    "description": "Bind discovered Tally company"
+  },
+  "addonsTallyUnbindCompany": {
+    "message": "Unbind",
+    "description": "Unbind Tally company"
+  },
+  "addonsTallyBindSuccess": {
+    "message": "Company bound",
+    "description": "Toast after bind"
+  },
+  "addonsTallyBindFailed": {
+    "message": "Could not bind company",
+    "description": "Toast on bind failure"
+  },
+  "addonsTallyUnbindSuccess": {
+    "message": "Company unbound",
+    "description": "Toast after unbind"
+  },
+  "addonsTallyUnbindFailed": {
+    "message": "Could not unbind company",
+    "description": "Toast on unbind failure"
+  },
+  "tallyDiscoverOnlyHint": {
+    "message": "Discover-only until mapped",
+    "description": "Hint under payroll-style modules"
+  },
+  "tallyMandatoryBannerTitle": {
+    "message": "Mandatory fields need mapping",
+    "description": "Banner title when required Arivu fields lack Tally mapping"
+  },
+  "tallyMandatoryBannerBody": {
+    "message": "Map these required fields before saving: {fields}",
+    "description": "Banner body listing unmapped mandatory field labels"
+  },
+  "tallyMandatoryMarkerTitle": {
+    "message": "Mandatory field",
+    "description": "Tooltip on required field asterisk"
+  },
+  "tallyMandatorySaveFailed": {
+    "message": "Could not save field mappings. Map all mandatory fields and try again.",
+    "description": "Fallback save error"
+  },
+  "tallyScheduledSync": {
+    "message": "Scheduled sync",
+    "description": "Enable cloud scheduler for Tally incremental sync"
+  },
+  "tallyScheduledSyncDesc": {
+    "message": "Automatically sync bound companies on your interval. Requires agent online and dry-run default off.",
+    "description": "Scheduled sync help"
+  },
+  "tallySyncInterval": {
+    "message": "Sync interval (minutes)",
+    "description": "How often each bound company syncs"
+  },
+  "tallySyncIntervalDesc": {
+    "message": "1–1440. Worker checks every 60 seconds; sync runs at most once per this interval.",
+    "description": "Sync interval help"
+  },
+  "tallyDryRunDefault": {
+    "message": "Dry-run default",
+    "description": "Keep scheduled sync from writing until ready"
+  },
+  "tallyDryRunDefaultDesc": {
+    "message": "When on, scheduled live sync stays paused. Turn off after a clean dry run.",
+    "description": "Dry-run default help"
+  },
+  "tallyScheduledBlockedByDryRun": {
+    "message": "Scheduled sync is enabled but dry-run default is still on — no live scheduled sync will run until you turn dry-run default off.",
+    "description": "Banner when schedule blocked by dry-run"
+  },
+  "fieldPermsSearchPh": {
+    "message": "Search modules or fields…",
+    "description": "Field permissions search placeholder"
+  },
+  "fieldPermsNoMatches": {
+    "message": "No modules or fields match your search.",
+    "description": "Field permissions empty search results"
+  },
+  "moduleNumberingSepNone": {
+    "message": "None",
+    "description": "No separator option for module numbering"
+  },
+  "moduleNumberingSepHelp": {
+    "message": "Joins prefix, date parts, and sequence. Choose None for IDs like ART000001.",
+    "description": "Help text under separator control"
   }
 }

@@ -1,6 +1,21 @@
 <template>
-  <div :class="variant === 'inline' ? 'space-y-2' : 'space-y-6'">
-    <p v-if="intro && variant !== 'inline'" class="text-sm text-gray-600 dark:text-gray-400">{{ intro }}</p>
+  <div :class="variant === 'inline' ? 'space-y-2' : 'space-y-4'">
+    <div
+      v-if="variant !== 'inline'"
+      class="sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-1 pb-3 -mt-1 space-y-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80"
+    >
+      <p v-if="intro" class="text-sm text-gray-600 dark:text-gray-400">{{ intro }}</p>
+      <div v-if="catalogModules.length" class="relative">
+        <MagnifyingGlassIcon class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          v-model="searchQuery"
+          type="search"
+          :placeholder="t('settings.fieldPermsSearchPh')"
+          class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700/50 pl-9 pr-3 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </div>
+    </div>
+
     <div
       v-if="!catalogModules.length"
       :class="[
@@ -10,25 +25,46 @@
     >
       {{ emptyLabel }}
     </div>
-    <template v-for="mod in catalogModules" :key="mod.moduleKey">
+    <div
+      v-else-if="variant !== 'inline' && !filteredModules.length"
+      class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 px-4 py-8 text-sm text-gray-500 dark:text-gray-400 text-center"
+    >
+      {{ t('settings.fieldPermsNoMatches') }}
+    </div>
+    <template v-for="mod in displayModules" :key="mod.moduleKey">
       <section
         v-if="variant !== 'inline'"
         class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
       >
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+        <button
+          type="button"
+          class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/40 border-b border-gray-200 dark:border-gray-700 text-left hover:bg-gray-100/80 dark:hover:bg-gray-900/60 transition-colors"
+          :aria-expanded="isModuleExpanded(mod.moduleKey)"
+          @click="toggleModule(mod.moduleKey)"
+        >
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ mod.label || mod.moduleKey }}</h4>
               <p v-if="showAppScope && scopeLabel(mod)" class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-0.5 font-medium">
                 {{ scopeLabel(mod) }}
               </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ moduleHint }}</p>
             </div>
+            <ChevronRightIcon
+              :class="[
+                'h-4 w-4 shrink-0 text-gray-400 mt-0.5 transition-transform',
+                isModuleExpanded(mod.moduleKey) && 'rotate-90'
+              ]"
+              aria-hidden="true"
+            />
           </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ moduleHint }}</p>
-        </div>
-        <div class="divide-y divide-gray-100 dark:divide-gray-700/80 max-h-80 overflow-y-auto">
+        </button>
+        <div
+          v-show="isModuleExpanded(mod.moduleKey)"
+          class="divide-y divide-gray-100 dark:divide-gray-700/80 max-h-80 overflow-y-auto"
+        >
           <FieldPermissionRow
-            v-for="field in mod.fieldCatalog"
+            v-for="field in fieldsForModule(mod)"
             :key="field.key"
             :field="field"
             :mod="mod"
@@ -65,8 +101,9 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import {
   resolveFieldOverrideLevel,
   resolveFieldRbacLevel,
@@ -94,7 +131,51 @@ const emit = defineEmits(['update:modelValue']);
 
 const { t } = useI18n();
 
+const searchQuery = ref('');
+/** @type {import('vue').Ref<Set<string>>} */
+const collapsedModules = ref(new Set());
+
 const catalogModules = computed(() => modulesWithFieldCatalog(props.modules));
+
+const normalizedSearch = computed(() => searchQuery.value.trim().toLowerCase());
+
+const filteredModules = computed(() => {
+  const q = normalizedSearch.value;
+  if (!q) return catalogModules.value;
+
+  return catalogModules.value
+    .map((mod) => {
+      const moduleHit =
+        String(mod.label || '')
+          .toLowerCase()
+          .includes(q) || String(mod.moduleKey || '').toLowerCase().includes(q);
+      const matchingFields = (mod.fieldCatalog || []).filter((field) => {
+        const label = String(field.label || '').toLowerCase();
+        const key = String(field.key || '').toLowerCase();
+        return label.includes(q) || key.includes(q);
+      });
+      if (!moduleHit && !matchingFields.length) return null;
+      return {
+        ...mod,
+        fieldCatalog: moduleHit ? mod.fieldCatalog : matchingFields
+      };
+    })
+    .filter(Boolean);
+});
+
+const displayModules = computed(() =>
+  props.variant === 'inline' ? catalogModules.value : filteredModules.value
+);
+
+watch(normalizedSearch, (q) => {
+  if (!q) return;
+  // Searching: expand all visible modules so matches are visible
+  const next = new Set(collapsedModules.value);
+  for (const mod of filteredModules.value) {
+    next.delete(mod.moduleKey);
+  }
+  collapsedModules.value = next;
+});
 
 const moduleHint = computed(() => t('settings.fieldPermsModuleHint'));
 const inheritLabel = computed(() =>
@@ -175,6 +256,21 @@ const FieldPermissionRow = defineComponent({
       );
   }
 });
+
+function fieldsForModule(mod) {
+  return mod.fieldCatalog || [];
+}
+
+function isModuleExpanded(moduleKey) {
+  return !collapsedModules.value.has(moduleKey);
+}
+
+function toggleModule(moduleKey) {
+  const next = new Set(collapsedModules.value);
+  if (next.has(moduleKey)) next.delete(moduleKey);
+  else next.add(moduleKey);
+  collapsedModules.value = next;
+}
 
 function appKeyFor(mod) {
   return mod.fieldPermissionAppKey || mod.appKey || null;

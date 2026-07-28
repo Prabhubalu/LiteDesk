@@ -71,6 +71,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   media: { type: Array, default: () => [] },
   canEdit: { type: Boolean, default: false },
@@ -79,9 +80,9 @@ const props = defineProps({
 
 const emit = defineEmits(['upload', 'set-primary', 'delete']);
 
-function confirmDelete(mediaId) {
+async function confirmDelete(mediaId) {
   if (!props.canEdit) return;
-  if (window.confirm(t('platform.catalogConfirmDeleteMedia'))) {
+  if (await confirmAction(t('platform.catalogConfirmDeleteMedia'))) {
     emit('delete', mediaId);
   }
 }

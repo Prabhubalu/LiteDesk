@@ -86,18 +86,14 @@
             class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
           />
 
-          <input
-            v-else-if="fieldDataType(clause.field) === 'date'"
-            v-model="clause.value"
-            type="date"
-            class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-          />
-
-          <input
-            v-else-if="fieldDataType(clause.field) === 'datetime'"
-            v-model="clause.value"
-            type="datetime-local"
-            class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+          <DateFilterDropdown
+            v-else-if="fieldDataType(clause.field) === 'date' || fieldDataType(clause.field) === 'datetime'"
+            :model-value="normalizeDateFilterModel(clause.value)"
+            :filter-key="clause.field || 'date'"
+            :filter-label="t('settings.slaConditionValuePh')"
+            button-class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+            teleport-options
+            @update:model-value="(v) => { clause.value = v; }"
           />
 
           <input
@@ -138,6 +134,8 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { SLA_CONDITION_OPERATORS } from '@/constants/slaPolicy';
+import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
+import { parseDateFilterValue } from '@/utils/dateFilterOptions';
 
 const props = defineProps({
   modelValue: { type: Object, required: true },
@@ -175,6 +173,12 @@ function fieldMeta(fieldKey) {
 function fieldDataType(fieldKey) {
   const dt = String(fieldMeta(fieldKey)?.dataType || '').toLowerCase();
   return dt || 'text';
+}
+
+function normalizeDateFilterModel(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'object') return parseDateFilterValue(v) || v;
+  return parseDateFilterValue(v);
 }
 
 function normalizeOptions(options = []) {

@@ -29,6 +29,32 @@ function resolveRelativeDateRange(operator, value) {
     y.setDate(y.getDate() - 1);
     return { $gte: startOfDay(y), $lte: endOfDay(y) };
   }
+  if (op === 'from_now' || op === 'fromNow') {
+    return { $gte: now };
+  }
+  if (op === 'before_now' || op === 'beforeNow') {
+    return { $lte: new Date(now.getTime() - 1000) };
+  }
+  if (op === 'this_week' || op === 'thisWeek') {
+    const day = now.getDay();
+    const start = startOfDay(now);
+    start.setDate(start.getDate() - day);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    end.setMilliseconds(-1);
+    return { $gte: start, $lte: end };
+  }
+  if (op === 'this_quarter' || op === 'thisQuarter') {
+    const q = Math.floor(now.getMonth() / 3);
+    const start = new Date(now.getFullYear(), q * 3, 1);
+    const end = new Date(now.getFullYear(), q * 3 + 3, 0, 23, 59, 59, 999);
+    return { $gte: startOfDay(start), $lte: end };
+  }
+  if (op === 'this_year' || op === 'thisYear') {
+    const start = new Date(now.getFullYear(), 0, 1);
+    const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    return { $gte: startOfDay(start), $lte: end };
+  }
   if (op === 'last_7_days') {
     const start = new Date(now);
     start.setDate(start.getDate() - 7);
@@ -57,6 +83,13 @@ function resolveRelativeDateRange(operator, value) {
   }
   if (op === 'between_dates' && Array.isArray(value) && value.length === 2) {
     return { $gte: new Date(value[0]), $lte: new Date(value[1]) };
+  }
+
+  // List-style DateFilterValue stored as rule.value under operator `is`
+  const { isDateFilterValue, dateFilterValueToMongoCondition } = require('../../utils/dateFilterValueResolve');
+  if (isDateFilterValue(value)) {
+    const cond = dateFilterValueToMongoCondition(value);
+    if (cond && cond !== 'EMPTY') return cond;
   }
 
   return null;

@@ -149,6 +149,7 @@ import {
   captureAnalyticsModuleVisited,
 } from '@/config/posthogAnalytics';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const { loading, saving, fetchSettings, updateSettings } = useAnalyticsHome();
@@ -207,7 +208,7 @@ async function submitToken() {
 }
 
 async function revoke(id) {
-  if (!window.confirm(t('analytics.apiTokensRevokeConfirm'))) return;
+  if (!await confirmAction(t('analytics.apiTokensRevokeConfirm'))) return;
   await revokeToken(id);
 }
 

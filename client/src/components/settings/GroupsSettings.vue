@@ -341,6 +341,9 @@
 </template>
 
 <script setup>
+import { useNotifications } from '@/composables/useNotifications';
+
+import { confirmAction } from '@/composables/useConfirmAction';
 defineProps({
   embedded: {
     type: Boolean,
@@ -355,6 +358,8 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import GroupFormModal from '@/components/groups/GroupFormModal.vue';
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 // State
 const groups = ref([]);
@@ -538,7 +543,7 @@ const handleGroupSaved = (savedGroup) => {
 };
 
 const handleDelete = async (group) => {
-  if (!confirm(t('settings.groupsDeleteConfirm', { name: group.name }))) return;
+  if (!await confirmAction(t('settings.groupsDeleteConfirm', { name: group.name }))) return;
   
   try {
     await apiClient.delete(`/groups/${group._id}`);
@@ -548,7 +553,7 @@ const handleDelete = async (group) => {
     fetchGroups();
   } catch (error) {
     console.error('Error deleting group:', error);
-    alert(t('settings.groupsDeleteFailed'));
+    notifications.error(t('settings.groupsDeleteFailed'));
   }
 };
 

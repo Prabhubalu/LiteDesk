@@ -201,7 +201,10 @@ import {
 import { isProcessDesignerTabPath } from '@/utils/navigationLabels';
 import { useTabs } from '@/composables/useTabs';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const router = useRouter();
 const route = useRoute();
 const { activeTabId, updateTabTitle, findTabById } = useTabs();
@@ -336,7 +339,7 @@ async function continueToDesigner() {
     const res = await apiClient.post('/admin/processes', buildPayload());
     if (!res.success) throw new Error(res.message || t('process.setupCreateFailed'));
     if (res.webhookSecret) {
-      alert(t('process.designerWebhookSecret', { secret: res.webhookSecret }));
+      notifications.error(t('process.designerWebhookSecret', { secret: res.webhookSecret }));
     }
     await router.push({ name: 'process-designer', params: { id: res.data._id } });
   } catch (e) {

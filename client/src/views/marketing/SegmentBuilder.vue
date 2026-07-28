@@ -198,6 +198,7 @@ import {
   hydrateFilterBuilderFromAst
 } from '@/utils/marketingAudienceFilterConfig';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   segmentId: {
     type: String,
@@ -475,7 +476,7 @@ async function handleSubmit() {
 }
 
 async function handleDelete() {
-  if (!window.confirm(t('marketing.segmentsDeleteConfirm'))) return;
+  if (!await confirmAction(t('marketing.segmentsDeleteConfirm'))) return;
   try {
     await deleteSegment(resolvedId.value);
     notifications.success(t('marketing.segmentsDeleteSuccess'));

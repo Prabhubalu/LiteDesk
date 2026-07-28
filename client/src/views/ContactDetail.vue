@@ -415,7 +415,11 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
@@ -550,7 +554,7 @@ const handleContactUpdated = () => {
 };
 
 const deleteContact = async () => {
-  if (!confirm('Are you sure you want to delete this contact?')) return;
+  if (!await confirmAction('Are you sure you want to delete this contact?')) return;
   
   try {
     await apiClient(`/people/${route.params.id}`, {
@@ -559,7 +563,7 @@ const deleteContact = async () => {
     router.push('/people');
   } catch (err) {
     console.error('Error deleting contact:', err);
-    alert(t('common.contactDetailToastFailedToDeleteContact'));
+    notifications.error(t('common.contactDetailToastFailedToDeleteContact'));
   }
 };
 
@@ -603,7 +607,7 @@ const viewOrganization = (organizationId) => {
 };
 
 const unlinkOrganization = async () => {
-  if (!confirm('Are you sure you want to unlink this organization?')) return;
+  if (!await confirmAction('Are you sure you want to unlink this organization?')) return;
   
   try {
     const response = await apiClient.put(`/people/${contact.value._id}`, {
@@ -615,7 +619,7 @@ const unlinkOrganization = async () => {
     }
   } catch (error) {
     console.error('Error unlinking organization:', error);
-    alert(t('common.contactDetailToastFailedToUnlinkOrganization'));
+    notifications.error(t('common.contactDetailToastFailedToUnlinkOrganization'));
   }
 };
 

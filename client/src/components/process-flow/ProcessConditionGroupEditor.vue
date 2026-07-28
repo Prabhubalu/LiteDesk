@@ -143,19 +143,14 @@
                 :button-class="PROCESS_SELECT_BUTTON_CLASS"
                 @update:model-value="(v) => patchCondition(block.key, index, { value: v === 'true' ? true : v === 'false' ? false : '' })"
               />
-              <input
-                v-else-if="valueInputType(item) === 'date'"
-                :value="stringValue(item.value)"
-                type="date"
-                class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
-                @input="(e) => patchCondition(block.key, index, { value: e.target.value })"
-              />
-              <input
-                v-else-if="valueInputType(item) === 'datetime'"
-                :value="datetimeLocalValue(item.value)"
-                type="datetime-local"
-                class="w-full px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900"
-                @input="(e) => patchCondition(block.key, index, { value: e.target.value })"
+              <DateFilterDropdown
+                v-else-if="valueInputType(item) === 'date' || valueInputType(item) === 'datetime'"
+                :model-value="normalizeDateFilterModel(item.value)"
+                :filter-key="fieldKeyFor(item) || 'date'"
+                :filter-label="t('process.inspectorValueHeading')"
+                :button-class="PROCESS_SELECT_BUTTON_CLASS + ' w-full'"
+                teleport-options
+                @update:model-value="(v) => patchCondition(block.key, index, { value: v })"
               />
               <input
                 v-else
@@ -222,6 +217,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import DateFilterDropdown from '@/components/common/DateFilterDropdown.vue';
 import ProcessExpressionBuilderModal from '@/components/process-flow/ProcessExpressionBuilderModal.vue';
 import {
   getConditionOperatorOptions,
@@ -231,6 +227,7 @@ import {
   conditionPathToField
 } from '@/utils/processDesignerConstants';
 import { PROCESS_FORMULA_HELPER_CATALOG } from '@/constants/processFormulaHelperCatalog';
+import { parseDateFilterValue } from '@/utils/dateFilterOptions';
 import apiClient from '@/utils/apiClient';
 
 const { t } = useI18n();
@@ -455,6 +452,13 @@ function valueInputType(item) {
 function stringValue(v) {
   if (v == null) return '';
   return String(v);
+}
+
+/** Accept legacy ISO/date strings or DateFilterValue objects for DateFilterDropdown. */
+function normalizeDateFilterModel(v) {
+  if (v == null || v === '') return null;
+  if (typeof v === 'object') return parseDateFilterValue(v) || v;
+  return parseDateFilterValue(v);
 }
 
 function booleanString(v) {

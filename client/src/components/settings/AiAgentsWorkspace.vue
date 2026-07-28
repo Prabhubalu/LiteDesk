@@ -533,6 +533,7 @@ import { useI18n } from 'vue-i18n';
 import { EyeIcon, PlusIcon, SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 
 const loading = ref(true);
@@ -820,7 +821,7 @@ async function saveAgent() {
 
 async function confirmRevertAgent() {
   if (!currentAgent.value?.canRevert) return;
-  if (!window.confirm(t('settings.aiAgentsRevertConfirm', { name: currentAgent.value.title }))) return;
+  if (!await confirmAction(t('settings.aiAgentsRevertConfirm', { name: currentAgent.value.title }))) return;
   saving.value = true;
   actionError.value = '';
   try {
@@ -842,7 +843,7 @@ async function confirmRevertAgent() {
 
 async function confirmDeleteAgent() {
   if (!currentAgent.value) return;
-  if (!window.confirm(t('settings.aiAgentsDeleteConfirm', { name: currentAgent.value.title }))) return;
+  if (!await confirmAction(t('settings.aiAgentsDeleteConfirm', { name: currentAgent.value.title }))) return;
   saving.value = true;
   try {
     const key = currentAgent.value.key || currentAgent.value.name;
@@ -980,7 +981,7 @@ async function saveTool() {
 
 async function revertTool() {
   if (!toolEditor.value) return;
-  if (!window.confirm(t('settings.aiAgentsToolRevertConfirm', { name: toolEditor.value.name }))) return;
+  if (!await confirmAction(t('settings.aiAgentsToolRevertConfirm', { name: toolEditor.value.name }))) return;
   toolSaving.value = true;
   try {
     const name = toolEditor.value.name;

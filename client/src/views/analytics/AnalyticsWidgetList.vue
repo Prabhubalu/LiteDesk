@@ -126,6 +126,7 @@ import {
   captureAnalyticsWidgetDuplicated,
 } from '@/config/posthogAnalytics';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -197,7 +198,7 @@ async function duplicateRow(id) {
 }
 
 async function archiveRow(row) {
-  if (!window.confirm(t('analytics.widgetArchiveConfirm', { name: row.name }))) return;
+  if (!await confirmAction(t('analytics.widgetArchiveConfirm', { name: row.name }))) return;
   const res = await archiveWidget(String(row._id));
   if (res?.success) {
     captureAnalyticsWidgetArchived({ widget_id: row._id });

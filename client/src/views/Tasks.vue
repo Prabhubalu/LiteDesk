@@ -340,7 +340,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { ref, computed, watch, nextTick, onMounted, onActivated } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -705,7 +708,7 @@ const handleKanbanUpdate = async ({ item, newStage }) => {
     refreshList();
   } catch (err) {
     console.error('Error updating task status:', err);
-    alert(err?.response?.data?.message || err?.message || t('common.tasksToastFailedToUpdateTaskStatus'));
+    notifications.error(err?.response?.data?.message || err?.message || t('common.tasksToastFailedToUpdateTaskStatus'));
   }
 };
 
@@ -856,7 +859,7 @@ const handleDeleteTask = async (row) => {
     refreshList();
   } catch (error) {
     console.error('Error deleting task:', error);
-    alert(error?.response?.data?.message || error?.message || t('common.tasksToastFailedToDeleteTask'));
+    notifications.error(error?.response?.data?.message || error?.message || t('common.tasksToastFailedToDeleteTask'));
   }
 };
 
@@ -872,7 +875,7 @@ const handleBulkAction = async (action, rows) => {
     }
   } catch (error) {
     console.error('Error performing bulk action:', error);
-    alert(t('common.tasksToastErrorPerformingBulkActionPlease'));
+    notifications.error(t('common.tasksToastErrorPerformingBulkActionPlease'));
   }
 };
 
@@ -898,7 +901,7 @@ const exportTasks = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting tasks:', error);
-    alert(t('common.tasksToastErrorExportingTasksPleaseTry'));
+    notifications.error(t('common.tasksToastErrorExportingTasksPleaseTry'));
   }
 };
 

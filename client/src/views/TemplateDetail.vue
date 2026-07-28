@@ -47,6 +47,15 @@
             {{ t('templates.openBuilder') }}
           </button>
           <button
+            v-if="canCreate"
+            type="button"
+            class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm"
+            :disabled="cloneBusy"
+            @click="handleDuplicate"
+          >
+            {{ cloneBusy ? t('states.loading') : t('actions.duplicate') }}
+          </button>
+          <button
             v-if="canEdit && template.moduleScope && !template.isDefault"
             type="button"
             class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm"
@@ -235,6 +244,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { useTabs } from '@/composables/useTabs';
 import { openRecordInTab } from '@/utils/tabNavigation';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   id: { type: String, default: '' }
 });
@@ -252,6 +262,7 @@ const {
   publishTemplate,
   archiveTemplate,
   deleteTemplate,
+  cloneTemplate,
   listVersions,
   validateTemplate,
   restoreVersion,
@@ -261,6 +272,7 @@ const {
 const loading = ref(true);
 const validateBusy = ref(false);
 const deleteBusy = ref(false);
+const cloneBusy = ref(false);
 const defaultBusy = ref(false);
 const restoreBusy = ref(null);
 const renderBusy = ref(false);
@@ -271,6 +283,7 @@ const recordId = ref('');
 
 const templateId = computed(() => props.id || route.params.id);
 
+const canCreate = computed(() => authStore.can('templates', 'create'));
 const canEdit = computed(() => authStore.can('templates', 'edit'));
 const canPublish = computed(() => authStore.can('templates', 'publish'));
 const canArchive = computed(() => authStore.can('templates', 'archive'));
@@ -311,6 +324,28 @@ function openBuilder() {
     params: { id, name },
     name: `template-builder-${id}`
   });
+}
+
+async function handleDuplicate() {
+  if (!templateId.value || cloneBusy.value) return;
+  cloneBusy.value = true;
+  try {
+    const created = await cloneTemplate(templateId.value);
+    notifications.success(t('templates.duplicateSuccess'));
+    const id = created?._id || created?.id;
+    if (!id) return;
+    const name = String(created?.name || '').trim() || t('templates.detailTitle');
+    openRecordInTab(`/templates/${id}/builder`, {
+      title: name,
+      icon: 'document-text',
+      params: { id, name },
+      name: `template-builder-${id}`
+    });
+  } catch (error) {
+    notifications.error(error?.message || t('templates.duplicateFailed'));
+  } finally {
+    cloneBusy.value = false;
+  }
 }
 
 async function loadTemplate() {
@@ -412,7 +447,7 @@ async function handleArchive() {
 async function handleDelete() {
   if (!template.value) return;
   const name = String(template.value.name || '').trim() || t('templates.detailTitle');
-  if (!window.confirm(t('templates.confirmDelete', { name }))) return;
+  if (!await confirmAction(t('templates.confirmDelete', { name }))) return;
 
   deleteBusy.value = true;
   try {

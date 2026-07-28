@@ -1903,6 +1903,14 @@
     "message": "Changed {field} from \"{from}\" to \"{to}\"",
     "description": "Generic field change summary"
   },
+  "activityDescriptionImageAdded": {
+    "message": "Image added",
+    "description": "Activity feed label when a description image was added"
+  },
+  "activityDescriptionImageRemoved": {
+    "message": "Image removed",
+    "description": "Activity feed label when a description image was removed"
+  },
   "activityUpdatedRecord": {
     "message": "Updated this record",
     "description": "Generic system activity fallback"
@@ -2202,6 +2210,18 @@
   "descriptionEmptyReadonly": {
     "message": "No description yet.",
     "description": "Read-only empty description"
+  },
+  "descriptionImagePreview": {
+    "message": "Expanded description image",
+    "description": "Lightbox title/alt when expanding an inline description image"
+  },
+  "descriptionImageZoomIn": {
+    "message": "Zoom in",
+    "description": "Zoom in control for description image lightbox"
+  },
+  "descriptionImageZoomOut": {
+    "message": "Zoom out",
+    "description": "Zoom out control for description image lightbox"
   },
   "subtasksHeader": {
     "message": "Subtasks ({completed}/{total})",

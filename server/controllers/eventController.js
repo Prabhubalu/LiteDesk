@@ -336,11 +336,43 @@ exports.getEvents = async (req, res) => {
             query['appointment.isAppointment'] = true;
         }
         
-        // Date range filter
-        if (startDateTime || endDateTime) {
+        const { buildDateFieldQuery } = require('../utils/listQueryBuilders/tasksListQuery');
+        const hasStartDateFieldFilter = Boolean(
+            req.query.startDateTimeOp || req.query.startDateTimePreset
+        );
+        const hasEndDateFieldFilter = Boolean(
+            req.query.endDateTimeOp || req.query.endDateTimePreset
+        );
+
+        // Legacy calendar / system-view range: plain ISO startDateTime/endDateTime both bind startDateTime
+        if ((startDateTime || endDateTime) && !hasStartDateFieldFilter && !hasEndDateFieldFilter) {
             query.startDateTime = {};
             if (startDateTime) query.startDateTime.$gte = new Date(startDateTime);
             if (endDateTime) query.startDateTime.$lte = new Date(endDateTime);
+        }
+
+        // Column date Quick Filters / Specific Date (startDateTime* / endDateTime* Op|Preset)
+        if (hasStartDateFieldFilter) {
+            const startCond = buildDateFieldQuery('startDateTime', req.query);
+            if (startCond === 'EMPTY') {
+                query.$and = [
+                    ...(query.$and || []),
+                    { $or: [{ startDateTime: null }, { startDateTime: { $exists: false } }] },
+                ];
+            } else if (startCond) {
+                query.startDateTime = startCond;
+            }
+        }
+        if (hasEndDateFieldFilter) {
+            const endCond = buildDateFieldQuery('endDateTime', req.query);
+            if (endCond === 'EMPTY') {
+                query.$and = [
+                    ...(query.$and || []),
+                    { $or: [{ endDateTime: null }, { endDateTime: { $exists: false } }] },
+                ];
+            } else if (endCond) {
+                query.endDateTime = endCond;
+            }
         }
         
         // Event type filter
@@ -383,6 +415,21 @@ exports.getEvents = async (req, res) => {
         // Related organization filter
         if (relatedId) {
             query.relatedToId = relatedId;
+        }
+
+        // Flat assignedTo from list filters / My Events system view (client may send userId or "me")
+        const assignedTo = req.query.assignedTo;
+        if (assignedTo !== undefined && assignedTo !== '') {
+            if (assignedTo === 'unassigned' || assignedTo === 'null') {
+                query = {
+                    $and: [
+                        query,
+                        { $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }] },
+                    ],
+                };
+            } else {
+                query.assignedTo = assignedTo === 'me' ? req.user._id : assignedTo;
+            }
         }
 
         // Visibility scope filter
@@ -1226,6 +1273,17 @@ exports.updateEvent = async (req, res) => {
                     message: 'Validation failed.',
                     error: 'One or more required fields are missing.',
                     validationErrors
+                });
+            }
+
+            const { validatePicklistDependencyValues } = require('../utils/dependencyEvaluation');
+            const picklistErrors = validatePicklistDependencyValues(moduleDef.fields, validationData);
+            if (picklistErrors.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Validation failed.',
+                    code: 'PICKLIST_DEPENDENCY_VIOLATION',
+                    validationErrors: picklistErrors
                 });
             }
         }

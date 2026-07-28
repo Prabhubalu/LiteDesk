@@ -60,6 +60,7 @@ import { captureFirstTimeEmptyStateSeen } from '@/config/posthogOnboarding';
 import { captureDocumentsModuleVisited, captureDocumentUploaded, captureKnowledgeBaseViewed } from '@/config/posthogDocuments';
 import apiClient from '@/utils/apiClient';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t, te } = useI18n();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -971,12 +972,10 @@ async function processUploadFiles(files) {
           })
         );
       } else if (first?.code === 'DOCUMENT_ALREADY_EXISTS') {
-        const uploadAsVersion = window.confirm(
-          t('documents.uploadAsNewVersionConfirm', {
+        const uploadAsVersion = await confirmAction(t('documents.uploadAsNewVersionConfirm', {
             title: first.title || fileList[0]?.name || '',
             documentNumber: first.documentNumber || ''
-          })
-        );
+          }));
         if (uploadAsVersion) {
           const retry = await uploadDocuments(fileList, {
             folderId: selectedFolderId.value || undefined,

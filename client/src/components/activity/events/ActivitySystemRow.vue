@@ -20,7 +20,7 @@
         </div>
         <!-- Tags field: show colored chips instead of raw JSON -->
         <p
-          v-if="!event.descriptionDiffHtml && isTagsFieldChange"
+          v-if="!hasDescriptionDiff && isTagsFieldChange"
           class="text-[12px] leading-[1.4] text-gray-700 dark:text-gray-300"
         >
           <span class="mr-1">{{ t('records.activitySystemChangedTo', { field: ui.getSystemEventFieldLabel(event) }) }}</span>
@@ -36,7 +36,7 @@
           <span v-else class="text-gray-500 dark:text-gray-400">—</span>
         </p>
         <p
-          v-else-if="!event.descriptionDiffHtml"
+          v-else-if="!hasDescriptionDiff"
           class="text-[12px] leading-[1.4] text-gray-700 dark:text-gray-300"
         >
           {{ t('records.activitySystemChangedFromTo', {
@@ -73,6 +73,38 @@
         class="rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50 px-3 py-2 text-[12px] leading-[1.5] text-gray-700 dark:text-gray-300 [&_del]:bg-red-100 [&_del]:dark:bg-red-900/40 [&_del]:text-red-800 [&_del]:dark:text-red-200 [&_del]:line-through [&_ins]:bg-green-100 [&_ins]:dark:bg-green-900/40 [&_ins]:text-green-800 [&_ins]:dark:text-green-200 [&_ins]:no-underline"
         v-html="event.descriptionDiffHtml"
       />
+      <div
+        v-if="descriptionImageChanges.length"
+        class="space-y-1.5"
+      >
+        <div
+          v-for="(change, index) in descriptionImageChanges"
+          :key="`${change.type}-${change.src}-${index}`"
+          class="flex items-center gap-2.5 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/50 px-2.5 py-2"
+        >
+          <button
+            type="button"
+            class="shrink-0 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 overflow-hidden cursor-zoom-in"
+            @click="openImagePreview(change.src)"
+          >
+            <img
+              :src="change.src"
+              :alt="imageChangeLabel(change.type)"
+              class="h-12 w-12 object-cover"
+            >
+          </button>
+          <span
+            :class="[
+              'text-[12px] font-medium',
+              change.type === 'added'
+                ? 'text-green-700 dark:text-green-300'
+                : 'text-red-700 dark:text-red-300'
+            ]"
+          >
+            {{ imageChangeLabel(change.type) }}
+          </span>
+        </div>
+      </div>
     </div>
     <span
       v-if="event.createdAt && !ui.isFieldChangeSystemEvent(event)"
@@ -83,11 +115,19 @@
       {{ ui.formatRelativeActivityTime(event.createdAt) }}
     </span>
   </div>
+
+  <RichDescriptionImageLightbox
+    :open="showImagePreview"
+    :src="previewImageSrc"
+    @close="closeImagePreview"
+  />
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
+import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
 
 const props = defineProps({
   event: { type: Object, required: true },
@@ -95,9 +135,22 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const {
+  showImagePreview,
+  previewImageSrc,
+  closeImagePreview,
+  openImagePreview
+} = useRichDescriptionImagePreview();
 
 const details = computed(() => props.event?.payload?.details || props.event?.details || {});
 const isTagsFieldChange = computed(() => String(details.value?.field || '').toLowerCase() === 'tags');
+const descriptionImageChanges = computed(() => {
+  const changes = props.event?.descriptionImageChanges;
+  return Array.isArray(changes) ? changes.filter((item) => item?.src && (item.type === 'added' || item.type === 'removed')) : [];
+});
+const hasDescriptionDiff = computed(() =>
+  Boolean(props.event?.descriptionDiffHtml) || descriptionImageChanges.value.length > 0
+);
 const compareLink = computed(() => details.value?.compareLink || '');
 const revisionNumber = computed(() => details.value?.revisionNumber || details.value?.toRevision || null);
 const riskLevel = computed(() => details.value?.riskLevel || '');
@@ -115,6 +168,12 @@ const riskClass = computed(() => {
   if (value === 'medium') return `${base} bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200`;
   return `${base} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200`;
 });
+
+function imageChangeLabel(type) {
+  return type === 'removed'
+    ? t('records.activityDescriptionImageRemoved')
+    : t('records.activityDescriptionImageAdded');
+}
 
 function parseTagsFromValue(value) {
   if (value == null || value === '' || value === 'Empty') return [];

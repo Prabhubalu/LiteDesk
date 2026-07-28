@@ -123,11 +123,15 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import ProfileFormDrawer from './ProfileFormDrawer.vue';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 defineProps({
   embedded: { type: Boolean, default: false }
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const profiles = ref([]);
 const loading = ref(false);
@@ -176,24 +180,24 @@ const cloneProfile = async (profile) => {
     if (response.success) {
       await fetchProfiles();
     } else {
-      window.alert(response.message || t('settings.profilesCloneFailed'));
+      notifications.error(response.message || t('settings.profilesCloneFailed'));
     }
   } catch (err) {
-    window.alert(err.message || t('settings.profilesCloneFailed'));
+    notifications.error(err.message || t('settings.profilesCloneFailed'));
   }
 };
 
 const deleteProfile = async (profile) => {
-  if (!window.confirm(t('settings.profilesDeleteConfirm', { name: profile.name }))) return;
+  if (!await confirmAction(t('settings.profilesDeleteConfirm', { name: profile.name }))) return;
   try {
     const response = await apiClient.delete(`/profiles/${profile._id}`);
     if (response.success) {
       await fetchProfiles();
     } else {
-      window.alert(response.message || t('settings.profilesDeleteFailed'));
+      notifications.error(response.message || t('settings.profilesDeleteFailed'));
     }
   } catch (err) {
-    window.alert(err.message || t('settings.profilesDeleteFailed'));
+    notifications.error(err.message || t('settings.profilesDeleteFailed'));
   }
 };
 

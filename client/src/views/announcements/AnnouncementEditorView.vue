@@ -678,6 +678,7 @@ import { captureAnnouncementPublished } from '@/config/posthogAnnouncements';
 import AnnouncementLivePreview from '@/components/announcements/AnnouncementLivePreview.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const STEP_IDS = {
   message: 'step-message',
   appearance: 'step-appearance',
@@ -962,7 +963,7 @@ async function confirmLeave() {
     await runAutosave({ quiet: true });
   }
   if (!isDirty.value) return true;
-  return window.confirm(t('announcements.leaveUnsaved'));
+  return await confirmAction(t('announcements.leaveUnsaved'));
 }
 
 function handleBeforeUnload(e) {
@@ -1291,7 +1292,7 @@ async function onPublish() {
     audience: audienceSummary.value,
     when: timingSummary.value,
   });
-  if (!window.confirm(`${t('announcements.publishConfirmTitle')}\n\n${confirmBody}`)) {
+  if (!await confirmAction(`${t('announcements.publishConfirmTitle')}\n\n${confirmBody}`)) {
     return;
   }
   clearTimeout(autosaveTimer);

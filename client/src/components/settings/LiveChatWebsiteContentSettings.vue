@@ -168,6 +168,7 @@ import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const emit = defineEmits(['back']);
 const { t } = useI18n();
 const notifications = useNotifications();
@@ -250,7 +251,7 @@ async function saveEditor() {
 
 async function removePage(page) {
   if (!page?._id) return;
-  if (!window.confirm(t('settings.addonsLiveChatWebsiteContentDeleteConfirm'))) return;
+  if (!await confirmAction(t('settings.addonsLiveChatWebsiteContentDeleteConfirm'))) return;
   try {
     await apiClient.delete(`/live-chat/website-content/${page._id}`);
     notifications.success(t('settings.addonsLiveChatWebsiteContentDeleted'));

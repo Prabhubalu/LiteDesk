@@ -10,6 +10,7 @@ import {
 } from '@/config/posthogPortal';
 import { isPortalFrameworkV1Enabled } from '@/utils/portalFeatureFlags';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   peopleId: { type: String, required: true }
 });
@@ -181,7 +182,7 @@ async function confirmAssignRoles() {
 }
 
 async function disablePortal() {
-  if (!window.confirm(t('people.externalAccessDisableConfirm'))) return;
+  if (!await confirmAction(t('people.externalAccessDisableConfirm'))) return;
   await runAction(
     async () => {
       await apiClient.post(`/people/${props.peopleId}/portal/disable`);
@@ -196,7 +197,7 @@ async function disablePortal() {
 }
 
 async function removeRole(roleId) {
-  if (!window.confirm(t('people.externalAccessRemoveRoleConfirm'))) return;
+  if (!await confirmAction(t('people.externalAccessRemoveRoleConfirm'))) return;
   await runAction(
     () => apiClient.delete(`/people/${props.peopleId}/portal/roles/${roleId}`),
     t('people.externalAccessRoleRemovedSuccess')
@@ -211,7 +212,7 @@ async function resendInvite() {
 }
 
 async function resetPassword() {
-  if (!window.confirm(t('people.externalAccessResetPasswordConfirm'))) return;
+  if (!await confirmAction(t('people.externalAccessResetPasswordConfirm'))) return;
   await runAction(
     () => apiClient.post(`/people/${props.peopleId}/portal/reset-password`),
     t('people.externalAccessPasswordResetSuccess')
@@ -219,7 +220,7 @@ async function resetPassword() {
 }
 
 async function terminateSessions() {
-  if (!window.confirm(t('people.externalAccessTerminateSessionsConfirm'))) return;
+  if (!await confirmAction(t('people.externalAccessTerminateSessionsConfirm'))) return;
   await runAction(
     async () => {
       await apiClient.post(`/people/${props.peopleId}/portal/terminate-sessions`);

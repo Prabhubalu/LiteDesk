@@ -307,6 +307,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -477,7 +478,7 @@ const handleExecutionAction = async (actionData) => {
     
     // Show confirmation if required
     if (capability?.uiHints?.confirmationRequired) {
-      const confirmed = confirm(`Are you sure you want to ${capability.uiHints.label.toLowerCase()}?`);
+      const confirmed = await confirmAction(`Are you sure you want to ${capability.uiHints.label.toLowerCase()}?`);
       if (!confirmed) {
         executing.value = false;
         executingCapabilityKey.value = null;

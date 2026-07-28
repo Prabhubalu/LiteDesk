@@ -558,7 +558,10 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 // Type declaration for process.env (used in DEV-ONLY guards)
 declare const process: {
   env: {
@@ -1405,7 +1408,7 @@ const handleCheckIn = async () => {
             accuracy: position.coords.accuracy || undefined
           };
         } catch (geoError) {
-          alert(t('common.eventExecutionSurfaceToastLocationIsRequiredForCheck'));
+          notifications.warning(t('common.eventExecutionSurfaceToastLocationIsRequiredForCheck'));
           checkingIn.value = false;
           return;
         }

@@ -497,6 +497,7 @@ import {
   captureAnalyticsScheduleUpdated,
 } from '@/config/posthogAnalytics';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
@@ -828,7 +829,7 @@ async function resume(id: string) {
 }
 
 async function remove(row: AnalyticsScheduleRecord) {
-  if (!window.confirm(t('analytics.schedulesDeleteConfirm', { name: row.name }))) return;
+  if (!await confirmAction(t('analytics.schedulesDeleteConfirm', { name: row.name }))) return;
   const res = await deleteSchedule(row._id);
   if (res?.success) {
     captureAnalyticsScheduleDeleted({ schedule_id: row._id });

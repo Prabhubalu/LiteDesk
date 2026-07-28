@@ -234,7 +234,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -462,13 +465,13 @@ const handleInlineDelete = async (row) => {
 // Bulk delete
 const bulkDeleteOrganizations = async (selectedRows) => {
   if (!selectedRows || selectedRows.length === 0) {
-    alert(t('common.listBulkDeleteNoSelection'));
+    notifications.warning(t('common.listBulkDeleteNoSelection'));
     return;
   }
 
   const idsToDelete = selectedRows.map((row) => row?._id || row?.id || row).filter(Boolean);
   if (idsToDelete.length === 0) {
-    alert(t('common.listBulkDeleteNoSelection'));
+    notifications.warning(t('common.listBulkDeleteNoSelection'));
     return;
   }
 
@@ -491,9 +494,9 @@ const bulkDeleteOrganizations = async (selectedRows) => {
             firstError?.message ||
             'Failed to delete some organizations';
           if (firstError?.response?.status === 403) {
-            alert(`Permission denied: ${errorMessage}`);
+            notifications.error(`Permission denied: ${errorMessage}`);
           } else {
-            alert(`Failed to delete ${failedCount} of ${idsToDelete.length} organizations. ${errorMessage}`);
+            notifications.error(`Failed to delete ${failedCount} of ${idsToDelete.length} organizations. ${errorMessage}`);
           }
           if (deletedCount > 0 && moduleListRef.value?.refresh) {
             moduleListRef.value.refresh();
@@ -507,7 +510,7 @@ const bulkDeleteOrganizations = async (selectedRows) => {
     },
     onError: (error) => {
       console.error('Error bulk deleting organizations:', error);
-      alert(`Error deleting organizations: ${error.message || t('common.organizationsToastUnknownError')}`);
+      notifications.error(`Error deleting organizations: ${error.message || t('common.organizationsToastUnknownError')}`);
     },
   });
 };
@@ -574,7 +577,7 @@ const bulkExportOrganizations = async (selectedRows) => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error bulk exporting organizations:', error);
-    alert(t('common.organizationsToastErrorExportingOrganizationsPleaseTry'));
+    notifications.error(t('common.organizationsToastErrorExportingOrganizationsPleaseTry'));
   }
 };
 
@@ -610,7 +613,7 @@ const exportOrganizations = async () => {
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting organizations:', error);
-    alert(t('common.organizationsToastErrorExportingOrganizationsPleaseTry2'));
+    notifications.error(t('common.organizationsToastErrorExportingOrganizationsPleaseTry2'));
   }
 };
 

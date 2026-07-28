@@ -1,5 +1,5 @@
 <template>
-  <div :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain' : 'p-6'">
+  <div :class="embedded ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : 'p-6'">
     <div
       v-if="!embedded"
       class="mb-6 shrink-0"
@@ -7,11 +7,12 @@
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ t('settings.usersTabManagement') }}</h2>
       <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
         {{ t('settings.usersPageSubtitle') }}
-      </p>
+    </p>
     </div>
 
     <ListView
       :hide-page-header="embedded"
+      :fill-height="embedded"
       :title="t('settings.usersTabManagement')"
       module-key="settings-users"
       :create-label="t('settings.usersInvite')"

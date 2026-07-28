@@ -88,7 +88,17 @@ function buildInvoiceListQuery(req) {
     assertValidInvoiceStatus(String(req.query.status));
     q.status = String(req.query.status);
   }
-  if (req.query?.assignedTo) q.assignedTo = req.query.assignedTo;
+  if (req.query?.assignedTo) {
+    const raw = req.query.assignedTo;
+    if (raw === 'unassigned' || raw === 'null') {
+      q.$and = [
+        ...(q.$and || []),
+        { $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }] },
+      ];
+    } else {
+      q.assignedTo = raw === 'me' ? req.user._id : raw;
+    }
+  }
   if (req.query?.sourceType) q.sourceType = String(req.query.sourceType).trim();
 
   if (req.filterByUser && !req.viewAll) {
@@ -105,12 +115,14 @@ function buildInvoiceListQuery(req) {
     ];
   }
 
-  return q;
+  const { applyListFilterQueryParam } = require('../utils/listFilterQuery');
+  return applyListFilterQueryParam(q, req.query, 'invoices', { userId: req.user?._id });
 }
 
 async function computeInvoiceListStatistics(matchQuery) {
+  const { castMatchQueryForAggregate } = require('../utils/searchRelevance');
   const statusCounts = await Invoice.aggregate([
-    { $match: matchQuery },
+    { $match: castMatchQueryForAggregate(Invoice, matchQuery) },
     { $group: { _id: '$status', count: { $sum: 1 } } }
   ]);
   const byStatus = Object.fromEntries(statusCounts.map((row) => [row._id, row.count]));

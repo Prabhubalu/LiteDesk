@@ -52,6 +52,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const bulkDeleteStore = useBulkDeleteProgressStore();
 
@@ -85,8 +86,8 @@ const backgroundHintKey = computed(() =>
     : 'common.bulkDeleteBackgroundHint'
 );
 
-function requestCancel() {
-  if (window.confirm(t(leaveConfirmKey.value))) {
+async function requestCancel() {
+  if (await confirmAction(t(leaveConfirmKey.value))) {
     bulkDeleteStore.requestCancel();
   }
 }

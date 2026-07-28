@@ -173,6 +173,7 @@ import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const emit = defineEmits(['back']);
 const { t } = useI18n();
 const notifications = useNotifications();
@@ -265,7 +266,7 @@ async function saveEditor() {
 
 async function removeQueue(queue) {
   if (!queue?._id || queue.isDefault) return;
-  if (!window.confirm(t('settings.addonsLiveChatQueueDeleteConfirm'))) return;
+  if (!await confirmAction(t('settings.addonsLiveChatQueueDeleteConfirm'))) return;
   try {
     await apiClient.delete(`/live-chat/queues/${queue._id}`);
     notifications.success(t('settings.addonsLiveChatQueueDeleted'));

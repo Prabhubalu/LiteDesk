@@ -1,42 +1,22 @@
 <template>
-  <TransitionRoot as="template" :show="isOpen">
-    <Dialog class="relative z-[10000]" @close="handleDialogClose">
-      <TransitionChild
-        as="template"
-        enter="ease-out duration-200"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="ease-in duration-200"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
-      >
-        <div class="fixed inset-0 bg-gray-500/75 dark:bg-black/75" />
-      </TransitionChild>
-
-      <div class="fixed inset-0 overflow-hidden">
-        <div class="absolute inset-0 overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-0 sm:pl-16">
-            <TransitionChild
-              as="template"
-              enter="transform transition ease-in-out duration-300 sm:duration-300"
-              enter-from="translate-x-full"
-              enter-to="translate-x-0"
-              leave="transform transition ease-in-out duration-300 sm:duration-300"
-              leave-from="translate-x-0"
-              leave-to="translate-x-full"
-            >
-              <div class="pointer-events-auto h-full flex max-w-full">
-                <DialogPanel
-                  :class="[
-                    'rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
-                    fullMode ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]'
-                  ]"
-                >
+  <WorkspaceScopedDrawerShell
+    :is-open="isOpen"
+    draft-module-key="tasks"
+    :draft-record-id="taskEditDraftRecordId"
+    @backdrop="handleDialogClose"
+    @escape="handleDialogClose"
+  >
+              <div
+                :class="[
+                  'rounded-tl-xl overflow-hidden flex h-full flex-col bg-white dark:bg-gray-800 shadow-xl w-screen max-w-full transition-[width] duration-200 ease-out',
+                  fullMode ? 'sm:max-w-[60rem]' : 'sm:max-w-[30rem]'
+                ]"
+              >
                 <form @submit.prevent="handleSubmit" class="rounded-none relative flex h-full flex-col divide-y divide-gray-200 dark:divide-gray-700">
                   <!-- Header -->
                   <div class="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-6 sm:px-6 flex-shrink-0">
                     <div class="flex items-center justify-between">
-                      <DialogTitle class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ t('tasks.taskEditDrawerEditTask') }}</DialogTitle>
+                      <h2 class="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ t('tasks.taskEditDrawerEditTask') }}</h2>
                       <button
                         type="button"
                         class="relative rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer"
@@ -212,29 +192,23 @@
                     </div>
                   </div>
                 </form>
-              </DialogPanel>
               </div>
-            </TransitionChild>
-          </div>
-        </div>
-      </div>
-    </Dialog>
-  </TransitionRoot>
+  </WorkspaceScopedDrawerShell>
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicFormField from '@/components/common/DynamicFormField.vue';
+import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
 import TaskSubtasksField from '@/components/tasks/TaskSubtasksField.vue';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
-import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
+import { getFieldDependencyState, applyPicklistDependencyValueClears } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
 import { getTaskFieldMetadata } from '@/platform/fields/taskFieldModel';
 import { isSystemField as isSystemFieldFromEngine, canEditField } from '@/platform/fields/fieldCapabilityEngine';
@@ -256,6 +230,10 @@ const formData = ref({});
 const errors = ref({});
 const saving = ref(false);
 const fullMode = ref(false);
+const taskEditDraftRecordId = computed(() => {
+  const id = props.record?._id || props.record?.id;
+  return id != null ? String(id) : null;
+});
 
 // Simple rule: always exclude system fields from the edit drawer
 const quickCreateKeysSet = computed(() => {
@@ -378,6 +356,19 @@ function getFieldState(field) {
     { currentUser: authStore.user, moduleKey: 'tasks' }
   );
 }
+
+watch(
+  () => [formData.value, moduleDefinition.value?.fields],
+  () => {
+    const fields = moduleDefinition.value?.fields || [];
+    const cleared = applyPicklistDependencyValueClears(fields, formData.value, {
+      currentUser: authStore.user,
+      moduleKey: 'tasks',
+    });
+    if (cleared) formData.value = cleared;
+  },
+  { deep: true }
+);
 
 function updateField(key, value) {
   formData.value = { ...formData.value, [key]: value };

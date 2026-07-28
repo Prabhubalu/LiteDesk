@@ -169,6 +169,9 @@
 </template>
 
 <script setup>
+import { useNotifications } from '@/composables/useNotifications';
+
+import { confirmAction } from '@/composables/useConfirmAction';
 defineProps({
   embedded: {
     type: Boolean,
@@ -194,6 +197,8 @@ import EditUserModal from './EditUserModal.vue';
 import InviteUserDrawer from './InviteUserDrawer.vue';
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const ROLES_VIEW_KEY = 'arivu-settings-roles-view';
 const viewMode = ref(localStorage.getItem(ROLES_VIEW_KEY) || 'list');
@@ -249,7 +254,7 @@ const fetchRoles = async () => {
 };
 
 const initializeDefaultRoles = async () => {
-  if (!confirm(t('settings.rolesInitConfirm'))) return;
+  if (!await confirmAction(t('settings.rolesInitConfirm'))) return;
   try {
     const response = await apiClient.post('/roles/initialize');
     if (response.success) {
@@ -257,7 +262,7 @@ const initializeDefaultRoles = async () => {
     }
   } catch (error) {
     console.error('Error initializing roles:', error);
-    alert(t('settings.rolesInitFailed'));
+    notifications.error(t('settings.rolesInitFailed'));
   }
 };
 
@@ -293,17 +298,17 @@ const handleRoleSaved = () => {
 };
 
 const deleteRole = async (role) => {
-  if (!confirm(t('settings.rolesDeleteConfirm', { name: role.name }))) return;
+  if (!await confirmAction(t('settings.rolesDeleteConfirm', { name: role.name }))) return;
   try {
     const response = await apiClient.delete(`/roles/${role._id}`);
     if (response.success) {
       fetchRoles();
     } else {
-      alert(response.message || t('settings.rolesDeleteFailed'));
+      notifications.error(response.message || t('settings.rolesDeleteFailed'));
     }
   } catch (error) {
     console.error('Error deleting role:', error);
-    alert(error.response?.message || t('settings.rolesDeleteFailed'));
+    notifications.error(error.response?.message || t('settings.rolesDeleteFailed'));
   }
 };
 

@@ -25,6 +25,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { useAuthStore } from '@/stores/auth';
 import { getQuoteConversionEligibility, resolveConversionTypeForQuote } from '@/utils/quoteConversionEligibility';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   record: { type: Object, default: null },
   context: { type: Object, default: () => ({}) }
@@ -59,7 +60,7 @@ async function convert() {
   const msg = eligibility.value.usedExpiredOverride
     ? t('records.conversionConfirmOverride', { type: typeLabel })
     : t('records.conversionConfirm', { type: typeLabel });
-  if (!window.confirm(msg)) return;
+  if (!await confirmAction(msg)) return;
 
   busy.value = true;
   try {

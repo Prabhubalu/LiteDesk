@@ -180,6 +180,7 @@ import { useI18n } from 'vue-i18n';
 import { ref, computed } from 'vue';
 import apiClient from '../../utils/apiClient';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   task: {
     type: Object,
@@ -229,8 +230,8 @@ const toggleSubtask = async (subtask) => {
 };
 
 // Delete confirmation
-const confirmDelete = () => {
-  if (confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+const confirmDelete = async () => {
+  if (await confirmAction('Are you sure you want to delete this task? This action cannot be undone.')) {
     emit('delete', props.task._id);
   }
 };

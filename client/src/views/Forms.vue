@@ -211,9 +211,12 @@ import { XMarkIcon, ClipboardDocumentCheckIcon, ChatBubbleLeftRightIcon, HandThu
 import { useProjectionCreate } from '@/composables/useProjectionCreate';
 import { canHardDeleteForm } from '@/utils/formEditPermissions';
 
+import { useNotifications } from '@/composables/useNotifications';
 const FORM_DELETE_BLOCKED_CODE = 'FORM_HAS_SUBMITTED_RESPONSES';
 
 const { t } = useI18n();
+const notifications = useNotifications();
+
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -565,7 +568,7 @@ const viewResponses = (form) => {
 
 const handleDelete = async (form) => {
   if (!canHardDeleteForm(form)) {
-    alert(t('forms.deleteBlockedSubmittedResponses.message'));
+    notifications.warning(t('forms.deleteBlockedSubmittedResponses.message'));
     return;
   }
 
@@ -580,10 +583,10 @@ const handleDelete = async (form) => {
   } catch (error) {
     console.error('Error deleting form:', error);
     if (error?.response?.data?.code === FORM_DELETE_BLOCKED_CODE) {
-      alert(t('forms.deleteBlockedSubmittedResponses.message'));
+      notifications.warning(t('forms.deleteBlockedSubmittedResponses.message'));
       return;
     }
-    alert(t('forms.hubDeleteFormFailed.message'));
+    notifications.error(t('forms.hubDeleteFormFailed.message'));
   }
 };
 
@@ -598,7 +601,7 @@ const handleBulkAction = async (actionId, selectedRows) => {
       const skippedCount = selectedRows.length - deletableRows.length;
 
       if (skippedCount > 0) {
-        alert(t('forms.hubDeleteBlockedSubmittedCount.message', { count: skippedCount }));
+        notifications.warning(t('forms.hubDeleteBlockedSubmittedCount.message', { count: skippedCount }));
       }
 
       if (!deletableRows.length) return;
@@ -615,14 +618,14 @@ const handleBulkAction = async (actionId, selectedRows) => {
       ).length;
 
       if (blocked > 0) {
-        alert(t('forms.hubDeleteBlockedSubmittedCount.message', { count: blocked }));
+        notifications.warning(t('forms.hubDeleteBlockedSubmittedCount.message', { count: blocked }));
       }
 
       await fetchForms();
     }
   } catch (error) {
     console.error('Error performing bulk action on forms:', error);
-    alert(t('forms.hubBulkActionError'));
+    notifications.error(t('forms.hubBulkActionError'));
   }
 };
 

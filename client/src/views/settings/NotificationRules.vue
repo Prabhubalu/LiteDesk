@@ -173,7 +173,11 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, computed, onMounted } from 'vue';
 import { useNotificationRules } from '@/composables/useNotificationRules';
 import RuleBuilderModal from '@/components/notifications/RuleBuilderModal.vue';
@@ -231,7 +235,7 @@ async function handleToggle(rule) {
 }
 
 async function handleDelete(rule) {
-  if (!confirm(`Are you sure you want to delete this rule?\n\n"${formatRuleSentence(rule)}"`)) {
+  if (!await confirmAction(`Are you sure you want to delete this rule?\n\n"${formatRuleSentence(rule)}"`)) {
     return;
   }
   
@@ -240,7 +244,7 @@ async function handleDelete(rule) {
     await loadRuleLimits();
   } catch (error) {
     console.error('[NotificationRules] Error deleting rule:', error);
-    alert(t('common.notificationRulesToastFailedToDeleteRulePlease'));
+    notifications.error(t('common.notificationRulesToastFailedToDeleteRulePlease'));
   }
 }
 

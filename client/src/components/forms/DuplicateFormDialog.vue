@@ -87,7 +87,10 @@ import apiClient from '@/utils/apiClient';
 import { useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 
 const props = defineProps({
   isOpen: {
@@ -116,7 +119,7 @@ const handleCancel = () => {
 
 const handleDuplicate = async () => {
   if (!props.formId) {
-    alert(t('forms.dupFormIdRequired'));
+    notifications.warning(t('forms.dupFormIdRequired'));
     return;
   }
 
@@ -139,12 +142,12 @@ const handleDuplicate = async () => {
       emit('duplicated', duplicatedForm);
       emit('close');
     } else {
-      alert(response.message || t('forms.dupFailed'));
+      notifications.error(response.message || t('forms.dupFailed'));
     }
   } catch (error) {
     console.error('Error duplicating form:', error);
     const errorMessage = error.response?.data?.message || error.message || t('forms.dupFailed');
-    alert(errorMessage);
+    notifications.error(errorMessage);
   } finally {
     duplicating.value = false;
   }

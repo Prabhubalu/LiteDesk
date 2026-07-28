@@ -112,6 +112,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { captureMarketingAssetDeleted, captureMarketingAssetUploaded, captureMarketingModuleVisited } from '@/config/posthogMarketing';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const authStore = useAuthStore();
 const notifications = useNotifications();
@@ -184,7 +185,7 @@ async function onUpload(event) {
 async function confirmDelete(asset) {
   const id = asset._id || asset.assetId;
   if (!id) return;
-  if (!window.confirm(t('marketing.assetsDeleteConfirm'))) return;
+  if (!await confirmAction(t('marketing.assetsDeleteConfirm'))) return;
 
   try {
     await deleteAsset(id);

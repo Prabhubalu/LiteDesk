@@ -1,3 +1,4 @@
+import { showGlobalNotification } from '@/composables/useNotifications'
 /**
  * Boot order: `useAuthStore` from authRegistry stays static. `apiClient` is NOT imported at file
  * level — it is dynamically imported in `initializeDynamicRoutes` and in guards that need it, to
@@ -1935,7 +1936,7 @@ router.beforeEach(async (to, from, next) => {
     }
     if (!hasAnySettingsAccess(settingsCtx)) {
       logNavDebug('Blocked: No access to any Settings section', { path: to.path })
-      alert('You do not have access to Settings. Contact your administrator if you need configuration access.')
+      showGlobalNotification('You do not have access to Settings. Contact your administrator if you need configuration access.', { type: 'warning' })
       next(getDefaultRoute(authStore))
       return
     }
@@ -2011,7 +2012,7 @@ router.beforeEach(async (to, from, next) => {
     const org = authStore.organization;
     if (org && org.subscription?.status === 'terminated') {
       logNavDebug('Blocked: Instance is terminated')
-      alert('This instance has been terminated. Please contact your administrator.')
+      showGlobalNotification('This instance has been terminated. Please contact your administrator.', { type: 'error' })
       next({ name: 'login' })
       return
     }
@@ -2048,13 +2049,13 @@ router.beforeEach(async (to, from, next) => {
 
     if (salesModuleRedirect === 'audit-dashboard') {
       logNavDebug('Blocked: Sales route accessed by audit-only user', { route: to.path, module })
-      alert('You do not have access to Sales features. Redirecting to Audit App.')
+      showGlobalNotification('You do not have access to Sales features. Redirecting to Audit App.', { type: 'warning' })
       next({ name: 'audit-dashboard' })
       return
     }
     if (salesModuleRedirect === 'portal-dashboard') {
       logNavDebug('Blocked: Sales route accessed by portal-only user', { route: to.path, module })
-      alert('You do not have access to Sales features. Redirecting to Portal.')
+      showGlobalNotification('You do not have access to Sales features. Redirecting to Portal.', { type: 'warning' })
       next({ name: 'portal-dashboard' })
       return
     }
@@ -2080,7 +2081,7 @@ router.beforeEach(async (to, from, next) => {
   // Check if route requires master organization
   if (to.meta.requiresMasterOrganization && !authStore.isMasterOrganization) {
     logNavDebug('Blocked: Master organization required')
-    alert('This feature is only available to the application owner.')
+    showGlobalNotification('This feature is only available to the application owner.', { type: 'warning' })
     next(getDefaultRoute(authStore))
     return
   }
@@ -2088,7 +2089,7 @@ router.beforeEach(async (to, from, next) => {
   // Check if route requires platform admin (Phase 0H - Control Plane)
   if (to.meta.requiresPlatformAdmin && !authStore.isPlatformAdmin) {
     logNavDebug('Blocked: Platform admin access required')
-    alert('This feature is only available to platform administrators.')
+    showGlobalNotification('This feature is only available to platform administrators.', { type: 'warning' })
     next(getDefaultRoute(authStore))
     return
   }
@@ -2105,7 +2106,7 @@ router.beforeEach(async (to, from, next) => {
   // Check if route requires admin (Phase 15)
   if (to.meta.requiresAdmin && !authStore.isAdminLike) {
     logNavDebug('Blocked: Admin access required')
-    alert('This feature is only available to administrators.')
+    showGlobalNotification('This feature is only available to administrators.', { type: 'warning' })
     next(getDefaultRoute(authStore))
     return
   }
@@ -2125,7 +2126,7 @@ router.beforeEach(async (to, from, next) => {
     
     if (!hasAuditAccess) {
       logNavDebug('Blocked: AUDIT app access required')
-      alert('You do not have access to the Audit App. Please contact your administrator.')
+      showGlobalNotification('You do not have access to the Audit App. Please contact your administrator.', { type: 'warning' })
       next(getDefaultRoute(authStore))
       return
     }
@@ -2146,7 +2147,7 @@ router.beforeEach(async (to, from, next) => {
     
     if (!hasPortalAccess) {
       logNavDebug('Blocked: PORTAL app access required')
-      alert('You do not have access to the Portal. Please contact your administrator.')
+      showGlobalNotification('You do not have access to the Portal. Please contact your administrator.', { type: 'warning' })
       next(getDefaultRoute(authStore))
       return
     }
@@ -2167,11 +2168,11 @@ router.beforeEach(async (to, from, next) => {
     if (!hasPermission) {
       logNavDebug('Blocked: Insufficient permissions')
       if (to.meta.requiresPortalApp) {
-        alert(`You don't have permission to access this portal area. Please contact your administrator.`)
+        showGlobalNotification(`You don't have permission to access this portal area. Please contact your administrator.`, { type: 'error' })
         next({ name: 'portal-dashboard' })
         return
       }
-      alert(`You don't have permission to access ${module}. Please contact your administrator.`)
+      showGlobalNotification(`You don't have permission to access ${module}. Please contact your administrator.`, { type: 'error' })
       next(getDefaultRoute(authStore))
       return
     }

@@ -253,8 +253,9 @@
               <!-- Rich content when current version or when diff is empty -->
               <div
                 v-else-if="descriptionHistorySelectedHasContent"
-                class="text-md text-gray-900 dark:text-white px-6 py-4 leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:border-gray-200 [&_blockquote]:pl-4 [&_blockquote]:my-2 [&_blockquote]:text-gray-500 dark:[&_blockquote]:border-gray-600 dark:[&_blockquote]:text-gray-400 [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400"
+                class="text-md text-gray-900 dark:text-white px-6 py-4 leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:border-gray-200 [&_blockquote]:pl-4 [&_blockquote]:my-2 [&_blockquote]:text-gray-500 dark:[&_blockquote]:border-gray-600 dark:[&_blockquote]:text-gray-400 [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-2 [&_img]:block [&_img]:cursor-zoom-in"
                 v-html="descriptionHistorySelectedContent"
+                @click="handleRichHtmlClick"
               />
               <p v-else class="px-6 py-4 text-sm text-gray-400 dark:text-gray-500 italic m-0">
                 {{ t('records.genericNoDescInVersion') }}
@@ -322,6 +323,11 @@
             </div>
           </div>
         </div>
+        <RichDescriptionImageLightbox
+          :open="showImagePreview"
+          :src="previewImageSrc"
+          @close="closeImagePreview"
+        />
       </div>
 
       <div v-if="embed && task && !expandedLeftSection" class="pt-0 flex-shrink-0" aria-hidden="true" />
@@ -1706,6 +1712,9 @@ import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import DOMPurify from 'dompurify';
 import { sanitizeRichDescriptionHtml } from '@/utils/richDescriptionHtml';
+import { buildDescriptionActivityDiff, isDescriptionActivityFieldChange } from '@/utils/contentVersionHistory';
+import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
+import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
 import {
   ChatBubbleLeftRightIcon,
   ClockIcon,
@@ -1766,6 +1775,12 @@ import {
 } from '@/platform/fields/taskFieldModel';
 
 const { t, te } = useI18n();
+const {
+  showImagePreview,
+  previewImageSrc,
+  closeImagePreview,
+  handleRichHtmlClick
+} = useRichDescriptionImagePreview();
 
 const route = useRoute();
 const router = useRouter();
@@ -3697,16 +3712,20 @@ const fetchActivityEvents = async () => {
       const systemEvents = response.data.map((log) => {
         const baseMessage = formatActivityLog(log);
         let descriptionDiffHtml = null;
+        let descriptionImageChanges = [];
         let message = baseMessage;
-        if (log.action === 'field_changed' && log.details?.field === 'description') {
-          const fromPlain = getPlainTextFromHtml(log.details.from ?? log.details.oldValue ?? '');
-          const toPlain = getPlainTextFromHtml(log.details.to ?? log.details.newValue ?? '');
+        if (isDescriptionActivityFieldChange(log.action, log.details)) {
+          const fromValue = log.details.from ?? log.details.oldValue ?? '';
+          const toValue = log.details.to ?? log.details.newValue ?? '';
+          const descriptionDiff = buildDescriptionActivityDiff(fromValue, toValue);
           message = `${resolveActorLabel(log.user, log.userId)} changed description`;
-          descriptionDiffHtml = DOMPurify.sanitize(diffWordsToHtml(fromPlain, toPlain), { ALLOWED_TAGS: ['ins', 'del'], ALLOWED_ATTR: ['class'] });
+          descriptionDiffHtml = descriptionDiff.diffHtml;
+          descriptionImageChanges = descriptionDiff.imageChanges;
         }
         return normalizeSystemActivityEvent(log, {
           message,
           descriptionDiffHtml,
+          descriptionImageChanges,
           recordRef: {
             module: 'tasks',
             id: String(task.value?._id || '')
@@ -4099,7 +4118,7 @@ const scrollActivityToBottom = (options = {}) => {
   nextTick(() => {
     const comp = activityTimelineRef.value;
     if (comp?.scrollToBottom) {
-      comp.scrollToBottom();
+      comp.scrollToBottom({ behavior });
       return;
     }
     const feedEl = comp?.feedEl;
@@ -4980,6 +4999,8 @@ const handleFieldSave = async (fieldName, newValue) => {
         }
       }
       notifyTaskListUpdated();
+      await fetchActivityEvents();
+      runActivityScrollToBottom({ behavior: 'smooth' });
     }
   } catch (err) {
     console.error(`Error updating task ${fieldName}:`, err);
@@ -4996,14 +5017,19 @@ watch(() => task.value?.description, (newDesc) => {
   isDescriptionExpanded.value = false;
 });
 
-function runActivityScrollToBottom() {
+function runActivityScrollToBottom(options = {}) {
+  const behavior = options.behavior ?? 'auto';
   const activeTab = rightPaneRef.value?.activeTab?.value;
   const hasContent = (activityEvents.value?.length ?? 0) > 0 || (emailThreads.value?.length ?? 0) > 0;
   if (activeTab !== 'activity' || !hasContent || !activityTimelineRef.value || isThreadViewActive.value) return;
   const run = () => {
-    scrollActivityToBottom();
-    setTimeout(() => scrollActivityToBottom(), 150);
-    setTimeout(() => scrollActivityToBottom(), 400);
+    scrollActivityToBottom({ behavior });
+    if (behavior === 'smooth') {
+      setTimeout(() => scrollActivityToBottom({ behavior: 'smooth' }), 180);
+      return;
+    }
+    setTimeout(() => scrollActivityToBottom({ behavior }), 150);
+    setTimeout(() => scrollActivityToBottom({ behavior }), 400);
   };
   nextTick(() => {
     requestAnimationFrame(() => requestAnimationFrame(run));
@@ -5389,7 +5415,7 @@ const handleUnlinkRelated = async (type, record) => {
     await fetchRelatedRecords();
   } catch (err) {
     console.error('Error unlinking related record:', err);
-    alert(t('records.genericUnlinkFailed'));
+    notifications.error(t('records.genericUnlinkFailed'));
   }
 };
 
@@ -5519,7 +5545,7 @@ const handleLinkRecordDrawerLinked = async ({ moduleKey, ids, context, relations
     closeLinkRecordDrawer();
   } catch (err) {
     console.error('Error linking record:', err);
-    alert(t('records.taskLinkModuleFailed', { moduleKey }));
+    notifications.error(t('records.taskLinkModuleFailed', { moduleKey }));
   }
 };
 
@@ -5564,7 +5590,7 @@ const {
   recordRef: task,
   closeRoute: '/tasks',
   router,
-  onCopySuccess: () => alert(t('records.taskCopyUrlSuccess')),
+  onCopySuccess: () => notifications.success(t('records.taskCopyUrlSuccess')),
   toggleFollow: async (_record, current) => !current,
   duplicate: async (record) => {
     console.log('Duplicate task:', record._id);
@@ -5641,7 +5667,7 @@ async function copyTaskUrl() {
   if (!url) return;
   try {
     await navigator.clipboard.writeText(url);
-    alert(t('records.taskCopyUrlSuccess'));
+    notifications.success(t('records.taskCopyUrlSuccess'));
   } catch (err) {
     console.error('Error copying URL:', err);
   }

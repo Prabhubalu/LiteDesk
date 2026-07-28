@@ -157,6 +157,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useAppShellStore } from '@/stores/appShell';
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
@@ -319,7 +320,7 @@ const getStatusBadgeClass = (status) => {
 };
 
 const handleEnable = async (app) => {
-  if (!confirm(t('settings.settingsAppMgmtEnableConfirm', { app: getAppDisplayName(app) }))) {
+  if (!await confirmAction(t('settings.settingsAppMgmtEnableConfirm', { app: getAppDisplayName(app) }))) {
     return;
   }
 
@@ -372,7 +373,7 @@ const handleEnable = async (app) => {
 };
 
 const handleDisable = async (app) => {
-  if (!confirm(t('settings.settingsAppMgmtDisableConfirm', { app: getAppDisplayName(app) }))) {
+  if (!await confirmAction(t('settings.settingsAppMgmtDisableConfirm', { app: getAppDisplayName(app) }))) {
     return;
   }
 

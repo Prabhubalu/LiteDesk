@@ -76,6 +76,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { useAuthStore } from '@/stores/auth';
 import InvoiceSendEmailDrawer from '@/components/record-page/sections/InvoiceSendEmailDrawer.vue';
 
+import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
   record: { type: Object, default: null },
   context: { type: Object, default: () => ({}) }
@@ -196,8 +197,8 @@ const workflowActions = computed(() => {
       key: 'post',
       label: t('records.invoicePost'),
       className: 'bg-indigo-600 hover:bg-indigo-700 text-white',
-      handler: () => {
-        if (!window.confirm(t('records.invoicePostConfirm'))) return;
+      handler: async () => {
+        if (!(await confirmAction(t('records.invoicePostConfirm')))) return;
         runAction('/post', 'records.invoicePostSuccess');
       }
     });

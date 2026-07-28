@@ -21,8 +21,10 @@ function normalizeAssignedToUserId(value) {
   return mongoose.Types.ObjectId.isValid(raw) ? new mongoose.Types.ObjectId(raw) : value;
 }
 
-function buildAssignedToUserFilter(userId) {
-  return { assignedTo: normalizeAssignedToUserId(userId) };
+function buildAssignedToUserFilter(userId, currentUserId) {
+  const resolved = userId === 'me' ? currentUserId : userId;
+  if (resolved === undefined || resolved === null || resolved === '') return null;
+  return { assignedTo: normalizeAssignedToUserId(resolved) };
 }
 
 function mergeSearchAndAssignedToFilters(query, searchFilter, assignedToFilter) {
@@ -121,7 +123,7 @@ async function buildOrganizationListMongoQuery({
         ]
       };
     } else {
-      assignedToFilter = buildAssignedToUserFilter(params.assignedTo);
+      assignedToFilter = buildAssignedToUserFilter(params.assignedTo, user?._id);
     }
   }
 

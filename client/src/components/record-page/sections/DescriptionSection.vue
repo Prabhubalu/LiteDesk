@@ -24,17 +24,23 @@
         canEdit ? 'cursor-text' : '',
         !hasDescription && canEdit ? 'transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40' : ''
       ]"
-      @click="startEdit"
+      @click="onDescriptionAreaClick"
     >
       <div
         v-if="description"
-        class="min-h-[120px] px-6 py-4 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-2 [&_img]:block"
+        class="min-h-[120px] px-6 py-4 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_p:last-child]:mb-0 [&_p]:leading-[1.75] [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:my-4 [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:my-4 [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:my-4 [&_h3]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:pl-6 [&_ol]:pl-6 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:text-indigo-600 [&_a]:underline dark:[&_a]:text-indigo-400 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-2 [&_img]:block [&_img]:cursor-zoom-in"
         v-html="sanitizedDescription"
       ></div>
       <p v-else class="px-6 py-2 text-sm text-gray-500 dark:text-gray-400 italic m-0">
         {{ canEdit ? t('records.descriptionAdd') : t('records.descriptionEmptyReadonly') }}
       </p>
     </div>
+
+    <RichDescriptionImageLightbox
+      :open="showImagePreview"
+      :src="previewImageSrc"
+      @close="closeImagePreview"
+    />
   </section>
 </template>
 
@@ -46,6 +52,8 @@ import {
   deleteOrphanSessionUploads,
   deleteRemovedInlineUploads
 } from '@/utils/inlineUploadStorage';
+import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
+import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 
 const props = defineProps({
@@ -58,6 +66,12 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const {
+  showImagePreview,
+  previewImageSrc,
+  closeImagePreview,
+  handleRichHtmlClick
+} = useRichDescriptionImagePreview();
 
 const title = computed(() => props.adapter?.getDescriptionTitle?.(props.record, props.context) || t('records.descriptionTitle'));
 const description = computed(() => props.adapter?.getDescription?.(props.record, props.context) || '');
@@ -84,6 +98,10 @@ const startEdit = () => {
   sessionUploadedUrls.value = [];
   isEditing.value = true;
   editingValue.value = String(description.value || '');
+};
+
+const onDescriptionAreaClick = (event) => {
+  handleRichHtmlClick(event, { onNonImage: startEdit });
 };
 
 const onImageUploaded = (url) => {

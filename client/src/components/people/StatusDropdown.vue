@@ -85,7 +85,10 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 
+import { useNotifications } from '@/composables/useNotifications';
 const { t } = useI18n();
+const notifications = useNotifications();
+
 import { ref, computed, watch, onUnmounted } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { usePeopleModuleFields } from '@/composables/usePeopleModuleFields';
@@ -247,11 +250,11 @@ const handleStatusSelect = async (newStatus) => {
       showDropdown.value = false;
     } else {
       console.error('Failed to update status:', response.message);
-      alert(response.message || t('people.statusDropdownToastFailedToUpdateStatus'));
+      notifications.error(response.message || t('people.statusDropdownToastFailedToUpdateStatus'));
     }
   } catch (error) {
     console.error('Error updating status:', error);
-    alert(error.response?.data?.message || t('people.statusDropdownToastErrorUpdatingStatus'));
+    notifications.error(error.response?.data?.message || t('people.statusDropdownToastErrorUpdatingStatus'));
   } finally {
     updating.value = false;
   }

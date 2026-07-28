@@ -47,14 +47,21 @@
       />
       <div
         v-else
-        class="min-h-[calc(100vh-14rem)] overflow-y-auto px-8 py-6 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_pre]:rounded-lg [&_pre]:bg-gray-100 [&_pre]:p-3 dark:[&_pre]:bg-gray-800"
+        class="min-h-[calc(100vh-14rem)] overflow-y-auto px-8 py-6 text-md text-gray-900 dark:text-white leading-[1.75] [&_p]:mb-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_pre]:rounded-lg [&_pre]:bg-gray-100 [&_pre]:p-3 dark:[&_pre]:bg-gray-800 [&_img]:max-w-full [&_img]:rounded-md [&_img]:cursor-zoom-in"
         v-html="sanitizedContent"
+        @click="handleRichHtmlClick"
       />
     </div>
 
     <p v-if="saving" class="flex-shrink-0 text-xs text-gray-500 dark:text-gray-400">
       {{ t('documents.editorSaving') }}
     </p>
+
+    <RichDescriptionImageLightbox
+      :open="showImagePreview"
+      :src="previewImageSrc"
+      @close="closeImagePreview"
+    />
   </div>
 </template>
 
@@ -63,6 +70,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import DocumentEditor from '@/components/documents/DocumentEditor.vue';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
+import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
+import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
 import { getRichContentHtml, toRichContentPayload } from '@/utils/documentRichContent';
 import { sanitizeRichDescriptionHtml } from '@/utils/richDescriptionHtml';
 import {
@@ -85,6 +94,12 @@ const emit = defineEmits(['save', 'publish', 'inline-comment-request', 'draft-sa
 
 const { t } = useI18n();
 const { saveDocumentEditDraft, deleteDocumentEditDraft } = useDocuments();
+const {
+  showImagePreview,
+  previewImageSrc,
+  closeImagePreview,
+  handleRichHtmlClick
+} = useRichDescriptionImagePreview();
 
 const editingValue = ref('');
 const editBaselineHtml = ref('');

@@ -452,5 +452,8 @@ const focusCommentInput = () => {
   });
 };
 
-defineExpose({ focusCommentInput });
+defineExpose({
+  focusCommentInput,
+  scrollToBottom: (options) => timelineRef.value?.scrollToBottom?.(options)
+});
 </script>
