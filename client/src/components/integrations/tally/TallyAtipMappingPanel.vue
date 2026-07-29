@@ -36,9 +36,9 @@
         <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
           <thead class="sticky top-0 z-10 bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th class="py-3 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 sm:pl-6">Name</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Entity</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+              <th class="py-3 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 sm:pl-6">{{ t('settings.tallyColName') }}</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ t('settings.tallyColEntity') }}</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ t('settings.tallyColStatus') }}</th>
               <th class="relative py-3 pl-3 pr-4 sm:pr-6"><span class="sr-only">{{ t('actions.edit') }}</span></th>
             </tr>
           </thead>
@@ -69,7 +69,7 @@
                     :disabled="rowBusy === row._id"
                     @click="createFrom(row)"
                   >
-                    Create
+                    {{ t('settings.tallyMappingCreate') }}
                   </button>
                   <button
                     type="button"
@@ -77,7 +77,7 @@
                     :disabled="rowBusy === row._id"
                     @click="promptLink(row)"
                   >
-                    Link
+                    {{ t('settings.tallyMappingLink') }}
                   </button>
                   <button
                     type="button"

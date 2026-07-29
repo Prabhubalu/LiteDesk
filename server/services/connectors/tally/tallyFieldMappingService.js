@@ -263,9 +263,18 @@ function getUnmappedRequiredFields(entityType, rules = []) {
     .map((m) => ({ key: m.key, label: m.label }));
 }
 
-function listTallyFieldsForEntity(entityType) {
+async function listTallyFieldsForEntity({ organizationId, companyGuid, entityType } = {}) {
   const et = String(entityType || '').toLowerCase();
-  return [...(TALLY_FIELD_CATALOGS[et] || DEFAULT_FIELD_CATALOGS[et]?.external || [])];
+  if (!organizationId || !companyGuid) {
+    return [];
+  }
+  const { getRuntimeFieldCatalog } = require('./tallyFieldCatalog');
+  const runtime = await getRuntimeFieldCatalog({
+    organizationId,
+    companyGuid,
+    entityType: et,
+  });
+  return [...(runtime.fields || [])];
 }
 
 function getEntityOptions() {
@@ -278,7 +287,7 @@ function getEntityOptions() {
   }));
 }
 
-function suggestMappings(input = {}) {
+async function suggestMappings(input = {}) {
   const entityType = String(input.entityType || '').trim().toLowerCase();
   const arivuFields =
     Array.isArray(input.arivuFields) && input.arivuFields.length
@@ -287,7 +296,11 @@ function suggestMappings(input = {}) {
   const externalFields =
     Array.isArray(input.externalFields) && input.externalFields.length
       ? input.externalFields
-      : listTallyFieldsForEntity(entityType);
+      : await listTallyFieldsForEntity({
+          organizationId: input.organizationId,
+          companyGuid: input.companyGuid,
+          entityType,
+        });
   const minConfidence = input.minConfidence != null ? Number(input.minConfidence) : 0.4;
 
   const suggestions = [];

@@ -19,6 +19,15 @@ function integrationCenterUrl(cfg) {
   if (api.includes('localhost') || api.includes('127.0.0.1')) {
     return 'http://localhost:5173/integrations/tally';
   }
+  // LAN / tunnel API → open Vite on same host (dev client), not /integrations on API port
+  try {
+    const u = new URL(api);
+    if (/^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(u.hostname)) {
+      return `${u.protocol}//${u.hostname}:5173/integrations/tally`;
+    }
+  } catch (_) {
+    /* fall through */
+  }
   return `${api.replace('://api.', '://app.')}/integrations/tally`;
 }
 

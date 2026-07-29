@@ -1,104 +1,112 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col overflow-auto bg-gray-50 dark:bg-gray-900">
     <!-- Page header -->
-    <div class="border-b border-gray-200 bg-white px-4 py-5 sm:px-6 dark:border-gray-700 dark:bg-gray-800">
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div class="min-w-0">
-          <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            {{ t('settings.tallyCenterTitle') }}
-          </h1>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {{ t('settings.tallyCenterDesc') }}
-          </p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <Listbox v-model="selectedCompanyGuid" as="div" class="relative min-w-[14rem]">
-            <ListboxButton
-              class="relative w-full cursor-default rounded-xl border border-gray-300 bg-white py-2 pl-3 pr-10 text-left text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-            >
-              <span class="block truncate">{{ selectedCompanyLabel }}</span>
-              <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
-              </span>
-            </ListboxButton>
-            <Transition
-              leave-active-class="transition duration-100 ease-in"
-              leave-from-class="opacity-100"
-              leave-to-class="opacity-0"
-            >
-              <ListboxOptions
-                class="absolute z-40 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-gray-200 bg-white py-1 text-sm shadow-lg focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+    <div class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+      <div class="px-4 pt-5 sm:px-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
+                {{ t('settings.tallyCenterTitle') }}
+              </h1>
+              <button
+                type="button"
+                class="text-xs font-medium text-gray-500 underline-offset-2 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
+                @click="goSettings"
               >
-                <ListboxOption v-slot="{ active, selected }" value="" as="template">
-                  <li
-                    :class="[
-                      active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-200' : 'text-gray-900 dark:text-gray-100',
-                      'relative cursor-pointer select-none py-2 pl-3 pr-9',
-                    ]"
-                  >
-                    <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">
-                      {{ t('settings.tallyCompanySelect') }}
-                    </span>
-                  </li>
-                </ListboxOption>
-                <ListboxOption
-                  v-for="c in activeCompanies"
-                  :key="c.companyGuid"
-                  v-slot="{ active, selected }"
-                  :value="c.companyGuid"
-                  as="template"
+                {{ t('settings.tallyBackSettings') }}
+              </button>
+            </div>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+              {{ t('settings.tallyCenterDescSimple') }}
+            </p>
+          </div>
+          <div class="flex flex-wrap items-end gap-2">
+            <div class="flex min-w-[12rem] flex-col gap-1">
+              <span class="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+                {{ t('settings.tallyCompanySwitcher') }}
+              </span>
+              <Listbox v-model="selectedCompanyGuid" as="div" class="relative">
+                <ListboxButton
+                  class="relative w-full cursor-default rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-9 text-left text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 >
-                  <li
-                    :class="[
-                      active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-200' : 'text-gray-900 dark:text-gray-100',
-                      'relative cursor-pointer select-none py-2 pl-3 pr-9',
-                    ]"
+                  <span class="block truncate">{{ selectedCompanyLabel }}</span>
+                  <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <ChevronUpDownIcon class="h-4 w-4 text-gray-400" aria-hidden="true" />
+                  </span>
+                </ListboxButton>
+                <Transition
+                  leave-active-class="transition duration-100 ease-in"
+                  leave-from-class="opacity-100"
+                  leave-to-class="opacity-0"
+                >
+                  <ListboxOptions
+                    class="absolute z-40 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-sm shadow-lg focus:outline-none dark:border-gray-600 dark:bg-gray-800"
                   >
-                    <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">
-                      {{ c.companyName }}
-                    </span>
-                    <span
-                      v-if="selected"
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-300"
+                    <ListboxOption v-slot="{ active, selected }" value="" as="template">
+                      <li
+                        :class="[
+                          active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-200' : 'text-gray-900 dark:text-gray-100',
+                          'relative cursor-pointer select-none py-2 pl-3 pr-9',
+                        ]"
+                      >
+                        <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">
+                          {{ t('settings.tallyCompanySelect') }}
+                        </span>
+                      </li>
+                    </ListboxOption>
+                    <ListboxOption
+                      v-for="c in activeCompanies"
+                      :key="c.companyGuid"
+                      v-slot="{ active, selected }"
+                      :value="c.companyGuid"
+                      as="template"
                     >
-                      <CheckIcon class="h-4 w-4" aria-hidden="true" />
-                    </span>
-                  </li>
-                </ListboxOption>
-              </ListboxOptions>
-            </Transition>
-          </Listbox>
-
-          <button
-            type="button"
-            class="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-            @click="goSettings"
-          >
-            {{ t('settings.tallyBackSettings') }}
-          </button>
-          <button
-            type="button"
-            class="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
-            :disabled="syncBusy || refreshing"
-            @click="runSync('incremental')"
-          >
-            {{ syncBusy ? t('states.loading') : t('settings.addonsTallySyncNow') }}
-          </button>
-          <button
-            type="button"
-            class="rounded-xl bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 disabled:opacity-50 dark:bg-gray-100 dark:text-gray-900"
-            :disabled="refreshing"
-            @click="onCompanyChange"
-          >
-            {{ refreshing ? t('states.loading') : t('actions.refresh') }}
-          </button>
+                      <li
+                        :class="[
+                          active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-200' : 'text-gray-900 dark:text-gray-100',
+                          'relative cursor-pointer select-none py-2 pl-3 pr-9',
+                        ]"
+                      >
+                        <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">
+                          {{ c.companyName }}
+                        </span>
+                        <span
+                          v-if="selected"
+                          class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-600 dark:text-indigo-300"
+                        >
+                          <CheckIcon class="h-4 w-4" aria-hidden="true" />
+                        </span>
+                      </li>
+                    </ListboxOption>
+                  </ListboxOptions>
+                </Transition>
+              </Listbox>
+            </div>
+            <button
+              type="button"
+              class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+              :disabled="refreshing"
+              @click="onCompanyChange"
+            >
+              {{ refreshing ? t('states.loading') : t('actions.refresh') }}
+            </button>
+            <button
+              type="button"
+              class="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
+              :disabled="syncBusy || refreshing || !companyGuid"
+              @click="runSync('incremental')"
+            >
+              {{ syncBusy ? t('states.loading') : t('settings.addonsTallySyncNow') }}
+            </button>
+          </div>
         </div>
       </div>
 
       <TabGroup :selected-index="tabIndex" @change="onTabChange">
-        <TabList class="mt-5 flex gap-1 overflow-x-auto border-b border-gray-200 dark:border-gray-700">
+        <TabList class="mt-4 flex gap-0 overflow-x-auto border-b border-gray-200 px-4 sm:px-6 dark:border-gray-700">
           <Tab
-            v-for="tab in tabs"
+            v-for="(tab, i) in tabs"
             :key="tab.id"
             v-slot="{ selected }"
             as="template"
@@ -109,10 +117,11 @@
                 selected
                   ? 'border-indigo-600 text-indigo-700 dark:border-indigo-400 dark:text-indigo-300'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800 dark:hover:text-gray-200',
-                'shrink-0 border-b-2 px-3 py-2.5 text-sm font-medium focus:outline-none sm:px-4',
+                i > 0 && tab.group !== tabs[i - 1].group ? 'ml-4' : '',
+                'shrink-0 border-b-2 px-3 py-2.5 text-sm font-medium focus:outline-none',
               ]"
             >
-              {{ tab.labelKey ? t(tab.labelKey) : tab.label }}
+              {{ t(tab.labelKey) }}
             </button>
           </Tab>
         </TabList>
@@ -127,6 +136,11 @@
       />
 
       <TallyAtipHealthPanel v-else-if="activeTab === 'health'" />
+
+      <TallyAtipCatalogPanel
+        v-else-if="activeTab === 'catalog'"
+        :company-guid="companyGuid || ''"
+      />
 
       <TallyAtipActivityPanel v-else-if="activeTab === 'activity'" />
 
@@ -271,7 +285,7 @@
                     {{ t('settings.tallyColFilter') }}
                   </th>
                   <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Inbound create
+                    {{ t('settings.tallyColInboundCreate') }}
                   </th>
                   <th
                     v-if="settingsForm.migrationMode"
@@ -621,11 +635,46 @@
                 </label>
                 <label class="mt-3 block text-sm text-gray-700 dark:text-gray-200">
                   {{ t('settings.tallyFilterParents') }}
-                  <input
-                    v-model="filterDraft.parentsText"
-                    class="mt-1 w-full rounded-xl border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                  />
                 </label>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {{ t('settings.tallyFilterParentsHint') }}
+                </p>
+                <div
+                  v-if="ledgerGroupsLoading"
+                  class="mt-2 text-xs text-gray-500"
+                >
+                  {{ t('states.loading') }}
+                </div>
+                <div
+                  v-else-if="ledgerGroupOptions.length"
+                  class="mt-2 max-h-48 overflow-auto rounded-xl border border-gray-200 dark:border-gray-600"
+                >
+                  <label
+                    v-for="g in ledgerGroupOptions"
+                    :key="g.value"
+                    class="flex cursor-pointer items-center gap-2 border-b border-gray-100 px-3 py-2 text-sm last:border-0 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+                  >
+                    <input
+                      v-model="filterDraft.parents"
+                      type="checkbox"
+                      :value="g.value"
+                      class="rounded border-gray-300 text-indigo-600"
+                    />
+                    <span class="truncate text-gray-800 dark:text-gray-200">{{ g.name }}</span>
+                  </label>
+                </div>
+                <p
+                  v-else
+                  class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200"
+                >
+                  {{ t('settings.tallyFilterParentsEmpty') }}
+                </p>
+                <input
+                  v-model="filterDraft.parentsText"
+                  type="text"
+                  class="mt-2 w-full rounded-xl border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                  :placeholder="t('settings.tallyFilterParentsManual')"
+                />
                 <div class="mt-6 flex justify-end gap-2">
                   <button
                     type="button"
@@ -737,6 +786,7 @@ import TallyAtipActivityPanel from '@/components/integrations/tally/TallyAtipAct
 import TallyAtipMappingPanel from '@/components/integrations/tally/TallyAtipMappingPanel.vue';
 import TallyAtipConflictsPanel from '@/components/integrations/tally/TallyAtipConflictsPanel.vue';
 import TallyAtipAssistantPanel from '@/components/integrations/tally/TallyAtipAssistantPanel.vue';
+import TallyAtipCatalogPanel from '@/components/integrations/tally/TallyAtipCatalogPanel.vue';
 
 import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
@@ -756,15 +806,16 @@ const VOUCHER_MODULE_KEYS = new Set([
 ]);
 
 const tabs = [
-  { id: 'wizard', labelKey: 'settings.tallyWizardTitle' },
-  { id: 'health', labelKey: 'settings.tallyHealthOk' },
-  { id: 'activity', labelKey: 'settings.tallyActivityTitle' },
-  { id: 'mapping', labelKey: 'settings.tallyMappingTitle' },
-  { id: 'conflicts', labelKey: 'settings.tallyConflictsTitle' },
-  { id: 'settings', labelKey: 'settings.tallyTabSyncSettings' },
-  { id: 'logs', labelKey: 'settings.tallyTabSyncLogs' },
-  { id: 'advanced', labelKey: 'settings.tallyTabAdvanced' },
-  { id: 'assistant', label: 'Assistant' },
+  { id: 'wizard', labelKey: 'settings.tallyTabSetup', group: 'setup' },
+  { id: 'health', labelKey: 'settings.tallyTabOverview', group: 'monitor' },
+  { id: 'activity', labelKey: 'settings.tallyActivityTitle', group: 'monitor' },
+  { id: 'conflicts', labelKey: 'settings.tallyConflictsTitle', group: 'monitor' },
+  { id: 'catalog', labelKey: 'settings.tallyCatalogTitle', group: 'data' },
+  { id: 'mapping', labelKey: 'settings.tallyMappingTitle', group: 'data' },
+  { id: 'settings', labelKey: 'settings.tallyTabSyncSettings', group: 'ops' },
+  { id: 'logs', labelKey: 'settings.tallyTabSyncLogs', group: 'ops' },
+  { id: 'advanced', labelKey: 'settings.tallyTabAdvanced', group: 'ops' },
+  { id: 'assistant', labelKey: 'settings.tallyAssistantTitle', group: 'help' },
 ];
 
 const activeTab = ref('wizard');
@@ -805,7 +856,14 @@ const settingsForm = ref({
 
 const taxForm = ref({ tallyLedgerName: '', arivuTaxCode: '', arivuTaxRatePercent: null });
 const filterRow = ref(null);
-const filterDraft = ref({ postedOnly: false, dateWindowDays: 30, parentsText: '' });
+const filterDraft = ref({
+  postedOnly: false,
+  dateWindowDays: 30,
+  parentsText: '',
+  parents: [],
+});
+const ledgerGroupOptions = ref([]);
+const ledgerGroupsLoading = ref(false);
 const logDrawer = ref(null);
 
 let pollTimer = null;
@@ -911,21 +969,47 @@ function filterSummary(row) {
   return bits.length ? bits.join(' · ') : t('settings.tallyFilterEdit');
 }
 
+async function loadLedgerGroups() {
+  ledgerGroupOptions.value = [];
+  if (!companyGuid.value) return;
+  ledgerGroupsLoading.value = true;
+  try {
+    const q = encodeURIComponent(companyGuid.value);
+    const res = await apiClient.get(`/connectors/tally/atip/ledger-groups?companyGuid=${q}`);
+    const data = res?.data ?? res;
+    const payload = data?.data || data || {};
+    const groups = Array.isArray(payload.groups) ? payload.groups : [];
+    ledgerGroupOptions.value = groups.map((g) => ({
+      name: g.name || g.value || g,
+      value: g.value || g.name || g,
+    }));
+  } catch {
+    ledgerGroupOptions.value = [];
+  } finally {
+    ledgerGroupsLoading.value = false;
+  }
+}
+
 function openFilter(row) {
   filterRow.value = row;
+  const selected = Array.isArray(row.filter?.parents) ? [...row.filter.parents] : [];
   filterDraft.value = {
     postedOnly: Boolean(row.filter?.postedOnly),
     dateWindowDays: row.filter?.dateWindowDays || 30,
-    parentsText: Array.isArray(row.filter?.parents) ? row.filter.parents.join(', ') : '',
+    parentsText: '',
+    parents: selected,
   };
+  loadLedgerGroups();
 }
 
 function applyFilter() {
   if (!filterRow.value) return;
-  const parents = filterDraft.value.parentsText
+  const fromChecks = Array.isArray(filterDraft.value.parents) ? filterDraft.value.parents : [];
+  const fromText = String(filterDraft.value.parentsText || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
+  const parents = [...new Set([...fromChecks, ...fromText])];
   filterRow.value.filter = {
     ...(filterRow.value.filter || {}),
     postedOnly: filterDraft.value.postedOnly,

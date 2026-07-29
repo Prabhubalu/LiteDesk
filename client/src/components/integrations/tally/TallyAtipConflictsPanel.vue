@@ -3,7 +3,7 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.tallyConflictsTitle') }}</h2>
-        <p class="mt-0.5 text-sm text-gray-500">Open conflicts for this connector.</p>
+        <p class="mt-0.5 text-sm text-gray-500">{{ t('settings.tallyConflictsDesc') }}</p>
       </div>
       <button
         type="button"
@@ -20,7 +20,9 @@
 
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <ul class="divide-y divide-gray-100 dark:divide-gray-700">
-        <li v-if="!rows.length" class="px-4 py-10 text-center text-sm text-gray-500 sm:px-6">—</li>
+        <li v-if="!rows.length" class="px-4 py-10 text-center text-sm text-gray-500 sm:px-6">
+          {{ t('settings.tallyConflictsEmpty') }}
+        </li>
         <li
           v-for="c in rows"
           :key="c._id"

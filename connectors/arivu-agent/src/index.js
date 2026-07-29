@@ -28,7 +28,9 @@ const {
   resolveCollectionId,
   collectionExport,
   ARIVU_TDL_PACK_VERSION,
+  ARIVU_COLLECTIONS,
 } = require('./arivuTdlXml');
+const { discoverLiveMetadataObjects, parseMasterRecordsFromXml, enrichLedgerRecord } = require('./metadataDiscover');
 const { OfflineQueue } = require('./offlineQueue');
 const { sendHeartbeat, pollJobs, ackJob } = require('./heartbeat');
 const { runPairingCli } = require('./pairing');
@@ -107,24 +109,30 @@ async function handleJob(cfg, job, queue) {
     return out;
   }
 
-  // ATIP 1B — metadata introspection (agent returns structured catalogue; cloud versions it)
+  // ATIP 1B — live collection probes → structured catalogue (no invented fields)
   if (type === 'discover_metadata') {
     const out = await runDiscoverAndHealth(cfg);
-    const port = cfg.tallyPort || params.port;
-    let body = null;
-    if (port && params.exportId) {
-      try {
-        const xml = buildExportEnvelope({
-          id: params.exportId || 'Arivu.Metadata.Introspect',
-          company: params.company || null,
-        });
-        const res = await postXml({ host: cfg.tallyHost, port, xml });
-        body = res.body?.slice?.(0, 200_000) || res.body;
-      } catch (err) {
-        // Fall through — cloud will bootstrap from empty objects + discovery health
-        out.result.metadataProbeError = err.message;
-      }
+    const port = cfg.tallyPort || params.port || out.result.discovery?.tallyPort;
+    const company =
+      params.company ||
+      out.result.discovery?.companies?.[0]?.name ||
+      null;
+
+    let live = { objects: [], errors: [], reachable: false };
+    if (port) {
+      live = await discoverLiveMetadataObjects({
+        host: cfg.tallyHost,
+        port,
+        company,
+      });
+    } else {
+      out.result.metadataProbeError = 'Tally port not available';
     }
+
+    if (live.errors?.length) {
+      out.result.metadataProbeErrors = live.errors;
+    }
+
     out.result.metadata = {
       tallyVersion: out.result.tallyVersion || out.result.discovery?.tallyVersion || null,
       tdlPackVersion: ARIVU_TDL_PACK_VERSION,
@@ -136,13 +144,94 @@ async function handleJob(cfg, job, queue) {
         multiCurrency: Boolean(out.result.discovery?.multiCurrency),
         payroll: Boolean(out.result.discovery?.payroll),
       },
-      // Empty objects → cloud Metadata Engine applies BOOTSTRAP_OBJECTS (still stored dynamically)
-      objects: out.result.objects || [],
-      body,
+      objects: live.objects || [],
+      probeErrors: live.errors || [],
     };
     out.result.objects = out.result.metadata.objects;
     out.result.tdlPackVersion = ARIVU_TDL_PACK_VERSION;
     return out;
+  }
+
+  // Full ledger dump — all field values (incl. User Space / UDF) into structured records
+  if (type === 'dump_ledgers') {
+    const out = await runDiscoverAndHealth(cfg);
+    const port = cfg.tallyPort || params.port || out.result.discovery?.tallyPort;
+    const company =
+      params.company ||
+      out.result.discovery?.companies?.[0]?.name ||
+      null;
+    if (!port) {
+      return { ok: false, error: 'Tally port not available', result: out.result };
+    }
+    const natives = [
+      '*',
+      '*.*',
+      '*.*.*',
+      'Address.*',
+      'GSTDetails.*',
+      'HSNDetails.*',
+      // Exact TDL method names (Masters.tdl) — wrong names are ignored by Tally
+      'Name',
+      'Parent',
+      'GUID',
+      'MasterID',
+      'AlterID',
+      'MailingName',
+      'Address',
+      'CountryName',
+      'CountryOfResidence',
+      'LedStateName',
+      'StateName',
+      'StateCode',
+      'Pincode',
+      'LedgerPhone',
+      'Phone',
+      'Fax',
+      'LedgerMobile',
+      'Mobile',
+      'PartyGSTIN',
+      'GSTIN',
+      'IncomeTaxNumber',
+      'CreditLimit',
+      'BillCreditPeriod',
+      'ClosingBalance',
+      'OpeningBalance',
+      'Email',
+      'EmailCC',
+      'Website',
+      'Narration',
+      'Description',
+      'GSTDetails',
+      'GSTRegistrationType',
+    ];
+    const xml = collectionExport(ARIVU_COLLECTIONS.LEDGERS, {
+      company,
+      extraNative: natives,
+      explode: true,
+    });
+    const res = await postXml({
+      host: cfg.tallyHost,
+      port,
+      xml,
+      timeoutMs: params.timeoutMs || 120_000,
+    });
+    const ledgers = parseMasterRecordsFromXml(res.body || '', 'LEDGER').map(enrichLedgerRecord);
+    return {
+      ok: res.ok,
+      result: {
+        ...out.result,
+        statusCode: res.statusCode,
+        masterType: 'Ledger',
+        exportId: 'Ledger',
+        fullFields: true,
+        ledgers,
+        count: ledgers.length,
+        // Prefer structured records; keep a short sample for debug
+        body: String(res.body || '').slice(0, 4_000),
+        tdlPackVersion: ARIVU_TDL_PACK_VERSION,
+        stats: { exported: ledgers.length, fullFields: true },
+      },
+    };
   }
 
   // Sync / outbox jobs: execute XML payloads built by cloud mappers
