@@ -19528,7 +19528,7 @@
     "description": "Hint under payroll-style modules"
   },
   "tallyCenterDescSimple": {
-    "message": "Map Tally modules to Arivu, control sync direction and filters, then review sync logs.",
+    "message": "Connect Tally, review health and mappings, then sync with confidence.",
     "description": "Updated page desc"
   },
   "tallyKeepArivu": {
@@ -19606,5 +19606,393 @@
   "tallyScheduledBlockedByDryRun": {
     "message": "Scheduled sync is enabled but dry-run default is still on — no live scheduled sync will run until you turn dry-run default off.",
     "description": "Banner when schedule blocked by dry-run"
+  },
+  "tallyCatalogTitle": {
+    "message": "Live catalog",
+    "description": "Tally Integration Center catalog tab title"
+  },
+  "tallyCatalogDesc": {
+    "message": "Objects and fields discovered from live Tally for the selected company.",
+    "description": "Catalog tab description"
+  },
+  "tallyCatalogDiscover": {
+    "message": "Discover metadata",
+    "description": "Enqueue live metadata discovery"
+  },
+  "tallyCatalogDiscoverQueued": {
+    "message": "Metadata discovery queued. Waiting for agent…",
+    "description": "After enqueue discover"
+  },
+  "tallyCatalogDiscoverFailed": {
+    "message": "Failed to enqueue metadata discovery",
+    "description": "Discover enqueue error"
+  },
+  "tallyCatalogObjects": {
+    "message": "Discovered objects",
+    "description": "Catalog object list heading"
+  },
+  "tallyCatalogFields": {
+    "message": "fields",
+    "description": "Field count label"
+  },
+  "tallyCatalogEmpty": {
+    "message": "No live schemas yet. Run Discover metadata with the agent connected.",
+    "description": "Empty catalog state"
+  },
+  "tallyCatalogNoFields": {
+    "message": "No fields sampled from live Tally for this object.",
+    "description": "Object with empty fields"
+  },
+  "tallyCatalogRawJson": {
+    "message": "Raw JSON",
+    "description": "Expand raw schema dump"
+  },
+  "tallyCatalogList": {
+    "message": "list",
+    "description": "Badge for nested Tally *.LIST fields"
+  },
+  "tallyCatalogListHint": {
+    "message": "Nested list — child fields appear indented below when present in the live sample.",
+    "description": "Hint under list field"
+  },
+  "tallyFilterParentsHint": {
+    "message": "Select Tally ledger groups from live discovery (used as ledger parent filter).",
+    "description": "Hint above ledger group checklist"
+  },
+  "tallyFilterParentsEmpty": {
+    "message": "No ledger groups yet. Run Live catalog → Discover metadata, then reopen this filter.",
+    "description": "Empty ledger groups checklist"
+  },
+  "tallyFilterParentsManual": {
+    "message": "Or type extra parent names, comma-separated",
+    "description": "Manual parents input placeholder"
+  },
+  "tallyCatalogListEmpty": {
+    "message": "No nested fields in this live sample for this list (Tally returned an empty *.LIST).",
+    "description": "Empty nested list"
+  },
+  "tallyCatalogShowEmptyLists": {
+    "message": "Show empty lists",
+    "description": "Toggle empty *.LIST stubs in catalog"
+  },
+  "tallyCatalogListHasChildren": {
+    "message": "Nested fields are listed below (indented).",
+    "description": "List has child paths below"
+  },
+  "tallyCatalogStandardFields": {
+    "message": "Standard fields",
+    "description": "Catalog section for non-UDF Tally fields"
+  },
+  "tallyCatalogUserSpace": {
+    "message": "User Space",
+    "description": "Catalog section for Tally UDF / User Space fields"
+  },
+  "tallyCatalogSectionEmpty": {
+    "message": "None in this live sample.",
+    "description": "Empty standard fields section"
+  },
+  "tallyCatalogUserSpaceEmpty": {
+    "message": "No User Space (UDF) fields in this live sample. Re-discover after the agent update if you expect UDFs.",
+    "description": "Empty User Space section"
+  },
+  "tallyLedgerDump": {
+    "message": "Dump all ledgers",
+    "description": "Pull every ledger with full field values from Tally"
+  },
+  "tallyLedgerDumpTitle": {
+    "message": "Ledger dump",
+    "description": "Section heading for dumped ledger records"
+  },
+  "tallyLedgerDumpHint": {
+    "message": "Full field values from live Tally (including User Space).",
+    "description": "Hint under ledger dump heading"
+  },
+  "tallyLedgerDumpEmpty": {
+    "message": "No ledgers dumped yet. Click Dump all ledgers with the agent connected.",
+    "description": "Empty ledger dump list"
+  },
+  "tallyLedgerDumpQueued": {
+    "message": "Ledger dump queued. Waiting for agent…",
+    "description": "After enqueue ledger dump"
+  },
+  "tallyLedgerDumpFailed": {
+    "message": "Failed to enqueue ledger dump",
+    "description": "Ledger dump enqueue error"
+  },
+  "tallyTabSetup": {
+    "message": "Setup",
+    "description": "Integration Center setup tab"
+  },
+  "tallyTabOverview": {
+    "message": "Overview",
+    "description": "Integration Center overview tab"
+  },
+  "tallyOverviewDesc": {
+    "message": "Connection health, queue depth, and company readiness at a glance.",
+    "description": "Overview tab description"
+  },
+  "tallyAssistantTitle": {
+    "message": "Assistant",
+    "description": "AI Sync Assistant tab title"
+  },
+  "tallyAssistantDesc": {
+    "message": "Ask about sync health, queue, GST, duplicates, or mappings.",
+    "description": "Assistant panel description"
+  },
+  "tallyAssistantEmpty": {
+    "message": "No messages yet. Ask a question about your Tally sync.",
+    "description": "Assistant empty state"
+  },
+  "tallyAssistantPlaceholder": {
+    "message": "Ask a question…",
+    "description": "Assistant input placeholder"
+  },
+  "tallyAssistantAsk": {
+    "message": "Ask",
+    "description": "Assistant submit button"
+  },
+  "tallyAssistantFailed": {
+    "message": "Assistant could not answer that right now",
+    "description": "Assistant error"
+  },
+  "tallyConflictsDesc": {
+    "message": "Resolve records that differ between Arivu and Tally.",
+    "description": "Conflicts panel description"
+  },
+  "tallyConflictsEmpty": {
+    "message": "No open conflicts",
+    "description": "Conflicts empty state"
+  },
+  "tallyConflictsOpenHint": {
+    "message": "Open conflicts",
+    "description": "Conflicts card hint"
+  },
+  "tallyQueuePending": {
+    "message": "Pending",
+    "description": "Queue pending label"
+  },
+  "tallyQueueActive": {
+    "message": "Active",
+    "description": "Queue active label"
+  },
+  "tallyQueueRetry": {
+    "message": "Retry",
+    "description": "Queue retry label"
+  },
+  "tallySyncTiming": {
+    "message": "Sync timing",
+    "description": "Sync timing card title"
+  },
+  "tallySyncAvg": {
+    "message": "Avg",
+    "description": "Average sync duration label"
+  },
+  "tallySyncLast": {
+    "message": "Last",
+    "description": "Last sync label"
+  },
+  "tallyCompaniesEmpty": {
+    "message": "No companies connected yet",
+    "description": "Empty companies list on overview"
+  },
+  "tallyChecklistEmpty": {
+    "message": "Checklist not available yet",
+    "description": "Empty validation checklist"
+  },
+  "tallyColInboundCreate": {
+    "message": "Inbound create",
+    "description": "Module mapping inbound create column"
+  },
+  "tallyWizardSubtitle": {
+    "message": "Finish these steps to get Tally syncing with Arivu.",
+    "description": "Wizard panel subtitle"
+  },
+  "tallyWizardCurrentStep": {
+    "message": "Step {n} of {total}",
+    "description": "Wizard current step badge"
+  },
+  "tallyWizardCompleteTitle": {
+    "message": "Integration ready",
+    "description": "Wizard complete title"
+  },
+  "tallyWizardCompleteDesc": {
+    "message": "Your connector is healthy. Use Sync now anytime, or review Activity and Sync logs.",
+    "description": "Wizard complete description"
+  },
+  "tallyWizardActions": {
+    "message": "Quick actions",
+    "description": "Wizard secondary actions heading"
+  },
+  "tallyWizardDraftMappings": {
+    "message": "Draft mappings",
+    "description": "Create AI mapping draft"
+  },
+  "tallyWizardActivateMapping": {
+    "message": "Activate mapping",
+    "description": "Activate mapping version"
+  },
+  "tallyWizardDraftCreated": {
+    "message": "Draft mapping created.",
+    "description": "Draft mapping success"
+  },
+  "tallyWizardDraftFailed": {
+    "message": "Could not create draft mapping",
+    "description": "Draft mapping error"
+  },
+  "tallyWizardMappingActivated": {
+    "message": "Mapping activated.",
+    "description": "Activate mapping success"
+  },
+  "tallyWizardActivateFailed": {
+    "message": "Could not activate mapping",
+    "description": "Activate mapping error"
+  },
+  "tallyWizardSyncTriggered": {
+    "message": "Sync started.",
+    "description": "Sync trigger success on wizard"
+  },
+  "tallyWizardRefreshCompanies": {
+    "message": "Refresh status",
+    "description": "Wizard detect-company primary action"
+  },
+  "tallyWizardPairHint": {
+    "message": "Open Back to settings to generate a pairing code, then enter it in the agent tray.",
+    "description": "Hint when Connect step is active"
+  },
+  "tallyHealthStateSearching": {
+    "message": "Searching for agent",
+    "description": "Health state searching"
+  },
+  "tallyHealthStateFound": {
+    "message": "Agent found",
+    "description": "Health state found"
+  },
+  "tallyHealthStateMetadata": {
+    "message": "Waiting for metadata",
+    "description": "Health state metadata_pending"
+  },
+  "tallyHealthStateReady": {
+    "message": "Ready",
+    "description": "Health state ready"
+  },
+  "tallyHealthStateDegraded": {
+    "message": "Needs attention",
+    "description": "Health state degraded"
+  },
+  "tallyHealthStateOffline": {
+    "message": "Offline",
+    "description": "Health state offline"
+  },
+  "tallyAtipStepConnect": {
+    "message": "Connect",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepConnectHint": {
+    "message": "Install the Arivu agent on the Tally PC and pair it with a one-time code.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyAtipStepDetect": {
+    "message": "Company",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepDetectHint": {
+    "message": "Open a company in TallyPrime, then select it in the company switcher above.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyAtipStepScan": {
+    "message": "Metadata",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepScanHint": {
+    "message": "Discover live objects and fields from Tally for this company.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyAtipStepAi": {
+    "message": "Mappings",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepAiHint": {
+    "message": "Generate suggested field mappings from discovered metadata.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyAtipStepReview": {
+    "message": "Review",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepReviewHint": {
+    "message": "Review suggestions, then activate the mapping version before syncing.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyAtipStepSync": {
+    "message": "Sync",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepSyncHint": {
+    "message": "Run the first synchronisation for this company.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyAtipStepProgress": {
+    "message": "Progress",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepProgressHint": {
+    "message": "Watch live progress until the connector reports ready.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyAtipStepComplete": {
+    "message": "Done",
+    "description": "ATIP wizard step"
+  },
+  "tallyAtipStepCompleteHint": {
+    "message": "Setup complete. Ongoing sync runs from the header or schedule.",
+    "description": "ATIP wizard step hint"
+  },
+  "tallyCheckTallyRunning": {
+    "message": "Tally running",
+    "description": "Checklist item"
+  },
+  "tallyCheckPortListening": {
+    "message": "XML port listening",
+    "description": "Checklist item"
+  },
+  "tallyCheckVersionSupported": {
+    "message": "Supported Tally version",
+    "description": "Checklist item"
+  },
+  "tallyCheckCompanyOpen": {
+    "message": "Company open",
+    "description": "Checklist item"
+  },
+  "tallyCheckTdlLoaded": {
+    "message": "TDL loaded",
+    "description": "Checklist item"
+  },
+  "tallyCheckXmlPermissions": {
+    "message": "XML permissions",
+    "description": "Checklist item"
+  },
+  "tallyCheckLicenseOk": {
+    "message": "License OK",
+    "description": "Checklist item"
+  },
+  "tallyColName": {
+    "message": "Name",
+    "description": "Mapping table name column"
+  },
+  "tallyColEntity": {
+    "message": "Entity",
+    "description": "Mapping table entity column"
+  },
+  "tallyColStatus": {
+    "message": "Status",
+    "description": "Mapping table status column"
+  },
+  "tallyMappingCreate": {
+    "message": "Create",
+    "description": "Create CRM record from external object"
+  },
+  "tallyMappingLink": {
+    "message": "Link",
+    "description": "Link external object to CRM record"
   }
 }

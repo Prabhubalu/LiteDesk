@@ -3,25 +3,35 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 
-const { BOOTSTRAP_OBJECTS, normalizeDiscoveryPayload, hashPayload } = require('../metadataEngine');
+const { normalizeDiscoveryPayload, hashPayload } = require('../metadataEngine');
 const { scorePair, suggestAll } = require('../aiMappingEngine');
 const { validatePayload, validateGstin, validateVoucherBalance } = require('../validationEngine');
 const { applyRules, toTallyDate, fromTallyDate, toTallyYesNo } = require('../transformationEngine');
 const { enrichError } = require('../errorIntelligenceEngine');
 
-describe('ATIP metadataEngine fixtures', () => {
-  it('bootstrap covers PRD core objects', () => {
-    const keys = BOOTSTRAP_OBJECTS.map((o) => o.objectKey);
-    for (const k of ['ledger', 'stock_item', 'godown', 'sales', 'purchase', 'receipt', 'journal']) {
-      assert.ok(keys.includes(k), `missing ${k}`);
-    }
+describe('ATIP metadataEngine', () => {
+  it('normalizeDiscoveryPayload does not invent objects when empty', () => {
+    const a = normalizeDiscoveryPayload({});
+    const b = normalizeDiscoveryPayload({ objects: [] });
+    assert.equal(a.objects.length, 0);
+    assert.equal(b.objects.length, 0);
+    assert.equal(a.thin, true);
+    assert.equal(hashPayload(a), hashPayload(b));
   });
 
-  it('normalizeDiscoveryPayload is deterministic hash', () => {
-    const a = normalizeDiscoveryPayload({});
-    const b = normalizeDiscoveryPayload({});
-    assert.equal(hashPayload(a), hashPayload(b));
-    assert.ok(a.objects.length > 10);
+  it('normalizeDiscoveryPayload keeps live objects', () => {
+    const n = normalizeDiscoveryPayload({
+      objects: [
+        {
+          objectKey: 'ledger',
+          objectName: 'Ledger',
+          fields: [{ name: 'NAME' }, { name: 'GSTIN' }],
+        },
+      ],
+    });
+    assert.equal(n.objects.length, 1);
+    assert.equal(n.thin, false);
+    assert.equal(n.objects[0].fields.length, 2);
   });
 });
 

@@ -11,6 +11,7 @@ function mapJobTypeToAgentType(jobType) {
   const t = String(jobType || '').toLowerCase();
   if (t === 'dry_run' || t === 'discover' || t === 'discover_companies') return 'discover';
   if (t === 'discover_metadata') return 'discover_metadata';
+  if (t === 'dump_ledgers') return 'dump_ledgers';
   if (t === 'push_voucher' || t === 'push_master' || t === 'outbox') return 'push_voucher';
   if (t === 'pull_masters' || t === 'pull_vouchers') return 'pull_masters';
   if (t === 'selective_sync') return 'sync';
@@ -223,17 +224,29 @@ async function acknowledgeAgentJob({
 
   // Inbound master export → catalog
   let inbound = null;
-  if (ok && (job.jobType === 'pull_masters' || job.payload?.masterType || job.payload?.exportId)) {
+  if (
+    ok &&
+    (job.jobType === 'pull_masters' ||
+      job.jobType === 'dump_ledgers' ||
+      job.payload?.masterType ||
+      job.payload?.exportId)
+  ) {
     try {
       const { applyInboundExport } = require('./tallyInboundApplyService');
       const body = result?.result?.body || result?.body || '';
+      const records =
+        result?.result?.ledgers ||
+        result?.ledgers ||
+        result?.result?.records ||
+        null;
       inbound = await applyInboundExport({
         organizationId,
         companyGuid: job.companyGuid || job.payload?.companyGuid || null,
         masterType: job.payload?.masterType || job.payload?.exportId || 'Ledger',
         body,
+        records: Array.isArray(records) ? records : null,
         jobId: String(job._id),
-        limitOverride: job.payload?.limit || null,
+        limitOverride: job.payload?.limit || (job.jobType === 'dump_ledgers' ? 5000 : null),
         sinceAlterId: job.payload?.sinceAlterId || null,
       });
     } catch (err) {
@@ -245,7 +258,6 @@ async function acknowledgeAgentJob({
   let metadataResult = null;
   if (ok && job.jobType === 'discover_metadata') {
     try {
-      const metadataEngine = require('./engines/metadataEngine');
       const synchronisationEngine = require('./engines/synchronisationEngine');
       const rawPayload =
         result?.result?.metadata ||
@@ -263,15 +275,6 @@ async function acknowledgeAgentJob({
         companyGuid: job.companyGuid || job.payload?.companyGuid,
         rawPayload,
       });
-      // Ensure bootstrap if agent returned empty objects
-      if (!rawPayload.objects?.length) {
-        await metadataEngine.applyDiscoveryResult({
-          organizationId,
-          companyGuid: job.companyGuid || job.payload?.companyGuid,
-          connectionId,
-          rawPayload,
-        });
-      }
     } catch (err) {
       console.warn('[tallyAgentJob] metadata apply failed', err.message);
     }

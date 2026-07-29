@@ -100,6 +100,11 @@ function loadConfig(configPath = process.env.ARIVU_CONFIG_PATH || defaultConfigP
     configPath: configPath || path.join(dataDir, 'config.json'),
   };
 
+  // Env always wins for local LAN / dual-machine debug (file often still has prod).
+  if (process.env.ARIVU_API_BASE && String(process.env.ARIVU_API_BASE).trim()) {
+    merged.apiBase = String(process.env.ARIVU_API_BASE).trim().replace(/\/$/, '');
+  }
+
   if (!merged.agentDeviceId) {
     merged.agentDeviceId = `arivu-${os.hostname()}-${os.platform()}`;
   }

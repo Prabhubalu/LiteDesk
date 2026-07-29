@@ -135,6 +135,40 @@ Config + queue directory:
 
 Override with `ARIVU_CONFIG_PATH` / `ARIVU_API_BASE` / `ARIVU_AGENT_TOKEN`.
 
+## Local dual-machine debug (same LAN)
+
+Use this to test against a **local** LiteDesk API on another machine (e.g. Mac) without pushing to main or using production.
+
+```text
+[ Windows: Agent + TallyPrime ]  --HTTP-->  http://<MAC_LAN_IP>:5000  [ Mac: LiteDesk server ]
+```
+
+### Mac
+
+1. Start LiteDesk server (default port **5000**) + client.
+2. Note LAN IP: `ipconfig getifaddr en0` (example `192.168.1.42`).
+3. Confirm Windows can reach `http://192.168.1.42:5000` (allow Node/port 5000 in Mac firewall if needed).
+4. Open **local** Integration Center → create a Tally pairing code.
+5. Use **Live catalog** tab → Discover metadata after the agent is paired.
+
+### Windows agent laptop
+
+1. Stop the agent.
+2. Edit `%LOCALAPPDATA%\Arivu\Connector\config.json`:
+   ```json
+   {
+     "apiBase": "http://192.168.1.42:5000",
+     "agentToken": null,
+     "connectionId": null
+   }
+   ```
+   (No trailing slash, no `/api`. Clear token/connection when leaving production.)
+3. For feature-branch agent code: copy `connectors/arivu-agent` from the repo, `npm install`, run `npm run start:console` (or tray). Or replace installed `.exe` after `./installer/build.sh` on Mac.
+4. Pair with the **local** Center pairing code.
+5. Switch back to prod later: `"apiBase": "https://api.arivusystems.com"` + re-pair with a production code.
+
+OTA update is not required for this loop (scaffold only downloads a published installer URL).
+
 ## Install UX (end user)
 
 1. In Arivu: **Download EXE** (entitled API → `ArivuConnectorSetup.exe`)

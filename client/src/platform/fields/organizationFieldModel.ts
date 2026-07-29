@@ -1045,10 +1045,12 @@ export const ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS = [
   'enabledApps',
   'enabledModules',
   'moduleOverrides',
+  'aiSettings',
   'crmInitialized',
   'settings',
   'onboarding',
   'embed',
+  'contentPublishing',
   'dataRegion',
   'security',
   'integrations',
@@ -1059,6 +1061,14 @@ export const ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS = [
   'descriptionVersions',
   'emailMergeTagMappings',
   'emailExternalCssAllowlist',
+  // Deferred CRM party fields (GST / external sync) — hide until product ships them on org forms
+  'gstin',
+  'gstRegistrationType',
+  'stateCode',
+  'billingAddressStructured',
+  'externalReferenceId',
+  'syncStatus',
+  'lastSyncAt',
 ] as const;
 
 const ORGANIZATION_TENANT_PLATFORM_ROOTS_NORM = ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS.map((key) =>

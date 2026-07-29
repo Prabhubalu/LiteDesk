@@ -15,10 +15,12 @@ const ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS = Object.freeze([
   'enabledApps',
   'enabledModules',
   'moduleOverrides',
+  'aiSettings',
   'crmInitialized',
   'settings',
   'onboarding',
   'embed',
+  'contentPublishing',
   'dataRegion',
   'security',
   'integrations',
@@ -29,6 +31,14 @@ const ORGANIZATION_TENANT_PLATFORM_FIELD_KEYS = Object.freeze([
   'descriptionVersions',
   'emailMergeTagMappings',
   'emailExternalCssAllowlist',
+  // Deferred CRM party fields (GST / external sync) — hide until product ships them on org forms
+  'gstin',
+  'gstRegistrationType',
+  'stateCode',
+  'billingAddressStructured',
+  'externalReferenceId',
+  'syncStatus',
+  'lastSyncAt',
 ]);
 
 function normalizeFieldKeyForMetadataLookup(key) {

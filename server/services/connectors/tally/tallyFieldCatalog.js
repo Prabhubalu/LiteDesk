@@ -493,7 +493,7 @@ module.exports = {
   FIELD_MAP_ENTITY_OPTIONS,
   ARIVU_EXTRA_FIELDS,
   /**
-   * ATIP 1B: prefer discovered TallyObjectSchema fields; fall back to golden fixture catalog.
+   * ATIP 1B: discovered TallyObjectSchema only — static catalog is CI fixture, not runtime SoT.
    */
   async getRuntimeFieldCatalog({ organizationId, companyGuid, entityType }) {
     try {
@@ -516,9 +516,8 @@ module.exports = {
         };
       }
     } catch {
-      /* fall through */
+      /* no schema */
     }
-    const fields = TALLY_FIELD_CATALOGS[entityType] || TALLY_FIELD_CATALOGS[String(entityType).toLowerCase()] || [];
-    return { source: 'fixture', fields };
+    return { source: 'none', fields: [] };
   },
 };
