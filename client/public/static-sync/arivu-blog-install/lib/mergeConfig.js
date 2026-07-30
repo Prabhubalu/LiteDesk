@@ -78,21 +78,23 @@ module.exports = { getArivuBlogRewrites, withArivuBlog };
 }
 
 function patchPackageJson(packageJsonPath, options = {}) {
-  const integrationMode = options.integrationMode || 'layout';
+  const integrationMode = options.integrationMode || 'hybrid';
   const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
   pkg.scripts = pkg.scripts || {};
 
-  if (integrationMode === 'standalone-html') {
+  if (integrationMode === 'standalone-html' || integrationMode === 'hybrid' || integrationMode === 'layout') {
     if (!pkg.scripts['sync:blog']) {
       pkg.scripts['sync:blog'] = 'node scripts/sync-blog-static.mjs';
     }
 
-    const syncCommand = 'npm run sync:blog';
-    const existingPrebuild = String(pkg.scripts.prebuild || '').trim();
-    if (!existingPrebuild) {
-      pkg.scripts.prebuild = syncCommand;
-    } else if (!existingPrebuild.includes('sync:blog')) {
-      pkg.scripts.prebuild = `${syncCommand} && ${existingPrebuild}`;
+    if (integrationMode !== 'layout') {
+      const syncCommand = 'npm run sync:blog';
+      const existingPrebuild = String(pkg.scripts.prebuild || '').trim();
+      if (!existingPrebuild) {
+        pkg.scripts.prebuild = syncCommand;
+      } else if (!existingPrebuild.includes('sync:blog')) {
+        pkg.scripts.prebuild = `${syncCommand} && ${existingPrebuild}`;
+      }
     }
   }
 
@@ -164,19 +166,63 @@ export default nextConfig;
 }
 
 function writeEnvFile(cwd, values, filename) {
-  const integrationMode = values.integrationMode || 'layout';
-  const lines = [
-    `ARIVU_ORG=${values.org}`,
-    `ARIVU_API_ORIGIN=${values.apiOrigin.replace(/\/$/, '')}`,
-    `BLOG_URL_PREFIX=${normalizePathPrefix(values.pathPrefix)}`,
-    `ARIVU_SYNC_MODE=${integrationMode === 'standalone-html' ? 'static' : 'layout'}`,
-    `ARIVU_SYNC_DEST=${values.dest || './public'}`,
-    `SITE_ORIGIN=${values.siteOrigin || ''}`,
-    'ARIVU_BLOG_WEBHOOK_SECRET=',
-    'VERCEL_DEPLOY_HOOK_URL=',
-  ];
+  const integrationMode = values.integrationMode || 'hybrid';
+  const resolveSyncMode = (mode) => {
+    if (mode === 'standalone-html') return 'static';
+    if (mode === 'layout') return 'layout';
+    return 'hybrid';
+  };
+
+  const parseEnvEntries = (content) => {
+    const order = [];
+    const map = new Map();
+    for (const rawLine of String(content || '').split(/\r?\n/)) {
+      const line = rawLine.trimEnd();
+      if (!line || line.trimStart().startsWith('#')) continue;
+      const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+      if (!match) continue;
+      if (!map.has(match[1])) order.push(match[1]);
+      map.set(match[1], match[2]);
+    }
+    return { order, values: map };
+  };
+
   const filePath = path.join(cwd, filename);
-  fs.writeFileSync(filePath, `${lines.join('\n')}\n`);
+  const existing = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
+  const { order, values: envValues } = parseEnvEntries(existing);
+  const updates = {
+    ARIVU_BLOG_ORG: values.org,
+    ARIVU_API_ORIGIN: values.apiOrigin.replace(/\/$/, ''),
+    BLOG_URL_PREFIX: normalizePathPrefix(values.pathPrefix),
+    ARIVU_SYNC_MODE: resolveSyncMode(integrationMode),
+    ARIVU_SYNC_DEST: values.dest || './public',
+    SITE_ORIGIN: values.siteOrigin || '',
+    ARIVU_BLOG_WEBHOOK_SECRET: '',
+    VERCEL_DEPLOY_HOOK_URL: '',
+  };
+  const preserveEmptyKeys = new Set([
+    'ARIVU_WEBHOOK_SECRET',
+    'ARIVU_BLOG_WEBHOOK_SECRET',
+    'VERCEL_DEPLOY_HOOK_URL',
+  ]);
+
+  for (const [key, rawValue] of Object.entries(updates)) {
+    const nextValue = rawValue == null ? '' : String(rawValue);
+    const current = envValues.has(key) ? String(envValues.get(key) || '') : null;
+    if (
+      preserveEmptyKeys.has(key)
+      && nextValue === ''
+      && current !== null
+      && current.trim() !== ''
+    ) {
+      continue;
+    }
+    if (!envValues.has(key)) order.push(key);
+    envValues.set(key, nextValue);
+  }
+
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${order.map((key) => `${key}=${envValues.get(key)}`).join('\n')}\n`);
   return filePath;
 }
 

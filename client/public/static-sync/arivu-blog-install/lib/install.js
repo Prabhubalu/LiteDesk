@@ -19,8 +19,9 @@ function resolvePackageRoot() {
   return path.resolve(__dirname, '..');
 }
 
-function copyIfExists(src, dest) {
+function copyIfExists(src, dest, options = {}) {
   if (!fs.existsSync(src)) return;
+  if (!options.force && fs.existsSync(dest)) return;
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(src, dest);
 }
@@ -31,13 +32,14 @@ function scaffoldStandalone(targetDir, options) {
 
   fs.mkdirSync(targetDir, { recursive: true });
   for (const entry of ['package.json', 'tsconfig.json', 'next.config.mjs', 'README.txt']) {
-    copyIfExists(path.join(templatesRoot, entry), path.join(targetDir, entry));
+    copyIfExists(path.join(templatesRoot, entry), path.join(targetDir, entry), options);
   }
 
   for (const entry of ['layout.tsx', 'page.tsx']) {
     copyIfExists(
       path.join(templatesRoot, 'app', entry),
       path.join(targetDir, 'app', entry),
+      options,
     );
   }
 
@@ -50,7 +52,7 @@ function scaffoldStandalone(targetDir, options) {
 
 function installIntoProject(targetDir, options) {
   const packageRoot = options.packageRoot || resolvePackageRoot();
-  const integrationMode = options.integrationMode || 'layout';
+  const integrationMode = options.integrationMode || 'hybrid';
   const project = detectNextProject(targetDir);
 
   if (!project.isNext && !options.allowMissingAppDir) {
@@ -69,26 +71,33 @@ function installIntoProject(targetDir, options) {
     appDir,
     libDir,
     integrationMode,
+    force: Boolean(options.force),
+    updateKit: Boolean(options.updateKit),
   });
 
   let blogLayoutPatched = false;
-  if (integrationMode === 'layout' && siteChrome.needsBlogLayoutChrome) {
-    const blogLayoutContent = buildBlogLayoutContent({
-      chromeComponents: siteChrome.referenceChromeComponents,
-    });
-    if (blogLayoutContent) {
-      const blogLayoutPath = path.join(targetDir, appDir, 'blog', 'layout.tsx');
-      fs.writeFileSync(blogLayoutPath, blogLayoutContent);
-      blogLayoutPatched = true;
+  if ((integrationMode === 'layout' || integrationMode === 'hybrid') && siteChrome.needsBlogLayoutChrome) {
+    const blogLayoutPath = path.join(targetDir, appDir, 'blog', 'layout.tsx');
+    if (options.force || !fs.existsSync(blogLayoutPath)) {
+      const blogLayoutContent = buildBlogLayoutContent({
+        chromeComponents: siteChrome.referenceChromeComponents,
+      });
+      if (blogLayoutContent) {
+        fs.writeFileSync(blogLayoutPath, blogLayoutContent);
+        blogLayoutPatched = true;
+      }
     }
   }
 
   if (integrationMode === 'standalone-html') {
-    writeArivuBlogConfig(targetDir, options.pathPrefix);
-    fs.writeFileSync(
-      path.join(targetDir, 'arivu-blog.config.cjs'),
-      buildArivuBlogConfigCjs(options.pathPrefix),
-    );
+    const configMjs = path.join(targetDir, 'arivu-blog.config.mjs');
+    const configCjs = path.join(targetDir, 'arivu-blog.config.cjs');
+    if (options.force || !fs.existsSync(configMjs)) {
+      writeArivuBlogConfig(targetDir, options.pathPrefix);
+    }
+    if (options.force || !fs.existsSync(configCjs)) {
+      fs.writeFileSync(configCjs, buildArivuBlogConfigCjs(options.pathPrefix));
+    }
   }
 
   const scripts = project.packageJsonPath
@@ -128,11 +137,17 @@ function printSuccess(result, options) {
   const siteOrigin = options.siteOrigin || 'https://www.example.com';
   process.stdout.write('\nArivu blog installed.\n\n');
 
-  if (result.integrationMode === 'layout') {
-    process.stdout.write('Mode: site layout (/blog pages use your site nav and footer)\n\n');
+  if (result.integrationMode === 'layout' || result.integrationMode === 'hybrid') {
+    const modeLabel = result.integrationMode === 'hybrid'
+      ? 'hybrid (live embed + silent static HTML)'
+      : 'site layout (/blog pages use your site nav and footer)';
+    process.stdout.write(`Mode: ${modeLabel}\n\n`);
     process.stdout.write('How it works:\n');
     process.stdout.write('  - /blog routes are Next.js App Router pages that fetch content from Arivu\n');
-    process.stdout.write('  - ARIVU_SYNC_MODE=layout skips public/blog/ static HTML\n');
+    process.stdout.write('  - ARIVU_SYNC_MODE=hybrid writes public/blog/ static HTML while /blog stays live embed+layout\n');
+    process.stdout.write('  - ARIVU_SYNC_MODE=layout skips static HTML write\n');
+    process.stdout.write('  - On Vercel hybrid: set VERCEL_DEPLOY_HOOK_URL so publish rebuilds static files\n');
+    process.stdout.write('  - Local hybrid: webhook writes files when not on Vercel (or ARIVU_SYNC_WRITE_LOCAL=1)\n');
     process.stdout.write('  - Site chrome is applied in app/blog/layout.tsx\n');
     process.stdout.write('  - SEO metadata is generated at build time from Arivu\n\n');
   } else {
@@ -152,6 +167,15 @@ function printSuccess(result, options) {
     process.stdout.write(`  - ${result.copied.webhook}\n`);
   }
   process.stdout.write(`  - ${result.envFile}\n`);
+
+  const skipped = result.copied.stats?.skipped || [];
+  const written = result.copied.stats?.written || [];
+  if (options.updateKit && !options.force) {
+    process.stdout.write(`\nUpdate-kit: refreshed ${written.length} tooling file(s); left UI/CSS routes alone.\n`);
+  }
+  if (skipped.length) {
+    process.stdout.write(`\nSkipped ${skipped.length} existing file(s) (customizations kept). Use --update-kit (tooling) or --force (everything).\n`);
+  }
 
   if (result.blogLayoutPatched) {
     if (result.siteChrome.referenceLayoutPath) {
@@ -175,6 +199,8 @@ function printSuccess(result, options) {
   process.stdout.write(`  3. In Arivu Blog settings, set publish webhook to ${siteOrigin}/api/arivu-webhook/blog\n`);
   if (result.integrationMode === 'layout') {
     process.stdout.write('  4. Deploy — Next.js builds /blog inside your site layout\n\n');
+  } else if (result.integrationMode === 'hybrid') {
+    process.stdout.write('  4. Deploy — live /blog + prebuild writes public/blog/ static HTML\n\n');
   } else {
     process.stdout.write('  4. Deploy — prebuild syncs SEO-ready HTML into public/blog/\n\n');
   }

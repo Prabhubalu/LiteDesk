@@ -30,10 +30,10 @@ function normalizeWebsiteOrigin(domain: string): string {
 function buildEnvFile(options: VercelStandaloneKitOptions): string {
   const siteOrigin = normalizeWebsiteOrigin(options.siteDomain || '');
   const lines = [
-    `ARIVU_ORG=${options.orgKey}`,
+    `ARIVU_HELP_ORG=${options.orgKey}`,
     `ARIVU_API_ORIGIN=${options.apiOrigin.replace(/\/$/, '')}`,
     `HELP_URL_PREFIX=${normalizePathPrefix(options.pathPrefix)}`,
-    'ARIVU_SYNC_MODE=layout',
+    'ARIVU_SYNC_MODE=hybrid',
     'ARIVU_SYNC_DEST=./public',
     `SITE_ORIGIN=${siteOrigin}`,
     'ARIVU_WEBHOOK_SECRET=',

@@ -1683,6 +1683,22 @@
     "message": "Deploy — /blog builds inside your site layout; point webhook to /api/arivu-webhook/blog",
     "description": "Blog Vercel install step 4"
   },
+  "addonsBlogVercelUninstallTitle": {
+    "message": "Uninstall (remove blog files)",
+    "description": "Title for Vercel/Next blog uninstall script section"
+  },
+  "addonsBlogVercelUninstallDesc": {
+    "message": "Run from your Next.js project root to detect and remove files added by the install command. Shared help files and env keys are kept if help is still installed.",
+    "description": "Description for Vercel/Next blog uninstall script"
+  },
+  "addonsBlogVercelUpdateKitTitle": {
+    "message": "Update kit (keep CSS / layouts)",
+    "description": "Title for Blog update-kit install command"
+  },
+  "addonsBlogVercelUpdateKitDesc": {
+    "message": "Refreshes sync scripts, help-sync, webhook route, and lib client — leaves app/blog layouts and your CSS alone.",
+    "description": "Description for Blog update-kit install command"
+  },
   "addonsBlogVercelStandaloneTitle": {
     "message": "Vercel — standalone project",
     "description": "Title for standalone Vercel blog deploy"
@@ -2178,6 +2194,22 @@
   "addonsArticlesVercelInstallStep4": {
     "message": "Deploy — /help builds inside your site layout with SEO metadata",
     "description": "Vercel install step 4"
+  },
+  "addonsArticlesVercelUninstallTitle": {
+    "message": "Uninstall (remove help files)",
+    "description": "Title for Vercel/Next help uninstall script section"
+  },
+  "addonsArticlesVercelUninstallDesc": {
+    "message": "Run from your Next.js project root to detect and remove files added by the install command. Shared blog files and env keys are kept if blog is still installed.",
+    "description": "Description for Vercel/Next help uninstall script"
+  },
+  "addonsArticlesVercelUpdateKitTitle": {
+    "message": "Update kit (keep CSS / layouts)",
+    "description": "Title for update-kit install command"
+  },
+  "addonsArticlesVercelUpdateKitDesc": {
+    "message": "Refreshes sync scripts, help-sync, webhook route, and lib client — leaves app/help layouts and your CSS alone.",
+    "description": "Description for update-kit install command"
   },
   "addonsArticlesVercelStandaloneTitle": {
     "message": "Vercel — standalone project",

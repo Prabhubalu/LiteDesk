@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const { loadEnvFiles } = require(path.join(__dirname, '../help-sync/lib/loadEnv.js'));
+loadEnvFiles();
+
 const { syncFull } = require(path.join(__dirname, '../help-sync/lib/sync.js'));
 
 const org = process.env.ARIVU_ORG || '';

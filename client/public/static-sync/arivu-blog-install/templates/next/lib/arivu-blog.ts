@@ -1,5 +1,5 @@
 const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
-const ORG = process.env.ARIVU_ORG || '';
+const ORG = process.env.ARIVU_BLOG_ORG || process.env.ARIVU_ORG || '';
 const PATH_PREFIX = process.env.BLOG_URL_PREFIX || '/blog/';
 
 export type ExportMeta = {
@@ -72,6 +72,70 @@ export function buildBlogPathname(pathPrefix: string, slug: string[] = []): stri
   const normalized = String(pathPrefix || '/blog/').trim().replace(/\/$/, '') || '/blog';
   if (!slug.length) return normalized;
   return `${normalized}/${slug.map((segment) => encodeURIComponent(segment)).join('/')}`;
+}
+
+/** hybrid/static: prefer synced public HTML when the file exists on disk */
+export function shouldPreferSyncedHtml(): boolean {
+  const mode = process.env.ARIVU_SYNC_MODE || 'hybrid';
+  return mode === 'hybrid' || mode === 'static';
+}
+
+function extractBodyFromSyncedHtml(fullHtml: string): string {
+  const openMatch = fullHtml.match(/<div\s+class="[^"]*\bld-help-(?:root|embed)\b[^"]*"[^>]*>/i);
+  if (openMatch && openMatch.index != null) {
+    const contentStart = openMatch.index + openMatch[0].length;
+    let depth = 1;
+    let i = contentStart;
+    while (i < fullHtml.length && depth > 0) {
+      const nextOpen = fullHtml.indexOf('<div', i);
+      const nextClose = fullHtml.indexOf('</div>', i);
+      if (nextClose < 0) break;
+      if (nextOpen >= 0 && nextOpen < nextClose) {
+        depth += 1;
+        i = nextOpen + 4;
+      } else {
+        depth -= 1;
+        if (depth === 0) {
+          return fullHtml.slice(contentStart, nextClose).trim();
+        }
+        i = nextClose + 6;
+      }
+    }
+  }
+
+  const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  if (!bodyMatch?.[1]) return '';
+  return bodyMatch[1]
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .trim();
+}
+
+export async function readSyncedPageHtml(pathname: string): Promise<string | null> {
+  if (!shouldPreferSyncedHtml()) return null;
+
+  const destRoot = process.env.ARIVU_SYNC_DEST || './public';
+  const relative = String(pathname || '')
+    .replace(/^\//, '')
+    .replace(/\/$/, '');
+  if (!relative) return null;
+
+  const { promises: fs } = await import('node:fs');
+  const path = await import('node:path');
+  const candidates = [
+    path.join(process.cwd(), destRoot, relative, 'index.html'),
+    path.join(process.cwd(), destRoot, `${relative}.html`),
+  ];
+
+  for (const filePath of candidates) {
+    try {
+      const fullHtml = await fs.readFile(filePath, 'utf8');
+      const body = extractBodyFromSyncedHtml(fullHtml);
+      if (body) return body;
+    } catch {
+      // try next candidate
+    }
+  }
+  return null;
 }
 
 export async function resolveBlogPage(slug: string[] = []): Promise<{
