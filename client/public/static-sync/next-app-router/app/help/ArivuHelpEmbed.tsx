@@ -65,7 +65,7 @@ export default function ArivuHelpEmbed({
   }, [scriptReady, org, origin, pathPrefix, pathname, title]);
 
   if (!origin || !org) {
-    return <p>Help center is not configured. Set ARIVU_API_ORIGIN and ARIVU_ORG.</p>;
+    return <p>Help center is not configured. Set ARIVU_API_ORIGIN and ARIVU_HELP_ORG (or ARIVU_ORG).</p>;
   }
 
   return (

@@ -25,13 +25,14 @@ function scaffoldStandalone(targetDir, options) {
 
   fs.mkdirSync(targetDir, { recursive: true });
   for (const entry of ['package.json', 'tsconfig.json', 'next.config.mjs', 'README.txt']) {
-    copyIfExists(path.join(templatesRoot, entry), path.join(targetDir, entry));
+    copyIfExists(path.join(templatesRoot, entry), path.join(targetDir, entry), options);
   }
 
   for (const entry of ['layout.tsx', 'page.tsx']) {
     copyIfExists(
       path.join(templatesRoot, 'app', entry),
       path.join(targetDir, 'app', entry),
+      options,
     );
   }
 
@@ -42,15 +43,16 @@ function scaffoldStandalone(targetDir, options) {
   });
 }
 
-function copyIfExists(src, dest) {
+function copyIfExists(src, dest, options = {}) {
   if (!fs.existsSync(src)) return;
+  if (!options.force && fs.existsSync(dest)) return;
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.copyFileSync(src, dest);
 }
 
 function installIntoProject(targetDir, options) {
   const packageRoot = options.packageRoot || resolvePackageRoot();
-  const integrationMode = options.integrationMode || 'layout';
+  const integrationMode = options.integrationMode || 'hybrid';
   const project = detectNextProject(targetDir);
 
   if (!project.isNext && !options.allowMissingAppDir) {
@@ -69,26 +71,34 @@ function installIntoProject(targetDir, options) {
     appDir,
     libDir,
     integrationMode,
+    force: Boolean(options.force),
+    updateKit: Boolean(options.updateKit),
   });
 
   let helpLayoutPatched = false;
-  if (integrationMode === 'layout' && siteChrome.needsHelpLayoutChrome) {
-    const helpLayoutContent = buildHelpLayoutContent({
-      chromeComponents: siteChrome.referenceChromeComponents,
-    });
-    if (helpLayoutContent) {
-      const helpLayoutPath = path.join(targetDir, appDir, 'help', 'layout.tsx');
-      fs.writeFileSync(helpLayoutPath, helpLayoutContent);
-      helpLayoutPatched = true;
+  // Never rewrite customized layout on --update-kit; only on --force or first install.
+  if ((integrationMode === 'layout' || integrationMode === 'hybrid') && siteChrome.needsHelpLayoutChrome) {
+    const helpLayoutPath = path.join(targetDir, appDir, 'help', 'layout.tsx');
+    if (options.force || !fs.existsSync(helpLayoutPath)) {
+      const helpLayoutContent = buildHelpLayoutContent({
+        chromeComponents: siteChrome.referenceChromeComponents,
+      });
+      if (helpLayoutContent) {
+        fs.writeFileSync(helpLayoutPath, helpLayoutContent);
+        helpLayoutPatched = true;
+      }
     }
   }
 
   if (integrationMode === 'standalone-html') {
-    writeArivuHelpConfig(targetDir, options.pathPrefix);
-    fs.writeFileSync(
-      path.join(targetDir, 'arivu-help.config.cjs'),
-      buildArivuHelpConfigCjs(options.pathPrefix),
-    );
+    const configMjs = path.join(targetDir, 'arivu-help.config.mjs');
+    const configCjs = path.join(targetDir, 'arivu-help.config.cjs');
+    if (options.force || !fs.existsSync(configMjs)) {
+      writeArivuHelpConfig(targetDir, options.pathPrefix);
+    }
+    if (options.force || !fs.existsSync(configCjs)) {
+      fs.writeFileSync(configCjs, buildArivuHelpConfigCjs(options.pathPrefix));
+    }
   }
 
   const scripts = project.packageJsonPath
@@ -128,11 +138,17 @@ function printSuccess(result, options) {
   const siteOrigin = options.siteOrigin || 'https://www.example.com';
   process.stdout.write('\nArivu help center installed.\n\n');
 
-  if (result.integrationMode === 'layout') {
-    process.stdout.write('Mode: site layout (help pages use your site nav and footer)\n\n');
+  if (result.integrationMode === 'layout' || result.integrationMode === 'hybrid') {
+    const modeLabel = result.integrationMode === 'hybrid'
+      ? 'hybrid (live embed + silent static HTML)'
+      : 'site layout (help pages use your site nav and footer)';
+    process.stdout.write(`Mode: ${modeLabel}\n\n`);
     process.stdout.write('How it works:\n');
     process.stdout.write('  - /help routes are Next.js App Router pages that fetch content from Arivu\n');
-    process.stdout.write('  - ARIVU_SYNC_MODE=layout skips public/help/ static HTML (that output is not rendered)\n');
+    process.stdout.write('  - ARIVU_SYNC_MODE=hybrid writes public/help/ static HTML while /help stays live embed+layout\n');
+    process.stdout.write('  - ARIVU_SYNC_MODE=layout skips static HTML write\n');
+    process.stdout.write('  - On Vercel hybrid: set VERCEL_DEPLOY_HOOK_URL so publish rebuilds static files\n');
+    process.stdout.write('  - Local hybrid: webhook writes files when not on Vercel (or ARIVU_SYNC_WRITE_LOCAL=1)\n');
     process.stdout.write('  - Site chrome is applied in app/help/layout.tsx\n');
     process.stdout.write('  - SEO metadata is generated at build time from Arivu\n\n');
   } else {
@@ -153,6 +169,14 @@ function printSuccess(result, options) {
   }
   process.stdout.write(`  - ${result.envFile}\n`);
 
+  const skipped = result.copied.stats?.skipped || [];
+  const written = result.copied.stats?.written || [];
+  if (options.updateKit && !options.force) {
+    process.stdout.write(`\nUpdate-kit: refreshed ${written.length} tooling file(s); left UI/CSS routes alone.\n`);
+  }
+  if (skipped.length) {
+    process.stdout.write(`\nSkipped ${skipped.length} existing file(s) (customizations kept). Use --update-kit (tooling) or --force (everything).\n`);
+  }
   if (result.helpLayoutPatched) {
     if (result.siteChrome.referenceLayoutPath) {
       process.stdout.write(`\nHelp layout wrapped with site chrome from ${result.siteChrome.referenceLayoutPath}:\n`);
@@ -186,6 +210,8 @@ function printSuccess(result, options) {
   process.stdout.write(`  3. In Arivu Articles settings, set publish webhook to ${siteOrigin}/api/arivu-webhook\n`);
   if (result.integrationMode === 'layout') {
     process.stdout.write('  4. Deploy — Next.js builds /help inside your site layout\n\n');
+  } else if (result.integrationMode === 'hybrid') {
+    process.stdout.write('  4. Deploy — live /help + prebuild writes public/help/ static HTML\n\n');
   } else {
     process.stdout.write('  4. Deploy — prebuild syncs SEO-ready HTML into public/help/\n\n');
   }
