@@ -15,7 +15,7 @@ export function normalizeTimeHHMM(value: string | null | undefined): string {
 function parseTimeMinutes(value: string): number | null {
   const normalized = normalizeTimeHHMM(value);
   const match = normalized.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
-  if (!match) return null;
+  if (!match?.[1] || match[2] === undefined) return null;
   return (parseInt(match[1], 10) * 60) + parseInt(match[2], 10);
 }
 

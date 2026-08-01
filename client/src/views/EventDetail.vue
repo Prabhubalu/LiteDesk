@@ -1533,7 +1533,7 @@ const formatDuration = (seconds: any) => {
   return `${minutes}m`;
 };
 
-const formatOrderValue = (value) => {
+const formatOrderValue = (value: unknown) => {
   return formatCurrencyValue(value, {
     currencyCode: resolveOrgCurrencyCode(authStore.organization),
   }) ?? '—';

@@ -4584,7 +4584,9 @@ const formatFullTimestamp = (date) => {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '';
   return formatUserDateTime(d);
-}; = (event) => {
+};
+
+const isTouchOrPenPointer = (event) => {
   if (event?.pointerType) {
     return event.pointerType === 'touch' || event.pointerType === 'pen';
   }
