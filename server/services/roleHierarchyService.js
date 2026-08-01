@@ -401,6 +401,93 @@ async function recalculateOrganizationRoleLevels(organizationId) {
   if (saves.length) await Promise.all(saves);
 }
 
+/**
+ * Resolve who a user reports to for display:
+ * 1) Explicit user.reportsTo when set and valid
+ * 2) Else walk parentRole chain and pick the first ancestor role that has an active user
+ *
+ * @param {object} user — lean or doc with _id, roleId, reportsTo, organizationId
+ * @param {{ organizationId?: unknown, UserModel?: typeof User, RoleModel?: typeof Role }} [options]
+ * @returns {Promise<{ user: object|null, source: 'manual'|'hierarchy'|null }>}
+ */
+async function resolveEffectiveReportsTo(user, options = {}) {
+  const UserModel = options.UserModel || User;
+  const RoleModel = options.RoleModel || Role;
+  const organizationId = options.organizationId || user?.organizationId;
+  if (!user?._id || !organizationId) {
+    return { user: null, source: null };
+  }
+
+  const selfId = String(user._id);
+  const reportFields = 'firstName lastName email username isOwner';
+
+  const manualRaw = user.reportsTo;
+  if (manualRaw) {
+    const manualId = manualRaw._id || manualRaw;
+    if (manualId && String(manualId) !== selfId) {
+      if (manualRaw.firstName != null || manualRaw.email != null || manualRaw.username != null) {
+        return {
+          user: {
+            _id: manualRaw._id || manualId,
+            firstName: manualRaw.firstName,
+            lastName: manualRaw.lastName,
+            email: manualRaw.email,
+            username: manualRaw.username,
+            isOwner: manualRaw.isOwner
+          },
+          source: 'manual'
+        };
+      }
+      const manual = await UserModel.findOne({
+        _id: manualId,
+        organizationId,
+        status: { $nin: ['deleted', 'inactive'] }
+      })
+        .select(reportFields)
+        .lean();
+      if (manual) {
+        return { user: manual, source: 'manual' };
+      }
+    }
+  }
+
+  const roleId = user.roleId?._id || user.roleId;
+  if (!roleId) {
+    return { user: null, source: null };
+  }
+
+  const roles = await RoleModel.find({ organizationId }).select('_id parentRole').lean();
+  const roleById = new Map(roles.map((role) => [String(role._id), role]));
+
+  let current = roleById.get(String(roleId));
+  const visited = new Set([String(roleId)]);
+
+  while (current?.parentRole) {
+    const parentId = String(current.parentRole);
+    if (visited.has(parentId)) break;
+    visited.add(parentId);
+
+    const candidates = await UserModel.find({
+      organizationId,
+      roleId: parentId,
+      _id: { $ne: user._id },
+      status: 'active'
+    })
+      .select(reportFields)
+      .sort({ isOwner: -1, createdAt: 1 })
+      .limit(1)
+      .lean();
+
+    if (candidates.length > 0) {
+      return { user: candidates[0], source: 'hierarchy' };
+    }
+
+    current = roleById.get(parentId);
+  }
+
+  return { user: null, source: null };
+}
+
 module.exports = {
   getDescendantRoleIdsFromRoles,
   getVisibleRoleIdsForPrivateSharing,
@@ -414,5 +501,6 @@ module.exports = {
   reorderSiblingRoles,
   normalizeParentRoleId,
   syncRoleUserCounts,
-  backfillMissingUserRoleIds
+  backfillMissingUserRoleIds,
+  resolveEffectiveReportsTo
 };

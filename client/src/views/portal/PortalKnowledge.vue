@@ -135,6 +135,7 @@
 </template>
 
 <script setup>
+import { formatUserDate } from '@/utils/localeFormat';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -210,11 +211,7 @@ async function runAsk() {
 
 function formatDate(value) {
   if (!value) return '';
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(value) || '—';
 }
 
 async function loadCollections() {

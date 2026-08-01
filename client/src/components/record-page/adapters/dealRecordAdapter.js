@@ -61,7 +61,7 @@ const getOwnerDisplayName = (record) => {
 };
 
 const KEY_FIELD_SECTION_EXCLUDED_KEYS = Object.freeze(['name', 'title', 'description', 'subtasks']);
-const KEY_SECTION_EDITABLE_TYPES = Object.freeze(new Set(['text', 'number', 'date', 'select', 'user', 'entity']));
+const KEY_SECTION_EDITABLE_TYPES = Object.freeze(new Set(['text', 'number', 'date', 'datetime', 'select', 'user', 'entity']));
 const DETAIL_SECTION_BASE_EXCLUDED_KEYS = Object.freeze([
   'name', 'title', 'description', 'subtasks',
   'createdBy', 'createdAt', 'modifiedBy', 'updatedAt',
@@ -137,6 +137,12 @@ const resolveStateFieldType = (fieldKey, configuredField) => {
   const metadata = getDealFieldMetadata(fieldKey);
   const filterType = String(metadata?.filterType || '').toLowerCase();
 
+  if (
+    explicitDataType.includes('date-time')
+    || explicitDataType.includes('datetime')
+  ) {
+    return 'datetime';
+  }
   if (explicitDataType.includes('date')) return 'date';
   if (filterType === 'date') return 'date';
   if (explicitDataType.includes('number') || explicitDataType.includes('currency') || explicitDataType.includes('decimal') || explicitDataType.includes('integer')) return 'number';

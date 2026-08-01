@@ -331,6 +331,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -412,7 +413,7 @@ const formatTime = (time) => {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  return formatUserDate(date);
 };
 
 const getTrialDaysRemaining = () => {
@@ -482,7 +483,7 @@ const fetchChartData = async () => {
     const date = new Date();
     date.setDate(date.getDate() - i);
     data.push({
-      date: date.toLocaleDateString(),
+      date: formatUserDate(date),
       count: Math.floor(Math.random() * 20) + contactStats.value.total / days
     });
   }

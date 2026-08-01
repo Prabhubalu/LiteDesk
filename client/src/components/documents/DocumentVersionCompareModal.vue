@@ -99,6 +99,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -151,7 +152,7 @@ function formatFileSize(bytes) {
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function compareValue(left, right) {

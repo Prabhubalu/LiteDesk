@@ -50,6 +50,8 @@ import portalApiClient from '@/utils/portalApiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import PortalPageShell from '@/components/portal/PortalPageShell.vue';
 import { PLATFORM_HOME_CARD_CLASS, PLATFORM_HOME_SKELETON_CLASS } from '@/utils/platformHomeLayout';
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const { t } = useI18n();
 const notifications = useNotifications();
@@ -59,18 +61,11 @@ const busyId = ref('');
 
 function formatDate(v) {
   if (!v) return '—';
-  return new Date(v).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(v) || '—';
 }
 
 function formatMoney(amount, currency = 'USD') {
-  return (Number(amount) || 0).toLocaleString(undefined, {
-    style: 'currency',
-    currency: currency || 'USD'
-  });
+  return formatCurrencyValue(amount, { currencyCode: currency || undefined }) ?? '—';
 }
 
 async function loadInvoices() {

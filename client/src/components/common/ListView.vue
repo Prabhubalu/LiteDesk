@@ -1521,6 +1521,7 @@ import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { moduleSupportsGenericRecordPreview } from '@/utils/recordPresence';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { formatNumber } from '@/utils/localeFormat';
 import { isFieldExcludedFromListCustomize, buildListColumnsFromModuleFields } from '@/utils/buildListColumnsFromModuleFields';
 import { useDefaultListFilters } from '@/composables/useDefaultListFilters';
 import { useListSelection } from '@/composables/useListSelection';
@@ -3279,33 +3280,39 @@ const computedStats = computed(() => {
     // Format the stat value
     let formattedStat = currentValue;
     if (config.formatter === 'currency') {
-      const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
-      const currencyCode = String(config.currencyCode || config.currency || orgCurrency).toUpperCase();
-      formattedStat = formatCurrencyValue(currentValue, { currencyCode }) || '—';
+      const orgCurrencyCode = resolveOrgCurrencyCode(authStore.organization);
+      const currencyCode = String(config.currencyCode || config.currency || orgCurrencyCode).toUpperCase();
+      formattedStat = formatCurrencyValue(currentValue, {
+        currencyCode,
+        orgCurrency: authStore.organization,
+      }) || '—';
     } else if (config.formatter === 'number') {
-      formattedStat = currentValue.toLocaleString();
+      formattedStat = formatNumber(currentValue);
     } else if (config.formatter === 'percentage') {
       formattedStat = `${currentValue}%`;
     } else if (typeof config.formatter === 'function') {
       formattedStat = config.formatter(currentValue);
     } else {
-      formattedStat = currentValue.toLocaleString();
+      formattedStat = formatNumber(currentValue);
     }
-    
+
     // Format previous stat
     let formattedPrevious = previousValue;
     if (config.formatter === 'currency') {
-      const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
-      const currencyCode = String(config.currencyCode || config.currency || orgCurrency).toUpperCase();
-      formattedPrevious = formatCurrencyValue(previousValue, { currencyCode }) || '—';
+      const orgCurrencyCode = resolveOrgCurrencyCode(authStore.organization);
+      const currencyCode = String(config.currencyCode || config.currency || orgCurrencyCode).toUpperCase();
+      formattedPrevious = formatCurrencyValue(previousValue, {
+        currencyCode,
+        orgCurrency: authStore.organization,
+      }) || '—';
     } else if (config.formatter === 'number') {
-      formattedPrevious = previousValue.toLocaleString();
+      formattedPrevious = formatNumber(previousValue);
     } else if (config.formatter === 'percentage') {
       formattedPrevious = `${previousValue}%`;
     } else if (typeof config.formatter === 'function') {
       formattedPrevious = config.formatter(previousValue);
     } else {
-      formattedPrevious = previousValue.toLocaleString();
+      formattedPrevious = formatNumber(previousValue);
     }
     
     return {

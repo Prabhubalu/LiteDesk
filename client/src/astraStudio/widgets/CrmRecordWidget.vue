@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 import type { CanvasWidget } from '@/astraStudio/types';
 
 const props = defineProps<{
@@ -88,15 +89,8 @@ const amountFormatted = computed(() => {
   if (raw == null || raw === '') return '';
   const n = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^0-9.-]/g, ''));
   if (!Number.isFinite(n)) return String(raw);
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: n % 1 === 0 ? 0 : 2,
-    }).format(n);
-  } catch {
-    return String(raw);
-  }
+  const currencyCode = record.value?.currency != null ? String(record.value.currency) : undefined;
+  return formatCurrencyValue(n, { currencyCode }) ?? String(raw);
 });
 
 const statusTone = computed(() => {

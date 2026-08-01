@@ -204,6 +204,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
 import { useOffline } from '@/composables/useOffline';
 import { initDB, getAssignments, saveAssignments } from '@/services/offlineDb.js';
 import { getPendingCount } from '@/services/offlineQueue.js';
@@ -329,8 +330,7 @@ const updatePendingCount = async () => {
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatUserDate(dateString) || 'N/A';
 };
 
 const getStatusBadgeClass = (state) => {

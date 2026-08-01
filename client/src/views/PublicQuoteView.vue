@@ -469,6 +469,7 @@ import {
 } from '@/utils/quoteSectionDisplay';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatDate, formatUserDate } from '@/utils/localeFormat';
 const route = useRoute();
 const token = computed(() => String(route.params.token || '').trim());
 
@@ -633,7 +634,7 @@ function fmtDate(v) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString();
+  return formatUserDate(d);
 }
 
 function fmtMoney(v) {
@@ -645,7 +646,7 @@ function fmtCommentTime(iso) {
   try {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+    return formatDate(d, { dateStyle: 'short', timeStyle: 'short' });
   } catch {
     return '';
   }

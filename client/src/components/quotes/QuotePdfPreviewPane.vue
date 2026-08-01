@@ -38,6 +38,7 @@
 import { ref } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   quoteId: { type: String, default: '' },
@@ -74,6 +75,6 @@ function formatDate(value) {
   if (!value) return '-';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleString();
+  return formatUserDateTime(d);
 }
 </script>

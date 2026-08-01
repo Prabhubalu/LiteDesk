@@ -222,6 +222,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 
 const { t } = useI18n();
@@ -258,7 +259,7 @@ function formatIp(ip) {
 function formatDate(value) {
   if (!value) return '';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return String(value);
   }

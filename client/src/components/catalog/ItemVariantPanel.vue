@@ -88,12 +88,15 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ fieldLabel('currency') }}</label>
-          <input
+          <select
             v-model="form.currency"
-            type="text"
             :disabled="!canEdit"
             class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm"
-          />
+          >
+            <option v-for="opt in currencyOptions" :key="opt.code" :value="opt.code">
+              {{ opt.symbol || opt.code }} {{ opt.code }} — {{ opt.name }}
+            </option>
+          </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ fieldLabel('tax_type') }}</label>
@@ -195,7 +198,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CATALOG_BARCODE_TYPES, CATALOG_BARCODE_TYPE_LABEL_KEYS } from '@/constants/catalogBarcode';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
-import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { getEnabledCurrencyOptions, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 import { getItemFieldMetadata } from '@/platform/fields/itemFieldModel';
 import ItemVariantPriceEntries from '@/components/catalog/ItemVariantPriceEntries.vue';
@@ -214,6 +217,7 @@ const emit = defineEmits(['save']);
 const { t } = useI18n();
 const authStore = useAuthStore();
 const orgCurrency = computed(() => resolveOrgCurrencyCode(authStore.organization));
+const currencyOptions = computed(() => getEnabledCurrencyOptions(authStore.organization));
 
 const barcodeTypes = CATALOG_BARCODE_TYPES;
 

@@ -789,6 +789,7 @@ import TallyAtipAssistantPanel from '@/components/integrations/tally/TallyAtipAs
 import TallyAtipCatalogPanel from '@/components/integrations/tally/TallyAtipCatalogPanel.vue';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatTime as formatLocaleTime, formatUserDate } from '@/utils/localeFormat';
 const { t } = useI18n();
 const router = useRouter();
 
@@ -953,11 +954,11 @@ function goSettings() {
 
 function formatDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString();
+  return formatUserDate(iso);
 }
 function formatTime(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString();
+  return formatLocaleTime(iso);
 }
 
 function filterSummary(row) {

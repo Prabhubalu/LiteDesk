@@ -126,6 +126,7 @@ import { MagnifyingGlassIcon, PaperClipIcon } from '@heroicons/vue/24/outline';
 import ChatMessageReceiptIcon from '@/components/cases/ChatMessageReceiptIcon.vue';
 import { liveChatAttachmentHref } from '@/utils/liveChatAttachmentUpload';
 import { receiptStatusFromMessage } from '@/utils/chatMessageReceipt';
+import { formatTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   messages: { type: Array, default: () => [] },
@@ -151,17 +152,6 @@ const filteredMessages = computed(() => {
   if (!q) return rows;
   return rows.filter((m) => String(m?.body || '').toLowerCase().includes(q));
 });
-
-function formatTime(dt) {
-  try {
-    return new Date(dt || Date.now()).toLocaleTimeString(undefined, {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  } catch {
-    return '';
-  }
-}
 
 function isSystemMessage(message) {
   return String(message?.authorType || '') === 'system';

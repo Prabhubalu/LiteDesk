@@ -65,6 +65,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { formatNumber } from '@/utils/localeFormat';
 import { useAuthStore } from '@/stores/authRegistry';
 
 const { t } = useI18n();
@@ -78,7 +79,7 @@ const status = ref(null);
 
 function formatValue(value) {
   if (value == null || value === '') return '—';
-  if (typeof value === 'number') return value.toLocaleString();
+  if (typeof value === 'number') return formatNumber(value);
   return String(value);
 }
 

@@ -21,6 +21,7 @@
 </template>
 
 <script setup>
+import { formatUserDateTime } from '@/utils/localeFormat';
 defineProps({
   rows: { type: Array, default: () => [] }
 });
@@ -35,6 +36,6 @@ function formatDate(value) {
   if (!value) return '-';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleString();
+  return formatUserDateTime(d);
 }
 </script>

@@ -67,13 +67,13 @@
               </p>
               <p v-if="addon.emailPolicy">
                 {{ t('settings.addonsEmailCreditsBalanceShort', {
-                  count: Number(addon.emailPolicy.creditsRemaining || 0).toLocaleString(),
+                  count: formatNumber(Number(addon.emailPolicy.creditsRemaining || 0)),
                 }) }}
               </p>
               <p v-if="addon.aiCredits">
                 {{ t('settings.addonsAiCreditsBalanceShort', {
-                  available: Number((addon.aiCredits.tokensAvailable ?? addon.aiCredits.tokensBalance) || 0).toLocaleString(),
-                  consumed: Number(addon.aiCredits.tokensConsumed || 0).toLocaleString(),
+                  available: formatNumber(Number((addon.aiCredits.tokensAvailable ?? addon.aiCredits.tokensBalance) || 0)),
+                  consumed: formatNumber(Number(addon.aiCredits.tokensConsumed || 0)),
                 }) }}
               </p>
               <p v-if="addon.subscription.trialEndsAt && addon.subscription.status === 'TRIAL'">
@@ -320,6 +320,7 @@ import { captureArticlesAddonInstalled } from '@/config/posthogArticles';
 import { captureBlogAddonInstalled } from '@/config/posthogBlog';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDate, formatNumber } from '@/utils/localeFormat';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -534,7 +535,7 @@ function statusBadgeClass(status) {
 
 function formatDate(value) {
   try {
-    return new Date(value).toLocaleDateString();
+    return formatUserDate(value);
   } catch {
     return String(value || '');
   }

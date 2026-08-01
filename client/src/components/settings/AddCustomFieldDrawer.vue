@@ -276,7 +276,7 @@ import { XMarkIcon } from '@heroicons/vue/24/outline';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import {
-  CURRENCY_OPTIONS,
+  getEnabledCurrencyOptions,
   getCurrencySymbolFromCode,
   resolveOrgCurrencyCode,
 } from '@/utils/currencyOptions';
@@ -323,7 +323,7 @@ const fieldTypeOptions = computed(() =>
   }))
 );
 const currencySelectOptions = computed(() =>
-  CURRENCY_OPTIONS.map((currency) => ({
+  getEnabledCurrencyOptions(authStore.organization).map((currency) => ({
     value: currency.code,
     label: `${currency.code} - ${currency.name}`,
   }))

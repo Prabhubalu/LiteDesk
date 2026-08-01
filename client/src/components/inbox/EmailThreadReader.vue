@@ -237,6 +237,7 @@ import { useI18n } from 'vue-i18n';
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import apiClient from '@/utils/apiClient';
 import { renderEmailMessageBody } from '@/utils/emailMessageBody';
+import { formatDate, formatTime, formatUserDateTime } from '@/utils/localeFormat';
 import EmailDockedReply from '@/components/inbox/EmailDockedReply.vue';
 import {
   ArrowLeftIcon,
@@ -412,7 +413,7 @@ function formatReaderDate(value) {
   if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString(undefined, {
+  return formatDate(d, {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
@@ -493,19 +494,19 @@ function formatRelative(value) {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
   if (sameDay(d, now)) {
-    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return formatTime(d, { hour: 'numeric', minute: '2-digit' });
   }
   if (diffMs < 6 * 24 * 60 * 60 * 1000) {
-    return d.toLocaleDateString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    return formatDate(d, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
   }
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatDate(d, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function formatFullDate(value) {
   if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString();
+  return formatUserDateTime(d);
 }
 
 function formatFileSize(bytes) {

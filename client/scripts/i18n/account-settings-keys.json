@@ -248,7 +248,7 @@
     "description": "Activity event type"
   },
   "profileHeading": {
-    "message": "Your profile",
+    "message": "My Profile",
     "description": "Profile page heading"
   },
   "profileSubtitle": {
@@ -314,6 +314,182 @@
   "profilePersonalInfoDesc": {
     "message": "Your name and contact details, visible to teammates",
     "description": "Profile section desc"
+  },
+  "profileUserInfo": {
+    "message": "User information",
+    "description": "Profile user info section"
+  },
+  "profileUserInfoDesc": {
+    "message": "Account identity, role, and language preference",
+    "description": "Profile user info section desc"
+  },
+  "profileEmployeeInfo": {
+    "message": "Employee information",
+    "description": "Profile employee section"
+  },
+  "profileEmployeeInfoDesc": {
+    "message": "Contact details and employment metadata",
+    "description": "Profile employee section desc"
+  },
+  "profileCurrencyPrefs": {
+    "message": "Currency & number preferences",
+    "description": "Profile currency section"
+  },
+  "profileCurrencyPrefsDesc": {
+    "message": "How amounts and large numbers appear for you across the platform",
+    "description": "Profile currency section desc"
+  },
+  "profileAccessType": {
+    "message": "User type",
+    "description": "Admin vs Standard label"
+  },
+  "profileAccessAdmin": {
+    "message": "Admin",
+    "description": "User type Admin"
+  },
+  "profileAccessStandard": {
+    "message": "Standard",
+    "description": "User type Standard"
+  },
+  "profileRole": {
+    "message": "Role",
+    "description": "Profile role field"
+  },
+  "profileReportsTo": {
+    "message": "Reports to",
+    "description": "Reports-to field"
+  },
+  "profileLanguage": {
+    "message": "Language",
+    "description": "Profile language field"
+  },
+  "profileTimeZone": {
+    "message": "Time zone",
+    "description": "User time zone preference on profile"
+  },
+  "profileDateFormat": {
+    "message": "Date format",
+    "description": "User date format preference on profile"
+  },
+  "profileDepartment": {
+    "message": "Department",
+    "description": "Deprecated department field"
+  },
+  "profilePrimaryGroup": {
+    "message": "Primary group",
+    "description": "Primary group the user belongs to"
+  },
+  "profilePrimaryEmail": {
+    "message": "Primary email",
+    "description": "Primary email field"
+  },
+  "profileSecondaryEmail": {
+    "message": "Secondary email",
+    "description": "Secondary email field"
+  },
+  "profileOfficePhone": {
+    "message": "Office phone",
+    "description": "Office phone field"
+  },
+  "profileHomePhone": {
+    "message": "Home phone",
+    "description": "Home phone field"
+  },
+  "profileMobilePhone": {
+    "message": "Mobile phone",
+    "description": "Mobile phone field"
+  },
+  "profileFax": {
+    "message": "Fax",
+    "description": "Fax field"
+  },
+  "profileCreatedAt": {
+    "message": "Created date & time",
+    "description": "Account created field"
+  },
+  "profileSuspendedOn": {
+    "message": "Suspended on",
+    "description": "Suspended date field"
+  },
+  "profileReactivatedOn": {
+    "message": "Reactivated on",
+    "description": "Reactivated date field"
+  },
+  "profilePreferredCurrency": {
+    "message": "Preferred currency",
+    "description": "Preferred currency field"
+  },
+  "profileShowPreferredCurrency": {
+    "message": "Show amounts in preferred currency",
+    "description": "Show preferred currency toggle"
+  },
+  "profileDigitGroupingPattern": {
+    "message": "Digit grouping pattern",
+    "description": "Digit grouping pattern field"
+  },
+  "profileDecimalSeparator": {
+    "message": "Decimal separator",
+    "description": "Decimal separator field"
+  },
+  "profileDigitGroupingSeparator": {
+    "message": "Digit grouping separator",
+    "description": "Digit grouping separator field"
+  },
+  "profileCurrencyDecimals": {
+    "message": "Number of currency decimals",
+    "description": "Currency decimals field"
+  },
+  "profileTruncateZeros": {
+    "message": "Truncate trailing zeros",
+    "description": "Truncate zeros field"
+  },
+  "profileAggregatedFormat": {
+    "message": "Aggregated number format",
+    "description": "Aggregated number format field"
+  },
+  "profileAggregatedFormatHelp": {
+    "message": "Controls how large numeric values are displayed in reports, dashboards, charts, or widgets. Instead of changing the actual value, it only changes the display format.",
+    "description": "Aggregated format help text"
+  },
+  "profileYes": {
+    "message": "Yes",
+    "description": "Yes option"
+  },
+  "profileNo": {
+    "message": "No",
+    "description": "No option"
+  },
+  "profileEmptyValue": {
+    "message": "—",
+    "description": "Empty read-only value"
+  },
+  "profileGroupingInternational": {
+    "message": "123,456,789",
+    "description": "International grouping example"
+  },
+  "profileGroupingIndian": {
+    "message": "12,34,56,789",
+    "description": "Indian grouping example"
+  },
+  "profileGroupingSpace": {
+    "message": "Space",
+    "description": "Space separator label"
+  },
+  "profileAggNone": {
+    "message": "None",
+    "description": "No aggregation"
+  },
+  "profileAggThousands": {
+    "message": "Thousands (K)",
+    "description": "Thousands aggregation"
+  },
+  "profileAggMillions": {
+    "message": "Millions (M)",
+    "description": "Millions aggregation"
+  },
+  "profileAggBillions": {
+    "message": "Billions (B)",
+    "description": "Billions aggregation"
   },
   "profileFirstName": {
     "message": "First name",

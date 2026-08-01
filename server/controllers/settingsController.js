@@ -2378,6 +2378,9 @@ exports.getOrganizationSettings = async (req, res) => {
             });
         }
 
+        const { normalizeCurrenciesForResponse } = require('../utils/orgCurrencies');
+        const currency = organization.settings?.currency || 'USD';
+
         // Return only organization identity and settings fields
         // Exclude subscription, billing, app enablement, etc.
         res.json({
@@ -2387,7 +2390,8 @@ exports.getOrganizationSettings = async (req, res) => {
                 logoUrl: organization.settings?.logoUrl || null,
                 primaryColor: organization.settings?.primaryColor || '#3a1f8a',
                 timeZone: organization.settings?.timeZone || 'UTC',
-                currency: organization.settings?.currency || 'USD',
+                currency,
+                currencies: normalizeCurrenciesForResponse(organization.settings?.currencies, currency),
                 locale: organization.settings?.locale || 'en-US',
                 language: organization.settings?.language || 'en',
                 defaultPhoneCountry: organization.settings?.defaultPhoneCountry || '',
@@ -2419,6 +2423,8 @@ exports.updateOrganizationSettings = async (req, res) => {
             });
         }
 
+        const { normalizeCurrenciesForResponse, validateAndNormalizeCurrenciesInput } = require('../utils/orgCurrencies');
+
         // Snapshot raw stored values (no display defaults) for accurate change detection.
         const snapshotOrganizationSettings = (org) => ({
             name: org.name ?? null,
@@ -2426,6 +2432,10 @@ exports.updateOrganizationSettings = async (req, res) => {
             primaryColor: org.settings?.primaryColor ?? null,
             timeZone: org.settings?.timeZone ?? null,
             currency: org.settings?.currency ?? null,
+            currencies: normalizeCurrenciesForResponse(
+                org.settings?.currencies,
+                org.settings?.currency || 'USD'
+            ),
             locale: org.settings?.locale ?? null,
             language: org.settings?.language ?? null,
             defaultPhoneCountry: org.settings?.defaultPhoneCountry ?? null
@@ -2434,7 +2444,7 @@ exports.updateOrganizationSettings = async (req, res) => {
         const beforeSnapshot = snapshotOrganizationSettings(organization);
         res.locals.settingsAuditBefore = beforeSnapshot;
 
-        const { name, logoUrl, primaryColor, timeZone, currency, locale, language, defaultPhoneCountry } = req.body;
+        const { name, logoUrl, primaryColor, timeZone, currency, currencies, locale, language, defaultPhoneCountry } = req.body;
         const { sanitizeBrandColor } = require('../services/quoteOrgSettingsService');
         const { isValidPhoneCountryIso2 } = require('../constants/phoneCountries');
 
@@ -2515,6 +2525,18 @@ exports.updateOrganizationSettings = async (req, res) => {
             }
         }
 
+        if (currencies !== undefined) {
+            const baseForCurrencies = organization.settings.currency || 'USD';
+            const validated = validateAndNormalizeCurrenciesInput(currencies, baseForCurrencies);
+            if (!validated.ok) {
+                return res.status(400).json({
+                    success: false,
+                    message: validated.message
+                });
+            }
+            organization.settings.currencies = validated.currencies;
+        }
+
         await organization.save();
 
         const afterSnapshot = snapshotOrganizationSettings(organization);
@@ -2525,6 +2547,7 @@ exports.updateOrganizationSettings = async (req, res) => {
             'primaryColor',
             'timeZone',
             'currency',
+            'currencies',
             'locale',
             'language',
             'defaultPhoneCountry'
@@ -2539,12 +2562,14 @@ exports.updateOrganizationSettings = async (req, res) => {
         res.locals.settingsAuditBefore = pickKeys(beforeSnapshot, sentKeys);
         res.locals.settingsAuditAfter = pickKeys(afterSnapshot, sentKeys);
 
+        const resolvedCurrency = organization.settings?.currency || 'USD';
         const afterPayload = {
             name: organization.name,
             logoUrl: organization.settings?.logoUrl || null,
             primaryColor: organization.settings?.primaryColor || '#3a1f8a',
             timeZone: organization.settings?.timeZone || 'UTC',
-            currency: organization.settings?.currency || 'USD',
+            currency: resolvedCurrency,
+            currencies: normalizeCurrenciesForResponse(organization.settings?.currencies, resolvedCurrency),
             locale: organization.settings?.locale || 'en-US',
             language: organization.settings?.language || 'en',
             defaultPhoneCountry: organization.settings?.defaultPhoneCountry || ''

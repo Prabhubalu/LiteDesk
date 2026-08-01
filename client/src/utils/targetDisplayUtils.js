@@ -1,3 +1,5 @@
+import { formatCurrencyValue } from '@/utils/currencyOptions';
+import { formatUserDate, formatNumberWithDisplayPrefs } from '@/utils/localeFormat';
 /**
  * Shared display helpers for Targets & Quotas UI.
  */
@@ -49,16 +51,21 @@ export function progressBarWidth(pct) {
 export function formatTargetValue(value, metricKind = 'count') {
   const n = Number(value) || 0;
   if (metricKind === 'currency') {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+    return formatCurrencyValue(n, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }) || '—';
   }
-  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
+  return formatNumberWithDisplayPrefs(n, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 }
 
 export function formatPeriodRange(start, end) {
   if (!start || !end) return '—';
-  const opts = { month: 'short', day: 'numeric', year: 'numeric' };
-  const s = new Date(start).toLocaleDateString(undefined, opts);
-  const e = new Date(end).toLocaleDateString(undefined, opts);
+  const s = formatUserDate(start);
+  const e = formatUserDate(end);
   return `${s} – ${e}`;
 }
 

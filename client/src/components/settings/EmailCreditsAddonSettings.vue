@@ -89,6 +89,8 @@ import { useI18n } from 'vue-i18n';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatNumber } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const emit = defineEmits(['back']);
 
@@ -103,14 +105,10 @@ const purchasingKey = ref('');
 const emailPolicy = computed(() => addon.value?.emailPolicy || null);
 const creditPacks = computed(() => addon.value?.pricing?.creditPacks || []);
 
-function formatNumber(value) {
-  return Number(value || 0).toLocaleString();
-}
-
 function formatPrice(pack) {
   const cents = Number(pack?.priceCents || 0);
-  const currency = String(pack?.currency || 'USD').toUpperCase();
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(cents / 100);
+  const currencyCode = String(pack?.currency || 'USD').toUpperCase();
+  return formatCurrencyValue(cents / 100, { currencyCode }) ?? '—';
 }
 
 async function loadAddon() {

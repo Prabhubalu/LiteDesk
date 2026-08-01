@@ -302,6 +302,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -383,7 +384,7 @@ const confirmImport = async () => {
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleString();
+  return formatUserDateTime(date);
 };
 
 const createFlow = () => {

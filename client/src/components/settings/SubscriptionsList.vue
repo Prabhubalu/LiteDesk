@@ -184,6 +184,7 @@
 
 <script setup>
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -252,7 +253,7 @@ function agentUsageWidth(agents) {
 function formatDate(value) {
   if (!value) return '';
   try {
-    return new Date(value).toLocaleDateString();
+    return formatUserDate(value);
   } catch {
     return '';
   }

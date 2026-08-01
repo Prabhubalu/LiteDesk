@@ -20,6 +20,7 @@ import {
 import { filterCaseEditSubmitPayload } from '@/platform/fields/caseFieldModel';
 import { useNotifications } from '@/composables/useNotifications';
 import { CASE_STATUS_RESOLUTION_KEY } from '@/composables/useCaseStatusResolution';
+import { formatUserDate } from '@/utils/localeFormat';
 
 function casePersonRowOrgId(p) {
   if (!p) return '';
@@ -115,7 +116,7 @@ export function useCaseRecordDetailFields({ caseRecord, caseId, canEdit, isClose
     return createGenericRecordAdapter({
       sectionLabels: createRecordSectionLabels(t),
       formatDate: (d) =>
-        (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+        (d ? formatUserDate(d) : '—'),
       moduleDefinition: moduleDefinition.value,
       canEditDetails: () => canEditDetails.value,
       saveDetailField: async (fieldKey, value) => {

@@ -143,7 +143,7 @@
           >
             <span class="text-gray-600 dark:text-gray-400">
               <span class="font-medium text-gray-900 dark:text-white capitalize">{{ row.sourceModuleKey }}</span>
-              · {{ row.direction === 'credit' ? '+' : '−' }}{{ Math.abs(row.amount) }}
+              · {{ row.direction === 'credit' ? '+' : '−' }}{{ formatContributionAmount(row) }}
             </span>
             <time class="text-xs text-gray-400 shrink-0">{{ formatRelative(row.occurredAt) }}</time>
           </li>
@@ -177,11 +177,21 @@ import apiClient from '@/utils/apiClient';
 import TargetStatusBadge from '@/components/targets/TargetStatusBadge.vue';
 import TargetProgressBar from '@/components/targets/TargetProgressBar.vue';
 import { formatPeriodRange, formatTargetValue, targetProgressPercent } from '@/utils/targetDisplayUtils';
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({ id: { type: String, default: '' } });
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+
+function formatContributionAmount(row) {
+  const amount = Math.abs(Number(row?.amount) || 0);
+  if (target.value?.metricKind === 'currency') {
+    return formatCurrencyValue(amount) || String(amount);
+  }
+  return String(amount);
+}
 
 const target = ref(null);
 const assignments = ref([]);
@@ -195,7 +205,7 @@ const targetId = computed(() => props.id || route.params.id);
 const progressPct = computed(() => targetProgressPercent(target.value));
 
 function formatDate(d) {
-  return d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  return d ? formatUserDate(d) : '';
 }
 
 function assignmentUserName(row) {

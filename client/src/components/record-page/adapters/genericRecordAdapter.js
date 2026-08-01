@@ -183,7 +183,18 @@ function fieldTypeFromDef(field, fieldKey) {
   if (key === 'tags') return 'tags';
   if (isMultiPicklistField(field)) return 'multi-select';
   if (!field) {
-    if (/(created|updated|modified|deleted|closed|start|end).*(at|date)/i.test(key) || ['duedate', 'birthday'].includes(key)) return 'date';
+    if (
+      key.includes('datetime')
+      || /(created|updated|modified|deleted)at$/i.test(key)
+    ) {
+      return 'datetime';
+    }
+    if (
+      /(closed|start|end|due|expected).*(date)/i.test(key)
+      || ['duedate', 'birthday', 'expectedclosedate', 'closedate'].includes(key)
+    ) {
+      return 'date';
+    }
     if (key === 'assignedto') return 'user';
     if (/(createdby|modifiedby|updatedby|assignedto)$/i.test(key) || /(owner|userid|caseowner)$/i.test(key)) return 'user';
     if (/(website|url|link)$/i.test(key)) return 'url';
@@ -197,7 +208,15 @@ function fieldTypeFromDef(field, fieldKey) {
   if (['createdby', 'updatedby', 'modifiedby', 'deletedby'].includes(key)) {
     return 'user';
   }
-  if (dt.includes('date') || dt.includes('datetime')) return 'date';
+  if (
+    dt === 'date-time'
+    || dt === 'datetime'
+    || dt.includes('date-time')
+    || dt.includes('datetime')
+  ) {
+    return 'datetime';
+  }
+  if (dt.includes('date')) return 'date';
   if (dt.includes('number') || dt.includes('currency') || dt.includes('decimal')) return 'number';
   if (dt.includes('select') || dt.includes('picklist') || dt.includes('status')) return 'select';
   if (dt.includes('url') || dt.includes('website') || dt.includes('link')) return 'url';
@@ -411,12 +430,13 @@ function getRecordPaneAllModuleFieldKeys(moduleDefinition, moduleKey = '', field
 
 /**
  * Create generic record adapter for a module.
- * @param {Object} opts - formatDate, moduleDefinition, canEditDetails, saveDetailField, getRelatedGroups, openRelatedItem, canUnlinkRelated, onUnlinkRelated, canLinkRecords, openLinkRecordDrawer, openAddRecordDrawer, handleDescriptionSave, canEditDescription, expandedLeftSection, openLeftSection, canViewDescriptionHistory, openDescriptionHistory, getEntityOptions
+ * @param {Object} opts - formatDate, formatDateTime, moduleDefinition, canEditDetails, saveDetailField, getRelatedGroups, openRelatedItem, canUnlinkRelated, onUnlinkRelated, canLinkRecords, openLinkRecordDrawer, openAddRecordDrawer, handleDescriptionSave, canEditDescription, expandedLeftSection, openLeftSection, canViewDescriptionHistory, openDescriptionHistory, getEntityOptions
  */
 export function createGenericRecordAdapter(opts = {}) {
   const {
     sectionLabels: sl,
     formatDate,
+    formatDateTime,
     moduleDefinition,
     canEditDetails,
     saveDetailField,
@@ -585,7 +605,13 @@ export function createGenericRecordAdapter(opts = {}) {
         }).filter(Boolean);
         displayValue = labels.join(', ');
       } else if (rawValue instanceof Date && !Number.isNaN(rawValue.getTime())) {
-        displayValue = formatDate ? formatDate(rawValue) : rawValue.toISOString().slice(0, 10);
+        if (fieldType === 'datetime') {
+          displayValue = formatDateTime
+            ? formatDateTime(rawValue)
+            : (formatDate ? formatDate(rawValue) : rawValue.toISOString());
+        } else {
+          displayValue = formatDate ? formatDate(rawValue) : rawValue.toISOString().slice(0, 10);
+        }
       } else if (rawValue != null && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
         const asStr = typeof rawValue.toString === 'function' ? String(rawValue) : '';
         if (/^[a-f\d]{24}$/i.test(asStr) && !(rawValue.name || rawValue.title || rawValue.email || rawValue.firstName)) {
@@ -601,7 +627,13 @@ export function createGenericRecordAdapter(opts = {}) {
         });
         displayValue = matchedOption?.label ?? matchedOption?.name ?? rawValue;
       } else if (rawValue != null && typeof rawValue === 'string' && /^\d{4}-\d{2}/.test(rawValue)) {
-        displayValue = formatDate ? formatDate(rawValue) : rawValue.slice(0, 10);
+        if (fieldType === 'datetime') {
+          displayValue = formatDateTime
+            ? formatDateTime(rawValue)
+            : (formatDate ? formatDate(rawValue) : rawValue);
+        } else {
+          displayValue = formatDate ? formatDate(rawValue) : rawValue.slice(0, 10);
+        }
       } else if (
         (normalizedFieldKey === '_id' || normalizedFieldKey === 'id') &&
         rawValue != null
@@ -652,7 +684,7 @@ export function createGenericRecordAdapter(opts = {}) {
         engineAllowsEdit &&
         !isTags &&
         canEditDetails?.(record, fieldKey) === true &&
-        ['text', 'url', 'phone', 'number', 'date', 'select', 'entity', 'user', 'multi-select'].includes(fieldType);
+        ['text', 'url', 'phone', 'number', 'date', 'datetime', 'select', 'entity', 'user', 'multi-select'].includes(fieldType);
       const canOpenTagsEditor = isTags && typeof context?.openTagsEditor === 'function';
       const tagChipStyleResolver = isMultiSelect
         ? buildPicklistTagChipStyleResolver(field, moduleKeyStr)
@@ -812,7 +844,7 @@ export function createGenericRecordAdapter(opts = {}) {
         }
         const isTags = fieldType === 'tags';
         const isPeopleFirstName = moduleKeyStr === 'people' && normKey(fieldKey) === 'first_name';
-        let canEdit = !isTags && canEditDetails?.(null, fieldKey) === true && ['text', 'url', 'phone', 'number', 'date', 'select', 'entity', 'user', 'multi-select'].includes(fieldType);
+        let canEdit = !isTags && canEditDetails?.(null, fieldKey) === true && ['text', 'url', 'phone', 'number', 'date', 'datetime', 'select', 'entity', 'user', 'multi-select'].includes(fieldType);
         if (isOrgDerivedStatus) {
           const systemOwned = isOrganizationDerivedStatusSystemOwned(record);
           canEdit = !systemOwned

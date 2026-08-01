@@ -215,7 +215,7 @@
               <template v-if="linkedAudienceName">
                 {{ linkedAudienceName }}
                 <span class="text-gray-500 dark:text-gray-400">
-                  ({{ linkedAudienceMemberCount.toLocaleString() }})
+                  ({{ formatNumber(linkedAudienceMemberCount) }})
                 </span>
               </template>
               <span v-else class="text-gray-400">—</span>
@@ -458,8 +458,8 @@
                   >
                     {{
                       t('marketing.campaignsDetailRecipientsShowing', {
-                        shown: filteredRecipients.length.toLocaleString(),
-                        total: recipientsPagination.total.toLocaleString()
+                        shown: formatNumber(filteredRecipients.length),
+                        total: formatNumber(recipientsPagination.total)
                       })
                     }}
                   </p>
@@ -604,7 +604,7 @@
               <div v-if="hasSent">
                 <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('marketing.campaignsStatsDelivered') }}</dt>
                 <dd class="mt-0.5 text-2xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
-                  {{ (campaign.stats?.delivered ?? 0).toLocaleString() }}
+                  {{ formatNumber(campaign.stats?.delivered ?? 0) }}
                 </dd>
               </div>
               <div v-if="hasSent && performanceStatCards.find(c => c.key === 'openRate')">
@@ -697,6 +697,7 @@ import {
 } from '@/config/posthogMarketing';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime, formatNumber } from '@/utils/localeFormat';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -798,7 +799,7 @@ const sendProgressEstimateLabel = computed(() => {
 function formatCount(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return '0';
-  return num.toLocaleString();
+  return formatNumber(num);
 }
 
 function stopSendProgressPolling() {
@@ -987,14 +988,14 @@ const allStatCards = computed(() => {
     {
       key: 'recipients',
       label: t('marketing.campaignsStatsRecipients'),
-      value: (stats.totalRecipients ?? stats.queued ?? 0).toLocaleString(),
+      value: formatNumber(stats.totalRecipients ?? stats.queued ?? 0),
       tone: 'default',
       group: 'performance'
     },
     {
       key: 'delivered',
       label: t('marketing.campaignsStatsDelivered'),
-      value: (stats.delivered ?? 0).toLocaleString(),
+      value: formatNumber(stats.delivered ?? 0),
       tone: 'success',
       group: 'performance'
     },
@@ -1015,56 +1016,56 @@ const allStatCards = computed(() => {
     {
       key: 'queued',
       label: t('marketing.campaignsStatsQueued'),
-      value: (stats.queued ?? 0).toLocaleString(),
+      value: formatNumber(stats.queued ?? 0),
       tone: 'info',
       group: 'delivery'
     },
     {
       key: 'failed',
       label: t('marketing.campaignsStatsFailed'),
-      value: (stats.failed ?? 0).toLocaleString(),
+      value: formatNumber(stats.failed ?? 0),
       tone: 'danger',
       group: 'delivery'
     },
     {
       key: 'rejected',
       label: t('marketing.campaignsStatsRejected'),
-      value: (stats.rejected ?? 0).toLocaleString(),
+      value: formatNumber(stats.rejected ?? 0),
       tone: 'warning',
       group: 'delivery'
     },
     {
       key: 'hardBounced',
       label: t('marketing.campaignsStatsHardBounced'),
-      value: (stats.hardBounced ?? 0).toLocaleString(),
+      value: formatNumber(stats.hardBounced ?? 0),
       tone: 'danger',
       group: 'issues'
     },
     {
       key: 'softBounced',
       label: t('marketing.campaignsStatsSoftBounced'),
-      value: (stats.softBounced ?? 0).toLocaleString(),
+      value: formatNumber(stats.softBounced ?? 0),
       tone: 'warning',
       group: 'issues'
     },
     {
       key: 'complaints',
       label: t('marketing.campaignsStatsComplaints'),
-      value: (stats.complaints ?? 0).toLocaleString(),
+      value: formatNumber(stats.complaints ?? 0),
       tone: 'danger',
       group: 'issues'
     },
     {
       key: 'unsubscribed',
       label: t('marketing.campaignsStatsUnsubscribed'),
-      value: (stats.skippedUnsubscribed ?? 0).toLocaleString(),
+      value: formatNumber(stats.skippedUnsubscribed ?? 0),
       tone: 'warning',
       group: 'issues'
     },
     {
       key: 'suppressed',
       label: t('marketing.campaignsStatsSuppressed'),
-      value: (stats.suppressed ?? 0).toLocaleString(),
+      value: formatNumber(stats.suppressed ?? 0),
       tone: 'warning',
       group: 'issues'
     }
@@ -1148,10 +1149,7 @@ function formatRate(value) {
 function formatScheduledAt(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value || '');
-  return date.toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  });
+  return formatUserDateTime(date);
 }
 
 async function loadPrecheck(recipientCount) {

@@ -271,7 +271,8 @@ const closeFormModal = () => {
 const formatCurrency = (amount) => {
   return (
     formatCurrencyValue(amount, {
-      currencyCode: resolveOrgCurrencyCode(),
+      currencyCode: resolveOrgCurrencyCode(authStore.organization),
+      orgCurrency: authStore.organization,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }) || '—'

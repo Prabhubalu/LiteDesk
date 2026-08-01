@@ -42,15 +42,44 @@ async function getTenantCurrencyCode(organizationId) {
 }
 
 /**
+ * Load org settings needed for currency enablement / rates.
+ * @param {import('mongoose').Types.ObjectId|string} organizationId
+ * @returns {Promise<{ settings?: { currency?: string, currencies?: unknown } }|null>}
+ */
+async function getTenantOrgCurrencySettings(organizationId) {
+  if (!organizationId) return null;
+  try {
+    return await Organization.findById(organizationId)
+      .select('settings.currency settings.currencies')
+      .lean();
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
  * Apply org default when payload currency is missing/blank.
+ * When a currency is provided, it must be the org base or an enabled currency.
  * @param {string|null|undefined} currency
  * @param {import('mongoose').Types.ObjectId|string} organizationId
  * @returns {Promise<string>}
  */
 async function resolveCurrencyOrOrgDefault(currency, organizationId) {
   const normalized = normalizeCurrencyCode(currency);
-  if (normalized) return normalized;
-  return getTenantCurrencyCode(organizationId);
+  if (!normalized) {
+    return getTenantCurrencyCode(organizationId);
+  }
+  const org = await getTenantOrgCurrencySettings(organizationId);
+  if (!org) return normalized;
+  const { isCurrencyEnabledForOrg } = require('./orgCurrencies');
+  if (!isCurrencyEnabledForOrg(org, normalized)) {
+    const err = new Error(
+      `Currency ${normalized} is not enabled for this organization`
+    );
+    err.code = 'CURRENCY_NOT_ENABLED';
+    throw err;
+  }
+  return normalized;
 }
 
 module.exports = {
@@ -58,5 +87,6 @@ module.exports = {
   normalizeCurrencyCode,
   resolveOrgCurrencyCode,
   getTenantCurrencyCode,
+  getTenantOrgCurrencySettings,
   resolveCurrencyOrOrgDefault,
 };

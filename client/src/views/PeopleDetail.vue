@@ -887,6 +887,7 @@
 </template>
 
 <script setup>
+import { formatUserDateTime } from '@/utils/localeFormat';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -1029,13 +1030,7 @@ const formatDate = (dateValue) => {
   if (!dateValue) return '-';
   try {
     const date = new Date(dateValue);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatUserDateTime(date);
   } catch (e) {
     return String(dateValue);
   }

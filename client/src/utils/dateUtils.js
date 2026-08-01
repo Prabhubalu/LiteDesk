@@ -1,38 +1,26 @@
-// Date utility functions to replace moment.js
+// Date utility functions — display formatting uses localeFormat (user TZ + dateFormat)
+
+import { formatWithPattern, getLocaleFormatContext, getZonedParts } from '@/utils/localeFormat';
 
 export const dateUtils = {
-  // Format date as "MMMM D, YYYY"
+  // Format date; when formatStr is a token pattern, values are taken in the active user time zone.
   format(date, formatStr = 'MMMM D, YYYY') {
-    const d = new Date(date);
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const daysShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    
-    const replacements = {
-      'YYYY': d.getFullYear(),
-      'MMMM': months[d.getMonth()],
-      'MMM': monthsShort[d.getMonth()],
-      'MM': String(d.getMonth() + 1).padStart(2, '0'),
-      'DD': String(d.getDate()).padStart(2, '0'),
-      'D': d.getDate(),
-      'dddd': days[d.getDay()],
-      'ddd': daysShort[d.getDay()],
-      'HH': String(d.getHours()).padStart(2, '0'),
-      'hh': String(d.getHours() % 12 || 12).padStart(2, '0'),
-      'h': d.getHours() % 12 || 12,
-      'mm': String(d.getMinutes()).padStart(2, '0'),
-      'ss': String(d.getSeconds()).padStart(2, '0'),
-      'A': d.getHours() >= 12 ? 'PM' : 'AM',
-      'a': d.getHours() >= 12 ? 'pm' : 'am'
-    };
-    
-    // IMPORTANT: Replace only format tokens from the template string.
-    // Do NOT run naive string replacements on the final output, otherwise tokens like "a"
-    // can corrupt month names (e.g. "Jan" -> "Jpmn" when replacing "a" with "pm").
-    const tokens = Object.keys(replacements).sort((a, b) => b.length - a.length);
-    const tokenRegex = new RegExp(tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g');
-    return String(formatStr).replace(tokenRegex, (match) => String(replacements[match]));
+    const ctx = getLocaleFormatContext();
+    const pattern = String(formatStr || 'MMMM D, YYYY')
+      .replace(/\bD\b/g, 'D')
+      .replace(/\bYYYY\b/g, 'YYYY');
+    // Prefer zoned token formatting for standard patterns
+    if (/YYYY|MMMM|MMM|MM|DD|HH|mm|ss/.test(pattern)) {
+      const formatted = formatWithPattern(date, pattern, ctx.timeZone || 'UTC');
+      if (formatted) return formatted;
+    }
+
+    const parts = getZonedParts(date, ctx.timeZone || 'UTC');
+    if (!parts) {
+      const d = new Date(date);
+      if (Number.isNaN(d.getTime())) return '';
+    }
+    return formatWithPattern(date, pattern, ctx.timeZone || 'UTC');
   },
 
   // Start of day

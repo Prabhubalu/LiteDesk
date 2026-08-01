@@ -1,5 +1,7 @@
 import type { WeekDay } from '@/composables/useBusinessHours';
 
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 export function normalizeTimeHHMM(value: string | null | undefined): string {
   if (!value) return '';
   const raw = String(value).trim();
@@ -8,6 +10,13 @@ export function normalizeTimeHHMM(value: string | null | undefined): string {
   const hour = Math.min(23, Math.max(0, parseInt(match[1], 10)));
   const minute = Math.min(59, Math.max(0, parseInt(match[2], 10)));
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function parseTimeMinutes(value: string): number | null {
+  const normalized = normalizeTimeHHMM(value);
+  const match = normalized.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+  if (!match) return null;
+  return (parseInt(match[1], 10) * 60) + parseInt(match[2], 10);
 }
 
 export function normalizeWeekForSave(week: WeekDay[]): WeekDay[] {
@@ -33,8 +42,46 @@ export function buildDefaultWeekLocal() {
   }));
 }
 
+/** Returns a user-facing English message, or null when valid. */
+export function validateWeekSchedule(week: WeekDay[] | undefined): string | null {
+  if (!Array.isArray(week) || week.length === 0) return 'Week schedule is required';
+
+  for (const day of week) {
+    if (!day?.enabled) continue;
+    const name = DAY_NAMES[day.day] || `Day ${day.day}`;
+    const windows = day.windows || [];
+    if (!windows.length) return `${name} is marked open but has no hours`;
+
+    for (let i = 0; i < windows.length; i += 1) {
+      const start = parseTimeMinutes(windows[i]?.start || '');
+      const end = parseTimeMinutes(windows[i]?.end || '');
+      if (start == null || end == null) {
+        return `${name}: enter a valid start and end time`;
+      }
+      if (end <= start) {
+        return `${name}: end time must be after start time`;
+      }
+    }
+
+    for (let i = 0; i < (day.breaks || []).length; i += 1) {
+      const br = day.breaks[i];
+      const start = parseTimeMinutes(br?.start || '');
+      const end = parseTimeMinutes(br?.end || '');
+      if (start == null || end == null) {
+        return `${name} break: enter a valid start and end time`;
+      }
+      if (end <= start) {
+        return `${name} break: end time must be after start time`;
+      }
+    }
+  }
+
+  return null;
+}
+
 export function validateScheduleForm(form: {
   name?: string;
+  week?: WeekDay[];
   linkedTo?: { type?: string; id?: string | null };
   isDefault?: boolean;
 }): string | null {

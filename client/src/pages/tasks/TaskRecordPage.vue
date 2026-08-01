@@ -1712,6 +1712,7 @@ import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import DOMPurify from 'dompurify';
 import { sanitizeRichDescriptionHtml } from '@/utils/richDescriptionHtml';
+import { formatDate as formatLocaleDate, formatTime, formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
 import { buildDescriptionActivityDiff, isDescriptionActivityFieldChange } from '@/utils/contentVersionHistory';
 import { useRichDescriptionImagePreview } from '@/composables/useRichDescriptionImagePreview';
 import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
@@ -1760,7 +1761,7 @@ import {
 import Avatar from '@/components/common/Avatar.vue';
 import 'emoji-picker-element';
 import DateCell from '@/components/common/table/DateCell.vue';
-import { getKeyFields } from '@/utils/fieldDisplay';
+import { getKeyFields, formatActivityChangeValue } from '@/utils/fieldDisplay';
 import { formatCurrencyValue, resolveCurrencyCodeForField, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
@@ -2048,13 +2049,7 @@ function formatDescriptionVersionDate(date) {
   if (!date) return '';
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(d);
 }
 
 async function fetchDescriptionVersions() {
@@ -2990,7 +2985,7 @@ const formatCompactDate = (dateValue) => {
   if (!dateValue) return '';
   const date = new Date(dateValue);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return formatUserDate(date);
 };
 
 const formatCompactCurrency = (value, currencyCode = null) => {
@@ -3333,7 +3328,7 @@ const taskDetailsPaneAdapter = computed(() => {
   return createGenericRecordAdapter({
     sectionLabels: createRecordSectionLabels(t),
     formatDate: (d) =>
-      (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+      (d ? formatUserDate(d) : '—'),
     moduleDefinition: taskModuleDefinition.value,
     canEditDetails: () => canEditTask.value,
     saveDetailField: (fieldKey, value) => handleFieldSave(fieldKey, value),
@@ -3908,13 +3903,19 @@ const getSystemEventFieldLabel = (event) => {
   return label || 'field';
 };
 
-const formatSystemEventValue = (value) => {
+const formatSystemEventValue = (value, event) => {
   if (value === undefined || value === null || value === '') return keyFieldsEmptyLabel.value;
-  return String(value);
+  const details = event?.details || {};
+  const fieldKey = String(details.field || '').trim();
+  const fields = taskModuleDefinition.value?.fields || [];
+  const match = fieldKey
+    ? fields.find((f) => String(f?.key || '') === fieldKey || String(f?.label || '') === fieldKey)
+    : null;
+  return formatActivityChangeValue(value, keyFieldsEmptyLabel.value, match?.dataType);
 };
 
-const getSystemEventFromValue = (event) => formatSystemEventValue(event?.details?.from ?? event?.details?.oldValue);
-const getSystemEventToValue = (event) => formatSystemEventValue(event?.details?.to ?? event?.details?.newValue);
+const getSystemEventFromValue = (event) => formatSystemEventValue(event?.details?.from ?? event?.details?.oldValue, event);
+const getSystemEventToValue = (event) => formatSystemEventValue(event?.details?.to ?? event?.details?.newValue, event);
 
 const formatActivityLog = (log) => {
   if (!log) return 'Activity logged';
@@ -3924,7 +3925,12 @@ const formatActivityLog = (log) => {
 
   const normalizeDisplayValue = (value) => {
     if (value === undefined || value === null || value === '') return keyFieldsEmptyLabel.value;
-    return String(value);
+    const fieldKey = String(details.field || '').trim();
+    const fields = taskModuleDefinition.value?.fields || [];
+    const match = fieldKey
+      ? fields.find((f) => String(f?.key || '') === fieldKey || String(f?.label || '') === fieldKey)
+      : null;
+    return formatActivityChangeValue(value, keyFieldsEmptyLabel.value, match?.dataType);
   };
 
   const toFieldLabel = (value) => {
@@ -4522,14 +4528,7 @@ const formatDate = (date) => {
   if (diffDays < 7) return `${diffDays} ${diffDays === 1 ? 'day' : 'days'}`;
   
   // Show full date with time for older items
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  });
+  return formatUserDateTime(d);
 };
 
 const formatRelativeActivityTime = (date) => {
@@ -4541,7 +4540,7 @@ const formatRelativeActivityTime = (date) => {
   let diffSeconds = Math.floor((now.getTime() - d.getTime()) / 1000);
   if (diffSeconds < 0) diffSeconds = 0;
 
-  const formatTimePart = (value) => value.toLocaleTimeString('en-US', {
+  const formatTimePart = (value) => formatTime(value, {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true
@@ -4567,16 +4566,16 @@ const formatRelativeActivityTime = (date) => {
   }
 
   if (dayDiff < 7) {
-    const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+    const weekday = formatLocaleDate(d, { weekday: 'long' });
     return `${weekday} at ${formatTimePart(d)}`;
   }
 
   if (d.getFullYear() === now.getFullYear()) {
-    const dayMonth = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+    const dayMonth = formatLocaleDate(d, { day: 'numeric', month: 'short' });
     return `${dayMonth} at ${formatTimePart(d)}`;
   }
 
-  const dayMonthYear = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  const dayMonthYear = formatLocaleDate(d, { day: 'numeric', month: 'short', year: 'numeric' });
   return `${dayMonthYear} at ${formatTimePart(d)}`;
 };
 
@@ -4584,17 +4583,8 @@ const formatFullTimestamp = (date) => {
   if (!date) return '';
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  });
-};
-
-const isTouchOrPenPointer = (event) => {
+  return formatUserDateTime(d);
+}; = (event) => {
   if (event?.pointerType) {
     return event.pointerType === 'touch' || event.pointerType === 'pen';
   }
@@ -4625,20 +4615,12 @@ const handleTimestampPointerUp = (event, date) => {
 
 const formatCreatedDate = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(date);
 };
 
 const formatStateDate = (date) => {
   if (!date) return null;
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'numeric',
-    day: 'numeric',
-    year: '2-digit'
-  });
+  return formatUserDate(date) || null;
 };
 
 const formatFileSize = (bytes) => {

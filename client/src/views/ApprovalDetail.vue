@@ -234,6 +234,8 @@ import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import QuoteApprovalWorkspace from '@/components/quotes/QuoteApprovalWorkspace.vue';
+import { formatUserDateTime } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const router = useRouter();
 const route = useRoute();
@@ -301,18 +303,7 @@ const getEntityDisplay = (approval) => {
 
 const formatCurrency = (value, currency) => {
   if (value == null || value === '') return '';
-  const n = Number(value);
-  if (!Number.isFinite(n)) return '';
-  const code = String(currency || '').trim();
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: code ? 'currency' : 'decimal',
-      currency: code || undefined,
-      maximumFractionDigits: 2
-    }).format(n);
-  } catch {
-    return `${n.toLocaleString()}${code ? ` ${code}` : ''}`;
-  }
+  return formatCurrencyValue(value, { currencyCode: currency || undefined }) ?? '';
 };
 
 const getApprovalReason = (approval) => {
@@ -328,7 +319,7 @@ const getApprovalReason = (approval) => {
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleString();
+  return formatUserDateTime(date);
 };
 
 const getDeciderName = (approval) => {

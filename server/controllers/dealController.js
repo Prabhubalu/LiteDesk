@@ -340,12 +340,19 @@ exports.createDeal = async (req, res) => {
 
         if (!payload.status) payload.status = 'Open';
 
-        // Currency defaults to tenant org settings (not hardcoded USD)
-        if (!payload.currency || !String(payload.currency).trim()) {
+        // Currency defaults to tenant org settings; must be base or an enabled currency
+        try {
             const { resolveCurrencyOrOrgDefault } = require('../utils/orgCurrency');
             payload.currency = await resolveCurrencyOrOrgDefault(payload.currency, req.user.organizationId);
-        } else {
-            payload.currency = String(payload.currency).trim().toUpperCase();
+        } catch (currencyErr) {
+            if (currencyErr?.code === 'CURRENCY_NOT_ENABLED') {
+                return res.status(400).json({
+                    success: false,
+                    code: currencyErr.code,
+                    message: currencyErr.message
+                });
+            }
+            throw currencyErr;
         }
 
         assignResolvedSource(payload, 'ui');

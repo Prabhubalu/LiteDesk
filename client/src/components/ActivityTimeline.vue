@@ -118,6 +118,7 @@ import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
 import { getHistoryDisplayText, getHistoryAppContext } from './people/historyEventMapping';
 import EmailThreadCard from '@/components/communications/EmailThreadCard.vue';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const emit = defineEmits(['retry-optimistic']);
 
@@ -477,13 +478,7 @@ const formatDate = (dateValue) => {
     } else if (diffDays < 7) {
       return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
     } else {
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      return formatUserDateTime(date);
     }
   } catch (e) {
     return String(dateValue);

@@ -9,6 +9,7 @@ import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Chart, registerables } from 'chart.js';
 import apiClient from '@/utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
 
 Chart.register(...registerables);
 
@@ -41,7 +42,7 @@ const fetchData = async () => {
       // Group by date and calculate response rate
       const dateGroups = {};
       responses.forEach(r => {
-        const date = new Date(r.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const date = formatUserDate(r.submittedAt);
         dateGroups[date] = (dateGroups[date] || 0) + 1;
       });
       

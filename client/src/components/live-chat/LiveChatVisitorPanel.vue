@@ -78,6 +78,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLiveChatTabNavigation } from '@/composables/useLiveChatTabNavigation';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   visitorId: { type: String, required: true },
@@ -102,7 +103,7 @@ const displayName = computed(() => {
 function formatDate(value) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return '—';
   }

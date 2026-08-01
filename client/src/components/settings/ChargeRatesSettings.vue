@@ -162,8 +162,11 @@ import apiClient from '@/utils/apiClient';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 const charges = ref([]);
 const loading = ref(false);
@@ -244,7 +247,7 @@ function scopeLabel(scope) {
 }
 function formatValue(row) {
   if (row.chargeType === 'PERCENTAGE') return `${row.chargeValue}%`;
-  return String(row.chargeValue);
+  return formatCurrencyValue(row.chargeValue, { orgCurrency: authStore.organization }) || String(row.chargeValue);
 }
 
 function resetForm() {

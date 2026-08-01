@@ -89,7 +89,7 @@
                       <p class="font-medium text-indigo-900 dark:text-indigo-100">
                         {{
                           t('marketing.campaignsSendCapacitySummary', {
-                            count: Number(precheck.credits.maxSendableRecipients).toLocaleString()
+                            count: formatNumber(Number(precheck.credits.maxSendableRecipients))
                           })
                         }}
                       </p>
@@ -99,8 +99,8 @@
                       >
                         {{
                           t('marketing.campaignsSendCapacityExceeded', {
-                            selected: effectiveRecipientCount.toLocaleString(),
-                            max: Number(precheck.credits.maxSendableRecipients).toLocaleString()
+                            selected: formatNumber(effectiveRecipientCount),
+                            max: formatNumber(Number(precheck.credits.maxSendableRecipients))
                           })
                         }}
                       </p>
@@ -110,13 +110,13 @@
                       class="mb-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800/50"
                     >
                       <p class="text-gray-700 dark:text-gray-200">
-                        {{ t('marketing.campaignsCreditSummaryRecipients', { count: precheck.credits.recipientCount.toLocaleString() }) }}
+                        {{ t('marketing.campaignsCreditSummaryRecipients', { count: formatNumber(precheck.credits.recipientCount) }) }}
                       </p>
                       <p class="text-gray-700 dark:text-gray-200">
-                        {{ t('marketing.campaignsCreditSummaryNeeded', { count: precheck.credits.creditsNeeded.toLocaleString() }) }}
+                        {{ t('marketing.campaignsCreditSummaryNeeded', { count: formatNumber(precheck.credits.creditsNeeded) }) }}
                       </p>
                       <p class="text-gray-700 dark:text-gray-200">
-                        {{ t('marketing.campaignsCreditSummaryRemaining', { count: precheck.credits.creditsRemaining.toLocaleString() }) }}
+                        {{ t('marketing.campaignsCreditSummaryRemaining', { count: formatNumber(precheck.credits.creditsRemaining) }) }}
                       </p>
                     </div>
                     <p
@@ -276,6 +276,7 @@ import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import CampaignTestSendModal from '@/components/marketing/CampaignTestSendModal.vue';
 import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
+import { formatNumber } from '@/utils/localeFormat';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -368,7 +369,7 @@ const throughputSummaryLines = computed(() => {
     lines.push({
       key: 'reputation',
       text: t('marketing.campaignsThroughputReputation', {
-        score: Number(throughput.senderReputation).toLocaleString()
+        score: formatNumber(Number(throughput.senderReputation))
       })
     });
   }
@@ -377,7 +378,7 @@ const throughputSummaryLines = computed(() => {
     lines.push({
       key: 'maxHourly',
       text: t('marketing.campaignsThroughputMaxHourly', {
-        rate: Number(throughput.maxHourlyRate).toLocaleString()
+        rate: formatNumber(Number(throughput.maxHourlyRate))
       })
     });
   }
@@ -386,7 +387,7 @@ const throughputSummaryLines = computed(() => {
     lines.push({
       key: 'effectiveHourly',
       text: t('marketing.campaignsThroughputEffectiveHourly', {
-        rate: Number(throughput.effectiveHourlyRate).toLocaleString()
+        rate: formatNumber(Number(throughput.effectiveHourlyRate))
       })
     });
   }
@@ -395,7 +396,7 @@ const throughputSummaryLines = computed(() => {
     lines.push({
       key: 'effectiveBurst',
       text: t('marketing.campaignsThroughputEffectiveBurst', {
-        rate: Number(throughput.effectiveBurstRate).toLocaleString()
+        rate: formatNumber(Number(throughput.effectiveBurstRate))
       })
     });
   }

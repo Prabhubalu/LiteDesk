@@ -408,6 +408,7 @@ import {
   XCircleIcon
 } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import { formatDate as formatLocaleDate, formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
 import { useOffline } from '@/composables/useOffline';
 import { useNotifications } from '@/composables/useNotifications';
 import { initDB, getAuditDetail, saveAuditDetail, getTimeline, saveTimeline } from '@/services/offlineDb.js';
@@ -1284,14 +1285,12 @@ const handleReject = async () => {
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatUserDate(dateString) || 'N/A';
 };
 
 const formatDateTime = (dateString) => {
   if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return formatUserDateTime(dateString) || 'N/A';
 };
 
 const getStatusBadgeClass = (state) => {
@@ -1350,7 +1349,11 @@ const groupedTimeline = computed(() => {
     } else if (date.getTime() === yesterday.getTime()) {
       dateLabel = 'Yesterday';
     } else {
-      dateLabel = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
+      dateLabel = formatLocaleDate(date, {
+        month: 'long',
+        day: 'numeric',
+        ...(date.getFullYear() !== today.getFullYear() ? { year: 'numeric' } : {})
+      });
     }
     
     if (!groups[dateLabel]) {

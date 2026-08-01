@@ -267,6 +267,7 @@ import {
   ClipboardDocumentListIcon
 } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   open: {
@@ -338,11 +339,7 @@ const getRecordSubtitle = (record) => {
   if (record.email) return record.email;
   if (record.company) return record.company;
   if (record.startDate) {
-    return new Date(record.startDate).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+    return formatUserDate(record.startDate);
   }
   return null;
 };

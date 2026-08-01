@@ -34,6 +34,7 @@ import { useI18n } from 'vue-i18n';
 import { usePortalKnowledge } from '@/composables/usePortalKnowledge';
 import PortalRecordShell from '@/components/portal/PortalRecordShell.vue';
 import { PLATFORM_HOME_CARD_CLASS } from '@/utils/platformHomeLayout';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -53,11 +54,7 @@ const richHtml = computed(() => {
 
 function formatDate(value) {
   if (!value) return '';
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(value) || '—';
 }
 
 onMounted(async () => {

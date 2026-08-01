@@ -29,14 +29,7 @@
     </template>
 
     <div class="space-y-6">
-    <section v-if="activeTab === 'mine'" class="space-y-4">
-      <AvailabilitySourceCard :label="t('settings.settingsBhScheduleCardLabel')" :show-settings-link="false" />
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        {{ t('settings.settingsBhPersonalOverridesHint') }}
-      </p>
-    </section>
-
-    <HolidayCalendarManager v-else-if="activeTab === 'holidays' && canManage" />
+    <HolidayCalendarManager v-if="activeTab === 'holidays' && canManage" />
 
     <BusinessHoursInsightsPanel v-else-if="activeTab === 'insights' && canManage" />
 
@@ -74,7 +67,6 @@
                 {{ t('settings.settingsBhBadgeDefault') }}
               </span>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ scopeLabel(set) }}</p>
             <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 truncate">{{ set.summary }}</p>
           </button>
         </div>
@@ -115,7 +107,6 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useBusinessHours } from '@/composables/useBusinessHours';
 import { useNotifications } from '@/composables/useNotifications';
-import AvailabilitySourceCard from '@/components/business-hours/AvailabilitySourceCard.vue';
 import HolidayCalendarManager from '@/components/business-hours/HolidayCalendarManager.vue';
 import BusinessHoursScheduleDrawer from '@/components/business-hours/BusinessHoursScheduleDrawer.vue';
 import BusinessHoursInsightsPanel from '@/components/business-hours/BusinessHoursInsightsPanel.vue';
@@ -132,16 +123,15 @@ const canManage = computed(() => {
 });
 
 const visibleTabs = computed(() => {
-  const tabs = [{ id: 'mine', label: t('settings.settingsBhTabMine') }];
-  if (canManage.value) {
-    tabs.unshift({ id: 'schedules', label: t('settings.settingsBhTabSchedules') });
-    tabs.push({ id: 'holidays', label: t('settings.settingsBhTabHolidays') });
-    tabs.push({ id: 'insights', label: t('settings.settingsBhTabInsights') });
-  }
-  return tabs;
+  if (!canManage.value) return [];
+  return [
+    { id: 'schedules', label: t('settings.settingsBhTabSchedules') },
+    { id: 'holidays', label: t('settings.settingsBhTabHolidays') },
+    { id: 'insights', label: t('settings.settingsBhTabInsights') },
+  ];
 });
 
-const activeTab = ref(canManage.value ? 'schedules' : 'mine');
+const activeTab = ref('schedules');
 const sets = ref([]);
 const listLoading = ref(true);
 const holidayCalendars = ref([]);
@@ -167,13 +157,6 @@ function holidayCalendarOptionLabel(name, count) {
   return count === 1
     ? t('settings.settingsBhHolidayCalendarOptionOne', { name, count })
     : t('settings.settingsBhHolidayCalendarOptionOther', { name, count });
-}
-
-function scopeLabel(set) {
-  const scopeType = set.linkedTo?.type || 'company';
-  if (scopeType === 'company') return t('settings.settingsBhScopeCompany');
-  if (scopeType === 'group') return t('settings.settingsBhScopeTeam');
-  return t('settings.settingsBhScopeIndividual');
 }
 
 function openCreateDrawer() {

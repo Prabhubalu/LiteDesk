@@ -77,6 +77,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useMarketingCampaigns } from '@/composables/useMarketingCampaigns';
 import { captureMarketingModuleVisited } from '@/config/posthogMarketing';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -87,7 +88,7 @@ const { fetchPendingApprovals } = useMarketingCampaigns();
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  return formatUserDateTime(date) || '—';
 }
 
 function openCampaign(id) {

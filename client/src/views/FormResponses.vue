@@ -220,6 +220,7 @@ import FormRecordResultsSummarySection from '@/components/forms/results/FormReco
 
 import { useNotifications } from '@/composables/useNotifications';
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDate } from '@/utils/localeFormat';
 const { t } = useI18n();
 const notifications = useNotifications();
 
@@ -507,7 +508,7 @@ const calculateOverallScore = (sectionScores) => {
 const viewResponseDetail = (response) => {
   openTab(`/forms/${route.params.id}/responses/${response._id}`, {
     name: `form-response-${response._id}`,
-    title: `Response - ${new Date(response.submittedAt).toLocaleDateString()}`,
+    title: `Response - ${formatUserDate(response.submittedAt)}`,
     component: 'FormResponseDetail',
     params: { formId: route.params.id, responseId: response._id },
     insertAdjacent: true

@@ -14,6 +14,11 @@ export function formatDateForDisplay(
   value: string | Date | number,
   dataType?: 'Date' | 'Date-Time' | 'DateTime' | 'date'
 ): string | null;
+export function formatActivityChangeValue(
+  value: unknown,
+  emptyLabel?: string,
+  dataType?: 'Date' | 'Date-Time' | 'DateTime' | 'date'
+): string;
 export function isIsoDateString(value: unknown): boolean;
 export function isObjectIdLike(value: unknown): boolean;
 export function formatRawValueForDisplay(

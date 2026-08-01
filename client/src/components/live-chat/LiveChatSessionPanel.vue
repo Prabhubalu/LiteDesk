@@ -456,6 +456,7 @@ import {
   receiptStatusFromMessage,
 } from '@/utils/chatMessageReceipt';
 import { formatLiveChatElapsed } from '@/utils/liveChatRelativeTime';
+import { formatTime } from '@/utils/localeFormat';
 import {
   liveChatVisitorTypeLabel,
   liveChatSessionPriorityLabel,
@@ -647,7 +648,7 @@ const chatStartedAt = computed(() =>
 const chatStartedLabel = computed(() => {
   if (!chatStartedAt.value) return '';
   try {
-    const time = new Date(chatStartedAt.value).toLocaleTimeString(undefined, {
+    const time = formatTime(chatStartedAt.value, {
       hour: 'numeric',
       minute: '2-digit',
     });
@@ -714,17 +715,6 @@ function syncLinkedPersonFromMeta() {
 
 function receiptStatus(message) {
   return receiptStatusFromMessage(message);
-}
-
-function formatTime(dt) {
-  try {
-    return new Date(dt || Date.now()).toLocaleTimeString(undefined, {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-  } catch {
-    return '';
-  }
 }
 
 function isSystemMessage(message) {

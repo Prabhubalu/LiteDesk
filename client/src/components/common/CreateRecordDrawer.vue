@@ -277,6 +277,7 @@ import {
 import {
   getGlobalSystemFieldKeys,
   isSystemField,
+  canEditField,
   normalizeFieldKeyForSystemMatch,
 } from '@/platform/fields/fieldCapabilityEngine';
 import {
@@ -706,13 +707,18 @@ const effectiveExcludeFields = computed(() => {
   // RULE: Global system fields (trash: deletedAt, deletedBy, deletionReason) never show in create/edit
   if (props.moduleKey === 'deals') {
     // Deal create/edit: Linked Items is DealLinesSection; never show legacy lineItems Rich Text.
-    // Relationship editor (when enabled) also hides contactId/accountId in favor of DealRelationshipEditor.
+    // Quick create uses legacy accountId/contactId; full mode uses DealRelationshipEditor.
+    const relationshipEditorVisible =
+      props.useDealRelationshipEditor && (!effectiveQuickCreateMode.value || fullMode.value);
     [
       ...(props.useDealRelationshipEditor
-        ? ['contactId', 'accountId', 'dealPeople', 'dealOrganizations']
+        ? relationshipEditorVisible
+          ? ['contactId', 'accountId', 'dealPeople', 'dealOrganizations']
+          : ['dealPeople', 'dealOrganizations']
         : []),
-      'descriptionVersions',
+      'status',
       'derivedStatus',
+      'descriptionVersions',
       'stageHistory',
       'playbookState',
       'activityLogs',
@@ -2192,11 +2198,38 @@ const handleSubmit = async () => {
       }
 
       const allFields = moduleDefinition.value.fields || [];
+      const excludedKeyNorms = new Set(
+        (effectiveExcludeFields.value || []).map((k) => normalizeFieldKeyForSystemMatch(k)).filter(Boolean)
+      );
 
-      // Get effective required fields (dependency-driven), excluding system fields
+      // Strict quick-create only renders QC keys — do not validate hidden required fields (silent Save).
+      const qcList =
+        effectiveModuleOverrideForDrawer.value?.quickCreate ??
+        moduleDefinition.value?.quickCreate;
+      const restrictToQuickCreate =
+        strictQuickCreateForForm.value &&
+        !fullMode.value &&
+        Array.isArray(qcList) &&
+        qcList.length > 0;
+      const quickCreateKeyNorms = restrictToQuickCreate
+        ? new Set(
+            qcList
+              .map((entry) =>
+                normalizeFieldKeyForSystemMatch(
+                  typeof entry === 'string' ? entry : entry?.key ?? entry
+                )
+              )
+              .filter(Boolean)
+          )
+        : null;
+
+      // Get effective required fields (dependency-driven), excluding system + hidden fields
       const requiredFields = allFields.filter(f => {
         const keyNorm = normalizeFieldKeyForSystemMatch(f.key);
-        if (!f.key || systemFieldKeys.includes(keyNorm)) return false;
+        if (!f.key || systemFieldKeys.includes(keyNorm) || excludedKeyNorms.has(keyNorm)) return false;
+        // Match DynamicForm: never validate platform-owned / non-editable fields (e.g. deals.status)
+        if (isSystemField(props.moduleKey, f) || !canEditField(props.moduleKey, f)) return false;
+        if (quickCreateKeyNorms && !quickCreateKeyNorms.has(keyNorm)) return false;
         const depState = getFieldDependencyState(f, formData.value, allFields, {
           moduleKey: props.moduleKey,
         });
@@ -2223,6 +2256,12 @@ const handleSubmit = async () => {
       // If validation fails, stop here
       if (Object.keys(errors.value).length > 0) {
         drawerDbg('[CreateRecordDrawer] ❌ Validation failed:', errors.value);
+        const fieldMessages = Object.entries(errors.value)
+          .filter(([k, v]) => k !== '_general' && v)
+          .map(([, v]) => v);
+        if (!errors.value._general && fieldMessages.length > 0) {
+          errors.value._general = fieldMessages[0];
+        }
         scrollToFirstErrorField();
         saving.value = false;
         return;
@@ -2233,6 +2272,8 @@ const handleSubmit = async () => {
     if (props.moduleKey === 'deals' && props.useDealRelationshipEditor && relationshipEditorRef.value) {
       const relValid = relationshipEditorRef.value.validate();
       if (!relValid) {
+        errors.value._general =
+          errors.value._general || t('deals.dealRelationshipEditorPrimaryCustomerRequired');
         saving.value = false;
         return;
       }

@@ -82,6 +82,7 @@
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { PaperClipIcon } from '@heroicons/vue/24/outline';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   question: { type: Object, required: true },
@@ -150,7 +151,7 @@ const textAnswer = computed(() => {
   if (props.question.type === 'Date' && answer) {
     const date = new Date(answer);
     if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      return formatUserDate(date);
     }
   }
   return String(answer);

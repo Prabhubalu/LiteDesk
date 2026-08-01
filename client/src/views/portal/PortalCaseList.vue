@@ -130,6 +130,7 @@ import PortalCaseListToolbar from '@/components/portal/PortalCaseListToolbar.vue
 import PortalCaseStatusBadge from '@/components/portal/PortalCaseStatusBadge.vue';
 import PortalCaseCreateDrawer from '@/components/portal/PortalCaseCreateDrawer.vue';
 import { PLATFORM_HOME_CARD_CLASS, PLATFORM_HOME_SKELETON_CLASS } from '@/utils/platformHomeLayout';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -159,11 +160,7 @@ const unreadTotal = computed(() => unreadCount(cases.value));
 
 function formatDate(value) {
   if (!value) return '';
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(value) || '—';
 }
 
 function openCase(id) {

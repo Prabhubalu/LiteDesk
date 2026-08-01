@@ -1269,6 +1269,7 @@ import {
 } from '@/utils/quoteSectionDisplay';
 import { useQuoteLinesSession, clearQuoteLinesSession } from '@/composables/useQuoteLinesSession';
 import { useQuoteLinesStickyColumns, updateQuoteLinesTableScrollHints } from '@/composables/useQuoteLinesStickyColumns';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -4397,9 +4398,9 @@ function priceProvenanceTitle(line) {
   const book = line?.priceBookNameSnapshot || '—';
   const source = pricingSourceLabel(line?.pricingSourceSnapshot);
   const entry = line?.priceBookEntryIdSnapshot ? String(line.priceBookEntryIdSnapshot) : '—';
-  const asOf = line?.pricingAsOfDateSnapshot ? new Date(line.pricingAsOfDateSnapshot).toLocaleDateString() : '—';
-  const effectiveFrom = line?.pricingEffectiveFromSnapshot ? new Date(line.pricingEffectiveFromSnapshot).toLocaleDateString() : '—';
-  const effectiveTo = line?.pricingEffectiveToSnapshot ? new Date(line.pricingEffectiveToSnapshot).toLocaleDateString() : '—';
+  const asOf = line?.pricingAsOfDateSnapshot ? formatUserDate(line.pricingAsOfDateSnapshot) : '—';
+  const effectiveFrom = line?.pricingEffectiveFromSnapshot ? formatUserDate(line.pricingEffectiveFromSnapshot) : '—';
+  const effectiveTo = line?.pricingEffectiveToSnapshot ? formatUserDate(line.pricingEffectiveToSnapshot) : '—';
   const minQty = Number.isFinite(Number(line?.pricingMinQtySnapshot)) ? String(line.pricingMinQtySnapshot) : '—';
 
   return t('records.linesPriceProvenanceTooltip', {

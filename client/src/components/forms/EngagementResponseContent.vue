@@ -177,6 +177,7 @@
 </template>
 
 <script setup>
+import { formatUserDateTime } from '@/utils/localeFormat';
 import { useI18n } from 'vue-i18n';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import EngagementResponseAnswerCard from '@/components/forms/EngagementResponseAnswerCard.vue';
@@ -271,13 +272,7 @@ function getQuestionResponse(questionId) {
 
 function formatDate(date) {
   if (!date) return '';
-  return new Date(date).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(date);
 }
 
 function scrollToSection(sectionId) {

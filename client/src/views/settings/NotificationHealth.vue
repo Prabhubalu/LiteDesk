@@ -228,10 +228,10 @@
                   </span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                  {{ channel.sent.toLocaleString() }}
+                  {{ formatNumber(channel.sent) }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                  {{ channel.failed.toLocaleString() }}
+                  {{ formatNumber(channel.failed) }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right"
                     :class="
@@ -325,7 +325,7 @@
                   {{ userAppKey || 'All' }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                  {{ user.notificationsReceived.toLocaleString() }}
+                  {{ formatNumber(user.notificationsReceived) }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
                   {{ user.unreadRate }}%
@@ -373,6 +373,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { formatNumber, formatUserDateTime } from '@/utils/localeFormat';
 
 const loading = ref(false);
 const error = ref(null);
@@ -469,7 +470,7 @@ async function loadUsers(page = 1) {
 function formatDate(dateString) {
   if (!dateString) return '—';
   const date = new Date(dateString);
-  return date.toLocaleString();
+  return formatUserDateTime(date);
 }
 
 function formatChannelName(channel) {

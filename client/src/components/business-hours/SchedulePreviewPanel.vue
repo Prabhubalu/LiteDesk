@@ -22,6 +22,7 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useBusinessHours } from '@/composables/useBusinessHours';
+import { formatDate, getLocaleFormatContext } from '@/utils/localeFormat';
 
 const props = defineProps({
   setId: { type: String, default: null },
@@ -36,13 +37,13 @@ const preview = ref(null);
 function formatInstant(iso) {
   if (!iso) return '';
   try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: props.timezone
-    }).format(new Date(iso));
+    return formatDate(
+      iso,
+      { dateStyle: 'medium', timeStyle: 'short' },
+      { ...getLocaleFormatContext(), timeZone: props.timezone || 'UTC' }
+    );
   } catch {
-    return new Date(iso).toLocaleString();
+    return '';
   }
 }
 

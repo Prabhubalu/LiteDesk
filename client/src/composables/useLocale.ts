@@ -19,14 +19,24 @@ import {
   formatDate,
   formatTime,
   formatRelativeTime,
+  formatUserDate,
+  formatUserDateTime,
+  wallDateTimeLocalToUtcIso,
+  utcToWallDateTimeLocal,
+  resolveTimeFormat,
 } from '@/utils/localeFormat';
-import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { normalizeCurrencyCode, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { normalizeIanaTimezone } from '@/utils/orgRegionalOptions';
+import type { DisplayPreferences } from '@/utils/localeFormat';
 
 export type LocaleResolution = {
   language: I18nLanguage;
   locale: string;
   timeZone: string;
+  dateFormat: string;
+  timeFormat: '12h' | '24h';
   currency: string;
+  displayPreferences: DisplayPreferences;
   isRtl: boolean;
   isPseudo: boolean;
 };
@@ -64,13 +74,66 @@ export function useLocale() {
   const authStore = useAuthStore();
 
   const orgSettings = computed(() => authStore.organization?.settings ?? {});
+  const userPrefs = computed(() => authStore.user ?? {});
 
   const locale = computed(() =>
     resolveLocaleTag(language.value, orgSettings.value?.locale as string | undefined)
   );
 
-  const timeZone = computed(() => (orgSettings.value?.timeZone as string) || 'UTC');
-  const currency = computed(() => resolveOrgCurrencyCode(orgSettings.value));
+  const timeZone = computed(() => {
+    const userTz = (userPrefs.value as { timeZone?: string | null })?.timeZone;
+    const orgTz = orgSettings.value?.timeZone as string | undefined;
+    return normalizeIanaTimezone(userTz || orgTz || 'UTC') || 'UTC';
+  });
+
+  const dateFormat = computed(() => {
+    const userFmt = (userPrefs.value as { dateFormat?: string | null })?.dateFormat;
+    const orgFmt = orgSettings.value?.dateFormat as string | undefined;
+    return String(userFmt || orgFmt || 'MM/DD/YYYY').trim() || 'MM/DD/YYYY';
+  });
+
+  const timeFormat = computed(() => {
+    const userFmt = (userPrefs.value as { timeFormat?: string | null })?.timeFormat;
+    return resolveTimeFormat(userFmt);
+  });
+
+  const displayPreferences = computed<DisplayPreferences>(() => {
+    const raw = (userPrefs.value as { displayPreferences?: DisplayPreferences | null })
+      ?.displayPreferences;
+    const orgCurrency = resolveOrgCurrencyCode(orgSettings.value);
+    return {
+      ...(raw || {}),
+      preferredCurrency:
+        normalizeCurrencyCode(raw?.preferredCurrency) || orgCurrency,
+    };
+  });
+
+  const baseCurrency = computed(() => resolveOrgCurrencyCode(orgSettings.value));
+
+  const orgCurrencies = computed(() => {
+    const raw = (orgSettings.value as { currencies?: unknown })?.currencies;
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter((row): row is Record<string, unknown> => Boolean(row && typeof row === 'object'))
+      .map((row) => ({
+        code: String(row.code || '').trim().toUpperCase(),
+        enabled: Boolean(row.enabled),
+        conversionRate: Number(row.conversionRate) > 0 ? Number(row.conversionRate) : 1,
+      }))
+      .filter((row) => Boolean(row.code));
+  });
+
+  const currency = computed(() => {
+    const prefs = displayPreferences.value;
+    const preferred = normalizeCurrencyCode(prefs.preferredCurrency);
+    if (
+      preferred
+      && (prefs.showAmountsInPreferredCurrency || preferred !== baseCurrency.value)
+    ) {
+      return preferred;
+    }
+    return baseCurrency.value;
+  });
 
   const isPseudo = computed(() =>
     PSEUDO_LANGUAGES.includes(language.value as (typeof PSEUDO_LANGUAGES)[number])
@@ -86,18 +149,26 @@ export function useLocale() {
     language: language.value,
     locale: locale.value,
     timeZone: timeZone.value,
+    dateFormat: dateFormat.value,
+    timeFormat: timeFormat.value,
     currency: currency.value,
+    displayPreferences: displayPreferences.value,
     isRtl: isRtl.value,
     isPseudo: isPseudo.value,
   }));
 
   watch(
-    resolution,
-    (r) => {
+    [resolution, baseCurrency, orgCurrencies],
+    ([r, base, currencies]) => {
       setLocaleFormatContext({
         locale: r.locale,
         timeZone: r.timeZone,
+        dateFormat: r.dateFormat,
+        timeFormat: r.timeFormat,
         currency: r.currency,
+        baseCurrency: base,
+        orgCurrencies: currencies,
+        displayPreferences: r.displayPreferences,
       });
       applyDocumentDirection(r.isRtl);
     },
@@ -129,7 +200,10 @@ export function useLocale() {
     language,
     locale,
     timeZone,
+    dateFormat,
+    timeFormat,
     currency,
+    displayPreferences,
     isRtl,
     isPseudo,
     resolution,
@@ -140,6 +214,10 @@ export function useLocale() {
     formatDate,
     formatTime,
     formatRelativeTime,
+    formatUserDate,
+    formatUserDateTime,
+    wallDateTimeLocalToUtcIso,
+    utcToWallDateTimeLocal,
     initFromAuth: async (orgLanguage?: string | null, userLanguage?: string | null) => {
       await initI18n({ orgLanguage, userLanguage });
     },

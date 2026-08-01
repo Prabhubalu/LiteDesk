@@ -449,6 +449,8 @@
 </template>
 
 <script setup>
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -963,20 +965,13 @@ function relativeTime(dateString) {
 }
 
 function formatMoney(amount, currency = 'USD') {
-  return (Number(amount) || 0).toLocaleString(undefined, {
-    style: 'currency',
-    currency: currency || 'USD'
-  });
+  return formatCurrencyValue(amount, { currencyCode: currency || undefined }) ?? '—';
 }
 
 function formatDueDate(value) {
   if (!value) return '';
   return t('cases.portalDashboardDueDate', {
-    date: new Date(value).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
+    date: formatUserDate(value)
   });
 }
 

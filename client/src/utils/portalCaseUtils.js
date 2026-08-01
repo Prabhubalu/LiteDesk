@@ -1,3 +1,5 @@
+import { formatDate, formatTime } from '@/utils/localeFormat';
+
 const CLOSED_STATUSES = new Set(['closed', 'resolved']);
 
 export function isPortalCaseClosed(status) {
@@ -92,7 +94,7 @@ export function formatPortalDayLabel(date, translate) {
   const diffDays = Math.round((today - target) / 86400000);
   if (diffDays === 0) return translate('cases.portalCasesToday');
   if (diffDays === 1) return translate('cases.portalCasesYesterday');
-  return date.toLocaleDateString(undefined, {
+  return formatDate(date, {
     weekday: 'short',
     month: 'short',
     day: 'numeric'
@@ -101,7 +103,7 @@ export function formatPortalDayLabel(date, translate) {
 
 export function formatPortalMessageTime(value) {
   if (!value) return '';
-  return new Date(value).toLocaleTimeString(undefined, {
+  return formatTime(value, {
     hour: '2-digit',
     minute: '2-digit'
   });

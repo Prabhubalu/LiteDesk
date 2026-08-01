@@ -681,7 +681,7 @@
               <div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('events.eventDetailOrderValue') }}</div>
                 <div class="text-lg font-bold text-gray-900 dark:text-white">
-                  ${{ (event.kpiActuals.orderValue || 0).toLocaleString() }}
+                  {{ formatOrderValue(event.kpiActuals.orderValue || 0) }}
                 </div>
               </div>
               <div>
@@ -797,9 +797,11 @@ import type {
   PermissionAction,
   PermissionScope
 } from '@/platform/permissions/platformPermissionVocabulary.types';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const event = ref<any>(null);
 const loading = ref(true);
@@ -1529,6 +1531,12 @@ const formatDuration = (seconds: any) => {
     return `${hours}h ${minutes}m`;
   }
   return `${minutes}m`;
+};
+
+const formatOrderValue = (value) => {
+  return formatCurrencyValue(value, {
+    currencyCode: resolveOrgCurrencyCode(authStore.organization),
+  }) ?? '—';
 };
 
 const getConversionRate = () => {

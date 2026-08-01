@@ -150,6 +150,7 @@
 import { ref, nextTick, onMounted, onUnmounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PaperClipIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/vue/24/outline';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 
@@ -288,7 +289,7 @@ const formatDate = (date) => {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
   
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatUserDate(d);
 };
 
 const formatFileSize = (bytes) => {

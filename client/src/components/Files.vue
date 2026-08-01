@@ -172,6 +172,7 @@ import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import { getApiUrlForFetch } from '@/config/apiBase';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   entityType: {
@@ -389,11 +390,7 @@ const formatDate = (dateValue) => {
     } else if (diffDays < 7) {
       return `${diffDays}d ago`;
     } else {
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
+      return formatUserDate(date);
     }
   } catch (e) {
     return String(dateValue);

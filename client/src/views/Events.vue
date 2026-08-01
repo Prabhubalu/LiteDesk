@@ -92,13 +92,13 @@
 
       <!-- Custom Start Date Time Cell -->
       <template #cell-startDateTime="{ value }">
-        <DateCell v-if="value" :value="value" format="short" />
+        <DateCell v-if="value" :value="value" format="long" />
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
       <!-- Custom End Date Time Cell -->
       <template #cell-endDateTime="{ value }">
-        <DateCell v-if="value" :value="value" format="short" />
+        <DateCell v-if="value" :value="value" format="long" />
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 

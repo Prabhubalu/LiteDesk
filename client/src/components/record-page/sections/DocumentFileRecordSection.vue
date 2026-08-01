@@ -185,6 +185,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import { captureDocumentVersionCompared } from '@/config/posthogDocuments';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const props = defineProps({
   record: { type: Object, default: null },
   adapter: { type: Object, default: () => ({}) },
@@ -235,7 +236,7 @@ function formatFileSize(bytes) {
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function formatUser(user) {

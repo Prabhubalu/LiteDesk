@@ -151,6 +151,7 @@ import BadgeCell from '../components/common/table/BadgeCell.vue';
 import UniversalImportModal from '../components/import/UniversalImportModal.vue';
 import { useActiveImportsStore } from '@/stores/activeImports';
 import { startBulkDelete } from '@/utils/runBulkDelete';
+import { formatUserDate, formatNumber, formatTime as formatLocaleTime } from '@/utils/localeFormat';
 
 // Router and auth
 const router = useRouter();
@@ -440,21 +441,17 @@ const formatStatus = (status) => {
 };
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
+  return formatUserDate(date) || '-';
 };
 
 const formatTime = (date) => {
-  return new Date(date).toLocaleTimeString('en-US', { 
+  return formatLocaleTime(date, { 
     hour: '2-digit', 
     minute: '2-digit' 
   });
 };
 
-const formatCount = (value) => Number(value || 0).toLocaleString();
+const formatCount = (value) => formatNumber(Number(value || 0));
 
 function getProcessingProgress(row) {
   const tracked = activeImportsStore.getImport(row._id);

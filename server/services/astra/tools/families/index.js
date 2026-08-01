@@ -874,13 +874,38 @@ async function runDealCreate(input = {}, ctx = {}) {
 
   const Deal = modelFor('deals', ctx.deps);
   if (Deal && typeof Deal.create === 'function' && ctx.organizationId) {
+    let pipeline = input.pipeline || null;
+    let stage = input.stage || null;
+    if (!pipeline || !stage) {
+      try {
+        const { getDefaultPipelineSettings } = require('../../../../controllers/moduleController');
+        const defaultSettings = getDefaultPipelineSettings();
+        const defaultPipeline = defaultSettings.find((p) => p.isDefault) || defaultSettings[0];
+        if (defaultPipeline?.stages?.length) {
+          pipeline = pipeline || defaultPipeline.key;
+          stage = stage || (defaultPipeline.stages[0].name || 'New');
+        }
+      } catch {
+        stage = stage || 'New';
+      }
+    }
+    const expectedCloseDate = input.expectedCloseDate
+      ? new Date(input.expectedCloseDate)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const amount =
+      input.amount === undefined || input.amount === null || input.amount === ''
+        ? 0
+        : Number(input.amount);
     const doc = await Deal.create({
       name,
       organizationId: toOrgId(ctx.organizationId),
-      amount: input.amount,
-      stage: input.stage,
+      amount: Number.isFinite(amount) ? amount : 0,
+      pipeline,
+      stage,
+      expectedCloseDate,
       status: 'Open',
       deletedAt: null,
+      assignedTo: ctx.userId ? toOrgId(ctx.userId) : undefined,
       createdBy: ctx.userId ? toOrgId(ctx.userId) : undefined,
     });
     return {

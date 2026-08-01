@@ -48,6 +48,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useOnboarding } from '@/composables/useOnboarding';
 import { captureFirstTimeEmptyStateSeen } from '@/config/posthogOnboarding';
 import { captureMarketingModuleVisited } from '@/config/posthogMarketing';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -98,7 +99,7 @@ function formatDate(value) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatUserDate(date) || '-';
 }
 
 async function loadSegments() {

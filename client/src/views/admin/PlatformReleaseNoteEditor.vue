@@ -424,6 +424,7 @@ import {
 } from '@/constants/releaseNoteAdmin';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const props = defineProps({
   id: { type: String, required: true }
 });
@@ -484,7 +485,7 @@ function deriveReleaseSlug(version, title) {
 }
 
 function formatDate(value) {
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function formatRate(rate) {

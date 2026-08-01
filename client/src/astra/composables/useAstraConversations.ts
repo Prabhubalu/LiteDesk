@@ -56,8 +56,13 @@ export function useAstraConversations() {
       nextCursor.value = data?.nextCursor || null;
       hasMore.value = Boolean(data?.hasMore && data?.nextCursor);
     } catch (err: unknown) {
-      const e = err as { message?: string };
-      error.value = e?.message || 'Failed to load conversations';
+      const e = err as { message?: string; status?: number; code?: string };
+      // Entitlement/permission races — treat as empty history, not a hard UI error.
+      if (e?.status === 403 || e?.status === 404) {
+        error.value = '';
+      } else {
+        error.value = e?.message || 'Failed to load conversations';
+      }
       conversations.value = [];
       nextCursor.value = null;
       hasMore.value = false;

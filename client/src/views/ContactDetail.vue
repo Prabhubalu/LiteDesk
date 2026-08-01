@@ -319,7 +319,7 @@
                 
                 <div v-if="contact.relatedDeals && contact.relatedDeals.length > 0">
                   <p class="text-xl font-bold text-green-600 dark:text-green-400">{{ contact.relatedDeals.length }}</p>
-                  <p class="text-xs font-medium text-gray-900 dark:text-white truncate mt-0.5">${{ (contact.relatedDeals.reduce((sum, deal) => sum + (deal.amount || 0), 0) / 1000).toFixed(0) }}K</p>
+                  <p class="text-xs font-medium text-gray-900 dark:text-white truncate mt-0.5">{{ relatedDealsTotalLabel }}</p>
                 </div>
                 <div v-else>
                   <p class="text-xl font-bold text-gray-400 dark:text-gray-500">0</p>
@@ -436,6 +436,8 @@ import { useAuthStore } from '@/stores/authRegistry';
 import Avatar from '@/components/common/Avatar.vue';
 import { useRecordContext } from '@/composables/useRecordContext';
 import { getProjectionTypeLabel, getProjectionTypeBadgeClass, getAppLabel } from '@/utils/projectionLabels';
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCompactCurrencyValue } from '@/utils/currencyOptions';
 
 const route = useRoute();
 const router = useRouter();
@@ -481,6 +483,12 @@ const projectionAppLabel = computed(() => {
 const notesCountDisplay = computed(() => {
   if (notesCount.value === null || notesCount.value === undefined) return '—';
   return notesCount.value;
+});
+
+const relatedDealsTotalLabel = computed(() => {
+  const deals = contact.value?.relatedDeals || [];
+  const total = deals.reduce((sum, deal) => sum + (Number(deal.amount) || 0), 0);
+  return formatCompactCurrencyValue(total, { orgCurrency: authStore.organization });
 });
 
 async function refreshNotesCount() {
@@ -537,11 +545,7 @@ const getInitials = () => {
 
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(date) || '-';
 };
 
 const editContact = () => {

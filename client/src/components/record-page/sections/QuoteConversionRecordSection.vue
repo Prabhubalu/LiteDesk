@@ -87,6 +87,7 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { conversionHintKey, getQuoteConversionEligibility } from '@/utils/quoteConversionEligibility';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -160,7 +161,7 @@ function fmtDate(v) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString();
+  return formatUserDateTime(d);
 }
 
 async function load() {

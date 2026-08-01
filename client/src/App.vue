@@ -7,6 +7,7 @@ import { useRouter, useRoute } from 'vue-router';
 
 import { useAuthStore } from '@/stores/authRegistry';
 import { useColorMode } from '@/composables/useColorMode';
+import { useLocale } from '@/composables/useLocale';
 import { readLastActiveAppIdFromStorage } from '@/composables/useSidebarState';
 const PlatformShell = defineAsyncComponent(() => import('@/components/PlatformShell.vue'));
 const NotificationContainer = defineAsyncComponent(() =>
@@ -149,6 +150,8 @@ async function ensureHeadlessFormControls() {
 
 const initDynamicRoutes = inject('arivuInitializeDynamicRoutes');
 const authStore = useAuthStore();
+// Keep localeFormat context (user TZ + dateFormat + timeFormat) synced app-wide.
+useLocale();
 const router = useRouter();
 const route = useRoute();
 

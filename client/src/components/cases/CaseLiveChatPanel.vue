@@ -73,6 +73,7 @@ import { withApiOrigin } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
 import ChatMessageReceiptIcon from '@/components/cases/ChatMessageReceiptIcon.vue';
+import { formatUserDateTime } from '@/utils/localeFormat';
 import {
   applyReceiptPatch,
   receiptStatusFromMessage
@@ -119,11 +120,12 @@ function receiptStatus(message) {
 
 function formatTime(dt) {
   try {
-    return new Date(dt || Date.now()).toLocaleString();
+    return formatUserDateTime(dt || Date.now()) || '';
   } catch (_) {
     return '';
   }
 }
+
 
 async function scrollToBottom() {
   await nextTick();

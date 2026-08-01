@@ -248,6 +248,7 @@ const CatalogSettingsHub = defineAsyncComponent(() => import('@/components/setti
 const InventorySettings = defineAsyncComponent(() => import('@/components/settings/InventorySettings.vue'));
 const PerformanceSettings = defineAsyncComponent(() => import('@/components/settings/PerformanceSettings.vue'));
 const BusinessHoursSettings = defineAsyncComponent(() => import('@/components/settings/BusinessHoursSettings.vue'));
+const CurrencySettings = defineAsyncComponent(() => import('@/components/settings/CurrencySettings.vue'));
 const WebformsSettings = defineAsyncComponent(() => import('@/components/settings/WebformsSettings.vue'));
 const SettingsAuditLog = defineAsyncComponent(() => import('@/components/settings/SettingsAuditLog.vue'));
 
@@ -464,6 +465,20 @@ const PlatformIcon = () => h('svg', {
   })
 ]);
 
+const CurrencyIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+  })
+]);
+
 const SecurityIcon = () => h('svg', {
   fill: 'none',
   stroke: 'currentColor',
@@ -664,6 +679,7 @@ const tabs = computed(() => {
   const all = [
     { id: 'profile', nameKey: 'settings.tabProfile', icon: ProfileIcon, component: ProfileSettings },
     { id: 'organization', nameKey: 'settings.tabCompany', icon: PlatformIcon, component: OrganizationSettings },
+    { id: 'currency', nameKey: 'settings.tabCurrency', icon: CurrencyIcon, component: CurrencySettings },
     { id: 'business-hours', nameKey: 'settings.tabBusinessHours', icon: BusinessHoursIcon, component: BusinessHoursSettings },
     { id: 'users-access', nameKey: 'settings.tabUsersAccess', icon: UsersIcon, component: UsersAccessSettings },
     { id: 'core-modules', nameKey: 'settings.tabCoreModules', icon: CoreModulesIcon, component: CoreModulesList },

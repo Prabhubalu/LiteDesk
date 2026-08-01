@@ -54,6 +54,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -69,13 +70,7 @@ const capturedAtLabel = computed(() => {
   const date = new Date(props.capturedAt);
   if (Number.isNaN(date.getTime())) return '';
   return t('templates.htmlImport.restoreSnapshotCapturedAt', {
-    date: date.toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    })
+    date: formatUserDateTime(date)
   });
 });
 </script>

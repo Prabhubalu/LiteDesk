@@ -49,6 +49,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ReleaseNoteItemRow from '@/components/release-notes/ReleaseNoteItemRow.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   release: {
@@ -63,7 +64,7 @@ const props = defineProps({
 
 defineEmits(['navigate']);
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 const sortedItems = computed(() => {
   const items = Array.isArray(props.release?.items) ? [...props.release.items] : [];
@@ -86,11 +87,7 @@ const publishedLabel = computed(() => {
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return '';
   return t('releaseNotes.publishedOn', {
-    date: new Intl.DateTimeFormat(locale.value, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date)
+    date: formatUserDate(date)
   });
 });
 </script>

@@ -78,9 +78,13 @@ exports.listSets = async (req, res) => {
       isDefault: true
     });
     if (defaultCount === 0 && canManageBusinessHourSets(req.user)) {
-      const org = await Organization.findById(organizationId).select('settings.timeZone').lean();
-      const tz = org?.settings?.timeZone || 'UTC';
-      await ensureDefaultCompanySet(organizationId, tz, req.user._id);
+      try {
+        const org = await Organization.findById(organizationId).select('settings.timeZone').lean();
+        const tz = org?.settings?.timeZone || 'UTC';
+        await ensureDefaultCompanySet(organizationId, tz, req.user._id);
+      } catch (ensureErr) {
+        console.warn('[businessHours] ensureDefaultCompanySet on list failed:', ensureErr?.message || ensureErr);
+      }
     }
 
     const sets = await BusinessHourSet.find(query)

@@ -257,11 +257,11 @@
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
-      <!-- Last Activity: relative age, absolute tooltip -->
+      <!-- Last Activity: profile date format; action label in tooltip -->
       <template #cell-lastActivityDate="{ value, row }">
         <DateCell
           :value="value"
-          format="relative"
+          format="short"
           :context-label="lastActivityActionLabel(row?.lastActivityAction)"
         />
       </template>
@@ -502,6 +502,7 @@ import { useLocale } from '@/composables/useLocale';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { ViewColumnsIcon, ListBulletIcon, UserIcon, CalendarDaysIcon, InboxIcon, RectangleStackIcon, PlusIcon, BuildingOfficeIcon, ChartBarIcon, BanknotesIcon, HashtagIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, FlagIcon as FlagIconSolid } from '@heroicons/vue/24/solid';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const router = useRouter();
 const route = useRoute();
@@ -1085,6 +1086,7 @@ const formatCurrency = (amount, currencyCode = null) => {
   return (
     formatCurrencyValue(amount || 0, {
       currencyCode: String(currencyCode || defaultDisplayCurrency.value).toUpperCase(),
+      orgCurrency: authStore.organization,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }) || '—'
@@ -1093,7 +1095,7 @@ const formatCurrency = (amount, currencyCode = null) => {
 
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatUserDate(date) || '-';
 };
 
 const getUserDisplayName = (user) => {

@@ -1447,6 +1447,7 @@ import { getAuditEventTypes, getEventTypeByLabel } from '@/metadata/eventTypes';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
+import { formatUserDateTime } from '@/utils/localeFormat';
 import clickOutside from '@/directives/clickOutside';
 
 type OrganizationLite = {
@@ -2305,14 +2306,7 @@ const formattedStartDateTime = computed(() => {
   if (!draft.value.startDateTime) return '';
   try {
     const date = new Date(draft.value.startDateTime);
-    return date.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+    return formatUserDateTime(date);
   } catch {
     return '';
   }
@@ -2322,14 +2316,7 @@ const formattedEndDateTime = computed(() => {
   if (!draft.value.endDateTime) return '';
   try {
     const date = new Date(draft.value.endDateTime);
-    return date.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+    return formatUserDateTime(date);
   } catch {
     return '';
   }

@@ -106,7 +106,7 @@
 
       <!-- Last Activity -->
       <template #cell-lastActivity="{ value }">
-        <DateCell :value="value" format="relative" />
+        <DateCell :value="value" format="short" />
       </template>
 
       <!-- Created On -->
@@ -235,7 +235,7 @@
       <!-- Estimated Value (SALES participation field) -->
       <template #cell-estimated_value="{ row, value }">
         <span v-if="getParticipationAwareCellValue('estimated_value', row, value) === '-'" class="text-gray-400 dark:text-gray-500">-</span>
-        <span v-else class="text-gray-900 dark:text-white">{{ value ? `$${value}` : '-' }}</span>
+        <span v-else class="text-gray-900 dark:text-white">{{ formatEstimatedValue(value) }}</span>
       </template>
 
       <!-- Role (SALES participation field) -->
@@ -315,6 +315,7 @@ import {
 import { startBulkDelete } from '@/utils/runBulkDelete';
 
 import { useNotifications } from '@/composables/useNotifications';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 const router = useRouter();
 const { t } = useI18n();
 const notifications = useNotifications();
@@ -516,6 +517,11 @@ const resolvePeopleListStatusOptions = (row) => {
  * @param {*} rawValue - Raw field value from row
  * @returns {*} - Value to display ("-" if not participating, otherwise rawValue)
  */
+function formatEstimatedValue(value) {
+  if (value == null || value === '') return '-';
+  return formatCurrencyValue(value, { orgCurrency: authStore.organization }) || '-';
+}
+
 const getParticipationAwareCellValue = (fieldKey, row, rawValue) => {
   // Get field metadata to check if it's a participation field
   try {

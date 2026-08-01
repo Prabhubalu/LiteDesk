@@ -66,6 +66,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAnalyticsHome } from '@/composables/useAnalyticsHome';
 import { captureAnalyticsTrashRestored, captureAnalyticsModuleVisited } from '@/config/posthogAnalytics';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -73,7 +74,7 @@ const { trashItems, loading, fetchTrash, restoreTrashItem } = useAnalyticsHome()
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function goHome() {

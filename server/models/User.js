@@ -53,6 +53,72 @@ const UserSchema = new mongoose.Schema({
     phoneNumber: String,
     avatar: String,
 
+    // Employee / org chart
+    reportsTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    /** @deprecated Prefer primaryGroupId — kept for existing data */
+    department: { type: String, default: '' },
+    primaryGroupId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+        default: null
+    },
+    secondaryEmail: {
+        type: String,
+        lowercase: true,
+        trim: true,
+        default: ''
+    },
+    officePhone: { type: String, default: '' },
+    homePhone: { type: String, default: '' },
+    mobilePhone: { type: String, default: '' },
+    fax: { type: String, default: '' },
+
+    /** Standing UI language preference (overrides org settings.language when set) */
+    language: { type: String, default: null },
+    /** Standing time zone preference (IANA; overrides org settings.timeZone when set) */
+    timeZone: { type: String, default: null },
+    /** Standing date format preference (overrides org settings.dateFormat when set) */
+    dateFormat: { type: String, default: null },
+    /** Standing time format preference: '12h' | '24h' (default 12h when unset) */
+    timeFormat: { type: String, default: null },
+
+    /** Currency & number display preferences (self-service + admin) */
+    displayPreferences: {
+        preferredCurrency: { type: String, default: null },
+        showAmountsInPreferredCurrency: { type: Boolean, default: false },
+        digitGroupingPattern: {
+            type: String,
+            enum: ['international', 'indian'],
+            default: 'international'
+        },
+        decimalSeparator: {
+            type: String,
+            enum: ['.', ','],
+            default: '.'
+        },
+        digitGroupingSeparator: {
+            type: String,
+            enum: [',', '.', ' ', "'"],
+            default: ','
+        },
+        currencyDecimalPlaces: {
+            type: Number,
+            min: 0,
+            max: 6,
+            default: 2
+        },
+        truncateTrailingZeros: { type: Boolean, default: false },
+        aggregatedNumberFormat: {
+            type: String,
+            enum: ['none', 'thousands', 'millions', 'billions'],
+            default: 'none'
+        }
+    },
+
     /** Optional personal business hours override (BusinessHourSet) */
     businessHourSetId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -304,6 +370,8 @@ const UserSchema = new mongoose.Schema({
         enum: ['active', 'inactive', 'suspended', 'invited', 'deleted'],
         default: 'active'
     },
+    suspendedAt: { type: Date, default: null },
+    reactivatedAt: { type: Date, default: null },
 
     // Invitation & email verification
     emailVerifiedAt: Date,

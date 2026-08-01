@@ -536,6 +536,7 @@
 </template>
 
 <script setup>
+import { formatUserDateTime, formatNumber } from '@/utils/localeFormat';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
@@ -676,15 +677,11 @@ const usagePaginationRange = computed(() => {
   };
 });
 
-function formatNumber(value) {
-  return new Intl.NumberFormat().format(Number(value || 0));
-}
-
 /** Ledger and usage debit amounts are tokens. */
 
 function formatUsageTime(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 /** Specialist that executed the turn (audit metadata); empty for non-agent abilities. */

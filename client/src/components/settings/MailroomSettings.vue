@@ -865,6 +865,7 @@ import { computed, defineComponent, h, onMounted, reactive, ref, watch } from 'v
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 import { useNotifications } from '@/composables/useNotifications';
 import { CASE_TYPES, CASE_PRIORITIES, CASE_CHANNELS } from '@/constants/caseLifecycle';
 import {
@@ -1181,7 +1182,7 @@ function signalLabel(signal) {
 function formatLogTime(value) {
   if (!value) return '';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return String(value);
   }

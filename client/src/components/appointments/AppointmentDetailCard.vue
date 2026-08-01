@@ -130,6 +130,7 @@ import { useI18n } from 'vue-i18n';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import AppointmentRescheduleModal from '@/components/appointments/AppointmentRescheduleModal.vue';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   appointment: { type: Object, default: null },
@@ -205,12 +206,7 @@ const formResponseEntries = computed(() => {
 
 function formatMarkedAt(iso) {
   try {
-    return new Date(iso).toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    });
+    return formatUserDateTime(iso);
   } catch {
     return '';
   }

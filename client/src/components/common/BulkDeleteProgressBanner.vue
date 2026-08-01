@@ -53,6 +53,7 @@ import { useI18n } from 'vue-i18n';
 import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatNumber } from '@/utils/localeFormat';
 const { t } = useI18n();
 const bulkDeleteStore = useBulkDeleteProgressStore();
 
@@ -63,8 +64,8 @@ const bannerTitle = computed(() =>
 );
 
 const progressLabel = computed(() => {
-  const processed = Number(bulkDeleteStore.processed || 0).toLocaleString();
-  const total = Number(bulkDeleteStore.total || 0).toLocaleString();
+  const processed = formatNumber(Number(bulkDeleteStore.processed || 0));
+  const total = formatNumber(Number(bulkDeleteStore.total || 0));
   if (bulkDeleteStore.operation === 'update') {
     return t('common.bulkUpdateProgressUpdating', { processed, total });
   }

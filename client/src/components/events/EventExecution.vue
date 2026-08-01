@@ -265,6 +265,7 @@ import { useEventNotifications } from '@/composables/useEventNotifications';
 
 import { useNotifications } from '@/composables/useNotifications';
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const props = defineProps({
   event: {
     type: Object,
@@ -916,7 +917,7 @@ const getOrgName = (orgId) => {
 
 const formatTime = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleString();
+  return formatUserDateTime(date);
 };
 
 const fetchOrganizations = async () => {

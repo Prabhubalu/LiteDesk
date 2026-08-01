@@ -389,6 +389,7 @@ import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -496,7 +497,7 @@ function formatRelativeDate(dateStr) {
   if (days === 1) return '1 day ago';
   if (days < 7) return `${days} days ago`;
   if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-  return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+  return formatUserDate(d);
 }
 
 function getPurgeUrgency(item) {
@@ -525,7 +526,7 @@ const oldestItemDisplay = computed(() => {
   const expiresAt = new Date(deletedAt.getTime() + retentionDays * 24 * 60 * 60 * 1000);
   const now = new Date();
   const days = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
-  const deletedStr = deletedAt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const deletedStr = formatUserDate(deletedAt);
   if (days <= 0) return 'Expired';
   if (days === 1) return 'Expires tomorrow';
   if (days <= 7) return `Expires in ${days} days`;

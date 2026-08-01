@@ -209,6 +209,7 @@ import ReportPreviewPanel from '@/components/analytics/ReportPreviewPanel.vue';
 import { useAnalyticsWidgets } from '@/composables/useAnalyticsWidgets';
 import { useColorMode } from '@/composables/useColorMode';
 import { captureAnalyticsWidgetExecuted } from '@/config/posthogAnalytics';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -297,7 +298,7 @@ function statusLabel(status: string) {
 
 function formatDate(value: string | null | undefined) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function goList() {

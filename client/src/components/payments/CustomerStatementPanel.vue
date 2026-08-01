@@ -16,7 +16,11 @@
       </label>
       <label class="block">
         <span class="text-xs text-gray-500">{{ t('records.paymentCurrency') }}</span>
-        <input v-model="currency" type="text" class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5" />
+        <select v-model="currency" class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5">
+          <option v-for="opt in currencyOptions" :key="opt.code" :value="opt.code">
+            {{ opt.symbol || opt.code }} {{ opt.code }} — {{ opt.name }}
+          </option>
+        </select>
       </label>
     </div>
 
@@ -78,6 +82,13 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDate } from '@/utils/localeFormat';
+import {
+  formatCurrencyValue,
+  getEnabledCurrencyOptions,
+  resolveOrgCurrencyCode,
+} from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({
   organizationRefId: { type: String, default: null },
@@ -85,23 +96,30 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 const notifications = useNotifications();
 const busy = ref(false);
 const preview = ref(null);
 
 const fromDate = ref(new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10));
 const toDate = ref(new Date().toISOString().slice(0, 10));
-const currency = ref(props.defaultCurrency || 'USD');
+const currencyOptions = computed(() => getEnabledCurrencyOptions(authStore.organization));
+const currency = ref(
+  props.defaultCurrency || resolveOrgCurrencyCode(authStore.organization)
+);
 
 const organizationRefId = computed(() => props.organizationRefId);
 
 function formatMoney(v) {
-  return (Number(v) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrencyValue(Number(v) || 0, {
+    currencyCode: currency.value,
+    orgCurrency: authStore.organization,
+  }) || '—';
 }
 
 function formatDate(v) {
   if (!v) return '—';
-  return new Date(v).toLocaleDateString();
+  return formatUserDate(v);
 }
 
 function queryParams() {

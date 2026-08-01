@@ -160,6 +160,7 @@ import { useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   organizationId: {
@@ -203,11 +204,7 @@ const fetchAudits = async () => {
 
 const formatDate = (date) => {
   if (!date) return 'N/A';
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(date) || 'N/A';
 };
 
 const viewAudit = (audit) => {

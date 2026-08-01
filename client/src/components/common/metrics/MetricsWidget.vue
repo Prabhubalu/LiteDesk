@@ -173,6 +173,7 @@ import DynamicFormField from '@/components/common/DynamicFormField.vue';
 import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
 import { formatCurrencyValue, resolveCurrencyCodeForField } from '@/utils/currencyOptions';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -451,7 +452,7 @@ function isDateLike(val) {
 function formatDate(val) {
   const d = new Date(val);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString();
+  return formatUserDate(d);
 }
 
 function formatCurrency(val) {

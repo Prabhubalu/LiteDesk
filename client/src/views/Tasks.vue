@@ -365,6 +365,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { ViewColumnsIcon, ListBulletIcon, CalendarDaysIcon, ClockIcon, HashtagIcon, CheckCircleIcon, LinkIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { PlusIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, FlagIcon as FlagIconSolid } from '@heroicons/vue/24/solid';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const router = useRouter();
 const route = useRoute();
@@ -813,7 +814,7 @@ const formatTaskCardValue = (value, key) => {
   if (typeof value === 'object' && value !== null && ('firstName' in value || 'first_name' in value))
     return getUserDisplayName(value);
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value))
-    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return formatUserDate(value);
   return String(value);
 };
 
@@ -914,11 +915,7 @@ const handleImportComplete = () => {
 // Utility functions
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
+  return formatUserDate(date) || '-';
 };
 
 const formatStatus = (status) => {

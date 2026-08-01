@@ -1,17 +1,10 @@
 import DOMPurify from 'dompurify';
 import { sanitizeRichDescriptionHtml } from '@/utils/richDescriptionHtml';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 export function formatContentVersionDate(date) {
   if (!date) return '';
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(date) || '';
 }
 
 export function getPlainTextFromHtml(html) {

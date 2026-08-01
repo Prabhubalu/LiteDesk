@@ -2,6 +2,8 @@
  * Sales Orders module activity UI labels.
  */
 
+import { formatCurrencyValue } from '@/utils/currencyOptions';
+
 const SALES_ORDER_ACTIVITY_MESSAGES = {
   sales_order_created: 'Created this sales order',
   sales_order_converted_from_quote: 'Converted from quote',
@@ -42,7 +44,10 @@ export function getSalesOrderActivityMessage(event) {
     const qty = d.allocatedQty ?? d.quantityAllocated;
     const amount = d.allocatedAmount;
     if (invoiceNumber && salesOrderNumber) {
-      return `Invoiced ${invoiceNumber} on ${salesOrderNumber}${qty != null ? ` · qty ${qty}` : ''}${amount != null ? ` · ${amount}` : ''}`;
+      const amountLabel = amount != null
+        ? (formatCurrencyValue(amount) || String(amount))
+        : null;
+      return `Invoiced ${invoiceNumber} on ${salesOrderNumber}${qty != null ? ` · qty ${qty}` : ''}${amountLabel ? ` · ${amountLabel}` : ''}`;
     }
   }
   return null;

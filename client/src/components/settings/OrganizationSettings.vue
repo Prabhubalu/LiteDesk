@@ -891,6 +891,9 @@ const handleSubmit = async () => {
         };
         localStorage.setItem('organization', JSON.stringify(authStore.organization));
       }
+      if (typeof authStore.syncI18nFromOrganization === 'function') {
+        await authStore.syncI18nFromOrganization();
+      }
       notifySuccess(t('settings.orgSaveSuccess'));
     } else {
       const msg = data?.message || t('settings.orgUpdateFailed');

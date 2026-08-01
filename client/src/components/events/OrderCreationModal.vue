@@ -93,13 +93,13 @@
             <div class="flex justify-between items-center mb-2">
               <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('events.orderCreationModalSubtotal') }}</span>
               <span class="text-lg font-bold text-gray-900 dark:text-white">
-                {{ currency }} {{ subtotal.toFixed(2) }}
+                {{ formatMoney(subtotal) }}
               </span>
             </div>
             <div class="flex justify-between items-center">
               <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('events.orderCreationModalTotal') }}</span>
               <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                {{ currency }} {{ total.toFixed(2) }}
+                {{ formatMoney(total) }}
               </span>
             </div>
           </div>
@@ -144,7 +144,7 @@
 import { useI18n } from 'vue-i18n';
 import { ref, computed, watch } from 'vue';
 import apiClient from '@/utils/apiClient';
-import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 
 import { useNotifications } from '@/composables/useNotifications';
@@ -191,6 +191,13 @@ const subtotal = computed(() => {
 const total = computed(() => {
   return subtotal.value; // Can add tax, discount, etc.
 });
+
+function formatMoney(value) {
+  return formatCurrencyValue(value, {
+    currencyCode: currency.value,
+    orgCurrency: authStore.organization,
+  }) || '—';
+}
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {

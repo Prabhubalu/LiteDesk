@@ -161,6 +161,7 @@ import { useI18n } from 'vue-i18n';
 import EditableLabeledValue from '@/components/record-page/EditableLabeledValue.vue';
 import { extractRecordCountry } from '@/utils/phoneInput';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
 
 const { t, te } = useI18n();
 
@@ -272,8 +273,8 @@ const getFieldValue = (field) => {
     if (!isNaN(d.getTime())) {
       const isDateTime = raw.includes('T');
       return isDateTime
-        ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        ? formatUserDateTime(d)
+        : formatUserDate(d);
     }
   }
   return raw;

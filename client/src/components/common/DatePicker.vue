@@ -226,7 +226,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/vue/24/outline';
-import { formatDate } from '@/utils/localeFormat';
+import { formatDate, formatUserDate, getLocaleFormatContext } from '@/utils/localeFormat';
 import {
   buildCalendarGrid,
   normalizeDateInput,
@@ -278,6 +278,8 @@ const emit = defineEmits(['update:modelValue', 'blur', 'escape', 'enter']);
 
 const { t, locale } = useI18n();
 
+const userTimeZone = computed(() => getLocaleFormatContext().timeZone || 'UTC');
+
 const popoverWasOpen = ref(false);
 
 function syncPopoverOpen(open) {
@@ -287,8 +289,6 @@ function syncPopoverOpen(open) {
   popoverWasOpen.value = open;
   return open ? '1' : '0';
 }
-
-const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const triggerRef = ref(null);
 const viewYear = ref(new Date().getFullYear());
@@ -300,21 +300,15 @@ const displayText = computed(() => {
   if (!normalizedValue.value) {
     return props.placeholder ?? t('common.datePickerPlaceholder');
   }
-  const parsed = parseIsoDate(normalizedValue.value);
-  if (!parsed) return normalizedValue.value;
-  return formatDate(
-    parsed,
-    { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: localTimeZone },
-    { locale: locale.value }
-  );
+  return formatUserDate(normalizedValue.value) || normalizedValue.value;
 });
 
 const monthLabels = computed(() =>
   Array.from({ length: 12 }, (_, index) =>
     formatDate(
       new Date(2024, index, 1),
-      { month: 'long', timeZone: localTimeZone },
-      { locale: locale.value }
+      { month: 'long', timeZone: userTimeZone.value },
+      { locale: locale.value, timeZone: userTimeZone.value }
     )
   )
 );

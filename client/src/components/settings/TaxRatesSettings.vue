@@ -229,8 +229,12 @@ import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDateTime } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 const { t } = useI18n();
 const notifications = useNotifications();
+const authStore = useAuthStore();
 
 
 const loading = ref(false);
@@ -303,13 +307,13 @@ function applicableLabel(value) {
 
 function formatValue(tax) {
   if (tax.taxType === 'PERCENTAGE') return `${tax.taxValue}%`;
-  return String(tax.taxValue);
+  return formatCurrencyValue(tax.taxValue, { orgCurrency: authStore.organization }) || String(tax.taxValue);
 }
 
 function formatDate(value) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return '—';
   }

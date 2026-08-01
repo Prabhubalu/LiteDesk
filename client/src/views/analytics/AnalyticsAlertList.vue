@@ -159,6 +159,7 @@ import {
 } from '@/config/posthogAnalytics';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -208,7 +209,7 @@ function formatCondition(row) {
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function resetForm() {

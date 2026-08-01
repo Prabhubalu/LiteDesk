@@ -7,6 +7,7 @@ import {
   captureAstraActionRejected,
   type AstraSurface,
 } from '@/config/posthogAi';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 export interface AstraProposalDetail {
   label: string;
@@ -111,7 +112,9 @@ function detailsFromFields(kind: string, fields?: Record<string, unknown>): Astr
   if (fields.durationMinutes) push('Duration', `${fields.durationMinutes} min`);
   if (fields.dueDate) push('Due', fields.dueDate);
   if (fields.priority) push('Priority', fields.priority);
-  if (fields.amount != null && fields.amount !== '') push('Amount', `$${fields.amount}`);
+  if (fields.amount != null && fields.amount !== '') {
+    push('Amount', formatCurrencyValue(fields.amount) || String(fields.amount));
+  }
   if (fields.stage) push('Stage', fields.stage);
   push('Related', related?.name || related?.title || orgRef?.name);
   push('Contact', contact?.name || contact?.title);

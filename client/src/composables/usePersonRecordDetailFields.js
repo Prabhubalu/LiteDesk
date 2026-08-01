@@ -11,6 +11,7 @@ import { createGenericRecordAdapter } from '@/components/record-page/adapters/ge
 import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
+import { formatUserDate } from '@/utils/localeFormat';
 
 function isDetailRowEmpty(row) {
   if (!row || row.key === 'source') return false;
@@ -74,7 +75,7 @@ export function usePersonRecordDetailFields({ personRecord, personId, canEdit, o
     return createGenericRecordAdapter({
       sectionLabels: createRecordSectionLabels(t),
       formatDate: (d) =>
-        (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+        (d ? formatUserDate(d) : '—'),
       moduleDefinition: moduleDefinition.value,
       canEditDetails: () => canEditDetails.value,
       saveDetailField: async (fieldKey, value) => {

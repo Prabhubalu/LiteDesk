@@ -128,16 +128,100 @@
 
                           <div class="space-y-1">
                             <label for="edit-user-phone" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
-                              {{ t('settings.editUserPhone') }}
+                              {{ t('settings.profileMobilePhone') }}
                             </label>
                             <input
                               id="edit-user-phone"
-                              v-model="form.phoneNumber"
+                              v-model="form.mobilePhone"
                               type="tel"
                               :readonly="user.isOwner"
                               :placeholder="t('settings.editUserPhonePh')"
                               :class="inputClass(user.isOwner)"
                             />
+                          </div>
+
+                          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="space-y-1">
+                              <label for="edit-user-secondary-email" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                                {{ t('settings.profileSecondaryEmail') }}
+                              </label>
+                              <input
+                                id="edit-user-secondary-email"
+                                v-model="form.secondaryEmail"
+                                type="email"
+                                :readonly="user.isOwner"
+                                :class="inputClass(user.isOwner)"
+                              />
+                            </div>
+                            <div class="space-y-1">
+                              <label for="edit-user-primary-group" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                                {{ t('settings.profilePrimaryGroup') }}
+                              </label>
+                              <HeadlessSelect
+                                v-if="!user.isOwner"
+                                id="edit-user-primary-group"
+                                v-model="form.primaryGroupId"
+                                :options="primaryGroupSelectOptions"
+                                teleport
+                              />
+                              <p v-else class="text-sm text-gray-700 dark:text-gray-300">
+                                {{ primaryGroupDisplayLabel || t('settings.profileEmptyValue') }}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div class="space-y-1">
+                              <label for="edit-user-office-phone" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                                {{ t('settings.profileOfficePhone') }}
+                              </label>
+                              <input
+                                id="edit-user-office-phone"
+                                v-model="form.officePhone"
+                                type="tel"
+                                :readonly="user.isOwner"
+                                :class="inputClass(user.isOwner)"
+                              />
+                            </div>
+                            <div class="space-y-1">
+                              <label for="edit-user-home-phone" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                                {{ t('settings.profileHomePhone') }}
+                              </label>
+                              <input
+                                id="edit-user-home-phone"
+                                v-model="form.homePhone"
+                                type="tel"
+                                :readonly="user.isOwner"
+                                :class="inputClass(user.isOwner)"
+                              />
+                            </div>
+                            <div class="space-y-1">
+                              <label for="edit-user-fax" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                                {{ t('settings.profileFax') }}
+                              </label>
+                              <input
+                                id="edit-user-fax"
+                                v-model="form.fax"
+                                type="tel"
+                                :readonly="user.isOwner"
+                                :class="inputClass(user.isOwner)"
+                              />
+                            </div>
+                            <div class="space-y-1">
+                              <label for="edit-user-reports-to" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                                {{ t('settings.profileReportsTo') }}
+                              </label>
+                              <HeadlessSelect
+                                v-if="!user.isOwner"
+                                id="edit-user-reports-to"
+                                v-model="form.reportsTo"
+                                :options="reportsToSelectOptions"
+                                teleport
+                              />
+                              <p v-else class="text-sm text-gray-700 dark:text-gray-300">
+                                {{ reportsToDisplayLabel || t('settings.profileEmptyValue') }}
+                              </p>
+                            </div>
                           </div>
 
                           <div class="space-y-1">
@@ -175,7 +259,23 @@
                             </p>
                           </div>
 
-                          <div v-else class="space-y-4">
+                          <div class="space-y-1">
+                            <label for="edit-user-business-hours" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                              {{ t('settings.inviteBusinessHours') }} <span class="text-red-500">*</span>
+                            </label>
+                            <HeadlessSelect
+                              id="edit-user-business-hours"
+                              v-model="form.businessHourSetId"
+                              :options="businessHoursSelectOptions"
+                              teleport
+                              :invalid="Boolean(validationErrors.businessHourSetId)"
+                            />
+                            <p v-if="validationErrors.businessHourSetId" class="text-xs text-red-600 dark:text-red-400 mt-1">
+                              {{ validationErrors.businessHourSetId }}
+                            </p>
+                          </div>
+
+                          <div v-if="isExternalUser" class="space-y-4">
                             <div class="rounded-lg border border-sky-200 bg-sky-50/60 px-4 py-3 dark:border-sky-800 dark:bg-sky-900/20">
                               <p class="text-sm text-sky-900 dark:text-sky-200">
                                 {{ t('settings.editUserPortalRolesHint') }}
@@ -538,7 +638,6 @@
                           {{ t('actions.cancel') }}
                         </button>
                         <button
-                          v-if="!user.isOwner || !rbacV2Enabled"
                           type="submit"
                           :disabled="saving"
                           class="inline-flex cursor-pointer items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
@@ -632,10 +731,13 @@ import { useAppShellStore } from '@/stores/appShell';
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
 import { useNotifications } from '@/composables/useNotifications';
 import { isRbacV2Enabled } from '@/utils/rbacFeatureFlags';
+import { useBusinessHours } from '@/composables/useBusinessHours';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDate } from '@/utils/localeFormat';
 const { t } = useI18n();
 const { success: notifySuccess, error: notifyError } = useNotifications();
+const { fetchSets } = useBusinessHours();
 
 const authStore = useAuthStore();
 const appShellStore = useAppShellStore();
@@ -672,15 +774,122 @@ async function loadOwnershipHint() {
 const form = ref({
   firstName: '',
   lastName: '',
-  phoneNumber: '',
+  mobilePhone: '',
+  secondaryEmail: '',
+  primaryGroupId: '',
+  officePhone: '',
+  homePhone: '',
+  fax: '',
+  reportsTo: '',
   roleId: '',
+  businessHourSetId: '',
   status: 'active'
+});
+
+const orgUsers = ref([]);
+const orgGroups = ref([]);
+
+function resolveReportsToId(user) {
+  const raw = user?.reportsTo;
+  if (!raw) return '';
+  if (typeof raw === 'object') return String(raw._id || raw.id || '');
+  return String(raw);
+}
+
+function resolvePrimaryGroupId(user) {
+  const raw = user?.primaryGroupId;
+  if (!raw) return '';
+  if (typeof raw === 'object') return String(raw._id || raw.id || '');
+  return String(raw);
+}
+
+function buildFormFromUser(user) {
+  return {
+    firstName: user.firstName || '',
+    lastName: user.lastName || '',
+    mobilePhone: user.mobilePhone || user.phoneNumber || '',
+    secondaryEmail: user.secondaryEmail || '',
+    primaryGroupId: resolvePrimaryGroupId(user),
+    officePhone: user.officePhone || '',
+    homePhone: user.homePhone || '',
+    fax: user.fax || '',
+    reportsTo: resolveReportsToId(user),
+    roleId: resolveRoleIdFromUser(user),
+    businessHourSetId: resolveUserBusinessHourSetId(user),
+    status: user.status || 'active'
+  };
+}
+
+async function fetchOrgUsers() {
+  try {
+    const res = await apiClient.get('/users?limit=500&page=1&sortBy=firstName&sortOrder=asc');
+    orgUsers.value = Array.isArray(res?.data) ? res.data : [];
+  } catch {
+    orgUsers.value = [];
+  }
+}
+
+async function fetchOrgGroups() {
+  try {
+    const res = await apiClient.get('/groups?limit=200');
+    const rows = Array.isArray(res?.data) ? res.data : (res?.data?.groups || []);
+    orgGroups.value = rows.filter((g) => g?.isActive !== false);
+  } catch {
+    orgGroups.value = [];
+  }
+}
+
+const reportsToSelectOptions = computed(() => {
+  const currentId = String(props.user?._id || '');
+  const options = [
+    { value: '', label: t('settings.profileEmptyValue') }
+  ];
+  for (const u of orgUsers.value) {
+    const id = String(u._id || '');
+    if (!id || id === currentId) continue;
+    const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || u.username || id;
+    options.push({ value: id, label: name });
+  }
+  return options;
+});
+
+const primaryGroupSelectOptions = computed(() => [
+  { value: '', label: t('settings.profileEmptyValue') },
+  ...orgGroups.value.map((g) => ({
+    value: String(g._id),
+    label: g.name || String(g._id),
+  })),
+]);
+
+const reportsToDisplayLabel = computed(() => {
+  const id = form.value.reportsTo || resolveReportsToId(props.user);
+  if (!id) return '';
+  const match = orgUsers.value.find((u) => String(u._id) === String(id));
+  if (match) {
+    return `${match.firstName || ''} ${match.lastName || ''}`.trim() || match.email || '';
+  }
+  const nested = props.user?.reportsTo;
+  if (nested && typeof nested === 'object') {
+    return `${nested.firstName || ''} ${nested.lastName || ''}`.trim() || nested.email || '';
+  }
+  return '';
+});
+
+const primaryGroupDisplayLabel = computed(() => {
+  const id = form.value.primaryGroupId || resolvePrimaryGroupId(props.user);
+  if (!id) return '';
+  const match = orgGroups.value.find((g) => String(g._id) === String(id));
+  if (match) return match.name || '';
+  const nested = props.user?.primaryGroupId;
+  if (nested && typeof nested === 'object') return nested.name || '';
+  return '';
 });
 
 const saving = ref(false);
 const error = ref('');
 const resendingInvite = ref(false);
 const availableRoles = ref([]);
+const businessHourSets = ref([]);
 const capabilities = ref([]);
 const loadingCapabilities = ref(false);
 const selectedAppRoles = ref({});
@@ -787,6 +996,14 @@ const roleSelectOptions = computed(() => [
   }))
 ]);
 
+const businessHoursSelectOptions = computed(() => [
+  { value: '', label: t('settings.inviteSelectBusinessHours') },
+  ...businessHourSets.value.map((set) => ({
+    value: set._id,
+    label: set.isDefault ? `${set.name} (${t('settings.settingsBhBadgeDefault')})` : set.name
+  }))
+]);
+
 const selectedRole = computed(() => {
   const roleId = props.user?.isOwner
     ? resolveRoleIdFromUser(props.user)
@@ -866,11 +1083,7 @@ const formatStatusLabel = (status) => {
 
 const formatAbsoluteDate = (date) => {
   if (!date) return t('settings.usersLastLoginNever');
-  return new Date(date).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(date) || t('settings.usersLastLoginNever');
 };
 
 const userDisplayName = (user) => `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || '';
@@ -918,6 +1131,31 @@ const fetchRoles = async () => {
     console.error('Error fetching roles:', err);
   }
 };
+
+const fetchBusinessHourSets = async () => {
+  try {
+    const sets = await fetchSets();
+    businessHourSets.value = Array.isArray(sets)
+      ? sets.filter((s) => s.status !== 'inactive')
+      : [];
+    if (!form.value.businessHourSetId) {
+      form.value.businessHourSetId = resolveDefaultBusinessHourSetId(businessHourSets.value);
+    }
+  } catch (err) {
+    console.error('Error fetching business hours:', err);
+    businessHourSets.value = [];
+  }
+};
+
+function resolveDefaultBusinessHourSetId(sets) {
+  const defaultSet = sets.find((s) => s.isDefault) || sets[0];
+  return defaultSet?._id ? String(defaultSet._id) : '';
+}
+
+function resolveUserBusinessHourSetId(user) {
+  if (user?.businessHourSetId) return String(user.businessHourSetId);
+  return resolveDefaultBusinessHourSetId(businessHourSets.value);
+}
 
 const loadExternalPortalState = async () => {
   if (!isExternalUser.value || !peopleId.value) {
@@ -1028,17 +1266,14 @@ watch(() => props.isOpen, (newVal) => {
     validationErrors.value = {};
     showPortalAssignModal.value = false;
     fetchRoles();
+    fetchBusinessHourSets();
+    void fetchOrgUsers();
+    void fetchOrgGroups();
     if (!rbacV2Enabled.value) {
       fetchCapabilities();
     }
     if (props.user) {
-      form.value = {
-        firstName: props.user.firstName || '',
-        lastName: props.user.lastName || '',
-        phoneNumber: props.user.phoneNumber || '',
-        roleId: resolveRoleIdFromUser(props.user),
-        status: props.user.status || 'active'
-      };
+      form.value = buildFormFromUser(props.user);
       initSelectedAppRoles();
     }
     if (isExternalUser.value) {
@@ -1052,13 +1287,7 @@ watch(() => props.isOpen, (newVal) => {
 
 watch(() => props.user, (newUser) => {
   if (newUser && props.isOpen) {
-    form.value = {
-      firstName: newUser.firstName || '',
-      lastName: newUser.lastName || '',
-      phoneNumber: newUser.phoneNumber || '',
-      roleId: resolveRoleIdFromUser(newUser),
-      status: newUser.status || 'active'
-    };
+    form.value = buildFormFromUser(newUser);
     initSelectedAppRoles();
   }
 });
@@ -1109,6 +1338,10 @@ const getRoleDisplayName = (appKey, roleKey) => roleDisplayNames[appKey]?.[roleK
 
 const validateForm = () => {
   validationErrors.value = {};
+  if (!form.value.businessHourSetId) {
+    validationErrors.value.businessHourSetId = t('settings.inviteBusinessHoursRequired');
+    return false;
+  }
   if (rbacV2Enabled.value) {
     return true;
   }
@@ -1144,31 +1377,52 @@ const handleSubmit = async () => {
 
   try {
     let payload;
-    if (rbacV2Enabled.value) {
+    if (props.user?.isOwner) {
+      payload = {
+        businessHourSetId: form.value.businessHourSetId
+      };
+      if (!rbacV2Enabled.value) {
+        payload.appAccess = selectedApps.value.map((appKey) => ({
+          appKey,
+          roleKey: selectedAppRoles.value[appKey]
+        }));
+      }
+    } else if (rbacV2Enabled.value) {
       payload = {
         firstName: form.value.firstName,
         lastName: form.value.lastName,
-        phoneNumber: form.value.phoneNumber,
-        status: form.value.status
+        mobilePhone: form.value.mobilePhone,
+        secondaryEmail: form.value.secondaryEmail,
+        primaryGroupId: form.value.primaryGroupId || null,
+        officePhone: form.value.officePhone,
+        homePhone: form.value.homePhone,
+        fax: form.value.fax,
+        reportsTo: form.value.reportsTo || null,
+        status: form.value.status,
+        businessHourSetId: form.value.businessHourSetId
       };
       if (!isExternalUser.value) {
         payload.roleId = form.value.roleId;
       }
     } else {
-      const appAccessPayload = selectedApps.value.map((appKey) => ({
-        appKey,
-        roleKey: selectedAppRoles.value[appKey]
-      }));
-      payload = props.user?.isOwner
-        ? { appAccess: appAccessPayload }
-        : {
-            firstName: form.value.firstName,
-            lastName: form.value.lastName,
-            phoneNumber: form.value.phoneNumber,
-            status: form.value.status,
-            ...(isExternalUser.value ? {} : { roleId: form.value.roleId }),
-            appAccess: appAccessPayload
-          };
+      payload = {
+        firstName: form.value.firstName,
+        lastName: form.value.lastName,
+        mobilePhone: form.value.mobilePhone,
+        secondaryEmail: form.value.secondaryEmail,
+        primaryGroupId: form.value.primaryGroupId || null,
+        officePhone: form.value.officePhone,
+        homePhone: form.value.homePhone,
+        fax: form.value.fax,
+        reportsTo: form.value.reportsTo || null,
+        status: form.value.status,
+        businessHourSetId: form.value.businessHourSetId,
+        ...(isExternalUser.value ? {} : { roleId: form.value.roleId }),
+        appAccess: selectedApps.value.map((appKey) => ({
+          appKey,
+          roleKey: selectedAppRoles.value[appKey]
+        }))
+      };
     }
     const response = await apiClient.put(`/users/${props.user._id}`, payload);
 

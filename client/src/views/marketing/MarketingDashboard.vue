@@ -378,6 +378,7 @@
 </template>
 
 <script setup>
+import { formatUserDate, formatUserDateTime, formatNumber } from '@/utils/localeFormat';
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -451,25 +452,25 @@ const kpiCards = computed(() => {
     {
       key: 'delivered',
       label: t('marketing.dashboardKpiDelivered'),
-      value: (engagement.delivered || 0).toLocaleString(),
+      value: formatNumber(engagement.delivered || 0),
       hint: t('marketing.dashboardKpiDeliveredHint', { rate: formatRate(engagement.deliveryRate) })
     },
     {
       key: 'opens',
       label: t('marketing.dashboardKpiOpens'),
-      value: (engagement.uniqueOpens || 0).toLocaleString(),
+      value: formatNumber(engagement.uniqueOpens || 0),
       hint: t('marketing.dashboardKpiOpensHint', { rate: formatRate(engagement.avgOpenRate) })
     },
     {
       key: 'clicks',
       label: t('marketing.dashboardKpiClicks'),
-      value: (engagement.uniqueClicks || 0).toLocaleString(),
+      value: formatNumber(engagement.uniqueClicks || 0),
       hint: t('marketing.dashboardKpiClicksHint', { rate: formatRate(engagement.avgClickRate) })
     },
     {
       key: 'audiences',
       label: t('marketing.dashboardKpiAudienceMembers'),
-      value: (dashboard.value?.kpis?.audiences?.totalMembers || 0).toLocaleString(),
+      value: formatNumber(dashboard.value?.kpis?.audiences?.totalMembers || 0),
       hint: t('marketing.dashboardKpiAudienceMembersHint', {
         count: dashboard.value?.kpis?.audiences?.totalAudiences || 0
       })
@@ -506,13 +507,13 @@ function formatRate(value) {
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  return formatUserDateTime(date);
 }
 
 function formatShortDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value || '');
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return formatUserDate(date);
 }
 
 function growthBarWidth(count) {

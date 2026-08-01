@@ -95,7 +95,7 @@
 
       <!-- Last Activity -->
       <template #cell-lastActivity="{ value }">
-        <DateCell :value="value" format="relative" />
+        <DateCell :value="value" format="short" />
       </template>
 
       <!-- Custom Contact Count Cell -->

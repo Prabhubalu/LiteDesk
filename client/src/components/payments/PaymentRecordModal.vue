@@ -19,7 +19,11 @@
         </label>
         <label class="block text-sm">
           <span class="text-gray-700 dark:text-gray-200">{{ t('records.paymentCurrency') }}</span>
-          <input v-model="form.paymentCurrency" type="text" class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5" />
+          <select v-model="form.paymentCurrency" class="mt-1 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-2 py-1.5">
+            <option v-for="opt in currencyOptions" :key="opt.code" :value="opt.code">
+              {{ opt.symbol || opt.code }} {{ opt.code }} — {{ opt.name }}
+            </option>
+          </select>
         </label>
         <label class="block text-sm">
           <span class="text-gray-700 dark:text-gray-200">{{ t('records.paymentDate') }}</span>
@@ -67,12 +71,12 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
-import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { getEnabledCurrencyOptions, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({
@@ -87,6 +91,8 @@ const router = useRouter();
 const notifications = useNotifications();
 const authStore = useAuthStore();
 const busy = ref(false);
+
+const currencyOptions = computed(() => getEnabledCurrencyOptions(authStore.organization));
 
 const form = reactive({
   amount: null,

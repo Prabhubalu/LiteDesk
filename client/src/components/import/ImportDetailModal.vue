@@ -197,6 +197,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, computed } from 'vue';
+import { formatUserDate, formatTime as formatLocaleTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   importRecord: {
@@ -235,15 +236,11 @@ const formatStatus = (status) => {
 };
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('en-US', { 
-    month: 'long', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
+  return formatUserDate(date) || '-';
 };
 
 const formatTime = (date) => {
-  return new Date(date).toLocaleTimeString('en-US', { 
+  return formatLocaleTime(date, { 
     hour: '2-digit', 
     minute: '2-digit' 
   });

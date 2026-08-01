@@ -65,6 +65,7 @@
 </template>
 
 <script setup>
+import { formatUserDate } from '@/utils/localeFormat';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -88,11 +89,7 @@ const searchQuery = ref('');
 
 function formatDate(value) {
   if (!value) return '';
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(value) || '—';
 }
 
 function openDocument(id) {

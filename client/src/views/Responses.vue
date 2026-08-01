@@ -384,6 +384,7 @@ import ListView from '@/components/common/ListView.vue';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import DateCell from '@/components/common/table/DateCell.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const route = useRoute();
 const router = useRouter();
@@ -597,7 +598,7 @@ const viewResponseDetail = (response) => {
 
   openTab(path, {
     name: `form-response-${response._id}`,
-    title: `Response - ${response.responseId || new Date(response.submittedAt).toLocaleDateString()}`,
+    title: `Response - ${response.responseId || formatUserDate(response.submittedAt)}`,
     component: 'ModuleRecordPage',
     params: tabParams,
     insertAdjacent: true
@@ -799,7 +800,7 @@ const exportResponses = async () => {
 // Format date helper
 const formatDate = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleDateString();
+  return formatUserDate(date);
 };
 
 // Lifecycle - Clear old column settings BEFORE ListView initializes

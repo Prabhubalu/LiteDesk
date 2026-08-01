@@ -93,6 +93,7 @@ import { useI18n } from 'vue-i18n';
 import { PaperClipIcon } from '@heroicons/vue/24/outline';
 import FormSummaryChoiceBars from './FormSummaryChoiceBars.vue';
 import FormSummaryRatingDistribution from './FormSummaryRatingDistribution.vue';
+import { formatDate as formatLocaleDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   question: { type: Object, required: true },
@@ -133,7 +134,7 @@ function handleExpandText() {
 function formatDate(value) {
   if (!value) return '';
   try {
-    return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+    return formatLocaleDate(value, { dateStyle: 'medium', timeStyle: 'short' }) || String(value);
   } catch {
     return String(value);
   }

@@ -36,7 +36,7 @@
           class="border-b border-gray-100 dark:border-gray-800"
         >
           <td class="py-2 pr-2 text-gray-900 dark:text-white">{{ row.bookName }}</td>
-          <td class="py-2 pr-2">{{ row.unitPrice }} {{ row.currency || '' }}</td>
+          <td class="py-2 pr-2">{{ formatEntryPrice(row) }}</td>
           <td class="py-2 pr-2">{{ row.minQty || 1 }}</td>
           <td class="py-2">
             <button
@@ -107,6 +107,8 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiList } from '@/utils/catalogApi';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
@@ -115,6 +117,14 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+
+function formatEntryPrice(row) {
+  return formatCurrencyValue(row.unitPrice, {
+    currencyCode: row.currency,
+    orgCurrency: authStore.organization,
+  }) || '—';
+}
 
 const loading = ref(false);
 const entries = ref([]);

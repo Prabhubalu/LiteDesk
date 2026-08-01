@@ -106,6 +106,7 @@ import { useI18n } from 'vue-i18n';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import { fetchUsersListCached } from '@/utils/recordLookupCache';
 import { captureMarketingCampaignApprovalSubmitted } from '@/config/posthogMarketing';
+import { formatDate as formatLocaleDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   campaign: { type: Object, required: true },
@@ -178,7 +179,7 @@ function formatHistoryAction(action) {
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  return formatLocaleDate(date, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 function userLabel(user) {
