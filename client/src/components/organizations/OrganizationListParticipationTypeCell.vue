@@ -22,19 +22,6 @@
       >
         {{ overflowLabel }}
       </span>
-      <template #content>
-        <div class="flex flex-col gap-1.5">
-          <div
-            v-for="entry in overflowEntries"
-            :key="entry.appKey || entry.role"
-            class="flex items-center gap-1 text-xs leading-snug"
-          >
-            <span v-if="entry.appLabel" class="font-medium text-white">{{ entry.appLabel }}</span>
-            <span v-if="entry.appLabel" class="opacity-40 select-none" aria-hidden="true">·</span>
-            <span class="text-slate-200">{{ entry.role }}</span>
-          </div>
-        </div>
-      </template>
     </HoverTooltip>
   </div>
   <div v-else-if="entries.length" class="flex items-center gap-1 flex-wrap">

@@ -62,8 +62,14 @@ export function useSettingsHealth(
         tasks.push(
           apiClient
             .getOptional('/settings/security')
-            .then((res) => {
-              const enabled = res?.data?.twoFactorAuth?.enabled;
+            .then((res: unknown) => {
+              const enabled =
+                res &&
+                typeof res === 'object' &&
+                'data' in res
+                  ? (res as { data?: { twoFactorAuth?: { enabled?: unknown } } }).data
+                      ?.twoFactorAuth?.enabled
+                  : undefined;
               twoFactorEnabled = typeof enabled === 'boolean' ? enabled : null;
             })
             .catch(() => {
@@ -76,7 +82,7 @@ export function useSettingsHealth(
         tasks.push(
           apiClient
             .getOptional('/taxes', { params: { includeInactive: 'false' } })
-            .then((res) => {
+            .then((res: unknown) => {
               if (res == null) {
                 taxCount = null;
                 return;
@@ -93,12 +99,16 @@ export function useSettingsHealth(
         tasks.push(
           apiClient
             .getOptional('/settings/module-numbering')
-            .then((res) => {
+            .then((res: unknown) => {
               if (res == null) {
                 numberingEnabledCount = null;
                 return;
               }
-              numberingEnabledCount = countEnabledNumbering(res?.configs);
+              const configs =
+                typeof res === 'object' && res !== null && 'configs' in res
+                  ? (res as { configs?: unknown }).configs
+                  : undefined;
+              numberingEnabledCount = countEnabledNumbering(configs);
             })
             .catch(() => {
               numberingEnabledCount = null;

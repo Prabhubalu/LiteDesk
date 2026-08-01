@@ -65,10 +65,10 @@
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
 
-      <!-- Custom Selling Price Cell -->
-      <template #cell-selling_price="{ value, row }">
-        <span v-if="value" class="text-sm font-medium text-gray-900 dark:text-white">
-          {{ formatCurrency(value, row?.currencyCode || row?.currency) }}
+      <!-- Custom Selling Price Cell — org default currency (same as record page) -->
+      <template #cell-selling_price="{ value }">
+        <span v-if="value != null && value !== ''" class="text-sm font-medium text-gray-900 dark:text-white">
+          {{ formatCurrency(value) }}
         </span>
         <span v-else class="text-sm text-gray-500 dark:text-gray-400">-</span>
       </template>
@@ -267,11 +267,11 @@ const closeFormModal = () => {
   editingItem.value = null;
 };
 
-// Utility functions
-const formatCurrency = (amount, currencyCode = null) => {
+// Utility functions — catalog prices use tenant default, not per-row legacy currency
+const formatCurrency = (amount) => {
   return (
     formatCurrencyValue(amount, {
-      currencyCode: String(currencyCode || resolveOrgCurrencyCode()).toUpperCase(),
+      currencyCode: resolveOrgCurrencyCode(),
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }) || '—'

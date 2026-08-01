@@ -116,7 +116,7 @@ watch(tabs, (items) => {
 }, { immediate: true });
 
 watch(
-  () => [route.query.usersAccessView, validTabIds.value] as const,
+  () => [route.query.usersAccessView, validTabIds.value],
   () => {
     const fromQuery = resolveTabFromQuery();
     if (fromQuery) {
