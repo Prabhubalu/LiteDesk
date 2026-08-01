@@ -3,44 +3,45 @@
     :class="[
       PLATFORM_HOME_CARD_CLASS,
       PLATFORM_HOME_INTENT_GRADIENT_CLASS,
-      'flex min-h-0 flex-col p-4 sm:p-5 h-auto sm:h-full'
+      '@container flex min-h-0 min-w-0 flex-col p-4 sm:p-5 h-auto sm:h-full'
     ]"
   >
-    <div class="platform-home-widget-header mb-3 flex items-stretch gap-2">
+    <div class="platform-home-widget-header mb-3 flex min-w-0 items-stretch gap-2">
       <p class="flex min-w-0 shrink items-center select-text text-sm font-medium text-neutral-700 dark:text-neutral-200">
         {{ t('platform.platformHomeIntentPrompt') }}
       </p>
       <PlatformHomeWidgetHeaderDragPad />
     </div>
 
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <!-- Container queries: Astra rail shrinks the shell without changing viewport `sm:`. -->
+    <div class="flex min-w-0 flex-col gap-2 @[22rem]:flex-row @[22rem]:items-center">
       <button
         type="button"
-        class="flex min-h-11 flex-1 items-center gap-3 rounded-xl px-4 py-2.5 text-left transition-colors hover:border-primary-200 hover:bg-white dark:hover:border-primary-500/40 dark:hover:bg-neutral-900/70"
+        class="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl px-4 py-2.5 text-left transition-colors hover:border-primary-200 hover:bg-white dark:hover:border-primary-500/40 dark:hover:bg-neutral-900/70"
         :class="PLATFORM_HOME_INSET_CONTROL_CLASS"
         @click="openSearch"
       >
         <MagnifyingGlassIcon class="h-5 w-5 shrink-0 text-neutral-400 dark:text-neutral-500" />
-        <span class="flex-1 truncate text-sm text-neutral-400 dark:text-neutral-500">
+        <span class="min-w-0 flex-1 truncate text-sm text-neutral-400 dark:text-neutral-500">
           {{ t('platform.platformHomeIntentPlaceholder') }}
         </span>
         <kbd
-          class="hidden shrink-0 rounded-md border border-neutral-200/55 bg-neutral-50 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500 shadow-none sm:inline dark:border-white/[0.10] dark:bg-neutral-900/60 dark:text-neutral-400"
+          class="hidden shrink-0 rounded-md border border-neutral-200/55 bg-neutral-50 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500 shadow-none @[28rem]:inline dark:border-white/[0.10] dark:bg-neutral-900/60 dark:text-neutral-400"
         >
           {{ searchShortcutLabel }}
         </kbd>
       </button>
 
-      <Menu as="div" v-slot="{ open }" class="relative shrink-0">
+      <Menu as="div" v-slot="{ open }" class="relative w-full shrink-0 @[22rem]:w-auto">
         <MenuButton
           ref="createMenuButtonRef"
           type="button"
-          class="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-primary-200 bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 dark:border-primary-700 dark:bg-primary-600 dark:hover:bg-primary-500 sm:w-auto"
+          class="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-primary-200 bg-primary-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 dark:border-primary-700 dark:bg-primary-600 dark:hover:bg-primary-500 @[22rem]:w-auto"
           :class="PLATFORM_HOME_PRIMARY_BUTTON_CLASS"
         >
-          <PlusIcon class="h-4 w-4" />
-          {{ t('actions.create') }}
-          <ChevronDownIcon class="h-4 w-4 opacity-80" />
+          <PlusIcon class="h-4 w-4 shrink-0" />
+          <span class="truncate">{{ t('actions.create') }}</span>
+          <ChevronDownIcon class="h-4 w-4 shrink-0 opacity-80" />
         </MenuButton>
 
         <Teleport to="body">

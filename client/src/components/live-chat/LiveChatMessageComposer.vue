@@ -463,6 +463,10 @@ async function handleSend() {
         sendAbortController = null;
       }
       isSending.value = false;
+      // busy disables the textarea (blur); restore focus once it re-enables
+      nextTick(() => {
+        if (!props.disabled) textareaRef.value?.focus();
+      });
     }
     return;
   }
