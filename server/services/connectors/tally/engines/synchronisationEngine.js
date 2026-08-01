@@ -132,11 +132,16 @@ async function runMetadataOnboarding({ organizationId, companyGuid, userId = nul
 }
 
 async function completeMetadataOnboarding({ organizationId, companyGuid, rawPayload, userId = null }) {
-  const { snapshot, diff } = await metadataEngine.applyDiscoveryResult({
+  const { snapshot, diff, thin } = await metadataEngine.applyDiscoveryResult({
     organizationId,
     companyGuid,
     rawPayload,
   });
+
+  if (thin || !snapshot || snapshot.status === 'failed') {
+    return { snapshot, diff, mappingDraft: null, thin: true };
+  }
+
   await schemaGenerator.generateForBinding({
     organizationId,
     companyGuid,
@@ -148,7 +153,7 @@ async function completeMetadataOnboarding({ organizationId, companyGuid, rawPayl
     companyGuid,
     userId,
   });
-  return { snapshot, diff, mappingDraft: draft };
+  return { snapshot, diff, mappingDraft: draft, thin: false };
 }
 
 async function enqueueSelectiveSync({ organizationId, companyGuid, tallyModuleKey, recordIds = [], dryRun = false }) {

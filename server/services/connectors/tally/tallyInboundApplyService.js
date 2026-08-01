@@ -79,8 +79,18 @@ function parseMasterObject(block) {
     PARTYGSTIN: firstTag(block, 'PARTYGSTIN') || firstTag(block, 'GSTIN'),
     GSTIN: firstTag(block, 'GSTIN') || firstTag(block, 'PARTYGSTIN'),
     GSTREGISTRATIONTYPE: firstTag(block, 'GSTREGISTRATIONTYPE'),
-    LEDGERSTATENAME: firstTag(block, 'LEDGERSTATENAME') || firstTag(block, 'STATECODE'),
-    STATECODE: firstTag(block, 'STATECODE') || firstTag(block, 'LEDGERSTATENAME'),
+    LEDGERSTATENAME: firstTag(block, 'LEDGERSTATENAME') || firstTag(block, 'LEDSTATENAME') || firstTag(block, 'STATECODE'),
+    STATECODE: firstTag(block, 'STATECODE') || firstTag(block, 'LEDGERSTATENAME') || firstTag(block, 'LEDSTATENAME'),
+    LEDSTATENAME: firstTag(block, 'LEDSTATENAME') || firstTag(block, 'LEDGERSTATENAME'),
+    PINCODE: firstTag(block, 'PINCODE'),
+    COUNTRYNAME: firstTag(block, 'COUNTRYNAME') || firstTag(block, 'COUNTRY'),
+    MAILINGNAME: firstTag(block, 'MAILINGNAME'),
+    EMAILCC: firstTag(block, 'EMAILCC'),
+    FAX: firstTag(block, 'FAX'),
+    LEDGERMOBILE: firstTag(block, 'LEDGERMOBILE') || firstTag(block, 'MOBILE'),
+    CREDITLIMIT: firstTag(block, 'CREDITLIMIT'),
+    BILLCREDITPERIOD: firstTag(block, 'BILLCREDITPERIOD'),
+    NARRATION: firstTag(block, 'NARRATION') || firstTag(block, 'DESCRIPTION'),
     LEDGERPHONE: firstTag(block, 'LEDGERPHONE') || firstTag(block, 'PHONE'),
     EMAIL: firstTag(block, 'EMAIL'),
     WEBSITE: firstTag(block, 'WEBSITE'),
@@ -236,11 +246,38 @@ function tagForMaster(key) {
 }
 
 function mapRemotePayload(spec, raw) {
-  if (spec.mapParty) return partyMapper.fromTally(raw);
-  if (spec.mapItem) return stockItemMapper.fromTally(raw);
-  if (spec.mapGodown) return godownMapper.fromTally(raw);
+  const tallyValues = { ...raw };
+  if (spec.mapParty) {
+    return {
+      ...tallyValues,
+      ...partyMapper.fromTally(raw),
+      name: raw.name || raw.NAME,
+      tallyValues,
+    };
+  }
+  if (spec.mapItem) {
+    return {
+      ...tallyValues,
+      ...stockItemMapper.fromTally(raw),
+      name: raw.name || raw.NAME,
+      tallyValues,
+    };
+  }
+  if (spec.mapGodown) {
+    return {
+      ...tallyValues,
+      ...godownMapper.fromTally(raw),
+      name: raw.name || raw.NAME,
+      tallyValues,
+    };
+  }
   if (spec.entityType === 'stock_group' || spec.entityType === 'stock_category') {
-    return stockGroupMapper.fromTally(raw);
+    return {
+      ...tallyValues,
+      ...stockGroupMapper.fromTally(raw),
+      name: raw.name || raw.NAME,
+      tallyValues,
+    };
   }
   return {
     name: raw.name || raw.NAME,
@@ -248,7 +285,8 @@ function mapRemotePayload(spec, raw) {
     guid: raw.GUID,
     masterId: raw.MASTERID,
     alterId: raw.ALTERID,
-    ...raw,
+    ...tallyValues,
+    tallyValues,
   };
 }
 
@@ -303,12 +341,14 @@ async function applyInboundExport({
   companyGuid = null,
   masterType = 'Ledger',
   body = '',
+  records = null,
   jobId = null,
   limitOverride = null,
   sinceAlterId = null,
 } = {}) {
   const xml = String(body || '');
-  if (!xml || xml.length < 20) {
+  const preParsed = Array.isArray(records) ? records.filter((r) => r && (r.name || r.NAME)) : [];
+  if (!preParsed.length && (!xml || xml.length < 20)) {
     return { applied: 0, created: 0, skipped: true };
   }
 
@@ -359,10 +399,24 @@ async function applyInboundExport({
   }
 
   const tag = tagForMaster(key);
-  const blocks = tag ? splitObjectBlocks(xml, tag) : [];
-  const objects = blocks.length
-    ? blocks.map(parseMasterObject).filter((o) => o.name)
-    : parseNames(xml).map((name) => ({ name, NAME: name }));
+  const blocks = !preParsed.length && tag ? splitObjectBlocks(xml, tag) : [];
+  const objects = preParsed.length
+    ? preParsed.map((o) => {
+        const row = {
+          ...o,
+          name: o.name || o.NAME,
+          NAME: o.NAME || o.name,
+        };
+        // Canonicalize common Tally tag aliases (LedStateName vs LedgerStateName, nested GSTIN, …)
+        if (row.LEDSTATENAME && !row.LEDGERSTATENAME) row.LEDGERSTATENAME = row.LEDSTATENAME;
+        if (row.LEDGERSTATENAME && !row.LEDSTATENAME) row.LEDSTATENAME = row.LEDGERSTATENAME;
+        if (row.GSTIN && !row.PARTYGSTIN) row.PARTYGSTIN = row.GSTIN;
+        if (row.PARTYGSTIN && !row.GSTIN) row.GSTIN = row.PARTYGSTIN;
+        return row;
+      })
+    : blocks.length
+      ? blocks.map(parseMasterObject).filter((o) => o.name)
+      : parseNames(xml).map((name) => ({ name, NAME: name }));
 
   for (const raw of objects.slice(0, limit)) {
     const alterNum = Number(raw.ALTERID || raw.alterId);

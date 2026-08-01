@@ -3,12 +3,12 @@
 -->
 <template>
   <section :class="sectionClass">
-    <div v-if="fullMode" class="flex items-center gap-3">
-      <h3 class="shrink-0 text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white">
-        {{ t('organizations.organizationQuickCreateDrawerTypesTitle') }}
-      </h3>
-      <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
-    </div>
+    <h3
+      v-if="fullMode"
+      class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white"
+    >
+      {{ t('organizations.organizationQuickCreateDrawerTypesTitle') }}
+    </h3>
     <template v-else>
       <div class="space-y-1">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white">

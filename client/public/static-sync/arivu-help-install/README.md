@@ -22,9 +22,27 @@ The script:
 - Adds webhook route for publish-triggered Vercel rebuilds
 - Writes `.env.local` with your Arivu settings
 
-`ARIVU_SYNC_MODE=layout` skips writing `public/help/` static HTML — those files are not used for rendering in layout mode.
+Default is **hybrid**: sync writes `public/help/` HTML; App Router **prefers that HTML when present**, otherwise falls back to live embed.
+
+`ARIVU_SYNC_MODE=layout` skips writing `public/help/` static HTML.
+`ARIVU_SYNC_MODE=static` is SEO-only (remove App Router help routes; serve `public/help/`).
+
+Env keys are **merged** into `.env.local` (not overwritten). Help uses `ARIVU_HELP_ORG` (+ shared `ARIVU_API_ORIGIN`). Safe to install alongside blog (`ARIVU_BLOG_ORG`).
 
 Use `--mode=standalone-html` only if you want full standalone HTML files without site chrome.
+
+## Uninstall
+
+From your project root:
+
+```bash
+curl -fsSL https://app.arivu.com/static-sync/arivu-help-install.mjs | node - uninstall \
+  --api-origin=https://app.arivu.com
+```
+
+Detects and removes help routes, webhook, sync script, `lib/arivu-help.ts`, config helpers, `public/help/` (unless `--keep-static`), help env keys, and `package.json` sync scripts. Shared `help-sync/` / shared env keys are kept if blog is still installed.
+
+Options: `--dry-run` · `--keep-env` · `--keep-static`
 
 ## Create standalone Vercel project
 

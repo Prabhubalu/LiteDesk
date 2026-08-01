@@ -62,7 +62,7 @@ export default function ArivuBlogEmbed({
   }, [scriptReady, org, origin, pathPrefix, pathname]);
 
   if (!origin || !org) {
-    return <p>Blog is not configured. Set ARIVU_API_ORIGIN and ARIVU_ORG.</p>;
+    return <p>Blog is not configured. Set ARIVU_API_ORIGIN and ARIVU_BLOG_ORG (or ARIVU_ORG).</p>;
   }
 
   return (

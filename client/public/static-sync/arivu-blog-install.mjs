@@ -3,6 +3,7 @@
  * Bootstrap: download the Arivu blog installer from your Arivu app and run it.
  * Usage:
  *   curl -fsSL https://app.arivu.com/static-sync/arivu-blog-install.mjs | node - install --org=... --api-origin=...
+ *   curl -fsSL https://app.arivu.com/static-sync/arivu-blog-install.mjs | node - uninstall --api-origin=...
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';

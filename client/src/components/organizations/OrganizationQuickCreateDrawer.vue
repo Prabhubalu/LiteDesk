@@ -106,9 +106,9 @@
                               >
                                 <h3
                                   v-if="mode === 'full'"
-                                  class="text-sm font-semibold text-gray-900 dark:text-white"
+                                  class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white"
                                 >
-                                  {{ t('organizations.organizationQuickCreateDrawerQuickCreateFields') }}
+                                  {{ t('common.formQuickCreateFields') }}
                                 </h3>
                                 <DynamicForm
                                   module-key="organizations"
@@ -116,13 +116,13 @@
                                   :form-data="formData"
                                   :errors="errors"
                                   :exclude-fields="coreFormExcludeFields"
-                                  :show-all-fields="mode === 'full'"
+                                  :show-all-fields="false"
                                   :quick-create-mode="mode === 'quick'"
                                   :single-column="mode === 'quick'"
                                   :fields-override="mode === 'full'
                                     ? (fullQuickCreateFields.length ? fullQuickCreateFields : null)
                                     : coreQuickCreateFieldsOverride"
-                                  :module-override="mode === 'full' ? moduleDefinition : null"
+                                  :module-override="moduleDefinition"
                                   @update:form-data="updateFormData"
                                   @ready="onFormReady"
                                 />
@@ -139,20 +139,20 @@
                                 @update:form-data="updateFormData"
                               />
 
-                              <!-- 3. Full mode: remaining core fields -->
+                              <!-- 3. Full mode: remaining core fields (People parity — omit when empty) -->
                               <section
                                 v-if="mode === 'full' && fullOtherFields.length"
-                                class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700"
+                                class="space-y-4"
                               >
-                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                                  {{ t('organizations.organizationQuickCreateDrawerOtherFields') }}
+                                <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white">
+                                  {{ t('common.listCoreFields') }}
                                 </h3>
                                 <DynamicForm
                                   module-key="organizations"
                                   context="platform"
                                   :form-data="formData"
                                   :errors="errors"
-                                  :show-all-fields="true"
+                                  :show-all-fields="false"
                                   :quick-create-mode="false"
                                   :single-column="false"
                                   :fields-override="fullOtherFields"
@@ -392,6 +392,8 @@ const fullOtherFields = computed(() => {
     .filter((key) => {
       if (!key) return false;
       const keyLower = String(key).toLowerCase();
+      // types + type-scoped live in OrganizationTypesSection (People: participation section)
+      if (keyLower === 'types') return false;
       if (excludedSet.has(keyLower)) return false;
       if (quickSet.has(keyLower)) return false;
       if (isOrganizationTypeScopedFieldKey(key)) return false;
@@ -427,9 +429,10 @@ const showCoreQuickCreateSection = computed(() => {
   return sanitizedQuickCreateFieldKeys.value.some(isCoreOrganizationFieldKey);
 });
 
+/** People parity: border-t only in quick mode when core fields sit above. */
 const typesSectionClass = computed(() => {
   const classes = ['flex', 'flex-col', 'gap-4'];
-  if (showCoreQuickCreateSection.value) {
+  if (mode.value === 'quick' && showCoreQuickCreateSection.value) {
     classes.push('border-t', 'border-gray-200', 'pt-8', 'dark:border-gray-700');
   }
   return classes;

@@ -151,16 +151,27 @@ async function getWizardState({ organizationId }) {
   const checklist = connection?.validationChecklist || {};
   const healthState = connection?.healthState || 'searching';
 
-  const steps = [
+  // Later steps must not appear complete until prior ones are.
+  const rawSteps = [
     { id: 'connect', label: 'Connect Tally', done: Boolean(connection && connection.status !== 'pending_pair' && connection.status !== 'revoked') },
     { id: 'detect_company', label: 'Detect company', done: bindings.some((b) => b.companyGuid) },
     { id: 'scan_metadata', label: 'Scan metadata', done: bindings.some((b) => b.activeMetadataSnapshotId) },
     { id: 'ai_mappings', label: 'AI field mappings', done: bindings.some((b) => b.activeMappingVersionId) },
-    { id: 'review', label: 'Review suggestions', done: healthState === 'ready' || bindings.some((b) => b.enabled) },
+    { id: 'review', label: 'Review suggestions', done: healthState === 'ready' || bindings.some((b) => b.enabled && b.activeMappingVersionId) },
     { id: 'start_sync', label: 'Start synchronisation', done: bindings.some((b) => b.lastSyncAt) },
-    { id: 'progress', label: 'Live progress', done: healthState === 'ready' },
+    { id: 'progress', label: 'Live progress', done: healthState === 'ready' && bindings.some((b) => b.lastSyncAt) },
     { id: 'complete', label: 'Integration complete', done: healthState === 'ready' && bindings.some((b) => b.enabled && b.lastSyncAt) },
   ];
+
+  let locked = false;
+  const steps = rawSteps.map((s) => {
+    if (locked) return { ...s, done: false };
+    if (!s.done) {
+      locked = true;
+      return { ...s, done: false };
+    }
+    return { ...s, done: true };
+  });
 
   const currentStep = steps.find((s) => !s.done)?.id || 'complete';
 

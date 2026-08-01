@@ -1,11 +1,20 @@
+import { createRequire } from 'module';
 import crypto from 'crypto';
+import path from 'path';
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 
 const WEBHOOK_SECRET = process.env.ARIVU_BLOG_WEBHOOK_SECRET || process.env.ARIVU_WEBHOOK_SECRET || '';
-const SYNC_MODE = process.env.ARIVU_SYNC_MODE || 'layout';
+const SYNC_MODE = process.env.ARIVU_SYNC_MODE || 'hybrid';
 const DEPLOY_HOOK_URL = process.env.VERCEL_DEPLOY_HOOK_URL || '';
-const BLOG_PREFIX = (process.env.BLOG_URL_PREFIX || '/blog/').replace(/\/$/, '') || '/blog';
+const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
+const ORG = process.env.ARIVU_BLOG_ORG || process.env.ARIVU_ORG || '';
+const DEST = process.env.ARIVU_SYNC_DEST || './public';
+const PATH_PREFIX = process.env.BLOG_URL_PREFIX || '/blog/';
+const SITE_ORIGIN = process.env.SITE_ORIGIN || '';
+const BLOG_PREFIX = PATH_PREFIX.replace(/\/$/, '') || '/blog';
+
+const require = createRequire(import.meta.url);
 
 function verifyWebhookSignature(rawBody: string, secret: string, header: string | null): boolean {
   if (!secret) return true;
@@ -23,23 +32,38 @@ function mapExportPathToRoute(exportPath: string): string {
   return normalized.startsWith(BLOG_PREFIX) ? normalized : `${BLOG_PREFIX}${normalized.startsWith('/') ? '' : '/'}${normalized}`;
 }
 
-async function triggerStaticDeploy(): Promise<NextResponse> {
-  if (!DEPLOY_HOOK_URL) {
-    return NextResponse.json(
-      { success: false, message: 'VERCEL_DEPLOY_HOOK_URL is required when ARIVU_SYNC_MODE=static' },
-      { status: 500 },
-    );
-  }
-
+async function triggerStaticDeploy(): Promise<{ ok: boolean; status?: number }> {
+  if (!DEPLOY_HOOK_URL) return { ok: false };
   const response = await fetch(DEPLOY_HOOK_URL, { method: 'POST' });
-  if (!response.ok) {
-    return NextResponse.json(
-      { success: false, message: 'Deploy hook request failed', status: response.status },
-      { status: 502 },
-    );
-  }
+  return { ok: response.ok, status: response.status };
+}
 
-  return NextResponse.json({ success: true, mode: 'static', triggered: 'deploy' });
+function shouldWriteStaticLocally(): boolean {
+  if (process.env.ARIVU_SYNC_WRITE_LOCAL === '0') return false;
+  if (process.env.ARIVU_SYNC_WRITE_LOCAL === '1') return true;
+  return !process.env.VERCEL;
+}
+
+async function writeStaticFromWebhook(payload: unknown): Promise<unknown | null> {
+  if (!shouldWriteStaticLocally() || !API_ORIGIN || !ORG) return null;
+  try {
+    const syncPath = path.join(process.cwd(), 'help-sync/lib/sync.js');
+    const { handleWebhookPayload } = require(syncPath) as {
+      handleWebhookPayload: (options: Record<string, unknown>) => Promise<unknown>;
+    };
+    return await handleWebhookPayload({
+      apiOrigin: API_ORIGIN,
+      org: ORG,
+      dest: DEST,
+      payload,
+      pathPrefix: PATH_PREFIX,
+      siteOrigin: SITE_ORIGIN,
+      addon: 'blog',
+      mirrorAssets: process.env.ARIVU_MIRROR_ASSETS !== '0',
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request: Request) {
@@ -73,12 +97,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: 'Missing export paths' }, { status: 400 });
   }
 
-  if (SYNC_MODE === 'static' || SYNC_MODE === 'layout') {
-    return triggerStaticDeploy();
+  if (SYNC_MODE === 'static') {
+    const deploy = await triggerStaticDeploy();
+    if (!deploy.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: DEPLOY_HOOK_URL
+            ? 'Deploy hook request failed'
+            : 'VERCEL_DEPLOY_HOOK_URL is required when ARIVU_SYNC_MODE=static',
+          status: deploy.status,
+        },
+        { status: DEPLOY_HOOK_URL ? 502 : 500 },
+      );
+    }
+    return NextResponse.json({ success: true, mode: 'static', triggered: 'deploy' });
   }
 
-  const revalidated = paths.map((path) => mapExportPathToRoute(path));
-  revalidated.forEach((path) => revalidatePath(path));
+  const revalidated = paths.map((pathValue) => mapExportPathToRoute(pathValue));
+  revalidated.forEach((pathValue) => revalidatePath(pathValue));
   revalidatePath(BLOG_PREFIX);
-  return NextResponse.json({ success: true, mode: 'isr', revalidated });
+
+  if (SYNC_MODE === 'hybrid') {
+    const staticWrite = await writeStaticFromWebhook(payload);
+    let deployTriggered = false;
+    if (DEPLOY_HOOK_URL) {
+      const deploy = await triggerStaticDeploy();
+      deployTriggered = deploy.ok;
+    }
+    return NextResponse.json({
+      success: true,
+      mode: 'hybrid',
+      revalidated,
+      staticWrite: Boolean(staticWrite),
+      deployTriggered,
+    });
+  }
+
+  return NextResponse.json({ success: true, mode: SYNC_MODE, revalidated });
 }

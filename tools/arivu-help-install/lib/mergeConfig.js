@@ -45,21 +45,24 @@ export function withArivuHelp(config = {}) {
 }
 
 function patchPackageJson(packageJsonPath, options = {}) {
-  const integrationMode = options.integrationMode || 'layout';
+  const integrationMode = options.integrationMode || 'hybrid';
   const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
   pkg.scripts = pkg.scripts || {};
 
-  if (integrationMode === 'standalone-html') {
+  // static SEO + hybrid both write public/help HTML at build time
+  if (integrationMode === 'standalone-html' || integrationMode === 'hybrid' || integrationMode === 'layout') {
     if (!pkg.scripts['sync:help']) {
       pkg.scripts['sync:help'] = 'node scripts/sync-help-static.mjs';
     }
 
-    const syncCommand = 'npm run sync:help';
-    const existingPrebuild = String(pkg.scripts.prebuild || '').trim();
-    if (!existingPrebuild) {
-      pkg.scripts.prebuild = syncCommand;
-    } else if (!existingPrebuild.includes('sync:help')) {
-      pkg.scripts.prebuild = `${syncCommand} && ${existingPrebuild}`;
+    if (integrationMode !== 'layout') {
+      const syncCommand = 'npm run sync:help';
+      const existingPrebuild = String(pkg.scripts.prebuild || '').trim();
+      if (!existingPrebuild) {
+        pkg.scripts.prebuild = syncCommand;
+      } else if (!existingPrebuild.includes('sync:help')) {
+        pkg.scripts.prebuild = `${syncCommand} && ${existingPrebuild}`;
+      }
     }
   }
 
@@ -129,20 +132,76 @@ export default nextConfig;
   return { created: true, path: configPath };
 }
 
+function parseEnvEntries(content) {
+  const order = [];
+  const values = new Map();
+  for (const rawLine of String(content || '').split(/\r?\n/)) {
+    const line = rawLine.trimEnd();
+    if (!line || line.trimStart().startsWith('#')) continue;
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+    if (!match) continue;
+    const key = match[1];
+    if (!values.has(key)) order.push(key);
+    values.set(key, match[2]);
+  }
+  return { order, values };
+}
+
+/**
+ * Upsert keys into an env file without wiping unrelated entries.
+ * Empty updates for preserveEmptyKeys keep any existing non-empty value (secrets, deploy hooks).
+ */
+function upsertEnvFile(filePath, updates, options = {}) {
+  const preserveEmptyKeys = new Set(options.preserveEmptyKeys || []);
+  const existing = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
+  const { order, values } = parseEnvEntries(existing);
+
+  for (const [key, rawValue] of Object.entries(updates)) {
+    const nextValue = rawValue == null ? '' : String(rawValue);
+    const current = values.has(key) ? String(values.get(key) || '') : null;
+    if (
+      preserveEmptyKeys.has(key)
+      && nextValue === ''
+      && current !== null
+      && current.trim() !== ''
+    ) {
+      continue;
+    }
+    if (!values.has(key)) order.push(key);
+    values.set(key, nextValue);
+  }
+
+  const body = `${order.map((key) => `${key}=${values.get(key)}`).join('\n')}\n`;
+  ensureDirForFile(filePath);
+  fs.writeFileSync(filePath, body);
+  return filePath;
+}
+
+function ensureDirForFile(filePath) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+}
+
+function resolveSyncMode(integrationMode) {
+  if (integrationMode === 'standalone-html') return 'static';
+  if (integrationMode === 'layout') return 'layout';
+  return 'hybrid';
+}
+
 function writeEnvFile(cwd, values, filename) {
-  const integrationMode = values.integrationMode || 'layout';
-  const lines = [
-    `ARIVU_ORG=${values.org}`,
-    `ARIVU_API_ORIGIN=${values.apiOrigin.replace(/\/$/, '')}`,
-    `HELP_URL_PREFIX=${normalizePathPrefix(values.pathPrefix)}`,
-    `ARIVU_SYNC_MODE=${integrationMode === 'standalone-html' ? 'static' : 'layout'}`,
-    `ARIVU_SYNC_DEST=${values.dest || './public'}`,
-    `SITE_ORIGIN=${values.siteOrigin || ''}`,
-    'ARIVU_WEBHOOK_SECRET=',
-    'VERCEL_DEPLOY_HOOK_URL=',
-  ];
+  const integrationMode = values.integrationMode || 'hybrid';
   const filePath = path.join(cwd, filename);
-  fs.writeFileSync(filePath, `${lines.join('\n')}\n`);
+  upsertEnvFile(filePath, {
+    ARIVU_HELP_ORG: values.org,
+    ARIVU_API_ORIGIN: values.apiOrigin.replace(/\/$/, ''),
+    HELP_URL_PREFIX: normalizePathPrefix(values.pathPrefix),
+    ARIVU_SYNC_MODE: resolveSyncMode(integrationMode),
+    ARIVU_SYNC_DEST: values.dest || './public',
+    SITE_ORIGIN: values.siteOrigin || '',
+    ARIVU_WEBHOOK_SECRET: '',
+    VERCEL_DEPLOY_HOOK_URL: '',
+  }, {
+    preserveEmptyKeys: ['ARIVU_WEBHOOK_SECRET', 'ARIVU_BLOG_WEBHOOK_SECRET', 'VERCEL_DEPLOY_HOOK_URL'],
+  });
   return filePath;
 }
 
@@ -160,5 +219,6 @@ module.exports = {
   patchNextConfig,
   createDefaultNextConfig,
   writeEnvFile,
+  upsertEnvFile,
   writeArivuHelpConfig,
 };

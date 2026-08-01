@@ -572,7 +572,7 @@ router.get('/field-mappings', async (req, res) => {
     })
       .sort({ version: -1 })
       .lean();
-    const suggested = tallyFieldMappingService.suggestMappings({
+    const suggested = await tallyFieldMappingService.suggestMappings({
       organizationId: req.user.organizationId,
       entityType,
       companyGuid,
@@ -581,7 +581,13 @@ router.get('/field-mappings', async (req, res) => {
     const arivuFieldMeta = tallyFieldMappingService.listArivuFieldMetaForEntity(entityType);
     const arivuFieldLabels = Object.fromEntries(arivuFieldMeta.map((m) => [m.key, m.label]));
     const requiredKeys = new Set(arivuFieldMeta.filter((m) => m.required).map((m) => m.key));
-    const tallyFields = suggested.tallyFields || tallyFieldMappingService.listTallyFieldsForEntity(entityType);
+    const tallyFields =
+      suggested.tallyFields ||
+      (await tallyFieldMappingService.listTallyFieldsForEntity({
+        organizationId: req.user.organizationId,
+        companyGuid,
+        entityType,
+      }));
     // Prefer saved rules when present; merge so every Arivu field still has a row
     const savedByArivu = new Map((existing?.rules || []).map((r) => [r.arivuFieldKey, r]));
     const rows = arivuFields.map((arivuFieldKey) => {
@@ -1085,6 +1091,79 @@ router.post('/atip/metadata/discover', async (req, res) => {
   }
 });
 
+router.post('/atip/ledgers/dump', async (req, res) => {
+  try {
+    const { companyGuid } = req.body || {};
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { metadataEngine } = require('../services/connectors/tally/engines');
+    const job = await metadataEngine.enqueueLedgerDump({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      requestedBy: req.user._id,
+    });
+    return res.json({ success: true, data: job });
+  } catch (error) {
+    console.error('[tallyConnector] atip/ledgers/dump', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to enqueue ledger dump' });
+  }
+});
+
+router.get('/atip/ledgers', async (req, res) => {
+  try {
+    const { companyGuid } = req.query;
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const tallyMappingService = require('../services/connectors/tally/tallyMappingService');
+    const TallyCompanyBinding = require('../models/TallyCompanyBinding');
+    const binding = await TallyCompanyBinding.findOne({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    })
+      .select('companyName')
+      .lean();
+    const companyName = binding?.companyName || null;
+    const limit = Math.min(parseInt(req.query.limit || '500', 10) || 500, 2000);
+    const skip = Math.max(parseInt(req.query.skip || '0', 10) || 0, 0);
+    const result = await tallyMappingService.listExternalObjects({
+      organizationId: req.user.organizationId,
+      companyGuid,
+      entityType: 'party',
+      status: 'all',
+      q: req.query.q || '',
+      limit,
+      skip,
+    });
+    const ledgers = (result.rows || []).map((row) => {
+      const remote = row.metadata?.remotePayload || {};
+      const values = { ...(remote.tallyValues || remote) };
+      if (companyName && !values._companyName) values._companyName = companyName;
+      if (companyName && !values.COMPANYNAME) values.COMPANYNAME = companyName;
+      return {
+        _id: row._id,
+        externalId: row.externalId,
+        name: row.displayName || values.NAME || values.name || remote.name,
+        parent: values.PARENT || values.parent || remote.parent,
+        mappingStatus: row.mappingStatus,
+        updatedAt: row.updatedAt,
+        values,
+      };
+    });
+    return res.json({
+      success: true,
+      data: ledgers,
+      meta: {
+        total: result.total,
+        limit: result.limit,
+        skip: result.skip,
+        hasMore: result.hasMore,
+        companyName,
+      },
+    });
+  } catch (error) {
+    console.error('[tallyConnector] atip/ledgers', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to list ledgers' });
+  }
+});
+
 router.get('/atip/metadata/objects', async (req, res) => {
   try {
     const { companyGuid } = req.query;
@@ -1098,6 +1177,22 @@ router.get('/atip/metadata/objects', async (req, res) => {
   } catch (error) {
     console.error('[tallyConnector] atip/metadata/objects', error);
     return res.status(500).json({ success: false, message: error.message || 'Failed to list object schemas' });
+  }
+});
+
+router.get('/atip/ledger-groups', async (req, res) => {
+  try {
+    const { companyGuid } = req.query;
+    if (!companyGuid) return res.status(400).json({ success: false, message: 'companyGuid required' });
+    const { metadataEngine } = require('../services/connectors/tally/engines');
+    const data = await metadataEngine.listLedgerGroups({
+      organizationId: req.user.organizationId,
+      companyGuid,
+    });
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[tallyConnector] atip/ledger-groups', error);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to list ledger groups' });
   }
 });
 

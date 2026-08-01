@@ -1,7 +1,6 @@
-const API_ORIGIN = (process.env.ARIVU_API_ORIGIN || '').replace(/\/$/, '');
-const ORG = process.env.ARIVU_ORG || '';
+const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
+const ORG = process.env.ARIVU_HELP_ORG || process.env.ARIVU_ORG || '';
 const PATH_PREFIX = process.env.HELP_URL_PREFIX || '/help/';
-const SITE_ORIGIN = process.env.SITE_ORIGIN || '';
 
 export type ExportMeta = {
   title?: string;
@@ -31,12 +30,8 @@ type ManifestData = {
   articles?: ManifestArticle[];
 };
 
-function isHelpConfigured(): boolean {
-  return Boolean(API_ORIGIN && ORG);
-}
-
 function contentBase(): string {
-  return `${API_ORIGIN}/api/public/v1/content/${encodeURIComponent(ORG)}`;
+  return `${API_ORIGIN.replace(/\/$/, '')}/api/public/v1/content/${encodeURIComponent(ORG)}`;
 }
 
 function buildQuery(extra: Record<string, string> = {}): string {
@@ -59,7 +54,6 @@ async function fetchExportJson<T>(url: string): Promise<T | null> {
 }
 
 export async function fetchHomeExport(): Promise<ExportPayload | null> {
-  if (!isHelpConfigured()) return null;
   return fetchExportJson(`${contentBase()}/export/home${buildQuery()}`);
 }
 
@@ -67,7 +61,6 @@ export async function fetchCollectionExport(
   slug: string,
   parentSlug = '',
 ): Promise<ExportPayload | null> {
-  if (!isHelpConfigured()) return null;
   const parent = parentSlug ? { parent: parentSlug } : {};
   return fetchExportJson(
     `${contentBase()}/export/collections/${encodeURIComponent(slug)}${buildQuery(parent)}`,
@@ -75,14 +68,12 @@ export async function fetchCollectionExport(
 }
 
 export async function fetchArticleExport(articleSlug: string): Promise<ExportPayload | null> {
-  if (!isHelpConfigured()) return null;
   return fetchExportJson(
     `${contentBase()}/articles/${encodeURIComponent(articleSlug)}/export${buildQuery()}`,
   );
 }
 
 export async function fetchManifest(): Promise<ManifestData | null> {
-  if (!isHelpConfigured()) return null;
   const params = new URLSearchParams({ pathPrefix: PATH_PREFIX });
   return fetchExportJson(`${contentBase()}/manifest.json?${params.toString()}`);
 }
@@ -98,11 +89,73 @@ export function buildHelpPathname(pathPrefix: string, slug: string[] = []): stri
   return `${normalized}/${slug.map((segment) => encodeURIComponent(segment)).join('/')}`;
 }
 
+/** hybrid/static: prefer synced public HTML when the file exists on disk */
+export function shouldPreferSyncedHtml(): boolean {
+  const mode = process.env.ARIVU_SYNC_MODE || 'hybrid';
+  return mode === 'hybrid' || mode === 'static';
+}
+
+function extractBodyFromSyncedHtml(fullHtml: string): string {
+  const openMatch = fullHtml.match(/<div\s+class="[^"]*\bld-help-(?:root|embed)\b[^"]*"[^>]*>/i);
+  if (openMatch && openMatch.index != null) {
+    const contentStart = openMatch.index + openMatch[0].length;
+    let depth = 1;
+    let i = contentStart;
+    while (i < fullHtml.length && depth > 0) {
+      const nextOpen = fullHtml.indexOf('<div', i);
+      const nextClose = fullHtml.indexOf('</div>', i);
+      if (nextClose < 0) break;
+      if (nextOpen >= 0 && nextOpen < nextClose) {
+        depth += 1;
+        i = nextOpen + 4;
+      } else {
+        depth -= 1;
+        if (depth === 0) {
+          return fullHtml.slice(contentStart, nextClose).trim();
+        }
+        i = nextClose + 6;
+      }
+    }
+  }
+
+  const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  if (!bodyMatch?.[1]) return '';
+  return bodyMatch[1]
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .trim();
+}
+
+export async function readSyncedPageHtml(pathname: string): Promise<string | null> {
+  if (!shouldPreferSyncedHtml()) return null;
+
+  const destRoot = process.env.ARIVU_SYNC_DEST || './public';
+  const relative = String(pathname || '')
+    .replace(/^\//, '')
+    .replace(/\/$/, '');
+  if (!relative) return null;
+
+  const { promises: fs } = await import('node:fs');
+  const path = await import('node:path');
+  const candidates = [
+    path.join(process.cwd(), destRoot, relative, 'index.html'),
+    path.join(process.cwd(), destRoot, `${relative}.html`),
+  ];
+
+  for (const filePath of candidates) {
+    try {
+      const fullHtml = await fs.readFile(filePath, 'utf8');
+      const body = extractBodyFromSyncedHtml(fullHtml);
+      if (body) return body;
+    } catch {
+      // try next candidate
+    }
+  }
+  return null;
+}
+
 export async function resolveHelpPage(slug: string[] = []): Promise<{
   data: ExportPayload;
 } | null> {
-  if (!isHelpConfigured()) return null;
-
   if (slug.length === 0) {
     const data = await fetchHomeExport();
     const pageHtml = pickPageHtml(data);
@@ -152,10 +205,9 @@ export async function buildStaticSlugParams(): Promise<Array<{ slug: string[] }>
 }
 
 export async function fetchStaticSitemapXml(): Promise<string | null> {
-  if (!isHelpConfigured()) return null;
   const params = new URLSearchParams({
     pathPrefix: PATH_PREFIX,
-    siteOrigin: SITE_ORIGIN,
+    siteOrigin: process.env.SITE_ORIGIN || '',
   });
   const response = await fetch(`${contentBase()}/export/sitemap.xml?${params.toString()}`, {
     next: { revalidate: 3600 },

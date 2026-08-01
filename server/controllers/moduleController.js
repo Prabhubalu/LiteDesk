@@ -2476,8 +2476,12 @@ function enrichOrganizationsFieldsWithStatusTypes(fields, config) {
 
 async function enrichOrganizationsModuleFields(fields, organizationId) {
     if (!Array.isArray(fields) || !organizationId) return fields;
+    const { isTenantPlatformOrganizationFieldPath } = require('../constants/organizationTenantPlatformFields');
     const { stripRetiredOrganizationTypesFromModuleFields } = require('../constants/organizationTypeDefaults');
-    const { fields: strippedFields } = stripRetiredOrganizationTypesFromModuleFields(fields);
+    const withoutTenantPlatform = fields.filter(
+        (field) => !isTenantPlatformOrganizationFieldPath(field?.key)
+    );
+    const { fields: strippedFields } = stripRetiredOrganizationTypesFromModuleFields(withoutTenantPlatform);
     const {
         getOrganizationTypesConfig,
         getOrganizationParticipationTypesConfig,

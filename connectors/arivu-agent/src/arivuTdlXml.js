@@ -283,6 +283,7 @@ module.exports = {
   ARIVU_TDL_PACK_VERSION,
   ARIVU_COLLECTIONS,
   COLLECTION_TYPE,
+  FALLBACK_NATIVES,
   collectionExport,
   companiesListEnvelope,
   ledgersListEnvelope,
