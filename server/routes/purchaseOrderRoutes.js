@@ -12,6 +12,24 @@ function sendError(res, err) {
   return res.status(status).json({ success: false, message: err.message, code: err.code || 'UNKNOWN' });
 }
 
+/** Flatten { purchaseOrder, lines } for GenericModule / ModuleRecordPage / QuoteLines. */
+function normalizePoLine(line) {
+  if (!line) return line;
+  return {
+    ...line,
+    quantity: line.quantityOrdered,
+    purchaseOrderLineId: line._id
+  };
+}
+
+function flattenPoResult(result) {
+  if (!result?.purchaseOrder) return result;
+  const lines = (result.lines || []).map(normalizePoLine);
+  const out = { ...result.purchaseOrder, lines };
+  if (result.line) out.line = normalizePoLine(result.line);
+  return out;
+}
+
 const router = express.Router();
 router.use(protect);
 router.use(resolveAppContext);
@@ -22,11 +40,16 @@ router.use(checkTrialStatus);
 
 router.get('/', checkPermission('inventory', 'view'), async (req, res) => {
   try {
-    const data = await procurementService.listPurchaseOrders({
+    const result = await procurementService.listPurchaseOrders({
       organizationId: req.user.organizationId,
-      status: req.query.status || null
+      status: req.query.status || null,
+      page: req.query.page,
+      limit: req.query.limit,
+      sortBy: req.query.sortBy,
+      sortOrder: req.query.sortOrder,
+      search: req.query.search || req.query.q || null
     });
-    return res.json({ success: true, data });
+    return res.json({ success: true, data: result.data, pagination: result.pagination });
   } catch (err) {
     return sendError(res, err);
   }
@@ -39,7 +62,7 @@ router.post('/', checkPermission('inventory', 'adjust'), async (req, res) => {
       userId: req.user._id,
       payload: req.body || {}
     });
-    return res.status(201).json({ success: true, data });
+    return res.status(201).json({ success: true, data: flattenPoResult(data) });
   } catch (err) {
     return sendError(res, err);
   }
@@ -51,7 +74,67 @@ router.get('/:id', checkPermission('inventory', 'view'), async (req, res) => {
       organizationId: req.user.organizationId,
       id: req.params.id
     });
-    return res.json({ success: true, data });
+    return res.json({ success: true, data: flattenPoResult(data) });
+  } catch (err) {
+    return sendError(res, err);
+  }
+});
+
+async function updateHeader(req, res) {
+  try {
+    const data = await procurementService.updatePurchaseOrder({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+      userId: req.user._id,
+      payload: req.body || {}
+    });
+    return res.json({ success: true, data: flattenPoResult(data) });
+  } catch (err) {
+    return sendError(res, err);
+  }
+}
+
+router.put('/:id', checkPermission('inventory', 'adjust'), updateHeader);
+router.patch('/:id', checkPermission('inventory', 'adjust'), updateHeader);
+
+router.post('/:id/lines', checkPermission('inventory', 'adjust'), async (req, res) => {
+  try {
+    const data = await procurementService.addPurchaseOrderLine({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+      userId: req.user._id,
+      payload: req.body || {}
+    });
+    return res.status(201).json({ success: true, data: flattenPoResult(data) });
+  } catch (err) {
+    return sendError(res, err);
+  }
+});
+
+router.patch('/:id/lines/:lineId', checkPermission('inventory', 'adjust'), async (req, res) => {
+  try {
+    const data = await procurementService.updatePurchaseOrderLine({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+      lineId: req.params.lineId,
+      userId: req.user._id,
+      payload: req.body || {}
+    });
+    return res.json({ success: true, data: flattenPoResult(data) });
+  } catch (err) {
+    return sendError(res, err);
+  }
+});
+
+router.delete('/:id/lines/:lineId', checkPermission('inventory', 'adjust'), async (req, res) => {
+  try {
+    const data = await procurementService.deletePurchaseOrderLine({
+      organizationId: req.user.organizationId,
+      id: req.params.id,
+      lineId: req.params.lineId,
+      userId: req.user._id
+    });
+    return res.json({ success: true, data: flattenPoResult(data) });
   } catch (err) {
     return sendError(res, err);
   }

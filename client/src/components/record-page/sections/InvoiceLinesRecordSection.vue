@@ -3,6 +3,7 @@
     :record="record"
     :context="context"
     :adapter="invoiceCommercialLinesAdapter"
+    :draft-mode="draftMode"
     @updated="emit('updated', $event)"
   />
 </template>
@@ -16,7 +17,8 @@ import { invoiceCommercialLinesAdapter } from '@/platform/commercialLines/adapte
 
 defineProps({
   record: { type: Object, default: null },
-  context: { type: Object, default: () => ({}) }
+  context: { type: Object, default: () => ({}) },
+  draftMode: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['updated']);

@@ -128,13 +128,12 @@
                                 />
                               </section>
 
-                              <!-- 2. Organization types + type-dependent fields -->
-                              <OrganizationTypesSection
+                              <!-- 2. App participation (types per enabled app) -->
+                              <OrganizationParticipationSection
                                 :section-class="typesSectionClass"
                                 :form-data="formData"
                                 :errors="errors"
                                 :module-override="moduleDefinition"
-                                :organization-type-defs="organizationTypeDefs"
                                 :single-column="mode === 'quick'"
                                 :full-mode="mode === 'full'"
                                 @update:form-data="updateFormData"
@@ -213,7 +212,7 @@ import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
 import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
-import OrganizationTypesSection from '@/components/organizations/OrganizationTypesSection.vue';
+import OrganizationParticipationSection from '@/components/organizations/OrganizationParticipationSection.vue';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { useTabs } from '@/composables/useTabs';
@@ -416,7 +415,7 @@ function isCoreOrganizationFieldKey(fieldKey) {
   return true;
 }
 
-/** Core quick create only — types and type-scoped fields render in OrganizationTypesSection. */
+/** Core quick create only — types/participation fields render in OrganizationParticipationSection. */
 const coreQuickCreateFieldsOverride = computed(() => {
   const sanitized = sanitizedQuickCreateFieldKeys.value.filter(isCoreOrganizationFieldKey);
   return sanitized.length ? sanitized : null;
@@ -605,7 +604,7 @@ function resolveAllowedFieldsForSubmit(formState) {
   if (createMode.value === 'quick') {
     const coreKeys = sanitizedQuickCreateFieldKeys.value.filter(isCoreOrganizationFieldKey);
     const baseCore = coreKeys.length > 0 ? coreKeys : ['name'];
-    return [...new Set([...baseCore, 'types', ...typeDependentKeys])];
+    return [...new Set([...baseCore, 'types', 'participations', ...typeDependentKeys])];
   }
 
   return [
@@ -613,6 +612,7 @@ function resolveAllowedFieldsForSubmit(formState) {
       ...fullQuickCreateFields.value,
       ...fullOtherFields.value,
       'types',
+      'participations',
       ...typeDependentKeys,
     ]),
   ];
@@ -629,6 +629,12 @@ function buildCreateOrganizationPayload(formState) {
       const value = formState[field];
       
       // Handle different value types
+      if (field === 'participations' && value && typeof value === 'object' && !Array.isArray(value)) {
+        if (Object.keys(value).length > 0) {
+          payload.participations = value;
+        }
+        continue;
+      }
       if (Array.isArray(value)) {
         // Include only non-empty arrays
         if (value.length > 0) {

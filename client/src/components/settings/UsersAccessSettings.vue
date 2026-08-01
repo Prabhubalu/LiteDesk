@@ -14,7 +14,7 @@
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          @click="activeTab = tab.id"
+          @click="setActiveTab(tab.id)"
           :class="[
             activeTab === tab.id
               ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
@@ -52,6 +52,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { isRbacV2Enabled, isSharingV1Enabled } from '@/utils/rbacFeatureFlags';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
@@ -63,6 +64,8 @@ import GroupsSettings from './GroupsSettings.vue';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
 
 const USERS_ACCESS_TAB_KEY = 'arivu-users-access-tab';
 const activeTab = ref(localStorage.getItem(USERS_ACCESS_TAB_KEY) || 'users');
@@ -85,11 +88,44 @@ const tabs = computed(() => {
   return items;
 });
 
+const validTabIds = computed(() => new Set(tabs.value.map((tab) => tab.id)));
+
+function resolveTabFromQuery() {
+  const view = route.query.usersAccessView;
+  if (typeof view === 'string' && validTabIds.value.has(view)) {
+    return view;
+  }
+  return null;
+}
+
+function setActiveTab(tabId) {
+  activeTab.value = tabId;
+  const query = { ...route.query, tab: 'users-access' };
+  if (tabId === 'users') {
+    delete query.usersAccessView;
+  } else {
+    query.usersAccessView = tabId;
+  }
+  router.replace({ path: '/settings', query });
+}
+
 watch(tabs, (items) => {
   if (!items.some((tab) => tab.id === activeTab.value)) {
     activeTab.value = 'users';
   }
 }, { immediate: true });
+
+watch(
+  () => [route.query.usersAccessView, validTabIds.value],
+  () => {
+    const fromQuery = resolveTabFromQuery();
+    if (fromQuery) {
+      if (fromQuery !== activeTab.value) activeTab.value = fromQuery;
+      return;
+    }
+  },
+  { immediate: true }
+);
 
 watch(activeTab, (v) => {
   localStorage.setItem(USERS_ACCESS_TAB_KEY, v);

@@ -151,6 +151,9 @@ import { getParticipation } from '@/utils/getParticipation';
 import {
   resolvePeopleListParticipationColumnLabel,
 } from '@/utils/peopleParticipationUi';
+import {
+  resolveOrganizationListParticipationColumnLabel,
+} from '@/utils/organizationParticipationUi';
 import { getModuleListConfig, hasModuleListConfig, getSystemViews, resolvePeopleListAppContext } from '@/platform/modules/moduleListRegistry';
 import {
   buildFilterFieldsFromModuleFields,
@@ -974,7 +977,9 @@ const adaptedColumns = computed(() => {
             t,
             te
           )
-        : defaultLabel;
+        : props.moduleKey === 'organizations'
+          ? resolveOrganizationListParticipationColumnLabel(col.key, () => defaultLabel, t, te)
+          : defaultLabel;
     return {
       key: col.key,
       label,
@@ -1005,7 +1010,9 @@ const adaptedFilterFields = computed(() => {
             t,
             te
           )
-        : defaultLabel;
+        : props.moduleKey === 'organizations'
+          ? resolveOrganizationListParticipationColumnLabel(field.key, () => defaultLabel, t, te)
+          : defaultLabel;
     return {
       key: field.key,
       label,

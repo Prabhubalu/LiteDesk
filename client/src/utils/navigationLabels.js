@@ -31,6 +31,7 @@ export const MODULE_LABEL_KEYS = {
   deals: 'navigation.moduleDeals',
   quotes: 'navigation.moduleQuotes',
   sales_orders: 'navigation.moduleSalesOrders',
+  purchase_orders: 'navigation.inventoryPurchaseOrders',
   invoices: 'navigation.moduleInvoices',
   payments: 'navigation.modulePayments',
   responses: 'navigation.moduleResponses',

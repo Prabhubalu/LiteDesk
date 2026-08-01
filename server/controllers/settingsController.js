@@ -4177,6 +4177,219 @@ exports.updatePeopleTypes = async (req, res) => {
 };
 
 /**
+ * GET /api/settings/core-modules/organizations/participation-types/usage?appKey=
+ * Counts CRM orgs with participations[APP].role === role (or types[] fallback).
+ */
+exports.getOrganizationParticipationTypesUsage = async (req, res) => {
+    try {
+        const organizationId = req.user.organizationId;
+        const appKey = String(req.query.appKey || 'SALES').toUpperCase().trim();
+        const {
+            ORGANIZATION_PARTICIPATION_APP_KEYS,
+        } = require('../constants/organizationParticipation');
+        if (!ORGANIZATION_PARTICIPATION_APP_KEYS.includes(appKey)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid appKey',
+            });
+        }
+        if (!organizationId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const Organization = require('../models/Organization');
+        const { getOrganizationParticipationTypesConfig } = require('../utils/tenantMetadata');
+        const { types } = await getOrganizationParticipationTypesConfig(organizationId, appKey);
+        const usage = {};
+        for (const role of types) {
+            usage[role] = 0;
+        }
+
+        const path = `participations.${appKey}.role`;
+        const rows = await Organization.aggregate([
+            { $match: { isTenant: false, [path]: { $exists: true, $ne: null } } },
+            { $group: { _id: `$${path}`, count: { $sum: 1 } } },
+        ]);
+        for (const row of rows) {
+            const role = String(row._id || '').trim();
+            if (!role) continue;
+            const match = types.find((t) => t.toLowerCase() === role.toLowerCase());
+            const key = match || role;
+            usage[key] = (usage[key] || 0) + row.count;
+        }
+
+        res.json({ success: true, appKey, data: { usage } });
+    } catch (error) {
+        console.error('getOrganizationParticipationTypesUsage error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get organization participation type usage',
+            error: error.message,
+        });
+    }
+};
+
+/**
+ * GET /api/settings/core-modules/organizations/participation-types?appKey=
+ */
+exports.getOrganizationParticipationTypes = async (req, res) => {
+    try {
+        const organizationId = req.user.organizationId;
+        const appKey = (req.query.appKey || 'SALES').toUpperCase();
+        if (!organizationId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        const {
+            ORGANIZATION_PARTICIPATION_APP_KEYS,
+        } = require('../constants/organizationParticipation');
+        if (!ORGANIZATION_PARTICIPATION_APP_KEYS.includes(appKey)) {
+            return res.status(400).json({
+                success: false,
+                message: 'appKey must be one of SALES, HELPDESK, INVENTORY, MARKETING, PORTAL',
+            });
+        }
+        const { getOrganizationParticipationTypesConfig } = require('../utils/tenantMetadata');
+        const { types, defaultRole, typeDefs } =
+            await getOrganizationParticipationTypesConfig(organizationId, appKey);
+        res.json({
+            success: true,
+            data: { types, defaultRole, typeDefs },
+            appKey,
+        });
+    } catch (error) {
+        console.error('Get organization participation-types error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get organization participation types',
+            error: error.message,
+        });
+    }
+};
+
+/**
+ * PUT /api/settings/core-modules/organizations/participation-types
+ * Body: { appKey, types: (string | { value, color, fields? })[], defaultRole? }
+ */
+exports.updateOrganizationParticipationTypes = async (req, res) => {
+    try {
+        const organizationId = req.user.organizationId;
+        if (!organizationId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const appKey = String(req.body?.appKey || '').toUpperCase().trim();
+        const typesIn = req.body?.types;
+        const defaultIn = req.body?.defaultRole != null ? req.body.defaultRole : req.body?.default;
+        const {
+            ORGANIZATION_PARTICIPATION_APP_KEYS,
+        } = require('../constants/organizationParticipation');
+        if (!ORGANIZATION_PARTICIPATION_APP_KEYS.includes(appKey)) {
+            return res.status(400).json({
+                success: false,
+                message: 'appKey must be one of SALES, HELPDESK, INVENTORY, MARKETING, PORTAL',
+            });
+        }
+
+        const {
+            sanitizePeopleTypeDefsForSave,
+            collectAllowedOrganizationParticipationFieldKeys,
+        } = require('../utils/tenantMetadata');
+        const allowedFieldKeys = await collectAllowedOrganizationParticipationFieldKeys(
+            organizationId,
+            appKey
+        );
+        const parsed = sanitizePeopleTypeDefsForSave(typesIn, { allowedFieldKeys });
+        if (!parsed.ok) {
+            return res.status(400).json({
+                success: false,
+                message: parsed.message,
+            });
+        }
+
+        const normalizedDefs = parsed.typeDefs;
+        const normalized = normalizedDefs.map((d) => d.value);
+        let defaultCanonical = normalized[0];
+        if (defaultIn != null && String(defaultIn).trim()) {
+            const want = String(defaultIn).trim();
+            const match = normalized.find((t) => t.toLowerCase() === want.toLowerCase());
+            defaultCanonical = match || normalized[0];
+        }
+
+        let tenantConfig = await TenantModuleConfiguration.findOne({
+            organizationId,
+            moduleKey: 'organizations',
+            'settings.organizationParticipationTypes': { $exists: true, $ne: null },
+        });
+        if (!tenantConfig) {
+            tenantConfig = await TenantModuleConfiguration.findOne({
+                organizationId,
+                appKey: 'SALES',
+                moduleKey: 'organizations',
+            });
+        }
+        if (!tenantConfig) {
+            tenantConfig = await TenantModuleConfiguration.findOne({
+                organizationId,
+                moduleKey: 'organizations',
+            });
+        }
+        if (!tenantConfig) {
+            tenantConfig = new TenantModuleConfiguration({
+                organizationId,
+                appKey: 'SALES',
+                moduleKey: 'organizations',
+                enabled: true,
+            });
+        }
+
+        if (!tenantConfig.settings) tenantConfig.settings = {};
+        if (
+            !tenantConfig.settings.organizationParticipationTypes ||
+            typeof tenantConfig.settings.organizationParticipationTypes !== 'object'
+        ) {
+            tenantConfig.settings.organizationParticipationTypes = {};
+        }
+
+        const { attachSettingsAuditDiff, cloneForAudit } = require('../utils/settingsAuditSnapshot');
+        const before = cloneForAudit(
+            tenantConfig.settings.organizationParticipationTypes[appKey] || null
+        );
+
+        tenantConfig.settings.organizationParticipationTypes[appKey] = {
+            types: normalizedDefs,
+            default: defaultCanonical,
+        };
+        tenantConfig.markModified('settings');
+        tenantConfig.markModified('settings.organizationParticipationTypes');
+        await tenantConfig.save();
+
+        const after = cloneForAudit({
+            types: normalizedDefs,
+            default: defaultCanonical,
+        });
+        attachSettingsAuditDiff(res, before, after, { keys: ['types', 'default'] });
+
+        res.json({
+            success: true,
+            message: 'Organization participation types updated',
+            data: {
+                types: normalized,
+                defaultRole: defaultCanonical,
+                typeDefs: normalizedDefs,
+            },
+            appKey,
+        });
+    } catch (error) {
+        console.error('Update organization participation-types error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update organization participation types',
+            error: error.message,
+        });
+    }
+};
+
+/**
  * GET /api/settings/billing/external-user-usage
  * V1 usage collection — no seat blocking.
  */

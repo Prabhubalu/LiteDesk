@@ -94,6 +94,10 @@ import type { PaymentFieldMetadata } from './paymentFieldModel';
 
 import { DOCUMENT_FIELD_METADATA } from './documentsFieldModel';
 import type { DocumentFieldMetadata } from './documentsFieldModel';
+import {
+  getInventoryWorkbenchFieldMetadataMap,
+  isInventoryWorkbenchModuleKey,
+} from './inventoryWorkbenchFieldModel';
 
 // =============================================================================
 // MODULE KEY TYPE
@@ -224,10 +228,13 @@ export function getFieldMetadataMap(
   moduleKey: string
 ): Record<string, BaseFieldMetadata> | undefined {
   const resolved = normalizeModuleKeyForRegistry(moduleKey) ?? moduleKey;
-  if (!(resolved in FIELD_REGISTRY)) {
-    return undefined;
+  if (resolved in FIELD_REGISTRY) {
+    return FIELD_REGISTRY[resolved as keyof typeof FIELD_REGISTRY] as Record<string, BaseFieldMetadata>;
   }
-  return FIELD_REGISTRY[resolved as keyof typeof FIELD_REGISTRY] as Record<string, BaseFieldMetadata>;
+  if (isInventoryWorkbenchModuleKey(moduleKey)) {
+    return getInventoryWorkbenchFieldMetadataMap(moduleKey) as Record<string, BaseFieldMetadata> | undefined;
+  }
+  return undefined;
 }
 
 /**

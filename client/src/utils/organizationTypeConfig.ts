@@ -2,6 +2,11 @@
  * Parse organization type rows from GET/PATCH status-types API.
  */
 
+import {
+  resolveAvailableOrganizationRoles,
+  type OrganizationEnabledAppLike,
+} from '@/platform/organizations/organizationParticipation';
+
 export interface OrganizationTypeDef {
   value: string;
   label: string;
@@ -19,9 +24,11 @@ export type OrganizationTypePicklistOption = {
 };
 
 export const DEFAULT_ORGANIZATION_TYPE_VALUES = [
+  'Lead',
   'Customer',
-  'Partner',
+  'Marketing Lead',
   'Vendor',
+  'Partner',
 ] as const;
 
 export const RETIRED_ORGANIZATION_TYPE_VALUES = ['Distributor', 'Dealer'] as const;
@@ -33,15 +40,46 @@ export function isRetiredOrganizationTypeValue(value: unknown): boolean {
 
 /** Picklist options for Organizations `types` (enabled types, else platform defaults). */
 export function organizationTypeDefsToPicklistOptions(
-  typeDefs: ReadonlyArray<OrganizationTypeDef> | null | undefined
+  typeDefs: ReadonlyArray<OrganizationTypeDef> | null | undefined,
+  options?: {
+    /** When provided, only roles declared by enabled participation apps are shown. */
+    enabledApps?: ReadonlyArray<OrganizationEnabledAppLike> | null;
+  }
 ): OrganizationTypePicklistOption[] {
   const defs = (Array.isArray(typeDefs) ? typeDefs : []).filter(
     (d) => d && d.enabled !== false && !isRetiredOrganizationTypeValue(d.value ?? d.label)
   );
-  const enabled = defs;
+  const gateByApps = options != null && Object.prototype.hasOwnProperty.call(options, 'enabledApps');
+
+  if (gateByApps) {
+    const roles = resolveAvailableOrganizationRoles(options?.enabledApps);
+    const byKey = new Map(
+      defs.map((d) => [String(d.value ?? d.label ?? '').trim().toLowerCase(), d] as const)
+    );
+    return roles
+      .map((role) => {
+        const match = byKey.get(role.toLowerCase());
+        // Tenant explicitly disabled this role
+        const rawDisabled = (Array.isArray(typeDefs) ? typeDefs : []).find(
+          (d) =>
+            String(d?.value ?? d?.label ?? '')
+              .trim()
+              .toLowerCase() === role.toLowerCase() && d.enabled === false
+        );
+        if (rawDisabled) return null;
+        return {
+          value: match ? String(match.value ?? role).trim() || role : role,
+          label: match
+            ? String(match.label ?? match.value ?? role).trim() || role
+            : role,
+        };
+      })
+      .filter((row): row is OrganizationTypePicklistOption => row != null);
+  }
+
   const source =
-    enabled.length > 0
-      ? enabled
+    defs.length > 0
+      ? defs
       : DEFAULT_ORGANIZATION_TYPE_VALUES.map((value) => ({
           value,
           label: value,

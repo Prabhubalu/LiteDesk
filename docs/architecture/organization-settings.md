@@ -115,16 +115,24 @@ Fields are grouped by ownership model (see Section 5):
 Organization Settings allow configuration of:
 
 #### Type Definitions
-- Configure available organization types: Customer, Partner, Vendor, Distributor, Dealer
-- Type labels and descriptions
-- Type visibility rules
+- Configure available organization types (labels, enabled, type-scoped fields)
+- Platform participation registry gates which types appear by **enabled apps**:
+  - **Sales** → Lead, Customer
+  - **Helpdesk** → Customer
+  - **Inventory** → Vendor
+  - **Marketing** → Marketing Lead, Customer
+  - **Portal** → Partner
+
+#### Storage
+- `organization.participations[APP] = { role }` — app-scoped source of truth (mirrors People)
+- `organization.types[]` — **system-derived** union of roles for field visibility, filters, list column, and BC (not admin-edited; hidden from Field Configurations)
 
 #### Type-Specific Behavior
 - Configure which fields appear based on selected types
 - Type-based field requirements
 - Type-based relationship rules
 
-**Note:** Organization types are stored in the `types` array field. Settings configure which types are available and how they behave, not which organizations have which types.
+**Note:** Settings configure which types are available and how they behave, not which organizations have which types. App enablement controls which participation roles are offered in create/edit pickers. Create/edit uses App Participation UI only — never a flat editable Types multi-picklist.
 
 ### 3.3 Status Picklists
 
@@ -176,7 +184,9 @@ Organization Settings provide **read-only visibility** of:
 - Show required vs optional app participation
 - Display app-specific field usage
 
-**Prohibited:** Toggling app participation. App participation is controlled at the application level, not the module level. Organization Settings display this information for transparency only.
+**Organization type availability** is derived from enabled apps via the platform participation registry (`organizationParticipation`), not toggled in Organization Settings. Enabling Sales / Helpdesk / Inventory / Marketing / Portal controls which roles appear on create/edit.
+
+**Prohibited:** Toggling app participation from Organization Settings. App participation is controlled at the application level. Organization Settings display this information for transparency only.
 
 ---
 
@@ -269,25 +279,39 @@ Organization fields follow a three-tier ownership model:
 ### 5.1 Core Business Fields
 
 **Owner:** Platform Core  
-**Intent:** Business identity, relationships, type-scoped status, and contextual attributes
+**Intent:** Business identity and relationships
 
 **Fields Include:**
-- **Identity:** `name`, `industry`, `website`, `phone`, `address`, `types`, `tags`
+- **Identity:** `name`, `industry`, `website`, `phone`, `address`, `tags`
 - **Relationships:** `assignedTo`, `accountManager`, `primaryContact`
-- **Type status:** `customerStatus`, `customerTier`, `partnerStatus`, `partnerTier`, `partnerType`, `vendorStatus`, `dealerLevel`
-- **Business detail:** `slaLevel`, `paymentTerms`, `creditLimit`, `annualRevenue`, `numberOfEmployees`, and other type-specific attributes
 
 **Characteristics:**
 - Platform-owned and shared across all applications
-- Unlike People, Organizations do **not** use app participation for field ownership
-- Type-specific fields are governed by the `types` array, not by Sales app scope
 - Cannot be deleted or renamed
 - Visibility and requirements can be configured
 - Appear in all apps that use Organizations
 
 ### 5.2 App Participation Fields
 
-**Not applicable.** Organization CRM fields are platform-core. App participation applies to People (e.g. `lead_status`) where fields live in `participations.SALES`, not to Organizations.
+**Owner:** App Participation (mirrors People)  
+**Intent:** Per-app role (state) and type-scoped attributes
+
+**Fields Include:**
+- **Virtual roles** → `participations[APP].role`:
+  - Sales: `sales_type` (Lead, Customer)
+  - Helpdesk: `helpdesk_role` (Customer)
+  - Inventory: `inventory_role` (Vendor)
+  - Marketing: `marketing_role` (Marketing Lead, Customer)
+  - Portal: `portal_role` (Partner)
+- **Sales attributes:** `customerStatus`, `customerTier`, `slaLevel`, `paymentTerms`, `creditLimit`, `annualRevenue`, `numberOfEmployees`
+- **Inventory attributes:** `vendorStatus`, `vendorRating`, `vendorContract`, `preferredPaymentMethod`, `taxId`
+- **Portal attributes:** `partnerStatus`, `partnerTier`, `partnerType`, `partnerSince`, `territory`, `discountRate`
+
+**Characteristics:**
+- Grouped under **SALES / HELPDESK / INVENTORY / MARKETING / PORTAL PARTICIPATION** in Field Configurations
+- Virtual role fields are visibility-configurable; options come from Types / participation registry
+- Type-attribute fields remain visibility-gated by selected participation roles (`types` union)
+- Cannot be deleted or renamed
 
 ### 5.3 System-Managed Fields
 
@@ -299,18 +323,21 @@ Organization fields follow a three-tier ownership model:
 - `organizationId` (tenant isolation)
 - `createdAt`, `updatedAt` (timestamps)
 - `createdBy` (creator reference)
+- `types` (derived participation union — hidden from Field Configurations; list/filter/key-field summary only)
+- `participations` (app participation map — not shown in Field Configurations; virtual roles are flattened)
 - `isTenant` (tenant flag - excluded from Settings)
 
 **Characteristics:**
 - System-managed, not user-configurable
-- Visibility can be controlled
+- Visibility can be controlled (where `isVisibleInConfig`)
 - Cannot be edited or deleted
 - Required for system operation
 
 ### Field Configuration Rules
 
 1. **Core fields:** Can configure visibility, requirements, default values. Cannot delete or rename.
-2. **System fields:** Can configure visibility only. Cannot edit, delete, or modify behavior.
+2. **Participation fields:** Can configure visibility (state fields may be locked like People). Cannot delete or rename.
+3. **System fields:** Can configure visibility only. Cannot edit, delete, or modify behavior.
 
 ---
 

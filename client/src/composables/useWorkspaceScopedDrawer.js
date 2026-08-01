@@ -26,6 +26,7 @@ import {
  *   draftModuleKey?: import('vue').Ref<string> | string | (() => string),
  *   draftRecordId?: import('vue').Ref<string|null> | string | (() => string|null),
  *   onEscape?: () => void,
+ *   onPark?: (tabId: string|null) => void,
  *   focusRef?: import('vue').Ref<HTMLElement|null>,
  * }} [options]
  */
@@ -35,6 +36,8 @@ export function useWorkspaceScopedDrawer(isOpenSource, options = {}) {
   const workspaceDrawerHost = `#${PLATFORM_WORKSPACE_DRAWER_HOST_ID}`;
   const workspaceDrawerHostReady = ref(false);
   const ownerTabId = ref(null);
+  /** True after park until the owning tab is active again (unpark). */
+  const wasParked = ref(false);
 
   function readIsOpen() {
     return Boolean(unref(isOpenSource));
@@ -117,6 +120,17 @@ export function useWorkspaceScopedDrawer(isOpenSource, options = {}) {
     if (key) clearTabDrawerDraft(key);
   }
 
+  /**
+   * Shell must call this synchronously before remounting the panel so create/edit
+   * drawers can restore form + commercial draft state first.
+   * @returns {boolean}
+   */
+  function takeWasParked() {
+    if (!wasParked.value) return false;
+    wasParked.value = false;
+    return true;
+  }
+
   function handleEscapeKey(event) {
     if (event.key !== 'Escape' || !effectivelyOpen.value) return;
     options.onEscape?.();
@@ -137,6 +151,7 @@ export function useWorkspaceScopedDrawer(isOpenSource, options = {}) {
     if (!readIsOpen()) return;
     if (!ownerTabId.value && prevId) ownerTabId.value = prevId;
     if (prevId && ownerTabId.value && prevId === ownerTabId.value && nextId !== prevId) {
+      wasParked.value = true;
       // Consumers should persist via onPark callback if needed
       options.onPark?.(ownerTabId.value);
     }
@@ -151,6 +166,7 @@ export function useWorkspaceScopedDrawer(isOpenSource, options = {}) {
         return;
       }
       if (wasOpen) {
+        wasParked.value = false;
         releaseOwnerTab();
         window.removeEventListener('keydown', handleEscapeKey);
       }
@@ -191,5 +207,6 @@ export function useWorkspaceScopedDrawer(isOpenSource, options = {}) {
     persistDraft,
     loadDraft,
     clearDraft,
+    takeWasParked,
   };
 }

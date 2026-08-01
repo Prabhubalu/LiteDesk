@@ -28,6 +28,27 @@ const ORGANIZATION_TYPE_FIELDS = Object.freeze({
     'annualRevenue',
     'numberOfEmployees'
   ]),
+  // Sales / Marketing funnel roles share the customer field pool
+  Lead: Object.freeze([
+    'customerStatus',
+    'customerTier',
+    'slaLevel',
+    'paymentTerms',
+    'creditLimit',
+    'accountManager',
+    'annualRevenue',
+    'numberOfEmployees'
+  ]),
+  'Marketing Lead': Object.freeze([
+    'customerStatus',
+    'customerTier',
+    'slaLevel',
+    'paymentTerms',
+    'creditLimit',
+    'accountManager',
+    'annualRevenue',
+    'numberOfEmployees'
+  ]),
   Partner: Object.freeze([
     'partnerStatus',
     'partnerTier',

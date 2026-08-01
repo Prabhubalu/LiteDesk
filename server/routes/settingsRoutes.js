@@ -46,6 +46,9 @@ router.patch('/core-modules/:moduleKey/applications/:appKey', controller.toggleA
 // Organization Status-Types endpoints (specific to organizations module)
 router.get('/core-modules/organizations/status-types', sessionBootstrapLimiter, controller.getOrganizationStatusTypes);
 router.patch('/core-modules/organizations/status-types', controller.updateOrganizationStatusTypes);
+router.get('/core-modules/organizations/participation-types/usage', sessionBootstrapLimiter, controller.getOrganizationParticipationTypesUsage);
+router.get('/core-modules/organizations/participation-types', sessionBootstrapLimiter, controller.getOrganizationParticipationTypes);
+router.put('/core-modules/organizations/participation-types', controller.updateOrganizationParticipationTypes);
 
 // People types endpoint (tenant-configurable, e.g. Lead, Contact)
 router.get('/core-modules/people/people-types/usage', sessionBootstrapLimiter, controller.getPeopleTypesUsage);

@@ -1,6 +1,6 @@
 <template>
   <section
-    v-if="record?._id"
+    v-if="record?._id || draftMode"
     :class="[
       'quote-lines-workspace',
       { 'quote-lines-workspace--expanded': isLinesExpanded },
@@ -1273,19 +1273,286 @@ import { useQuoteLinesStickyColumns, updateQuoteLinesTableScrollHints } from '@/
 const props = defineProps({
   record: { type: Object, default: null },
   adapter: { type: Object, default: () => ({}) },
-  context: { type: Object, default: () => ({}) }
+  context: { type: Object, default: () => ({}) },
+  /** Create drawer: mutate lines/sections locally until parent Save POSTs the header. */
+  draftMode: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['updated']);
 
 const linesAdapter = computed(() => resolveCommercialLinesAdapter(props.adapter));
+/** Full capability set in draftMode — mutations run locally until parent Save. */
 const caps = computed(() => linesAdapter.value.capabilities);
 const apiBase = computed(() => linesAdapter.value.apiBase);
-const recordApiId = computed(() => props.record?._id);
+const isApiMode = computed(() => Boolean(props.record?._id) && !props.draftMode);
+const recordApiId = computed(() => (isApiMode.value ? props.record?._id : null));
 const documentRecordBase = computed(() => {
   const id = recordApiId.value;
   return id ? `${apiBase.value}/${id}` : '';
 });
+
+let localDraftSeq = 0;
+function nextLocalDraftId(prefix) {
+  localDraftSeq += 1;
+  return `${prefix}-${Date.now().toString(36)}-${localDraftSeq}`;
+}
+
+function currentLocalLines() {
+  return Array.isArray(props.record?.lines) ? props.record.lines.map((l) => ({ ...l })) : [];
+}
+
+function currentLocalSections() {
+  return Array.isArray(props.record?.sections) ? props.record.sections.map((s) => ({ ...s })) : [];
+}
+
+function filterLocalIncludedLines(lineList) {
+  const all = Array.isArray(lineList) ? lineList : [];
+  const visible = all.filter((l) => l && l.hiddenLine !== true);
+  const bundleModeByParentId = new Map();
+  for (const l of visible) {
+    if (String(l?.lineType || '') !== 'bundle_parent') continue;
+    const mode = String(l?.bundleSnapshot?.pricingMode || '').toLowerCase().trim() || 'fixed';
+    const key = String(l._id || l._localId || l[linesAdapter.value.lineIdField] || '');
+    if (key) bundleModeByParentId.set(key, mode);
+  }
+  return visible.filter((l) => {
+    const type = String(l?.lineType || '');
+    if (type === 'bundle_component') {
+      const parentId = l.parentBundleLineId ? String(l.parentBundleLineId) : '';
+      return parentId ? bundleModeByParentId.get(parentId) !== 'fixed' : true;
+    }
+    if (type === 'bundle_parent') {
+      const mode = String(l?.bundleSnapshot?.pricingMode || '').toLowerCase().trim() || 'fixed';
+      return mode !== 'rollup';
+    }
+    return true;
+  });
+}
+
+function computeLocalDiscountAmount({ lineSubtotal, discountType, discountValue, discountAmount }) {
+  if (Number.isFinite(Number(discountAmount)) && Number(discountAmount) > 0) {
+    return Number(discountAmount);
+  }
+  const dtype = String(discountType || '').trim();
+  const dval = Number(discountValue) || 0;
+  if (dtype === 'percent' && dval > 0) return (Number(lineSubtotal) || 0) * dval / 100;
+  if (dtype === 'amount' && dval > 0) return dval;
+  return 0;
+}
+
+function computeLocalSectionTotals(section, sectionLines) {
+  const included = filterLocalIncludedLines(sectionLines);
+  let sectionLineDiscountTotal = 0;
+  for (const l of included) {
+    const qty = Number(l.quantity) || 0;
+    const unit = Number(l.unitPriceSnapshot) || 0;
+    const gross = qty * unit;
+    const net = Number(l.lineSubtotal) || 0;
+    sectionLineDiscountTotal += Math.max(0, gross - net);
+  }
+  const sectionSubtotal = included.reduce((sum, l) => sum + (Number(l.lineSubtotal) || 0), 0);
+  const sectionTaxTotal = included.reduce((sum, l) => sum + (Number(l.lineTaxTotal) || 0), 0);
+  const sectionDiscountTotal = computeLocalDiscountAmount({
+    lineSubtotal: sectionSubtotal,
+    discountType: section?.sectionDiscountType,
+    discountValue: section?.sectionDiscountValue,
+    discountAmount: section?.sectionDiscountAmount
+  });
+  const sectionNet = Math.max(0, sectionSubtotal - sectionDiscountTotal);
+  const sectionTotal = Math.round((sectionNet + sectionTaxTotal) * 100) / 100;
+  return {
+    sectionSubtotal: Math.round(sectionSubtotal * 100) / 100,
+    sectionLineDiscountTotal: Math.round(sectionLineDiscountTotal * 100) / 100,
+    sectionDiscountTotal: Math.round(sectionDiscountTotal * 100) / 100,
+    sectionTaxTotal: Math.round(sectionTaxTotal * 100) / 100,
+    sectionNet: Math.round(sectionNet * 100) / 100,
+    sectionTotal
+  };
+}
+
+function withLocalSectionTotals(sections, lineList) {
+  const list = Array.isArray(lineList) ? lineList : [];
+  const sectionIdField = linesAdapter.value.sectionIdField;
+  return (Array.isArray(sections) ? sections : []).map((section) => {
+    const sid = String(section?._id || '');
+    const sectionLines = list.filter((l) => String(l?.[sectionIdField] || '') === sid);
+    return { ...section, ...computeLocalSectionTotals(section, sectionLines) };
+  });
+}
+
+function localTaxAmountOnBase(base, tax) {
+  const value = Number(tax?.taxValue ?? tax?.value);
+  if (!Number.isFinite(value) || value < 0) return 0;
+  const tType = String(tax?.taxType || '').toUpperCase();
+  if (tType === 'PERCENTAGE' || tType === 'PERCENT') {
+    return (Number(base) || 0) * value / 100;
+  }
+  return value;
+}
+
+function buildLocalItemTaxSnapshot(taxIds, optionsById) {
+  const taxes = (Array.isArray(taxIds) ? taxIds : [])
+    .map((id) => {
+      const opt = optionsById?.get(String(id));
+      if (!opt) return null;
+      return {
+        taxId: String(id),
+        name: opt.name || String(opt.label || '').replace(/\s*\([^)]*\)\s*$/, '') || String(id),
+        taxType: opt.taxType,
+        taxValue: Number(opt.taxValue),
+        scope: 'ITEM',
+        amount: 0
+      };
+    })
+    .filter(Boolean);
+  return {
+    mode: taxes.length ? 'engine' : 'none',
+    source: 'localDraft',
+    side: 'SALES',
+    taxes,
+    calculatedAt: new Date().toISOString()
+  };
+}
+
+function resolveLocalItemTaxes(line) {
+  const fromSnap = Array.isArray(line?.taxSnapshot?.taxes) ? line.taxSnapshot.taxes : [];
+  if (fromSnap.length) {
+    return fromSnap.map((t) => ({
+      taxId: String(t.taxId || t._id || ''),
+      name: t.name,
+      taxType: t.taxType,
+      taxValue: Number(t.taxValue),
+      scope: t.scope || 'ITEM'
+    })).filter((t) => t.taxId);
+  }
+  const taxIds = Array.isArray(line?.taxIds) ? line.taxIds.map(String) : [];
+  if (!taxIds.length) return [];
+  const byId = new Map((itemTaxOptions.value || []).map((o) => [String(o.id), o]));
+  return taxIds.map((id) => {
+    const opt = byId.get(id);
+    if (!opt) return null;
+    return {
+      taxId: id,
+      name: opt.name || opt.label,
+      taxType: opt.taxType,
+      taxValue: Number(opt.taxValue),
+      scope: 'ITEM'
+    };
+  }).filter(Boolean);
+}
+
+function recomputeLocalLineMoney(line) {
+  const qty = Number(line?.quantity) || 0;
+  const unit = Number(line?.unitPriceSnapshot) || 0;
+  const gross = qty * unit;
+  const dtype = String(line?.discountType || '').trim();
+  const dval = Number(line?.discountValue) || 0;
+  let discountAmount = 0;
+  if (dtype === 'percent' && dval > 0) discountAmount = (gross * dval) / 100;
+  else if (dtype === 'amount' && dval > 0) discountAmount = dval;
+  const lineSubtotal = Math.max(0, gross - discountAmount);
+
+  const itemTaxes = resolveLocalItemTaxes(line);
+  let lineTaxTotal = 0;
+  const snapshotTaxes = itemTaxes.map((tx) => {
+    const amount = Math.round(localTaxAmountOnBase(lineSubtotal, tx) * 100) / 100;
+    lineTaxTotal += amount;
+    return { ...tx, amount };
+  });
+  lineTaxTotal = Math.round(lineTaxTotal * 100) / 100;
+
+  const taxIds = snapshotTaxes.map((t) => String(t.taxId)).filter(Boolean);
+  const taxSnapshot = {
+    mode: snapshotTaxes.length ? 'engine' : 'none',
+    source: line?.taxSnapshot?.source || 'localDraft',
+    side: line?.taxSnapshot?.side || 'SALES',
+    taxes: snapshotTaxes,
+    calculatedAt: new Date().toISOString()
+  };
+
+  return {
+    ...line,
+    taxIds,
+    taxSnapshot,
+    discountAmount,
+    lineSubtotal,
+    lineTaxTotal,
+    lineTotal: Math.round((lineSubtotal + lineTaxTotal) * 100) / 100
+  };
+}
+
+function localTotalsFromLines(lineList, recordOverride = null) {
+  const list = Array.isArray(lineList) ? lineList : [];
+  const record = recordOverride || props.record || {};
+  const subtotal = list.reduce((sum, l) => sum + (Number(l?.lineSubtotal) || 0), 0);
+  const lineDiscountTotal = list.reduce((sum, l) => sum + (Number(l?.discountAmount) || 0), 0);
+  const lineTaxTotal = list.reduce((sum, l) => sum + (Number(l?.lineTaxTotal) || 0), 0);
+
+  const gType = String(record.globalDiscountType || '').trim();
+  const gVal = Number(record.globalDiscountValue) || 0;
+  let globalDiscountAmount = 0;
+  if (gType === 'percent' && gVal > 0) globalDiscountAmount = (subtotal * gVal) / 100;
+  else if (gType === 'amount' && gVal > 0) globalDiscountAmount = gVal;
+
+  const afterGlobal = Math.max(0, subtotal - globalDiscountAmount);
+
+  // Document charges from snapshot ids
+  const chargeSnap = record?.chargeDocumentSnapshot?.charges || [];
+  let chargesTotal = 0;
+  for (const c of chargeSnap) {
+    const value = Number(c.chargeValue ?? c.value);
+    if (!Number.isFinite(value) || value < 0) continue;
+    if (String(c.chargeType || '').toUpperCase() === 'PERCENTAGE') {
+      chargesTotal += (afterGlobal * value) / 100;
+    } else {
+      chargesTotal += value;
+    }
+  }
+
+  // Document taxes from snapshot (on after-global + charges base when percent)
+  const taxSnap = record?.transactionTaxSnapshot?.taxes || [];
+  let taxTotal = lineTaxTotal;
+  const taxBase = afterGlobal + chargesTotal;
+  for (const tx of taxSnap) {
+    const value = Number(tx.taxValue ?? tx.value);
+    if (!Number.isFinite(value) || value < 0) continue;
+    const tType = String(tx.taxType || '').toUpperCase();
+    if (tType === 'PERCENTAGE' || tType === 'PERCENT') {
+      taxTotal += (taxBase * value) / 100;
+    } else {
+      taxTotal += value;
+    }
+  }
+
+  const grandTotal = Math.max(0, afterGlobal + chargesTotal + taxTotal);
+  return {
+    subtotal,
+    lineDiscountTotal,
+    globalDiscountTotal: globalDiscountAmount,
+    globalDiscountAmount,
+    taxTotal: Math.round(taxTotal * 100) / 100,
+    chargesTotal: Math.round(chargesTotal * 100) / 100,
+    adjustmentTotal: 0,
+    grandTotal: Math.round(grandTotal * 100) / 100
+  };
+}
+
+function emitLocalLinesRecalc(nextLines, extras = {}) {
+  const recordPatch = { ...(props.record || {}), ...(extras.record || {}) };
+  const lines = (nextLines || currentLocalLines()).map((l) => recomputeLocalLineMoney(l));
+  const sections = withLocalSectionTotals(
+    extras.sections ?? currentLocalSections(),
+    lines
+  );
+  emit('updated', {
+    type: 'lines-recalculated',
+    lines,
+    sections,
+    totals: localTotalsFromLines(lines, { ...recordPatch, lines, sections }),
+    quote: extras.quote || null,
+    ...extras.emitExtra
+  });
+}
 
 const isLinesExpanded = computed(() => props.context?.expandedLeftSection === 'lines');
 
@@ -1384,7 +1651,13 @@ function currencySymbolForCode(code) {
   }
 }
 
-const quoteId = computed(() => props.record?._id);
+const quoteId = computed(() =>
+  isApiMode.value
+    ? props.record?._id
+    : props.draftMode
+      ? `local-draft:${linesAdapter.value.moduleKey}`
+      : props.record?._id
+);
 const { busy, overrideLock } = useQuoteLinesSession(quoteId);
 const {
   showSkuColumn,
@@ -1411,7 +1684,7 @@ const hasSections = computed(() => quoteSections.value.length > 0);
 
 const sectionBlocks = computed(() => {
   const adapter = linesAdapter.value;
-  return buildQuoteSectionBlocks({
+  const blocks = buildQuoteSectionBlocks({
     lines: lines.value,
     sections: quoteSections.value,
     uncategorizedTitle: t('records.quoteSectionUncategorized'),
@@ -1419,6 +1692,15 @@ const sectionBlocks = computed(() => {
     sectionUuidField: adapter.sectionUuidField,
     lineIdField: adapter.lineIdField,
     includeInTotalField: adapter.includeInTotalField || 'includeInQuoteTotal'
+  });
+  if (!props.draftMode) return blocks;
+  return blocks.map((block) => {
+    if (!block?.section) return block;
+    const sectionLines = (block.rows || []).map((r) => r.line).filter(Boolean);
+    return {
+      ...block,
+      section: { ...block.section, ...computeLocalSectionTotals(block.section, sectionLines) }
+    };
   });
 });
 
@@ -1714,10 +1996,31 @@ function closeSectionModal() {
 }
 
 function emitSectionsUpdated(payload) {
+  if (!props.draftMode || isApiMode.value) {
+    emit('updated', {
+      type: 'sections-updated',
+      sections: payload?.sections ?? null,
+      totals: payload?.totals ?? null,
+      lines: payload?.lines ?? null
+    });
+    return;
+  }
+  const lines = Array.isArray(payload?.lines) ? payload.lines : currentLocalLines();
+  const pricedLines = lines.map((l) => recomputeLocalLineMoney(l));
+  const sections = Array.isArray(payload?.sections)
+    ? withLocalSectionTotals(payload.sections, pricedLines)
+    : payload?.sections ?? null;
+  const totals = payload?.totals ?? (Array.isArray(sections)
+    ? localTotalsFromLines(pricedLines, {
+        ...(props.record || {}),
+        lines: pricedLines,
+        sections
+      })
+    : null);
   emit('updated', {
     type: 'sections-updated',
-    sections: payload?.sections ?? null,
-    totals: payload?.totals ?? null,
+    sections,
+    totals,
     lines: payload?.lines ?? null
   });
 }
@@ -1731,7 +2034,22 @@ function isLastMovableSection(block) {
 }
 
 async function persistSectionOrder() {
-  if (!canReorderSections.value || !recordApiId.value || !caps.value.sectionReorder) return;
+  if (!canReorderSections.value || !caps.value.sectionReorder) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
+  if (!isApiMode.value) {
+    const byKey = new Map(sectionBlocks.value.map((b) => [b.key, b]));
+    const nextSections = movableSectionKeys.value.map((key, idx) => {
+      const block = byKey.get(key);
+      return { ...block.section, sectionOrder: idx };
+    }).filter(Boolean);
+    emitSectionsUpdated({
+      sections: nextSections,
+      totals: localTotalsFromLines(currentLocalLines())
+    });
+    return;
+  }
+
   busy.value = true;
   try {
     const byKey = new Map(sectionBlocks.value.map((b) => [b.key, b]));
@@ -1773,10 +2091,47 @@ async function moveSectionByDelta(block, delta) {
 }
 
 async function submitSectionModal(form) {
-  if (!props.record?._id) return;
+  if (!props.record?._id && !props.draftMode) return;
+  const includeField = linesAdapter.value.includeInTotalField || 'includeInQuoteTotal';
+
+  if (!isApiMode.value) {
+    if (sectionModalMode.value === 'create') {
+      const sid = nextLocalDraftId('local-sec');
+      const created = {
+        _id: sid,
+        [linesAdapter.value.sectionUuidField]: sid,
+        sectionTitle: form.sectionTitle,
+        sectionType: form.sectionType,
+        [includeField]: form.includeInQuoteTotal !== false,
+        sectionOrder: currentLocalSections().length,
+        sectionTotal: 0
+      };
+      emitSectionsUpdated({
+        sections: sortQuoteSections([...currentLocalSections(), created]),
+        totals: localTotalsFromLines(currentLocalLines())
+      });
+    } else {
+      const id = String(sectionModalEditingId.value || '');
+      const next = currentLocalSections().map((s) => {
+        if (sectionRef(s) !== id && String(s._id) !== id) return s;
+        return {
+          ...s,
+          sectionTitle: form.sectionTitle,
+          sectionType: form.sectionType,
+          [includeField]: form.includeInQuoteTotal !== false
+        };
+      });
+      emitSectionsUpdated({
+        sections: sortQuoteSections(next),
+        totals: localTotalsFromLines(currentLocalLines())
+      });
+    }
+    closeSectionModal();
+    return;
+  }
+
   busy.value = true;
   try {
-    const includeField = linesAdapter.value.includeInTotalField || 'includeInQuoteTotal';
     const body = {
       sectionTitle: form.sectionTitle,
       sectionType: form.sectionType,
@@ -1814,7 +2169,24 @@ async function submitSectionModal(form) {
 }
 
 async function deleteSection(section) {
-  if (!props.record?._id || !section) return;
+  if ((!props.record?._id && !props.draftMode) || !section) return;
+
+  if (!isApiMode.value) {
+    const delRef = sectionRef(section);
+    const sectionIdField = linesAdapter.value.sectionIdField;
+    const remaining = currentLocalSections().filter((s) => sectionRef(s) !== delRef);
+    const fallback = remaining[0] ? sectionRef(remaining[0]) : null;
+    const nextLines = currentLocalLines().map((l) => {
+      if (String(l?.[sectionIdField] || '') !== String(delRef)) return l;
+      return { ...l, [sectionIdField]: fallback };
+    });
+    emitSectionsUpdated({
+      sections: remaining,
+      lines: nextLines
+    });
+    return;
+  }
+
   busy.value = true;
   try {
     const res = await apiClient.delete(`${documentRecordBase.value}/sections/${sectionRef(section)}`, {
@@ -1833,10 +2205,24 @@ async function deleteSection(section) {
 }
 
 async function toggleSectionInclude(section, checked) {
-  if (!recordApiId.value || !section || !caps.value.optionalSections) return;
+  if (!section || !caps.value.optionalSections) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
+  const includeField = linesAdapter.value.includeInTotalField || 'includeInQuoteTotal';
+  if (!isApiMode.value) {
+    const refId = sectionRef(section);
+    const next = currentLocalSections().map((s) =>
+      sectionRef(s) === refId ? { ...s, [includeField]: checked === true } : s
+    );
+    emitSectionsUpdated({
+      sections: next,
+      totals: localTotalsFromLines(currentLocalLines())
+    });
+    return;
+  }
+
   busy.value = true;
   try {
-    const includeField = linesAdapter.value.includeInTotalField || 'includeInQuoteTotal';
     const body = {
       [includeField]: checked === true
     };
@@ -1890,7 +2276,9 @@ function sanitizeDiscountInputEvent(event) {
 }
 
 async function saveSectionDiscount(section, patch = {}) {
-  if (!linesEditable.value || !recordApiId.value || !section || !caps.value.sectionDiscounts) return;
+  if (!linesEditable.value || !section || !caps.value.sectionDiscounts) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
   let nextType = patch.type !== undefined ? String(patch.type || '') : sectionDiscountType(section);
   let nextValue = patch.value !== undefined ? Number(patch.value) : sectionDiscountValue(section);
 
@@ -1908,6 +2296,24 @@ async function saveSectionDiscount(section, patch = {}) {
   }
 
   if (nextType && (!Number.isFinite(nextValue) || nextValue < 0)) return;
+
+  if (!isApiMode.value) {
+    const refId = sectionRef(section);
+    const next = currentLocalSections().map((s) =>
+      sectionRef(s) === refId
+        ? {
+            ...s,
+            sectionDiscountType: nextType || null,
+            sectionDiscountValue: nextType ? nextValue : 0
+          }
+        : s
+    );
+    emitSectionsUpdated({
+      sections: next,
+      totals: localTotalsFromLines(currentLocalLines())
+    });
+    return;
+  }
 
   busy.value = true;
   try {
@@ -1932,6 +2338,22 @@ async function saveSectionDiscount(section, patch = {}) {
 }
 
 async function patchLineSection(line, targetSectionRef) {
+  if (!isApiMode.value) {
+    if (!lineApiId(line) || !targetSectionRef) return;
+    const sectionIdField = linesAdapter.value.sectionIdField;
+    const updated = { ...line, [sectionIdField]: targetSectionRef };
+    const nextLines = currentLocalLines().map((l) =>
+      lineApiId(l) === lineApiId(line) ? updated : l
+    );
+    emit('updated', {
+      type: 'line-updated',
+      line: updated,
+      lines: nextLines,
+      totals: localTotalsFromLines(nextLines)
+    });
+    return;
+  }
+
   const body = {
     ...linesAdapter.value.buildPatchLineBody({ sectionRef: targetSectionRef }),
     overridePricing: overrideLock.value === true
@@ -1951,8 +2373,14 @@ function lineApiId(line) {
 }
 
 async function moveLineToSection(line, targetSectionRef) {
-  if (!linesEditable.value || !recordApiId.value || !lineApiId(line) || !targetSectionRef) return;
+  if (!linesEditable.value || !lineApiId(line) || !targetSectionRef) return;
+  if (isApiMode.value && !recordApiId.value) return;
   if (lineSectionRef(line) === targetSectionRef) return;
+
+  if (!isApiMode.value) {
+    await patchLineSection(line, targetSectionRef);
+    return;
+  }
 
   busy.value = true;
   try {
@@ -2047,7 +2475,8 @@ function lineDiscountInputValue(line) {
 }
 
 async function patchLineDiscount(line, patch = {}) {
-  if (!linesEditable.value || !recordApiId.value || !lineApiId(line) || !caps.value.discounts) return;
+  if (!linesEditable.value || !lineApiId(line) || !caps.value.discounts) return;
+  if (isApiMode.value && !recordApiId.value) return;
 
   let nextType = patch.type !== undefined ? String(patch.type || '') : lineDiscountType(line);
   let nextValue = patch.value !== undefined ? Number(patch.value) : lineDiscountValue(line);
@@ -2066,6 +2495,24 @@ async function patchLineDiscount(line, patch = {}) {
   }
 
   if (nextType && (!Number.isFinite(nextValue) || nextValue < 0)) return;
+
+  if (!isApiMode.value) {
+    const updated = recomputeLocalLineMoney({
+      ...line,
+      discountType: nextType || null,
+      discountValue: nextType ? nextValue : 0
+    });
+    const nextLines = (Array.isArray(props.record?.lines) ? props.record.lines : []).map((l) =>
+      lineApiId(l) === lineApiId(line) ? updated : l
+    );
+    emit('updated', {
+      type: 'line-updated',
+      line: updated,
+      lines: nextLines,
+      totals: localTotalsFromLines(nextLines)
+    });
+    return;
+  }
 
   busy.value = true;
   try {
@@ -2099,6 +2546,7 @@ const docTaxesPopoverStyle = ref({});
 const docChargesPopoverStyle = ref({});
 const docTaxOptions = ref([]);
 const docChargeOptions = ref([]);
+const itemTaxOptions = ref([]);
 const docTaxIds = ref([]);
 const docChargeIds = ref([]);
 const docTaxesLoading = ref(false);
@@ -2195,11 +2643,17 @@ function formatChargeOptionLabel(row) {
 }
 
 function snapshotTaxIds() {
+  if (Array.isArray(props.record?._localTransactionTaxIds)) {
+    return props.record._localTransactionTaxIds.map(String).filter(Boolean);
+  }
   const taxSnap = props.record?.transactionTaxSnapshot?.taxes || [];
   return taxSnap.map((x) => String(x.taxId || '')).filter(Boolean);
 }
 
 function snapshotChargeIds() {
+  if (Array.isArray(props.record?._localTransactionChargeIds)) {
+    return props.record._localTransactionChargeIds.map(String).filter(Boolean);
+  }
   const chargeSnap = props.record?.chargeDocumentSnapshot?.charges || [];
   return chargeSnap.map((x) => String(x.chargeId || '')).filter(Boolean);
 }
@@ -2226,7 +2680,26 @@ const docChargesPreviewTotal = computed(() => {
 });
 
 async function patchLineTaxes(line, taxIds = []) {
-  if (!linesEditable.value || !recordApiId.value || !lineApiId(line) || !caps.value.taxEdit) return;
+  if (!linesEditable.value || !lineApiId(line) || !caps.value.taxEdit) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
+  if (!isApiMode.value) {
+    await ensureItemTaxOptions();
+    const ids = Array.isArray(taxIds) ? taxIds.map(String) : [];
+    const byId = new Map((itemTaxOptions.value || []).map((o) => [String(o.id), o]));
+    const taxSnapshot = buildLocalItemTaxSnapshot(ids, byId);
+    const updated = recomputeLocalLineMoney({
+      ...line,
+      taxIds: ids,
+      taxSnapshot
+    });
+    const nextLines = currentLocalLines().map((l) =>
+      lineApiId(l) === lineApiId(line) ? updated : l
+    );
+    emitLocalLinesRecalc(nextLines);
+    return;
+  }
+
   busy.value = true;
   try {
     const body = {
@@ -2253,7 +2726,46 @@ async function patchLineTaxes(line, taxIds = []) {
 }
 
 async function saveDocumentTaxesCharges({ transactionTaxIds, transactionChargeIds }) {
-  if (!linesEditable.value || !recordApiId.value || !caps.value.taxesCharges) return false;
+  if (!linesEditable.value || !caps.value.taxesCharges) return false;
+  if (isApiMode.value && !recordApiId.value) return false;
+
+  if (!isApiMode.value) {
+    const taxOptsById = new Map((docTaxOptions.value || []).map((o) => [String(o.id), o]));
+    const chargeOptsById = new Map((docChargeOptions.value || []).map((o) => [String(o.id), o]));
+    const taxes = (transactionTaxIds || []).map((id) => {
+      const opt = taxOptsById.get(String(id));
+      return {
+        taxId: String(id),
+        taxType: opt?.taxType,
+        taxValue: opt?.taxValue,
+        label: opt?.label
+      };
+    });
+    const charges = (transactionChargeIds || []).map((id) => {
+      const opt = chargeOptsById.get(String(id));
+      return {
+        chargeId: String(id),
+        chargeType: opt?.chargeType,
+        chargeValue: opt?.chargeValue,
+        label: opt?.label
+      };
+    });
+    const quotePatch = {
+      transactionTaxSnapshot: { taxes },
+      chargeDocumentSnapshot: { charges },
+      _localTransactionTaxIds: (transactionTaxIds || []).map(String),
+      _localTransactionChargeIds: (transactionChargeIds || []).map(String)
+    };
+    const lines = currentLocalLines().map((l) => recomputeLocalLineMoney(l));
+    emit('updated', {
+      type: 'quote-taxes-charges-updated',
+      quote: quotePatch,
+      lines,
+      totals: localTotalsFromLines(lines, { ...props.record, ...quotePatch, lines })
+    });
+    return true;
+  }
+
   busy.value = true;
   try {
     const res = await apiClient.patch(`${documentRecordBase.value}/taxes-charges`, {
@@ -2300,6 +2812,25 @@ async function loadDocTaxOptions() {
   } finally {
     docTaxesLoading.value = false;
   }
+}
+
+async function ensureItemTaxOptions() {
+  if (itemTaxOptions.value.length) return itemTaxOptions.value;
+  try {
+    const taxesRes = await apiClient.get('/taxes', {
+      params: { scope: 'ITEM', applicableOn: 'SALES' }
+    });
+    itemTaxOptions.value = unwrapApiList(taxesRes).map((r) => ({
+      id: String(r._id),
+      name: r.name,
+      label: formatTaxOptionLabel(r),
+      taxType: r.taxType,
+      taxValue: Number(r.taxValue)
+    }));
+  } catch {
+    itemTaxOptions.value = [];
+  }
+  return itemTaxOptions.value;
 }
 
 async function loadDocChargeOptions() {
@@ -2367,10 +2898,27 @@ async function persistDocCharges() {
 }
 
 async function saveGlobalDiscount() {
-  if (!linesEditable.value || !recordApiId.value || !caps.value.globalDiscounts) return;
+  if (!linesEditable.value || !caps.value.globalDiscounts) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
   const value = Number(globalDiscountValue.value) || 0;
   const type = value > 0 ? globalDiscountType.value || 'percent' : null;
   if (type && value < 0) return;
+
+  if (!isApiMode.value) {
+    const quotePatch = {
+      globalDiscountType: type,
+      globalDiscountValue: type ? value : 0
+    };
+    const lines = currentLocalLines().map((l) => recomputeLocalLineMoney(l));
+    emit('updated', {
+      type: 'quote-discounts-updated',
+      quote: quotePatch,
+      lines,
+      totals: localTotalsFromLines(lines, { ...props.record, ...quotePatch, lines })
+    });
+    return;
+  }
 
   busy.value = true;
   try {
@@ -2480,7 +3028,8 @@ function onLineOrderDragStart() {
 }
 
 async function persistDragChanges() {
-  if (!linesEditable.value || !recordApiId.value || !caps.value.lineReorder) return;
+  if (!linesEditable.value || !caps.value.lineReorder) return;
+  if (isApiMode.value && !recordApiId.value) return;
 
   const moves = collectSectionMoves();
   const visibleIds = sectionBlocks.value.flatMap((block) =>
@@ -2488,6 +3037,30 @@ async function persistDragChanges() {
   );
   const orders = buildOrdersFromVisibleSequence(visibleIds);
   if (!moves.length && !orders.length) return;
+
+  if (!isApiMode.value) {
+    const byId = new Map(currentLocalLines().map((l) => [lineApiId(l), { ...l }]));
+    const sectionIdField = linesAdapter.value.sectionIdField;
+    const lineIdField = linesAdapter.value.lineIdField;
+    for (const move of moves) {
+      const cur = byId.get(lineApiId(move.line));
+      if (cur) {
+        cur[sectionIdField] = move.targetSectionRef;
+        byId.set(lineApiId(move.line), cur);
+      }
+    }
+    const nextLines = [];
+    for (const order of orders) {
+      const id = String(order[lineIdField] || '');
+      const line = byId.get(id);
+      if (!line) continue;
+      nextLines.push({ ...line, lineOrder: order.lineOrder });
+      byId.delete(id);
+    }
+    for (const leftover of byId.values()) nextLines.push(leftover);
+    emitLocalLinesRecalc(nextLines);
+    return;
+  }
 
   busy.value = true;
   try {
@@ -2769,18 +3342,20 @@ function getDefaultAddBlock() {
   return displaySectionBlocks.value.find((b) => !b.isOrphan) || displaySectionBlocks.value[0] || null;
 }
 
-/** Seed one draft search row on empty quotes so Add is not required first. */
+/** Seed one draft search row on empty lines so Add is not required first (edit + create draft). */
 const defaultDraftSeededQuoteId = ref('');
 watch(
   () => ({
     quoteId: String(props.record?._id || ''),
+    draftMode: Boolean(props.draftMode),
     editable: linesEditable.value,
     block: getDefaultAddBlock()
   }),
-  ({ quoteId, editable, block }) => {
-    if (!quoteId || !editable || !block?.key) return;
-    if (defaultDraftSeededQuoteId.value === quoteId) return;
-    defaultDraftSeededQuoteId.value = quoteId;
+  ({ quoteId, draftMode, editable, block }) => {
+    const seedKey = quoteId || (draftMode ? '__create-draft__' : '');
+    if (!seedKey || !editable || !block?.key) return;
+    if (defaultDraftSeededQuoteId.value === seedKey) return;
+    defaultDraftSeededQuoteId.value = seedKey;
     if ((block.rows || []).length > 0 || hasDraftRow(block.key)) return;
     ensureDraftRow(block);
   },
@@ -2986,12 +3561,73 @@ async function runDraftSearch(block) {
 async function addLineFromHit(block, hit) {
   const key = block?.key;
   const variantId = String(hit?._id || '');
-  if (!key || !variantId || !linesEditable.value || !recordApiId.value) return null;
+  if (!key || !variantId || !linesEditable.value) return null;
+  if (isApiMode.value && !recordApiId.value) return null;
   const commitKey = `${key}:${variantId}`;
   if (pendingDraftCommits.has(commitKey)) return null;
   pendingDraftCommits.add(commitKey);
   recordRecentVariant(hit);
   try {
+    if (!isApiMode.value) {
+      let unitPrice = Number(hit?.selling_price ?? hit?.unitPrice ?? hit?.list_price ?? 0) || 0;
+      let priceMeta = {};
+      try {
+        const priced = await apiClient.post('/catalog/price-books/resolve', {
+          variantId,
+          priceBookId: selectedPriceBookId.value || null,
+          quantity: 1,
+          asOfDate:
+            props.record?.quoteDate ||
+            props.record?.orderDate ||
+            props.record?.invoiceDate ||
+            null
+        });
+        const data = priced?.data || priced;
+        if (data && Number.isFinite(Number(data.unitPrice))) {
+          unitPrice = Number(data.unitPrice);
+          priceMeta = {
+            listPriceSnapshot: data.listPrice ?? unitPrice,
+            priceBookIdSnapshot: data.priceBookId ?? null,
+            priceBookNameSnapshot: data.priceBookName ?? null,
+            pricingSourceSnapshot: data.pricingSource ?? 'price_book'
+          };
+        }
+      } catch {
+        /* catalog resolve optional — fall back to hit price */
+      }
+      const lid = nextLocalDraftId('local-line');
+      const lineIdField = linesAdapter.value.lineIdField;
+      const sectionIdField = linesAdapter.value.sectionIdField;
+      const sectionRef = blockSectionRef(block) || null;
+      const qty = 1;
+      const order =
+        (Array.isArray(props.record?.lines) ? props.record.lines.length : 0) + 1;
+      let line = {
+        _localId: lid,
+        _id: lid,
+        [lineIdField]: lid,
+        variantId,
+        [sectionIdField]: sectionRef,
+        quantity: qty,
+        unitPriceSnapshot: unitPrice,
+        listPriceSnapshot: priceMeta.listPriceSnapshot ?? unitPrice,
+        itemNameSnapshot: hit?.item_name || hit?.name || null,
+        skuSnapshot: hit?.variant_code || hit?.item_code || hit?.sku || null,
+        lineType: 'product',
+        lineOrder: order,
+        discountType: null,
+        discountValue: 0,
+        discountAmount: 0,
+        ...priceMeta
+      };
+      line = recomputeLocalLineMoney(line);
+      const nextLines = [...(Array.isArray(props.record?.lines) ? props.record.lines : []), line];
+      return {
+        line,
+        data: { lines: nextLines, totals: localTotalsFromLines(nextLines) }
+      };
+    }
+
     const body = {
       ...linesAdapter.value.buildAddLineBody({
         variantId,
@@ -3358,7 +3994,25 @@ async function confirmBundleOptionalModal() {
   }
 
   const parent = bundleOptionalConfigureParent.value;
-  if (!lineApiId(parent) || !recordApiId.value || !caps.value.bundles) return;
+  if (!lineApiId(parent) || !caps.value.bundles) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
+  if (!isApiMode.value) {
+    const selected = new Set(bundleOptionalSelected.value.map(String));
+    const parentId = lineApiId(parent);
+    const nextLines = currentLocalLines().map((l) => {
+      if (String(l?.parentBundleLineId || '') !== String(parentId)) return l;
+      if (String(l?.lineType || '') !== 'bundle_component') return l;
+      const optional = l?.optionalLine === true || l?.bundleSnapshot?.isOptional === true;
+      if (!optional) return l;
+      const included = selected.has(String(l.variantId));
+      return { ...l, hiddenLine: !included };
+    });
+    notifications.success(t('records.linesBundleOptionalUpdateSuccess'));
+    emitLocalLinesRecalc(nextLines);
+    closeBundleOptionalModal();
+    return;
+  }
 
   busy.value = true;
   try {
@@ -3387,10 +4041,105 @@ async function confirmBundleOptionalModal() {
 }
 
 async function submitAddBundle(hit, includedOptionalComponentVariantIds) {
-  if (!recordApiId.value || !caps.value.bundles) return;
+  if (!caps.value.bundles) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
   const blockKey = bundlePickerBlockKey.value;
   const sectionField = linesAdapter.value.sectionIdField;
   const sectionRefVal = quoteSectionIdForBlockKey(blockKey) || null;
+  const lineIdField = linesAdapter.value.lineIdField;
+
+  if (!isApiMode.value) {
+    busy.value = true;
+    try {
+      const expandRes = await apiClient.get(`/catalog/variants/${hit._id}/bundle-expand`, {
+        params: {
+          priceBookId: selectedPriceBookId.value || undefined,
+          quantity: 1,
+          asOfDate:
+            props.record?.quoteDate ||
+            props.record?.orderDate ||
+            props.record?.invoiceDate ||
+            undefined
+        }
+      });
+      const expand = expandRes?.data || expandRes || {};
+      const included = new Set((includedOptionalComponentVariantIds || []).map(String));
+      const parentLid = nextLocalDraftId('local-bundle');
+      const parent = recomputeLocalLineMoney({
+        _localId: parentLid,
+        _id: parentLid,
+        [lineIdField]: parentLid,
+        variantId: String(hit._id),
+        [sectionField]: sectionRefVal,
+        quantity: 1,
+        unitPriceSnapshot: Number(expand.bundleUnitPrice) || 0,
+        listPriceSnapshot: Number(expand.bundleUnitPrice) || 0,
+        itemNameSnapshot: expand.bundleItemName || hit?.item_name || hit?.name || null,
+        skuSnapshot: hit?.variant_code || null,
+        lineType: 'bundle_parent',
+        lineOrder: currentLocalLines().length + 1,
+        discountType: null,
+        discountValue: 0,
+        bundleSnapshot: {
+          pricingMode: expand.pricingMode || 'fixed',
+          components: Array.isArray(expand.lines) ? expand.lines : []
+        },
+        _localBundleVariantId: String(hit._id),
+        _localIncludedOptionalComponentVariantIds: [...included]
+      });
+      const components = [];
+      for (const comp of Array.isArray(expand.lines) ? expand.lines : []) {
+        const isOptional = comp?.isOptional === true;
+        const variantId = String(comp.componentVariantId || '');
+        if (!variantId) continue;
+        if (isOptional && !included.has(variantId)) continue;
+        const cid = nextLocalDraftId('local-bcomp');
+        components.push(
+          recomputeLocalLineMoney({
+            _localId: cid,
+            _id: cid,
+            [lineIdField]: cid,
+            variantId,
+            [sectionField]: sectionRefVal,
+            quantity: Number(comp.quantity) || 1,
+            unitPriceSnapshot: Number(comp.unitPrice) || 0,
+            listPriceSnapshot: Number(comp.unitPrice) || 0,
+            itemNameSnapshot: comp.item_name || null,
+            skuSnapshot: comp.variant_code || null,
+            lineType: 'bundle_component',
+            parentBundleLineId: parentLid,
+            optionalLine: isOptional,
+            hiddenLine: false,
+            lineOrder: currentLocalLines().length + components.length + 2,
+            discountType: null,
+            discountValue: 0,
+            bundleSnapshot: { isOptional }
+          })
+        );
+      }
+      const addedLines = [parent, ...components];
+      if (blockKey) {
+        const block = displaySectionBlocks.value.find((b) => b.key === blockKey);
+        if (block) resetDraftRowForNextAdd(block);
+        else clearDraftRow(blockKey);
+      }
+      notifications.success(t('records.linesAddBundleSuccess'));
+      const nextLines = [...currentLocalLines(), ...addedLines];
+      emit('updated', {
+        type: 'lines-added',
+        lines: addedLines,
+        totals: localTotalsFromLines(nextLines)
+      });
+    } catch (e) {
+      notifications.error(e?.message || t('records.linesAddBundleFailed'));
+    } finally {
+      busy.value = false;
+      bundlePickerBlockKey.value = null;
+    }
+    return;
+  }
+
   busy.value = true;
   try {
     const res = await apiClient.post(`${documentRecordBase.value}/bundles`, {
@@ -3436,9 +4185,25 @@ async function refresh() {
 }
 
 async function patchQty(line, raw) {
-  if (!linesEditable.value || !recordApiId.value || !lineApiId(line)) return;
+  if (!linesEditable.value || !lineApiId(line)) return;
+  if (isApiMode.value && !recordApiId.value) return;
   const q = Number(raw);
   if (!Number.isFinite(q) || q <= 0) return;
+
+  if (!isApiMode.value) {
+    const updated = recomputeLocalLineMoney({ ...line, quantity: q });
+    const nextLines = (Array.isArray(props.record?.lines) ? props.record.lines : []).map((l) =>
+      lineApiId(l) === lineApiId(line) ? updated : l
+    );
+    emit('updated', {
+      type: 'line-updated',
+      line: updated,
+      lines: nextLines,
+      totals: localTotalsFromLines(nextLines)
+    });
+    return;
+  }
+
   busy.value = true;
   try {
     const body = {
@@ -3478,7 +4243,23 @@ function requestRemoveLine(line) {
 async function confirmRemoveLine() {
   const line = linePendingDelete.value;
   showDeleteLineModal.value = false;
-  if (!recordApiId.value || !lineApiId(line)) return;
+  if (!lineApiId(line)) return;
+
+  if (!isApiMode.value) {
+    const nextLines = (Array.isArray(props.record?.lines) ? props.record.lines : []).filter(
+      (l) => lineApiId(l) !== lineApiId(line)
+    );
+    emit('updated', {
+      type: 'line-deleted',
+      deletedLine: line,
+      lines: nextLines,
+      totals: localTotalsFromLines(nextLines)
+    });
+    linePendingDelete.value = null;
+    return;
+  }
+
+  if (!recordApiId.value) return;
   busy.value = true;
   try {
     const res = await apiClient.delete(`${documentRecordBase.value}/lines/${lineApiId(line)}`, {
@@ -3502,7 +4283,14 @@ async function confirmRemoveLine() {
 }
 
 async function recalculate() {
-  if (!recordApiId.value || !caps.value.recalculate) return;
+  if (!caps.value.recalculate) return;
+  if (isApiMode.value && !recordApiId.value) return;
+
+  if (!isApiMode.value) {
+    emitLocalLinesRecalc(currentLocalLines());
+    return;
+  }
+
   busy.value = true;
   try {
     const res = await apiClient.post(`${documentRecordBase.value}/recalculate`, {
@@ -3542,7 +4330,7 @@ async function loadPriceBooks() {
 }
 
 function onWorkspaceKeydown(event) {
-  if (!linesEditable.value || !props.record?._id) return;
+  if (!linesEditable.value || (!props.record?._id && !props.draftMode)) return;
   if (!(event.metaKey || event.ctrlKey) || String(event.key || '').toLowerCase() !== 'k') return;
   const tag = String(event.target?.tagName || '').toLowerCase();
   if (tag === 'textarea') return;
@@ -3624,6 +4412,22 @@ function priceProvenanceTitle(line) {
     minQty
   });
 }
+
+defineExpose({
+  getDraftPayload() {
+    if (!props.draftMode) return null;
+    return {
+      lines: Array.isArray(props.record?.lines) ? props.record.lines : [],
+      sections: Array.isArray(props.record?.sections) ? props.record.sections : [],
+      globalDiscountType: props.record?.globalDiscountType ?? null,
+      globalDiscountValue: props.record?.globalDiscountValue ?? 0,
+      transactionTaxSnapshot: props.record?.transactionTaxSnapshot ?? null,
+      chargeDocumentSnapshot: props.record?.chargeDocumentSnapshot ?? null,
+      _localTransactionTaxIds: props.record?._localTransactionTaxIds ?? null,
+      _localTransactionChargeIds: props.record?._localTransactionChargeIds ?? null
+    };
+  }
+});
 </script>
 
 <style scoped>

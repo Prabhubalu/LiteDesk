@@ -7,7 +7,8 @@
  * Keep INITIAL_ORGANIZATION_QUICK_CREATE aligned with ORGANIZATION_QUICK_CREATE_DEFAULT in
  * client/src/platform/fields/organizationFieldModel.ts.
  *
- * Organization types (`types`) render in OrganizationTypesSection; type-scoped fields follow selection.
+ * App participation roles are configured via OrganizationParticipationSection;
+ * `types[]` is the denormalized union (system-derived), not a QC field.
  */
 
 /** Fields shown in New Organization quick create on a fresh instance. */
@@ -17,7 +18,6 @@ const INITIAL_ORGANIZATION_QUICK_CREATE = [
   'phone',
   'website',
   'assignedTo',
-  'types',
 ];
 
 /**

@@ -127,11 +127,68 @@ exports.create = async (req, res) => {
     
     const { extractCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
     const { applyCreateOwnerDefaults } = require('../utils/recordCreateOwnerDefaults');
+    const {
+      applyTypesWrite,
+      validateOrganizationTypesForEnabledApps,
+      resolveTenantParticipationAppKeys,
+      deriveTypesFromParticipations,
+      validateOrganizationParticipations,
+    } = require('../utils/syncOrganizationParticipation');
+    const { resolveAvailableOrganizationRoles } = require('../constants/organizationParticipation');
     const { standardPayload, customFieldsSet } = extractCustomFields(req.body, Organization);
     const payloadWithOwnerDefaults = applyCreateOwnerDefaults(standardPayload, 'organizations', req.user?._id);
 
+    const enabledAppKeys = await resolveTenantParticipationAppKeys(req.user?.organizationId);
+    const allowedRoles = resolveAvailableOrganizationRoles(enabledAppKeys);
+    const bodyParticipations =
+      req.body.participations && typeof req.body.participations === 'object'
+        ? req.body.participations
+        : null;
+    if (bodyParticipations) {
+      const partGate = validateOrganizationParticipations(bodyParticipations, enabledAppKeys);
+      if (!partGate.valid) {
+        return res.status(400).json({
+          success: false,
+          message: partGate.message,
+          errors: { types: partGate.message },
+        });
+      }
+    }
+    const incomingTypes = Array.isArray(payloadWithOwnerDefaults.types)
+      ? payloadWithOwnerDefaults.types
+      : bodyParticipations
+        ? deriveTypesFromParticipations(bodyParticipations)
+        : [];
+    const typeGate = validateOrganizationTypesForEnabledApps(incomingTypes, allowedRoles);
+    if (!typeGate.valid) {
+      return res.status(400).json({
+        success: false,
+        message: typeGate.message,
+        errors: { types: typeGate.message },
+      });
+    }
+    let synced;
+    if (bodyParticipations && Object.keys(bodyParticipations).length > 0) {
+      synced = {
+        types: deriveTypesFromParticipations(bodyParticipations),
+        participations: bodyParticipations,
+      };
+    } else {
+      const typesForWrite =
+        incomingTypes.length > 0
+          ? incomingTypes
+          : [allowedRoles.includes('Customer') ? 'Customer' : allowedRoles[0] || 'Customer'];
+      synced = applyTypesWrite({
+        types: typesForWrite,
+        enabledAppKeys,
+        existingParticipations: {},
+      });
+    }
+
     const body = {
       ...payloadWithOwnerDefaults,
+      types: synced.types,
+      participations: synced.participations,
       // Set createdBy from authenticated user
       createdBy: req.user?._id || null,
       // Default assignedTo to creator if not provided (similar to tasks)
@@ -223,7 +280,13 @@ exports.list = async (req, res) => {
       });
     }
 
-    const appKey = req.appKey || 'SALES';
+    // Core/All Organizations lists send appKey=PLATFORM (not a registry app).
+    // Prefer query so we do not fall back to SALES projection (which hides Vendor/Partner-only).
+    const queryAppKey = String(req.query.appKey || '').toUpperCase();
+    const appKey =
+      queryAppKey === 'PLATFORM' || queryAppKey === 'ALL' || queryAppKey === 'CORE'
+        ? 'PLATFORM'
+        : (req.appKey || queryAppKey || 'SALES');
     const query = await buildOrganizationListMongoQuery({
       tenantOrganizationId,
       params: req.query,
@@ -704,6 +767,49 @@ exports.update = async (req, res) => {
     // Validate type mutation invariants if types are being updated
     if (updatePayload.types !== undefined && Array.isArray(updatePayload.types)) {
       const { validateTypeMutation, validateRoleInvariant } = require('../services/systemInvariants');
+      const {
+        applyTypesWrite,
+        validateOrganizationTypesForEnabledApps,
+        validateOrganizationParticipations,
+        resolveTenantParticipationAppKeys,
+        deriveTypesFromParticipations,
+      } = require('../utils/syncOrganizationParticipation');
+      const { resolveAvailableOrganizationRoles } = require('../constants/organizationParticipation');
+
+      const enabledAppKeys = await resolveTenantParticipationAppKeys(tenantOrganizationId);
+      const allowedRoles = resolveAvailableOrganizationRoles(enabledAppKeys);
+
+      if (updatePayload.participations && typeof updatePayload.participations === 'object') {
+        const partGate = validateOrganizationParticipations(
+          updatePayload.participations,
+          enabledAppKeys
+        );
+        if (!partGate.valid) {
+          return res.status(400).json({
+            success: false,
+            message: partGate.message,
+            errors: { types: partGate.message },
+          });
+        }
+        updatePayload.types = deriveTypesFromParticipations(updatePayload.participations);
+      } else {
+        const typeGate = validateOrganizationTypesForEnabledApps(updatePayload.types, allowedRoles);
+        if (!typeGate.valid) {
+          return res.status(400).json({
+            success: false,
+            message: typeGate.message,
+            errors: { types: typeGate.message },
+          });
+        }
+
+        const synced = applyTypesWrite({
+          types: updatePayload.types,
+          enabledAppKeys,
+          existingParticipations: org.participations || {},
+        });
+        updatePayload.types = synced.types;
+        updatePayload.participations = synced.participations;
+      }
       
       // Validate type mutation (additive only)
       const typeMutationResult = await validateTypeMutation({
@@ -763,6 +869,11 @@ exports.update = async (req, res) => {
               updatedKeys.push(field);
             }
           }
+        } else if (field === 'participations' && fieldValue && typeof fieldValue === 'object') {
+          org.participations = fieldValue;
+          org.markModified('participations');
+          hasChanges = true;
+          updatedKeys.push(field);
         } else if (Array.isArray(fieldValue)) {
           const currentArray = Array.isArray(org[field]) ? org[field] : [];
           if (JSON.stringify(currentArray) !== JSON.stringify(fieldValue)) {

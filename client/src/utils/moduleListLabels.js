@@ -218,6 +218,7 @@ const CREATE_LABEL_KEYS = {
   deals: 'deals.listCreate',
   quotes: 'quotes.listCreate',
   items: 'platform.listCreateItem',
+  purchase_orders: 'platform.listCreatePurchaseOrder',
   campaigns: 'marketing.campaignsNew',
   reports: 'analytics.newReport',
   widgets: 'analytics.newWidget',

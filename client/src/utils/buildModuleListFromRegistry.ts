@@ -94,6 +94,9 @@ function resolveListPermissionModule(moduleKey: string): string {
   if (moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards') {
     return 'reports';
   }
+  if (moduleKey === 'purchase_orders') {
+    return 'inventory';
+  }
   return moduleKey;
 }
 
@@ -114,6 +117,7 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
   const createLabel = moduleKey === 'people' ? 'New Person' : 
                      moduleKey === 'deals' ? 'New Deal' :
                      moduleKey === 'tasks' ? 'New Task' :
+                     moduleKey === 'purchase_orders' ? 'New PO' :
                      `New ${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`;
   
   const actions: Array<{
@@ -131,7 +135,10 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
       label: createLabel,
       type: 'create' as ActionType,
       route: getCreateRoute(moduleKey, appKey),
-      permission: `${permissionModule}.create`,
+      // Inventory RBAC uses adjust (not create) for mutations.
+      permission: moduleKey === 'purchase_orders'
+        ? 'inventory.adjust'
+        : `${permissionModule}.create`,
       variant: 'primary',
       order: 1,
     },
@@ -145,7 +152,7 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
           order: 2,
         }]
       : []),
-    ...(moduleKey === 'campaigns' || moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards'
+    ...(moduleKey === 'campaigns' || moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards' || moduleKey === 'purchase_orders'
       ? []
       : [{
           key: 'export',
@@ -177,6 +184,9 @@ function getCreateRoute(moduleKey: string, appKey?: string): string {
   }
   if (key === 'dashboards') {
     return '/analytics/dashboards/new';
+  }
+  if (key === 'purchase_orders') {
+    return '/inventory/purchase-orders/new';
   }
   return `/${key}/new`;
 }
@@ -443,6 +453,7 @@ function getModuleDisplayName(moduleKey: string): string {
     widgets: 'Widgets',
     dashboards: 'Dashboards',
     campaigns: 'Campaigns',
+    purchase_orders: 'Purchase Orders',
   };
   
   return nameMap[moduleKey.toLowerCase()] || moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1);

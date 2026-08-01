@@ -7,6 +7,7 @@
   -->
   <Teleport v-if="teleportReady || isLeaving" :to="teleportTarget">
     <div
+      v-show="effectivelyOpen || isLeaving"
       :class="[overlayPositionClass, drawerStackClass, 'pointer-events-none overflow-hidden']"
       role="dialog"
       aria-modal="false"
@@ -64,7 +65,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['backdrop', 'escape', 'park']);
+const emit = defineEmits(['backdrop', 'escape', 'park', 'unpark']);
 
 const isOpenRef = toRef(props, 'isOpen');
 const draftModuleKeyRef = toRef(props, 'draftModuleKey');
@@ -85,6 +86,7 @@ const {
   ownerTabId,
   claimOwnerTab,
   releaseOwnerTab,
+  takeWasParked,
 } = useWorkspaceScopedDrawer(isOpenRef, {
   draftModuleKey: draftModuleKeyRef,
   draftRecordId: draftRecordIdRef,
@@ -97,12 +99,24 @@ watch(
   (open, wasOpen) => {
     if (open) {
       isLeaving.value = false;
+      const unparking = takeWasParked();
+      if (unparking) {
+        // Park kept the panel mounted — restore state without remounting form/lines.
+        emit('unpark', ownerTabId.value);
+        panelVisible.value = true;
+        return;
+      }
       panelVisible.value = false;
       nextTick(() => {
         requestAnimationFrame(() => {
           panelVisible.value = true;
         });
       });
+      return;
+    }
+    // Park (isOpen still true): hide via v-show, keep panel DOM so commercial create
+    // does not re-seed or POST another Draft on tab return.
+    if (props.isOpen) {
       return;
     }
     if (wasOpen) isLeaving.value = true;

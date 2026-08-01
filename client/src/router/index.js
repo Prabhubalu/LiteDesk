@@ -166,11 +166,37 @@ const routes = [
   {
     path: '/inventory/purchase-orders',
     name: 'inventory-purchase-orders',
-    component: () => import('@/views/inventory/PurchaseOrders.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
       requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      moduleKey: 'purchase_orders',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/purchase-orders/new',
+    name: 'inventory-purchase-orders-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'inventory', action: 'view' },
+      moduleKey: 'purchase_orders',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/purchase-orders/:id',
+    name: 'inventory-purchase-order-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'inventory', action: 'view' },
+      moduleKey: 'purchase_orders',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {

@@ -350,5 +350,22 @@
   "sysFieldStatus": {
     "message": "Status",
     "description": "System organization field label"
+  },
+  "organizationQuickCreateSelectAppsHint": {
+    "message": "Select one or more apps. Configure type and fields for each selected app."
+  },
+  "organizationQuickCreateNoParticipationApps": {
+    "message": "No apps available for organization participation. Enable Sales, Helpdesk, Inventory, Marketing, or Portal."
+  },
+  "organizationAppSectionTitle": {
+    "message": "{app} information"
+  },
+  "listColumnParticipation": {
+    "message": "Participation",
+    "description": "Organizations list column label for derived types / app participation roles"
+  },
+  "listParticipationMore": {
+    "message": "+{count} more",
+    "description": "Overflow indicator for additional organization participations in list cell"
   }
 }

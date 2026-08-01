@@ -51,29 +51,12 @@
         <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
-      <!-- Custom Types Cell with colored picklist badges -->
-      <template #cell-types="{ value }">
-        <div v-if="value && Array.isArray(value) && value.length > 0" class="flex items-center gap-1 flex-wrap">
-          <BadgeCell
-            v-for="(type, index) in value.slice(0, 2)"
-            :key="index"
-            :value="type"
-            :options="organizationTypesPicklistOptions"
-          />
-          <span
-            v-if="value.length > 2"
-            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-            :title="value.slice(2).join(', ')"
-          >
-            +{{ value.length - 2 }}
-          </span>
-        </div>
-        <BadgeCell
-          v-else-if="value && !Array.isArray(value)"
-          :value="value"
-          :options="organizationTypesPicklistOptions"
+      <!-- Participation column (storage key types = denormalized union; UI prefers participations) -->
+      <template #cell-types="{ row }">
+        <OrganizationListParticipationTypeCell
+          :row="row"
+          :badge-options="organizationTypesPicklistOptions"
         />
-        <span v-else class="text-gray-500 dark:text-gray-400">-</span>
       </template>
 
       <!-- Custom Subscription Cell with Badge -->
@@ -251,6 +234,7 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import CSVImportModal from '@/components/import/CSVImportModal.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import OrganizationQuickCreateDrawer from '@/components/organizations/OrganizationQuickCreateDrawer.vue';
+import OrganizationListParticipationTypeCell from '@/components/organizations/OrganizationListParticipationTypeCell.vue';
 import {
   getPrimaryOrganizationStatusFieldKey,
   resolveOrganizationKeyFieldStatus,

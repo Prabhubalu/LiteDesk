@@ -260,6 +260,7 @@
             />
           </div>
         </div>
+        <slot name="after-quick-create" />
         <div
           v-if="remainingFields.length"
           class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"
@@ -385,6 +386,7 @@
             @update:salutation-value="onSalutationFieldUpdate"
           />
         </div>
+        <slot name="after-quick-create" />
       </div>
     </template>
     </template>
@@ -1335,6 +1337,19 @@ const getFieldState = (field) => {
     moduleKey: props.moduleKey,
   });
   let state = mergeOrgContactLookupForField(field, base, currentFormData, props.moduleKey, fields);
+  // PO / inventory vendorId → Vendor orgs via PLATFORM list (Sales-gated endpoint; not appKey=INVENTORY).
+  if (String(field.key || '').toLowerCase().replace(/[^a-z0-9]+/g, '') === 'vendorid') {
+    const prevQ =
+      state.lookupQuery && typeof state.lookupQuery === 'object' ? { ...state.lookupQuery } : {};
+    state = {
+      ...state,
+      lookupQuery: {
+        ...prevQ,
+        appKey: prevQ.appKey || 'PLATFORM',
+        type: prevQ.type || 'Vendor',
+      },
+    };
+  }
   if (
     String(props.moduleKey || '').toLowerCase() === 'organizations' &&
     ORGANIZATION_INTENT_STATUS_FIELD_KEYS.has(field.key)
@@ -1564,7 +1579,9 @@ function enrichOrganizationModuleTypesField(mod, typeDefs) {
   if (!mod || String(mod.key || '').toLowerCase() !== 'organizations' || !Array.isArray(mod.fields)) {
     return mod;
   }
-  const typeOptions = organizationTypeDefsToPicklistOptions(typeDefs);
+  const typeOptions = organizationTypeDefsToPicklistOptions(typeDefs, {
+    enabledApps: authStore.organization?.enabledApps,
+  });
   if (!typeOptions.length) return mod;
   return {
     ...mod,

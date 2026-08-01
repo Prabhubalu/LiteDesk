@@ -28,6 +28,10 @@ const GLOBAL_SYSTEM_FIELD_KEYS = new Set([
   'blognumber',
   'segmentnumber',
   'templatenumber',
+  // Connector sync metadata — set by integrations only; never create/edit UI
+  'externalreferenceid',
+  'syncstatus',
+  'lastsyncat',
 ]);
 
 /** @internal Used by fieldCapabilityEngine with pre-normalized keys. */

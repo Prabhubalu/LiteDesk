@@ -1079,9 +1079,11 @@ async function getOrganizationTypesConfig(organizationId) {
 }
 
 const DEFAULT_ORGANIZATION_TYPE_OPTIONS = [
+  'Lead',
   'Customer',
-  'Partner',
+  'Marketing Lead',
   'Vendor',
+  'Partner',
 ];
 
 /**
@@ -1140,6 +1142,224 @@ function statusPicklistPolicyToOptions(policyRows, fieldOptions) {
   }).filter(Boolean);
 }
 
+/**
+ * Map module field picklist options → statusTypes.statusPicklists rows.
+ * @param {unknown} options
+ * @returns {Array<{ value: string, label: string, enabled: boolean, color?: string }>}
+ */
+function moduleFieldOptionsToStatusPicklistRows(options) {
+  if (!Array.isArray(options)) return [];
+  const rows = [];
+  for (const opt of options) {
+    const value =
+      typeof opt === 'string' || typeof opt === 'number'
+        ? String(opt).trim()
+        : String(opt?.value ?? opt?.label ?? '').trim();
+    if (!value) continue;
+    const label =
+      typeof opt === 'object' && opt
+        ? String(opt.label ?? value).trim() || value
+        : value;
+    const row = {
+      value,
+      label,
+      enabled: !(typeof opt === 'object' && opt && opt.enabled === false),
+    };
+    if (typeof opt === 'object' && opt?.color) row.color = opt.color;
+    rows.push(row);
+  }
+  return rows;
+}
+
+/**
+ * Persist Field Configuration status picklist edits into tenant statusTypes.statusPicklists
+ * (source of truth) before enrichOrganizationsModuleFields on module save.
+ * Preserves previously disabled policy rows that are absent from the field payload
+ * (Field Config only receives enabled options after enrichment).
+ *
+ * @param {Array} fields
+ * @param {string|import('mongoose').Types.ObjectId} organizationId
+ * @returns {Promise<boolean>} true when a picklist was written
+ */
+async function syncOrganizationStatusPicklistsFromModuleFields(fields, organizationId) {
+  if (!Array.isArray(fields) || !organizationId) return false;
+  const { ORGANIZATION_STATUS_FIELD_KEYS } = require('../constants/organizationStatusDefaults');
+
+  const incomingByKey = {};
+  for (const field of fields) {
+    const key = String(field?.key || '').trim();
+    if (!ORGANIZATION_STATUS_FIELD_KEYS.includes(key)) continue;
+    const rows = moduleFieldOptionsToStatusPicklistRows(field.options);
+    if (rows.length > 0) incomingByKey[key] = rows;
+  }
+  if (Object.keys(incomingByKey).length === 0) return false;
+
+  let tenantConfig = null;
+  const appPriority = ['SALES', 'HELPDESK', 'AUDIT', 'PORTAL', 'LMS'];
+  for (const appKey of appPriority) {
+    tenantConfig = await TenantModuleConfiguration.findOne({
+      organizationId,
+      appKey,
+      moduleKey: 'organizations',
+    });
+    if (tenantConfig) break;
+  }
+  if (!tenantConfig) {
+    tenantConfig = await TenantModuleConfiguration.findOne({
+      organizationId,
+      moduleKey: 'organizations',
+    });
+  }
+  if (!tenantConfig) {
+    tenantConfig = new TenantModuleConfiguration({
+      organizationId,
+      appKey: 'SALES',
+      moduleKey: 'organizations',
+      enabled: true,
+      settings: {},
+    });
+  }
+
+  if (!tenantConfig.settings) tenantConfig.settings = {};
+  const prevStatusTypes = tenantConfig.settings.statusTypes || {};
+  const prevPicklists =
+    prevStatusTypes.statusPicklists && typeof prevStatusTypes.statusPicklists === 'object'
+      ? prevStatusTypes.statusPicklists
+      : {};
+
+  const nextPicklists = { ...prevPicklists };
+  for (const key of ORGANIZATION_STATUS_FIELD_KEYS) {
+    const incoming = incomingByKey[key];
+    if (!incoming) continue;
+    const incomingValues = new Set(incoming.map((r) => r.value.toLowerCase()));
+    const preservedDisabled = (Array.isArray(prevPicklists[key]) ? prevPicklists[key] : []).filter(
+      (row) =>
+        row &&
+        row.enabled === false &&
+        !incomingValues.has(String(row.value ?? '').trim().toLowerCase())
+    );
+    nextPicklists[key] = [...incoming, ...preservedDisabled];
+  }
+
+  tenantConfig.settings.statusTypes = {
+    ...prevStatusTypes,
+    statusPicklists: nextPicklists,
+  };
+  tenantConfig.markModified('settings');
+  tenantConfig.markModified('settings.statusTypes');
+  await tenantConfig.save();
+  return true;
+}
+
+/**
+ * Persist Field Configuration participation role picklist edits into
+ * settings.organizationParticipationTypes (SoT used by create/edit).
+ *
+ * @param {Array} fields
+ * @param {string|import('mongoose').Types.ObjectId} organizationId
+ * @returns {Promise<boolean>}
+ */
+async function syncOrganizationParticipationTypesFromModuleFields(fields, organizationId) {
+  if (!Array.isArray(fields) || !organizationId) return false;
+  const {
+    ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP,
+    ORGANIZATION_PARTICIPATION_BY_APP,
+  } = require('../constants/organizationParticipation');
+
+  const incomingByApp = {};
+  for (const field of fields) {
+    const key = String(field?.key || '').trim();
+    const appKey = ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP[key];
+    if (!appKey) continue;
+    const rows = moduleFieldOptionsToStatusPicklistRows(field.options);
+    if (rows.length > 0) incomingByApp[appKey] = rows;
+  }
+  if (Object.keys(incomingByApp).length === 0) return false;
+
+  let tenantConfig = null;
+  const appPriority = ['SALES', 'HELPDESK', 'AUDIT', 'PORTAL', 'LMS'];
+  for (const appKey of appPriority) {
+    tenantConfig = await TenantModuleConfiguration.findOne({
+      organizationId,
+      appKey,
+      moduleKey: 'organizations',
+    });
+    if (tenantConfig) break;
+  }
+  if (!tenantConfig) {
+    tenantConfig = await TenantModuleConfiguration.findOne({
+      organizationId,
+      moduleKey: 'organizations',
+    });
+  }
+  if (!tenantConfig) {
+    tenantConfig = new TenantModuleConfiguration({
+      organizationId,
+      appKey: 'SALES',
+      moduleKey: 'organizations',
+      enabled: true,
+      settings: {},
+    });
+  }
+
+  if (!tenantConfig.settings) tenantConfig.settings = {};
+  if (
+    !tenantConfig.settings.organizationParticipationTypes ||
+    typeof tenantConfig.settings.organizationParticipationTypes !== 'object'
+  ) {
+    tenantConfig.settings.organizationParticipationTypes = {};
+  }
+
+  const map = tenantConfig.settings.organizationParticipationTypes;
+  let changed = false;
+
+  for (const [appKey, rows] of Object.entries(incomingByApp)) {
+    const prevEntry = pickPeopleTypesEntry(map, appKey);
+    const prevDefs = Array.isArray(prevEntry?.typeDefs) ? prevEntry.typeDefs : [];
+    const prevByValue = new Map(
+      prevDefs.map((d) => [String(d.value || '').trim().toLowerCase(), d])
+    );
+
+    const typeDefs = rows.map((row, index) => {
+      const prev = prevByValue.get(row.value.toLowerCase());
+      const color =
+        row.color ||
+        (prev && prev.color) ||
+        normalizePeopleTypeStoredColor(null, index);
+      const def = { value: row.value, color };
+      if (prev && Array.isArray(prev.fields)) {
+        def.fields = prev.fields;
+      }
+      return def;
+    });
+
+    let defaultRole = prevEntry?.defaultRole || ORGANIZATION_PARTICIPATION_BY_APP[appKey]?.defaultType;
+    if (
+      !defaultRole ||
+      !typeDefs.some((d) => d.value.toLowerCase() === String(defaultRole).toLowerCase())
+    ) {
+      defaultRole = typeDefs[0]?.value;
+    } else {
+      const match = typeDefs.find(
+        (d) => d.value.toLowerCase() === String(defaultRole).toLowerCase()
+      );
+      defaultRole = match?.value || typeDefs[0]?.value;
+    }
+
+    map[appKey] = {
+      types: typeDefs,
+      default: defaultRole,
+    };
+    changed = true;
+  }
+
+  if (!changed) return false;
+  tenantConfig.markModified('settings');
+  tenantConfig.markModified('settings.organizationParticipationTypes');
+  await tenantConfig.save();
+  return true;
+}
+
 module.exports = {
   getEnabledAppsForTenant,
   getEnabledModulesForApp,
@@ -1161,7 +1381,143 @@ module.exports = {
   normalizeOrganizationTypesFromConfig,
   typeDefsToOrganizationTypePicklistOptions,
   statusPicklistPolicyToOptions,
+  moduleFieldOptionsToStatusPicklistRows,
+  syncOrganizationStatusPicklistsFromModuleFields,
+  syncOrganizationParticipationTypesFromModuleFields,
   normalizePicklistOptionValue,
   typeDefsToPeopleTypePicklistOptions,
   DEFAULT_PEOPLE_TYPES
+};
+
+/**
+ * Defaults for organization participation types per app.
+ * Canonical source: organizationParticipation.js registry.
+ */
+function defaultOrganizationParticipationTypeDefsForApp(upperKey) {
+  const {
+    ORGANIZATION_PARTICIPATION_BY_APP,
+  } = require('../constants/organizationParticipation');
+  const cfg = ORGANIZATION_PARTICIPATION_BY_APP[upperKey];
+  const roles = cfg?.allowedTypes ? [...cfg.allowedTypes] : ['Customer'];
+  return typeDefsFromStringArray(roles);
+}
+
+async function collectAllowedOrganizationParticipationFieldKeys(_organizationId, _appKeyUpper) {
+  const {
+    ORGANIZATION_TYPE_FIELDS,
+  } = require('../constants/organizationTypeDefaults');
+  const allowed = new Set();
+  for (const fields of Object.values(ORGANIZATION_TYPE_FIELDS)) {
+    for (const f of fields) allowed.add(f);
+  }
+  return allowed;
+}
+
+/**
+ * @returns {Promise<{ types: string[], defaultRole: string, typeDefs: Array<{value: string, color: string, fields?: string[]}> }>}
+ */
+async function getOrganizationParticipationTypesConfig(organizationId, appKey) {
+  const upper = (appKey || 'SALES').toUpperCase();
+  const {
+    ORGANIZATION_PARTICIPATION_BY_APP,
+    ORGANIZATION_PARTICIPATION_APP_KEYS,
+  } = require('../constants/organizationParticipation');
+
+  if (!ORGANIZATION_PARTICIPATION_APP_KEYS.includes(upper)) {
+    const typeDefs = defaultOrganizationParticipationTypeDefsForApp('SALES');
+    const types = typeDefs.map((d) => d.value);
+    return {
+      types,
+      defaultRole: ORGANIZATION_PARTICIPATION_BY_APP.SALES?.defaultType || types[0],
+      typeDefs,
+    };
+  }
+
+  try {
+    let tenantConfig = await TenantModuleConfiguration.findOne({
+      organizationId,
+      moduleKey: 'organizations',
+      'settings.organizationParticipationTypes': { $exists: true, $ne: null },
+    }).lean();
+
+    let entry = pickPeopleTypesEntry(
+      tenantConfig?.settings?.organizationParticipationTypes,
+      upper
+    );
+    if (entry) return entry;
+
+    const salesRow = await TenantModuleConfiguration.findOne({
+      organizationId,
+      appKey: 'SALES',
+      moduleKey: 'organizations',
+    }).lean();
+    entry = pickPeopleTypesEntry(
+      salesRow?.settings?.organizationParticipationTypes,
+      upper
+    );
+    if (entry) return entry;
+
+    const anyRow = await TenantModuleConfiguration.findOne({
+      organizationId,
+      moduleKey: 'organizations',
+      'settings.organizationParticipationTypes': { $exists: true, $ne: null },
+    }).lean();
+    entry = pickPeopleTypesEntry(
+      anyRow?.settings?.organizationParticipationTypes,
+      upper
+    );
+    if (entry) return entry;
+
+    const typeDefs = defaultOrganizationParticipationTypeDefsForApp(upper);
+    const types = typeDefs.map((d) => d.value);
+    return {
+      types,
+      defaultRole: ORGANIZATION_PARTICIPATION_BY_APP[upper]?.defaultType || types[0],
+      typeDefs,
+    };
+  } catch (error) {
+    console.error(
+      `[tenantMetadata] getOrganizationParticipationTypesConfig ${organizationId} ${appKey}:`,
+      error
+    );
+    const typeDefs = defaultOrganizationParticipationTypeDefsForApp(upper);
+    const types = typeDefs.map((d) => d.value);
+    return {
+      types,
+      defaultRole: ORGANIZATION_PARTICIPATION_BY_APP[upper]?.defaultType || types[0],
+      typeDefs,
+    };
+  }
+}
+
+module.exports = {
+  getEnabledAppsForTenant,
+  getEnabledModulesForApp,
+  getTenantModuleConfig,
+  getEffectiveRelationships,
+  isAppEnabledForTenant,
+  isModuleEnabledForTenant,
+  getPeopleTypes,
+  getPeopleTypesConfig,
+  validatePeopleType,
+  sanitizePeopleTypeDefsForSave,
+  collectAllowedPeopleParticipationFieldKeys,
+  sanitizeOrganizationTypeDefsForSave,
+  collectAllowedOrganizationTypeScopedFieldKeys,
+  getOrganizationTypesConfig,
+  maybeCleanupRetiredOrganizationTypesForTenant,
+  getDefaultOrganizationStatusFieldOptions,
+  mergeOrganizationStatusPicklistsWithDefaults,
+  normalizeOrganizationTypesFromConfig,
+  typeDefsToOrganizationTypePicklistOptions,
+  statusPicklistPolicyToOptions,
+  moduleFieldOptionsToStatusPicklistRows,
+  syncOrganizationStatusPicklistsFromModuleFields,
+  syncOrganizationParticipationTypesFromModuleFields,
+  normalizePicklistOptionValue,
+  typeDefsToPeopleTypePicklistOptions,
+  DEFAULT_PEOPLE_TYPES,
+  getOrganizationParticipationTypesConfig,
+  collectAllowedOrganizationParticipationFieldKeys,
+  defaultOrganizationParticipationTypeDefsForApp,
 };

@@ -11,8 +11,8 @@
  * 
  * ⚠️ IMPORTANT:
  * - Field ownership, intent, and scope are FINALIZED for this module
- * - Organizations do NOT use app participation (unlike People)
- * - All CRM organization attributes are platform-core, scoped by org type via `types`
+ * - App participation mirrors People: virtual role fields + app-scoped type attributes
+ * - `participations[APP].role` is source of truth; `types[]` is the denormalized union
  * 
  * ============================================================================
  * 
@@ -24,21 +24,23 @@
  *    - This field model covers CRM organization fields only
  * 
  * 2. Core business fields are platform-scoped
- *    - Identity: `name`, `industry`, `website`, `phone`, `address`, `types`, `tags`
+ *    - Identity: `name`, `industry`, `website`, `phone`, `address`, `tags`
  *    - Relationships: `assignedTo`, `accountManager`, `primaryContact`
- *    - Type status: `customerStatus`, `partnerStatus`, `vendorStatus`, etc.
- *    - Business detail: `creditLimit`, `paymentTerms`, `annualRevenue`, etc.
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
- * 3. System fields are infrastructure-scoped
- *    - `createdBy`, `createdAt`, `updatedAt`, `organizationId`, etc.
+ * 3. App participation fields (People-parallel)
+ *    - Virtual roles: `sales_type`, `helpdesk_role`, `inventory_role`, `marketing_role`, `portal_role`
+ *    - Type attributes live under primary owning app (SALES / INVENTORY / PORTAL)
+ *    - `types[]` is system-derived union of participation roles (not admin-edited)
+ *    - Record visibility still gated by `types` / participation roles
+ * 
+ * 4. System fields are infrastructure-scoped
+ *    - `createdBy`, `createdAt`, `updatedAt`, `organizationId`, `participations`, etc.
  *    - Managed by the platform, never user-editable
- *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
- * 4. Quick Create eligibility
- *    - All platform-core fields are configurable in Quick Create settings
- *    - Default runtime Quick Create includes core identity fields; admins configure more in Settings
- *    - System and tenant fields are excluded
+ * 5. Quick Create eligibility
+ *    - Core + non-virtual participation fields are configurable in Quick Create settings
+ *    - Virtual participation roles are configured via App Participation UI, not QC field list
  *    - See: docs/architecture/organization-settings.md
  * 
  * ============================================================================
@@ -99,6 +101,16 @@ export interface OrganizationFieldMetadata extends Omit<BaseFieldMetadata, 'inte
    * Organizations uses 'identity' for core fields (vs 'primary' in Tasks).
    */
   intent: OrganizationFieldIntent;
+
+  /**
+   * When true, stored under participations[appKey] (e.g. role), not a top-level document key.
+   */
+  isVirtual?: boolean;
+
+  /**
+   * App participation bucket (e.g. SALES, HELPDESK). Used with isVirtual.
+   */
+  appKey?: string;
 }
 
 // =============================================================================
@@ -206,6 +218,14 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     isComputed: true,
     isVisibleInConfig: true,
   },
+  participations: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false, // App participation map; virtual role fields are flattened for config
+  },
 
   // ==========================================================================
   // CORE BUSINESS FIELDS (platform-scoped, app-agnostic)
@@ -257,13 +277,16 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     allowOnCreate: true,
   },
   
-  // Types field - core classification
+  // Denormalized union of participations[APP].role — system-derived, not admin-edited.
+  // Hidden from Field Configurations; list/filters/key fields may still use it.
   types: {
-    owner: 'core',
-    intent: 'state',
+    owner: 'system',
+    intent: 'system',
     fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: true,
+    editable: false,
+    isSystem: true,
+    isComputed: true,
+    isVisibleInConfig: false,
     filterable: true,
     filterType: 'multi-select',
     filterPriority: 3,
@@ -311,67 +334,16 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     filterPriority: 6,
   },
 
-  // Type-scoped status fields (governed by `types`, not app participation)
-  customerStatus: {
-    owner: 'core',
-    intent: 'state',
+  partnerOnboardingSteps: {
+    owner: 'system',
+    intent: 'system',
     fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 7,
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
   },
-  customerTier: {
-    owner: 'core',
-    intent: 'state',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 8,
-  },
-  partnerStatus: {
-    owner: 'core',
-    intent: 'state',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 11,
-  },
-  partnerTier: {
-    owner: 'core',
-    intent: 'state',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 12,
-  },
-  partnerType: {
-    owner: 'core',
-    intent: 'state',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 13,
-  },
-  vendorStatus: {
-    owner: 'core',
-    intent: 'state',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'select',
-    filterPriority: 15,
-  },
+
+  // Retired type attributes (Distributor / Dealer) — remain platform-core
   dealerLevel: {
     owner: 'core',
     intent: 'state',
@@ -381,115 +353,6 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     filterable: true,
     filterType: 'select',
     filterPriority: 18,
-  },
-
-  // Core business detail fields
-  slaLevel: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-  },
-  paymentTerms: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-  },
-  creditLimit: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-  },
-  annualRevenue: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'number',
-    filterPriority: 9,
-  },
-  numberOfEmployees: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'number',
-    filterPriority: 10,
-  },
-  partnerSince: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'date',
-    filterPriority: 14,
-  },
-  partnerOnboardingSteps: {
-    owner: 'system',
-    intent: 'system',
-    fieldScope: 'CORE',
-    editable: false,
-    isSystem: true,
-    isVisibleInConfig: false,
-  },
-  territory: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-  },
-  discountRate: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-  },
-  vendorRating: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'number',
-    filterPriority: 16,
-  },
-  vendorContract: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-    filterable: true,
-    filterType: 'entity',
-    filterPriority: 17,
-  },
-  preferredPaymentMethod: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
-  },
-  taxId: {
-    owner: 'core',
-    intent: 'detail',
-    fieldScope: 'CORE',
-    editable: true,
-    allowOnCreate: false,
   },
   channelRegion: {
     owner: 'core',
@@ -536,6 +399,248 @@ export const ORGANIZATION_FIELD_METADATA: Record<string, OrganizationFieldMetada
     filterType: 'entity',
     filterPriority: 19,
   },
+
+  // ==========================================================================
+  // SALES PARTICIPATION — STATE (virtual role + customer/lead pool)
+  // Canonical SALES role → participations.SALES.role (virtual sales_type)
+  // ==========================================================================
+  sales_type: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'SALES',
+    editable: true,
+    requiredFor: ['SALES'],
+    isVirtual: true,
+    appKey: 'SALES',
+    filterable: true,
+    filterType: 'multi-select',
+    filterPriority: 2,
+  },
+  customerStatus: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'SALES',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 7,
+  },
+  customerTier: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'SALES',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 8,
+  },
+
+  // ==========================================================================
+  // SALES PARTICIPATION — DETAIL
+  // ==========================================================================
+  slaLevel: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'SALES',
+    editable: true,
+    allowOnCreate: false,
+  },
+  paymentTerms: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'SALES',
+    editable: true,
+    allowOnCreate: false,
+  },
+  creditLimit: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'SALES',
+    editable: true,
+    allowOnCreate: false,
+  },
+  annualRevenue: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'SALES',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'number',
+    filterPriority: 9,
+  },
+  numberOfEmployees: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'SALES',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'number',
+    filterPriority: 10,
+  },
+
+  // ==========================================================================
+  // HELPDESK PARTICIPATION — STATE
+  // ==========================================================================
+  helpdesk_role: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'HELPDESK',
+    editable: true,
+    isVirtual: true,
+    appKey: 'HELPDESK',
+    filterable: true,
+    filterType: 'multi-select',
+    filterPriority: 2,
+  },
+
+  // ==========================================================================
+  // INVENTORY PARTICIPATION — STATE + DETAIL (Vendor)
+  // ==========================================================================
+  inventory_role: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'INVENTORY',
+    editable: true,
+    requiredFor: ['INVENTORY'],
+    isVirtual: true,
+    appKey: 'INVENTORY',
+    filterable: true,
+    filterType: 'multi-select',
+    filterPriority: 2,
+  },
+  vendorStatus: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'INVENTORY',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 15,
+  },
+  vendorRating: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'INVENTORY',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'number',
+    filterPriority: 16,
+  },
+  vendorContract: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'INVENTORY',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'entity',
+    filterPriority: 17,
+  },
+  preferredPaymentMethod: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'INVENTORY',
+    editable: true,
+    allowOnCreate: false,
+  },
+  taxId: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'INVENTORY',
+    editable: true,
+    allowOnCreate: false,
+  },
+
+  // ==========================================================================
+  // MARKETING PARTICIPATION — STATE
+  // ==========================================================================
+  marketing_role: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'MARKETING',
+    editable: true,
+    isVirtual: true,
+    appKey: 'MARKETING',
+    filterable: true,
+    filterType: 'multi-select',
+    filterPriority: 2,
+  },
+
+  // ==========================================================================
+  // PORTAL PARTICIPATION — STATE + DETAIL (Partner)
+  // ==========================================================================
+  portal_role: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'PORTAL',
+    editable: true,
+    requiredFor: ['PORTAL'],
+    isVirtual: true,
+    appKey: 'PORTAL',
+    filterable: true,
+    filterType: 'multi-select',
+    filterPriority: 2,
+  },
+  partnerStatus: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'PORTAL',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 11,
+  },
+  partnerTier: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'PORTAL',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 12,
+  },
+  partnerType: {
+    owner: 'participation',
+    intent: 'state',
+    fieldScope: 'PORTAL',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'select',
+    filterPriority: 13,
+  },
+  partnerSince: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'PORTAL',
+    editable: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'date',
+    filterPriority: 14,
+  },
+  territory: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'PORTAL',
+    editable: true,
+    allowOnCreate: false,
+  },
+  discountRate: {
+    owner: 'participation',
+    intent: 'detail',
+    fieldScope: 'PORTAL',
+    editable: true,
+    allowOnCreate: false,
+  },
 };
 
 // =============================================================================
@@ -557,6 +662,13 @@ function validateOrganizationFieldMetadata(fieldName: string, metadata: Organiza
   if (owner === 'core' && intent !== 'identity' && intent !== 'state' && intent !== 'detail') {
     throw new Error(
       `Field "${fieldName}": Organization core fields must have intent: 'identity', 'state', or 'detail'. Found: ${intent}`
+    );
+  }
+
+  // Organization-specific: Participation fields must have intent: 'state' or 'detail'
+  if (owner === 'participation' && intent !== 'state' && intent !== 'detail') {
+    throw new Error(
+      `Field "${fieldName}": Organization participation fields must have intent: 'state' or 'detail'. Found: ${intent}`
     );
   }
 }
@@ -651,7 +763,6 @@ export const ORGANIZATION_ALWAYS_VISIBLE_FIELD_KEYS = new Set([
   'website',
   'phone',
   'address',
-  'types',
   'tags',
   'assignedTo',
   'accountManager',
@@ -665,6 +776,26 @@ export const ORGANIZATION_ALWAYS_VISIBLE_FIELD_KEYS = new Set([
  */
 export const ORGANIZATION_TYPE_FIELDS: Record<string, readonly string[]> = {
   Customer: [
+    'customerStatus',
+    'customerTier',
+    'slaLevel',
+    'paymentTerms',
+    'creditLimit',
+    'accountManager',
+    'annualRevenue',
+    'numberOfEmployees',
+  ],
+  Lead: [
+    'customerStatus',
+    'customerTier',
+    'slaLevel',
+    'paymentTerms',
+    'creditLimit',
+    'accountManager',
+    'annualRevenue',
+    'numberOfEmployees',
+  ],
+  'Marketing Lead': [
     'customerStatus',
     'customerTier',
     'slaLevel',
@@ -849,6 +980,8 @@ export const ORGANIZATION_INTENT_STATUS_FIELD_KEYS = new Set([
 
 const ORGANIZATION_TYPE_PRIMARY_STATUS_FIELD: Record<string, string> = {
   Customer: 'customerStatus',
+  Lead: 'customerStatus',
+  'Marketing Lead': 'customerStatus',
   Partner: 'partnerStatus',
   Vendor: 'vendorStatus',
 };
@@ -918,11 +1051,14 @@ export function getOrganizationParticipationFields(appKey: string): string[] {
 
 /**
  * Get all fields eligible for Quick Create configuration.
- * All platform-core organization fields (excludes system fields).
+ * Core + non-virtual participation fields (virtual roles use App Participation UI).
  */
 export function getOrganizationQuickCreateFields(): string[] {
   return Object.entries(ORGANIZATION_FIELD_METADATA)
-    .filter(([_, metadata]) => metadata.owner === 'core')
+    .filter(([_, metadata]) =>
+      metadata.owner === 'core' ||
+      (metadata.owner === 'participation' && !metadata.isVirtual)
+    )
     .map(([fieldName]) => fieldName);
 }
 
@@ -936,11 +1072,11 @@ export const ORGANIZATION_QUICK_CREATE_DEFAULT = [
   'phone',
   'website',
   'assignedTo',
-  'types',
 ] as const;
 
 /**
  * Default key fields for Organizations on a fresh instance.
+ * `types` = derived participation union (read-only summary on record).
  * Keep aligned with INITIAL_ORGANIZATION_KEY_FIELDS in server/constants/organizationModuleDefaults.js.
  */
 export const ORGANIZATION_DEFAULT_KEY_FIELDS = [

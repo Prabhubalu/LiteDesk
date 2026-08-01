@@ -54,21 +54,29 @@ module.exports = {
   ORGANIZATION: {
     platformOwned: true,
     baseModuleKey: 'organizations',
-    types: ['CUSTOMER', 'PARTNER', 'VENDOR', 'DEALER', 'CONTRACTOR', 'AUDITOR'],
+    // Canonical participation roles (app-scoped). Keep in sync with
+    // server/constants/organizationParticipation.js
+    types: ['LEAD', 'CUSTOMER', 'MARKETING_LEAD', 'VENDOR', 'PARTNER'],
     apps: {
       SALES: {
-        allowedTypes: ['CUSTOMER', 'PARTNER']
+        allowedTypes: ['LEAD', 'CUSTOMER'],
+        defaultType: 'CUSTOMER'
       },
       HELPDESK: {
-        allowedTypes: ['CUSTOMER']
+        allowedTypes: ['CUSTOMER'],
+        defaultType: 'CUSTOMER'
       },
-      AUDIT: {
-        readOnly: true,
-        allowedTypes: ['CUSTOMER', 'PARTNER', 'VENDOR']
+      INVENTORY: {
+        allowedTypes: ['VENDOR'],
+        defaultType: 'VENDOR'
+      },
+      MARKETING: {
+        allowedTypes: ['MARKETING_LEAD', 'CUSTOMER'],
+        defaultType: 'CUSTOMER'
       },
       PORTAL: {
-        readOnly: true,
-        allowedTypes: ['CUSTOMER', 'PARTNER', 'VENDOR', 'DEALER', 'CONTRACTOR', 'AUDITOR']
+        allowedTypes: ['PARTNER'],
+        defaultType: 'PARTNER'
       }
     }
   },

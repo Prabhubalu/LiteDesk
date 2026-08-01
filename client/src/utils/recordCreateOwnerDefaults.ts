@@ -10,6 +10,7 @@ const MODULE_CREATE_OWNER_FIELDS: Readonly<Record<string, readonly string[]>> = 
   events: ['assignedTo'],
   quotes: ['assignedTo'],
   sales_orders: ['assignedTo'],
+  purchase_orders: ['buyerId'],
   invoices: ['assignedTo'],
   documents: ['assignedTo'],
   forms: ['assignedTo'],

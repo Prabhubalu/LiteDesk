@@ -139,13 +139,22 @@ async function buildOrganizationListMongoQuery({
   if (params.tier) query['subscription.tier'] = params.tier;
   if (params.status) query['subscription.status'] = params.status;
 
-  const projectionMeta = getProjection(appKey, 'organizations');
-  query = applyProjectionFilter({
-    appKey,
-    moduleKey: 'organizations',
-    baseQuery: query,
-    projectionMeta
-  });
+  const normalizedAppKey = String(appKey || 'SALES').toUpperCase();
+  // Platform / All Organizations: no app type projection — show Customer, Vendor, Partner, etc.
+  const skipTypeProjection =
+    normalizedAppKey === 'PLATFORM'
+    || normalizedAppKey === 'ALL'
+    || normalizedAppKey === 'CORE';
+
+  if (!skipTypeProjection) {
+    const projectionMeta = getProjection(normalizedAppKey, 'organizations');
+    query = applyProjectionFilter({
+      appKey: normalizedAppKey,
+      moduleKey: 'organizations',
+      baseQuery: query,
+      projectionMeta
+    });
+  }
 
   let finalQuery = mergeSearchAndAssignedToFilters(query, searchFilter, assignedToFilter);
 

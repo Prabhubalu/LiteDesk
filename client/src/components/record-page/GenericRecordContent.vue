@@ -1187,6 +1187,7 @@ import FormRecordResponsesHub from '@/components/record-page/sections/FormRecord
 import { createItemsRecordAdapter } from '@/components/record-page/adapters/itemsRecordAdapter';
 import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quotesRecordAdapter';
 import { createSalesOrdersRecordAdapter } from '@/components/record-page/adapters/salesOrdersRecordAdapter';
+import { createPurchaseOrdersRecordAdapter } from '@/components/record-page/adapters/purchaseOrdersRecordAdapter';
 import { createInvoicesRecordAdapter } from '@/components/record-page/adapters/invoicesRecordAdapter';
 import { createPaymentsRecordAdapter } from '@/components/record-page/adapters/paymentsRecordAdapter';
 import { createDocumentsRecordAdapter } from '@/components/record-page/adapters/documentsRecordAdapter';
@@ -1873,7 +1874,13 @@ const closeAddRelatedRecordDrawer = () => {
   pendingAddRelatedLinkPayload.value = null;
 };
 
-const canLinkRecords = computed(() => !isFormsModule.value && authStore.can(props.moduleKey, 'edit'));
+const canLinkRecords = computed(() => {
+  if (isFormsModule.value) return false;
+  if (moduleKeyLower.value === 'purchase_orders') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  return authStore.can(props.moduleKey, 'edit');
+});
 
 const { context: genericRecordContext, contextRevision, load: loadGenericRecordContext, canUnlink: genericRecordContextCanUnlink } = useRecordContext(
   () => recordContextAppKey.value,
@@ -2044,6 +2051,7 @@ const recordTitle = computed(() => {
     items: r.item_name,
     quotes: r.quoteNumber || r.quoteTitle,
     sales_orders: r.salesOrderNumber || r.orderTitle,
+    purchase_orders: r.poNumber,
     invoices: r.invoiceNumber || r.invoiceTitle
   };
   return (
@@ -2084,7 +2092,13 @@ const recordAvatarIcon = computed(() => {
   return map[key] || getModuleIconComponent(key);
 });
 
-const canEditRecord = computed(() => authStore.can?.(props.moduleKey, 'edit') ?? false);
+const canEditRecord = computed(() => {
+  const key = moduleKeyLower.value;
+  if (key === 'purchase_orders') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  return authStore.can?.(props.moduleKey, 'edit') ?? false;
+});
 const canPrintRecord = computed(() => {
   if (!props.moduleKey || !record.value?._id) return false;
   return authStore.can('templates', 'view') && authStore.can('templates', 'render');
@@ -2579,6 +2593,8 @@ const genericAdapter = computed(() => {
       ? createQuotesRecordAdapter
       : moduleKeyLower.value === 'sales_orders'
         ? createSalesOrdersRecordAdapter
+        : moduleKeyLower.value === 'purchase_orders'
+          ? createPurchaseOrdersRecordAdapter
         : moduleKeyLower.value === 'invoices'
           ? createInvoicesRecordAdapter
           : moduleKeyLower.value === 'payments'

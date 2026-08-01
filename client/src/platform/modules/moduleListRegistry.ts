@@ -1711,6 +1711,65 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     normalizeViewFilters: normalizeSalesOrdersViewFilters
   },
 
+  purchase_orders: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'poNumber',
+        'status',
+        'vendorId',
+        'currency',
+        'grandTotal',
+        'poDate',
+        'updatedAt'
+      ],
+      lockedColumn: 'poNumber',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total POs', key: 'totalPurchaseOrders', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Pending approval', key: 'pendingApproval', formatter: 'number' },
+        { name: 'Approved', key: 'approved', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalPurchaseOrders: Number.isFinite(total) ? total : rows.length,
+          draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
+          pendingApproval: rows.filter((r) => String(r?.status || '').toLowerCase() === 'pending_approval').length,
+          approved: rows.filter((r) => String(r?.status || '').toLowerCase() === 'approved').length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Purchase Orders', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'pending_approval' } },
+      { id: 'approved', name: 'Approved', filters: { status: 'approved' } },
+      { id: 'partially-received', name: 'Partially Received', filters: { status: 'partially_received' } },
+      { id: 'fully-received', name: 'Fully Received', filters: { status: 'fully_received' } },
+      { id: 'cancelled', name: 'Cancelled', filters: { status: 'cancelled' } }
+    ],
+    apiEndpoint: '/inventory/purchase-orders',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
   campaigns: {
     defaultColumns: {
       defaultVisibleColumns: ['name', 'subject', 'status', 'recipientCount', 'updatedAt'],

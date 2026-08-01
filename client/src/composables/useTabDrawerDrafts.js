@@ -51,6 +51,27 @@ export function getTabDrawerDraft(key) {
 }
 
 /**
+ * Find the newest create draft for a module across tabs (keep-alive remount may lose ownerTabId).
+ * @param {string} moduleKey
+ * @returns {{ key: string, draft: object }|null}
+ */
+export function findLatestCreateDraftForModule(moduleKey) {
+  const mod = String(moduleKey || '').trim().toLowerCase();
+  if (!mod) return null;
+  const suffix = `::${mod}::create`;
+  let bestKey = null;
+  let best = null;
+  for (const [key, draft] of drafts.entries()) {
+    if (!key.endsWith(suffix) || !draft) continue;
+    if (!best || (draft.updatedAt || 0) >= (best.updatedAt || 0)) {
+      bestKey = key;
+      best = draft;
+    }
+  }
+  return bestKey && best ? { key: bestKey, draft: structuredCloneSafe(best) } : null;
+}
+
+/**
  * @param {string} key
  */
 export function clearTabDrawerDraft(key) {
