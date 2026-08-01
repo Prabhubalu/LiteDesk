@@ -96,6 +96,7 @@
 </template>
 
 <script setup>
+import { formatUserDateTime } from '@/utils/localeFormat';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
@@ -185,7 +186,7 @@ const statusTitle = computed(() => {
 
 function formatDateTime(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function openTakeoverConfirm() {

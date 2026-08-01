@@ -236,6 +236,7 @@ import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDate } from '@/utils/localeFormat';
 const { t } = useI18n();
 const notifications = useNotifications();
 
@@ -353,11 +354,7 @@ const formatAnswer = (answer) => {
 
 const formatDate = (date) => {
   if (!date) return null;
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(date);
 };
 
 const mapStatus = (status) => {

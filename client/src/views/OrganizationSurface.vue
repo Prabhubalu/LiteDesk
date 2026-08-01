@@ -396,7 +396,7 @@
           <div v-if="organization.numberOfEmployees" class="flex items-start">
             <span class="text-sm font-medium text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">{{ t('organizations.organizationSurfaceEmployees') }}</span>
             <span class="text-sm text-gray-900 dark:text-gray-100">
-              {{ organization.numberOfEmployees.toLocaleString() }}
+              {{ formatNumber(organization.numberOfEmployees) }}
             </span>
           </div>
           
@@ -501,6 +501,7 @@ import AutomationContext from '@/components/automation/AutomationContext.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { formatNumber } from '@/utils/localeFormat';
 // CONTRACT-LOCKED:
 // See docs/architecture/platform-permission-contract.md
 // Platform Permissions MUST remain explanatory-only.

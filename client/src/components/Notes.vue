@@ -115,6 +115,7 @@ import { useI18n } from 'vue-i18n';
 import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   entityType: {
@@ -265,13 +266,7 @@ const formatDate = (dateValue) => {
     } else if (diffDays < 7) {
       return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
     } else {
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      return formatUserDateTime(date);
     }
   } catch (e) {
     return String(dateValue);

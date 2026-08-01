@@ -112,6 +112,7 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
 import { useAuthStore } from '@/stores/authRegistry';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   moduleKey: {
@@ -155,12 +156,7 @@ function shortHash(value) {
 function formatWhen(value) {
   if (!value) return '—';
   try {
-    return new Intl.DateTimeFormat(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    }).format(new Date(value));
+    return formatUserDateTime(value) || String(value);
   } catch {
     return String(value);
   }

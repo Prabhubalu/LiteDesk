@@ -274,6 +274,7 @@ import UserTransferRecordsModal from './UserTransferRecordsModal.vue';
 import { useNotifications } from '@/composables/useNotifications';
 import { formatRelativeTime } from '@/utils/relativeTime';
 import { dateFilterValueToParams, parseDateFilterValue } from '@/utils/dateFilterOptions';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const { success: notifySuccess, error: notifyError } = useNotifications();
@@ -841,11 +842,7 @@ const formatUserTypeLabel = (userType) => {
 
 const formatAbsoluteDate = (date) => {
   if (!date) return t('settings.usersLastLoginNever');
-  return new Date(date).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(date) || t('settings.usersLastLoginNever');
 };
 
 const formatLastLogin = (date) => {

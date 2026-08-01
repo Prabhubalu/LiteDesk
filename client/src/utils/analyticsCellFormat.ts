@@ -1,3 +1,5 @@
+import { formatCurrency, formatNumber, formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
+
 export interface AnalyticsColumnFormat {
   key: string;
   label?: string;
@@ -15,7 +17,7 @@ export function formatAnalyticsCellValue(
   const type = String(column?.type || '').toLowerCase();
 
   if (value instanceof Date) {
-    return value.toLocaleString();
+    return formatUserDateTime(value) || '—';
   }
 
   if (typeof value === 'boolean') {
@@ -24,25 +26,27 @@ export function formatAnalyticsCellValue(
 
   if (typeof value === 'number') {
     if (type === 'currency' || column?.key?.toLowerCase().includes('amount')) {
-      return value.toLocaleString(undefined, {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 2,
-      });
+      return formatCurrency(value) || String(value);
     }
     if (type === 'percent') {
-      return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+      return `${formatNumber(value, { maximumFractionDigits: 2 })}%`;
     }
     return Number.isInteger(value)
-      ? value.toLocaleString()
-      : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      ? formatNumber(value)
+      : formatNumber(value, { maximumFractionDigits: 2 });
   }
 
   if (typeof value === 'string') {
-    if (type === 'date' || type === 'datetime') {
+    if (type === 'date') {
       const parsed = Date.parse(value);
       if (!Number.isNaN(parsed)) {
-        return new Date(parsed).toLocaleString();
+        return formatUserDate(new Date(parsed)) || value;
+      }
+    }
+    if (type === 'datetime') {
+      const parsed = Date.parse(value);
+      if (!Number.isNaN(parsed)) {
+        return formatUserDateTime(new Date(parsed)) || value;
       }
     }
     return value;

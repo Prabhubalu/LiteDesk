@@ -78,7 +78,7 @@
                 {{ entry.variantId }}
               </span>
             </div>
-            <span class="shrink-0 text-gray-700 dark:text-gray-300">{{ entry.unitPrice }} {{ entry.currency || selectedBook?.currency }}</span>
+            <span class="shrink-0 text-gray-700 dark:text-gray-300">{{ formatEntryPrice(entry) }}</span>
             <button type="button" class="text-xs text-red-600 shrink-0" @click="removeEntry(entry._id)">×</button>
           </div>
           <p v-if="!entries.length" class="text-sm text-gray-500">{{ t('settings.catalogNoPriceEntries') }}</p>
@@ -90,7 +90,11 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md space-y-4">
         <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('settings.catalogNewPriceBook') }}</h4>
         <input v-model="bookForm.name" class="w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600" :placeholder="t('settings.catalogPriceBookNamePlaceholder')" />
-        <input v-model="bookForm.currency" class="w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600" placeholder="USD" />
+        <select v-model="bookForm.currency" class="w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600">
+          <option v-for="opt in currencyOptions" :key="opt.code" :value="opt.code">
+            {{ opt.symbol || opt.code }} {{ opt.code }} — {{ opt.name }}
+          </option>
+        </select>
         <label class="inline-flex items-center gap-2 text-sm">
           <input v-model="bookForm.isDefault" type="checkbox" />
           {{ t('settings.catalogPriceBookSetDefault') }}
@@ -161,13 +165,25 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiData, unwrapCatalogApiList } from '@/utils/catalogApi';
-import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import {
+  formatCurrencyValue,
+  getEnabledCurrencyOptions,
+  resolveOrgCurrencyCode,
+} from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 
 import { confirmAction } from '@/composables/useConfirmAction';
 const { t } = useI18n();
 const authStore = useAuthStore();
 const orgCurrency = computed(() => resolveOrgCurrencyCode(authStore.organization));
+const currencyOptions = computed(() => getEnabledCurrencyOptions(authStore.organization));
+
+function formatEntryPrice(entry) {
+  return formatCurrencyValue(entry.unitPrice, {
+    currencyCode: entry.currency || selectedBook.value?.currency || orgCurrency.value,
+    orgCurrency: authStore.organization,
+  }) || '—';
+}
 
 const loading = ref(false);
 const loadError = ref('');

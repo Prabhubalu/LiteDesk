@@ -134,6 +134,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -188,8 +189,7 @@ function round2(n) {
 }
 
 function formatMoney(value) {
-  const n = Number(value) || 0;
-  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrencyValue(value, { currencyCode: eligibility.value?.payment?.currency }) ?? '—';
 }
 
 function close() {

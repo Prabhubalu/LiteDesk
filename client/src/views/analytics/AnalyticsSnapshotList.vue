@@ -100,6 +100,7 @@ import ReportPreviewPanel from '@/components/analytics/ReportPreviewPanel.vue';
 import { useAnalyticsSchedules } from '@/composables/useAnalyticsSchedules';
 import { analyticsResultToCsv, downloadAnalyticsCsv } from '@/utils/analyticsExport';
 import { captureAnalyticsModuleVisited, captureAnalyticsSnapshotExported } from '@/config/posthogAnalytics';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   id: { type: String, default: null },
@@ -118,7 +119,7 @@ function goSchedules() {
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function openSnapshot(id) {

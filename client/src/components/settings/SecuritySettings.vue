@@ -416,6 +416,7 @@ import apiClient from '@/utils/apiClient';
 
 import { useNotifications } from '@/composables/useNotifications';
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const { t } = useI18n();
 const notifications = useNotifications();
 
@@ -602,14 +603,7 @@ const handleSubmit = async () => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(dateString) || '-';
 };
 
 onMounted(() => {

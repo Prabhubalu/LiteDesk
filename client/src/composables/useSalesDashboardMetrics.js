@@ -6,7 +6,7 @@ import apiClient from '@/utils/apiClient';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 import { getNavigationIconComponent } from '@/utils/navigationIcons';
 import { formatCompactCurrencyValue } from '@/utils/currencyOptions';
-import { formatDate } from '@/utils/localeFormat';
+import { formatUserDate, formatTime } from '@/utils/localeFormat';
 
 /** @typedef {import('@/types/salesDashboardMetrics.types').SalesDashboardMetricsResponse} SalesDashboardMetricsResponse */
 
@@ -218,12 +218,12 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
 
   const rangeWindowLabel = computed(() => {
     const { start, end } = getDashboardRangeWindow(selectedRangeKey.value, now.value);
-    const startLabel = formatDate(start, { month: 'short', day: 'numeric', year: 'numeric' });
-    const endLabel = formatDate(end, { month: 'short', day: 'numeric', year: 'numeric' });
+    const startLabel = formatUserDate(start);
+    const endLabel = formatUserDate(end);
     return t('dashboard.rangeWindowSpan', { start: startLabel, end: endLabel });
   });
 
-  const formattedNow = computed(() => now.value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const formattedNow = computed(() => formatTime(now.value, { hour: '2-digit', minute: '2-digit' }));
 
   const fetchDashboardMetrics = async (definition) => {
     if (!isSalesApp.value) {
@@ -323,7 +323,7 @@ export function useSalesDashboardMetrics({ appKey, authStore }) {
     const staleDays = dashboardMetrics.value?.windows?.staleDays;
     if (!generatedAt) return 'Waiting for fresh analytics data';
     const date = new Date(generatedAt);
-    const updatedAt = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const updatedAt = formatTime(date, { hour: '2-digit', minute: '2-digit' });
     return staleDays
       ? `Live analytics updated ${updatedAt} • stale threshold ${staleDays}+ days`
       : `Live analytics updated ${updatedAt}`;

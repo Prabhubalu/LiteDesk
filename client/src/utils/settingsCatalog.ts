@@ -71,6 +71,15 @@ export const SETTINGS_CATALOG: SettingsCatalogEntry[] = [
     setupEssential: true,
   }),
   hub({
+    id: 'currency',
+    labelKey: 'settings.tabCurrency',
+    descriptionKey: 'settings.tabCurrencyDesc',
+    route: '/settings?tab=currency',
+    order: 25,
+    lane: 'workspace',
+    aliases: ['currencies', 'fx', 'exchange rate', 'conversion', 'multi-currency'],
+  }),
+  hub({
     id: 'business-hours',
     labelKey: 'settings.tabBusinessHours',
     descriptionKey: 'settings.tabBusinessHoursDesc',

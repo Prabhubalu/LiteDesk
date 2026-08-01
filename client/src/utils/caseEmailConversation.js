@@ -1,3 +1,4 @@
+import { formatUserDate, formatTime } from '@/utils/localeFormat';
 import { normalizeCaseEmailAttachment } from '@/utils/caseEmailAttachments';
 import { extractEmailFromActorName } from '@/utils/caseEmailReply';
 import {
@@ -116,10 +117,10 @@ export function formatCaseEmailTimelineStamp(date, t) {
   if (diffDays === 0) dayLabel = t('cases.recordEmailTimelineToday');
   else if (diffDays === 1) dayLabel = t('cases.recordEmailTimelineYesterday');
   else {
-    dayLabel = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    dayLabel = formatUserDate(d);
   }
 
-  const timeLabel = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  const timeLabel = formatTime(d, { hour: 'numeric', minute: '2-digit' });
   return `${dayLabel} • ${timeLabel}`;
 }
 

@@ -45,6 +45,7 @@
 </template>
 
 <script setup>
+import { formatUserDate } from '@/utils/localeFormat';
 defineProps({
   title: { type: String, required: true },
   subtitle: { type: String, default: '' },
@@ -59,7 +60,7 @@ defineEmits(['create']);
 
 function formatCell(row, col) {
   const v = row?.[col.key];
-  if (col.format === 'date' && v) return new Date(v).toLocaleDateString();
+  if (col.format === 'date' && v) return formatUserDate(v);
   if (v == null || v === '') return '—';
   return String(v);
 }

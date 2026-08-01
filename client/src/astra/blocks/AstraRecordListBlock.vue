@@ -93,6 +93,7 @@ import {
   PLATFORM_HOME_LIST_SCROLL_CLASS,
 } from '@/utils/platformHomeLayout';
 import type { AstraRecordListItem, AstraRecordAction } from '@/astra/blocks/types';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps<{
   title?: string;
@@ -125,13 +126,9 @@ const iconWrapClass = computed(() => {
 });
 
 function formatAmount(amount: number | string) {
-  const n = Number(amount);
-  if (!Number.isFinite(n)) return String(amount);
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(n);
+  const formatted = formatCurrencyValue(amount, { maximumFractionDigits: 0 });
+  if (formatted != null) return formatted;
+  return String(amount);
 }
 
 function onOpen(item: AstraRecordListItem) {

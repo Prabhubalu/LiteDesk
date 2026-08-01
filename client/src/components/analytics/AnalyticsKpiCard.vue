@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { formatNumber } from '@/utils/localeFormat';
 import type { AnalyticsExecuteResult } from '@/types/analytics.types';
 import {
   extractKpiValue,
@@ -50,7 +51,7 @@ const formattedValue = computed(() => {
   if (rawValue.value === null) return '—';
   const prefix = props.prefix || '';
   const suffix = props.suffix || '';
-  return `${prefix}${rawValue.value.toLocaleString()}${suffix}`;
+  return `${prefix}${formatNumber(rawValue.value)}${suffix}`;
 });
 
 const thresholdColor = computed(() => {

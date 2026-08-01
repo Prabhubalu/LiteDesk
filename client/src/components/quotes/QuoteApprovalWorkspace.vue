@@ -12,7 +12,7 @@
           </p>
         </div>
         <div class="text-right">
-          <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatMoney(workspace?.quote?.grandTotal, workspace?.quote?.currency) }}</div>
+          <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ formatCurrencyValue(workspace?.quote?.grandTotal, { currencyCode: workspace?.quote?.currency || undefined }) ?? '—' }}</div>
           <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ workspace?.quote?.status }}</div>
         </div>
       </div>
@@ -100,6 +100,7 @@ import { useNotifications } from '@/composables/useNotifications';
 import QuoteRevisionComparePanel from './QuoteRevisionComparePanel.vue';
 import QuoteApprovalHistory from './QuoteApprovalHistory.vue';
 import QuotePdfPreviewPane from './QuotePdfPreviewPane.vue';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   approval: { type: Object, default: null },
@@ -156,12 +157,4 @@ async function reject() {
   }
 }
 
-function formatMoney(value, currency = 'USD') {
-  const n = Number(value) || 0;
-  try {
-    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(n);
-  } catch {
-    return `${n.toLocaleString()} ${currency || ''}`.trim();
-  }
-}
 </script>

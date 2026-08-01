@@ -413,6 +413,8 @@ import { useRoute } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
 import { useActiveImportsStore } from '@/stores/activeImports';
 import apiClient from '@/utils/apiClient';
+import { formatUserDate, formatNumber, formatTime as formatLocaleTime } from '@/utils/localeFormat';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 
 const route = useRoute();
 const activeImportsStore = useActiveImportsStore();
@@ -499,7 +501,7 @@ const liveProgressPercent = computed(() => {
 });
 
 function formatCount(value) {
-  return Number(value || 0).toLocaleString();
+  return formatNumber(Number(value || 0));
 }
 
 let detailRefreshTimer = null;
@@ -583,12 +585,12 @@ const formatStatus = (status) => {
 
 const formatDate = (date) => {
   if (!date) return 'N/A';
-  return new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  return formatUserDate(date) || 'N/A';
 };
 
 const formatTime = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  return formatLocaleTime(date, { hour: '2-digit', minute: '2-digit' });
 };
 
 const formatProcessingTime = (ms) => {
@@ -652,30 +654,30 @@ const getRecordValue = (record, header) => {
       'Email': r => r.email || 'N/A',
       'Phone': r => r.phone || 'N/A',
       'Company': r => r.company || 'N/A',
-      'Created At': r => new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      'Created At': r => formatUserDate(r.createdAt) || 'N/A'
     },
     deals: {
       'Name': r => r.name || 'N/A',
-      'Amount': r => r.amount ? `$${r.amount.toLocaleString()}` : 'N/A',
+      'Amount': r => r.amount ? formatCurrencyValue(r.amount, { currencyCode: resolveOrgCurrencyCode() }) : 'N/A',
       'Stage': r => r.stage || 'N/A',
       'Status': r => r.status || 'N/A',
-      'Expected Close': r => r.expectedCloseDate ? new Date(r.expectedCloseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A',
-      'Created At': r => new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      'Expected Close': r => r.expectedCloseDate ? formatUserDate(r.expectedCloseDate) : 'N/A',
+      'Created At': r => formatUserDate(r.createdAt) || 'N/A'
     },
     tasks: {
       'Title': r => r.title || 'N/A',
       'Status': r => r.status || 'N/A',
       'Priority': r => r.priority || 'N/A',
-      'Due Date': r => r.dueDate ? new Date(r.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A',
+      'Due Date': r => r.dueDate ? formatUserDate(r.dueDate) : 'N/A',
       'Assigned To': r => r.assignedTo ? `${r.assignedTo.firstName || ''} ${r.assignedTo.lastName || ''}`.trim() : 'N/A',
-      'Created At': r => new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      'Created At': r => formatUserDate(r.createdAt) || 'N/A'
     },
     organizations: {
       'Name': r => r.name || 'N/A',
       'Industry': r => r.industry || 'N/A',
       'Website': r => r.website || 'N/A',
       'Phone': r => r.phone || 'N/A',
-      'Created At': r => new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      'Created At': r => formatUserDate(r.createdAt) || 'N/A'
     }
   };
   

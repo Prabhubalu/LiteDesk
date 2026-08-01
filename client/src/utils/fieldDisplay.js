@@ -9,6 +9,7 @@ import {
 } from './currencyOptions';
 import { i18n } from '@/i18n';
 import { resolveFieldLabel } from './fieldLabelResolver';
+import { formatUserDate, formatUserDateTime, formatNumberWithDisplayPrefs } from '@/utils/localeFormat';
 
 function normalizeAssignedToKey(key) {
   const fk = String(key || '').trim().toLowerCase().replace(/-/g, '_');
@@ -192,6 +193,7 @@ function resolvePicklistLabel(rawValue, options) {
 /**
  * Format a date-like value for user-friendly display.
  * Handles ISO strings, Date objects, and timestamps.
+ * Uses the active user time zone + dateFormat from localeFormat context.
  * @param {string|Date|number} value - Raw value (ISO string, Date, or timestamp)
  * @param {'Date'|'Date-Time'|'DateTime'|'date'} [dataType] - Optional type hint
  * @returns {string|null} Formatted date string or null if invalid
@@ -200,10 +202,39 @@ export function formatDateForDisplay(value, dataType) {
   if (value === null || value === undefined || value === '') return null;
   const d = value instanceof Date ? value : new Date(value);
   if (isNaN(d.getTime())) return null;
-  const isDateTime = dataType === 'Date-Time' || dataType === 'DateTime';
-  return isDateTime
-    ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  let isDateTime = dataType === 'Date-Time' || dataType === 'DateTime';
+  // Activity / raw ISO values often omit dataType; treat time-bearing ISO as Date-Time.
+  if (!isDateTime && !dataType && typeof value === 'string' && /T\d{2}:\d{2}/.test(value.trim())) {
+    isDateTime = true;
+  }
+  const formatted = isDateTime ? formatUserDateTime(d) : formatUserDate(d);
+  return formatted || null;
+}
+
+/**
+ * Format activity field-change from/to values (respects user date/time prefs).
+ * @param {*} value
+ * @param {string} [emptyLabel='Empty']
+ * @param {string} [dataType]
+ * @returns {string}
+ */
+export function formatActivityChangeValue(value, emptyLabel = 'Empty', dataType) {
+  if (value === undefined || value === null || value === '') return emptyLabel;
+  if (
+    dataType === 'Date' ||
+    dataType === 'Date-Time' ||
+    dataType === 'DateTime' ||
+    dataType === 'date'
+  ) {
+    return formatDateForDisplay(value, dataType) || emptyLabel;
+  }
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return formatDateForDisplay(value, 'Date-Time') || emptyLabel;
+  }
+  if (typeof value === 'string' && isIsoDateString(value)) {
+    return formatDateForDisplay(value) || value;
+  }
+  return String(value);
 }
 
 /**
@@ -260,22 +291,36 @@ export const getFieldValue = (fieldDef, record) => {
     case 'DateTime':
       return formatDateForDisplay(value, 'Date-Time');
     case 'Currency':
-      const decimalPlaces = fieldDef.numberSettings?.decimalPlaces || 2;
       if (value === undefined) return null;
       const currencyCode = resolveCurrencyCodeForField({ record, fieldDef });
+      const currencyOpts = { currencyCode };
+      if (fieldDef.numberSettings?.decimalPlaces != null) {
+        const decimalPlaces = Number(fieldDef.numberSettings.decimalPlaces);
+        currencyOpts.minimumFractionDigits = decimalPlaces;
+        currencyOpts.maximumFractionDigits = decimalPlaces;
+      }
       return (
-        formatCurrencyValue(value, {
-          currencyCode,
-          minimumFractionDigits: decimalPlaces,
-          maximumFractionDigits: decimalPlaces,
-        }) ||
-        `${getCurrencySymbolFromCode(currencyCode)}${parseFloat(value).toFixed(decimalPlaces)}`
+        formatCurrencyValue(value, currencyOpts) ||
+        `${getCurrencySymbolFromCode(currencyCode)}${parseFloat(value).toFixed(2)}`
       );
-    case 'Decimal':
-      const decimalPlaces2 = fieldDef.numberSettings?.decimalPlaces || 2;
-      return value !== undefined ? parseFloat(value).toFixed(decimalPlaces2) : null;
+    case 'Decimal': {
+      const decimalOpts = {};
+      if (fieldDef.numberSettings?.decimalPlaces != null) {
+        const decimalPlaces2 = Number(fieldDef.numberSettings.decimalPlaces);
+        decimalOpts.minimumFractionDigits = decimalPlaces2;
+        decimalOpts.maximumFractionDigits = decimalPlaces2;
+      }
+      return value !== undefined
+        ? formatNumberWithDisplayPrefs(Number(value), decimalOpts)
+        : null;
+    }
     case 'Integer':
-      return value !== undefined ? parseInt(value).toLocaleString() : null;
+      return value !== undefined
+        ? formatNumberWithDisplayPrefs(Number.parseInt(value, 10), {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          })
+        : null;
     case 'Picklist':
       return resolvePicklistLabel(value, fieldDef.options);
     case 'Multi-Picklist':

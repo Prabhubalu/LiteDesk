@@ -108,6 +108,7 @@
 </template>
 
 <script setup>
+import { formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
 import { useI18n } from 'vue-i18n';
 import SurfaceCard from '@/components/ui/SurfaceCard.vue';
 import CardHeader from '@/components/ui/CardHeader.vue';
@@ -466,8 +467,8 @@ const formatFieldValue = (fieldKey, value) => {
       if (isNaN(date.getTime())) return String(value);
       const isDateTime = typeof value === 'string' && value.includes('T');
       return isDateTime
-        ? date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        ? formatUserDateTime(date)
+        : formatUserDate(date);
     } catch (e) {
       return String(value);
     }
@@ -487,7 +488,7 @@ const formatFieldValue = (fieldKey, value) => {
   // Handle numeric fields
   if (typeof value === 'number') {
     if (fieldKey === 'lead_score' || fieldKey === 'estimated_value') {
-      return value.toLocaleString();
+      return formatUserDateTime(value);
     }
     return String(value);
   }

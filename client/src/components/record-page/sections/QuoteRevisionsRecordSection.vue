@@ -73,6 +73,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -122,7 +123,7 @@ function fmtDate(value) {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatUserDate(d);
 }
 
 function formatMoney(value, currency) {

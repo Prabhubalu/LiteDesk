@@ -1100,7 +1100,7 @@ import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInp
 import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
 import { getWebsiteValidationMessage } from '@/utils/urlInputValidation';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
-import { CURRENCY_OPTIONS, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { getEnabledCurrencyOptions, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
 import { deleteInlineUpload, isManagedInlineUploadRef } from '@/utils/inlineUploadStorage';
 import {
@@ -1398,7 +1398,7 @@ const isRequired = computed(() => {
 
 /** Field key `tags` (string[]); dataType should be Multi-Picklist — Tasks used to infer Text from schema */
 const isTagsField = computed(() => String(props.field?.key || '').toLowerCase() === 'tags');
-const currencyOptions = CURRENCY_OPTIONS;
+const currencyOptions = computed(() => getEnabledCurrencyOptions(authStore.organization));
 const effectiveCurrencyCode = computed(() => {
   // Prefer explicit companion/prop; do not let legacy numberSettings ($ → USD) override org default
   if (props.currencyCode) return String(props.currencyCode).toUpperCase();
@@ -1411,7 +1411,7 @@ const mergedPicklistSourceOptions = computed(() => {
     fieldKeyNorm === 'currency' || fieldKeyNorm === 'paymentcurrency';
   const base = Array.isArray(props.field.options) ? props.field.options : [];
   const currencyExtras = isCurrencyCodeField
-    ? CURRENCY_OPTIONS.map((c) => ({ value: c.code, label: c.code }))
+    ? currencyOptions.value.map((c) => ({ value: c.code, label: c.code }))
     : [];
   const extras = [
     ...currencyExtras,

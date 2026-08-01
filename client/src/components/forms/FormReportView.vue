@@ -226,6 +226,7 @@ import {
 } from '@/utils/formScoringUtils';
 
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const { t } = useI18n();
 const notifications = useNotifications();
 
@@ -344,13 +345,7 @@ const isStatusBlocked = computed(() => {
 });
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatUserDateTime(date);
 };
 
 const generateReport = async () => {

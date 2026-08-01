@@ -30,6 +30,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   record: { type: Object, default: null }
@@ -57,7 +58,7 @@ const detail = computed(() => {
   if (!respondedAt) return '';
   try {
     return t('records.quoteCustomerResponseAt', {
-      date: new Date(respondedAt).toLocaleString()
+      date: formatUserDateTime(respondedAt)
     });
   } catch {
     return '';
@@ -88,7 +89,7 @@ const signatureSignedAt = computed(() => {
   if (!at) return '';
   try {
     return t('records.quoteCustomerResponseSignedAt', {
-      date: new Date(at).toLocaleString()
+      date: formatUserDateTime(at)
     });
   } catch {
     return '';

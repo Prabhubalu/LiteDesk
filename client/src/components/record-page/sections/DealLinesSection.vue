@@ -345,7 +345,7 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiData } from '@/utils/catalogApi';
 import { useLocale } from '@/composables/useLocale';
-import { resolveOrgCurrencyCode, DEFAULT_CURRENCY_CODE } from '@/utils/currencyOptions';
+import { resolveOrgCurrencyCode, DEFAULT_CURRENCY_CODE, formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   /** Persisted deal record (needs _id for API mode) */
@@ -417,17 +417,7 @@ const currencyCode = computed(() => {
 });
 
 function formatMoney(value) {
-  const n = Number(value) || 0;
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: currencyCode.value,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(n);
-  } catch {
-    return n.toFixed(2);
-  }
+  return formatCurrencyValue(value, { currencyCode: currencyCode.value }) ?? '—';
 }
 
 function lineKey(line) {

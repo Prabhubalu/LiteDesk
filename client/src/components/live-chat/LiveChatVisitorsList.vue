@@ -72,6 +72,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   selectedVisitorId: { type: String, default: '' },
@@ -102,7 +103,7 @@ function displayName(visitor) {
 function formatRelative(value) {
   if (!value) return '';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return '';
   }

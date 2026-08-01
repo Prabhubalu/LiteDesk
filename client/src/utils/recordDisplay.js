@@ -17,6 +17,7 @@ import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getKeyFields, getFieldValue, getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { formatCurrencyValue, resolveCurrencyCodeForField } from '@/utils/currencyOptions';
+import { formatUserDate } from '@/utils/localeFormat';
 
 // Cache for record data (key: appKey.moduleKey.recordId)
 const recordCache = new Map();
@@ -446,7 +447,7 @@ function formatRelatedFieldValue(record, field, rawValue) {
   if (field.format === 'date') {
     const d = new Date(rawValue);
     if (!Number.isNaN(d.getTime())) {
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      return formatUserDate(d);
     }
   }
   return String(rawValue);

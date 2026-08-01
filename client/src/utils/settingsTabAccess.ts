@@ -64,6 +64,8 @@ export function canAccessSettingsTab(
   switch (tabId) {
     case 'organization':
       return Boolean(p.edit || p.view);
+    case 'currency':
+      return Boolean(p.edit || p.view);
     case 'users-access':
       return Boolean(p.manageUsers);
     case 'core-modules':
@@ -110,6 +112,7 @@ export function canAccessSettingsTab(
 const SETTINGS_TAB_IDS = [
   'profile',
   'organization',
+  'currency',
   'users-access',
   'core-modules',
   'applications',

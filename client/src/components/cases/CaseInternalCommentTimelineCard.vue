@@ -37,6 +37,7 @@ import Avatar from '@/components/common/Avatar.vue';
 import CommentContent from '@/components/record-page/CommentContent.vue';
 import { enrichPersonForAvatar } from '@/utils/caseTimeline';
 import { formatCaseEmailTimelineStamp } from '@/utils/caseEmailConversation';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   activity: { type: Object, required: true },
@@ -64,6 +65,6 @@ const fullTimestamp = computed(() => {
   const raw = props.createdAt || props.activity?.createdAt;
   if (!raw) return '';
   const d = new Date(raw);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString();
+  return Number.isNaN(d.getTime()) ? '' : formatUserDateTime(d);
 });
 </script>

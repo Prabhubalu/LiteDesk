@@ -73,6 +73,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FolderIcon } from '@heroicons/vue/24/outline';
 import DocumentsListView from '@/components/documents/DocumentsListView.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   folders: { type: Array, default: () => [] },
@@ -133,7 +134,7 @@ function formatFolderDate(value) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatUserDate(date) || '—';
 }
 
 defineExpose({

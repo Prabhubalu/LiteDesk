@@ -429,6 +429,7 @@ import {
   liveChatYesNoLabel,
 } from '@/utils/liveChatSessionDisplay';
 import { canAdminLiveChat, canReplyLiveChatSessions } from '@/utils/liveChatPermissions';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const DetailCard = defineComponent({
   name: 'LiveChatClosedSessionDetailCard',
@@ -598,7 +599,7 @@ function mapLinkedRecordRow(entry) {
 function formatDate(value) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return '—';
   }

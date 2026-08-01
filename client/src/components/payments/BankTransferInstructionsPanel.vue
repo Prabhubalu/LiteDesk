@@ -36,6 +36,7 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   record: { type: Object, default: null }
@@ -46,10 +47,7 @@ const loading = ref(false);
 const instructions = ref([]);
 
 function formatMoney(amount, currency = 'USD') {
-  return (Number(amount) || 0).toLocaleString(undefined, {
-    style: 'currency',
-    currency: currency || 'USD'
-  });
+  return formatCurrencyValue(amount, { currencyCode: currency || 'USD' }) ?? '—';
 }
 
 async function loadInstructions() {

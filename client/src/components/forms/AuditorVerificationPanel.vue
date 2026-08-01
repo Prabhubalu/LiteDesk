@@ -131,6 +131,7 @@ import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const { t } = useI18n();
 const notifications = useNotifications();
 
@@ -249,13 +250,7 @@ const verifyAction = async (questionId, approved) => {
 
 const formatDate = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(date);
 };
 
 // Lifecycle

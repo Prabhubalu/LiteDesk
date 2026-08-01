@@ -96,6 +96,7 @@ import apiClient from '@/utils/apiClient';
 import { getKeyFields, getFieldValue } from '@/utils/fieldDisplay';
 import { PlusIcon, BriefcaseIcon, LinkIcon } from '@heroicons/vue/24/outline';
 import CardWidget from '@/components/common/CardWidget.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   contactId: {
@@ -175,11 +176,7 @@ const fetchDeals = async () => {
 
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(date) || '-';
 };
 
 const getStageClass = (stage) => {

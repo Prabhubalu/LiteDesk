@@ -1704,6 +1704,7 @@ import {
 import { HeartIcon as HeartIconSolid, TagIcon as TagIconSolid, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/solid';
 
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
 const { t } = useI18n();
 const notifications = useNotifications();
 
@@ -5296,8 +5297,8 @@ const formatFieldValue = (value) => {
     const d = new Date(value);
     if (!isNaN(d.getTime())) {
       return value.includes('T')
-        ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-        : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        ? formatUserDateTime(d)
+        : formatUserDate(d);
     }
   }
   return String(value);
@@ -5564,13 +5565,7 @@ const formatDate = (date) => {
   if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
   
   // For older activities, show full date and time
-  return dateObj.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(dateObj);
 };
 
 // Get initials
@@ -6255,7 +6250,7 @@ const viewResponseDetail = (response) => {
   
   openTab(`/forms/${formId}/responses/${responseId}`, {
     name: `form-response-${responseId}`,
-    title: `Response - ${new Date(response.submittedAt).toLocaleDateString()}`,
+    title: `Response - ${formatUserDate(response.submittedAt)}`,
     component: 'FormResponseDetail',
     insertAdjacent: true,
     params: { formId, responseId }

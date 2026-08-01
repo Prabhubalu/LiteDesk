@@ -90,6 +90,7 @@ import { useI18n } from 'vue-i18n';
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue';
 import { useBulkDeleteProgressStore } from '@/stores/bulkDeleteProgress';
+import { formatNumber } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const bulkDeleteStore = useBulkDeleteProgressStore();
@@ -152,8 +153,8 @@ const emit = defineEmits(['close', 'confirm']);
 const showBulkProgress = computed(() => props.isBulk && bulkDeleteStore.isActive);
 
 const bulkProgressLabel = computed(() => {
-  const processed = Number(bulkDeleteStore.processed || 0).toLocaleString();
-  const total = Number(bulkDeleteStore.total || 0).toLocaleString();
+  const processed = formatNumber(Number(bulkDeleteStore.processed || 0));
+  const total = formatNumber(Number(bulkDeleteStore.total || 0));
   return t('common.bulkDeleteProgressDeleting', { processed, total });
 });
 

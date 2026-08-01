@@ -75,6 +75,21 @@
         </p>
       </div>
 
+      <div class="space-y-1">
+        <label for="onboarding-invite-business-hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {{ t('settings.inviteBusinessHours') }} <span class="text-red-500">*</span>
+        </label>
+        <HeadlessSelect
+          id="onboarding-invite-business-hours"
+          v-model="form.businessHourSetId"
+          :options="businessHoursSelectOptions"
+          :invalid="Boolean(validationErrors.businessHourSetId)"
+        />
+        <p v-if="validationErrors.businessHourSetId" class="mt-1 text-xs text-red-600 dark:text-red-400">
+          {{ validationErrors.businessHourSetId }}
+        </p>
+      </div>
+
       <div v-if="!rbacV2Enabled" class="space-y-3">
         <span class="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {{ t('settings.inviteAppAccess') }} <span class="text-red-500">*</span>
@@ -333,6 +348,21 @@
                             </p>
                           </div>
 
+                          <div class="space-y-1">
+                            <label for="invite-business-hours" class="block text-sm/6 font-medium text-gray-900 dark:text-white">
+                              {{ t('settings.inviteBusinessHours') }} <span class="text-red-500">*</span>
+                            </label>
+                            <HeadlessSelect
+                              id="invite-business-hours"
+                              v-model="form.businessHourSetId"
+                              :options="businessHoursSelectOptions"
+                              :invalid="Boolean(validationErrors.businessHourSetId)"
+                            />
+                            <p v-if="validationErrors.businessHourSetId" class="text-xs text-red-600 dark:text-red-400 mt-1">
+                              {{ validationErrors.businessHourSetId }}
+                            </p>
+                          </div>
+
                           <div
                             v-if="rbacV2Enabled && selectedRole"
                             class="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/60 dark:bg-indigo-900/20 p-4 space-y-3"
@@ -571,9 +601,11 @@ import { useAuthStore } from '@/stores/auth';
 import { isRbacV2Enabled } from '@/utils/rbacFeatureFlags';
 import { captureInviteSent } from '@/config/posthogOnboarding';
 import { getAppLabel } from '@/utils/getRoleDisplay';
+import { useBusinessHours } from '@/composables/useBusinessHours';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const { fetchSets } = useBusinessHours();
 const rbacV2Enabled = computed(() => isRbacV2Enabled(authStore.organization));
 
 const props = defineProps({
@@ -601,6 +633,7 @@ const form = ref({
   email: '',
   userType: 'INTERNAL',
   roleId: '',
+  businessHourSetId: '',
   sendEmail: true,
   welcomeNote: '',
   suggestedTask: ''
@@ -611,6 +644,7 @@ const error = ref('');
 const successMessage = ref('');
 const successDetail = ref('');
 const availableRoles = ref([]);
+const businessHourSets = ref([]);
 const capabilities = ref([]);
 const loadingCapabilities = ref(false);
 const selectedAppRoles = ref({});
@@ -626,6 +660,14 @@ const roleSelectOptions = computed(() => [
   ...availableRoles.value.map((role) => ({
     value: role._id,
     label: rbacV2Enabled.value ? role.name : `${role.name} — ${role.description}`
+  }))
+]);
+
+const businessHoursSelectOptions = computed(() => [
+  { value: '', label: t('settings.inviteSelectBusinessHours') },
+  ...businessHourSets.value.map((set) => ({
+    value: set._id,
+    label: set.isDefault ? `${set.name} (${t('settings.settingsBhBadgeDefault')})` : set.name
   }))
 ]);
 
@@ -740,6 +782,10 @@ const isFormValid = computed(() => {
     return false;
   }
 
+  if (!form.value.businessHourSetId) {
+    return false;
+  }
+
   if (rbacV2Enabled.value) {
     return true;
   }
@@ -803,6 +849,7 @@ function initializeForm() {
     form.value.roleId = props.initialRoleId;
   }
   fetchRoles();
+  fetchBusinessHourSets();
   if (!rbacV2Enabled.value) {
     fetchCapabilities();
   }
@@ -816,6 +863,24 @@ const fetchRoles = async () => {
     }
   } catch (err) {
     console.error('Error fetching roles:', err);
+  }
+};
+
+const fetchBusinessHourSets = async () => {
+  try {
+    const sets = await fetchSets();
+    businessHourSets.value = Array.isArray(sets)
+      ? sets.filter((s) => s.status !== 'inactive')
+      : [];
+    if (!form.value.businessHourSetId) {
+      const defaultSet = businessHourSets.value.find((s) => s.isDefault) || businessHourSets.value[0];
+      if (defaultSet?._id) {
+        form.value.businessHourSetId = defaultSet._id;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching business hours:', err);
+    businessHourSets.value = [];
   }
 };
 
@@ -841,6 +906,7 @@ const resetForm = () => {
     email: '',
     userType: 'INTERNAL',
     roleId: '',
+    businessHourSetId: '',
     sendEmail: true,
     welcomeNote: '',
     suggestedTask: ''
@@ -914,6 +980,11 @@ const validateForm = () => {
     return false;
   }
 
+  if (!form.value.businessHourSetId) {
+    validationErrors.value.businessHourSetId = t('settings.inviteBusinessHoursRequired');
+    return false;
+  }
+
   if (rbacV2Enabled.value) {
     return true;
   }
@@ -965,6 +1036,7 @@ const handleSubmit = async () => {
         lastName: form.value.lastName,
         email: form.value.email,
         roleId: form.value.roleId,
+        businessHourSetId: form.value.businessHourSetId,
         sendEmail: form.value.sendEmail,
         welcomeNote: form.value.welcomeNote || undefined,
         suggestedTask: form.value.suggestedTask || undefined
@@ -975,6 +1047,7 @@ const handleSubmit = async () => {
         lastName: form.value.lastName,
         email: form.value.email,
         roleId: form.value.roleId,
+        businessHourSetId: form.value.businessHourSetId,
         userType: form.value.userType,
         appAccess: selectedApps.value.map((appKey) => ({
           appKey,
@@ -990,6 +1063,7 @@ const handleSubmit = async () => {
         lastName: form.value.lastName,
         email: form.value.email,
         roleId: form.value.roleId,
+        businessHourSetId: form.value.businessHourSetId,
         userType: form.value.userType,
         sendEmail: form.value.sendEmail,
         welcomeNote: form.value.welcomeNote || undefined,

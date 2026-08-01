@@ -340,6 +340,7 @@ import '../editor/contentStudioGallery.css';
 import '../editor/contentStudioChecklist.css';
 import '../editor/contentStudioFaq.css';
 import '../editor/contentStudioSteps.css';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   editor: { type: Object, default: null },
@@ -528,7 +529,7 @@ const authorInitials = computed(() => {
   const parts = String(resolvedAuthorName.value).trim().split(/\s+/).filter(Boolean);
   return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('') || 'A';
 });
-const formattedDate = computed(() => new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()));
+const formattedDate = computed(() => formatUserDate(new Date()));
 const readTimeLabel = computed(() => t('contentStudio.readTime', { minutes: props.readMinutes }));
 
 function openImagePicker() {

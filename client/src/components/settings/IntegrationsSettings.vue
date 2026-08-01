@@ -1203,6 +1203,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useNotifications } from '@/composables/useNotifications';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -2187,14 +2188,7 @@ const formatCheckedAt = (value) => {
   if (!value) return '';
   const dt = new Date(value);
   if (Number.isNaN(dt.getTime())) return '';
-  return dt.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  });
+  return formatUserDateTime(dt);
 };
 
 function hydrateEmailSetupFromList() {

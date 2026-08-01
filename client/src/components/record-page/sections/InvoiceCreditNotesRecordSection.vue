@@ -79,6 +79,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/utils/apiClient';
 import InvoiceCreateCreditNoteModal from '@/components/record-page/sections/InvoiceCreateCreditNoteModal.vue';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -99,8 +100,7 @@ const canCreateCreditNote = computed(() => {
 });
 
 function formatMoney(value) {
-  const n = Number(value) || 0;
-  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrencyValue(value, { currencyCode: props.record?.currency }) ?? '—';
 }
 
 function formatReason(reason) {

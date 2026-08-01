@@ -221,6 +221,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import { ref, onMounted, onUnmounted } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const loading = ref(true);
 const loadingMore = ref(false);
@@ -324,8 +325,7 @@ const setupInfiniteScroll = () => {
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatUserDate(dateString) || 'N/A';
 };
 
 const getStatusBadgeClass = (state) => {

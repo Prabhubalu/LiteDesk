@@ -334,6 +334,11 @@ export const useAuthStore = defineStore('auth', {
                 lastName: userData.lastName,
                 avatar: userData.avatar || '',
                 entitledAddons: userData.entitledAddons || null,
+                language: userData.language ?? null,
+                timeZone: userData.timeZone ?? null,
+                dateFormat: userData.dateFormat ?? null,
+                timeFormat: userData.timeFormat ?? null,
+                displayPreferences: userData.displayPreferences || null,
             };
             
             if (userData.organization) {
@@ -383,9 +388,54 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const { upgradeI18nAfterLogin } = await import('@/i18n');
                 const orgLang = this.organization?.settings?.language ?? null;
-                await upgradeI18nAfterLogin({ orgLanguage: orgLang, userLanguage: null });
+                const userLang = this.user?.language ?? null;
+                await upgradeI18nAfterLogin({ orgLanguage: orgLang, userLanguage: userLang });
             } catch (_e) {
                 /* i18n optional at bootstrap */
+            }
+            try {
+                const { setLocaleFormatContext } = await import('@/utils/localeFormat');
+                const { normalizeIanaTimezone } = await import('@/utils/orgRegionalOptions');
+                const { resolveOrgCurrencyCode } = await import('@/utils/currencyOptions');
+                const { LANGUAGE_TO_DEFAULT_LOCALE, DEFAULT_LOCALE } = await import('@/i18n/constants');
+                const org = this.organization?.settings || {};
+                const userTz = this.user?.timeZone;
+                const userFmt = this.user?.dateFormat;
+                const userTimeFmt = this.user?.timeFormat;
+                const userPrefs = this.user?.displayPreferences || {};
+                const orgCurrency = resolveOrgCurrencyCode(org) || 'USD';
+                const preferred = String(userPrefs.preferredCurrency || '').trim().toUpperCase() || null;
+                const showPreferred = userPrefs.showAmountsInPreferredCurrency === true;
+                const userLang = this.user?.language || org.language || 'en';
+                const base = String(userLang).split('-')[0];
+                const locale =
+                    (org.locale && String(org.locale).includes('-') && org.locale)
+                    || LANGUAGE_TO_DEFAULT_LOCALE[base]
+                    || DEFAULT_LOCALE;
+                const orgCurrencies = Array.isArray(org.currencies)
+                    ? org.currencies
+                        .filter((row) => row && typeof row === 'object' && row.code)
+                        .map((row) => ({
+                            code: String(row.code).trim().toUpperCase(),
+                            enabled: Boolean(row.enabled),
+                            conversionRate: Number(row.conversionRate) > 0 ? Number(row.conversionRate) : 1,
+                        }))
+                    : [];
+                setLocaleFormatContext({
+                    locale,
+                    timeZone: normalizeIanaTimezone(userTz || org.timeZone || 'UTC') || 'UTC',
+                    dateFormat: String(userFmt || org.dateFormat || 'MM/DD/YYYY').trim() || 'MM/DD/YYYY',
+                    timeFormat: userTimeFmt === '24h' ? '24h' : '12h',
+                    currency: (showPreferred && preferred) ? preferred : orgCurrency,
+                    baseCurrency: orgCurrency,
+                    orgCurrencies,
+                    displayPreferences: {
+                        ...userPrefs,
+                        preferredCurrency: preferred || orgCurrency,
+                    },
+                });
+            } catch (_e) {
+                /* format context optional at bootstrap */
             }
         },
         
@@ -1107,6 +1157,7 @@ export const useAuthStore = defineStore('auth', {
                                 ? String(this.organization._id)
                                 : undefined,
                         });
+                        void this.syncI18nFromOrganization();
                         logAuthAccessDebug('User permissions refreshed successfully');
                         return true;
                     }

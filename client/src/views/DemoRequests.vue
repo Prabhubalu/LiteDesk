@@ -345,6 +345,7 @@ const notifications = useNotifications();
 
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '../utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const demoRequests = ref([]);
 const stats = ref(null);
@@ -530,11 +531,7 @@ const formatStatus = (status) => {
 };
 
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(dateString) || '-';
 };
 
 // Search and filter methods

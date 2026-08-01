@@ -66,6 +66,7 @@
 </template>
 
 <script setup>
+import { formatUserDateTime } from '@/utils/localeFormat';
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
@@ -111,7 +112,7 @@ const executionOptions = computed(() =>
 );
 
 function formatRunLabel(ex) {
-  const d = ex.startedAt ? new Date(ex.startedAt).toLocaleString() : t('process.insightRunUnknownTime');
+  const d = ex.startedAt ? formatUserDateTime(ex.startedAt) : t('process.insightRunUnknownTime');
   return t('process.insightRunOption', { status: ex.status, startedAt: d });
 }
 

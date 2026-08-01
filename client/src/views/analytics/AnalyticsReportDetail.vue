@@ -297,6 +297,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatUserDateTime } from '@/utils/localeFormat';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
@@ -471,7 +472,7 @@ function statusLabel(status: string) {
 
 function formatDate(value: string | Date | null | undefined) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function goList() {

@@ -650,6 +650,7 @@ import { getEventTypeDefinitionByKey } from '@/metadata/eventTypes';
 import type { EventTypeDefinition } from '@/types/eventSettings.types';
 import { deriveEventPermissions } from '@/platform/events/eventPermissions.utils';
 import type { EventActionPermission } from '@/platform/events/eventPermissions.types';
+import { formatUserDateTime, formatTime } from '@/utils/localeFormat';
 
 const route = useRoute();
 const router = useRouter();
@@ -905,15 +906,9 @@ const formattedTimeRange = computed(() => {
     const start = new Date(ctx.startDateTime);
     const end = new Date(ctx.endDateTime);
     
-    const startFormatted = start.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    });
+    const startFormatted = formatUserDateTime(start);
     
-    const endFormatted = end.toLocaleString('en-US', {
+    const endFormatted = formatTime(end, {
       hour: 'numeric',
       minute: '2-digit'
     });

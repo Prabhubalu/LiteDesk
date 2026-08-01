@@ -95,6 +95,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const route = useRoute();
 const { t } = useI18n();
@@ -113,10 +114,7 @@ const showCardPay = computed(() => (link.value?.allowedMethods || ['card']).incl
 const showBankTransfer = computed(() => (link.value?.allowedMethods || []).includes('bank_transfer'));
 
 function formatMoney(amount, currency = 'USD') {
-  return (Number(amount) || 0).toLocaleString(undefined, {
-    style: 'currency',
-    currency: currency || 'USD'
-  });
+  return formatCurrencyValue(amount, { currencyCode: currency || 'USD' }) ?? '—';
 }
 
 async function loadLink() {

@@ -67,6 +67,8 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -78,13 +80,12 @@ const summary = ref(null);
 const allocations = ref([]);
 
 function formatMoney(value) {
-  const n = Number(value) || 0;
-  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrencyValue(value, { currencyCode: props.record?.currency }) ?? '—';
 }
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatUserDate(value) || '—';
 }
 
 async function loadDetail() {

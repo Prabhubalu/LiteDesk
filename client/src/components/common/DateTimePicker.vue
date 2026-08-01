@@ -265,7 +265,13 @@ import {
   ChevronRightIcon,
   ClockIcon,
 } from '@heroicons/vue/24/outline';
-import { formatDate } from '@/utils/localeFormat';
+import {
+  formatDate,
+  formatUserDateTime,
+  getLocaleFormatContext,
+  utcToWallDateTimeLocal,
+  wallDateTimeLocalToUtcIso,
+} from '@/utils/localeFormat';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import {
   buildCalendarGrid,
@@ -273,7 +279,6 @@ import {
   normalizeDateTimeInput,
   parseDateTimeLocal,
   splitDateTimeLocal,
-  toDateTimeLocal,
   toIsoDate,
 } from '@/utils/datePickerUtils';
 
@@ -321,7 +326,7 @@ const emit = defineEmits(['update:modelValue', 'blur', 'escape', 'enter']);
 
 const { t, locale } = useI18n();
 
-const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const userTimeZone = computed(() => getLocaleFormatContext().timeZone || 'UTC');
 
 const triggerRef = ref(null);
 const viewYear = ref(new Date().getFullYear());
@@ -330,35 +335,28 @@ const draftDate = ref(toIsoDate(new Date()));
 const draftHour = ref(0);
 const draftMinute = ref(0);
 
-const normalizedValue = computed(() => normalizeDateTimeInput(props.modelValue));
+const normalizedValue = computed(() => {
+  if (!props.modelValue) return '';
+  const raw = String(props.modelValue).trim();
+  if (/Z$/i.test(raw) || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(raw)) {
+    return utcToWallDateTimeLocal(raw, userTimeZone.value).slice(0, 16);
+  }
+  return normalizeDateTimeInput(raw);
+});
 
 const displayText = computed(() => {
-  if (!normalizedValue.value) {
+  if (!props.modelValue) {
     return props.placeholder ?? t('common.dateTimePickerPlaceholder');
   }
-  const parsed = parseDateTimeLocal(normalizedValue.value);
-  if (!parsed) return normalizedValue.value;
-  return formatDate(
-    parsed,
-    {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: localTimeZone,
-    },
-    { locale: locale.value }
-  );
+  return formatUserDateTime(props.modelValue) || normalizedValue.value;
 });
 
 const monthLabels = computed(() =>
   Array.from({ length: 12 }, (_, index) =>
     formatDate(
       new Date(2024, index, 1),
-      { month: 'long', timeZone: localTimeZone },
-      { locale: locale.value }
+      { month: 'long', timeZone: userTimeZone.value },
+      { locale: locale.value, timeZone: userTimeZone.value }
     )
   )
 );
@@ -427,7 +425,7 @@ const canApply = computed(() =>
   Boolean(draftDate.value) && !isDateTimeLocalDisabled(draftDateTime.value, props.min, props.max)
 );
 
-const nowDateTime = computed(() => toDateTimeLocal(new Date()));
+const nowDateTime = computed(() => utcToWallDateTimeLocal(new Date(), userTimeZone.value).slice(0, 16));
 const isNowDisabled = computed(() =>
   isDateTimeLocalDisabled(nowDateTime.value, props.min, props.max)
 );
@@ -580,17 +578,20 @@ function selectDraftDate(iso) {
 }
 
 function selectNow() {
-  const now = new Date();
-  draftDate.value = toIsoDate(now);
-  draftHour.value = now.getHours();
-  draftMinute.value = now.getMinutes();
-  viewYear.value = now.getFullYear();
-  viewMonth.value = now.getMonth();
+  const wall = utcToWallDateTimeLocal(new Date(), userTimeZone.value);
+  const split = splitDateTimeLocal(wall);
+  draftDate.value = split.date;
+  draftHour.value = split.hour;
+  draftMinute.value = split.minute;
+  const [y, m] = split.date.split('-').map(Number);
+  viewYear.value = y || new Date().getFullYear();
+  viewMonth.value = (m || 1) - 1;
 }
 
 function applyDateTime(close) {
   if (!canApply.value) return;
-  emit('update:modelValue', draftDateTime.value);
+  const iso = wallDateTimeLocalToUtcIso(draftDateTime.value, userTimeZone.value);
+  emit('update:modelValue', iso || '');
   close();
   emit('blur');
 }

@@ -49,6 +49,7 @@
 <script setup>
 import { computed } from 'vue';
 import QuoteCommercialRiskBadge from './QuoteCommercialRiskBadge.vue';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   compare: { type: Object, default: null },
@@ -74,14 +75,23 @@ function flattenRows(rows) {
     customerVisible: row.customerVisible,
     severity: row.severity,
     details: row.fieldDiffs?.length
-      ? row.fieldDiffs.map((d) => `${d.label}: ${displayValue(d.fromValue)} -> ${displayValue(d.toValue)}`).join('; ')
-      : `${displayValue(row.fromValue)} -> ${displayValue(row.toValue)}`
+      ? row.fieldDiffs.map((d) => `${d.label}: ${displayValue(d.fromValue, d.label)} -> ${displayValue(d.toValue, d.label)}`).join('; ')
+      : `${displayValue(row.fromValue, row.label)} -> ${displayValue(row.toValue, row.label)}`
   }));
 }
 
-function displayValue(value) {
+function isMoneyLabel(label) {
+  const s = String(label || '').toLowerCase();
+  return /amount|price|total|subtotal|tax|charge|discount|currency|value|cost/.test(s);
+}
+
+function displayValue(value, label = '') {
   if (value == null || value === '') return '-';
   if (typeof value === 'object') return JSON.stringify(value);
+  if (isMoneyLabel(label)) {
+    const n = Number(value);
+    if (Number.isFinite(n)) return formatCurrencyValue(n) || String(value);
+  }
   return String(value);
 }
 

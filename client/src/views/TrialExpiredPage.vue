@@ -115,6 +115,7 @@
 </template>
 
 <script setup>
+import { formatDate, formatUserDate } from '@/utils/localeFormat';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -126,7 +127,7 @@ import {
   isOrganizationTrialExpired
 } from '@/utils/trialStatus';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const { colorMode } = useColorMode();
@@ -166,13 +167,13 @@ const trialEndDateLabel = computed(() => {
   const endDate = authStore.organization?.subscription?.trialEndDate;
   if (!endDate) return '';
   try {
-    return new Intl.DateTimeFormat(locale.value, {
+    return formatDate(endDate, {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    }).format(new Date(endDate));
+    }) || formatUserDate(endDate);
   } catch (_error) {
-    return new Date(endDate).toLocaleDateString();
+    return formatUserDate(endDate);
   }
 });
 

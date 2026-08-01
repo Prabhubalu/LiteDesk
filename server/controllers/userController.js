@@ -48,6 +48,46 @@ const {
     ensureOrgSubscriptionForEnabledApps
 } = require('../utils/subscriptionUtils');
 const userRecordTransferService = require('../services/userRecordTransferService');
+const {
+    applyEmployeeContactFields,
+    applyStatusTimestamps,
+    seedDisplayPreferencesFromOrg,
+    effectiveMobilePhone
+} = require('../utils/userProfileFields');
+const Group = require('../models/Group');
+
+/**
+ * @param {object} user
+ * @param {unknown} primaryGroupId
+ * @param {unknown} organizationId
+ * @returns {Promise<{ ok: true } | { ok: false, message: string, code: string }>}
+ */
+async function applyPrimaryGroupId(user, primaryGroupId, organizationId) {
+    if (primaryGroupId == null || primaryGroupId === '') {
+        user.primaryGroupId = null;
+        return { ok: true };
+    }
+    if (!mongoose.Types.ObjectId.isValid(primaryGroupId)) {
+        return { ok: false, message: 'Invalid primary group id', code: 'INVALID_PRIMARY_GROUP' };
+    }
+    const group = await Group.findOne({
+        _id: primaryGroupId,
+        organizationId,
+        isActive: { $ne: false }
+    }).select('_id members').lean();
+    if (!group) {
+        return { ok: false, message: 'Primary group not found', code: 'PRIMARY_GROUP_NOT_FOUND' };
+    }
+    user.primaryGroupId = primaryGroupId;
+    const memberIds = (group.members || []).map((id) => String(id));
+    if (!memberIds.includes(String(user._id))) {
+        await Group.updateOne(
+            { _id: primaryGroupId, organizationId },
+            { $addToSet: { members: user._id } }
+        );
+    }
+    return { ok: true };
+}
 
 async function mirrorUserStatusToMaster(ScopedUser, user, organization, status) {
     if (ScopedUser === User) return;
@@ -754,7 +794,8 @@ exports.inviteUser = async (req, res) => {
         // New unified format
         userType,
         appAccess,
-        name // Alternative to firstName/lastName
+        name, // Alternative to firstName/lastName
+        businessHourSetId
     } = req.body;
 
     try {
@@ -784,12 +825,33 @@ exports.inviteUser = async (req, res) => {
             });
         }
 
+        if (!businessHourSetId || !mongoose.Types.ObjectId.isValid(businessHourSetId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Business hours is required',
+                code: 'BUSINESS_HOURS_REQUIRED'
+            });
+        }
+
         // Get organization for validation (required before RBAC v2 format checks)
         const organization = req.organization || await Organization.findById(req.user.organizationId);
         if (!organization) {
             return res.status(404).json({
                 success: false,
                 message: 'Organization not found'
+            });
+        }
+
+        const BusinessHourSet = require('../models/BusinessHourSet');
+        const businessHourSet = await BusinessHourSet.findOne({
+            _id: businessHourSetId,
+            organizationId: organization._id
+        }).select('_id').lean();
+        if (!businessHourSet) {
+            return res.status(400).json({
+                success: false,
+                message: 'Selected business hours not found',
+                code: 'BUSINESS_HOURS_NOT_FOUND'
             });
         }
 
@@ -1158,6 +1220,7 @@ exports.inviteUser = async (req, res) => {
             reinviteUser.roleId = roleId || null;
             reinviteUser.role = legacyRole || null;
             reinviteUser.isOwner = isOwner;
+            reinviteUser.businessHourSetId = businessHourSetId;
             reinviteUser.status = inviteCredentials.initialStatus;
             reinviteUser.userType = finalUserType;
             reinviteUser.appAccess = finalAppAccess;
@@ -1188,6 +1251,7 @@ exports.inviteUser = async (req, res) => {
                 roleId: roleId || null, // May be null for unified format
                 role: legacyRole || null, // Store legacy role for backward compatibility
                 isOwner: isOwner,
+                businessHourSetId,
                 status: inviteCredentials.initialStatus,
                 userType: finalUserType,
                 appAccess: finalAppAccess,
@@ -1383,7 +1447,7 @@ exports.inviteUser = async (req, res) => {
 
 // --- Update user role and permissions ---
 exports.updateUser = async (req, res) => {
-    const { role, roleId, status, firstName, lastName, phoneNumber, appAccess } = req.body;
+    const { role, roleId, status, firstName, lastName, phoneNumber, appAccess, businessHourSetId } = req.body;
 
     try {
         const organization = req.organization || await Organization.findById(req.user.organizationId);
@@ -1427,12 +1491,12 @@ exports.updateUser = async (req, res) => {
         }
 
         const requestKeys = Object.keys(req.body || {});
-        const isOwnerAppAccessOnlyUpdate = user.isOwner &&
+        const isOwnerAllowedUpdate = user.isOwner &&
             requestKeys.length > 0 &&
-            requestKeys.every((key) => key === 'appAccess');
+            requestKeys.every((key) => key === 'appAccess' || key === 'businessHourSetId');
 
-        // Prevent changing owner profile/role/status, but allow app seat updates.
-        if (user.isOwner && !isOwnerAppAccessOnlyUpdate) {
+        // Prevent changing owner profile/role/status, but allow app seat + business hours updates.
+        if (user.isOwner && !isOwnerAllowedUpdate) {
             return res.status(403).json({ 
                 success: false,
                 message: 'Cannot modify the organization owner',
@@ -1440,11 +1504,101 @@ exports.updateUser = async (req, res) => {
             });
         }
 
+        async function applyBusinessHourSetId() {
+            if (!Object.prototype.hasOwnProperty.call(req.body || {}, 'businessHourSetId')) {
+                return null;
+            }
+            if (!businessHourSetId || !mongoose.Types.ObjectId.isValid(businessHourSetId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Business hours is required',
+                    code: 'BUSINESS_HOURS_REQUIRED'
+                });
+            }
+            const BusinessHourSet = require('../models/BusinessHourSet');
+            const businessHourSet = await BusinessHourSet.findOne({
+                _id: businessHourSetId,
+                organizationId: organization._id
+            }).select('_id').lean();
+            if (!businessHourSet) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Selected business hours not found',
+                    code: 'BUSINESS_HOURS_NOT_FOUND'
+                });
+            }
+            user.businessHourSetId = businessHourSetId;
+            return null;
+        }
+
         // Update fields (owner profile remains immutable from this endpoint)
         if (!user.isOwner) {
-            if (firstName !== undefined) user.firstName = firstName;
-            if (lastName !== undefined) user.lastName = lastName;
-            if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+            const employeePatch = {};
+            for (const key of [
+                'firstName', 'lastName', 'phoneNumber', 'secondaryEmail',
+                'officePhone', 'homePhone', 'mobilePhone', 'fax', 'language', 'timeZone', 'dateFormat', 'timeFormat', 'displayPreferences'
+            ]) {
+                if (Object.prototype.hasOwnProperty.call(req.body || {}, key)) {
+                    employeePatch[key] = req.body[key];
+                }
+            }
+            if (Object.keys(employeePatch).length > 0) {
+                const contactResult = applyEmployeeContactFields(user, employeePatch, organization);
+                if (!contactResult.ok) {
+                    return res.status(400).json({
+                        success: false,
+                        message: contactResult.message,
+                        code: contactResult.code
+                    });
+                }
+            }
+
+            if (Object.prototype.hasOwnProperty.call(req.body || {}, 'primaryGroupId')) {
+                const groupResult = await applyPrimaryGroupId(user, req.body.primaryGroupId, organization._id);
+                if (!groupResult.ok) {
+                    return res.status(400).json({
+                        success: false,
+                        message: groupResult.message,
+                        code: groupResult.code
+                    });
+                }
+            }
+
+            if (Object.prototype.hasOwnProperty.call(req.body || {}, 'reportsTo')) {
+                const reportsToRaw = req.body.reportsTo;
+                if (reportsToRaw == null || reportsToRaw === '') {
+                    user.reportsTo = null;
+                } else {
+                    if (!mongoose.Types.ObjectId.isValid(reportsToRaw)) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Invalid reportsTo user id',
+                            code: 'INVALID_REPORTS_TO'
+                        });
+                    }
+                    if (String(reportsToRaw) === String(user._id)) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'User cannot report to themselves',
+                            code: 'REPORTS_TO_SELF'
+                        });
+                    }
+                    const manager = await ScopedUser.findOne({
+                        _id: reportsToRaw,
+                        organizationId: organization._id,
+                        status: { $nin: ['deleted'] }
+                    }).select('_id').lean();
+                    if (!manager) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Reports-to user not found in this organization',
+                            code: 'REPORTS_TO_NOT_FOUND'
+                        });
+                    }
+                    user.reportsTo = reportsToRaw;
+                }
+            }
+
             if (status !== undefined) {
                 const nextStatus = String(status);
                 if (nextStatus === 'deleted') {
@@ -1485,8 +1639,14 @@ exports.updateUser = async (req, res) => {
                         }
                     });
                 }
+                applyStatusTimestamps(user, nextStatus, user.status);
                 user.status = nextStatus;
             }
+        }
+
+        {
+            const bhError = await applyBusinessHourSetId();
+            if (bhError) return bhError;
         }
         
         const externalUser = isExternalUserType(user.userType);
@@ -1693,6 +1853,22 @@ exports.updateUser = async (req, res) => {
                 email: updated.email,
                 firstName: updated.firstName,
                 lastName: updated.lastName,
+                phoneNumber: updated.phoneNumber,
+                mobilePhone: effectiveMobilePhone(updated),
+                department: updated.department,
+                primaryGroupId: updated.primaryGroupId,
+                secondaryEmail: updated.secondaryEmail,
+                officePhone: updated.officePhone,
+                homePhone: updated.homePhone,
+                fax: updated.fax,
+                language: updated.language,
+                timeZone: updated.timeZone,
+                dateFormat: updated.dateFormat,
+                timeFormat: updated.timeFormat,
+                displayPreferences: updated.displayPreferences,
+                reportsTo: updated.reportsTo,
+                suspendedAt: updated.suspendedAt,
+                reactivatedAt: updated.reactivatedAt,
                 role: updated.role,
                 roleId: updated.roleId,
                 status: updated.status,
@@ -2046,7 +2222,9 @@ exports.getProfile = async (req, res) => {
         const ScopedUser = await getScopedUserModel(organization);
 
         const user = await ScopedUser.findById(req.user._id)
-            .select('-password');
+            .select('-password')
+            .populate('reportsTo', 'firstName lastName email username')
+            .populate('primaryGroupId', 'name type color');
 
         if (!user) {
             return res.status(404).json({
@@ -2055,12 +2233,25 @@ exports.getProfile = async (req, res) => {
             });
         }
 
+        seedDisplayPreferencesFromOrg(user, organization);
+
         await materializeEffectiveCRMEnvelopeOnUser(user, {
             organization,
             activeExternalRoleId: req.user.activeExternalRoleId || req.user._activeExternalRoleId || null
         });
         const sanitizedUser = sanitizeUserResponsePayload(user);
+        sanitizedUser.mobilePhone = effectiveMobilePhone(sanitizedUser);
         const [userWithRole] = await attachRoleSummaries([sanitizedUser]);
+
+        const ScopedRole = await getScopedRoleModel(organization);
+        const { resolveEffectiveReportsTo } = require('../services/roleHierarchyService');
+        const reportsResolution = await resolveEffectiveReportsTo(userWithRole, {
+            organizationId: organization?._id || req.user.organizationId,
+            UserModel: ScopedUser,
+            RoleModel: ScopedRole
+        });
+        userWithRole.reportsTo = reportsResolution.user;
+        userWithRole.reportsToSource = reportsResolution.source;
 
         if (organization) {
             const { buildOrgCapabilities } = require('../utils/orgCapabilities');
@@ -2093,8 +2284,6 @@ exports.getProfile = async (req, res) => {
 
 // --- Update current user profile ---
 exports.updateProfile = async (req, res) => {
-    const { firstName, lastName, phoneNumber, avatar } = req.body;
-
     try {
         const organization = req.organization || await Organization.findById(req.user.organizationId);
         const ScopedUser = await getScopedUserModel(organization);
@@ -2107,12 +2296,44 @@ exports.updateProfile = async (req, res) => {
             });
         }
 
-        if (firstName !== undefined) user.firstName = firstName;
-        if (lastName !== undefined) user.lastName = lastName;
-        if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
-        if (avatar !== undefined) user.avatar = avatar;
+        const employeePatch = {};
+        for (const key of [
+            'firstName', 'lastName', 'phoneNumber', 'secondaryEmail',
+            'officePhone', 'homePhone', 'mobilePhone', 'fax', 'language', 'timeZone', 'dateFormat', 'timeFormat', 'displayPreferences', 'avatar'
+        ]) {
+            if (Object.prototype.hasOwnProperty.call(req.body || {}, key)) {
+                employeePatch[key] = req.body[key];
+            }
+        }
 
+        if (Object.prototype.hasOwnProperty.call(employeePatch, 'avatar')) {
+            user.avatar = employeePatch.avatar;
+            delete employeePatch.avatar;
+        }
+
+        if (Object.keys(employeePatch).length > 0) {
+            const contactResult = applyEmployeeContactFields(user, employeePatch, organization);
+            if (!contactResult.ok) {
+                return res.status(400).json({
+                    success: false,
+                    message: contactResult.message,
+                    code: contactResult.code
+                });
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(req.body || {}, 'primaryGroupId')) {
+            return res.status(403).json({
+                success: false,
+                message: 'Primary group can only be assigned by an admin',
+                code: 'PRIMARY_GROUP_ADMIN_ONLY'
+            });
+        }
+
+        seedDisplayPreferencesFromOrg(user, organization);
         await user.save();
+
+        const mobile = effectiveMobilePhone(user);
 
         res.json({
             success: true,
@@ -2123,7 +2344,22 @@ exports.updateProfile = async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 phoneNumber: user.phoneNumber,
-                avatar: user.avatar
+                mobilePhone: mobile,
+                primaryGroupId: user.primaryGroupId,
+                secondaryEmail: user.secondaryEmail,
+                officePhone: user.officePhone,
+                homePhone: user.homePhone,
+                fax: user.fax,
+                language: user.language,
+                timeZone: user.timeZone,
+                dateFormat: user.dateFormat,
+                timeFormat: user.timeFormat,
+                displayPreferences: user.displayPreferences,
+                avatar: user.avatar,
+                reportsTo: user.reportsTo,
+                suspendedAt: user.suspendedAt,
+                reactivatedAt: user.reactivatedAt,
+                createdAt: user.createdAt
             },
             message: 'Profile updated successfully'
         });

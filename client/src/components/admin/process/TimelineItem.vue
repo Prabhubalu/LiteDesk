@@ -95,6 +95,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import { formatTime as formatLocaleTime } from '@/utils/localeFormat';
 const props = defineProps({
   type: {
     type: String,
@@ -121,6 +122,6 @@ const { t } = useI18n();
 const formatTime = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return formatLocaleTime(date, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 };
 </script>

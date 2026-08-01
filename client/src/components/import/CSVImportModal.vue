@@ -1135,6 +1135,7 @@ import {
 import { useAuthStore } from '@/stores/auth';
 import { ref, reactive, computed, watch, toRef, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { formatNumber } from '@/utils/localeFormat';
 
 const authStore = useAuthStore();
 
@@ -1718,11 +1719,11 @@ const importProgressPercent = computed(() => {
 });
 
 const formattedImportProcessed = computed(() =>
-  (importProgress.value.processed ?? 0).toLocaleString()
+  formatNumber(importProgress.value.processed ?? 0)
 );
 
 const formattedImportTotal = computed(() =>
-  (importProgress.value.total ?? 0).toLocaleString()
+  formatNumber(importProgress.value.total ?? 0)
 );
 
 const importResultSummary = computed(() => {
@@ -2538,8 +2539,8 @@ const performImport = async () => {
 
   if (totalRows.value > IMPORT_MAX_ROWS) {
     showBannerError(t('import.importRowLimitExceeded', {
-      count: totalRows.value.toLocaleString(),
-      max: IMPORT_MAX_ROWS.toLocaleString(),
+      count: formatNumber(totalRows.value),
+      max: formatNumber(IMPORT_MAX_ROWS),
     }));
     return;
   }
@@ -2637,8 +2638,8 @@ const performImport = async () => {
     if (limitCode === 'IMPORT_ROW_LIMIT_EXCEEDED') {
       const maxRows = error.response?.data?.maxRows ?? IMPORT_MAX_ROWS;
       showBannerError(t('import.importRowLimitExceeded', {
-        count: Number(error.response?.data?.rowCount || totalRows.value).toLocaleString(),
-        max: Number(maxRows).toLocaleString(),
+        count: formatNumber(Number(error.response?.data?.rowCount || totalRows.value)),
+        max: formatNumber(Number(maxRows)),
       }));
     } else if (limitCode === 'IMPORT_INLINE_LIMIT_EXCEEDED') {
       showBannerError(t('import.importInlineLimitExceeded'));

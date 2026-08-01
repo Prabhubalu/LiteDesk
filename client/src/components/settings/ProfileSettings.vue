@@ -213,7 +213,7 @@
         </div>
       </section>
 
-      <!-- Personal Information -->
+      <!-- User Information -->
       <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <header class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-gray-700/60">
           <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-600 text-white shadow-sm">
@@ -222,11 +222,91 @@
             </svg>
           </div>
           <div>
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profilePersonalInfo') }}</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profilePersonalInfoDesc') }}</p>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileUserInfo') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileUserInfoDesc') }}</p>
           </div>
         </header>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profileUsername') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
+            </label>
+            <input
+              :value="form.username"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed font-mono text-sm"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profileAccessType') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
+            </label>
+            <input
+              :value="accessTypeLabel"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profileRole') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
+            </label>
+            <input
+              :value="roleDisplayName"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profileReportsTo') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
+            </label>
+            <input
+              :value="reportsToLabel"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileLanguage') }}</label>
+            <HeadlessSelect v-model="form.language" :options="languageOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileTimeZone') }}</label>
+            <HeadlessSelect v-model="form.timeZone" :options="timeZoneOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileDateFormat') }}</label>
+            <HeadlessSelect v-model="form.dateFormat" :options="dateFormatOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileTimeFormat') }}</label>
+            <HeadlessSelect v-model="form.timeFormat" :options="timeFormatOptions" />
+          </div>
+        </div>
+      </section>
 
+      <!-- Employee Information -->
+      <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <header class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-gray-700/60">
+          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileEmployeeInfo') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileEmployeeInfoDesc') }}</p>
+          </div>
+        </header>
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-2">
             <label for="profile-first-name" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileFirstName') }}</label>
@@ -236,11 +316,10 @@
               type="text"
               maxlength="60"
               autocomplete="given-name"
-              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
               :placeholder="t('settings.profileFirstNamePh')"
             />
           </div>
-
           <div class="space-y-2">
             <label for="profile-last-name" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileLastName') }}</label>
             <input
@@ -249,81 +328,186 @@
               type="text"
               maxlength="60"
               autocomplete="family-name"
-              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
               :placeholder="t('settings.profileLastNamePh')"
             />
           </div>
-
           <div class="space-y-2">
-            <label for="profile-phone" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profilePhone') }}</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h2.586a1 1 0 01.707.293l2.121 2.121a1 1 0 01.293.707V8.5a1 1 0 01-.293.707L8.5 11a16 16 0 004.5 4.5l1.793-1.793A1 1 0 0115.5 13.5h2.379a1 1 0 01.707.293l2.121 2.121a1 1 0 01.293.707V19a2 2 0 01-2 2h-1C9.163 21 3 14.837 3 7V5z" />
-                </svg>
-              </span>
-              <input
-                id="profile-phone"
-                v-model="form.phoneNumber"
-                type="tel"
-                autocomplete="tel"
-                maxlength="40"
-                class="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all outline-none"
-                :placeholder="t('settings.profilePhonePh')"
-              />
-            </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profilePhoneHint') }}</p>
-          </div>
-
-          <div class="space-y-2">
-            <label for="profile-username" class="block text-sm font-medium text-gray-900 dark:text-gray-200">
-              {{ t('settings.profileUsername') }}
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profilePrimaryGroup') }}
               <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
             </label>
-            <div class="relative">
-              <input
-                id="profile-username"
-                :value="form.username"
-                type="text"
-                readonly
-                class="w-full px-3.5 py-2.5 pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed font-mono text-sm"
-              />
-              <button
-                type="button"
-                @click="copyToClipboard(form.username, t('settings.profileUsername'))"
-                class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                :title="t('settings.profileCopyUsername', { username: form.username })"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
-            </div>
+            <input
+              :value="primaryGroupLabel"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
           </div>
-
-          <div class="space-y-2 md:col-span-2">
-            <label for="profile-email" class="block text-sm font-medium text-gray-900 dark:text-gray-200">
-              {{ t('settings.profileEmail') }}
-              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileEmailAdmin') }}</span>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profilePrimaryEmail') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
             </label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 dark:text-gray-500">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 11-8 0 4 4 0 018 0zM3 5l9 7 9-7M3 5v14a2 2 0 002 2h14a2 2 0 002-2V5" />
-                </svg>
-              </span>
-              <input
-                id="profile-email"
-                :value="profile?.email"
-                type="email"
-                readonly
-                class="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-              />
-            </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              {{ t('settings.profileEmailHint') }}
-            </p>
+            <input
+              :value="profile?.email"
+              type="email"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
           </div>
+          <div class="space-y-2">
+            <label for="profile-secondary-email" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileSecondaryEmail') }}</label>
+            <input
+              id="profile-secondary-email"
+              v-model="form.secondaryEmail"
+              type="email"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+            />
+          </div>
+          <div class="space-y-2">
+            <label for="profile-office-phone" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileOfficePhone') }}</label>
+            <input
+              id="profile-office-phone"
+              v-model="form.officePhone"
+              type="tel"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+            />
+          </div>
+          <div class="space-y-2">
+            <label for="profile-home-phone" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileHomePhone') }}</label>
+            <input
+              id="profile-home-phone"
+              v-model="form.homePhone"
+              type="tel"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+            />
+          </div>
+          <div class="space-y-2">
+            <label for="profile-mobile-phone" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileMobilePhone') }}</label>
+            <input
+              id="profile-mobile-phone"
+              v-model="form.mobilePhone"
+              type="tel"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+            />
+          </div>
+          <div class="space-y-2">
+            <label for="profile-fax" class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileFax') }}</label>
+            <input
+              id="profile-fax"
+              v-model="form.fax"
+              type="tel"
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 outline-none"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profileCreatedAt') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
+            </label>
+            <input
+              :value="formatDateTime(profile?.createdAt)"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profileSuspendedOn') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
+            </label>
+            <input
+              :value="formatDateTime(profile?.suspendedAt)"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">
+              {{ t('settings.profileReactivatedOn') }}
+              <span class="ml-1 text-xs font-normal text-gray-400 dark:text-gray-500">{{ t('settings.profileReadOnly') }}</span>
+            </label>
+            <input
+              :value="formatDateTime(profile?.reactivatedAt)"
+              type="text"
+              readonly
+              class="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Currency & Number Preferences -->
+      <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <header class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-gray-700/60">
+          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileCurrencyPrefs') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileCurrencyPrefsDesc') }}</p>
+          </div>
+        </header>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profilePreferredCurrency') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.preferredCurrency" :options="currencyOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileShowPreferredCurrency') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.showAmountsInPreferredCurrency" :options="yesNoOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileDigitGroupingPattern') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.digitGroupingPattern" :options="digitGroupingPatternOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileDecimalSeparator') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.decimalSeparator" :options="decimalSeparatorOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileDigitGroupingSeparator') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.digitGroupingSeparator" :options="digitGroupingSeparatorOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileCurrencyDecimals') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.currencyDecimalPlaces" :options="decimalPlacesOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileTruncateZeros') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.truncateTrailingZeros" :options="yesNoOptions" />
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-200">{{ t('settings.profileAggregatedFormat') }}</label>
+            <HeadlessSelect v-model="form.displayPreferences.aggregatedNumberFormat" :options="aggregatedFormatOptions" />
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ t('settings.profileAggregatedFormatHelp') }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Business hours -->
+      <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <header class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-gray-700/60">
+          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileBusinessHours') }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileBusinessHoursDesc') }}</p>
+          </div>
+        </header>
+        <div class="p-6">
+          <AvailabilitySourceCard
+            :label="t('settings.profileBusinessHoursAssigned')"
+            :show-settings-link="false"
+          />
         </div>
       </section>
 
@@ -633,7 +817,9 @@
 <script setup>
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
-import { ref, computed, onMounted, reactive } from 'vue';
+import AvailabilitySourceCard from '@/components/business-hours/AvailabilitySourceCard.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import { ref, computed, onMounted, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { getApiUrlForFetch } from '@/config/apiBase';
@@ -641,6 +827,9 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useColorMode } from '@/composables/useColorMode';
 import { useNotifications } from '@/composables/useNotifications';
 import I18nDeveloperSettings from '@/components/settings/I18nDeveloperSettings.vue';
+import { buildCurrencyOptions, getAllTimezones, normalizeIanaTimezone } from '@/utils/orgRegionalOptions';
+import { getEnabledCurrencyOptions, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { formatDate, formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -657,19 +846,74 @@ const ACCEPTED_AVATAR_TYPES = [
 ];
 const MAX_AVATAR_SIZE = 10 * 1024 * 1024;
 
+const LANGUAGE_I18N_KEYS = {
+  en: 'orgLangEn',
+  es: 'orgLangEs',
+  fr: 'orgLangFr',
+  de: 'orgLangDe',
+  it: 'orgLangIt',
+  pt: 'orgLangPt',
+  nl: 'orgLangNl',
+  ru: 'orgLangRu',
+  ar: 'orgLangAr',
+  hi: 'orgLangHi',
+  ja: 'orgLangJa',
+  zh: 'orgLangZh',
+  ko: 'orgLangKo',
+};
+
+const PROFILE_LANGUAGES = Object.keys(LANGUAGE_I18N_KEYS);
+
+function defaultDisplayPreferences(orgCurrency) {
+  return {
+    preferredCurrency: orgCurrency || 'USD',
+    showAmountsInPreferredCurrency: 'false',
+    digitGroupingPattern: 'international',
+    decimalSeparator: '.',
+    digitGroupingSeparator: ',',
+    currencyDecimalPlaces: 2,
+    truncateTrailingZeros: 'false',
+    aggregatedNumberFormat: 'none',
+  };
+}
+
+function emptyForm(orgCurrency) {
+  return {
+    firstName: '',
+    lastName: '',
+    avatar: '',
+    username: '',
+    secondaryEmail: '',
+    officePhone: '',
+    homePhone: '',
+    mobilePhone: '',
+    fax: '',
+    language: '',
+    timeZone: '',
+    dateFormat: '',
+    timeFormat: '12h',
+    displayPreferences: defaultDisplayPreferences(orgCurrency),
+  };
+}
+
 const loading = ref(true);
 const saving = ref(false);
 const error = ref(null);
 const profile = ref(null);
 
-const form = ref({
-  firstName: '',
-  lastName: '',
-  phoneNumber: '',
-  avatar: '',
-  username: '',
-});
-const originalForm = ref({ ...form.value });
+const form = ref(emptyForm());
+const originalForm = ref(emptyForm());
+const orgGroups = ref([]);
+
+async function fetchOrgGroups() {
+  try {
+    const res = await apiClient.get('/groups?limit=200');
+    const rows = Array.isArray(res?.data) ? res.data : (res?.data?.groups || []);
+    orgGroups.value = rows.filter((g) => g?.isActive !== false);
+  } catch {
+    orgGroups.value = [];
+  }
+}
 
 const avatarInputRef = ref(null);
 const avatarUploading = ref(false);
@@ -682,6 +926,169 @@ const changingPassword = ref(false);
 const passwordError = ref('');
 const passwordForm = reactive({ current: '', next: '', confirm: '' });
 const passwordVisibility = reactive({ current: false, next: false, confirm: false });
+
+const languageOptions = computed(() =>
+  PROFILE_LANGUAGES.map((code) => ({
+    value: code,
+    label: t(`settings.${LANGUAGE_I18N_KEYS[code]}`),
+  }))
+);
+
+const timeZoneOptions = computed(() =>
+  getAllTimezones().map((tz) => ({
+    value: tz.value,
+    label: `${tz.sublabel || tz.text} (${tz.offset})`,
+  }))
+);
+
+const dateFormatOptions = computed(() => [
+  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+  { value: 'MMM DD, YYYY', label: 'MMM DD, YYYY' },
+]);
+
+const timeFormatOptions = computed(() => [
+  { value: '12h', label: t('settings.modFieldsTime12h') },
+  { value: '24h', label: t('settings.modFieldsTime24h') },
+]);
+
+const currencyOptions = computed(() =>
+  buildCurrencyOptions(getEnabledCurrencyOptions(authStore.organization))
+);
+
+// Picking a non-base preferred currency turns on converted display automatically.
+watch(
+  () => form.value.displayPreferences?.preferredCurrency,
+  (preferred) => {
+    if (!form.value?.displayPreferences) return;
+    const orgBase = resolveOrgCurrencyCode(authStore.organization);
+    if (preferred && preferred !== orgBase) {
+      form.value.displayPreferences.showAmountsInPreferredCurrency = 'true';
+    }
+  }
+);
+
+const yesNoOptions = computed(() => [
+  { value: 'true', label: t('settings.profileYes') },
+  { value: 'false', label: t('settings.profileNo') },
+]);
+
+const digitGroupingPatternOptions = computed(() => [
+  { value: 'international', label: t('settings.profileGroupingInternational') },
+  { value: 'indian', label: t('settings.profileGroupingIndian') },
+]);
+
+const decimalSeparatorOptions = computed(() => [
+  { value: '.', label: '.' },
+  { value: ',', label: ',' },
+]);
+
+const digitGroupingSeparatorOptions = computed(() => [
+  { value: ',', label: ',' },
+  { value: '.', label: '.' },
+  { value: ' ', label: t('settings.profileGroupingSpace') },
+  { value: "'", label: "'" },
+]);
+
+const decimalPlacesOptions = computed(() =>
+  [0, 1, 2, 3, 4, 5, 6].map((n) => ({ value: n, label: String(n) }))
+);
+
+const aggregatedFormatOptions = computed(() => [
+  { value: 'none', label: t('settings.profileAggNone') },
+  { value: 'thousands', label: t('settings.profileAggThousands') },
+  { value: 'millions', label: t('settings.profileAggMillions') },
+  { value: 'billions', label: t('settings.profileAggBillions') },
+]);
+
+function formatDateTime(value) {
+  if (!value) return t('settings.profileEmptyValue');
+  return formatUserDateTime(value) || t('settings.profileEmptyValue');
+}
+
+const accessTypeLabel = computed(() => {
+  const p = profile.value;
+  if (!p) return t('settings.profileEmptyValue');
+  const legacy = String(p.role || '').toLowerCase();
+  if (p.isOwner || legacy === 'owner' || legacy === 'admin') {
+    return t('settings.profileAccessAdmin');
+  }
+  return t('settings.profileAccessStandard');
+});
+
+const roleDisplayName = computed(() => {
+  const p = profile.value;
+  if (!p) return t('settings.profileEmptyValue');
+  return p.roleId?.name || p.role || t('settings.profileEmptyValue');
+});
+
+const reportsToLabel = computed(() => {
+  const r = profile.value?.reportsTo;
+  if (!r) return t('settings.profileEmptyValue');
+  if (typeof r === 'object') {
+    const name = `${r.firstName || ''} ${r.lastName || ''}`.trim();
+    return name || r.email || r.username || t('settings.profileEmptyValue');
+  }
+  return t('settings.profileEmptyValue');
+});
+
+const primaryGroupLabel = computed(() => {
+  const g = profile.value?.primaryGroupId;
+  if (!g) return t('settings.profileEmptyValue');
+  if (typeof g === 'object') {
+    return g.name || t('settings.profileEmptyValue');
+  }
+  const match = orgGroups.value.find((row) => String(row._id) === String(g));
+  return match?.name || t('settings.profileEmptyValue');
+});
+
+function snapshotFromProfile(data) {
+  const orgSettings = data?.organizationId?.settings || {};
+  const orgCurrency = orgSettings.currency || 'USD';
+  const rawPrefs = data.displayPreferences || {};
+  const prefs = {
+    ...defaultDisplayPreferences(orgCurrency),
+    ...rawPrefs,
+    preferredCurrency: rawPrefs.preferredCurrency || orgCurrency,
+    showAmountsInPreferredCurrency: rawPrefs.showAmountsInPreferredCurrency ? 'true' : 'false',
+    truncateTrailingZeros: rawPrefs.truncateTrailingZeros ? 'true' : 'false',
+    currencyDecimalPlaces: Number(rawPrefs.currencyDecimalPlaces ?? 2),
+  };
+  return {
+    firstName: data.firstName || '',
+    lastName: data.lastName || '',
+    avatar: data.avatar || '',
+    username: data.username || '',
+    secondaryEmail: data.secondaryEmail || '',
+    officePhone: data.officePhone || '',
+    homePhone: data.homePhone || '',
+    mobilePhone: data.mobilePhone || data.phoneNumber || '',
+    fax: data.fax || '',
+    language: data.language || orgSettings.language || 'en',
+    timeZone: normalizeIanaTimezone(data.timeZone || orgSettings.timeZone || 'UTC') || 'UTC',
+    dateFormat: data.dateFormat || orgSettings.dateFormat || 'MM/DD/YYYY',
+    timeFormat: data.timeFormat === '24h' ? '24h' : '12h',
+    displayPreferences: prefs,
+  };
+}
+
+function serializeForm(f) {
+  return JSON.stringify({
+    firstName: f.firstName,
+    lastName: f.lastName,
+    secondaryEmail: f.secondaryEmail,
+    officePhone: f.officePhone,
+    homePhone: f.homePhone,
+    mobilePhone: f.mobilePhone,
+    fax: f.fax,
+    language: f.language,
+    timeZone: f.timeZone,
+    dateFormat: f.dateFormat,
+    timeFormat: f.timeFormat,
+    displayPreferences: f.displayPreferences,
+  });
+}
 
 const THEME_SWATCHES = [
   {
@@ -799,7 +1206,7 @@ function formatAbsolute(date) {
   if (!date) return '';
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString(undefined, {
+  return formatDate(d, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -811,7 +1218,7 @@ function formatAbsolute(date) {
 const memberSinceLabel = computed(() => {
   const d = profile.value?.createdAt;
   if (!d) return '';
-  return new Date(d).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+  return formatDate(d, { month: 'short', year: 'numeric' });
 });
 
 const lastLoginLabel = computed(() => formatRelative(profile.value?.lastLogin));
@@ -887,11 +1294,7 @@ const canSubmitPassword = computed(() => {
 });
 
 const hasProfileChanges = computed(() => {
-  return (
-    form.value.firstName !== originalForm.value.firstName ||
-    form.value.lastName !== originalForm.value.lastName ||
-    form.value.phoneNumber !== originalForm.value.phoneNumber
-  );
+  return serializeForm(form.value) !== serializeForm(originalForm.value);
 });
 
 // --- Fetch ---
@@ -904,15 +1307,15 @@ async function fetchProfile() {
       throw new Error(result?.message || t('settings.profileUnableLoad'));
     }
     profile.value = result.data;
-    const snapshot = {
-      firstName: result.data.firstName || '',
-      lastName: result.data.lastName || '',
-      phoneNumber: result.data.phoneNumber || '',
-      avatar: result.data.avatar || '',
-      username: result.data.username || '',
+    const snapshot = snapshotFromProfile(result.data);
+    form.value = {
+      ...snapshot,
+      displayPreferences: { ...snapshot.displayPreferences },
     };
-    form.value = { ...snapshot };
-    originalForm.value = { ...snapshot };
+    originalForm.value = {
+      ...snapshot,
+      displayPreferences: { ...snapshot.displayPreferences },
+    };
     avatarBroken.value = false;
   } catch (err) {
     console.error('Load profile failed', err);
@@ -930,18 +1333,40 @@ async function saveProfile() {
     const payload = {
       firstName: form.value.firstName?.trim() || '',
       lastName: form.value.lastName?.trim() || '',
-      phoneNumber: form.value.phoneNumber?.trim() || '',
+      secondaryEmail: form.value.secondaryEmail?.trim() || '',
+      officePhone: form.value.officePhone?.trim() || '',
+      homePhone: form.value.homePhone?.trim() || '',
+      mobilePhone: form.value.mobilePhone?.trim() || '',
+      fax: form.value.fax?.trim() || '',
+      language: form.value.language || null,
+      timeZone: form.value.timeZone || null,
+      dateFormat: form.value.dateFormat || null,
+      timeFormat: form.value.timeFormat || '12h',
+      displayPreferences: {
+        ...form.value.displayPreferences,
+        preferredCurrency: form.value.displayPreferences.preferredCurrency || null,
+        showAmountsInPreferredCurrency: (() => {
+          const preferred = form.value.displayPreferences.preferredCurrency || null;
+          const orgBase = resolveOrgCurrencyCode(authStore.organization);
+          // Selecting a non-base preferred currency implies display conversion.
+          if (preferred && preferred !== orgBase) return true;
+          return form.value.displayPreferences.showAmountsInPreferredCurrency === 'true';
+        })(),
+        truncateTrailingZeros: form.value.displayPreferences.truncateTrailingZeros === 'true',
+        currencyDecimalPlaces: Number(form.value.displayPreferences.currencyDecimalPlaces),
+      },
     };
     const result = await apiClient.put('/users/profile', payload);
     if (!result?.success) {
       throw new Error(result?.message || t('settings.profileUpdateFailed'));
     }
     originalForm.value = {
-      ...originalForm.value,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      phoneNumber: payload.phoneNumber,
+      ...form.value,
+      displayPreferences: { ...form.value.displayPreferences },
     };
+    if (profile.value) {
+      Object.assign(profile.value, payload);
+    }
     await authStore.refreshUser({ force: true });
     notifySuccess(t('settings.profileUpdated'));
   } catch (err) {
@@ -953,7 +1378,10 @@ async function saveProfile() {
 }
 
 function resetProfileForm() {
-  form.value = { ...originalForm.value };
+  form.value = {
+    ...originalForm.value,
+    displayPreferences: { ...originalForm.value.displayPreferences },
+  };
 }
 
 // --- Avatar upload ---
@@ -1120,5 +1548,8 @@ async function copyToClipboard(value, label) {
   }
 }
 
-onMounted(fetchProfile);
+onMounted(() => {
+  void fetchOrgGroups();
+  void fetchProfile();
+});
 </script>

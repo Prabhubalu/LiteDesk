@@ -102,6 +102,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { listContentDocuments } from '@/modules/contentStudio/services/contentStudioApi';
 import { captureBlogModuleVisited } from '@/config/posthogBlog';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -114,7 +115,7 @@ const visibilityFilter = ref('');
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
+  return formatUserDate(value) || '—';
 }
 
 function goCreate() {

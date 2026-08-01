@@ -1,3 +1,4 @@
+import { formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
 /**
  * Compact relative time for queue rows (e.g. "2m", "1h", "3d").
  */
@@ -15,7 +16,7 @@ export function formatLiveChatRelativeTime(value, now = Date.now()) {
   const diffDay = Math.floor(diffHour / 24);
   if (diffDay < 7) return `${diffDay}d`;
   try {
-    return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    return formatUserDate(value);
   } catch {
     return '';
   }
@@ -61,13 +62,7 @@ export function formatLiveChatDurationBetween(startValue, endValue) {
 export function formatLiveChatDateTime(value) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    return formatUserDateTime(value);
   } catch {
     return '—';
   }

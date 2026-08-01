@@ -209,6 +209,7 @@ const { t } = useI18n();
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { formatUserDate } from '@/utils/localeFormat';
 
 // Portal-specific API client (for /portal/* routes)
 const portalApiClient = async (url, options = {}) => {
@@ -294,11 +295,7 @@ const canUploadEvidence = computed(() => {
 const formatDate = (dateString) => {
   if (!dateString) return 'Not set';
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(date) || '—';
 };
 
 const formatStatus = (status) => {

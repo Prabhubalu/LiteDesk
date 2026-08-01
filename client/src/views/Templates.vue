@@ -124,6 +124,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import { openRecordInTab } from '@/utils/tabNavigation';
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -242,7 +243,7 @@ function formatDate(value) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatUserDate(date) || '-';
 }
 
 async function loadTemplates() {

@@ -197,6 +197,7 @@ import {
   UserCircleIcon
 } from '@heroicons/vue/24/outline';
 import { threadListSenderLine } from '@/utils/emailParticipantDisplay';
+import { formatDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   threadRow: { type: Object, default: null },
@@ -291,6 +292,6 @@ function formatShortTime(value) {
   if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return formatDate(d, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 </script>

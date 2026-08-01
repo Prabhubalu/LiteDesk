@@ -115,6 +115,7 @@ import {
 } from '@headlessui/vue';
 import apiClient from '@/utils/apiClient';
 import { formatSlotTime } from '@/utils/appointmentFormatters';
+import { formatDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -142,7 +143,7 @@ const dateOptions = computed(() => {
     d.setDate(today.getDate() + i);
     out.push({
       key: d.toISOString().slice(0, 10),
-      weekday: d.toLocaleDateString(undefined, { weekday: 'short' }),
+      weekday: formatDate(d, { weekday: 'short' }),
       day: d.getDate()
     });
   }

@@ -61,7 +61,7 @@
                     {{ deal.name }}
                   </h1>
                   <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-                    ${{ deal.amount?.toLocaleString() || 0 }}
+                    {{ formatDealMoney(deal.amount ?? 0) }}
                   </p>
                 </div>
               </div>
@@ -272,7 +272,7 @@
                 <div>
                   <p class="text-xs text-gray-600 dark:text-gray-400 font-medium">{{ t('settings.assignRulesDistWeighted') }}</p>
                   <p class="text-xl font-bold text-gray-900 dark:text-white mt-0.5">
-                    ${{ ((deal.amount || 0) * (deal.probability || 0) / 100).toLocaleString() }}
+                    {{ formatDealMoney((deal.amount || 0) * (deal.probability || 0) / 100) }}
                   </p>
                 </div>
                 <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -481,10 +481,14 @@ import RelatedEventsWidget from '@/components/events/RelatedEventsWidget.vue';
 import RelatedRecordsPanel from '@/components/relationships/RelatedRecordsPanel.vue';
 import AutomationContext from '@/components/automation/AutomationContext.vue';
 import Avatar from '@/components/common/Avatar.vue';
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const route = useRoute();
 const router = useRouter();
 const notifications = useNotifications();
+const authStore = useAuthStore();
 
 // Use tabs composable
 const { openTab } = useTabs();
@@ -623,13 +627,14 @@ const fetchDeal = async () => {
   }
 };
 
+const formatDealMoney = (value) => {
+  const currencyCode = resolveOrgCurrencyCode(deal.value?.currency || authStore.organization);
+  return formatCurrencyValue(value, { currencyCode }) ?? '—';
+};
+
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(date) || '-';
 };
 
 const formatTimeAgo = (date) => {

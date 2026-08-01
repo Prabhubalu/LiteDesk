@@ -110,6 +110,7 @@ import PortalCaseConversation from '@/components/portal/PortalCaseConversation.v
 import PortalCaseReplyComposer from '@/components/portal/PortalCaseReplyComposer.vue';
 import PortalCaseCsat from '@/components/portal/PortalCaseCsat.vue';
 import { PLATFORM_HOME_CARD_CLASS } from '@/utils/platformHomeLayout';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -143,12 +144,7 @@ const updatedLabel = computed(() => {
   const value = caseRecord.value?.updatedAt;
   if (!value) return '';
   return t('cases.portalCasesUpdated', {
-    date: new Date(value).toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    date: formatUserDateTime(value)
   });
 });
 

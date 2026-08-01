@@ -14,7 +14,7 @@
         /* Single-line edit: keep items-center so the row does not jump vs display mode; multiline needs top alignment */
         isEditing && multiline ? 'items-start pt-0.5' : 'items-center',
         hasDisplayValue ? 'text-gray-900 dark:text-white' : 'text-record-empty',
-        isValueCellClickable ? 'cursor-text' : ''
+        isValueCellClickable ? valueCellCursorClass : ''
       ]"
       @click="onValueCellClick"
     >
@@ -276,6 +276,18 @@
           @blur="handleBlur"
           @escape="handleCancel"
         />
+        <DateTimePicker
+          v-else-if="type === 'datetime'"
+          ref="inputRef"
+          v-model="localValue"
+          :invalid="Boolean(saveHttpError)"
+          :input-class="[
+            'w-full h-8 px-2 py-1 text-sm border rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer',
+            saveHttpError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+          ].join(' ')"
+          @blur="handleBlur"
+          @escape="handleCancel"
+        />
         <p
           v-if="saveHttpError && type !== 'phone'"
           class="text-xs text-red-600 dark:text-red-400 leading-snug w-full min-w-0 break-words"
@@ -285,7 +297,10 @@
       </div>
       <div
         v-else-if="layout === 'row'"
-        :class="['editable-labeled-value__display flex-1 min-w-0 w-full min-h-8 flex items-center rounded px-2 -mx-2 -my-1 transition-colors', canEdit ? 'cursor-text hover:bg-gray-50 dark:hover:bg-gray-800' : 'hover:bg-gray-50 dark:hover:bg-gray-800']"
+        :class="[
+          'editable-labeled-value__display flex-1 min-w-0 w-full min-h-8 flex items-center rounded px-2 -mx-2 -my-1 transition-colors',
+          canEdit ? [valueCellCursorClass, 'hover:bg-gray-50 dark:hover:bg-gray-800'] : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+        ]"
       >
         <div v-if="type === 'tags'" class="flex flex-wrap gap-1.5 min-w-0">
           <span
@@ -535,6 +550,15 @@
           @blur="handleBlur"
           @escape="handleCancel"
         />
+        <DateTimePicker
+          v-else-if="isEditing && type === 'datetime'"
+          ref="inputRef"
+          v-model="localValue"
+          :invalid="Boolean(saveHttpError)"
+          :input-class="[compactDrawerControlClass, 'cursor-pointer'].join(' ')"
+          @blur="handleBlur"
+          @escape="handleCancel"
+        />
         <div
           v-else
           :class="compactDrawerDisplayClass"
@@ -695,6 +719,15 @@
           @blur="handleBlur"
           @escape="handleCancel"
         />
+        <DateTimePicker
+          v-else-if="type === 'datetime'"
+          ref="inputRef"
+          v-model="localValue"
+          :invalid="Boolean(saveHttpError)"
+          :input-class="[stackSingleLineEditInputClass, 'cursor-pointer'].join(' ')"
+          @blur="handleBlur"
+          @escape="handleCancel"
+        />
         <p
           v-if="saveHttpError && type !== 'phone'"
           class="mt-1 text-xs text-red-600 dark:text-red-400 leading-snug"
@@ -785,6 +818,7 @@ import TagMultiPicklistField from '@/components/common/TagMultiPicklistField.vue
 import { useDefaultPhoneCountry } from '@/composables/useDefaultPhoneCountry';
 import PeopleFirstNameWithSalutationField from '@/components/people/PeopleFirstNameWithSalutationField.vue';
 import DatePicker from '@/components/common/DatePicker.vue';
+import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import { sanitizeInternationalPhone, validatePhoneValue } from '@/utils/phoneInput';
 import { getApiErrorMessage } from '@/utils/httpErrors';
 
@@ -820,8 +854,8 @@ const props = defineProps({
   },
   type: {
     type: String,
-    default: 'text', // 'text', 'number', 'date', 'select', 'user', 'entity', 'tags', 'multi-select'
-    validator: (value) => ['text', 'url', 'phone', 'number', 'date', 'select', 'user', 'entity', 'tags', 'multi-select'].includes(value)
+    default: 'text', // 'text', 'number', 'date', 'datetime', 'select', 'user', 'entity', 'tags', 'multi-select'
+    validator: (value) => ['text', 'url', 'phone', 'number', 'date', 'datetime', 'select', 'user', 'entity', 'tags', 'multi-select'].includes(value)
   },
   multiline: {
     type: Boolean,
@@ -960,6 +994,7 @@ const fieldIcon = computed(() => {
   const map = {
     number: CurrencyDollarIcon,
     date: CalendarDaysIcon,
+    datetime: CalendarDaysIcon,
     text: DocumentTextIcon,
     phone: DevicePhoneMobileIcon,
     select: TagIcon,
@@ -977,8 +1012,7 @@ const stackDisplayModeClass = computed(() => {
   }
   if (props.canEdit) {
     classes.push(
-      (props.type === 'tags' && props.onTagsOpen ? 'cursor-pointer' : 'cursor-text') +
-        ' hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 py-1 -mx-2 -my-1 transition-colors'
+      `${valueCellCursorClass.value} hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-2 py-1 -mx-2 -my-1 transition-colors`
     );
   }
   return classes;
@@ -1024,9 +1058,7 @@ const compactDrawerListboxClass = computed(() => {
 const compactDrawerReadOnlyClass = computed(() => DRAWER_FIELD_READ_ONLY_DISPLAY_CLASS);
 
 const compactDrawerDisplayClass = computed(() => {
-  const clickable =
-    props.type === 'tags' && typeof props.onTagsOpen === 'function' ? 'cursor-pointer' : 'cursor-text';
-  return joinDrawerFieldClasses(compactDrawerControlClass.value, clickable);
+  return joinDrawerFieldClasses(compactDrawerControlClass.value, valueCellCursorClass.value);
 });
 
 const isValidObjectId = (value) => typeof value === 'string' && /^[0-9a-fA-F]{24}$/.test(value);
@@ -1088,6 +1120,9 @@ const initializeLocalValue = () => {
     } else {
       localValue.value = props.value;
     }
+  } else if (props.type === 'datetime') {
+    // DateTimePicker expects UTC ISO (or empty); keep as stored
+    localValue.value = props.value == null || props.value === '' ? '' : String(props.value);
   } else if (props.type === 'user') {
     // Extract user ID if value is an object
     if (props.value && typeof props.value === 'object' && props.value._id) {
@@ -1340,8 +1375,13 @@ const isValueCellClickable = computed(() => {
   if (props.layout === 'row' && props.type === 'phone') return false;
   if (props.type === 'multi-select') return false;
   if (props.type === 'tags' && typeof props.onTagsOpen === 'function') return true;
-  return ['text', 'url', 'number', 'date', 'tags'].includes(props.type);
+  return ['text', 'url', 'number', 'date', 'datetime', 'tags'].includes(props.type);
 });
+
+/** Picker/tag cells use pointer; free-text cells use text caret. */
+const valueCellCursorClass = computed(() =>
+  ['date', 'datetime', 'tags'].includes(props.type) ? 'cursor-pointer' : 'cursor-text'
+);
 
 const onValueCellClick = (event) => {
   if (isValueCellClickable.value) handleClick(event);
@@ -1555,7 +1595,7 @@ const handleClick = (event) => {
       inputRef.value.focus({ preventScroll: true });
       if (props.type === 'text' || props.type === 'url' || props.type === 'number') {
         inputRef.value.select();
-      } else if (props.type === 'date') {
+      } else if (props.type === 'date' || props.type === 'datetime') {
         inputRef.value?.open?.();
       } else if (props.type === 'phone') {
         inputRef.value?.select?.();
@@ -1634,7 +1674,7 @@ const handleBlur = async () => {
     phoneError.value = null;
   }
 
-  // Convert date back to ISO string if needed
+  // Convert date-only back to ISO midnight; datetime already UTC ISO from DateTimePicker
   if (props.type === 'date' && valueToSave) {
     const date = new Date(valueToSave + 'T00:00:00');
     valueToSave = date.toISOString();
@@ -1681,5 +1721,6 @@ const handleCancel = () => {
 .editable-labeled-value__text {
   display: block;
   min-width: 0;
+  cursor: inherit;
 }
 </style>

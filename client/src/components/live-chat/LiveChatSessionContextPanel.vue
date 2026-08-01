@@ -837,6 +837,7 @@ import {
   liveChatAiSentimentScoreLabel,
 } from '@/utils/liveChatSessionDisplay';
 import { canAdminLiveChat, canHandleLiveChatSession } from '@/utils/liveChatPermissions';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const DEFAULT_EXPANDED_SECTIONS = Object.freeze([
   'details',
@@ -1317,7 +1318,7 @@ function assignmentEventLine(event) {
 function formatDate(value) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return '—';
   }

@@ -80,6 +80,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
+import { formatDate as formatLocaleDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   peopleId: { type: String, required: true }
@@ -118,7 +119,7 @@ const statusLabel = computed(() =>
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  return formatLocaleDate(date, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 function historyLabel(entry) {

@@ -48,6 +48,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useActiveImportsStore } from '@/stores/activeImports';
 import { useTabs } from '@/composables/useTabs';
+import { formatNumber } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -55,7 +56,7 @@ const activeImportsStore = useActiveImportsStore();
 const { openTab } = useTabs();
 
 function formatCount(value) {
-  return Number(value || 0).toLocaleString();
+  return formatNumber(Number(value || 0));
 }
 
 function progressPercent(item) {

@@ -122,6 +122,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { listPlatformNotes } from '@/utils/releaseNotesApi';
 import { RELEASE_NOTE_STATUS_OPTIONS } from '@/constants/releaseNoteAdmin';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -135,7 +136,7 @@ const statusOptions = RELEASE_NOTE_STATUS_OPTIONS;
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function importanceClass(importance) {

@@ -151,7 +151,8 @@ async function createQuote(req, res) {
       String(err?.message || '').includes('E11000') ||
       String(err?.message || '').includes('duplicate key');
     const code = err?.code === 'VALIDATION' ? 'VALIDATION' : isDup ? 'DUPLICATE' : err?.code || 'UNKNOWN';
-    const status = code === 'VALIDATION' ? 400 : isDup ? 409 : 500;
+    const status =
+      code === 'VALIDATION' || code === 'CURRENCY_NOT_ENABLED' ? 400 : isDup ? 409 : 500;
     return res.status(status).json({
       success: false,
       message: isDup

@@ -52,7 +52,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-2xl font-bold text-gray-900 dark:text-white">${{ formatNumber(statistics.totalMRR || 0) }}</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrencyValue(statistics.totalMRR || 0) ?? '—' }}</p>
           <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ t('platform.instanceManagementMonthlyRevenue') }}</p>
         </div>
       </div>
@@ -366,6 +366,8 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '../utils/apiClient';
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const instances = ref([]);
 const statistics = ref({});
@@ -500,15 +502,7 @@ const clearFilters = () => {
 
 const formatDate = (date) => {
   if (!date) return 'N/A';
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
-
-const formatNumber = (num) => {
-  return new Intl.NumberFormat('en-US').format(num);
+  return formatUserDate(date) || 'N/A';
 };
 
 const getStatusClass = (status) => {

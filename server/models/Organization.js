@@ -287,6 +287,12 @@ const OrganizationSchema = new mongoose.Schema({
             type: String, 
             default: 'USD' 
         },
+        /** Enabled non-base currencies with manual conversion rates vs settings.currency */
+        currencies: [{
+            code: { type: String, required: true, uppercase: true, trim: true },
+            enabled: { type: Boolean, default: false },
+            conversionRate: { type: Number, default: 1, min: 0 }
+        }],
         locale: { 
             type: String, 
             default: 'en-US' 

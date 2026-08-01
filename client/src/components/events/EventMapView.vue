@@ -41,6 +41,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   event: {
@@ -206,7 +207,7 @@ const updateTrackingPoints = () => {
         iconSize: [16, 16],
         iconAnchor: [8, 8]
       })
-    }).addTo(map).bindPopup('Check-In: ' + new Date(checkInPoint.timestamp).toLocaleString());
+    }).addTo(map).bindPopup('Check-In: ' + formatUserDateTime(checkInPoint.timestamp));
     markers.push(marker);
   }
   
@@ -227,7 +228,7 @@ const updateTrackingPoints = () => {
         iconSize: [16, 16],
         iconAnchor: [8, 8]
       })
-    }).addTo(map).bindPopup('Check-Out: ' + new Date(checkOutPoint.timestamp).toLocaleString());
+    }).addTo(map).bindPopup('Check-Out: ' + formatUserDateTime(checkOutPoint.timestamp));
     markers.push(marker);
   }
   

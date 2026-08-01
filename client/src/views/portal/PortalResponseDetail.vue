@@ -59,6 +59,7 @@ import { useI18n } from 'vue-i18n';
 import portalApiClient from '@/utils/portalApiClient';
 import PortalPageShell from '@/components/portal/PortalPageShell.vue';
 import { PLATFORM_HOME_CARD_CLASS, PLATFORM_HOME_SKELETON_CLASS } from '@/utils/platformHomeLayout';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -74,13 +75,7 @@ const canContinue = computed(() => {
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(value) || '—';
 }
 
 async function loadResponse() {

@@ -60,6 +60,8 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/utils/apiClient';
 import PaymentRefundWizardModal from '@/components/payments/PaymentRefundWizardModal.vue';
+import { formatUserDate } from '@/utils/localeFormat';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   record: { type: Object, default: null },
@@ -77,13 +79,12 @@ const canRefund = computed(() => {
 });
 
 function formatMoney(value) {
-  const n = Number(value) || 0;
-  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrencyValue(value, { currencyCode: props.record?.currency }) ?? '—';
 }
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatUserDate(value) || '—';
 }
 
 function formatReason(reason) {

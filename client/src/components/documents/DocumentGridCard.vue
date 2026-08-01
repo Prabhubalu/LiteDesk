@@ -106,6 +106,7 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/vue/24/solid';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import DocumentGridThumbnail from '@/components/documents/DocumentGridThumbnail.vue';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   doc: { type: Object, required: true },
@@ -138,6 +139,6 @@ const updatedLabel = computed(() => {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatUserDate(date);
 });
 </script>

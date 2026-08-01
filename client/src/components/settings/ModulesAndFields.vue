@@ -4752,7 +4752,7 @@ import apiClient from '@/utils/apiClient';
 import { invalidateTenantSchemaCaches, fetchModulesListCached, fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { getDefaultEmailValidations } from '@/utils/defaultFieldValidations';
 import {
-  CURRENCY_OPTIONS,
+  getEnabledCurrencyOptions,
   getCurrencySymbolFromCode,
   formatCurrencyValue,
   resolveOrgCurrencyCode,
@@ -7747,7 +7747,7 @@ const showAddOption = ref(false);
 const newOptionValue = ref('');
 const newOptionColor = ref(PLATFORM_DEFAULT_PICKLIST_COLOR);
 const currencySelectOptions = computed(() =>
-  CURRENCY_OPTIONS.map((currency) => ({
+  getEnabledCurrencyOptions(authStore.organization).map((currency) => ({
     value: currency.code,
     label: `${currency.code} - ${currency.name}`,
   }))

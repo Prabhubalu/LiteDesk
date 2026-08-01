@@ -85,7 +85,7 @@
                   ? 'text-emerald-600 dark:text-emerald-400'
                   : 'text-red-600 dark:text-red-400'"
               >
-                {{ reputationDelta > 0 ? '+' : '−' }}{{ Math.abs(Number(reputationDelta)).toLocaleString() }}
+                {{ reputationDelta > 0 ? '+' : '−' }}{{ formatNumber(Math.abs(Number(reputationDelta))) }}
               </p>
             </div>
             <div
@@ -152,6 +152,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BoltIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import { formatNumber } from '@/utils/localeFormat';
 import {
   reputationScoreClass,
   reputationScoreTone
@@ -167,7 +168,7 @@ const policy = ref(null);
 function formatLimit(value) {
   const num = Number(value);
   if (!Number.isFinite(num) || num <= 0) return t('settings.emailPolicyUnlimited');
-  return num.toLocaleString();
+  return formatNumber(num);
 }
 
 const minReputation = computed(() => Number(policy.value?.marketingMinSenderReputation) || 40);
@@ -198,7 +199,7 @@ const reputationBarClass = computed(() => {
 });
 
 const maxSendableLabel = computed(() =>
-  Number(policy.value?.maxSendableRecipients ?? 0).toLocaleString()
+  formatNumber(Number(policy.value?.maxSendableRecipients ?? 0))
 );
 
 const capacityBlocked = computed(() => {
@@ -219,7 +220,7 @@ const limitingFactorLabel = computed(() => {
   }
   if (factor === 'throughputDaily') {
     return t('marketing.campaignsMaxSendableLimitedByThroughput', {
-      count: Number(policy.value?.throughputDaily || 0).toLocaleString()
+      count: formatNumber(Number(policy.value?.throughputDaily || 0))
     });
   }
   if (factor === 'reputation') {
@@ -234,11 +235,11 @@ const limitingFactorLabel = computed(() => {
 const creditsRemaining = computed(() => Number(policy.value?.creditsRemaining || 0));
 const creditsReserved = computed(() => Number(policy.value?.creditsReserved || 0));
 
-const creditsRemainingLabel = computed(() => creditsRemaining.value.toLocaleString());
-const creditsReservedLabel = computed(() => creditsReserved.value.toLocaleString());
+const creditsRemainingLabel = computed(() => formatNumber(creditsRemaining.value));
+const creditsReservedLabel = computed(() => formatNumber(creditsReserved.value));
 
 const reputationScoreLabel = computed(() =>
-  reputationScore.value != null ? reputationScore.value.toLocaleString() : '—'
+  reputationScore.value != null ? formatNumber(reputationScore.value) : '—'
 );
 
 const effectiveRateLabel = computed(() => {

@@ -68,11 +68,8 @@
 
                         <ScheduleEditorForm
                           v-model:form="form"
-                          :scope-options="scopeOptions"
                           :status-options="statusOptions"
                           :holiday-calendar-options="holidayCalendarOptions"
-                          :group-options="groupOptions"
-                          :user-options="userOptions"
                           :is-default-locked="isEdit && !!form.isDefault"
                           :preview-set-id="isEdit ? scheduleId : null"
                         />
@@ -140,11 +137,11 @@ import {
 import { XMarkIcon } from '@heroicons/vue/24/outline';
 import { useBusinessHours } from '@/composables/useBusinessHours';
 import { detectUserTimezone } from '@/utils/ianaTimezones';
-import apiClient from '@/utils/apiClient';
 import {
   buildDefaultWeekLocal,
   buildSchedulePayload,
-  validateScheduleForm
+  validateScheduleForm,
+  validateWeekSchedule
 } from '@/utils/businessHoursFormUtils';
 import { useNotifications } from '@/composables/useNotifications';
 import ScheduleEditorForm from '@/components/business-hours/ScheduleEditorForm.vue';
@@ -165,12 +162,6 @@ const { t } = useI18n();
 const { fetchSet, createSet, updateSet, deleteSet } = useBusinessHours();
 const { success, error: notifyError } = useNotifications();
 
-const scopeOptions = computed(() => [
-  { value: 'company', label: t('settings.settingsBhScopeEveryone') },
-  { value: 'group', label: t('settings.settingsBhScopeTeam') },
-  { value: 'user', label: t('settings.settingsBhScopeIndividual') }
-]);
-
 const statusOptions = computed(() => [
   { value: 'active', label: t('settings.settingsBhStatusActive') },
   { value: 'inactive', label: t('settings.settingsBhStatusInactive') }
@@ -181,25 +172,6 @@ const loading = ref(false);
 const saving = ref(false);
 const formError = ref('');
 const form = ref(createEmptyForm());
-const groups = ref([]);
-const users = ref([]);
-
-const groupOptions = computed(() =>
-  groups.value.map((g) => ({
-    value: g._id,
-    label: g.name || t('settings.settingsBhUnnamedTeam')
-  }))
-);
-
-const userOptions = computed(() =>
-  users.value.map((u) => {
-    const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
-    return {
-      value: u._id,
-      label: name || u.email || u.username || t('settings.settingsBhUserFallback')
-    };
-  })
-);
 
 function createEmptyForm() {
   return {
@@ -214,33 +186,8 @@ function createEmptyForm() {
   };
 }
 
-async function loadScopeOptions() {
-  try {
-    const [groupsRes, usersRes] = await Promise.all([
-      apiClient.get('/groups?page=1&limit=500&sortBy=name&sortOrder=asc'),
-      apiClient.get('/users/list')
-    ]);
-
-    groups.value = groupsRes?.success && Array.isArray(groupsRes.data) ? groupsRes.data : [];
-
-    let userList = [];
-    if (Array.isArray(usersRes)) {
-      userList = usersRes;
-    } else if (usersRes?.success && Array.isArray(usersRes.data)) {
-      userList = usersRes.data;
-    } else if (Array.isArray(usersRes?.data)) {
-      userList = usersRes.data;
-    }
-    users.value = userList.filter((u) => u?.status !== 'inactive');
-  } catch {
-    groups.value = [];
-    users.value = [];
-  }
-}
-
 async function loadForm() {
   formError.value = '';
-  await loadScopeOptions();
 
   if (!isEdit.value) {
     form.value = createEmptyForm();
@@ -259,7 +206,7 @@ async function loadForm() {
       week: JSON.parse(JSON.stringify(set.week)),
       holidayCalendarId: set.holidayCalendarId || null,
       overtimeAllowed: set.overtimeAllowed,
-      linkedTo: { type: set.linkedTo?.type || 'company', id: set.linkedTo?.id || null },
+      linkedTo: { type: 'company', id: null },
       isDefault: set.isDefault,
       status: set.status
     };
@@ -281,6 +228,11 @@ async function save() {
   const validationKey = validateScheduleForm(form.value);
   if (validationKey) {
     formError.value = t(`settings.${validationKey}`);
+    return;
+  }
+  const weekError = validateWeekSchedule(form.value.week);
+  if (weekError) {
+    formError.value = weekError;
     return;
   }
 

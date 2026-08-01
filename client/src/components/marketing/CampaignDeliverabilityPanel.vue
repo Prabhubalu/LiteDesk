@@ -72,6 +72,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { reputationScoreClass, reputationScoreBorderClass } from '@/utils/reputationScoreTone';
+import { formatNumber } from '@/utils/localeFormat';
 
 const props = defineProps({
   loading: { type: Boolean, default: false },
@@ -84,7 +85,7 @@ const props = defineProps({
 const { t } = useI18n();
 
 const senderScoreLabel = computed(() =>
-  props.senderReputation != null ? `${Number(props.senderReputation).toLocaleString()} / 100` : '—'
+  props.senderReputation != null ? `${formatNumber(Number(props.senderReputation))} / 100` : '—'
 );
 
 const healthScore = computed(() => {
@@ -93,7 +94,7 @@ const healthScore = computed(() => {
 });
 
 const healthScoreLabel = computed(() =>
-  healthScore.value != null ? `${healthScore.value.toLocaleString()} / 100` : '—'
+  healthScore.value != null ? `${formatNumber(healthScore.value)} / 100` : '—'
 );
 
 const senderScoreClass = computed(() => reputationScoreClass(props.senderReputation));

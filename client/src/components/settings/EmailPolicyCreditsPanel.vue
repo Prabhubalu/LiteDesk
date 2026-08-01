@@ -179,6 +179,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatNumber } from '@/utils/localeFormat';
 
 const props = defineProps({
   canManage: { type: Boolean, default: false }
@@ -196,7 +197,7 @@ const policy = ref(null);
 function formatLimit(value) {
   const num = Number(value);
   if (!Number.isFinite(num) || num <= 0) return t('settings.emailPolicyUnlimited');
-  return num.toLocaleString();
+  return formatNumber(num);
 }
 
 const summaryItems = computed(() => {
@@ -205,17 +206,17 @@ const summaryItems = computed(() => {
     {
       key: 'creditsRemaining',
       label: t('settings.emailPolicyCreditsRemaining'),
-      value: Number(policy.value.creditsRemaining || 0).toLocaleString()
+      value: formatNumber(Number(policy.value.creditsRemaining || 0))
     },
     {
       key: 'creditsReserved',
       label: t('settings.emailPolicyCreditsReserved'),
-      value: Number(policy.value.creditsReserved || 0).toLocaleString()
+      value: formatNumber(Number(policy.value.creditsReserved || 0))
     },
     {
       key: 'monthlyCredits',
       label: t('settings.emailPolicyMonthlyCredits'),
-      value: Number(policy.value.monthlyCredits || 0).toLocaleString()
+      value: formatNumber(Number(policy.value.monthlyCredits || 0))
     },
     {
       key: 'dailySendLimit',

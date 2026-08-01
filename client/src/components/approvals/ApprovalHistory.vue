@@ -75,6 +75,7 @@
 import { useI18n } from 'vue-i18n';
 import { ref, onMounted } from 'vue';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   entityType: {
@@ -119,7 +120,7 @@ const loadHistory = async () => {
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleString();
+  return formatUserDateTime(date);
 };
 
 const getDeciderName = (approval) => {

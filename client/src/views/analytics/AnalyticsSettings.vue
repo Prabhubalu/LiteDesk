@@ -150,6 +150,7 @@ import {
 } from '@/config/posthogAnalytics';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const { t } = useI18n();
 const router = useRouter();
 const { loading, saving, fetchSettings, updateSettings } = useAnalyticsHome();
@@ -181,7 +182,7 @@ const tokenForm = reactive({
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function goHome() {

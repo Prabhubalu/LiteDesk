@@ -2,6 +2,8 @@
  * Human-readable sentences for process flow nodes (operations-first copy).
  */
 
+import { formatNumber } from '@/utils/localeFormat';
+
 const OPERATOR_PHRASES = {
   equals: 'is',
   '===': 'is',
@@ -25,7 +27,7 @@ function fieldLabel(field) {
 
 function formatValue(value) {
   if (value == null || value === '') return '—';
-  if (typeof value === 'number') return value.toLocaleString();
+  if (typeof value === 'number') return formatNumber(value);
   return String(value);
 }
 

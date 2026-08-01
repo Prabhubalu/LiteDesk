@@ -181,6 +181,7 @@ import { ref, computed } from 'vue';
 import apiClient from '../../utils/apiClient';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDate } from '@/utils/localeFormat';
 const props = defineProps({
   task: {
     type: Object,
@@ -239,11 +240,7 @@ const confirmDelete = async () => {
 // Utility functions
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('en-US', { 
-    month: 'long', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
+  return formatUserDate(date) || '-';
 };
 
 const formatPriority = (priority) => {

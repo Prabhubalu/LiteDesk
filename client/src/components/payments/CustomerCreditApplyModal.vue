@@ -52,6 +52,7 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -68,7 +69,7 @@ const amount = ref(0);
 const autoApply = ref(true);
 
 function formatMoney(value) {
-  return (Number(value) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrencyValue(value, { currencyCode: props.record?.currency }) ?? '—';
 }
 
 function close() {

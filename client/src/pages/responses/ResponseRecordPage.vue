@@ -510,6 +510,7 @@ import { isAuditFormType, isEngagementFormType } from '@/utils/engagementFormDis
 
 import { useNotifications } from '@/composables/useNotifications';
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const props = defineProps({
   embed: { type: Boolean, default: false },
   recordId: { type: String, default: null },
@@ -917,13 +918,7 @@ const calculatePassRate = (resp) => {
 
 const formatDate = (date) => {
   if (!date) return '';
-  return new Date(date).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(date);
 };
 
 const approveResponse = async () => {

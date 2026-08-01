@@ -494,6 +494,7 @@ import { isInboxShellUnblocked, formatMailboxInboundStatus } from '@/utils/mailb
 import { createInboxStream } from '@/composables/useInboxStream';
 import { shouldPromptGmailReconnect, gmailReconnectMessage } from '@/utils/gmailConnectErrors';
 import { threadListSenderLine } from '@/utils/emailParticipantDisplay';
+import { formatDate, formatTime } from '@/utils/localeFormat';
 
 const router = useRouter();
 const route = useRoute();
@@ -1461,7 +1462,7 @@ function formatShortSyncTime(value) {
   if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return formatDate(d, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
 function openConnectGroupGmail(mb) {
@@ -2423,14 +2424,14 @@ function formatGmailStyleDate(value) {
   const now = new Date();
   const startOfDay = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate());
   if (startOfDay(d).getTime() === startOfDay(now).getTime()) {
-    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return formatTime(d, { hour: 'numeric', minute: '2-digit' });
   }
   const weekAgo = new Date(now);
   weekAgo.setDate(weekAgo.getDate() - 6);
   if (d >= startOfDay(weekAgo)) {
-    return d.toLocaleDateString(undefined, { weekday: 'short' });
+    return formatDate(d, { weekday: 'short' });
   }
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return formatDate(d, { month: 'short', day: 'numeric' });
 }
 
 function emailAvatarLetter(row) {

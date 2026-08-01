@@ -1256,6 +1256,7 @@ import {
   getPlainTextFromHtml,
   isDescriptionActivityFieldChange
 } from '@/utils/contentVersionHistory';
+import { formatActivityChangeValue } from '@/utils/fieldDisplay';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
 import { useRecordPresence } from '@/composables/useRecordPresence';
 import { isRecordPresenceSupported } from '@/utils/recordPresence';
@@ -1284,6 +1285,7 @@ import EventRecordExecutionPanel from '@/components/events/EventRecordExecutionP
 import 'emoji-picker-element';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
 const { t, te } = useI18n();
 
 const formatAppLabel = (appKey) => getAppLabel(appKey) || appKey || 'App';
@@ -2602,7 +2604,8 @@ const genericAdapter = computed(() => {
             : createGenericRecordAdapter;
   return adapterFactory({
     sectionLabels: createRecordSectionLabels(t),
-    formatDate: (d) => (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+    formatDate: (d) => (d ? formatUserDate(d) : '—'),
+    formatDateTime: (d) => (d ? formatUserDateTime(d) : '—'),
     moduleDefinition: moduleDefinition.value,
     inventoryEnabled: authStore.inventoryEnabled,
     ...(moduleKeyLower.value === 'organizations'
@@ -3043,7 +3046,7 @@ function formatFullTimestamp(date) {
   if (!date) return '';
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleString();
+  return formatUserDateTime(d);
 }
 
 function formatRelativeActivityTime(date) {
@@ -3074,6 +3077,17 @@ const {
 } = useCommentReactionTooltip({
   getCurrentUserId: () => authStore.user?._id || authStore.user?.id || ''
 });
+
+const resolveActivityFieldDataType = (event) => {
+  const details = event?.details || event?.payload?.details || {};
+  const fieldKey = String(details.field || '').trim();
+  if (!fieldKey) return undefined;
+  const fields = moduleDefinition.value?.fields || [];
+  const match = fields.find(
+    (f) => String(f?.key || '') === fieldKey || String(f?.label || '') === fieldKey
+  );
+  return match?.dataType;
+};
 
 const activityUi = computed(() => {
   const searchQuery = activitySearchQuery.value || '';
@@ -3192,7 +3206,7 @@ const activityUi = computed(() => {
         const plain = getPlainTextFromHtml(String(v));
         return plain || 'Empty';
       }
-      return String(v);
+      return formatActivityChangeValue(v, 'Empty', resolveActivityFieldDataType(event));
     },
     getSystemEventToValue: (event) => {
       const details = event?.details || event?.payload?.details || {};
@@ -3202,7 +3216,7 @@ const activityUi = computed(() => {
         const plain = getPlainTextFromHtml(String(v));
         return plain || 'Empty';
       }
-      return String(v);
+      return formatActivityChangeValue(v, 'Empty', resolveActivityFieldDataType(event));
     },
     getSystemEventMessage: (event) => {
       if (!event) return 'Updated this record';
@@ -4856,7 +4870,7 @@ function viewFormResponseDetail(responseItem) {
   const responseId = responseItem._id;
   openTab(`/forms/${formId}/responses/${responseId}`, {
     name: `form-response-${responseId}`,
-    title: `${t('navigation.moduleResponses')} - ${new Date(responseItem.submittedAt).toLocaleDateString()}`,
+    title: `${t('navigation.moduleResponses')} - ${formatUserDate(responseItem.submittedAt)}`,
     insertAdjacent: true,
     params: { formId, responseId }
   });

@@ -30,12 +30,14 @@
             v-model="day.windows[0].start"
             type="time"
             class="px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            @focus="ensureDayWindow(day)"
           />
           <span class="text-gray-400 text-sm">{{ t('settings.settingsBhTimeTo') }}</span>
           <input
             v-model="day.windows[0].end"
             type="time"
             class="px-2 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            @focus="ensureDayWindow(day)"
           />
         </template>
         <span v-else class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.settingsBhClosed') }}</span>
@@ -103,14 +105,21 @@ function copyMondayToWeekdays() {
   const week = props.modelValue.map((d) => ({ ...d, windows: [...d.windows], breaks: [...d.breaks] }));
   const mon = week.find((d) => d.day === 1);
   if (!mon) return;
+  const monWindow = mon.windows?.[0] || { start: '09:00', end: '18:00' };
   for (const d of week) {
     if (d.day >= 1 && d.day <= 5) {
       d.enabled = mon.enabled;
-      d.windows = [{ ...mon.windows[0] }];
+      d.windows = [{ start: monWindow.start, end: monWindow.end }];
       d.breaks = mon.breaks.length ? [{ ...mon.breaks[0] }] : [];
     }
   }
   emit('update:modelValue', week);
+}
+
+function ensureDayWindow(day) {
+  if (!day.windows?.length) {
+    day.windows = [{ start: '09:00', end: '18:00' }];
+  }
 }
 
 function addBreak(day) {

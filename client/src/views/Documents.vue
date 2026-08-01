@@ -61,6 +61,7 @@ import { captureDocumentsModuleVisited, captureDocumentUploaded, captureKnowledg
 import apiClient from '@/utils/apiClient';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const { t, te } = useI18n();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -601,7 +602,7 @@ function formatOwner(row) {
 
 function formatDate(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  return formatUserDateTime(value);
 }
 
 function formatVersion(version) {

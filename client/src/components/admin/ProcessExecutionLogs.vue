@@ -226,6 +226,7 @@
 </template>
 
 <script setup>
+import { formatUserDateTime } from '@/utils/localeFormat';
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
@@ -296,7 +297,7 @@ const getTriggerLabel = (execution) => {
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  return date.toLocaleString();
+  return formatUserDateTime(date);
 };
 
 const getDuration = (start, end) => {

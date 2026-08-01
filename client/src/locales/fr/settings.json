@@ -20261,5 +20261,277 @@
   "addonsArticlesVercelUpdateKitDesc": {
     "message": "Refreshes sync scripts, help-sync, webhook route, and lib client — leaves app/help layouts and your CSS alone.",
     "description": "Description for update-kit install command"
+  },
+  "inviteBusinessHours": {
+    "message": "Business Hours",
+    "description": "Invite/edit user business hours field"
+  },
+  "inviteSelectBusinessHours": {
+    "message": "Select business hours",
+    "description": "Business hours select placeholder"
+  },
+  "inviteBusinessHoursRequired": {
+    "message": "Business hours is required",
+    "description": "Business hours validation"
+  },
+  "profileBusinessHours": {
+    "message": "Business hours",
+    "description": "Profile business hours section title"
+  },
+  "profileBusinessHoursDesc": {
+    "message": "The working hours schedule assigned to you for booking, SLAs, and availability.",
+    "description": "Profile business hours section description"
+  },
+  "profileBusinessHoursAssigned": {
+    "message": "Your assigned schedule",
+    "description": "Profile business hours card label"
+  },
+  "profileUserInfo": {
+    "message": "User information",
+    "description": "Profile user info section"
+  },
+  "profileUserInfoDesc": {
+    "message": "Account identity, role, and language preference",
+    "description": "Profile user info section desc"
+  },
+  "profileEmployeeInfo": {
+    "message": "Employee information",
+    "description": "Profile employee section"
+  },
+  "profileEmployeeInfoDesc": {
+    "message": "Contact details and employment metadata",
+    "description": "Profile employee section desc"
+  },
+  "profileCurrencyPrefs": {
+    "message": "Currency & number preferences",
+    "description": "Profile currency section"
+  },
+  "profileCurrencyPrefsDesc": {
+    "message": "How amounts and large numbers appear for you across the platform",
+    "description": "Profile currency section desc"
+  },
+  "profileAccessType": {
+    "message": "User type",
+    "description": "Admin vs Standard label"
+  },
+  "profileAccessAdmin": {
+    "message": "Admin",
+    "description": "User type Admin"
+  },
+  "profileAccessStandard": {
+    "message": "Standard",
+    "description": "User type Standard"
+  },
+  "profileRole": {
+    "message": "Role",
+    "description": "Profile role field"
+  },
+  "profileReportsTo": {
+    "message": "Reports to",
+    "description": "Reports-to field"
+  },
+  "profileLanguage": {
+    "message": "Language",
+    "description": "Profile language field"
+  },
+  "profileDepartment": {
+    "message": "Department",
+    "description": "Department field"
+  },
+  "profilePrimaryEmail": {
+    "message": "Primary email",
+    "description": "Primary email field"
+  },
+  "profileSecondaryEmail": {
+    "message": "Secondary email",
+    "description": "Secondary email field"
+  },
+  "profileOfficePhone": {
+    "message": "Office phone",
+    "description": "Office phone field"
+  },
+  "profileHomePhone": {
+    "message": "Home phone",
+    "description": "Home phone field"
+  },
+  "profileMobilePhone": {
+    "message": "Mobile phone",
+    "description": "Mobile phone field"
+  },
+  "profileFax": {
+    "message": "Fax",
+    "description": "Fax field"
+  },
+  "profileCreatedAt": {
+    "message": "Created date & time",
+    "description": "Account created field"
+  },
+  "profileSuspendedOn": {
+    "message": "Suspended on",
+    "description": "Suspended date field"
+  },
+  "profileReactivatedOn": {
+    "message": "Reactivated on",
+    "description": "Reactivated date field"
+  },
+  "profilePreferredCurrency": {
+    "message": "Preferred currency",
+    "description": "Preferred currency field"
+  },
+  "profileShowPreferredCurrency": {
+    "message": "Show amounts in preferred currency",
+    "description": "Show preferred currency toggle"
+  },
+  "profileDigitGroupingPattern": {
+    "message": "Digit grouping pattern",
+    "description": "Digit grouping pattern field"
+  },
+  "profileDecimalSeparator": {
+    "message": "Decimal separator",
+    "description": "Decimal separator field"
+  },
+  "profileDigitGroupingSeparator": {
+    "message": "Digit grouping separator",
+    "description": "Digit grouping separator field"
+  },
+  "profileCurrencyDecimals": {
+    "message": "Number of currency decimals",
+    "description": "Currency decimals field"
+  },
+  "profileTruncateZeros": {
+    "message": "Truncate trailing zeros",
+    "description": "Truncate zeros field"
+  },
+  "profileAggregatedFormat": {
+    "message": "Aggregated number format",
+    "description": "Aggregated number format field"
+  },
+  "profileAggregatedFormatHelp": {
+    "message": "Controls how large numeric values are displayed in reports, dashboards, charts, or widgets. Instead of changing the actual value, it only changes the display format.",
+    "description": "Aggregated format help text"
+  },
+  "profileYes": {
+    "message": "Yes",
+    "description": "Yes option"
+  },
+  "profileNo": {
+    "message": "No",
+    "description": "No option"
+  },
+  "profileEmptyValue": {
+    "message": "—",
+    "description": "Empty read-only value"
+  },
+  "profileGroupingInternational": {
+    "message": "123,456,789",
+    "description": "International grouping example"
+  },
+  "profileGroupingIndian": {
+    "message": "12,34,56,789",
+    "description": "Indian grouping example"
+  },
+  "profileGroupingSpace": {
+    "message": "Space",
+    "description": "Space separator label"
+  },
+  "profileAggNone": {
+    "message": "None",
+    "description": "No aggregation"
+  },
+  "profileAggThousands": {
+    "message": "Thousands (K)",
+    "description": "Thousands aggregation"
+  },
+  "profileAggMillions": {
+    "message": "Millions (M)",
+    "description": "Millions aggregation"
+  },
+  "profileAggBillions": {
+    "message": "Billions (B)",
+    "description": "Billions aggregation"
+  },
+  "profilePrimaryGroup": {
+    "message": "Primary group",
+    "description": "Primary group the user belongs to"
+  },
+  "profileTimeZone": {
+    "message": "Time zone",
+    "description": "Read-only org time zone on profile"
+  },
+  "profileDateFormat": {
+    "message": "Date format",
+    "description": "Read-only org date format on profile"
+  },
+  "profileTimeFormat": {
+    "message": "Format de l'heure",
+    "description": "User time format preference on profile (12h/24h)"
+  },
+  "tabCurrency": {
+    "message": "Currency",
+    "description": "Currency settings tab (short nav label)"
+  },
+  "tabCurrencyDesc": {
+    "message": "Enable currencies and set conversion rates relative to your company base currency",
+    "description": "Currency settings landing card description"
+  },
+  "currencyPageSubtitle": {
+    "message": "Enable additional currencies and set conversion rates from your company base currency.",
+    "description": "Currency settings page subtitle"
+  },
+  "currencyLoading": {
+    "message": "Loading currency settings…",
+    "description": "Currency settings loading state"
+  },
+  "currencyLoadFailed": {
+    "message": "Couldn’t load currency settings",
+    "description": "Currency settings load error title"
+  },
+  "currencyBaseLabel": {
+    "message": "Base currency",
+    "description": "Base currency section title"
+  },
+  "currencyBaseHint": {
+    "message": "Taken from Company Details → Default currency. Conversion rates below are relative to this base.",
+    "description": "Base currency section hint"
+  },
+  "currencyEditBaseLink": {
+    "message": "Edit in Company Details",
+    "description": "Link to Company Details for base currency"
+  },
+  "currencyBaseBadge": {
+    "message": "Base",
+    "description": "Badge on base currency row"
+  },
+  "currencyListTitle": {
+    "message": "Currencies",
+    "description": "Enabled currencies list section title"
+  },
+  "currencyListHint": {
+    "message": "Conversion rate means how many units of that currency equal 1 {base}.",
+    "description": "Hint for conversion rate meaning"
+  },
+  "currencyColCurrency": {
+    "message": "Currency",
+    "description": "Currency table column header"
+  },
+  "currencyColEnabled": {
+    "message": "Enabled",
+    "description": "Enabled column header"
+  },
+  "currencyColConversion": {
+    "message": "Conversion (1 {base})",
+    "description": "Conversion rate column header"
+  },
+  "currencyRateInvalid": {
+    "message": "Enter a conversion rate greater than 0 for {code}.",
+    "description": "Validation error for conversion rate"
+  },
+  "currencySaveSuccess": {
+    "message": "Currency settings saved",
+    "description": "Success toast after saving currencies"
+  },
+  "currencySaveFailed": {
+    "message": "Failed to save currency settings",
+    "description": "Error toast after failed currency save"
   }
 }

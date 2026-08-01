@@ -52,6 +52,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/stores/auth';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const auth = useAuthStore();
@@ -61,7 +62,7 @@ const busyId = ref('');
 
 function formatDate(v) {
   if (!v) return '—';
-  return new Date(v).toLocaleString();
+  return formatUserDateTime(v);
 }
 
 function statusClass(status) {

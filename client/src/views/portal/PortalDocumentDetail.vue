@@ -62,6 +62,7 @@ import { usePortalDocuments } from '@/composables/usePortalDocuments';
 import { useTabs } from '@/composables/useTabs';
 import PortalPageShell from '@/components/portal/PortalPageShell.vue';
 import { PLATFORM_HOME_CARD_CLASS, PLATFORM_HOME_SKELETON_CLASS } from '@/utils/platformHomeLayout';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -95,11 +96,7 @@ watch([document, activeTabId, () => route.path], () => {
 
 function formatDate(value) {
   if (!value) return '';
-  return new Date(value).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatUserDate(value) || '—';
 }
 
 function goBack() {

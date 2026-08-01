@@ -13,7 +13,7 @@
  * Relative format: scan-friendly age; title tooltip: absolute datetime.
  */
 import { computed } from 'vue';
-import { formatDate, formatRelativeTime } from '@/utils/localeFormat';
+import { formatUserDate, formatUserDateTime, formatRelativeTime } from '@/utils/localeFormat';
 
 const props = defineProps({
   value: {
@@ -53,13 +53,13 @@ const formattedDate = computed(() => {
 
   switch (props.format) {
     case 'short':
-      return formatDate(date, { dateStyle: 'medium' }) || '-';
+      return formatUserDate(date) || '-';
     case 'long':
-      return formatDate(date, { dateStyle: 'full' }) || '-';
+      return formatUserDateTime(date) || '-';
     case 'custom':
-      return props.customFormat || formatDate(date, { dateStyle: 'medium' }) || '-';
+      return props.customFormat || formatUserDate(date) || '-';
     default:
-      return formatDate(date, { dateStyle: 'medium' }) || '-';
+      return formatUserDate(date) || '-';
   }
 });
 
@@ -67,8 +67,7 @@ const tooltip = computed(() => {
   if (!props.value) return '';
   const date = new Date(props.value);
   if (Number.isNaN(date.getTime())) return '';
-  const absolute =
-    formatDate(date, { dateStyle: 'full', timeStyle: 'short' }) || '';
+  const absolute = formatUserDateTime(date) || '';
   if (!absolute) return '';
   const label = typeof props.contextLabel === 'string' ? props.contextLabel.trim() : '';
   return label ? `${label} · ${absolute}` : absolute;

@@ -229,6 +229,7 @@ import apiClient from '@/utils/apiClient';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const emit = defineEmits(['back']);
 
@@ -284,7 +285,7 @@ function statusBadgeClass(status) {
 function formatDateTime(value) {
   if (!value) return '';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return String(value);
   }

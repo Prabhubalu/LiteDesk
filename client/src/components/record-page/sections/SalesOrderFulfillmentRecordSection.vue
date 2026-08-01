@@ -108,6 +108,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { getSalesOrderFulfillmentEventTypes } from '@/utils/inventoryCapability';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const props = defineProps({
   record: { type: Object, default: null },
   context: { type: Object, default: () => ({}) }
@@ -186,7 +187,7 @@ function fmtDate(v) {
   if (!v) return '—';
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString();
+  return formatUserDateTime(d);
 }
 
 async function loadEvents() {

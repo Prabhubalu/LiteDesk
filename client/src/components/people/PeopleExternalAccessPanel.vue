@@ -11,6 +11,7 @@ import {
 import { isPortalFrameworkV1Enabled } from '@/utils/portalFeatureFlags';
 
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatUserDateTime } from '@/utils/localeFormat';
 const props = defineProps({
   peopleId: { type: String, required: true }
 });
@@ -69,7 +70,7 @@ const unassignedRoles = computed(() => {
 function formatDate(value) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch (_err) {
     return String(value);
   }

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { CanvasWidget } from '@/astraStudio/types';
 import { parseWidgetContentRows } from '@/astraStudio/widgets/widgetContent';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps<{
   widget: CanvasWidget;
@@ -21,7 +22,7 @@ function formatWhen(at?: string): string {
   if (!at) return '';
   const d = new Date(at);
   if (Number.isNaN(d.getTime())) return String(at);
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatUserDate(d);
 }
 
 function looksLikeDate(text: string): boolean {

@@ -1,3 +1,5 @@
+import { formatDate, formatTime, formatUserDate } from '@/utils/localeFormat';
+
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export const APPOINTMENT_TYPE_OPTIONS = [
@@ -36,14 +38,13 @@ export const DEFAULT_BOOKING_GUEST_FIELDS = [
   { key: 'phone', labelKey: 'appointments.defaultFieldPhone', type: 'phone', required: false }
 ];
 
-export function formatSlotTime(iso, locale = undefined) {
-  const d = new Date(iso);
-  return d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' });
+export function formatSlotTime(iso) {
+  return formatTime(iso, { hour: 'numeric', minute: '2-digit' });
 }
 
-export function formatSlotDate(iso, locale = undefined) {
-  const d = new Date(iso);
-  return d.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' });
+export function formatSlotDate(iso) {
+  return formatDate(iso, { weekday: 'long', month: 'long', day: 'numeric' })
+    || formatUserDate(iso);
 }
 
 export function slugifyClient(input) {

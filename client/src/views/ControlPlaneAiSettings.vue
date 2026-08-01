@@ -219,6 +219,7 @@ import apiClient from '@/utils/apiClient';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import { formatCurrencyValue } from '@/utils/currencyOptions';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -263,15 +264,9 @@ watch(
 );
 
 function formatMoney(cents, currency = 'USD') {
-  const amount = Number(cents || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: String(currency || 'USD').toUpperCase(),
-    }).format(amount);
-  } catch {
-    return `$${(amount || 0).toFixed(2)}`;
-  }
+  return formatCurrencyValue(Number(cents || 0) / 100, {
+    currencyCode: String(currency || 'USD').toUpperCase(),
+  }) ?? '—';
 }
 
 function mapPacks(packs) {

@@ -351,6 +351,7 @@ import ListView from '@/components/common/ListView.vue';
 import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const emit = defineEmits(['back']);
 const { t } = useI18n();
@@ -737,7 +738,7 @@ function serializeForm() {
 function formatDate(value) {
   if (!value) return '—';
   try {
-    return new Date(value).toLocaleString();
+    return formatUserDateTime(value);
   } catch {
     return '—';
   }

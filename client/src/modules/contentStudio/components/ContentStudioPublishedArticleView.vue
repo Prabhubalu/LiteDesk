@@ -85,6 +85,7 @@ import '../editor/contentStudioSteps.css';
 import '../editor/contentStudioTabs.css';
 import '../editor/contentStudioRelatedArticles.css';
 import '../editor/contentStudioArticleAppearance.css';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const props = defineProps({
   title: { type: String, default: '' },
@@ -145,9 +146,9 @@ const authorInitials = computed(() => {
 });
 const formattedDate = computed(() => {
   if (!props.publishedAt) {
-    return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
+    return formatUserDate(new Date());
   }
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(props.publishedAt));
+  return formatUserDate(props.publishedAt);
 });
 const readTimeLabel = computed(() => t('contentStudio.readTime', { minutes: props.readMinutes }));
 

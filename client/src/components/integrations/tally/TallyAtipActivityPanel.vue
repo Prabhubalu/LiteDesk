@@ -49,6 +49,7 @@
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
+import { formatUserDateTime } from '@/utils/localeFormat';
 
 const { t } = useI18n();
 const items = ref([]);
@@ -57,7 +58,7 @@ const error = ref('');
 
 function formatDateTime(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString();
+  return formatUserDateTime(iso);
 }
 
 async function load() {

@@ -1,3 +1,4 @@
+import { formatUserDate } from '@/utils/localeFormat';
 /**
  * Date filter option groups and helpers for list view date filters.
  * Used by ListView and ModuleList for Quick Filters, Relative, Specific Date, and Data Status.
@@ -374,7 +375,7 @@ export function getDateFilterLabel(value: DateFilterValue | null): string {
 function formatDateLabel(iso: string): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    return formatUserDate(d);
   } catch {
     return iso;
   }

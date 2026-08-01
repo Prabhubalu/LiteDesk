@@ -151,6 +151,7 @@ import apiClient from '@/utils/apiClient';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { useAuthStore } from '@/stores/authRegistry';
 import { getRecordLabel } from '@/utils/recordDisplay';
+import { formatUserDate } from '@/utils/localeFormat';
 
 const RECORD_TYPE_OPTIONS_DEFAULT = [
   { key: 'organizations', label: 'Organization' },
@@ -613,7 +614,7 @@ watch(searchQuery, () => {
 });
 
 const getDisplayName = (item) => getRecordLabel(item);
-const getSecondaryText = (item) => item.email || item.status || (item.startDateTime ? new Date(item.startDateTime).toLocaleDateString() : '') || '';
+const getSecondaryText = (item) => item.email || item.status || (item.startDateTime ? formatUserDate(item.startDateTime) : '') || '';
 
 const isSelected = (id) => selectedIds.value.has(id);
 const isPrelinked = (id) => prelinkedIds.value.has(id);

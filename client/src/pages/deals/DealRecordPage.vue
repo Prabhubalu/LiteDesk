@@ -348,7 +348,7 @@
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <p class="text-3xl font-bold text-green-600 dark:text-green-400">${{ (deal.amount || 0).toLocaleString() }}</p>
+              <p class="text-3xl font-bold text-green-600 dark:text-green-400">{{ formatDealAmount(deal?.amount) || '—' }}</p>
               <span class="text-sm text-gray-500 dark:text-gray-400">{{ dealWeightedLabel }}</span>
             </div>
           </div>
@@ -1277,6 +1277,7 @@ import { createRecordSectionLabels } from '@/utils/recordSectionLabels';
 import { resolveFieldContext } from '@/utils/fieldContextFilter';
 import { formatRelativeTime } from '@/utils/relativeTime';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
+import { formatActivityChangeValue } from '@/utils/fieldDisplay';
 import { resolveStageOrPicklistLabel } from '@/utils/configurableLabelResolver';
 import { picklistChipStyle } from '@/utils/picklistColorPalette';
 import { i18n } from '@/i18n/index';
@@ -1341,6 +1342,8 @@ import { refreshRelatedRecordsAfterDocumentChange } from '@/composables/useDocum
 import AutomationContext from '@/components/automation/AutomationContext.vue';
 import RecordDocumentsPanel from '@/components/record-page/RecordDocumentsPanel.vue';
 import { supportsDocumentAttachments } from '@/constants/documentAttachments';
+import { formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
+import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 
 const { t, te } = useI18n();
 const {
@@ -1741,13 +1744,7 @@ const formatDescriptionVersionDate = (date) => {
   if (!date) return '';
   const parsed = new Date(date);
   if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+  return formatUserDateTime(parsed);
 };
 
 const getPlainTextFromHtml = (html) => {
@@ -1931,7 +1928,7 @@ const dealDetailsPaneAdapter = computed(() => {
   return createGenericRecordAdapter({
     sectionLabels: createRecordSectionLabels(t),
     formatDate: (d) =>
-      (d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'),
+      (d ? formatUserDate(d) : '—'),
     moduleDefinition: dealModuleDefinition.value,
     canEditDetails: () => canEditDeal.value,
     saveDetailField: handleDealDetailFieldSave,
@@ -2352,7 +2349,8 @@ const formatDealAmount = (amountValue) => {
   if (amountValue == null || amountValue === '') return null;
   const numericValue = Number(amountValue);
   if (!Number.isFinite(numericValue)) return String(amountValue);
-  return `$${numericValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  const currencyCode = resolveOrgCurrencyCode(deal.value?.currency || authStore.organization);
+  return formatCurrencyValue(numericValue, { currencyCode });
 };
 
 const formatDealProbability = (probabilityValue) => {
@@ -2575,7 +2573,9 @@ const weightedAmount = computed(() => {
 });
 
 const dealWeightedLabel = computed(() => t('records.dealWeightedAmount', {
-  amount: `$${weightedAmount.value.toLocaleString()}`
+  amount: formatCurrencyValue(weightedAmount.value, {
+    currencyCode: resolveOrgCurrencyCode(deal.value?.currency || authStore.organization),
+  }) ?? '—',
 }));
 
 const dealStarAriaLabel = computed(() => (
@@ -3181,21 +3181,9 @@ const fetchDeal = async () => {
   }
 };
 
-const dateLocale = computed(() => {
-  const code = String(i18n.global.locale.value || 'en').split('-')[0];
-  if (code === 'de') return 'de-DE';
-  if (code === 'es') return 'es-ES';
-  if (code === 'fr') return 'fr-FR';
-  return 'en-US';
-});
-
 const formatDate = (date) => {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString(dateLocale.value, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
+  return formatUserDate(date) || '-';
 };
 
 const formatTimeAgo = (date) => formatRelativeTime(date, t);
@@ -3655,7 +3643,7 @@ const formatFullTimestamp = (date) => {
   if (!date) return '';
   const parsed = new Date(date);
   if (Number.isNaN(parsed.getTime())) return '';
-  return parsed.toLocaleString();
+  return formatUserDateTime(parsed);
 };
 
 const handleTimestampPointerUp = () => {};
@@ -3862,13 +3850,19 @@ const getSystemEventFieldLabel = (event) => {
   return resolveFieldLabel('deals', { key, label: String(raw ?? '').trim() }, t, te) || t('records.activitySystemFieldFallback');
 };
 
-const formatSystemEventValue = (value) => {
+const formatSystemEventValue = (value, event) => {
   if (value === undefined || value === null || value === '') return keyFieldsEmptyLabel.value;
-  return String(value);
+  const details = event?.details || event?.payload?.details || {};
+  const fieldKey = String(details.field || '').trim();
+  const fields = dealModuleDefinition.value?.fields || [];
+  const match = fieldKey
+    ? fields.find((f) => String(f?.key || '') === fieldKey || String(f?.label || '') === fieldKey)
+    : null;
+  return formatActivityChangeValue(value, keyFieldsEmptyLabel.value, match?.dataType);
 };
 
-const getSystemEventFromValue = (event) => formatSystemEventValue(event?.details?.from ?? event?.details?.oldValue ?? event?.payload?.details?.from ?? event?.payload?.details?.oldValue);
-const getSystemEventToValue = (event) => formatSystemEventValue(event?.details?.to ?? event?.details?.newValue ?? event?.payload?.details?.to ?? event?.payload?.details?.newValue);
+const getSystemEventFromValue = (event) => formatSystemEventValue(event?.details?.from ?? event?.details?.oldValue ?? event?.payload?.details?.from ?? event?.payload?.details?.oldValue, event);
+const getSystemEventToValue = (event) => formatSystemEventValue(event?.details?.to ?? event?.details?.newValue ?? event?.payload?.details?.to ?? event?.payload?.details?.newValue, event);
 const getSystemEventMessage = (event) => {
   if (!event) return t('records.activityUpdatedRecord');
   const processMsg = getProcessActivityMessage(event);

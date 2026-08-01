@@ -160,6 +160,7 @@ import ProcessExecutionLogs from '@/components/admin/ProcessExecutionLogs.vue';
 
 import { useNotifications } from '@/composables/useNotifications';
 import { confirmAction } from '@/composables/useConfirmAction';
+import { formatTime, formatUserDate } from '@/utils/localeFormat';
 const { t, te } = useI18n();
 const notifications = useNotifications();
 
@@ -309,9 +310,9 @@ const formatDate = (dateString) => {
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return '—';
   return (
-    date.toLocaleDateString() +
+    formatUserDate(date) +
     ' ' +
-    date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    formatTime(date, { hour: '2-digit', minute: '2-digit' })
   );
 };
 
