@@ -10,7 +10,7 @@
       class="grid-stack-item group/home-widget"
       :gs-id="item.instanceId"
     >
-      <div class="grid-stack-item-content h-full overflow-hidden rounded-2xl">
+      <div class="grid-stack-item-content h-full min-w-0 overflow-hidden rounded-2xl">
         <slot name="cell" :item="item" />
       </div>
     </div>
@@ -290,13 +290,20 @@ watch(gridLayoutSyncKey, async () => {
   await syncGridToLayout();
 });
 
+function onAssistantRailChange() {
+  // Shell width changes without a window resize; nudge charts / dependent layout.
+  scheduleChartResize();
+}
+
 onMounted(async () => {
   initGrid();
   await syncGridToLayout();
   setLayoutLocked(layoutLocked.value);
+  window.addEventListener('arivu:assistant-rail', onAssistantRailChange);
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('arivu:assistant-rail', onAssistantRailChange);
   destroyGrid();
 });
 
