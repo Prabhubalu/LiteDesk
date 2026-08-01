@@ -20,6 +20,17 @@ const {
     isInitialCaseRequiredField,
     isCasesFormExcludedField,
 } = require('../constants/casesModuleDefaults');
+const {
+    INITIAL_INVENTORY_FIELDS,
+    INITIAL_INVENTORY_QUICK_CREATE,
+    applyInventoryModuleFieldDefaults,
+} = require('../constants/inventoryModuleDefaults');
+const {
+    INVENTORY_WORKBENCH_MODULES,
+    INVENTORY_WORKBENCH_KEYS,
+    resolveInventoryModuleModel,
+    isInventorySchemaModuleKey,
+} = require('../constants/inventoryWorkbenchModules');
 
 const {
     getDefaultEmailValidations,
@@ -33,6 +44,10 @@ const {
     INITIAL_SALES_ORDER_QUICK_CREATE,
     isInitialSalesOrderRequiredField,
 } = require('../constants/salesOrderModuleDefaults');
+const {
+    INITIAL_PURCHASE_ORDER_QUICK_CREATE,
+    isInitialPurchaseOrderRequiredField,
+} = require('../constants/purchaseOrderModuleDefaults');
 const {
     INITIAL_INVOICE_QUICK_CREATE,
     isInitialInvoiceRequiredField,
@@ -209,6 +224,13 @@ const TENANT_PICKLIST_OPTION_SOURCE_FIELDS = {
         'partnerType',
         'vendorStatus',
         'dealerLevel',
+        // Virtual participation roles — options SoT is organizationParticipationTypes;
+        // Field Config edits must survive merge until enrich overlays the policy.
+        'sales_type',
+        'helpdesk_role',
+        'inventory_role',
+        'marketing_role',
+        'portal_role',
     ]),
 };
 
@@ -776,6 +798,13 @@ function getFieldDataType(key, fieldName, path) {
         return quoteFieldMappings[fieldName];
     }
 
+    const purchaseOrderFieldMappings = {
+        currency: 'Picklist',
+    };
+    if (key === 'purchase_orders' && purchaseOrderFieldMappings[fieldName]) {
+        return purchaseOrderFieldMappings[fieldName];
+    }
+
     // Fall back to inference based on schema type
     return inferDataType(path);
 }
@@ -823,6 +852,127 @@ function getPeopleVirtualBaseFields() {
             placeholder: '',
             order: 0
         }
+    ];
+}
+
+/** Organizations virtual fields: per-app participation roles (mirrors People). */
+function getOrganizationVirtualBaseFields() {
+    return [
+        {
+            key: 'sales_type',
+            label: 'Sales Type',
+            dataType: 'Picklist',
+            keyField: false,
+            required: false,
+            options: ['Lead', 'Customer'],
+            defaultValue: null,
+            visibility: { list: true, detail: true },
+            owner: 'platform',
+            context: 'sales',
+            isVirtual: true,
+            appKey: 'SALES',
+            filterable: true,
+            filterType: 'multi-select',
+            filterPriority: 2,
+            dependencies: [],
+            validations: [],
+            lookupSettings: null,
+            index: false,
+            placeholder: '',
+            order: 0,
+        },
+        {
+            key: 'helpdesk_role',
+            label: 'Helpdesk Type',
+            dataType: 'Picklist',
+            keyField: false,
+            required: false,
+            options: ['Customer'],
+            defaultValue: null,
+            visibility: { list: true, detail: true },
+            owner: 'platform',
+            context: 'helpdesk',
+            isVirtual: true,
+            appKey: 'HELPDESK',
+            filterable: true,
+            filterType: 'multi-select',
+            filterPriority: 2,
+            dependencies: [],
+            validations: [],
+            lookupSettings: null,
+            index: false,
+            placeholder: '',
+            order: 0,
+        },
+        {
+            key: 'inventory_role',
+            label: 'Inventory Type',
+            dataType: 'Picklist',
+            keyField: false,
+            required: false,
+            options: ['Vendor'],
+            defaultValue: null,
+            visibility: { list: true, detail: true },
+            owner: 'platform',
+            context: 'inventory',
+            isVirtual: true,
+            appKey: 'INVENTORY',
+            filterable: true,
+            filterType: 'multi-select',
+            filterPriority: 2,
+            dependencies: [],
+            validations: [],
+            lookupSettings: null,
+            index: false,
+            placeholder: '',
+            order: 0,
+        },
+        {
+            key: 'marketing_role',
+            label: 'Marketing Type',
+            dataType: 'Picklist',
+            keyField: false,
+            required: false,
+            options: ['Marketing Lead', 'Customer'],
+            defaultValue: null,
+            visibility: { list: true, detail: true },
+            owner: 'platform',
+            context: 'marketing',
+            isVirtual: true,
+            appKey: 'MARKETING',
+            filterable: true,
+            filterType: 'multi-select',
+            filterPriority: 2,
+            dependencies: [],
+            validations: [],
+            lookupSettings: null,
+            index: false,
+            placeholder: '',
+            order: 0,
+        },
+        {
+            key: 'portal_role',
+            label: 'Portal Type',
+            dataType: 'Picklist',
+            keyField: false,
+            required: false,
+            options: ['Partner'],
+            defaultValue: null,
+            visibility: { list: true, detail: true },
+            owner: 'platform',
+            context: 'portal',
+            isVirtual: true,
+            appKey: 'PORTAL',
+            filterable: true,
+            filterType: 'multi-select',
+            filterPriority: 2,
+            dependencies: [],
+            validations: [],
+            lookupSettings: null,
+            index: false,
+            placeholder: '',
+            order: 0,
+        },
     ];
 }
 
@@ -888,6 +1038,15 @@ function getBaseFieldsForKey(key) {
             items: require('../models/Item'),
             responses: require('../models/FormResponse'),
             documents: require('../models/Document'),
+            purchase_orders: resolveInventoryModuleModel('purchase_orders'),
+            receipt_notes: resolveInventoryModuleModel('receipt_notes'),
+            purchase_returns: resolveInventoryModuleModel('purchase_returns'),
+            delivery_notes: resolveInventoryModuleModel('delivery_notes'),
+            delivery_returns: resolveInventoryModuleModel('delivery_returns'),
+            sales_returns: resolveInventoryModuleModel('sales_returns'),
+            stockrooms: resolveInventoryModuleModel('stockrooms'),
+            stock_adjustments: resolveInventoryModuleModel('stock_adjustments'),
+            stock_transfers: resolveInventoryModuleModel('stock_transfers'),
         };
         const model = modelByKey[key];
         if (!model) return [];
@@ -914,6 +1073,10 @@ function getBaseFieldsForKey(key) {
             'deletionReason',
             'calendarSync',
             'playbookState',
+            // Connector sync metadata — set by integrations only; never create/edit UI
+            'externalReferenceId',
+            'syncStatus',
+            'lastSyncAt',
             // Import job linkage - set by import pipeline only
             'importHistoryId',
             // Auto-number fields (system-generated Record IDs)
@@ -992,6 +1155,8 @@ function getBaseFieldsForKey(key) {
                     if (isTenantPlatformOrganizationFieldPath(name)) return false;
                     // Mixed internal CRM field — not exposed in module config or create/edit
                     if (name === 'partnerOnboardingSteps') return false;
+                    // App participation map — virtual role fields are flattened for config
+                    if (name === 'participations') return false;
                 }
                 if (key === 'quotes') {
                     const quotesSchemaExcluded = new Set([
@@ -1278,6 +1443,9 @@ function getBaseFieldsForKey(key) {
                 if (name === 'assignedTo') fieldLabel = 'Assigned To';
                 if (name === 'contactId') fieldLabel = 'Contact';
                 if (name === 'organizationRefId') fieldLabel = 'Organization';
+                if (name === 'vendorId') fieldLabel = 'Vendor';
+                if (name === 'vendorContactId') fieldLabel = 'Vendor Contact';
+                if (name === 'buyerId') fieldLabel = 'Buyer';
                 if (name === 'lifecycle_state') fieldLabel = 'Status';
                 if (name === 'categoryId') fieldLabel = 'Category';
                 // UX normalization: hide technical relationship naming in Events module UI
@@ -1683,13 +1851,15 @@ function getBaseFieldsForKey(key) {
                                 ? true
                                 : (key === 'sales_orders' && isInitialSalesOrderRequiredField(name))
                                     ? true
-                                    : (key === 'invoices' && isInitialInvoiceRequiredField(name))
+                                    : (key === 'purchase_orders' && isInitialPurchaseOrderRequiredField(name))
                                         ? true
-                                        : (key === 'payments' && isInitialPaymentRequiredField(name))
+                                        : (key === 'invoices' && isInitialInvoiceRequiredField(name))
                                             ? true
-                                            : (key === 'cases' && isInitialCaseRequiredField(name))
+                                            : (key === 'payments' && isInitialPaymentRequiredField(name))
                                                 ? true
-                                                : !!path.isRequired,
+                                                : (key === 'cases' && isInitialCaseRequiredField(name))
+                                                    ? true
+                                                    : !!path.isRequired,
                     options: eventTypeOptions,
                     defaultValue: eventTypeDefaultValue,
                     // Use placeholder as helper text for Lookup fields (shown under label in UI); never show technical IDs.
@@ -1720,6 +1890,16 @@ function getBaseFieldsForKey(key) {
             ];
             const have = new Set(baseFields.map((f) => String(f.key || '').toLowerCase()));
             for (const v of extraPeopleFields) {
+                if (!have.has(String(v.key || '').toLowerCase())) {
+                    baseFields.push(v);
+                    have.add(String(v.key || '').toLowerCase());
+                }
+            }
+        }
+
+        if (key === 'organizations') {
+            const have = new Set(baseFields.map((f) => String(f.key || '').toLowerCase()));
+            for (const v of getOrganizationVirtualBaseFields()) {
                 if (!have.has(String(v.key || '').toLowerCase())) {
                     baseFields.push(v);
                     have.add(String(v.key || '').toLowerCase());
@@ -2298,9 +2478,29 @@ async function enrichOrganizationsModuleFields(fields, organizationId) {
     if (!Array.isArray(fields) || !organizationId) return fields;
     const { stripRetiredOrganizationTypesFromModuleFields } = require('../constants/organizationTypeDefaults');
     const { fields: strippedFields } = stripRetiredOrganizationTypesFromModuleFields(fields);
-    const { getOrganizationTypesConfig } = require('../utils/tenantMetadata');
+    const {
+        getOrganizationTypesConfig,
+        getOrganizationParticipationTypesConfig,
+        typeDefsToPeopleTypePicklistOptions,
+    } = require('../utils/tenantMetadata');
+    const { ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP } = require('../constants/organizationParticipation');
     const config = await getOrganizationTypesConfig(organizationId);
-    return enrichOrganizationsFieldsWithStatusTypes(strippedFields, config);
+    let next = enrichOrganizationsFieldsWithStatusTypes(strippedFields, config);
+
+    const optionsByFieldKey = {};
+    for (const [fieldKey, appKey] of Object.entries(ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP)) {
+        const participationCfg = await getOrganizationParticipationTypesConfig(organizationId, appKey);
+        optionsByFieldKey[fieldKey] = typeDefsToPeopleTypePicklistOptions(
+            Array.isArray(participationCfg?.typeDefs) ? participationCfg.typeDefs : []
+        );
+    }
+    next = next.map((f) => {
+        const key = String(f?.key || '').trim();
+        const options = optionsByFieldKey[key];
+        if (!options || options.length === 0) return f;
+        return { ...f, options };
+    });
+    return next;
 }
 
 /** Canonical config for Cases system field labels / reopen reason. */
@@ -2568,6 +2768,8 @@ exports.listModules = async (req, res) => {
             { key: 'events', name: 'Events' },
             { key: 'forms', name: 'Forms' },
             { key: 'items', name: 'Items' },
+            { key: 'inventory', name: 'Inventory' },
+            ...INVENTORY_WORKBENCH_MODULES,
             { key: 'imports', name: 'Imports' },
             { key: 'reports', name: 'Reports' },
             { key: 'users', name: 'Users' } // For lookup targets (assignedTo, lead_owner, createdBy)
@@ -2679,6 +2881,17 @@ exports.listModules = async (req, res) => {
                 moduleKey: { $in: platformKeysForQuery },
             });
         }
+        // Inventory app modules (ledger + commercial workbench) live at appKey=inventory.
+        const inventoryModuleKeysForQuery = (!requestedKeys
+            ? ['inventory', ...INVENTORY_WORKBENCH_KEYS]
+            : ['inventory', ...INVENTORY_WORKBENCH_KEYS].filter((k) => requestedKeys.has(k)));
+        if (inventoryModuleKeysForQuery.length > 0) {
+            customQueryOr.push({
+                appKey: 'inventory',
+                organizationId: null,
+                moduleKey: { $in: inventoryModuleKeysForQuery },
+            });
+        }
         const custom = await ModuleDefinition.find({ $or: customQueryOr })
         .select('+quickCreate +quickCreateLayout')
         .lean();
@@ -2783,9 +2996,12 @@ exports.listModules = async (req, res) => {
         // Use same object references as custom so quickCreate merge (above) applies to what we use in the main merge.
         const customByKey = new Map();
         
-        // First add platform-level modules (base configuration)
+        // First add platform-level modules (base configuration) and Inventory app modules
         for (const m of custom) {
-            if (m.appKey === 'platform' && !m.organizationId) {
+            const appKeyLower = String(m.appKey || '').toLowerCase();
+            const isPlatformBase = appKeyLower === 'platform' && !m.organizationId;
+            const isInventoryAppModule = appKeyLower === 'inventory' && !m.organizationId;
+            if (isPlatformBase || isInventoryAppModule) {
                 const moduleKey = m.moduleKey || m.key;
                 if (moduleKey) {
                     if (!m.key) m.key = moduleKey;
@@ -3515,6 +3731,10 @@ exports.listModules = async (req, res) => {
                     finalQuickCreate = [...INITIAL_SALES_ORDER_QUICK_CREATE];
                     console.log('📋 Sales Orders: Applying canonical default Quick Create:', finalQuickCreate);
                 }
+                if (sys.key === 'purchase_orders' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_PURCHASE_ORDER_QUICK_CREATE];
+                    console.log('📋 Purchase Orders: Applying canonical default Quick Create:', finalQuickCreate);
+                }
                 if (sys.key === 'invoices' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
                     finalQuickCreate = [...INITIAL_INVOICE_QUICK_CREATE];
                     console.log('📋 Invoices: Applying canonical default Quick Create:', finalQuickCreate);
@@ -3789,6 +4009,13 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'cases') {
                     finalFields = enrichCasesModuleFields(finalFields);
                 }
+                if (sys.key === 'purchase_orders' && Array.isArray(finalFields)) {
+                    finalFields = finalFields.map((field) => {
+                        if (String(field?.key || '').toLowerCase() !== 'currency') return field;
+                        if (field.dataType === 'Picklist') return field;
+                        return { ...field, dataType: 'Picklist' };
+                    });
+                }
                 finalFields = applyOwnerFieldRequiredToModuleFields(finalFields, sys.key);
                 let resolvedRelationships = shouldUseOverrideRelationships(override, sys)
                     ? override.relationships
@@ -3807,9 +4034,16 @@ exports.listModules = async (req, res) => {
                     relationships: resolvedRelationships,
                     // Phase 17: Preserve notification metadata (use override if exists, else default)
                     notifications: override.notifications || sys.notifications || getDefaultNotificationMetadata(sys.key),
-                    name: override.name || sys.name,
+                    name: override.name || override.label || sys.name,
                     enabled: override.enabled !== undefined ? override.enabled : sys.enabled,
-                    pipelineSettings
+                    pipelineSettings,
+                    ...(isInventorySchemaModuleKey(sys.key)
+                        ? {
+                            appKey: override.appKey || 'inventory',
+                            label: override.label || override.name || sys.name,
+                            pluralLabel: override.pluralLabel || override.label || sys.name
+                        }
+                        : {})
                 });
                 customByKey.delete(sys.key);
             } else {
@@ -3873,6 +4107,9 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'sales_orders') {
                     defaultQuickCreate = [...INITIAL_SALES_ORDER_QUICK_CREATE];
                 }
+                if (sys.key === 'purchase_orders') {
+                    defaultQuickCreate = [...INITIAL_PURCHASE_ORDER_QUICK_CREATE];
+                }
                 if (sys.key === 'invoices') {
                     defaultQuickCreate = [...INITIAL_INVOICE_QUICK_CREATE];
                 }
@@ -3882,12 +4119,21 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'documents') {
                     defaultQuickCreate = [...INITIAL_DOCUMENT_QUICK_CREATE];
                 }
+                if (sys.key === 'inventory') {
+                    defaultQuickCreate = [...INITIAL_INVENTORY_QUICK_CREATE];
+                }
                 let taskFields = withOrder;
                 if (sys.key === 'tasks') {
                     taskFields = normalizeTasksModuleFields(taskFields);
                     taskFields = dedupeFieldsByKey(taskFields);
                 } else if (sys.key === 'people') {
                     taskFields = normalizePeopleModuleFields(taskFields);
+                } else if (sys.key === 'inventory' && (!Array.isArray(taskFields) || taskFields.length === 0)) {
+                    taskFields = applyInventoryModuleFieldDefaults(INITIAL_INVENTORY_FIELDS).map((f, i) => ({
+                        ...f,
+                        order: i,
+                        dataType: f.dataType || f.type || 'text'
+                    }));
                 }
                 let dealPipelineSettings = [];
                 if (sys.key === 'deals') {
@@ -3911,6 +4157,13 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'events') {
                     fieldsToPush = (Array.isArray(fieldsToPush) ? fieldsToPush : []).map(normalizeEventFieldConfig);
                 }
+                if (sys.key === 'purchase_orders' && Array.isArray(fieldsToPush)) {
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        if (String(field?.key || '').toLowerCase() !== 'currency') return field;
+                        if (field.dataType === 'Picklist') return field;
+                        return { ...field, dataType: 'Picklist' };
+                    });
+                }
                 fieldsToPush = applyOwnerFieldRequiredToModuleFields(fieldsToPush, sys.key);
                 const defaultRelationships = sys.key === 'quotes'
                     ? cloneQuoteDefaultRelationships()
@@ -3927,7 +4180,10 @@ exports.listModules = async (req, res) => {
                     notifications: sys.notifications || getDefaultNotificationMetadata(sys.key),
                     pipelineSettings: sys.key === 'deals'
                         ? dealPipelineSettings
-                        : JSON.parse(JSON.stringify(sys.pipelineSettings || []))
+                        : JSON.parse(JSON.stringify(sys.pipelineSettings || [])),
+                    ...(isInventorySchemaModuleKey(sys.key)
+                        ? { appKey: 'inventory', label: sys.name, pluralLabel: sys.name }
+                        : {})
                 });
             }
         }
@@ -4689,6 +4945,14 @@ exports.updateSystemModule = async (req, res) => {
                 fieldsOut = enrichPeopleFieldsWithPeopleTypes(fieldsOut, peopleCfg.typeDefs);
             }
             if (keyLower === 'organizations') {
+                // Field Config picklist edits must land in tenant SoT before enrich,
+                // otherwise enrichOrganizationsModuleFields discards the client's option edits.
+                const {
+                    syncOrganizationStatusPicklistsFromModuleFields,
+                    syncOrganizationParticipationTypesFromModuleFields,
+                } = require('../utils/tenantMetadata');
+                await syncOrganizationStatusPicklistsFromModuleFields(fieldsOut, req.user.organizationId);
+                await syncOrganizationParticipationTypesFromModuleFields(fieldsOut, req.user.organizationId);
                 fieldsOut = await enrichOrganizationsModuleFields(fieldsOut, req.user.organizationId);
             }
             updateObj.fields = fieldsOut;
@@ -5436,3 +5700,4 @@ exports.addModuleFieldPicklistOption = async (req, res) => {
 exports.getDefaultPipelineSettings = getDefaultPipelineSettings;
 exports.getBaseFieldsForKey = getBaseFieldsForKey;
 exports.getPeopleVirtualBaseFields = getPeopleVirtualBaseFields;
+exports.getOrganizationVirtualBaseFields = getOrganizationVirtualBaseFields;

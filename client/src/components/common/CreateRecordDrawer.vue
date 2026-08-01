@@ -6,7 +6,8 @@
     :draft-record-id="draftRecordIdForShell"
     @backdrop="handleDialogClose"
     @escape="handleDialogClose"
-    @park="persistOwnerDraft"
+    @park="handlePark"
+    @unpark="handleUnpark"
   >
                 <div
                   :class="[
@@ -95,10 +96,10 @@
                             :errors="errors"
                             :excludeFields="effectiveExcludeFields"
                             :lockedFields="lockedFields"
-                            :showAllFields="fullMode || !effectiveQuickCreateMode"
+                            :showAllFields="isCommercialLinesForm || fullMode || !effectiveQuickCreateMode"
                             :quickCreateMode="strictQuickCreateForForm"
                             :useQuickCreateOrder="(useQuickCreateOrder || strictQuickCreateForForm) && !fullMode"
-                            :singleColumn="!fullMode"
+                            :singleColumn="!fullMode && !isCommercialLinesForm"
                             :quickCreateFirstWhenExpanded="effectiveQuickCreateMode"
                             :fieldSearch="showFieldSearch ? fieldSearch : ''"
                             @update:formData="updateFormData"
@@ -116,18 +117,28 @@
                                   v-else-if="isQuoteModule && commercialFormRecord"
                                   :record="commercialFormRecord"
                                   :context="commercialLinesFormContext"
+                                  :draft-mode="isCommercialLinesCreate"
                                   @updated="handleCommercialLinesUpdated"
                                 />
                                 <InvoiceLinesRecordSection
                                   v-else-if="isInvoiceModule && commercialFormRecord"
                                   :record="commercialFormRecord"
                                   :context="commercialLinesFormContext"
+                                  :draft-mode="isCommercialLinesCreate"
                                   @updated="handleCommercialLinesUpdated"
                                 />
                                 <SalesOrderLinesRecordSection
                                   v-else-if="isSalesOrderModule && commercialFormRecord"
                                   :record="commercialFormRecord"
                                   :context="commercialLinesFormContext"
+                                  :draft-mode="isCommercialLinesCreate"
+                                  @updated="handleCommercialLinesUpdated"
+                                />
+                                <PurchaseOrderLinesRecordSection
+                                  v-else-if="isPurchaseOrderModule && commercialFormRecord"
+                                  :record="commercialFormRecord"
+                                  :context="commercialLinesFormContext"
+                                  :draft-mode="isCommercialLinesCreate"
                                   @updated="handleCommercialLinesUpdated"
                                 />
                                 <p
@@ -220,6 +231,7 @@ import {
   saveTabDrawerDraft,
   getTabDrawerDraft,
   clearTabDrawerDraft,
+  findLatestCreateDraftForModule,
 } from '@/composables/useTabDrawerDrafts';
 // Lazy-load to avoid circular chunk ↔ record-activity init (production TDZ).
 const DealLinesSection = defineAsyncComponent(
@@ -234,8 +246,10 @@ const InvoiceLinesRecordSection = defineAsyncComponent(
 const SalesOrderLinesRecordSection = defineAsyncComponent(
   () => import('@/components/record-page/sections/SalesOrderLinesRecordSection.vue')
 );
+const PurchaseOrderLinesRecordSection = defineAsyncComponent(
+  () => import('@/components/record-page/sections/PurchaseOrderLinesRecordSection.vue')
+);
 import apiClient from '@/utils/apiClient';
-import { getApiUrlForFetch } from '@/config/apiBase';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import {
@@ -297,7 +311,9 @@ import {
   applyQuoteLinesRecalculateToRecord,
   applyQuoteSectionsToRecord,
 } from '@/utils/quoteRecordPatch';
-import { clearQuoteLinesSession } from '@/composables/useQuoteLinesSession';
+import {
+  resolveCommercialLinesAdapter,
+} from '@/platform/commercialLines/adapters';
 
 const _c = globalThis.console;
 function drawerDbg(...args) {
@@ -383,6 +399,24 @@ function currentDraftKey(tabId = ownerTabId.value || activeTabId.value) {
   return tabDrawerDraftKey(tabId, props.moduleKey, recordId);
 }
 
+/** Prefer owner-tab draft; fall back to newest create draft for this module (remount / lost ownerTabId). */
+function resolveExistingCreateDraft() {
+  if (props.record) return null;
+  const keyed = getTabDrawerDraft(currentDraftKey(ownerTabId.value || activeTabId.value));
+  const hasLocalCommercial =
+    keyed?.commercialFormRecord &&
+    typeof keyed.commercialFormRecord === 'object' &&
+    !keyed.commercialFormRecord._id;
+  if (
+    keyed?.commercialCreateDraftId ||
+    (keyed?.formData && Object.keys(keyed.formData).length) ||
+    hasLocalCommercial
+  ) {
+    return keyed;
+  }
+  return findLatestCreateDraftForModule(props.moduleKey)?.draft || null;
+}
+
 function snapshotDraftPayload() {
   return {
     formData: formData.value || {},
@@ -405,6 +439,18 @@ function persistOwnerDraft() {
     if (!Object.keys(formData.value || {}).length) return;
   }
   saveTabDrawerDraft(currentDraftKey(ownerTabId.value), snapshotDraftPayload());
+}
+
+/** Await in-flight commercial record load (edit only) before parking tab draft. */
+async function handlePark() {
+  if (isCommercialLinesEdit.value && commercialFormEnsurePromise.value) {
+    try {
+      await commercialFormEnsurePromise.value;
+    } catch {
+      /* ensure logs its own errors */
+    }
+  }
+  persistOwnerDraft();
 }
 
 function applyDraft(draft) {
@@ -438,6 +484,30 @@ function clearOwnerDraft() {
   clearTabDrawerDraft(currentDraftKey(ownerTabId.value));
 }
 
+/**
+ * Tab return — panel stayed mounted while parked. Re-assert commercial full mode.
+ * Create uses local lines stub (no server Draft on open/unpark).
+ */
+async function handleUnpark() {
+  if (!props.isOpen) return;
+  if (commercialFormEnsurePromise.value) {
+    await commercialFormEnsurePromise.value;
+  }
+  const existingDraft = resolveExistingCreateDraft();
+  if (existingDraft) {
+    applyDraft(existingDraft);
+  }
+  if (isCommercialLinesForm.value) {
+    setDrawerMode(true, { animate: false });
+  }
+  if (isCommercialLinesCreate.value && !commercialFormRecord.value) {
+    seedCommercialCreateStub();
+  } else if (isCommercialLinesEdit.value) {
+    await ensureCommercialFormRecord();
+  }
+  persistOwnerDraft();
+}
+
 // Omit override = infer from route + activeApp on /people (null would mean explicit global-only)
 const { isSalesContext } = useCreationContext();
 const { typeDefs: organizationTypeDefs } = useOrganizationTypes();
@@ -446,8 +516,13 @@ const moduleKeyLower = computed(() => props.moduleKey?.toLowerCase() || '');
 const isQuoteModule = computed(() => moduleKeyLower.value === 'quotes');
 const isInvoiceModule = computed(() => moduleKeyLower.value === 'invoices');
 const isSalesOrderModule = computed(() => moduleKeyLower.value === 'sales_orders');
+const isPurchaseOrderModule = computed(() => moduleKeyLower.value === 'purchase_orders');
 const isCommercialLinesForm = computed(
-  () => isQuoteModule.value || isInvoiceModule.value || isSalesOrderModule.value
+  () =>
+    isQuoteModule.value ||
+    isInvoiceModule.value ||
+    isSalesOrderModule.value ||
+    isPurchaseOrderModule.value
 );
 const isCommercialLinesCreate = computed(() => isCommercialLinesForm.value && !isEditing.value);
 const isCommercialLinesEdit = computed(() => isCommercialLinesForm.value && isEditing.value);
@@ -469,6 +544,12 @@ const COMMERCIAL_LINES_CONFIG = {
     draftFailedKey: 'records.salesOrderCreateDraftFailed',
     loadFailedKey: 'records.salesOrderLoadFailed',
     linesTitleKey: 'records.salesOrderLinesSectionTitle'
+  },
+  purchase_orders: {
+    apiPath: '/inventory/purchase-orders',
+    draftFailedKey: 'platform.poCreateLinesDraftFailed',
+    loadFailedKey: 'platform.poCreateLinesDraftFailed',
+    linesTitleKey: 'platform.poLinesSectionTitle'
   }
 };
 const commercialLinesConfig = computed(
@@ -495,34 +576,6 @@ const commercialLinesFormContext = {
     handleCommercialLinesSectionUpdated(payload);
   }
 };
-
-function isDuplicateKeyError(error) {
-  const msg = String(
-    error?.message ||
-    error?.response?.data?.message ||
-    error?.response?.data?.error ||
-    ''
-  );
-  return error?.response?.status === 409 ||
-    msg.includes('E11000') ||
-    msg.includes('duplicate key');
-}
-
-async function createCommercialDraftWithRetry(payload, maxAttempts = 3) {
-  const apiPath = commercialLinesConfig.value.apiPath;
-  let lastError = null;
-  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    try {
-      return await apiClient.post(apiPath, payload);
-    } catch (error) {
-      lastError = error;
-      if (!isDuplicateKeyError(error) || attempt >= maxAttempts - 1) {
-        throw error;
-      }
-    }
-  }
-  throw lastError;
-}
 
 // Two modes: Quick Create Mode (only quick create fields) | Full Form Mode (all fields from config except system)
 // Show toggle when quick-create is configured. Commercial line docs always open in full form (no toggle).
@@ -588,7 +641,8 @@ const effectiveQuickCreateMode = computed(() => {
     'cases',
     'quotes',
     'invoices',
-    'sales_orders'
+    'sales_orders',
+    'purchase_orders'
   ];
   return useQuickCreateByDefault.includes(props.moduleKey?.toLowerCase());
 });
@@ -617,6 +671,7 @@ const moduleNameMap = {
   'quotes': 'Quote',
   'invoices': 'Invoice',
   'sales_orders': 'Sales Order',
+  'purchase_orders': 'Purchase Order',
   'users': 'User'
 };
 
@@ -708,7 +763,7 @@ const effectiveExcludeFields = computed(() => {
     }
     return Array.from(excluded);
   }
-  if (isInvoiceModule.value || isSalesOrderModule.value) {
+  if (isInvoiceModule.value || isSalesOrderModule.value || moduleKeyLower.value === 'payments') {
     const fields = effectiveModuleOverrideForDrawer.value?.fields || [];
     for (const field of fields) {
       const key = String(field?.key || '');
@@ -1165,52 +1220,8 @@ function syncLegacyLookupsIntoDealRelationships() {
   );
 }
 
-function discardCommercialCreateDraft(draftId, { keepalive = false } = {}) {
-  const id = String(draftId || commercialCreateDraftId.value || '').trim();
-  if (!id || commercialCreateSaved.value) return;
-  const apiPath = commercialLinesConfig.value.apiPath;
-
-  if (keepalive && typeof fetch !== 'undefined') {
-    const token = authStore.user?.token;
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
-    if (isQuoteModule.value) clearQuoteLinesSession(id);
-    void fetch(getApiUrlForFetch(`${apiPath}/${id}`), {
-      method: 'DELETE',
-      headers,
-      keepalive: true,
-    }).catch((error) => {
-      drawerWarn('[CreateRecordDrawer] Failed to discard commercial draft on unload:', error);
-    });
-    return;
-  }
-
-  apiClient.delete(`${apiPath}/${id}`)
-    .catch((error) => {
-      drawerWarn('[CreateRecordDrawer] Failed to discard commercial draft:', error);
-    })
-    .finally(() => {
-      if (isQuoteModule.value) clearQuoteLinesSession(id);
-    });
-}
-
-function handleCommercialCreatePageHide(event) {
-  // bfcache: page may be restored — do not discard
-  if (event?.persisted) return;
-  if (!isCommercialLinesCreate.value || commercialCreateSaved.value || saving.value) return;
-  const id = commercialCreateDraftId.value;
-  if (!id) return;
-  discardCommercialCreateDraft(id, { keepalive: true });
-  commercialCreateDraftId.value = null;
-}
-
 const closeDrawer = () => {
   if (!saving.value) {
-    const draftIdToDiscard =
-      isCommercialLinesCreate.value && commercialCreateDraftId.value && !commercialCreateSaved.value
-        ? commercialCreateDraftId.value
-        : null;
-
     clearOwnerDraft();
     ownerTabId.value = null;
     pendingDraftRestore.value = false;
@@ -1222,10 +1233,6 @@ const closeDrawer = () => {
     commercialCreateDraftId.value = null;
     commercialCreateSaved.value = false;
     emit('close');
-
-    if (draftIdToDiscard) {
-      discardCommercialCreateDraft(draftIdToDiscard);
-    }
     // Reset form after closing
     setTimeout(() => {
       formData.value = {};
@@ -1245,33 +1252,62 @@ async function loadCommercialFormRecord(recordId) {
   commercialFormRecord.value = loaded?.data || loaded;
 }
 
+/** Local create stub — no server Draft until Save. */
+function seedCommercialCreateStub() {
+  if (!isCommercialLinesCreate.value) return;
+  if (commercialFormRecord.value && !commercialFormRecord.value._id) return;
+
+  const adapter = resolveCommercialLinesAdapter(
+    isPurchaseOrderModule.value
+      ? 'purchaseOrder'
+      : isSalesOrderModule.value
+        ? 'salesOrder'
+        : isInvoiceModule.value
+          ? 'invoice'
+          : 'quote'
+  );
+  const orgCurrency = resolveOrgCurrencyCode(authStore.organization) || 'USD';
+  const sectionId = `local-sec-${Date.now().toString(36)}`;
+  const includeField = adapter.includeInTotalField || 'includeInQuoteTotal';
+  const section = {
+    _id: sectionId,
+    [adapter.sectionUuidField]: sectionId,
+    sectionTitle: 'General',
+    sectionOrder: 0,
+    sectionType: 'standard',
+    [includeField]: true,
+    sectionTotal: 0
+  };
+
+  commercialFormRecord.value = {
+    status: isPurchaseOrderModule.value ? 'draft' : 'Draft',
+    currency: orgCurrency,
+    lines: [],
+    sections: [section],
+    subtotal: 0,
+    grandTotal: 0,
+    lineDiscountTotal: 0,
+    globalDiscountTotal: 0,
+    taxTotal: 0,
+    chargesTotal: 0,
+    adjustmentTotal: 0
+  };
+  commercialCreateDraftId.value = null;
+  commercialCreateSaved.value = false;
+  commercialFormLoading.value = false;
+}
+
+/** Load commercial record for edit drawer only — create uses local stub until Save. */
 async function ensureCommercialFormRecord() {
-  if (!isCommercialLinesForm.value) return;
-
-  const editId = props.record?._id || props.record?.id;
-  if (isCommercialLinesEdit.value && editId) {
-    if (String(commercialFormRecord.value?._id || '') === String(editId)) return;
-    if (commercialFormEnsurePromise.value) {
-      await commercialFormEnsurePromise.value;
-      return;
-    }
-
-    commercialFormLoading.value = true;
-    commercialFormEnsurePromise.value = (async () => {
-      try {
-        await loadCommercialFormRecord(editId);
-      } catch (error) {
-        drawerWarn('[CreateRecordDrawer] Failed to load commercial record for edit:', error);
-      } finally {
-        commercialFormEnsurePromise.value = null;
-        commercialFormLoading.value = false;
-      }
-    })();
-    await commercialFormEnsurePromise.value;
+  if (isCommercialLinesCreate.value) {
+    seedCommercialCreateStub();
     return;
   }
+  if (!isCommercialLinesEdit.value) return;
 
-  if (!isCommercialLinesCreate.value || commercialFormRecord.value?._id) return;
+  const editId = props.record?._id || props.record?.id;
+  if (!editId) return;
+  if (String(commercialFormRecord.value?._id || '') === String(editId)) return;
   if (commercialFormEnsurePromise.value) {
     await commercialFormEnsurePromise.value;
     return;
@@ -1280,36 +1316,245 @@ async function ensureCommercialFormRecord() {
   commercialFormLoading.value = true;
   commercialFormEnsurePromise.value = (async () => {
     try {
-      const orgCurrency = resolveOrgCurrencyCode(authStore.organization);
-      const createPayload = applyCreateOwnerDefaultsToPayload(
-        {
-          ...props.initialData,
-          ...(orgCurrency && !props.initialData?.currency ? { currency: orgCurrency } : {}),
-        },
-        moduleKeyLower.value,
-        resolveCurrentUserId(authStore.user)
-      );
-      const created = await createCommercialDraftWithRetry(createPayload);
-      const createdRecord = created?.data || created;
-      const draftId = createdRecord?._id || createdRecord?.id;
-      if (!draftId) {
-        throw new Error('Commercial draft was not created');
-      }
-      commercialCreateDraftId.value = draftId;
-      commercialCreateSaved.value = false;
-      await loadCommercialFormRecord(draftId);
-      if (moduleDefinition.value) {
-        mergeCommercialFormRecordIntoFormData(commercialFormRecord.value);
-      }
+      await loadCommercialFormRecord(editId);
     } catch (error) {
-      drawerWarn('[CreateRecordDrawer] Failed to create commercial draft:', error);
+      drawerWarn('[CreateRecordDrawer] Failed to load commercial record for edit:', error);
     } finally {
       commercialFormEnsurePromise.value = null;
       commercialFormLoading.value = false;
     }
   })();
-
   await commercialFormEnsurePromise.value;
+}
+
+/**
+ * After header create, replay local commercial draft onto the new server record
+ * (sections, product lines, bundles, discounts, taxes/charges).
+ */
+async function flushCommercialCreateLines(createdRecord) {
+  const headerId = createdRecord?._id || createdRecord?.id;
+  if (!headerId || !isCommercialLinesCreate.value) return createdRecord;
+
+  const local = commercialFormRecord.value;
+  if (!local) return createdRecord;
+
+  const localLines = Array.isArray(local.lines) ? local.lines : [];
+  const localSections = Array.isArray(local.sections) ? local.sections : [];
+  const hasAnything =
+    localLines.length > 0 ||
+    localSections.some((s) => String(s?.sectionTitle || '').trim().toLowerCase() !== 'general') ||
+    local.globalDiscountType ||
+    local._localTransactionTaxIds?.length ||
+    local._localTransactionChargeIds?.length ||
+    local.transactionTaxSnapshot?.taxes?.length ||
+    local.chargeDocumentSnapshot?.charges?.length;
+  if (!hasAnything) return createdRecord;
+
+  const adapter = resolveCommercialLinesAdapter(
+    isPurchaseOrderModule.value
+      ? 'purchaseOrder'
+      : isSalesOrderModule.value
+        ? 'salesOrder'
+        : isInvoiceModule.value
+          ? 'invoice'
+          : 'quote'
+  );
+  const apiPath = commercialLinesConfig.value.apiPath;
+  const includeField = adapter.includeInTotalField || 'includeInQuoteTotal';
+  const isPurchaseOrderFlush = adapter.kind === 'purchaseOrder';
+
+  let serverRecord = createdRecord;
+  try {
+    const loaded = await apiClient.get(`${apiPath}/${headerId}`);
+    serverRecord = loaded?.data || loaded || createdRecord;
+  } catch (error) {
+    drawerWarn('[CreateRecordDrawer] Failed to reload commercial record before line flush:', error);
+  }
+
+  const sectionMap = new Map(); // localSectionRef -> serverSectionRef
+  let serverSections = Array.isArray(serverRecord?.sections) ? [...serverRecord.sections] : [];
+  const defaultSection =
+    serverSections.find((s) => String(s?.sectionTitle || '').trim().toLowerCase() === 'general') ||
+    serverSections[0] ||
+    null;
+  const defaultSectionRef = defaultSection
+    ? String(defaultSection[adapter.sectionUuidField] || defaultSection._id || '')
+    : null;
+
+  if (!isPurchaseOrderFlush) {
+  for (const localSec of localSections) {
+    const localRef = String(localSec[adapter.sectionUuidField] || localSec._id || '');
+    const title = String(localSec.sectionTitle || '').trim();
+    if (!localRef) continue;
+    if (title.toLowerCase() === 'general' && defaultSectionRef) {
+      sectionMap.set(localRef, defaultSectionRef);
+      continue;
+    }
+    if (title.toLowerCase() === 'general') {
+      sectionMap.set(localRef, defaultSectionRef || localRef);
+      continue;
+    }
+    try {
+      const body = {
+        sectionTitle: localSec.sectionTitle,
+        sectionType: localSec.sectionType || 'standard',
+        [includeField]: localSec[includeField] !== false
+      };
+      if (adapter.kind === 'quote') body.overridePricing = false;
+      const res = await apiClient.post(`${apiPath}/${headerId}/sections`, body);
+      const created = res?.data?.section;
+      const serverRef = created
+        ? String(created[adapter.sectionUuidField] || created._id || '')
+        : '';
+      if (serverRef) sectionMap.set(localRef, serverRef);
+      if (Array.isArray(res?.data?.sections)) serverSections = res.data.sections;
+      if (localSec.sectionDiscountType && Number(localSec.sectionDiscountValue) > 0 && serverRef) {
+        await apiClient.patch(`${apiPath}/${headerId}/sections/${serverRef}/discounts`, {
+          sectionDiscountType: localSec.sectionDiscountType,
+          sectionDiscountValue: Number(localSec.sectionDiscountValue) || 0,
+          overridePricing: false
+        });
+      }
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to flush commercial section:', error);
+      throw error;
+    }
+  }
+  }
+
+  const mapSection = (localRef) => {
+    if (!localRef) return defaultSectionRef;
+    return sectionMap.get(String(localRef)) || defaultSectionRef;
+  };
+
+  // Product lines (non-bundle)
+  for (const line of localLines) {
+    const lineType = String(line.lineType || 'product');
+    if (lineType !== 'product') continue;
+    const variantId = String(line.variantId || '').trim();
+    if (!variantId) continue;
+    const qty = Number(line.quantity ?? line.quantityOrdered);
+    const body = adapter.buildAddLineBody({
+      variantId,
+      quantity: Number.isFinite(qty) && qty > 0 ? qty : 1,
+      sectionRef: isPurchaseOrderFlush ? null : mapSection(line[adapter.sectionIdField]),
+      priceBookId: line.priceBookIdSnapshot || null,
+      overridePricing: false
+    });
+    if (isPurchaseOrderFlush && line.unitPrice != null) {
+      body.unitPrice = Number(line.unitPrice) || 0;
+    }
+    try {
+      const res = await apiClient.post(`${apiPath}/${headerId}/lines`, body);
+      const createdLine =
+        res?.data?.line ||
+        (isPurchaseOrderFlush && Array.isArray(res?.data?.lines)
+          ? res.data.lines[res.data.lines.length - 1]
+          : null);
+      const lineServerId = createdLine
+        ? String(createdLine[adapter.lineIdField] || createdLine._id || '')
+        : '';
+      if (!lineServerId) {
+        if (isPurchaseOrderFlush && res?.success) continue;
+        continue;
+      }
+      if (isPurchaseOrderFlush) continue;
+      const patch = {};
+      if (line.discountType && Number(line.discountValue) > 0) {
+        Object.assign(
+          patch,
+          adapter.buildPatchLineBody({
+            discountType: line.discountType,
+            discountValue: Number(line.discountValue) || 0
+          })
+        );
+      }
+      if (Array.isArray(line.taxIds) && line.taxIds.length) {
+        Object.assign(patch, adapter.buildPatchLineBody({ taxIds: line.taxIds.map(String) }));
+      }
+      if (Object.keys(patch).length) {
+        await apiClient.patch(`${apiPath}/${headerId}/lines/${lineServerId}`, patch);
+      }
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to flush commercial create line:', error);
+      throw error;
+    }
+  }
+
+  // Bundles
+  if (!isPurchaseOrderFlush) {
+  for (const line of localLines) {
+    if (String(line.lineType || '') !== 'bundle_parent') continue;
+    const bundleVariantId = String(line._localBundleVariantId || line.variantId || '').trim();
+    if (!bundleVariantId) continue;
+    const sectionField = adapter.sectionIdField;
+    try {
+      await apiClient.post(`${apiPath}/${headerId}/bundles`, {
+        bundleVariantId,
+        priceBookId: line.priceBookIdSnapshot || null,
+        quantity: Number(line.quantity) || 1,
+        asOfDate: local.quoteDate || local.orderDate || local.invoiceDate || null,
+        includedOptionalComponentVariantIds: Array.isArray(line._localIncludedOptionalComponentVariantIds)
+          ? line._localIncludedOptionalComponentVariantIds
+          : [],
+        [sectionField]: mapSection(line[sectionField]),
+        overridePricing: false
+      });
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to flush commercial bundle:', error);
+      throw error;
+    }
+  }
+  }
+
+  // Global discount
+  if (!isPurchaseOrderFlush && local.globalDiscountType && Number(local.globalDiscountValue) > 0) {
+    try {
+      await apiClient.patch(`${apiPath}/${headerId}/discounts`, {
+        globalDiscountType: local.globalDiscountType,
+        globalDiscountValue: Number(local.globalDiscountValue) || 0,
+        overridePricing: false
+      });
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to flush commercial global discount:', error);
+      throw error;
+    }
+  }
+
+  // Doc taxes / charges
+  if (!isPurchaseOrderFlush) {
+  const taxIds =
+    local._localTransactionTaxIds ||
+    (local.transactionTaxSnapshot?.taxes || []).map((x) => x.taxId).filter(Boolean);
+  const chargeIds =
+    local._localTransactionChargeIds ||
+    (local.chargeDocumentSnapshot?.charges || []).map((x) => x.chargeId).filter(Boolean);
+  if ((taxIds && taxIds.length) || (chargeIds && chargeIds.length)) {
+    try {
+      await apiClient.patch(`${apiPath}/${headerId}/taxes-charges`, {
+        overridePricing: false,
+        transactionTaxIds: taxIds || [],
+        transactionChargeIds: chargeIds || []
+      });
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to flush commercial taxes/charges:', error);
+      throw error;
+    }
+  }
+
+  try {
+    await apiClient.post(`${apiPath}/${headerId}/recalculate`, { overridePricing: false });
+  } catch (error) {
+    drawerWarn('[CreateRecordDrawer] Failed to recalculate after commercial flush:', error);
+  }
+  }
+
+  try {
+    const refreshed = await apiClient.get(`${apiPath}/${headerId}`);
+    return refreshed?.data || refreshed || serverRecord;
+  } catch {
+    return serverRecord;
+  }
 }
 
 function applyOrgCurrencyToCreateForm() {
@@ -1367,6 +1612,9 @@ function mergeCommercialFormRecordIntoFormData(record) {
 }
 
 function commercialLinesPatchFields() {
+  if (isPurchaseOrderModule.value) {
+    return { lineIdField: 'purchaseOrderLineId', sectionUuidField: 'purchaseOrderSectionId' };
+  }
   if (isSalesOrderModule.value) {
     return { lineIdField: 'salesOrderLineId', sectionUuidField: 'salesOrderSectionId' };
   }
@@ -1413,13 +1661,21 @@ function handleCommercialLinesUpdated(payload) {
     return;
   }
   if (payload?.type === 'line-updated') {
-    applyQuoteLinesMutationToRecord(record, {
-      line: payload.line,
-      totals: payload.totals,
-      sections: payload.sections,
-      lineIdField: patchFields.lineIdField,
-      sectionUuidField: patchFields.sectionUuidField
-    });
+    if (Array.isArray(payload.lines)) {
+      applyQuoteLinesRecalculateToRecord(record, {
+        lines: payload.lines,
+        totals: payload.totals,
+        sections: payload.sections
+      });
+    } else {
+      applyQuoteLinesMutationToRecord(record, {
+        line: payload.line,
+        totals: payload.totals,
+        sections: payload.sections,
+        lineIdField: patchFields.lineIdField,
+        sectionUuidField: patchFields.sectionUuidField
+      });
+    }
     bumpRecord();
     return;
   }
@@ -1449,6 +1705,9 @@ function handleCommercialLinesUpdated(payload) {
     payload?.type === 'sections-updated' &&
     applyQuoteSectionsToRecord(record, payload.sections)
   ) {
+    if (Array.isArray(payload.lines)) {
+      record.lines = payload.lines;
+    }
     if (payload.totals) {
       applyQuoteLinesRecalculateToRecord(record, {
         lines: payload.lines,
@@ -1906,10 +2165,6 @@ const handleSubmit = async () => {
   });
   
   errors.value = {};
-  if (isCommercialLinesCreate.value && !commercialFormRecord.value?._id) {
-    errors.value._general = t(commercialLinesConfig.value.draftFailedKey);
-    return;
-  }
   saving.value = true;
 
   try {
@@ -2474,23 +2729,19 @@ const handleSubmit = async () => {
         role: 'Lead',
         formData: submitData
       });
-    } else if (isCommercialLinesCreate.value && commercialFormRecord.value?._id) {
-      const draftId = commercialFormRecord.value._id;
-      response = await apiClient.put(`${endpoint}/${draftId}`, submitData);
-      const savedData = response?.data || response;
-      if (savedData && commercialFormRecord.value) {
-        response = {
-          ...response,
-          data: {
-            ...savedData,
-            lines: commercialFormRecord.value.lines,
-            sections: commercialFormRecord.value.sections,
-          },
-        };
-      }
     } else {
-      // Create new record (including people in Global context)
+      // Create new record (commercial docs: header POST, then flush local draft lines)
       response = await apiClient.post(createEndpoint, submitData);
+      if (
+        isCommercialLinesCreate.value &&
+        (response?.success || response?.data) &&
+        Array.isArray(commercialFormRecord.value?.lines) &&
+        commercialFormRecord.value.lines.length
+      ) {
+        const header = response.data || response;
+        const withLines = await flushCommercialCreateLines(header);
+        response = { ...response, data: withLines, success: true };
+      }
     }
     
     drawerDbg('[CreateRecordDrawer] 📥 API response:', {
@@ -2530,6 +2781,7 @@ const handleSubmit = async () => {
             'quotes': () => savedRecord.quoteNumber || savedRecord.quoteTitle || 'Quote',
             'invoices': () => savedRecord.invoiceNumber || savedRecord.invoiceTitle || 'Invoice',
             'sales_orders': () => savedRecord.salesOrderNumber || savedRecord.orderTitle || 'Sales Order',
+            'purchase_orders': () => savedRecord.poNumber || 'Purchase Order',
             'users': () => savedRecord.firstName && savedRecord.lastName 
               ? `${savedRecord.firstName} ${savedRecord.lastName}`.trim()
               : savedRecord.email || savedRecord.username || 'User'
@@ -2553,6 +2805,7 @@ const handleSubmit = async () => {
             'quotes': `/quotes/${recordId}`,
             'invoices': `/invoices/${recordId}`,
             'sales_orders': `/sales-orders/${recordId}`,
+            'purchase_orders': `/inventory/purchase-orders/${recordId}`,
             'users': `/users/${recordId}`
           };
           
@@ -2569,6 +2822,7 @@ const handleSubmit = async () => {
             'quotes': 'document-text',
             'invoices': 'document-text',
             'sales_orders': 'shopping-cart',
+            'purchase_orders': 'document-text',
             'users': 'user'
           };
           
@@ -2742,21 +2996,18 @@ watch(
 // Reset form when drawer opens/closes
 watch(() => props.isOpen, (isOpen, wasOpen) => {
   if (!isOpen && wasOpen) {
-    const draftId = commercialCreateDraftId.value;
-    if (isCommercialLinesCreate.value && draftId && !commercialCreateSaved.value) {
-      // Parent flipped isOpen without closeDrawer (rare) — discard server draft unless we parked.
-      if (!ownerTabId.value || !getTabDrawerDraft(currentDraftKey(ownerTabId.value))) {
-        discardCommercialCreateDraft(draftId);
-      }
-    }
     window.removeEventListener('beforeunload', handleBeforeUnload);
-    window.removeEventListener('pagehide', handleCommercialCreatePageHide);
   }
   if (isOpen) {
     ownerTabId.value = activeTabId.value;
-    const existingDraft = getTabDrawerDraft(currentDraftKey(ownerTabId.value));
+    const existingDraft = resolveExistingCreateDraft();
     errors.value = {};
-    if (existingDraft?.formData && Object.keys(existingDraft.formData).length) {
+    const hasFormData = existingDraft?.formData && Object.keys(existingDraft.formData).length;
+    const hasLocalCommercial =
+      existingDraft?.commercialFormRecord &&
+      typeof existingDraft.commercialFormRecord === 'object' &&
+      !existingDraft.commercialFormRecord._id;
+    if (hasFormData || hasLocalCommercial) {
       applyDraft(existingDraft);
       if (!props.record) {
         applyInitialDataOverlay();
@@ -2774,7 +3025,6 @@ watch(() => props.isOpen, (isOpen, wasOpen) => {
       moduleDefinition.value = null;
     }
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handleCommercialCreatePageHide);
     nextTick(() => closeButtonRef.value?.focus?.());
     // Form seeds from record in onFormReady / moduleOverride watch after module loads
   } else {
@@ -2792,7 +3042,7 @@ watch(() => props.isOpen, (isOpen, wasOpen) => {
       moduleDefinition.value = null;
     }, 300);
   }
-});
+}, { immediate: true });
 
 onUnmounted(() => {
   if (props.isOpen && ownerTabId.value) {
@@ -2800,6 +3050,5 @@ onUnmounted(() => {
   }
   clearModeAnimTimer();
   window.removeEventListener('beforeunload', handleBeforeUnload);
-  window.removeEventListener('pagehide', handleCommercialCreatePageHide);
 });
 </script>

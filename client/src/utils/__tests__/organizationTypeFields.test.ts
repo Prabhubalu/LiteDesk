@@ -41,7 +41,11 @@ describe('organization type field visibility', () => {
   });
 
   it('maps field keys back to organization types', () => {
-    expect(getOrganizationTypesForField('customerStatus')).toEqual(['Customer']);
+    expect(getOrganizationTypesForField('customerStatus')).toEqual([
+      'Customer',
+      'Lead',
+      'Marketing Lead',
+    ]);
     expect(getOrganizationTypesForField('dealerLevel')).toEqual(['Dealer']);
   });
 
@@ -92,16 +96,39 @@ describe('organization type field visibility', () => {
 
   it('builds organization type picklist options with platform defaults', () => {
     expect(organizationTypeDefsToPicklistOptions(null).map((o) => o.value)).toEqual([
+      'Lead',
       'Customer',
-      'Partner',
+      'Marketing Lead',
       'Vendor',
+      'Partner',
     ]);
     expect(
       organizationTypeDefsToPicklistOptions([
         { value: 'Customer', label: 'Customer', enabled: true },
         { value: 'Partner', label: 'Partner', enabled: false },
-      ]    ).map((o) => o.value)
+      ]).map((o) => o.value)
     ).toEqual(['Customer']);
+  });
+
+  it('gates organization type picklist by enabled apps', () => {
+    expect(
+      organizationTypeDefsToPicklistOptions(null, {
+        enabledApps: [{ appKey: 'SALES', status: 'ACTIVE' }],
+      }).map((o) => o.value)
+    ).toEqual(['Lead', 'Customer']);
+    expect(
+      organizationTypeDefsToPicklistOptions(null, {
+        enabledApps: [
+          { appKey: 'SALES', status: 'ACTIVE' },
+          { appKey: 'INVENTORY', status: 'ACTIVE' },
+        ],
+      }).map((o) => o.value)
+    ).toEqual(['Lead', 'Customer', 'Vendor']);
+    expect(
+      organizationTypeDefsToPicklistOptions(null, {
+        enabledApps: [{ appKey: 'PORTAL', status: 'ACTIVE' }],
+      }).map((o) => o.value)
+    ).toEqual(['Partner']);
   });
 
   it('filters retired organization types from picklist options', () => {

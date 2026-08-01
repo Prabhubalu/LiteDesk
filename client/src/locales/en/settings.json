@@ -4,16 +4,88 @@
     "description": "Settings page header subtitle"
   },
   "landingSubtitle": {
-    "message": "Manage your company settings and platform configuration",
+    "message": "Search settings, or browse by category",
     "description": "Settings landing page subtitle"
+  },
+  "searchPlaceholder": {
+    "message": "Search settings",
+    "description": "Settings overview and quick-jump search placeholder"
+  },
+  "searchResults": {
+    "message": "Results",
+    "description": "Settings search results section label"
+  },
+  "searchEmpty": {
+    "message": "No settings match. Try another name or synonym.",
+    "description": "Settings search empty state"
+  },
+  "recentLabel": {
+    "message": "Recent",
+    "description": "Settings overview recent lane label"
+  },
+  "suggestedLabel": {
+    "message": "Suggested",
+    "description": "Settings overview suggested lane label"
+  },
+  "browseLabel": {
+    "message": "Browse",
+    "description": "Settings overview unified category grid label"
+  },
+  "setupEssentialsLabel": {
+    "message": "Setup essentials",
+    "description": "Settings overview setup essentials lane label"
+  },
+  "setupChip": {
+    "message": "Setup",
+    "description": "Badge on setup-essential settings chips"
+  },
+  "needsAttentionLabel": {
+    "message": "Needs attention",
+    "description": "Settings overview live health lane label"
+  },
+  "healthChipAttention": {
+    "message": "Needs attention",
+    "description": "Status chip when a settings area needs configuration"
+  },
+  "healthReasonOrg": {
+    "message": "Add company name and currency",
+    "description": "Health reason for incomplete organization settings"
+  },
+  "healthReasonSecurity2fa": {
+    "message": "Turn on two-factor authentication",
+    "description": "Health reason when org 2FA is disabled"
+  },
+  "healthReasonTaxes": {
+    "message": "Add at least one tax rate",
+    "description": "Health reason when no tax rates exist"
+  },
+  "healthReasonNumbering": {
+    "message": "Enable document numbering for a module",
+    "description": "Health reason when no module numbering is enabled"
   },
   "navOverview": {
     "message": "Overview",
     "description": "Settings sidebar overview tab"
   },
+  "navPersonal": {
+    "message": "Personal",
+    "description": "Settings overview personal section label"
+  },
   "navWorkspace": {
     "message": "Workspace",
     "description": "Settings sidebar workspace section label"
+  },
+  "navRailApps": {
+    "message": "Apps",
+    "description": "Settings sidebar apps section label"
+  },
+  "navRailOperations": {
+    "message": "Operations",
+    "description": "Settings sidebar operations section label"
+  },
+  "navRailAccount": {
+    "message": "Account",
+    "description": "Settings sidebar account section label"
   },
   "navInternal": {
     "message": "Internal",
@@ -11351,6 +11423,14 @@
     "message": "Helpdesk Modules",
     "description": "Helpdesk schema ModulesAndFields title"
   },
+  "appsInventoryModules": {
+    "message": "Inventory Modules",
+    "description": "Inventory option / schema title"
+  },
+  "appsInventoryModulesDesc": {
+    "message": "Configure fields, relationships, and data structure for Purchase Orders, Receipt Notes, and other Inventory modules",
+    "description": "Inventory option desc"
+  },
   "helpdeskAnalyticsTitle": {
     "message": "Helpdesk Analytics Dashboard",
     "description": "Dashboard title"
@@ -12314,6 +12394,10 @@
   "modFieldsGroupCoreDeal": {
     "message": "Core Deal Fields",
     "description": "Deals field group"
+  },
+  "modFieldsGroupCoreModule": {
+    "message": "Core Module Fields",
+    "description": "Inventory workbench core fields group"
   },
   "modFieldsGroupCoreEvent": {
     "message": "Core Event Fields",
@@ -15366,6 +15450,18 @@
   "settingsAppDetailConfigureHelpdeskSubtitle": {
     "message": "Manage Helpdesk-owned configuration and case settings",
     "description": "Configure Helpdesk section subtitle"
+  },
+  "settingsAppDetailConfigureInventorySubtitle": {
+    "message": "Manage Inventory-owned configuration and settings",
+    "description": "Configure Inventory section subtitle"
+  },
+  "settingsAppDetailInventoryModuleDesc": {
+    "message": "Configure fields, relationships, and data structure for {module}",
+    "description": "Fallback description for an Inventory-owned module card"
+  },
+  "settingsAppDetailNoInventoryModules": {
+    "message": "No Inventory modules are available for this organization.",
+    "description": "Empty state when Inventory has no owned modules"
   },
   "settingsAppDetailAutomations": {
     "message": "Automations",
@@ -19606,5 +19702,140 @@
   "tallyScheduledBlockedByDryRun": {
     "message": "Scheduled sync is enabled but dry-run default is still on — no live scheduled sync will run until you turn dry-run default off.",
     "description": "Banner when schedule blocked by dry-run"
+  },
+  "organizationParticipationTypesTitle": {
+    "message": "Organization types"
+  },
+  "organizationParticipationTypesIntro": {
+    "message": "Roles shown when an organization participates in an app (for example Lead and Customer in Sales, or Vendor in Inventory). Changes apply everywhere those dropdowns are used—no page reload needed."
+  },
+  "organizationParticipationTypesHintMinOne": {
+    "message": "Keep at least one role per app. Role names must be unique within the app."
+  },
+  "organizationParticipationTypesHintDefaultRole": {
+    "message": "The default role is used when attaching an organization to this app if no type is chosen."
+  },
+  "organizationParticipationTypesHintColors": {
+    "message": "Colors appear on list and record badges for that participation role."
+  },
+  "organizationParticipationTypesHintParticipation": {
+    "message": "Field checkboxes control which fields show when this type is selected in create and edit."
+  },
+  "organizationParticipationTypesAppLabel": {
+    "message": "Application"
+  },
+  "organizationParticipationTypesAppSales": {
+    "message": "Sales"
+  },
+  "organizationParticipationTypesAppHelpdesk": {
+    "message": "Helpdesk"
+  },
+  "organizationParticipationTypesAppInventory": {
+    "message": "Inventory"
+  },
+  "organizationParticipationTypesAppMarketing": {
+    "message": "Marketing"
+  },
+  "organizationParticipationTypesAppPortal": {
+    "message": "Portal"
+  },
+  "organizationParticipationTypesDefaultRoleLabel": {
+    "message": "Default role"
+  },
+  "organizationParticipationTypesRoleTypesLabel": {
+    "message": "Role types"
+  },
+  "organizationParticipationTypesEmptyRoles": {
+    "message": "No roles yet. Add at least one role for this app."
+  },
+  "organizationParticipationTypesFieldsWhenSelected": {
+    "message": "Fields when this type is selected"
+  },
+  "organizationParticipationTypesResetPlatformDefaults": {
+    "message": "Reset to platform defaults"
+  },
+  "organizationParticipationTypesNoParticipationFields": {
+    "message": "No type-scoped fields for {appKey}."
+  },
+  "organizationParticipationTypesUsingPlatformDefaults": {
+    "message": "Using platform defaults for this type."
+  },
+  "organizationParticipationTypesInheritedNotSaved": {
+    "message": "(inherited — not saved until you change a checkbox)"
+  },
+  "organizationParticipationTypesPlatformDefaultNoFields": {
+    "message": "Platform default has no fields for this type."
+  },
+  "organizationParticipationTypesCustomFields": {
+    "message": "Custom field set for this type."
+  },
+  "organizationParticipationTypesNoFieldsExplicit": {
+    "message": "No fields selected for this type."
+  },
+  "organizationParticipationTypesReset": {
+    "message": "Reset"
+  },
+  "organizationParticipationTypesAddRole": {
+    "message": "Add role"
+  },
+  "organizationParticipationTypesRoleNameLabel": {
+    "message": "Role name"
+  },
+  "organizationParticipationTypesRoleNamePh": {
+    "message": "e.g. Customer"
+  },
+  "organizationParticipationTypesInUseOne": {
+    "message": "In use by {count} organization"
+  },
+  "organizationParticipationTypesInUseOther": {
+    "message": "In use by {count} organizations"
+  },
+  "organizationParticipationTypesDeleteInUseOne": {
+    "message": "This role is used by {count} organization. Remove it from those records first, or reassign them."
+  },
+  "organizationParticipationTypesDeleteInUseOther": {
+    "message": "This role is used by {count} organizations. Remove it from those records first, or reassign them."
+  },
+  "organizationParticipationTypesFieldsLoadConnection": {
+    "message": "Could not load organization fields. Check your connection and try again."
+  },
+  "organizationParticipationTypesFieldsLoadFailed": {
+    "message": "Could not load organization fields."
+  },
+  "organizationParticipationTypesSelectType": {
+    "message": "Select type"
+  },
+  "modFieldsTabOrganizationTypes": {
+    "message": "Types"
+  },
+  "organizationParticipationTypesDeleteTitle": {
+    "message": "Remove this role?"
+  },
+  "organizationParticipationTypesDeleteEmpty": {
+    "message": "This role is not in use and can be removed."
+  },
+  "organizationParticipationTypesErrEnterName": {
+    "message": "Enter a role name."
+  },
+  "organizationParticipationTypesErrDuplicateExists": {
+    "message": "A role with this name already exists."
+  },
+  "organizationParticipationTypesErrDuplicateNames": {
+    "message": "Role names must be unique."
+  },
+  "organizationParticipationTypesErrEmptyName": {
+    "message": "Role names cannot be empty."
+  },
+  "organizationParticipationTypesErrAtLeastOne": {
+    "message": "Keep at least one role."
+  },
+  "organizationParticipationTypesSaveFailed": {
+    "message": "Failed to save organization types."
+  },
+  "organizationParticipationTypesFailedLoad": {
+    "message": "Failed to load organization types."
+  },
+  "organizationParticipationTypesFailedSave": {
+    "message": "Failed to save organization types."
   }
 }

@@ -182,7 +182,35 @@ export const INVOICE_FIELD_METADATA: Record<string, InvoiceFieldMetadata> = {
     editable: false,
     isSystem: true,
     isVisibleInConfig: true
-  }
+  },
+  // Connector sync metadata — system-managed; never user-editable on create/edit
+  externalReferenceId: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
+  syncStatus: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
+  lastSyncAt: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
 };
 
 export function getInvoiceFieldMetadata(fieldName: string): InvoiceFieldMetadata | undefined {

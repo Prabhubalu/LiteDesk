@@ -236,7 +236,7 @@
 
       <!-- Organizations Tabbed Interface (always show for Organizations module) -->
       <div v-else-if="isOrganizationsModule" class="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Status & Types, Relationships, Quick Create) -->
+        <!-- ModulesAndFields with its own tabs (Module details, Field Configurations, Types, Relationships, Quick Create) -->
         <ModulesAndFields
           class="flex min-h-0 flex-1 flex-col overflow-hidden"
           :module-filter="organizationsModuleFilter" 

@@ -4,6 +4,7 @@ const { sanitizeOrganizationTypeDefsForSave } = require('../tenantMetadata');
 const {
   typeDefsToOrganizationTypePicklistOptions,
   statusPicklistPolicyToOptions,
+  moduleFieldOptionsToStatusPicklistRows,
 } = require('../tenantMetadata');
 
 test('sanitizeOrganizationTypeDefsForSave: fields validated against allowedFieldKeys', () => {
@@ -90,4 +91,28 @@ test('statusPicklistPolicyToOptions: only enabled statuses', () => {
 
 test('statusPicklistPolicyToOptions: null when no tenant policy rows', () => {
   assert.equal(statusPicklistPolicyToOptions(null, [{ value: 'Active' }]), null);
+});
+
+test('moduleFieldOptionsToStatusPicklistRows: maps Field Config options for statusTypes SoT', () => {
+  const rows = moduleFieldOptionsToStatusPicklistRows([
+    { value: 'Active', label: 'Active', color: '#16A34A' },
+    { value: 'On Hold', label: 'On Hold', color: '#D97706' },
+    'Legacy',
+  ]);
+  assert.deepEqual(rows, [
+    { value: 'Active', label: 'Active', enabled: true, color: '#16A34A' },
+    { value: 'On Hold', label: 'On Hold', enabled: true, color: '#D97706' },
+    { value: 'Legacy', label: 'Legacy', enabled: true },
+  ]);
+});
+
+test('ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP covers Field Config role picklists', () => {
+  const {
+    ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP,
+  } = require('../../constants/organizationParticipation');
+  assert.equal(ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP.sales_type, 'SALES');
+  assert.equal(ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP.helpdesk_role, 'HELPDESK');
+  assert.equal(ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP.inventory_role, 'INVENTORY');
+  assert.equal(ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP.marketing_role, 'MARKETING');
+  assert.equal(ORGANIZATION_PARTICIPATION_VIRTUAL_FIELD_TO_APP.portal_role, 'PORTAL');
 });

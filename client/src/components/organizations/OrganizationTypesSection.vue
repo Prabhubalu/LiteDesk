@@ -137,6 +137,7 @@ import { BuildingOffice2Icon, CheckCircleIcon, ChevronDownIcon } from '@heroicon
 import DynamicForm from '@/components/common/DynamicForm.vue';
 import { getOrganizationFieldsForType } from '@/platform/fields/organizationFieldModel';
 import { organizationTypeDefsToPicklistOptions } from '@/utils/organizationTypeConfig';
+import { useAuthStore } from '@/stores/authRegistry';
 
 const props = defineProps({
   formData: {
@@ -173,11 +174,14 @@ const props = defineProps({
 const emit = defineEmits(['update:formData']);
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
 const expandedByType = ref({});
 
 const availableTypes = computed(() =>
-  organizationTypeDefsToPicklistOptions(props.organizationTypeDefs)
+  organizationTypeDefsToPicklistOptions(props.organizationTypeDefs, {
+    enabledApps: authStore.organization?.enabledApps,
+  })
 );
 
 const selectedTypes = computed(() =>

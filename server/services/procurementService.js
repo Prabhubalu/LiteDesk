@@ -55,51 +55,73 @@ function lineMoney({ quantity, unitPrice, discountType, discountValue }) {
   return { lineSubtotal, lineTaxTotal: 0, lineTotal: lineSubtotal };
 }
 
+async function buildPurchaseOrderLineDoc({ organizationId, row, lineOrder }) {
+  if (!row?.variantId) throw validationError('Line variantId is required');
+  const qty = Number(row.quantityOrdered ?? row.quantity);
+  if (!Number.isFinite(qty) || qty <= 0) throw validationError('quantityOrdered must be > 0');
+  const { variant, item } = await hydrateVariant(organizationId, row.variantId);
+  const unitPrice = Number(row.unitPrice ?? variant.purchase_price ?? variant.cost_price ?? 0) || 0;
+  const money = lineMoney({
+    quantity: qty,
+    unitPrice,
+    discountType: row.discountType,
+    discountValue: row.discountValue
+  });
+  return {
+    organizationId,
+    lineOrder,
+    variantId: variant._id,
+    skuSnapshot: variant.variant_code || variant.barcode || String(variant._id),
+    itemNameSnapshot: item?.item_name || null,
+    descriptionSnapshot: row.description || item?.description || null,
+    quantityOrdered: qty,
+    quantityReceived: 0,
+    quantityPending: qty,
+    unitOfMeasure: row.unitOfMeasure || variant.unit_of_measure || item?.unit_of_measure || null,
+    unitPrice,
+    discountType: row.discountType || null,
+    discountValue: Number(row.discountValue) || 0,
+    taxSnapshot: row.taxSnapshot || { taxes: [] },
+    chargeSnapshot: row.chargeSnapshot || { charges: [] },
+    lineSubtotal: money.lineSubtotal,
+    lineTaxTotal: money.lineTaxTotal,
+    lineTotal: money.lineTotal,
+    expectedDeliveryDate: row.expectedDeliveryDate || null
+  };
+}
+
+async function recalculatePurchaseOrderTotals({ organizationId, purchaseOrderId, userId }) {
+  const lines = await PurchaseOrderLine.find({ organizationId, purchaseOrderId }).sort({ lineOrder: 1 }).lean();
+  const subtotal = lines.reduce((sum, line) => sum + (Number(line.lineSubtotal) || 0), 0);
+  const taxTotal = lines.reduce((sum, line) => sum + (Number(line.lineTaxTotal) || 0), 0);
+  const po = await PurchaseOrder.findOne({ _id: purchaseOrderId, organizationId, deletedAt: null });
+  if (!po) throw validationError('Purchase order not found', 'NOT_FOUND');
+  const chargesTotal = Number(po.chargesTotal) || 0;
+  po.subtotal = subtotal;
+  po.taxTotal = taxTotal;
+  po.grandTotal = subtotal + taxTotal + chargesTotal;
+  if (userId) po.modifiedBy = userId;
+  await po.save();
+  return { purchaseOrder: po.toObject(), lines };
+}
+
 async function createPurchaseOrder({ organizationId, userId, payload }) {
   const vendorId = payload.vendorId;
   if (!vendorId) throw validationError('Vendor is required');
   const linesInput = Array.isArray(payload.lines) ? payload.lines : [];
-  if (!linesInput.length) throw validationError('At least one line is required');
 
   const poNumber = await nextDocNumber(organizationId, 'purchase_orders', 'PO');
   let subtotal = 0;
   const lineDocs = [];
 
   for (let i = 0; i < linesInput.length; i++) {
-    const row = linesInput[i];
-    if (!row.variantId) throw validationError('Line variantId is required');
-    const qty = Number(row.quantityOrdered ?? row.quantity);
-    if (!Number.isFinite(qty) || qty <= 0) throw validationError('quantityOrdered must be > 0');
-    const { variant, item } = await hydrateVariant(organizationId, row.variantId);
-    const unitPrice = Number(row.unitPrice ?? variant.purchase_price ?? variant.cost_price ?? 0) || 0;
-    const money = lineMoney({
-      quantity: qty,
-      unitPrice,
-      discountType: row.discountType,
-      discountValue: row.discountValue
-    });
-    subtotal += money.lineSubtotal;
-    lineDocs.push({
+    const ld = await buildPurchaseOrderLineDoc({
       organizationId,
-      lineOrder: i + 1,
-      variantId: variant._id,
-      skuSnapshot: variant.variant_code || variant.barcode || String(variant._id),
-      itemNameSnapshot: item?.item_name || null,
-      descriptionSnapshot: row.description || item?.description || null,
-      quantityOrdered: qty,
-      quantityReceived: 0,
-      quantityPending: qty,
-      unitOfMeasure: row.unitOfMeasure || variant.unit_of_measure || item?.unit_of_measure || null,
-      unitPrice,
-      discountType: row.discountType || null,
-      discountValue: Number(row.discountValue) || 0,
-      taxSnapshot: row.taxSnapshot || { taxes: [] },
-      chargeSnapshot: row.chargeSnapshot || { charges: [] },
-      lineSubtotal: money.lineSubtotal,
-      lineTaxTotal: money.lineTaxTotal,
-      lineTotal: money.lineTotal,
-      expectedDeliveryDate: row.expectedDeliveryDate || null
+      row: linesInput[i],
+      lineOrder: i + 1
     });
+    subtotal += ld.lineSubtotal;
+    lineDocs.push(ld);
   }
 
   const po = await PurchaseOrder.create({
@@ -128,15 +150,66 @@ async function createPurchaseOrder({ organizationId, userId, payload }) {
   for (const ld of lineDocs) {
     ld.purchaseOrderId = po._id;
   }
-  await PurchaseOrderLine.insertMany(lineDocs);
+  if (lineDocs.length) {
+    await PurchaseOrderLine.insertMany(lineDocs);
+  }
   const lines = await PurchaseOrderLine.find({ organizationId, purchaseOrderId: po._id }).lean();
   return { purchaseOrder: po.toObject(), lines };
 }
 
-async function listPurchaseOrders({ organizationId, status = null, limit = 50 }) {
+async function listPurchaseOrders({
+  organizationId,
+  status = null,
+  page = 1,
+  limit = 50,
+  sortBy = 'updatedAt',
+  sortOrder = 'desc',
+  search = null
+}) {
   const q = { organizationId, deletedAt: null };
-  if (status) q.status = status;
-  return PurchaseOrder.find(q).sort({ createdAt: -1 }).limit(limit).lean();
+  if (status) {
+    const statuses = Array.isArray(status)
+      ? status
+      : String(status).split(',').map((s) => s.trim()).filter(Boolean);
+    if (statuses.length === 1) q.status = statuses[0];
+    else if (statuses.length > 1) q.status = { $in: statuses };
+  }
+  if (search) {
+    const term = String(search).trim();
+    if (term) {
+      q.$or = [
+        { poNumber: { $regex: term, $options: 'i' } },
+        { vendorReferenceNumber: { $regex: term, $options: 'i' } }
+      ];
+    }
+  }
+
+  const pageNum = Math.max(1, Number(page) || 1);
+  const limitNum = Math.min(200, Math.max(1, Number(limit) || 50));
+  const allowedSort = new Set(['updatedAt', 'createdAt', 'poDate', 'poNumber', 'status', 'grandTotal']);
+  const sortField = allowedSort.has(String(sortBy)) ? String(sortBy) : 'updatedAt';
+  const sortDir = String(sortOrder).toLowerCase() === 'asc' ? 1 : -1;
+
+  const [totalRecords, data] = await Promise.all([
+    PurchaseOrder.countDocuments(q),
+    PurchaseOrder.find(q)
+      .sort({ [sortField]: sortDir })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .lean()
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalRecords / limitNum));
+  return {
+    data,
+    pagination: {
+      page: pageNum,
+      limit: limitNum,
+      totalRecords,
+      totalPages,
+      hasMore: pageNum < totalPages
+    }
+  };
 }
 
 async function getPurchaseOrder({ organizationId, id }) {
@@ -144,6 +217,114 @@ async function getPurchaseOrder({ organizationId, id }) {
   if (!purchaseOrder) throw validationError('Purchase order not found', 'NOT_FOUND');
   const lines = await PurchaseOrderLine.find({ organizationId, purchaseOrderId: id }).sort({ lineOrder: 1 }).lean();
   return { purchaseOrder, lines };
+}
+
+const PO_HEADER_EDITABLE = new Set([
+  'vendorId',
+  'vendorContactId',
+  'vendorReferenceNumber',
+  'poDate',
+  'currency',
+  'exchangeRate',
+  'paymentTerms',
+  'expectedDeliveryDate',
+  'buyerId',
+  'notes',
+  'termsAndConditions'
+]);
+
+async function updatePurchaseOrder({ organizationId, id, userId, payload }) {
+  const po = await PurchaseOrder.findOne({ _id: id, organizationId, deletedAt: null });
+  if (!po) throw validationError('Purchase order not found', 'NOT_FOUND');
+  if (po.status !== PO_STATUSES.DRAFT) {
+    throw validationError('Only draft purchase orders can be edited');
+  }
+  const body = payload || {};
+  for (const key of PO_HEADER_EDITABLE) {
+    if (Object.prototype.hasOwnProperty.call(body, key)) {
+      po[key] = body[key];
+    }
+  }
+  po.modifiedBy = userId;
+  await po.save();
+  const lines = await PurchaseOrderLine.find({ organizationId, purchaseOrderId: id }).sort({ lineOrder: 1 }).lean();
+  return { purchaseOrder: po.toObject(), lines };
+}
+
+async function addPurchaseOrderLine({ organizationId, id, userId, payload }) {
+  const po = await PurchaseOrder.findOne({ _id: id, organizationId, deletedAt: null });
+  if (!po) throw validationError('Purchase order not found', 'NOT_FOUND');
+  if (po.status !== PO_STATUSES.DRAFT) {
+    throw validationError('Lines can only be added to draft purchase orders');
+  }
+  const last = await PurchaseOrderLine.findOne({ organizationId, purchaseOrderId: id })
+    .sort({ lineOrder: -1 })
+    .select('lineOrder')
+    .lean();
+  const lineOrder = (Number(last?.lineOrder) || 0) + 1;
+  const ld = await buildPurchaseOrderLineDoc({
+    organizationId,
+    row: payload || {},
+    lineOrder
+  });
+  ld.purchaseOrderId = po._id;
+  const created = await PurchaseOrderLine.create(ld);
+  const result = await recalculatePurchaseOrderTotals({ organizationId, purchaseOrderId: id, userId });
+  return { ...result, line: created.toObject() };
+}
+
+async function updatePurchaseOrderLine({ organizationId, id, lineId, userId, payload }) {
+  const po = await PurchaseOrder.findOne({ _id: id, organizationId, deletedAt: null });
+  if (!po) throw validationError('Purchase order not found', 'NOT_FOUND');
+  if (po.status !== PO_STATUSES.DRAFT) {
+    throw validationError('Lines can only be edited on draft purchase orders');
+  }
+  const line = await PurchaseOrderLine.findOne({ _id: lineId, organizationId, purchaseOrderId: id });
+  if (!line) throw validationError('Purchase order line not found', 'NOT_FOUND');
+
+  const body = payload || {};
+  const qty = body.quantityOrdered ?? body.quantity;
+  if (qty !== undefined) {
+    const n = Number(qty);
+    if (!Number.isFinite(n) || n <= 0) throw validationError('quantityOrdered must be > 0');
+    line.quantityOrdered = n;
+    line.quantityPending = Math.max(0, n - (Number(line.quantityReceived) || 0));
+  }
+  if (body.unitPrice !== undefined) line.unitPrice = Number(body.unitPrice) || 0;
+  if (body.discountType !== undefined) line.discountType = body.discountType || null;
+  if (body.discountValue !== undefined) line.discountValue = Number(body.discountValue) || 0;
+  if (body.description !== undefined) line.descriptionSnapshot = body.description;
+  if (body.unitOfMeasure !== undefined) line.unitOfMeasure = body.unitOfMeasure;
+  if (body.expectedDeliveryDate !== undefined) line.expectedDeliveryDate = body.expectedDeliveryDate;
+
+  const money = lineMoney({
+    quantity: line.quantityOrdered,
+    unitPrice: line.unitPrice,
+    discountType: line.discountType,
+    discountValue: line.discountValue
+  });
+  line.lineSubtotal = money.lineSubtotal;
+  line.lineTaxTotal = money.lineTaxTotal;
+  line.lineTotal = money.lineTotal;
+  await line.save();
+
+  const result = await recalculatePurchaseOrderTotals({ organizationId, purchaseOrderId: id, userId });
+  return { ...result, line: line.toObject() };
+}
+
+async function deletePurchaseOrderLine({ organizationId, id, lineId, userId }) {
+  const po = await PurchaseOrder.findOne({ _id: id, organizationId, deletedAt: null });
+  if (!po) throw validationError('Purchase order not found', 'NOT_FOUND');
+  if (po.status !== PO_STATUSES.DRAFT) {
+    throw validationError('Lines can only be removed from draft purchase orders');
+  }
+  const deleted = await PurchaseOrderLine.findOneAndDelete({
+    _id: lineId,
+    organizationId,
+    purchaseOrderId: id
+  });
+  if (!deleted) throw validationError('Purchase order line not found', 'NOT_FOUND');
+  return recalculatePurchaseOrderTotals({ organizationId, purchaseOrderId: id, userId });
 }
 
 async function submitPurchaseOrder({ organizationId, id, userId }) {
@@ -495,6 +676,10 @@ module.exports = {
   createPurchaseOrder,
   listPurchaseOrders,
   getPurchaseOrder,
+  updatePurchaseOrder,
+  addPurchaseOrderLine,
+  updatePurchaseOrderLine,
+  deletePurchaseOrderLine,
   submitPurchaseOrder,
   approvePurchaseOrder,
   cancelPurchaseOrder,

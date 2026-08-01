@@ -18,7 +18,8 @@ const APP_PATH_PREFIXES = [
   'lms',
   'helpdesk',
   'marketing',
-  'projects'
+  'projects',
+  'inventory'
 ];
 
 /**

@@ -513,10 +513,15 @@ const OrganizationSchema = new mongoose.Schema({
     
     // ===== CRM FIELDS (from OrganizationV2) =====
     // CRM Core
-    // Values from module field config (Settings → Fields), not a fixed schema enum
+    // types[] = denormalized union of participation roles (field visibility / filters / BC)
+    // participations[APP] = { role } — app-scoped source of truth (mirrors People)
     types: {
         type: [String],
         default: []
+    },
+    participations: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     },
     website: { type: String, trim: true },
     phone: { type: String, trim: true },

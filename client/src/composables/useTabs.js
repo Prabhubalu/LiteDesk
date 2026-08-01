@@ -1026,6 +1026,7 @@ const getIconForPath = (path) => {
   if (pathOnly === '/dashboard/audit' || pathOnly.startsWith('/dashboard/audit')) return 'shield-check';
   if (pathOnly === '/dashboard/sales' || pathOnly.startsWith('/dashboard/sales')) return 'document-chart-bar';
   if (pathOnly === '/dashboard/marketing' || pathOnly.startsWith('/dashboard/marketing')) return 'chart-bar';
+  if (pathOnly.startsWith('/inventory/purchase-orders')) return 'document-text';
   if (pathOnly.startsWith('/marketing/campaigns')) return 'megaphone';
   if (pathOnly === '/marketing/blog' || pathOnly.startsWith('/marketing/blog/')) return 'document-text';
   if (pathOnly.startsWith('/marketing/audiences')) return 'users';

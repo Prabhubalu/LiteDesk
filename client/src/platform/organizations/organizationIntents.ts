@@ -39,7 +39,7 @@ export const ORGANIZATION_INTENT_DEFINITIONS: OrganizationIntentDefinition[] = [
   {
     key: 'customer',
     label: 'Customer',
-    organizationTypes: ['Customer'],
+    organizationTypes: ['Customer', 'Lead', 'Marketing Lead'],
     allowedStatuses: ['Prospect', 'Active', 'On Hold', 'At Risk', 'Inactive', 'Churned'],
     defaultStatus: 'Prospect',
     editableInCreate: true,

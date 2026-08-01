@@ -176,7 +176,35 @@ export const PAYMENT_FIELD_METADATA: Record<string, PaymentFieldMetadata> = {
     isSystem: true,
     isVisibleInConfig: true,
     allowOnCreate: false
-  }
+  },
+  // Connector sync metadata — system-managed; never user-editable on create/edit
+  externalReferenceId: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
+  syncStatus: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
+  lastSyncAt: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
 };
 
 export function getPaymentFieldMetadata(fieldName: string): PaymentFieldMetadata | undefined {

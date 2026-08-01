@@ -1287,10 +1287,22 @@ function onEventGeoLocationUpdate(geoLocation) {
 /** When Settings omits lookupSettings, map known field keys to /people or /v2/organization list APIs. */
 function inferLookupTargetFromFieldKey(fieldKey) {
   const k = String(fieldKey || '').toLowerCase();
-  if (k === 'contactid' || k === 'personid') return 'people';
-  if (k === 'organizationrefid' || k === 'accountid') return 'organizations';
+  if (k === 'contactid' || k === 'personid' || k === 'vendorcontactid') return 'people';
+  if (k === 'organizationrefid' || k === 'accountid' || k === 'vendorid') return 'organizations';
   if (k === 'dealid') return 'deals';
   return '';
+}
+
+/** Inventory vendor pickers: PLATFORM skips SALES Customer/Lead projection; type=Vendor scopes the list.
+ * Do not pass appKey=INVENTORY — /v2/organization is Sales-gated and 403s non-SALES req.appKey. */
+function vendorOrgLookupParams(fieldKey, params = {}) {
+  const k = String(fieldKey || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  if (k !== 'vendorid') return params;
+  return {
+    ...params,
+    appKey: params.appKey || 'PLATFORM',
+    type: params.type || 'Vendor',
+  };
 }
 
 const isLookupField = computed(() => {
@@ -2378,10 +2390,12 @@ const fetchLookupOptions = async () => {
     const moduleKey = targetModule;
     fieldDbg('Fetching lookup options for module:', moduleKey, 'field:', props.field.key);
 
-    const depParams =
+    const depParams = vendorOrgLookupParams(
+      props.field?.key,
       props.dependencyState?.lookupQuery && typeof props.dependencyState.lookupQuery === 'object'
         ? { ...props.dependencyState.lookupQuery }
-        : {};
+        : {}
+    );
     const mk = String(moduleKey || '').toLowerCase();
     const isPeopleList =
       mk === 'people' || mk === 'person' || mk === 'contact';
@@ -2619,9 +2633,34 @@ const fetchLookupModalData = async () => {
           params = { ...params, ...props.dependencyState.lookupQuery };
         }
       }
+      const orgMk = String(moduleKey || '').toLowerCase();
+      if (orgMk === 'organization' || orgMk === 'organizations') {
+        params = vendorOrgLookupParams(props.field?.key, params);
+      }
     } else {
-      lookupModalLoading.value = false;
-      return;
+      // Fallback when Settings omitted lookupSettings but field key is a known relationship.
+      const inferred = inferLookupTargetFromFieldKey(props.field?.key);
+      if (!inferred) {
+        lookupModalLoading.value = false;
+        return;
+      }
+      lookupTargetModule = inferred;
+      if (inferred === 'organizations') {
+        endpoint = '/v2/organization';
+        params = vendorOrgLookupParams(props.field?.key, {
+          ...params,
+          ...(props.dependencyState?.lookupQuery && typeof props.dependencyState.lookupQuery === 'object'
+            ? props.dependencyState.lookupQuery
+            : {}),
+        });
+      } else if (inferred === 'people') {
+        endpoint = '/people';
+        if (props.dependencyState?.lookupQuery && typeof props.dependencyState.lookupQuery === 'object') {
+          params = { ...params, ...props.dependencyState.lookupQuery };
+        }
+      } else {
+        endpoint = `/${inferred}`;
+      }
     }
     
     const response = await apiClient.get(endpoint, { params });

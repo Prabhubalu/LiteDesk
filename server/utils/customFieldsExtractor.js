@@ -31,6 +31,10 @@ const RESERVED_KEYS = new Set([
   'blogNumber',
   'segmentNumber',
   'templateNumber',
+  // Connector sync metadata — set by integrations only
+  'externalReferenceId',
+  'syncStatus',
+  'lastSyncAt',
   // API response-only computed fields — never persist back into customFields
   'lastActivity',
   'lastActivityDate',

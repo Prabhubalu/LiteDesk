@@ -12,6 +12,7 @@ import type { Component } from 'vue';
 export const MODULE_ICON_IDS: Record<string, string> = {
   quotes: 'document-text',
   sales_orders: 'shopping-cart',
+  purchase_orders: 'document-text',
   invoices: 'document-currency-dollar',
   payments: 'credit-card',
   inventory: 'cube',
@@ -26,6 +27,7 @@ export const MODULE_ICON_IDS: Record<string, string> = {
 export const MODULE_ICON_COMPONENTS: Record<string, Component> = {
   quotes: DocumentTextIcon,
   sales_orders: ShoppingCartIcon,
+  purchase_orders: DocumentTextIcon,
   invoices: DocumentCurrencyDollarIcon,
   payments: CreditCardIcon,
   inventory: CubeIcon,
@@ -35,6 +37,7 @@ export const MODULE_ICON_COMPONENTS: Record<string, Component> = {
 const ROUTE_SLUG_TO_MODULE_KEY: Record<string, string> = {
   quotes: 'quotes',
   'sales-orders': 'sales_orders',
+  'purchase-orders': 'purchase_orders',
   invoices: 'invoices',
   payments: 'payments'
 };

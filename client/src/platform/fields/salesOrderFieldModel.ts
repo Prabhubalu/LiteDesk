@@ -243,6 +243,34 @@ export const SALES_ORDER_FIELD_METADATA: Record<string, SalesOrderFieldMetadata>
     isSystem: true,
     isVisibleInConfig: false,
   },
+  // Connector sync metadata — system-managed; never user-editable on create/edit
+  externalReferenceId: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
+  syncStatus: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
+  lastSyncAt: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+  },
 };
 
 export function getSalesOrderFieldMetadata(fieldName: string): SalesOrderFieldMetadata | undefined {

@@ -137,8 +137,10 @@
       <component
         v-else-if="selectedApp && !isSalesApp && currentAppTabComponent"
         :is="currentAppTabComponent"
+        ref="appTabContentRef"
         :app-key="String(selectedApp || '').toUpperCase()"
         class="min-h-0 flex-1"
+        @selected-module-change="appSelectedModule = $event"
       />
     </div>
   </div>
@@ -154,6 +156,7 @@ import SalesSchema from './SalesSchema.vue';
 import SalesPipelines from './SalesPipelines.vue';
 import SalesPlaybooks from './SalesPlaybooks.vue';
 import HelpdeskSchema from './HelpdeskSchema.vue';
+import InventorySchema from './InventorySchema.vue';
 import PlatformAnalyticsDashboardEmbed from '@/components/analytics/PlatformAnalyticsDashboardEmbed.vue';
 
 const { t } = useI18n();
@@ -163,11 +166,14 @@ const authStore = useAuthStore();
 const activeSalesTab = ref('options');
 const activeAppTab = ref('options');
 const salesTabContentRef = ref(null);
+const appTabContentRef = ref(null);
 const salesSelectedModule = ref(null);
+const appSelectedModule = ref(null);
 
 const APP_NAME_KEYS = {
   sales: 'settings.appsNameSales',
   helpdesk: 'settings.appsNameHelpdesk',
+  inventory: 'settings.appsNameInventory',
   projects: 'settings.appsNameProjects',
   portal: 'settings.appsNamePortal',
   audit: 'settings.appsNameAudit',
@@ -177,6 +183,7 @@ const APP_NAME_KEYS = {
 const APP_DESC_KEYS = {
   sales: 'settings.appsDescSales',
   helpdesk: 'settings.appsDescHelpdesk',
+  inventory: 'settings.appsDescInventory',
   projects: 'settings.appsDescProjects',
   portal: 'settings.appsDescPortal',
   audit: 'settings.appsDescAudit',
@@ -263,6 +270,9 @@ const salesPageHeading = computed(() => {
   if (hasSalesAccess.value && isSalesApp.value && activeSalesTab.value && activeSalesTab.value !== 'options') {
     return getOptionName(activeSalesTab.value);
   }
+  if (!isSalesApp.value && activeAppTab.value === 'schema' && appSelectedModule.value?.name) {
+    return appSelectedModule.value.name;
+  }
   if (!isSalesApp.value && activeAppTab.value && activeAppTab.value !== 'options') {
     return getAppOptionName(selectedApp.value, activeAppTab.value);
   }
@@ -275,6 +285,9 @@ const salesPageSubheading = computed(() => {
   }
   if (hasSalesAccess.value && isSalesApp.value && activeSalesTab.value && activeSalesTab.value !== 'options') {
     return getOptionDescription(activeSalesTab.value);
+  }
+  if (!isSalesApp.value && activeAppTab.value === 'schema' && appSelectedModule.value?.name) {
+    return t('settings.appsModuleConfigureHint');
   }
   if (!isSalesApp.value && activeAppTab.value && activeAppTab.value !== 'options') {
     return getAppOptionDescription(selectedApp.value, activeAppTab.value);
@@ -383,6 +396,15 @@ const getAppOptions = (app) => {
         }
       }
     ],
+    inventory: [
+      {
+        id: 'schema',
+        nameKey: 'settings.appsInventoryModules',
+        descriptionKey: 'settings.appsInventoryModulesDesc',
+        icon: SchemaIcon,
+        available: true
+      }
+    ],
     projects: [
       {
         id: 'templates',
@@ -461,8 +483,8 @@ const getAppOptions = (app) => {
     mergedById.set(option.id, option);
   }
 
-  // Helpdesk has explicit options; hide generic placeholders that create noise.
-  if (appLower === 'helpdesk') {
+  // Helpdesk/Inventory have explicit options; hide generic placeholders that create noise.
+  if (appLower === 'helpdesk' || appLower === 'inventory') {
     mergedById.delete('settings');
   }
 
@@ -473,6 +495,9 @@ const appSettingsComponents = {
   helpdesk: {
     schema: HelpdeskSchema,
     analytics: PlatformAnalyticsDashboardEmbed
+  },
+  inventory: {
+    schema: InventorySchema
   }
 };
 
@@ -518,6 +543,18 @@ const goBack = () => {
     activeSalesTab.value = 'options';
     return;
   }
+  // Inventory (and other app schemas): leave module fields → Application Detail cards
+  if (!isSalesApp.value && String(selectedApp.value || '').toLowerCase() === 'inventory' && activeAppTab.value === 'schema') {
+    appSelectedModule.value = null;
+    activeAppTab.value = 'options';
+    router.push({ path: '/settings', query: { tab: 'applications', appKey: 'INVENTORY' } });
+    return;
+  }
+  if (!isSalesApp.value && activeAppTab.value === 'schema' && appSelectedModule.value) {
+    appTabContentRef.value?.goBackToModuleList?.();
+    appSelectedModule.value = null;
+    return;
+  }
   if (!isSalesApp.value && activeAppTab.value !== 'options') {
     activeAppTab.value = 'options';
     return;
@@ -543,7 +580,12 @@ watch(() => route.query.app, (newApp) => {
     // Reset to options view when switching apps
     activeSalesTab.value = 'options';
     activeAppTab.value = 'options';
+    appSelectedModule.value = null;
   }
+});
+
+watch(activeAppTab, (tab) => {
+  if (tab !== 'schema') appSelectedModule.value = null;
 });
 
 // Watch for config query parameter to navigate directly to a config option

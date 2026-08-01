@@ -138,6 +138,38 @@
         </div>
       </div>
 
+      <!-- SECTION B3: Inventory Modules (same workbench list as app sidebar) -->
+      <div v-if="(application.status === 'ENABLED' || application.status === 'TRIAL') && isInventoryApp" class="space-y-4">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.appsInventoryModules') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {{ t('settings.appsInventoryModulesDesc') }}
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <button
+            v-for="mod in inventoryOwnedModules"
+            :key="mod.key"
+            @click="navigateToInventoryModule(mod)"
+            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer group text-left"
+          >
+            <div class="flex items-start gap-4">
+              <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors flex-shrink-0">
+                <component :is="inventoryModuleIcon(mod)" class="w-6 h-6" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1">
+                  {{ inventoryModuleLabel(mod) }}
+                </h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                  {{ inventoryModuleDesc(mod) }}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
       <!-- SECTION A: Dependencies (Informational - Read-Only) -->
       <div class="space-y-6">
         <div>
@@ -312,6 +344,8 @@ import { ref, computed, onMounted, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
+import { getIconComponent } from '@/utils/navigationIcons';
+import { INVENTORY_WORKBENCH_MODULES } from '@/utils/inventoryWorkbenchNav';
 
 const { t } = useI18n();
 
@@ -326,6 +360,7 @@ const router = useRouter();
 const application = ref(null);
 const loading = ref(true);
 const error = ref(null);
+const inventoryOwnedModules = INVENTORY_WORKBENCH_MODULES;
 
 const appKey = computed(() => {
   return route.query.appKey || route.params.appKey;
@@ -370,6 +405,9 @@ const isSalesApp = computed(() => {
 });
 const isHelpdeskApp = computed(() => {
   return appKey.value === 'HELPDESK';
+});
+const isInventoryApp = computed(() => {
+  return appKey.value === 'INVENTORY';
 });
 
 const STATUS_LABEL_KEYS = {
@@ -510,6 +548,34 @@ const navigateToHelpdeskConfig = (configId) => {
   router.push({
     path: '/settings',
     query
+  });
+};
+
+function inventoryModuleLabel(mod) {
+  return mod?.labelKey ? t(mod.labelKey) : (mod?.label || mod?.name || mod?.key || '');
+}
+
+function inventoryModuleDesc(mod) {
+  return t('settings.settingsAppDetailInventoryModuleDesc', {
+    module: inventoryModuleLabel(mod)
+  });
+}
+
+function inventoryModuleIcon(mod) {
+  return getIconComponent(mod?.icon, mod?.key) || SchemaIcon;
+}
+
+const navigateToInventoryModule = (mod) => {
+  const moduleKey = String(mod?.key || '').toLowerCase();
+  if (!moduleKey) return;
+  router.push({
+    path: '/settings',
+    query: {
+      tab: 'applications',
+      app: 'inventory',
+      config: 'schema',
+      module: moduleKey
+    }
   });
 };
 

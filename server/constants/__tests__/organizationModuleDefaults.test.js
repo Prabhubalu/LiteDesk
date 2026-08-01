@@ -12,7 +12,6 @@ test('INITIAL_ORGANIZATION_QUICK_CREATE matches canonical Organization quick cre
     'phone',
     'website',
     'assignedTo',
-    'types',
   ]);
 });
 

@@ -1098,5 +1098,49 @@
   "platformHomeCreateCase": {
     "message": "New case",
     "description": "Platform home create menu item"
+  },
+  "poLinesEmpty": {
+    "message": "No lines yet. Add a variant to this purchase order.",
+    "description": "Empty state for purchase order lines section"
+  },
+  "poLineItem": {
+    "message": "Item",
+    "description": "Purchase order line item column"
+  },
+  "poLineQty": {
+    "message": "Qty",
+    "description": "Purchase order line quantity column"
+  },
+  "poLineUnitPrice": {
+    "message": "Unit price",
+    "description": "Purchase order line unit price column"
+  },
+  "poLineTotal": {
+    "message": "Total",
+    "description": "Purchase order line total column"
+  },
+  "poLineVariantId": {
+    "message": "Variant ID",
+    "description": "Purchase order add-line variant id field"
+  },
+  "poLineAdd": {
+    "message": "Add line",
+    "description": "Purchase order add line button"
+  },
+  "poLineAddFailed": {
+    "message": "Failed to add line",
+    "description": "Purchase order add line error"
+  },
+  "poLinesSectionTitle": {
+    "message": "Lines",
+    "description": "Purchase order create drawer lines section title"
+  },
+  "poCreateLinesDraftFailed": {
+    "message": "Could not prepare purchase order lines.",
+    "description": "Purchase order create drawer lines stub failed"
+  },
+  "listCreatePurchaseOrder": {
+    "message": "New PO",
+    "description": "Purchase orders list create button"
   }
 }

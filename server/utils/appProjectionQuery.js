@@ -148,7 +148,9 @@ function applyProjectionFilter({ appKey, moduleKey, baseQuery = {}, projectionMe
         const typeMap = {
           'CUSTOMER': 'Customer',
           'PARTNER': 'Partner',
-          'VENDOR': 'Vendor'
+          'VENDOR': 'Vendor',
+          'LEAD': 'Lead',
+          'MARKETING_LEAD': 'Marketing Lead',
         };
         return types.map(t => typeMap[t?.toUpperCase()] || t).filter(Boolean);
       }

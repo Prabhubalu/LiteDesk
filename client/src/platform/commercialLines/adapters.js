@@ -5,7 +5,27 @@
 
 import { isCommerciallyLockedStatus } from '@/constants/quoteLifecycle';
 
-/** @typedef {'quote' | 'salesOrder' | 'invoice'} CommercialLinesKind */
+/** Draft PO: catalog lines + unit price; no quote sections/taxes/bundles yet. */
+/** @type {CommercialLinesCapabilities} */
+const PURCHASE_ORDER_CAPABILITIES = {
+  discounts: true,
+  pricingColumns: false,
+  sectionReorder: false,
+  lineReorder: false,
+  optionalSections: false,
+  sectionDiscounts: false,
+  globalDiscounts: false,
+  taxesCharges: false,
+  recalculate: false,
+  bundles: false,
+  headerActions: false,
+  createCatalogItem: true,
+  columnPrefs: true,
+  unitPriceEdit: true,
+  taxEdit: false
+};
+
+/** @typedef {'quote' | 'salesOrder' | 'invoice' | 'purchaseOrder'} CommercialLinesKind */
 
 /**
  * @typedef {object} CommercialLinesCapabilities
@@ -185,10 +205,44 @@ export const invoiceCommercialLinesAdapter = {
   }
 };
 
+/** @type {CommercialLinesAdapter} */
+export const purchaseOrderCommercialLinesAdapter = {
+  kind: 'purchaseOrder',
+  apiBase: '/inventory/purchase-orders',
+  lineIdField: 'purchaseOrderLineId',
+  sectionIdField: 'purchaseOrderSectionId',
+  sectionUuidField: 'purchaseOrderSectionId',
+  includeInTotalField: 'includeInPoTotal',
+  moduleKey: 'purchase_orders',
+  capabilities: PURCHASE_ORDER_CAPABILITIES,
+  isEditable(record) {
+    return String(record?.status || '').toLowerCase() === 'draft';
+  },
+  buildAddLineBody({ variantId, quantity = 1 }) {
+    return {
+      variantId,
+      quantityOrdered: quantity,
+      quantity
+    };
+  },
+  buildPatchLineBody(fields) {
+    const body = {};
+    if (fields.quantity !== undefined) {
+      body.quantityOrdered = fields.quantity;
+      body.quantity = fields.quantity;
+    }
+    if (fields.discountType !== undefined) body.discountType = fields.discountType;
+    if (fields.discountValue !== undefined) body.discountValue = fields.discountValue;
+    if (fields.unitPrice !== undefined) body.unitPrice = fields.unitPrice;
+    return body;
+  }
+};
+
 const BY_KIND = {
   quote: quoteCommercialLinesAdapter,
   salesOrder: salesOrderCommercialLinesAdapter,
-  invoice: invoiceCommercialLinesAdapter
+  invoice: invoiceCommercialLinesAdapter,
+  purchaseOrder: purchaseOrderCommercialLinesAdapter
 };
 
 /**
@@ -221,7 +275,7 @@ export function resolveCommercialLinesAdapter(input) {
 export function commercialLineId(adapter, line) {
   if (!line) return '';
   const key = adapter.lineIdField;
-  return String(line[key] || line._id || '').trim();
+  return String(line[key] || line._id || line._localId || '').trim();
 }
 
 /**

@@ -38,6 +38,7 @@ const RELATED_MODULE_KEYS = [
   'forms',
   'quotes',
   'sales_orders',
+  'purchase_orders',
   'invoices',
   'payments',
   'documents',
@@ -96,6 +97,7 @@ const BATCH_FETCH_MODULES = new Set([
   'cases',
   'quotes',
   'sales_orders',
+  'purchase_orders',
   'invoices',
   'documents',
   'organizations'
@@ -120,6 +122,8 @@ const MODULE_KEY_ALIASES = Object.freeze({
   invoice: 'invoices',
   'sales-order': 'sales_orders',
   salesorders: 'sales_orders',
+  'purchase-order': 'purchase_orders',
+  purchaseorders: 'purchase_orders',
   project: 'projects',
   payment: 'payments'
 });
@@ -158,6 +162,8 @@ function getRecordEndpoint(appKey, moduleKey) {
     document: '/documents',
     sales_orders: '/sales-orders',
     salesorders: '/sales-orders',
+    purchase_orders: '/inventory/purchase-orders',
+    purchaseorders: '/inventory/purchase-orders',
     invoices: '/invoices',
     invoice: '/invoices'
   };
@@ -314,6 +320,10 @@ const RELATED_RECORD_KEY_FIELDS = Object.freeze({
   ],
   sales_orders: [
     { key: 'salesOrderNumber', label: 'Order #' },
+    { key: 'status', label: 'Status' }
+  ],
+  purchase_orders: [
+    { key: 'poNumber', label: 'PO #' },
     { key: 'status', label: 'Status' }
   ],
   invoices: [

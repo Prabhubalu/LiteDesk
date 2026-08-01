@@ -36,4 +36,4 @@ export const SETTINGS_RAIL_ITEM_INACTIVE_CLASS =
 
 /** Landing / overview cards inside settings. */
 export const SETTINGS_OVERVIEW_CARD_CLASS =
-  'cursor-pointer rounded-xl border border-neutral-200 bg-white p-5 transition-colors hover:border-primary-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-primary-600';
+  'cursor-pointer rounded-xl border border-neutral-200 bg-white p-4 transition-colors hover:border-primary-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-primary-600';

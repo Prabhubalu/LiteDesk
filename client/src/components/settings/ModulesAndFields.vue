@@ -521,11 +521,17 @@
             </div>
           </template>
 
-          <!-- Deals module: Grouped by core vs system (same pattern as Tasks, People) -->
-          <template v-else-if="isDealsModule || isCasesModule">
-            <!-- Core Deal Fields -->
+          <!-- Deals / Cases / Inventory workbench: Core Module Fields vs System Fields -->
+          <template v-else-if="isDealsModule || isCasesModule || isInventoryWorkbenchModule">
+            <!-- Core Module Fields -->
             <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isCasesModule ? t('settings.modFieldsGroupCoreCase') : t('settings.modFieldsGroupCoreDeal') }}</div>
+              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{
+                isInventoryWorkbenchModule
+                  ? t('settings.modFieldsGroupCoreModule')
+                  : isCasesModule
+                    ? t('settings.modFieldsGroupCoreCase')
+                    : t('settings.modFieldsGroupCoreDeal')
+              }}</div>
               <ul class="space-y-1">
                 <li
                   v-for="(fieldKey, idx) in groupedFields.coreIdentity"
@@ -913,12 +919,12 @@
           <div>
             <div class="flex items-center gap-2">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ currentFieldTitle }}</h3>
-              <!-- People module: Use metadata-based badges -->
-              <template v-if="isPeopleModule && currentField?.key">
-                <span v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
+              <!-- People / Organizations: metadata-based badges -->
+              <template v-if="(isPeopleModule || isOrganizationsModule) && currentField?.key">
+                <span v-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'system'" class="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
                 <span v-else-if="currentField?.owner === 'org'" class="px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
-                <span v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
-                <span v-else-if="getPeopleFieldMetadata(currentField.key)?.fieldScope" class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ getPeopleFieldMetadata(currentField.key)?.fieldScope }}</span>
+                <span v-else-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'core'" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
+                <span v-else-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.fieldScope" class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.fieldScope }}</span>
               </template>
               <!-- Deals module: Core vs System badges from deal field model -->
               <template v-else-if="isDealsModule && currentField?.key">
@@ -934,11 +940,11 @@
                 <span v-else-if="isCoreField(currentField, selectedModule?.key)" class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
               </template>
             </div>
-            <!-- People module: Metadata-based messages -->
-            <template v-if="isPeopleModule && currentField?.key">
-              <p v-if="getPeopleFieldMetadata(currentField.key)?.owner === 'system'" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgSystemField') }}</p>
-              <p v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-blue-600 dark:text-blue-400">{{ t('settings.modFieldsMsgCoreIdentity') }}</p>
-              <p v-else-if="getPeopleFieldMetadata(currentField.key)?.owner === 'participation'" class="mt-1 text-xs text-purple-600 dark:text-purple-400">{{ t('settings.modFieldsMsgParticipation', { scope: getPeopleFieldMetadata(currentField.key)?.fieldScope }) }}</p>
+            <!-- People / Organizations: Metadata-based messages -->
+            <template v-if="(isPeopleModule || isOrganizationsModule) && currentField?.key">
+              <p v-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'system'" class="mt-1 text-xs text-amber-600 dark:text-amber-400">{{ t('settings.modFieldsMsgSystemField') }}</p>
+              <p v-else-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'core'" class="mt-1 text-xs text-blue-600 dark:text-blue-400">{{ t('settings.modFieldsMsgCoreIdentity') }}</p>
+              <p v-else-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'participation'" class="mt-1 text-xs text-purple-600 dark:text-purple-400">{{ t('settings.modFieldsMsgParticipation', { scope: (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.fieldScope }) }}</p>
             </template>
             <!-- Deals module: Core vs System messages -->
             <template v-else-if="isDealsModule && currentField?.key">
@@ -1123,14 +1129,14 @@
                   <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">{{ t('settings.modFieldsKey') }}</label>
                   <input 
                     v-model="currentField.key" 
-                    :disabled="!canRenameField(currentField) || isSystemField(currentField) || isCoreField(currentField, selectedModule?.key) || currentField.dataType === 'Auto-Number' || (isPeopleModule && (getPeopleFieldMetadata(currentField.key)?.owner === 'system' || getPeopleFieldMetadata(currentField.key)?.owner === 'core' || getPeopleFieldMetadata(currentField.key)?.owner === 'participation'))" 
+                    :disabled="!canRenameField(currentField) || isSystemField(currentField) || isCoreField(currentField, selectedModule?.key) || currentField.dataType === 'Auto-Number' || ((isPeopleModule || isOrganizationsModule) && ((isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'system' || (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'core' || (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'participation'))" 
                     class="w-full px-3 py-2 rounded bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10" 
                   />
                   <p v-if="currentField.dataType === 'Auto-Number'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintAutoNumberKey') }}</p>
-                  <p v-if="isSystemField(currentField) || (isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'system')" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintSystemKey') }}</p>
-                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'core'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreIdentityKey') }}</p>
-                  <p v-if="isPeopleModule && getPeopleFieldMetadata(currentField.key)?.owner === 'participation'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintParticipationKey') }}</p>
-                  <p v-if="isCoreField(currentField, selectedModule?.key) && !isSystemField(currentField) && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreKey') }}</p>
+                  <p v-if="isSystemField(currentField) || ((isPeopleModule || isOrganizationsModule) && (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'system')" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintSystemKey') }}</p>
+                  <p v-if="(isPeopleModule || isOrganizationsModule) && (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'core'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreIdentityKey') }}</p>
+                  <p v-if="(isPeopleModule || isOrganizationsModule) && (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'participation'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintParticipationKey') }}</p>
+                  <p v-if="isCoreField(currentField, selectedModule?.key) && !isSystemField(currentField) && !isPeopleModule && !isOrganizationsModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreKey') }}</p>
                   <p v-if="!isSystemField(currentField) && !isCoreField(currentField, selectedModule?.key) && currentField.dataType !== 'Auto-Number' && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintAutoKey') }}</p>
                 </div>
                 <div>
@@ -1149,9 +1155,9 @@
                   <p v-if="isCoreField(currentField, selectedModule?.key) && !isPeopleModule" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsHintCoreType') }}</p>
                 </div>
                 
-                <!-- Field Metadata (read-only) - People module only -->
-                <template v-if="isPeopleModule && currentField?.key">
-                  <div v-if="getPeopleFieldMetadata(currentField.key)" class="w-full mt-4 p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg">
+                <!-- Field Metadata (read-only) - People / Organizations -->
+                <template v-if="(isPeopleModule || isOrganizationsModule) && currentField?.key">
+                  <div v-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))" class="w-full mt-4 p-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg">
                     <div class="space-y-2">
                       <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{{ t('settings.modFieldsFieldMetadata') }}</div>
                       <div class="flex flex-wrap items-center gap-3">
@@ -1159,21 +1165,21 @@
                         <div class="flex items-center gap-2">
                           <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMetadataOwner') }}</span>
                           <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                            {{ formatOwnerDisplay(getPeopleFieldMetadata(currentField.key)) }}
+                            {{ formatOwnerDisplay(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key)) }}
                           </span>
                         </div>
                         <!-- Intent -->
                         <div class="flex items-center gap-2">
                           <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMetadataIntent') }}</span>
                           <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                            {{ formatIntentDisplay(getPeopleFieldMetadata(currentField.key)?.intent) }}
+                            {{ formatIntentDisplay((isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.intent) }}
                           </span>
                         </div>
                         <!-- Required for (only if present) -->
-                        <div v-if="getPeopleFieldMetadata(currentField.key)?.requiredFor?.length" class="flex items-center gap-2">
+                        <div v-if="(isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.requiredFor?.length" class="flex items-center gap-2">
                           <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsMetadataRequiredFor') }}</span>
                           <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                            {{ formatRequiredForApps(getPeopleFieldMetadata(currentField.key)?.requiredFor) }}
+                            {{ formatRequiredForApps((isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.requiredFor) }}
                           </span>
                         </div>
                       </div>
@@ -1667,7 +1673,7 @@
             </div>
             <div v-if="activeSubTab === 'validations'" class="space-y-3">
               <!-- Participation field info message -->
-              <div v-if="isPeopleModule && currentField?.key && getPeopleFieldMetadata(currentField.key)?.owner === 'participation'" class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div v-if="(isPeopleModule || isOrganizationsModule) && currentField?.key && (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'participation'" class="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <div class="flex items-start gap-3">
                   <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1727,10 +1733,10 @@
                   </p>
                   <button 
                     @click="addValidation" 
-                    :disabled="(isPeopleModule && currentField?.key && getPeopleFieldMetadata(currentField.key)?.owner === 'participation') || (isEventsModule && currentField?.key && isEventsAppParticipationField(currentField.key))"
+                    :disabled="((isPeopleModule || isOrganizationsModule) && currentField?.key && (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'participation') || (isEventsModule && currentField?.key && isEventsAppParticipationField(currentField.key))"
                     :class="[
                       'px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2',
-                      ((isPeopleModule && currentField?.key && getPeopleFieldMetadata(currentField.key)?.owner === 'participation') || (isEventsModule && currentField?.key && isEventsAppParticipationField(currentField.key))) ? 'opacity-50 cursor-not-allowed' : ''
+                      (((isPeopleModule || isOrganizationsModule) && currentField?.key && (isPeopleModule ? getPeopleFieldMetadata(currentField.key) : getOrganizationFieldMetadata(currentField.key))?.owner === 'participation') || (isEventsModule && currentField?.key && isEventsAppParticipationField(currentField.key))) ? 'opacity-50 cursor-not-allowed' : ''
                     ]"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
@@ -2399,8 +2405,8 @@
       <!-- Other tabs: Module details, Relationship, Quick Create -->
       <section v-else class="flex-1 min-w-0 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
         <div class="flex-1 min-h-0 overflow-y-auto p-4" v-if="activeTopTab === 'details'">
-          <!-- Platform Ownership Info Box (for platform-owned modules) -->
-          <div v-if="selectedModule?.platformOwned || selectedModule?.type === 'system'" class="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <!-- Platform Ownership Info Box (platform / core modules only) -->
+          <div v-if="showPlatformOwnedCapabilityBanner(selectedModule)" class="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div class="flex items-start gap-3">
               <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -2522,166 +2528,9 @@
           </div>
         </div>
 
-        <!-- Status & Types Tab (Organizations) — tenant policy only (enable/disable). Catalog: Fields tab. -->
-        <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'status-types' && isOrganizationsModule">
-          <div class="p-6">
-            <!-- Header -->
-            <div class="mb-6">
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsOrgsStatusTypesDesc') }}</p>
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>{{ t('settings.modFieldsNoteLabel') }}</strong>{{ t('settings.modFieldsOrgsStatusTypesNote') }}</p>
-              </div>
-            </div>
-
-            <!-- Organization Types Section -->
-            <div class="mb-8">
-              <div class="flex items-center justify-between mb-4 gap-3">
-                <div class="min-w-0">
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsOrgTypesTitle') }}</h4>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsOrgTypesDesc') }}</p>
-                </div>
-                <button
-                  type="button"
-                  @click="openOrganizationPicklistInFieldConfig('types')"
-                  class="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-                >
-                  {{ t('settings.modFieldsEditInFieldConfig') }}
-                </button>
-              </div>
-              
-              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <div v-if="statusTypesLoading" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-                  {{ t('settings.modFieldsLoadingOrgTypes') }}
-                </div>
-                <div v-else-if="organizationTypes.length === 0" class="text-center py-8 space-y-3">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoOrgTypesDefined') }}</p>
-                  <button
-                    type="button"
-                    @click="openOrganizationPicklistInFieldConfig('types')"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    {{ t('settings.modFieldsEditInFieldConfig') }}
-                  </button>
-                </div>
-                <div v-else class="space-y-3">
-                  <div 
-                    v-for="(type, index) in organizationTypes" 
-                    :key="`${type.value}-${index}`"
-                    class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3"
-                  >
-                    <div class="flex items-center justify-between gap-3">
-                      <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <span
-                          class="h-3.5 w-3.5 rounded-full flex-shrink-0 ring-1 ring-gray-900/10 dark:ring-white/20"
-                          :style="{ backgroundColor: type.color || '#3B82F6' }"
-                          :title="t('settings.modFieldsColor')"
-                          aria-hidden="true"
-                        />
-                        <div class="flex-1 min-w-0">
-                          <div class="text-sm font-medium text-gray-900 dark:text-white">{{ type.label }}</div>
-                          <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ type.description || t('settings.modFieldsOrgTypeDefaultDesc') }}</div>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-3">
-                        <button
-                          type="button"
-                          class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-                          @click="setExpandedOrgTypeIndex(index)"
-                        >
-                          {{ expandedOrgTypeIndex === index ? t('settings.orgTypesHideFields') : t('settings.orgTypesConfigureFields') }}
-                        </button>
-                        <HeadlessSwitch
-                          :checked="type.enabled"
-                          @change="setPicklistEnabled(type, $event)"
-                          switch-class="w-9 h-5"
-                        />
-                      </div>
-                    </div>
-                    <OrganizationTypeFieldPanel
-                      v-if="expandedOrgTypeIndex === index"
-                      :row="type"
-                      :field-options="organizationTypeFieldOptions"
-                      @toggle-field="(fieldKey, checked) => toggleOrganizationTypeField(index, fieldKey, checked)"
-                      @reset-fields="resetOrganizationTypeFields(index)"
-                    />
-                  </div>
-                  
-                  <div class="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700 space-y-1">
-                    <p>{{ t('settings.modFieldsOrgTypesFootnote') }}</p>
-                    <p>{{ t('settings.modFieldsStatusTypesColorHint') }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Status picklists — policy only (values edited under Fields) -->
-            <div class="space-y-6">
-              <div
-                v-for="section in organizationStatusPicklistSections"
-                :key="section.fieldKey"
-              >
-                <div class="flex items-center justify-between mb-4 gap-3">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ t(section.titleKey) }}</h4>
-                    <span
-                      v-if="section.showSalesBadge"
-                      class="px-2 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded flex-shrink-0"
-                    >{{ t('settings.modFieldsBadgeSales') }}</span>
-                  </div>
-                  <button
-                    type="button"
-                    @click="openOrganizationPicklistInFieldConfig(section.fieldKey)"
-                    class="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-                  >
-                    {{ t('settings.modFieldsEditInFieldConfig') }}
-                  </button>
-                </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ t(section.descriptionKey) }}</p>
-
-                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                  <div
-                    v-if="!statusPicklists[section.fieldKey]?.length"
-                    class="text-center py-8 space-y-3"
-                  >
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsNoStatusValuesCatalog') }}</p>
-                    <button
-                      type="button"
-                      @click="openOrganizationPicklistInFieldConfig(section.fieldKey)"
-                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-                    >
-                      {{ t('settings.modFieldsEditInFieldConfig') }}
-                    </button>
-                  </div>
-                  <div v-else class="space-y-2">
-                    <div
-                      v-for="(status, index) in statusPicklists[section.fieldKey]"
-                      :key="status.value || index"
-                      class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-                    >
-                      <span
-                        class="h-3.5 w-3.5 rounded-full flex-shrink-0 ring-1 ring-gray-900/10 dark:ring-white/20"
-                        :style="{ backgroundColor: resolveStatusPicklistColor(status, section.fieldKey) }"
-                        :title="t('settings.modFieldsColor')"
-                        aria-hidden="true"
-                      />
-                      <span class="flex-1 min-w-0 text-sm font-medium text-gray-900 dark:text-white">{{ status.label }}</span>
-                      <HeadlessSwitch
-                        :checked="status.enabled"
-                        @change="setPicklistEnabled(status, $event)"
-                        switch-class="w-9 h-5"
-                      />
-                    </div>
-                  </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-1">
-                    <p>{{ t(section.footnoteKey) }}</p>
-                    <p>{{ t('settings.modFieldsStatusTypesColorHint') }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
+        <!-- Types Tab (Organizations): per-app participation roles -->
+        <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'organization-types' && isOrganizationsModule">
+          <OrganizationTypesSettings embedded />
         </div>
 
         <!-- Types Tab (People module): per-app participation roles -->
@@ -4926,7 +4775,7 @@ import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import ModuleFormModal from './ModuleFormModal.vue';
 import PeopleTypesSettings from './PeopleTypesSettings.vue';
-import OrganizationTypeFieldPanel from './OrganizationTypeFieldPanel.vue';
+import OrganizationTypesSettings from './OrganizationTypesSettings.vue';
 import { invalidateOrganizationTypesCache } from '@/utils/organizationTypesInvalidate';
 import { isRetiredOrganizationTypeValue } from '@/utils/organizationTypeConfig';
 import {
@@ -5044,6 +4893,10 @@ import {
   classifyCaseField,
   CASE_QUICK_CREATE_DEFAULT,
 } from '@/platform/fields/caseFieldModel';
+import {
+  classifyInventoryWorkbenchField,
+  isInventoryWorkbenchModuleKey,
+} from '@/platform/fields/inventoryWorkbenchFieldModel';
 import {
   EVENT_FIELD_METADATA,
   getEventFieldMetadata,
@@ -5278,6 +5131,16 @@ function getModuleCardIcon(mod) {
   return moduleCardIconMap[key] || CubeIcon;
 }
 
+/** Platform core banner — not for app-owned system modules (Inventory PO, Sales deals, Helpdesk cases). */
+function showPlatformOwnedCapabilityBanner(mod) {
+  if (!mod) return false;
+  if (mod.platformOwned === true) return true;
+  if (mod.type !== 'system') return false;
+  const appKey = String(mod.appKey || mod.app || '').toLowerCase();
+  if (appKey && appKey !== 'platform') return false;
+  return true;
+}
+
 const DEAL_RELATIONSHIP_DEFAULTS = Object.freeze([
   { name: 'Related Projects', type: 'one_to_many', isLookup: false, targetModuleKey: 'projects', relationshipKey: 'deal_projects' },
   { name: 'Related Organizations', type: 'many_to_one', isLookup: true, targetModuleKey: 'organizations', relationshipKey: 'deal_organizations' },
@@ -5468,8 +5331,8 @@ function getAllowedTopTabs(moduleKey) {
     return [...TOP_TAB_IDS_BASE, 'people-types'];
   }
   if (moduleKey === 'organizations') {
-    // Organizations module has Status & Types tab
-    return [...TOP_TAB_IDS_BASE, 'status-types'];
+    // Types = app participation roles (status picklists live under Field Configurations)
+    return [...TOP_TAB_IDS_BASE, 'organization-types'];
   }
   if (moduleKey === 'tasks') {
     // Tasks module has Status & Priority tab (Tasks-specific, unlike People)
@@ -5523,10 +5386,11 @@ const topTabs = computed(() => {
     }
   }
   if (moduleKey === 'organizations') {
-    // Insert "Status & Types" tab after "Field Configurations" and before "Relationships"
     const fieldsTabIndex = tabs.findIndex(tab => tab.id === 'fields');
     if (fieldsTabIndex >= 0) {
-      tabs.splice(fieldsTabIndex + 1, 0, { id: 'status-types', nameKey: 'settings.modFieldsTabStatusTypes' });
+      tabs.splice(fieldsTabIndex + 1, 0,
+        { id: 'organization-types', nameKey: 'settings.modFieldsTabOrganizationTypes' }
+      );
     }
   }
   if (moduleKey === 'tasks') {
@@ -5570,6 +5434,7 @@ const tabTitleMap = {
   details: 'Module Details',
   fields: 'Field Configurations',
   'people-types': 'Types',
+  'organization-types': 'Types',
   'status-types': 'Status & Types',
   'status-priority': 'Status & Priority',
   'status': 'Status',
@@ -5587,7 +5452,7 @@ const getInitialTab = () => {
   // First check URL query
   const route = useRoute();
   const modeKey = typeof route.query.mode === 'string' ? route.query.mode : null;
-  if (modeKey && ['details', 'fields', 'people-types', 'status-types', 'status-priority', 'status', 'roles-rules', 'relationships', 'quick', 'logic', 'outcomes', 'access'].includes(modeKey)) {
+  if (modeKey && ['details', 'fields', 'people-types', 'organization-types', 'status-types', 'status-priority', 'status', 'roles-rules', 'relationships', 'quick', 'logic', 'outcomes', 'access'].includes(modeKey)) {
     return modeKey;
   }
   // If no URL param, we'll check localStorage after module loads
@@ -6788,6 +6653,9 @@ const isDealsModule = computed(() => {
 const isCasesModule = computed(() => {
   return selectedModule.value?.key?.toLowerCase() === 'cases';
 });
+const isInventoryWorkbenchModule = computed(() => {
+  return isInventoryWorkbenchModuleKey(selectedModule.value?.key);
+});
 
 /** Shared core modules where custom fields may be Core vs app-participation scoped. */
 const CUSTOM_FIELD_APP_SCOPE_MODULES = new Set(['people', 'organizations', 'tasks', 'events', 'items', 'deals', 'cases']);
@@ -6945,7 +6813,7 @@ const quickCreateAvailableFields = computed(() => {
     return [...coreFields, ...participationFields];
   }
 
-  // For Organizations: all core fields (platform + custom), excluding system and tenant fields
+  // For Organizations: core + non-virtual participation (virtual roles use App Participation UI)
   if (isOrganizationsModule.value) {
     return editFields.value.filter(f => {
       if (!f.key) return false;
@@ -6958,7 +6826,10 @@ const quickCreateAvailableFields = computed(() => {
         }
       }
       if (f.owner === 'org') return true;
-      return classifyOrganizationField(f.key) === 'core';
+      const meta = getOrganizationFieldMetadata(f.key);
+      if (meta?.owner === 'core') return true;
+      if (meta?.owner === 'participation' && !meta.isVirtual) return true;
+      return false;
     });
   }
 
@@ -7097,7 +6968,7 @@ const quickCreateEventParticipationEntries = computed(() => {
 // See: docs/architecture/event-settings.md Section 6
 // See: client/src/platform/modules/forms/formsModule.definition.ts
 const groupedFields = computed(() => {
-  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isSalesOrdersModule.value && !isInvoicesModule.value && !isPaymentsModule.value && !isDocumentsModule.value && !isDealsModule.value && !isCasesModule.value) {
+  if (!isPeopleModule.value && !isOrganizationsModule.value && !isTasksModule.value && !isEventsModule.value && !isFormsModule.value && !isItemsModule.value && !isQuotesModule.value && !isSalesOrdersModule.value && !isInvoicesModule.value && !isPaymentsModule.value && !isDocumentsModule.value && !isDealsModule.value && !isCasesModule.value && !isInventoryWorkbenchModule.value) {
     return { coreIdentity: [], participation: {}, system: [] };
   }
 
@@ -7397,6 +7268,22 @@ const groupedFields = computed(() => {
       } else if (isCasesModule.value) {
         // Cases module: use case field model for classification (core vs system)
         const classification = classifyCaseField(fieldKey);
+        if (classification === 'core') {
+          coreIdentity.push(fieldKey);
+          continue;
+        }
+        if (classification === 'system') {
+          system.push(fieldKey);
+          continue;
+        }
+        if (!participation[classification]) {
+          participation[classification] = [];
+        }
+        participation[classification].push(fieldKey);
+        continue;
+      } else if (isInventoryWorkbenchModule.value) {
+        const moduleKey = String(selectedModule.value?.key || '').toLowerCase();
+        const classification = classifyInventoryWorkbenchField(moduleKey, fieldKey);
         if (classification === 'core') {
           coreIdentity.push(fieldKey);
           continue;
@@ -7774,6 +7661,8 @@ function formatOwnerDisplay(metadata) {
       'SALES': 'Sales',
       'HELPDESK': 'Help Desk',
       'MARKETING': 'Marketing',
+      'INVENTORY': 'Inventory',
+      'PORTAL': 'Portal',
       'SERVICE': 'Service',
       'CORE': 'Platform'
     };
@@ -7800,8 +7689,10 @@ function formatIntentDisplay(intent) {
 // Helper: Check if validation editing should be disabled (for participation fields)
 function isValidationDisabled() {
   if (currentField.value?.dataType === 'Phone') return true;
-  if (!isPeopleModule.value || !currentField.value?.key) return false;
-  const metadata = getPeopleFieldMetadata(currentField.value.key);
+  if ((!isPeopleModule.value && !isOrganizationsModule.value) || !currentField.value?.key) return false;
+  const metadata = isOrganizationsModule.value
+    ? getOrganizationFieldMetadata(currentField.value.key)
+    : getPeopleFieldMetadata(currentField.value.key);
   return metadata?.owner === 'participation';
 }
 
@@ -7839,11 +7730,13 @@ function canHideField(field) {
 
 // Helper: Check if field is a participation state field (locked by app)
 function isParticipationStateField(field) {
-  if (!isPeopleModule.value || !field?.key) return false;
+  if ((!isPeopleModule.value && !isOrganizationsModule.value) || !field?.key) return false;
   
   try {
-    const metadata = getFieldMetadata(field.key);
-    return metadata.owner === 'participation' && metadata.intent === 'state';
+    const metadata = isOrganizationsModule.value
+      ? getOrganizationFieldMetadata(field.key)
+      : getFieldMetadata(field.key);
+    return metadata?.owner === 'participation' && metadata?.intent === 'state';
   } catch (err) {
     return false;
   }
@@ -8216,16 +8109,16 @@ function openTaskStatusPriorityLens() {
   if (statusIdx >= 0) selectField(statusIdx);
 }
 
+/** Remap retired Organizations Status & Types deep links to Types. */
+function resolveOrganizationsTopTab(tabId) {
+  if (tabId === 'status-types') return 'organization-types';
+  return tabId;
+}
+
 function openTaskPriorityInFieldConfig() {
   activeTopTab.value = 'fields';
   const priorityIdx = editFields.value.findIndex(f => String(f?.key || '').toLowerCase() === 'priority');
   if (priorityIdx >= 0) selectField(priorityIdx);
-}
-
-/** Organizations Status & Types: open Fields tab for catalog edits (types / status picklists). */
-function openOrganizationPicklistInFieldConfig(fieldKey) {
-  activeTopTab.value = 'fields';
-  void nextTick(() => selectFieldByKey(fieldKey));
 }
 
 function getDocumentPicklistFieldFromConfig(fieldKey) {
@@ -8274,30 +8167,6 @@ function setDocumentPicklistEnabled(fieldKey, index, event) {
     field.options[index] = { ...option, enabled };
   }
 }
-
-const organizationStatusPicklistSections = [
-  {
-    fieldKey: 'customerStatus',
-    titleKey: 'settings.modFieldsCustomerStatus',
-    descriptionKey: 'settings.modFieldsStatusForCustomer',
-    footnoteKey: 'settings.modFieldsCustomerStatusFootnote',
-    showSalesBadge: false,
-  },
-  {
-    fieldKey: 'partnerStatus',
-    titleKey: 'settings.modFieldsPartnerStatus',
-    descriptionKey: 'settings.modFieldsStatusForPartner',
-    footnoteKey: 'settings.modFieldsPartnerStatusFootnote',
-    showSalesBadge: false,
-  },
-  {
-    fieldKey: 'vendorStatus',
-    titleKey: 'settings.modFieldsVendorStatus',
-    descriptionKey: 'settings.modFieldsStatusForVendor',
-    footnoteKey: 'settings.modFieldsVendorStatusFootnote',
-    showSalesBadge: false,
-  },
-];
 
 function getDefaultOptionColor(optionValue, field = currentField.value, existingOptions = null) {
   const siblings = existingOptions ?? field?.options ?? [];
@@ -8658,12 +8527,16 @@ const fetchModules = async (apiGetOptions = {}) => {
         // Get allowed tabs for this module
         const allowedTabs = getAllowedTopTabs(initialMod.key);
         let tabToSet = allowedTabs[0] || 'fields'; // default to first allowed tab
-        if (modeKey && allowedTabs.includes(modeKey)) {
-          tabToSet = modeKey;
+        const urlMode = initialMod.key === 'organizations' ? resolveOrganizationsTopTab(modeKey) : modeKey;
+        if (urlMode && allowedTabs.includes(urlMode)) {
+          tabToSet = urlMode;
           console.log('Restoring tab from URL:', tabToSet);
         } else {
           // If no mode in URL, check localStorage for this module
-          const storedMode = localStorage.getItem(`arivu-modfields-tab-${initialMod.key}`);
+          const storedModeRaw = localStorage.getItem(`arivu-modfields-tab-${initialMod.key}`);
+          const storedMode = initialMod.key === 'organizations'
+            ? resolveOrganizationsTopTab(storedModeRaw)
+            : storedModeRaw;
           if (storedMode && allowedTabs.includes(storedMode)) {
             tabToSet = storedMode;
             console.log('Restoring tab from localStorage:', tabToSet, 'for module:', initialMod.key);
@@ -8679,14 +8552,6 @@ const fetchModules = async (apiGetOptions = {}) => {
         }
         // Ensure URL reflects selection (use the tab we just set)
         router.replace({ query: { ...route.query, module: initialMod.key, field: editFields.value[selectedFieldIdx.value]?.key || '', mode: tabToSet, subtab: activeSubTab.value } });
-        
-        // If organizations module and status-types tab, fetch status types after a brief delay
-        // to ensure reactive state is settled
-        if (initialMod.key === 'organizations' && tabToSet === 'status-types') {
-          nextTick(() => {
-            fetchStatusTypes();
-          });
-        }
         
         // If items module and status-types tab, initialize snapshot
         if (initialMod.key === 'items' && tabToSet === 'status-types') {
@@ -9305,23 +9170,19 @@ const selectModule = (mod, preferFieldKey = null) => {
   syncOptionsBuffer();
   // Restore tab from localStorage when selecting module (before updating URL)
   const allowedTabs = getAllowedTopTabs(mod.key);
-  const storedTab = localStorage.getItem(`arivu-modfields-tab-${mod.key}`);
+  const storedTabRaw = localStorage.getItem(`arivu-modfields-tab-${mod.key}`);
+  const storedTab = mod.key === 'organizations' ? resolveOrganizationsTopTab(storedTabRaw) : storedTabRaw;
   if (storedTab && allowedTabs.includes(storedTab)) {
     console.log('Restoring tab from localStorage when selecting module:', storedTab, 'for module:', mod.key);
     activeTopTab.value = storedTab;
   } else if (!allowedTabs.includes(activeTopTab.value)) {
-    activeTopTab.value = allowedTabs[0] || 'fields';
+    const fallbackTab = mod.key === 'organizations'
+      ? resolveOrganizationsTopTab(activeTopTab.value)
+      : activeTopTab.value;
+    activeTopTab.value = allowedTabs.includes(fallbackTab) ? fallbackTab : (allowedTabs[0] || 'fields');
   }
   const selKey = editFields.value[selectedFieldIdx.value]?.key || '';
   router.replace({ query: { ...route.query, module: mod.key, field: selKey, mode: activeTopTab.value, subtab: activeSubTab.value } });
-  
-  // If organizations module and status-types tab, fetch status types after a brief delay
-  // to ensure reactive state is settled
-  if (mod.key === 'organizations' && activeTopTab.value === 'status-types') {
-    nextTick(() => {
-      fetchStatusTypes();
-    });
-  }
   
   // If items module and status-types tab, initialize snapshot
   if (mod.key === 'items' && activeTopTab.value === 'status-types') {
@@ -12438,10 +12299,7 @@ const modulePageDirty = computed(() => {
   if (!selectedModuleId.value) return false;
   const tab = activeTopTab.value;
   if (tab === 'quick') return quickDirty.value;
-  if (tab === 'status-types') {
-    if (isOrganizationsModule.value) return statusTypesDirty.value;
-    if (isItemsModule.value) return itemStatusTypesDirty.value;
-  }
+  if (tab === 'status-types' && isItemsModule.value) return itemStatusTypesDirty.value;
   if (tab === 'roles-rules' && isEventsModule.value) return eventRolesRulesDirty.value;
   if (['details', 'relationships', 'pipeline', 'fields'].includes(tab)) return isDirty.value;
   return false;
@@ -12450,10 +12308,7 @@ const modulePageDirty = computed(() => {
 const modulePageSaving = computed(() => {
   const tab = activeTopTab.value;
   if (tab === 'quick') return isSavingQuickCreate.value;
-  if (tab === 'status-types') {
-    if (isOrganizationsModule.value) return savingStatusTypes.value;
-    if (isItemsModule.value) return savingItemStatusTypes.value;
-  }
+  if (tab === 'status-types' && isItemsModule.value) return savingItemStatusTypes.value;
   if (tab === 'roles-rules' && isEventsModule.value) return savingEventRolesRules.value;
   return isSaving.value;
 });
@@ -12464,15 +12319,9 @@ async function saveModulePageChanges() {
     await saveQuickCreate();
     return;
   }
-  if (tab === 'status-types') {
-    if (isOrganizationsModule.value) {
-      await saveStatusTypes();
-      return;
-    }
-    if (isItemsModule.value) {
-      await saveItemStatusTypes();
-      return;
-    }
+  if (tab === 'status-types' && isItemsModule.value) {
+    await saveItemStatusTypes();
+    return;
   }
   if (tab === 'roles-rules' && isEventsModule.value) {
     await saveEventRolesRules();
@@ -12511,15 +12360,9 @@ function resetModulePageChanges() {
     selectModule(selectedModule.value, currentField.value?.key || null);
     return;
   }
-  if (tab === 'status-types') {
-    if (isOrganizationsModule.value) {
-      fetchStatusTypes();
-      return;
-    }
-    if (isItemsModule.value) {
-      restoreItemStatusTypesFromSnapshot();
-      return;
-    }
+  if (tab === 'status-types' && isItemsModule.value) {
+    restoreItemStatusTypesFromSnapshot();
+    return;
   }
   if (tab === 'roles-rules' && isEventsModule.value) {
     restoreEventRolesRulesFromSnapshot();
@@ -13364,8 +13207,7 @@ async function saveStatusTypes() {
   }
 }
 
-// Watch for module and tab changes to fetch status types
-// Fetch when status-types tab is opened for organizations module
+// Watch for module and tab changes (items status-types snapshot, events status snapshot)
 let watchDebounceTimer = null;
 watch(() => [selectedModule.value?.key, activeTopTab.value], async ([moduleKey, tab]) => {
   // Debounce watch to prevent multiple rapid triggers
@@ -13374,31 +13216,12 @@ watch(() => [selectedModule.value?.key, activeTopTab.value], async ([moduleKey, 
   }
   
   watchDebounceTimer = setTimeout(async () => {
-    console.log('[Status Types] Watch triggered:', { moduleKey, tab, hasData: organizationTypes.value.length > 0, isFetching: fetchingStatusTypes.value });
-    
-    if (moduleKey === 'organizations' && tab === 'status-types') {
-      // Skip if already fetching
-      if (fetchingStatusTypes.value) {
-        console.log('[Status Types] Already fetching, skipping watch trigger');
-        return;
-      }
-      
-      // Reset initial load flag when switching to this tab
-      isInitialLoad.value = true;
-      
-      // Always fetch on tab switch to ensure we have the latest data from server
-      // This ensures data is refreshed on page reload
-      console.log('[Status Types] Fetching status types for organizations module...');
-      await fetchStatusTypes();
-    } else if (moduleKey === 'events' && tab === 'status') {
+    if (moduleKey === 'events' && tab === 'status') {
       // Initialize event status snapshot when status tab is opened
       // ARCHITECTURE NOTE: Event statuses are system-locked, but we initialize the snapshot for consistency.
       // See: docs/architecture/event-settings.md Section 8.1
       await nextTick();
       initializeEventStatusSnapshot();
-    } else {
-      // Reset flag when switching away from status-types tab
-      isInitialLoad.value = true;
     }
     
     // Initialize item status/types when switching to items status-types tab
@@ -13423,13 +13246,6 @@ watch(() => [selectedModule.value?.key, activeTopTab.value], async ([moduleKey, 
 
 onMounted(async () => {
   await fetchModules();
-  
-  // After modules are loaded, if we're on the organizations status-types tab, fetch status types
-  if (selectedModule.value?.key === 'organizations' && activeTopTab.value === 'status-types') {
-    console.log('[Status Types] onMounted: Fetching status types after module load');
-    await nextTick();
-    await fetchStatusTypes();
-  }
   
   // After modules are loaded, if we're on the items status-types tab, initialize snapshot
   if (selectedModule.value?.key === 'items' && activeTopTab.value === 'status-types') {
@@ -13477,10 +13293,22 @@ watch(
     if (typeof modeKey !== 'string') return;
     const mod = selectedModule.value;
     if (!mod) return;
+    const resolvedMode = mod.key === 'organizations' ? resolveOrganizationsTopTab(modeKey) : modeKey;
     const allowed = getAllowedTopTabs(mod.key);
-    if (!allowed.includes(modeKey)) return;
-    if (activeTopTab.value === modeKey) return;
-    activeTopTab.value = modeKey;
+    if (!allowed.includes(resolvedMode)) return;
+    if (activeTopTab.value === resolvedMode) return;
+    activeTopTab.value = resolvedMode;
+    if (resolvedMode !== modeKey) {
+      router.replace({
+        query: {
+          ...route.query,
+          module: mod.key,
+          field: editFields.value[selectedFieldIdx.value]?.key || '',
+          mode: resolvedMode,
+          subtab: activeSubTab.value,
+        },
+      });
+    }
   },
   { immediate: true }
 );

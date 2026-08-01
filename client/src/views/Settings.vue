@@ -108,7 +108,7 @@
                         <span v-if="railShowsFullLabels" class="min-w-0 flex-1 truncate text-left">{{ t(tab.nameKey) }}</span>
                       </button>
                     </li>
-                    <li v-if="tab.id === 'profile' && idx < tabs.length - 1">
+                    <li v-if="railSectionLabelAfter(tab.id) && idx < tabs.length - 1">
                       <hr class="my-2 shrink-0 border-neutral-200 dark:border-neutral-700" />
                       <div
                         :class="[
@@ -116,7 +116,7 @@
                           !railShowsFullLabels && 'flex w-[calc(0.5rem+1.125rem+0.5rem)] shrink-0 items-center justify-center px-[0.5rem]',
                         ]"
                       >
-                        {{ railShowsFullLabels ? t('settings.navWorkspace') : '·' }}
+                        {{ railShowsFullLabels ? t(railSectionLabelAfter(tab.id)) : '·' }}
                       </div>
                     </li>
                   </template>
@@ -193,17 +193,24 @@
         </section>
       </div>
     </div>
+
+    <SettingsQuickJump
+      :open="quickJumpOpen"
+      :access-ctx="settingsAccessCtx"
+      @close="quickJumpOpen = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, h, watch, onUnmounted, defineAsyncComponent } from 'vue';
+import { ref, computed, h, watch, onMounted, onUnmounted, defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
 import { useAuthStore } from '@/stores/authRegistry';
+import { useRecentSettingsTabs } from '@/composables/useRecentSettingsTabs';
 import { canAccessSettingsTab } from '@/utils/settingsTabAccess';
 import {
   SETTINGS_RAIL_ITEM_BASE_CLASS,
@@ -215,6 +222,7 @@ import {
 import { NESTED_PANEL_FLOATING_LG_CLASS } from '@/utils/sidebarLayout';
 import { useColorMode } from '@/composables/useColorMode';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
+import SettingsQuickJump from '@/components/settings/SettingsQuickJump.vue';
 
 const ProfileSettings = defineAsyncComponent(() => import('@/components/settings/ProfileSettings.vue'));
 const OrganizationSettings = defineAsyncComponent(() => import('@/components/settings/OrganizationSettings.vue'));
@@ -245,11 +253,40 @@ const SettingsAuditLog = defineAsyncComponent(() => import('@/components/setting
 
 const authStore = useAuthStore();
 const { colorMode, toggleColorMode } = useColorMode();
+const { record: recordRecentSettingsTab } = useRecentSettingsTabs();
 
 const SETTINGS_TAB_KEY = 'arivu-settings-active-tab';
 const route = useRoute();
 const router = useRouter();
 const activeTab = ref(route.query.tab || null);
+const quickJumpOpen = ref(false);
+
+/** Section labels inserted in the rail after these tab ids (scannable groups). */
+function railSectionLabelAfter(tabId) {
+  const staticAfter = {
+    profile: 'settings.navWorkspace',
+    'users-access': 'settings.navRailApps',
+  };
+  if (staticAfter[tabId]) return staticAfter[tabId];
+
+  const tabIds = tabs.value.map((t) => t.id);
+
+  const appsGroup = new Set(['applications', 'addons', 'catalog', 'inventory']);
+  let appsEnd = '';
+  for (const id of tabIds) {
+    if (appsGroup.has(id)) appsEnd = id;
+  }
+  if (appsEnd && tabId === appsEnd) return 'settings.navRailOperations';
+
+  const opsGroup = new Set(['automation', 'webforms', 'performance']);
+  let opsEnd = '';
+  for (const id of tabIds) {
+    if (opsGroup.has(id)) opsEnd = id;
+  }
+  if (opsEnd && tabId === opsEnd) return 'settings.navRailAccount';
+
+  return '';
+}
 
 const isDeepAppConfig = computed(() =>
   activeTab.value === 'applications'
@@ -932,8 +969,32 @@ restoreInitialTab();
 
 watch(activeTab, (v) => {
   if (v) {
-  localStorage.setItem(SETTINGS_TAB_KEY, v);
+    localStorage.setItem(SETTINGS_TAB_KEY, v);
+    recordRecentSettingsTab(v);
   }
+});
+
+function isSettingsTypingTarget(el) {
+  if (!el || !(el instanceof HTMLElement)) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+
+function onSettingsSlashKey(event) {
+  if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+  if (isSettingsTypingTarget(event.target)) return;
+  // Overview has its own inline search focus handler.
+  if (!activeTab.value || activeTab.value === 'landing') return;
+  event.preventDefault();
+  quickJumpOpen.value = true;
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onSettingsSlashKey);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onSettingsSlashKey);
 });
 
 // If available tabs change due to permission changes, keep the closest valid tab

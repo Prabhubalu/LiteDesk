@@ -87,7 +87,49 @@ exports.create = async (req, res) => {
     }
 
     const { typeDefs } = await getOrganizationTypesConfig(req.user.organizationId);
-    const selectedTypes = Array.isArray(req.body.types) ? req.body.types : [];
+    const {
+      resolveAvailableOrganizationRoles,
+    } = require('../constants/organizationParticipation');
+    const {
+      applyTypesWrite,
+      validateOrganizationTypesForEnabledApps,
+      validateOrganizationParticipations,
+      resolveTenantParticipationAppKeys,
+      deriveTypesFromParticipations,
+    } = require('../utils/syncOrganizationParticipation');
+
+    const enabledAppKeys = await resolveTenantParticipationAppKeys(req.user.organizationId);
+    const allowedRoles = resolveAvailableOrganizationRoles(enabledAppKeys);
+
+    const bodyParticipations =
+      req.body.participations && typeof req.body.participations === 'object'
+        ? req.body.participations
+        : null;
+    if (bodyParticipations) {
+      const partGate = validateOrganizationParticipations(bodyParticipations, enabledAppKeys);
+      if (!partGate.valid) {
+        return res.status(400).json({
+          success: false,
+          message: partGate.message,
+          errors: { types: partGate.message },
+        });
+      }
+    }
+
+    const selectedTypes = Array.isArray(req.body.types)
+      ? req.body.types
+      : bodyParticipations
+        ? deriveTypesFromParticipations(bodyParticipations)
+        : [];
+    const typeGate = validateOrganizationTypesForEnabledApps(selectedTypes, allowedRoles);
+    if (!typeGate.valid) {
+      return res.status(400).json({
+        success: false,
+        message: typeGate.message,
+        errors: { types: typeGate.message },
+      });
+    }
+
     const payload = filterOrganizationSubmitPayloadByTypes(
       stripBlockedOrganizationSubmitFields(req.body),
       selectedTypes,
@@ -110,6 +152,32 @@ exports.create = async (req, res) => {
         message: 'Types must be an array',
         errors: { types: 'Types must be an array' }
       });
+    }
+
+    if (bodyParticipations && Object.keys(bodyParticipations).length > 0) {
+      const types = deriveTypesFromParticipations(bodyParticipations);
+      payload.types = types.length ? types : selectedTypes;
+      payload.participations = bodyParticipations;
+    } else if (Array.isArray(payload.types)) {
+      const synced = applyTypesWrite({
+        types: payload.types,
+        enabledAppKeys,
+        existingParticipations: {},
+      });
+      payload.types = synced.types;
+      payload.participations = synced.participations;
+    } else if (selectedTypes.length === 0) {
+      // Default: Sales Customer when Sales enabled, else first allowed role
+      const defaultRole = allowedRoles.includes('Customer')
+        ? 'Customer'
+        : allowedRoles[0] || 'Customer';
+      const synced = applyTypesWrite({
+        types: [defaultRole],
+        enabledAppKeys,
+        existingParticipations: {},
+      });
+      payload.types = synced.types;
+      payload.participations = synced.participations;
     }
 
     if (payload.website !== undefined) {
