@@ -139,6 +139,16 @@
                                 @update:form-data="updateFormData"
                               />
 
+                              <!-- 2b. Vendor Catalog (Inventory → Vendor) -->
+                              <VendorCatalogSection
+                                v-if="showVendorCatalog"
+                                ref="vendorCatalogSectionRef"
+                                v-model="vendorCatalogLines"
+                                :disabled="saving || (loading && isEditMode)"
+                                :vendor-id="organizationId || null"
+                                :class="vendorCatalogSectionClass"
+                              />
+
                               <!-- 3. Full mode: remaining core fields (People parity — omit when empty) -->
                               <section
                                 v-if="mode === 'full' && fullOtherFields.length"
@@ -213,6 +223,7 @@ import { XMarkIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
 import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import OrganizationParticipationSection from '@/components/organizations/OrganizationParticipationSection.vue';
+import VendorCatalogSection from '@/components/organizations/VendorCatalogSection.vue';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import { useTabs } from '@/composables/useTabs';
@@ -310,7 +321,8 @@ function setOrgDrawerMode(nextMode, { animate = true } = {}) {
     mode.value = 'quick';
     createMode.value = 'quick';
     modeAnimTimer = setTimeout(() => {
-      panelWide.value = false;
+      // Keep wide when Vendor Catalog is active so the line table remains usable
+      panelWide.value = !!showVendorCatalog.value;
       modeAnimTimer = null;
     }, 90);
   }
@@ -321,6 +333,40 @@ const formData = ref({ ...props.initialData });
 const errors = ref({});
 const saving = ref(false);
 const moduleDefinition = ref(null);
+/** Draft Vendor Catalog lines (persisted via inventory vendor-catalog API). */
+const vendorCatalogLines = ref([]);
+const vendorCatalogSectionRef = ref(null);
+
+const showVendorCatalog = computed(() => {
+  const parts = formData.value?.participations;
+  if (parts && typeof parts === 'object' && parts.INVENTORY) {
+    const role = String(parts.INVENTORY.role || '').toLowerCase();
+    return !role || role === 'vendor';
+  }
+  return false;
+});
+
+/** Prefer live section state (avoids v-model desync before submit). */
+function resolveVendorCatalogEntries() {
+  const fromChild = vendorCatalogSectionRef.value?.getEntries?.();
+  if (Array.isArray(fromChild)) return fromChild;
+  return Array.isArray(vendorCatalogLines.value) ? vendorCatalogLines.value : [];
+}
+
+async function persistVendorCatalog(orgId) {
+  if (!showVendorCatalog.value || !orgId) return;
+  const entries = resolveVendorCatalogEntries();
+  try {
+    await apiClient.put(`/organizations/${orgId}/vendor-catalog`, { entries });
+  } catch (catalogErr) {
+    console.error('[OrganizationQuickCreate] Vendor catalog save failed:', catalogErr);
+    throw catalogErr;
+  }
+}
+
+const vendorCatalogSectionClass = computed(() => [
+  'border-t border-gray-200 pt-8 dark:border-gray-700',
+]);
 
 // ============================================================================
 // AUTHORITATIVE FIELD LISTS (DO NOT INFER FROM FILLED VALUES)
@@ -478,8 +524,17 @@ const helperText = computed(() => {
 });
 
 // Computed: Drawer width class based on mode (quick vs full)
+// Vendor Catalog needs horizontal room for the line table — force wide panel.
 const drawerWidthClass = computed(() => {
-  return panelWide.value ? 'sm:w-[60rem]' : 'sm:w-[30rem]';
+  return panelWide.value || showVendorCatalog.value ? 'sm:w-[60rem]' : 'sm:w-[30rem]';
+});
+
+watch(showVendorCatalog, (show) => {
+  if (show) {
+    panelWide.value = true;
+  } else if (mode.value === 'quick') {
+    panelWide.value = false;
+  }
 });
 
 // Exclude only system and tenant fields from Quick Create rendering.
@@ -659,7 +714,14 @@ function buildCreateOrganizationPayload(formState) {
     selectedTypes,
     organizationTypeDefs.value
   );
-  return normalizeOrganizationEditSubmitPayload(typeFiltered, moduleDefinition.value?.fields);
+  const normalized = normalizeOrganizationEditSubmitPayload(typeFiltered, moduleDefinition.value?.fields);
+
+  // Vendor Catalog is not a module field — attach when Inventory Vendor is active
+  if (showVendorCatalog.value) {
+    normalized.vendorCatalog = resolveVendorCatalogEntries();
+  }
+
+  return normalized;
 }
 
 /**
@@ -705,7 +767,27 @@ const handleSubmit = async () => {
     
     if (response.success) {
       const org = response.data;
-      
+      const orgId = org?._id || org?.id || props.organizationId;
+
+      // Always persist catalog via dedicated endpoint (source of truth for UI rows)
+      if (showVendorCatalog.value && orgId) {
+        try {
+          await persistVendorCatalog(orgId);
+        } catch (catalogErr) {
+          errors.value._general =
+            catalogErr?.response?.data?.message ||
+            catalogErr?.message ||
+            t('organizations.vendorCatalogSaveFailed');
+          scrollToFirstErrorField();
+          saving.value = false;
+          // Keep drawer open so user can retry; org may already exist
+          if (!isEditMode.value && orgId) {
+            emit('saved', org);
+          }
+          return;
+        }
+      }
+
       // In edit mode, just emit saved event
       if (isEditMode.value) {
         emit('saved', org);
@@ -805,8 +887,32 @@ const fetchOrganizationData = async () => {
         industry: data.industry || '',
         website: data.website || '',
         phone: data.phone || '',
-        address: data.address || ''
+        address: data.address || '',
+        participations:
+          data.participations && typeof data.participations === 'object'
+            ? { ...data.participations }
+            : undefined,
+        vendorStatus: data.vendorStatus ?? null,
+        vendorRating: data.vendorRating ?? null,
+        vendorContract: data.vendorContract ?? null,
+        preferredPaymentMethod: data.preferredPaymentMethod ?? null,
+        taxId: data.taxId ?? null
       };
+
+      try {
+        const catRes = await apiClient.get(
+          `/organizations/${props.organizationId}/vendor-catalog`,
+          { params: { includeInactive: true } }
+        );
+        const rows = catRes?.data ?? catRes;
+        vendorCatalogLines.value = Array.isArray(rows)
+          ? rows
+          : Array.isArray(rows?.data)
+            ? rows.data
+            : [];
+      } catch {
+        vendorCatalogLines.value = [];
+      }
       
       setOrgDrawerMode('quick', { animate: false });
     } else {
@@ -842,6 +948,7 @@ watch(() => props.isOpen, (isOpen) => {
         ...props.initialData,
         types: Array.isArray(props.initialData?.types) ? [...props.initialData.types] : [],
       };
+      vendorCatalogLines.value = [];
       errors.value = {};
       setOrgDrawerMode('quick', { animate: false });
     }

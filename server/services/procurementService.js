@@ -55,12 +55,36 @@ function lineMoney({ quantity, unitPrice, discountType, discountValue }) {
   return { lineSubtotal, lineTaxTotal: 0, lineTotal: lineSubtotal };
 }
 
-async function buildPurchaseOrderLineDoc({ organizationId, row, lineOrder }) {
+async function buildPurchaseOrderLineDoc({ organizationId, row, lineOrder, vendorId = null }) {
   if (!row?.variantId) throw validationError('Line variantId is required');
   const qty = Number(row.quantityOrdered ?? row.quantity);
   if (!Number.isFinite(qty) || qty <= 0) throw validationError('quantityOrdered must be > 0');
   const { variant, item } = await hydrateVariant(organizationId, row.variantId);
-  const unitPrice = Number(row.unitPrice ?? variant.purchase_price ?? variant.cost_price ?? 0) || 0;
+  let catalogPrice = null;
+  if (vendorId) {
+    try {
+      const vendorCatalogService = require('./vendorCatalogService');
+      const entry = await vendorCatalogService.getEntryByVariant({
+        organizationId,
+        vendorId,
+        variantId: row.variantId,
+        activeOnly: true
+      });
+      if (entry && entry.purchasePrice != null) {
+        catalogPrice = Number(entry.purchasePrice);
+      }
+    } catch {
+      /* catalog optional */
+    }
+  }
+  const unitPrice =
+    Number(
+      row.unitPrice ??
+        (Number.isFinite(catalogPrice) ? catalogPrice : null) ??
+        variant.purchase_price ??
+        variant.cost_price ??
+        0
+    ) || 0;
   const money = lineMoney({
     quantity: qty,
     unitPrice,
@@ -118,7 +142,8 @@ async function createPurchaseOrder({ organizationId, userId, payload }) {
     const ld = await buildPurchaseOrderLineDoc({
       organizationId,
       row: linesInput[i],
-      lineOrder: i + 1
+      lineOrder: i + 1,
+      vendorId
     });
     subtotal += ld.lineSubtotal;
     lineDocs.push(ld);
@@ -262,11 +287,30 @@ async function addPurchaseOrderLine({ organizationId, id, userId, payload }) {
     .select('lineOrder')
     .lean();
   const lineOrder = (Number(last?.lineOrder) || 0) + 1;
+  const row = payload || {};
   const ld = await buildPurchaseOrderLineDoc({
     organizationId,
-    row: payload || {},
-    lineOrder
+    row,
+    lineOrder,
+    vendorId: po.vendorId
   });
+  if (row.linkToVendorCatalog === true && po.vendorId) {
+    try {
+      const vendorCatalogService = require('./vendorCatalogService');
+      await vendorCatalogService.upsertEntry({
+        organizationId,
+        vendorId: po.vendorId,
+        payload: {
+          variantId: row.variantId,
+          purchasePrice: ld.unitPrice,
+          status: 'Active'
+        },
+        userId
+      });
+    } catch {
+      /* non-blocking: PO line still succeeds */
+    }
+  }
   ld.purchaseOrderId = po._id;
   const created = await PurchaseOrderLine.create(ld);
   const result = await recalculatePurchaseOrderTotals({ organizationId, purchaseOrderId: id, userId });
@@ -518,6 +562,22 @@ async function verifyReceiptNote({ organizationId, id, userId }) {
   rn.modifiedBy = userId;
   await rn.save();
   await refreshPoReceiveStatus(organizationId, rn.purchaseOrderId);
+
+  try {
+    const vendorCatalogService = require('./vendorCatalogService');
+    await vendorCatalogService.recordPurchasesFromReceipt({
+      organizationId,
+      vendorId: rn.vendorId,
+      lines: lines.map((l) => l.toObject ? l.toObject() : l),
+      purchaseDate: rn.receiptDate || new Date(),
+      userId
+    });
+  } catch (catalogErr) {
+    console.warn(
+      '[procurementService] vendor catalog last-purchase update failed',
+      catalogErr?.message
+    );
+  }
 
   return getReceiptNote({ organizationId, id });
 }

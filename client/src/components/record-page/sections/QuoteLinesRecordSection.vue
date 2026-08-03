@@ -900,8 +900,41 @@
                         </div>
                       </div>
                       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ t('records.linesPickItemsSubtitle') }}
+                        {{
+                          isPurchaseOrderLines
+                            ? t('records.linesPoVendorCatalogSubtitle')
+                            : t('records.linesPickItemsSubtitle')
+                        }}
                       </p>
+                      <div
+                        v-if="isPurchaseOrderLines && poVendorId"
+                        class="mt-3 flex flex-wrap items-center gap-2"
+                      >
+                        <button
+                          type="button"
+                          class="rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-colors"
+                          :class="
+                            poVariantScope === 'linked'
+                              ? 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-800'
+                              : 'bg-white text-gray-600 ring-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600'
+                          "
+                          @click="setPoVariantScope('linked')"
+                        >
+                          {{ t('records.linesPoShowVendorCatalog') }}
+                        </button>
+                        <button
+                          type="button"
+                          class="rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-colors"
+                          :class="
+                            poVariantScope === 'all'
+                              ? 'bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-800'
+                              : 'bg-white text-gray-600 ring-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600'
+                          "
+                          @click="setPoVariantScope('all')"
+                        >
+                          {{ t('records.linesPoBrowseAllItems') }}
+                        </button>
+                      </div>
                     </div>
 
                     <div class="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -1012,12 +1045,24 @@
                                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                                   {{ hit.item_name || hit.variant_code || '—' }}
                                 </p>
+                                <span
+                                  v-if="isPurchaseOrderLines && hit.linked === false"
+                                  class="shrink-0 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-inset ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-800"
+                                >
+                                  {{ t('records.linesPoNotLinkedBadge') }}
+                                </span>
                               </div>
                               <p
                                 v-if="variantHitSubtitle(hit)"
                                 class="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate font-mono"
                               >
                                 {{ variantHitSubtitle(hit) }}
+                              </p>
+                              <p
+                                v-if="poLastPurchaseLabel(hit)"
+                                class="mt-0.5 text-xs text-gray-400 dark:text-gray-500 truncate"
+                              >
+                                {{ poLastPurchaseLabel(hit) }}
                               </p>
                             </div>
                             <div class="shrink-0 text-right">
@@ -1196,6 +1241,51 @@
       </div>
     </Teleport>
 
+    <Teleport to="body">
+      <div
+        v-if="poUnlinkedConfirm.open"
+        class="fixed inset-0 z-[80] flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="absolute inset-0 bg-gray-900/40" @click="closePoUnlinkedConfirm({ ok: false })" />
+        <div
+          class="relative w-full max-w-md rounded-xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-gray-900 dark:ring-white/10"
+        >
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+            {{ t('records.linesPoUnlinkedTitle') }}
+          </h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            {{ t('records.linesPoUnlinkedMessage') }}
+          </p>
+          <label class="mt-4 flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-200">
+            <input
+              v-model="poUnlinkedConfirm.alsoLink"
+              type="checkbox"
+              class="mt-0.5 size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
+            />
+            <span>{{ t('records.linesPoAlsoLinkVendor') }}</span>
+          </label>
+          <div class="mt-5 flex justify-end gap-2">
+            <button
+              type="button"
+              class="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 dark:text-gray-200 dark:ring-gray-700 dark:hover:bg-gray-800"
+              @click="closePoUnlinkedConfirm({ ok: false })"
+            >
+              {{ t('actions.cancel') }}
+            </button>
+            <button
+              type="button"
+              class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 dark:bg-indigo-500"
+              @click="confirmPoUnlinkedAndAdd"
+            >
+              {{ t('records.linesPoContinue') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
     <DeleteConfirmationModal
       :show="showDeleteLineModal"
       :record-name="linePendingDelete?.itemNameSnapshot || t('records.linesTitle')"
@@ -1282,6 +1372,111 @@ const props = defineProps({
 const emit = defineEmits(['updated']);
 
 const linesAdapter = computed(() => resolveCommercialLinesAdapter(props.adapter));
+
+const isPurchaseOrderLines = computed(() => linesAdapter.value.kind === 'purchaseOrder');
+const poVendorId = computed(() => {
+  const v = props.record?.vendorId;
+  if (!v) return '';
+  if (typeof v === 'object') return String(v._id || v.id || '');
+  return String(v);
+});
+const poVariantScope = ref('linked');
+
+function setPoVariantScope(scope) {
+  poVariantScope.value = scope === 'all' ? 'all' : 'linked';
+  if (showVariantPicker.value) runVariantSearch();
+}
+
+async function searchVariantsForDocument({ q = '', limit = 25 } = {}) {
+  if (isPurchaseOrderLines.value && poVendorId.value) {
+    const res = await apiClient.get(
+      `/inventory/vendor-catalog/${poVendorId.value}/variants/search`,
+      {
+        params: {
+          q,
+          limit,
+          scope: poVariantScope.value === 'all' ? 'all' : 'linked'
+        }
+      }
+    );
+    return unwrapCatalogApiData(res);
+  }
+  const res = await apiClient.get('/catalog/variants/search', {
+    params: { q, limit }
+  });
+  return unwrapCatalogApiData(res);
+}
+
+function poLastPurchaseLabel(hit) {
+  if (!isPurchaseOrderLines.value) return '';
+  const price = hit?.last_purchase_price;
+  const date = hit?.last_purchase_date;
+  if (price == null && !date) return '';
+  const code = String(hit?.currency || currencyCode.value || 'USD').toUpperCase();
+  const priceLabel =
+    price != null && price !== ''
+      ? formatQuoteMoney(price, code)
+      : '—';
+  let dateLabel = '—';
+  if (date) {
+    try {
+      dateLabel = new Date(date).toLocaleDateString(undefined, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      dateLabel = String(date).slice(0, 10);
+    }
+  }
+  return t('records.linesPoLastPurchase', { price: priceLabel, date: dateLabel });
+}
+
+const poUnlinkedConfirm = ref({
+  open: false,
+  hit: null,
+  block: null,
+  alsoLink: true,
+  resolve: null
+});
+
+function closePoUnlinkedConfirm(result) {
+  const resolve = poUnlinkedConfirm.value.resolve;
+  poUnlinkedConfirm.value = {
+    open: false,
+    hit: null,
+    block: null,
+    alsoLink: true,
+    resolve: null
+  };
+  if (typeof resolve === 'function') resolve(result);
+}
+
+function promptPoUnlinkedConfirm(hit, block) {
+  return new Promise((resolve) => {
+    poUnlinkedConfirm.value = {
+      open: true,
+      hit,
+      block,
+      alsoLink: true,
+      resolve
+    };
+  });
+}
+
+function confirmPoUnlinkedAndAdd() {
+  const alsoLink = !!poUnlinkedConfirm.value.alsoLink;
+  closePoUnlinkedConfirm({ ok: true, alsoLink });
+}
+
+async function ensurePoLineAllowed(hit, block) {
+  if (!isPurchaseOrderLines.value) return { ok: true, alsoLink: false };
+  // linked true or missing (fallback search): allow
+  if (hit?.linked !== false) return { ok: true, alsoLink: false };
+  const result = await promptPoUnlinkedConfirm(hit, block);
+  if (!result?.ok) return { ok: false, alsoLink: false };
+  return { ok: true, alsoLink: !!result.alsoLink };
+}
 /** Full capability set in draftMode — mutations run locally until parent Save. */
 const caps = computed(() => linesAdapter.value.capabilities);
 const apiBase = computed(() => linesAdapter.value.apiBase);
@@ -3544,10 +3739,10 @@ async function runDraftSearch(block) {
   }
   state.searchLoading = true;
   try {
-    const res = await apiClient.get('/catalog/variants/search', {
-      params: { q: state.searchQuery, limit: 8 }
+    const hits = await searchVariantsForDocument({
+      q: state.searchQuery,
+      limit: 8
     });
-    const hits = unwrapCatalogApiData(res);
     state.searchResults = Array.isArray(hits) ? hits : [];
     state.searchOpen = true;
     if (state.searchHighlight >= state.searchResults.length) {
@@ -3566,35 +3761,48 @@ async function addLineFromHit(block, hit) {
   if (isApiMode.value && !recordApiId.value) return null;
   const commitKey = `${key}:${variantId}`;
   if (pendingDraftCommits.has(commitKey)) return null;
+
+  const gate = await ensurePoLineAllowed(hit, block);
+  if (!gate.ok) return null;
+
   pendingDraftCommits.add(commitKey);
   recordRecentVariant(hit);
   try {
     if (!isApiMode.value) {
-      let unitPrice = Number(hit?.selling_price ?? hit?.unitPrice ?? hit?.list_price ?? 0) || 0;
+      let unitPrice =
+        Number(
+          hit?.purchase_price ??
+            hit?.unitPrice ??
+            hit?.selling_price ??
+            hit?.list_price ??
+            0
+        ) || 0;
       let priceMeta = {};
-      try {
-        const priced = await apiClient.post('/catalog/price-books/resolve', {
-          variantId,
-          priceBookId: selectedPriceBookId.value || null,
-          quantity: 1,
-          asOfDate:
-            props.record?.quoteDate ||
-            props.record?.orderDate ||
-            props.record?.invoiceDate ||
-            null
-        });
-        const data = priced?.data || priced;
-        if (data && Number.isFinite(Number(data.unitPrice))) {
-          unitPrice = Number(data.unitPrice);
-          priceMeta = {
-            listPriceSnapshot: data.listPrice ?? unitPrice,
-            priceBookIdSnapshot: data.priceBookId ?? null,
-            priceBookNameSnapshot: data.priceBookName ?? null,
-            pricingSourceSnapshot: data.pricingSource ?? 'price_book'
-          };
+      if (!isPurchaseOrderLines.value) {
+        try {
+          const priced = await apiClient.post('/catalog/price-books/resolve', {
+            variantId,
+            priceBookId: selectedPriceBookId.value || null,
+            quantity: 1,
+            asOfDate:
+              props.record?.quoteDate ||
+              props.record?.orderDate ||
+              props.record?.invoiceDate ||
+              null
+          });
+          const data = priced?.data || priced;
+          if (data && Number.isFinite(Number(data.unitPrice))) {
+            unitPrice = Number(data.unitPrice);
+            priceMeta = {
+              listPriceSnapshot: data.listPrice ?? unitPrice,
+              priceBookIdSnapshot: data.priceBookId ?? null,
+              priceBookNameSnapshot: data.priceBookName ?? null,
+              pricingSourceSnapshot: data.pricingSource ?? 'price_book'
+            };
+          }
+        } catch {
+          /* catalog resolve optional — fall back to hit price */
         }
-      } catch {
-        /* catalog resolve optional — fall back to hit price */
       }
       const lid = nextLocalDraftId('local-line');
       const lineIdField = linesAdapter.value.lineIdField;
@@ -3635,7 +3843,12 @@ async function addLineFromHit(block, hit) {
         quantity: 1,
         sectionRef: blockSectionRef(block) || null,
         priceBookId: selectedPriceBookId.value || null,
-        overridePricing: overrideLock.value === true
+        overridePricing: overrideLock.value === true,
+        unitPrice:
+          isPurchaseOrderLines.value
+            ? Number(hit?.purchase_price ?? hit?.unitPrice ?? hit?.selling_price ?? 0) || 0
+            : undefined,
+        linkToVendorCatalog: gate.alsoLink === true
       })
     };
     if (linesAdapter.value.kind === 'quote') {
@@ -3846,10 +4059,10 @@ function debouncedBundleSearch() {
 async function runVariantSearch() {
   variantSearchLoading.value = true;
   try {
-    const res = await apiClient.get('/catalog/variants/search', {
-      params: { q: variantSearchQuery.value, limit: 25 }
+    const hits = await searchVariantsForDocument({
+      q: variantSearchQuery.value,
+      limit: 25
     });
-    const hits = unwrapCatalogApiData(res);
     variantSearchResults.value = Array.isArray(hits) ? hits : [];
   } finally {
     variantSearchLoading.value = false;

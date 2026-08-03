@@ -558,7 +558,7 @@
 
         <!-- Section stack: show when collapsed, or when expanded to details/related (adapter returns only that section) -->
         <section
-          v-if="record && !isTemplatesModule && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion', 'preview', 'responses'].includes(expandedLeftSection))"
+          v-if="record && !isTemplatesModule && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'vendor-catalog', 'details', 'related', 'lines', 'revisions', 'conversion', 'preview', 'responses'].includes(expandedLeftSection))"
           :class="[
             expandedLeftSection === 'lines'
               ? 'flex-1 min-h-0 flex flex-col overflow-hidden mt-2'
@@ -1185,6 +1185,7 @@ import FormRecordPreviewSection from '@/components/record-page/sections/FormReco
 import FormRecordShareLinkPanel from '@/components/record-page/sections/FormRecordShareLinkPanel.vue';
 import FormRecordResponsesHub from '@/components/record-page/sections/FormRecordResponsesHub.vue';
 import { createItemsRecordAdapter } from '@/components/record-page/adapters/itemsRecordAdapter';
+import { createOrganizationsRecordAdapter } from '@/components/record-page/adapters/organizationsRecordAdapter';
 import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quotesRecordAdapter';
 import { createSalesOrdersRecordAdapter } from '@/components/record-page/adapters/salesOrdersRecordAdapter';
 import { createPurchaseOrdersRecordAdapter } from '@/components/record-page/adapters/purchaseOrdersRecordAdapter';
@@ -2589,6 +2590,8 @@ const genericAdapter = computed(() => {
     ? createFormRecordAdapter
     : moduleKeyLower.value === 'items'
     ? createItemsRecordAdapter
+    : moduleKeyLower.value === 'organizations'
+    ? createOrganizationsRecordAdapter
     : moduleKeyLower.value === 'documents'
       ? createDocumentsRecordAdapter
       : moduleKeyLower.value === 'quotes'
@@ -2918,6 +2921,10 @@ const sectionContext = computed(() => {
   if (moduleKeyLower.value === 'items') {
     base.onCatalogUpdated = () => fetchRecord();
     base.canEditCatalog = canEditRecord.value;
+  }
+  if (moduleKeyLower.value === 'organizations') {
+    base.canEdit = canEditRecord.value;
+    base.canEditVendorCatalog = canEditRecord.value;
   }
   if (moduleKeyLower.value === 'documents') {
     base.canEdit = canEditRecord.value;

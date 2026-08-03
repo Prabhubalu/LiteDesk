@@ -367,5 +367,97 @@
   },
   "organizationAppSectionTitle": {
     "message": "{app} information"
+  },
+  "vendorCatalogTitle": {
+    "message": "Vendor Catalog",
+    "description": "Section title for items a vendor supplies"
+  },
+  "vendorCatalogHint": {
+    "message": "Items this vendor supplies and their default purchase prices. Used when creating Purchase Orders.",
+    "description": "Helper under vendor catalog section"
+  },
+  "vendorCatalogAddItem": {
+    "message": "Add item",
+    "description": "Add row to vendor catalog"
+  },
+  "vendorCatalogAddFirst": {
+    "message": "Add the first item",
+    "description": "Empty-state CTA for vendor catalog"
+  },
+  "vendorCatalogEmpty": {
+    "message": "No items linked yet. Add items this vendor supplies for faster purchasing.",
+    "description": "Empty vendor catalog"
+  },
+  "vendorCatalogColItem": {
+    "message": "Item",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColVendorCode": {
+    "message": "Vendor item code",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColVendorName": {
+    "message": "Vendor item name",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColPurchasePrice": {
+    "message": "Purchase price",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColLastPrice": {
+    "message": "Last purchase price",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColLastDate": {
+    "message": "Last purchase date",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColStatus": {
+    "message": "Status",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogSearchItems": {
+    "message": "Search items…",
+    "description": "Item search in vendor catalog"
+  },
+  "vendorCatalogNoMatches": {
+    "message": "No matching items",
+    "description": "Vendor catalog search empty"
+  },
+  "vendorCatalogVariant": {
+    "message": "Variant",
+    "description": "Fallback label"
+  },
+  "vendorCatalogStatusActive": {
+    "message": "Active",
+    "description": "Vendor catalog status"
+  },
+  "vendorCatalogStatusInactive": {
+    "message": "Inactive",
+    "description": "Vendor catalog status"
+  },
+  "vendorCatalogChangeItem": {
+    "message": "Change",
+    "description": "Change selected catalog item"
+  },
+  "vendorCatalogSaveFailed": {
+    "message": "Organization saved, but vendor catalog could not be updated.",
+    "description": "Partial failure toast/message"
+  },
+  "vendorCatalogEmptyTitle": {
+    "message": "No catalog items",
+    "description": "Title for empty vendor catalog on record page"
+  },
+  "vendorCatalogLoadFailed": {
+    "message": "Could not load vendor catalog.",
+    "description": "Error loading vendor catalog section"
+  },
+  "vendorCatalogEdit": {
+    "message": "Edit catalog",
+    "description": "Edit vendor catalog on organization record"
+  },
+  "vendorCatalogSaved": {
+    "message": "Vendor catalog saved",
+    "description": "Toast after inline vendor catalog save"
   }
 }

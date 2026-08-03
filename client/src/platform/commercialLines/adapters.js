@@ -218,12 +218,19 @@ export const purchaseOrderCommercialLinesAdapter = {
   isEditable(record) {
     return String(record?.status || '').toLowerCase() === 'draft';
   },
-  buildAddLineBody({ variantId, quantity = 1 }) {
-    return {
+  buildAddLineBody({ variantId, quantity = 1, unitPrice, linkToVendorCatalog }) {
+    const body = {
       variantId,
       quantityOrdered: quantity,
       quantity
     };
+    if (unitPrice != null && unitPrice !== '') {
+      body.unitPrice = Number(unitPrice) || 0;
+    }
+    if (linkToVendorCatalog === true) {
+      body.linkToVendorCatalog = true;
+    }
+    return body;
   },
   buildPatchLineBody(fields) {
     const body = {};

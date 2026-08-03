@@ -1,0 +1,534 @@
+<!--
+  Vendor Catalog line section — Vendor ↔ Items supply relationship.
+  User fields editable; last purchase fields read-only (system).
+-->
+<template>
+  <section class="space-y-3" data-field-key="vendorCatalog">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+          {{ t('organizations.vendorCatalogTitle') }}
+        </h3>
+        <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+          {{ t('organizations.vendorCatalogHint') }}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+        :disabled="disabled"
+        @click="addEmptyRow"
+      >
+        <PlusIcon class="size-3.5" aria-hidden="true" />
+        {{ t('organizations.vendorCatalogAddItem') }}
+      </button>
+    </div>
+
+    <div
+      v-if="!lines.length"
+      class="rounded-lg border border-dashed border-gray-200 bg-gray-50/80 px-4 py-8 text-center dark:border-gray-700 dark:bg-gray-800/40"
+    >
+      <CubeIcon class="mx-auto size-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+        {{ t('organizations.vendorCatalogEmpty') }}
+      </p>
+      <button
+        type="button"
+        class="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+        :disabled="disabled"
+        @click="addEmptyRow"
+      >
+        {{ t('organizations.vendorCatalogAddFirst') }}
+      </button>
+    </div>
+
+    <div
+      v-else
+      class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700"
+    >
+      <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-800/80">
+          <tr class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <th class="px-3 py-2.5 font-medium">{{ t('organizations.vendorCatalogColItem') }}</th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColVendorCode') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColVendorName') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColPurchasePrice') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColLastPrice') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColLastDate') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium">{{ t('organizations.vendorCatalogColStatus') }}</th>
+            <th class="px-2 py-2.5 w-10"><span class="sr-only">{{ t('actions.remove') }}</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
+          <tr v-for="(row, index) in lines" :key="row._localKey" class="align-top">
+            <td class="px-3 py-2 min-w-[12rem] max-w-[16rem]">
+              <div :data-row-search="row._localKey">
+                <input
+                  v-if="!row.variantId"
+                  :ref="(el) => setSearchRef(row._localKey, el)"
+                  v-model="row.searchQuery"
+                  type="search"
+                  class="w-full rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  :placeholder="t('organizations.vendorCatalogSearchItems')"
+                  :disabled="disabled"
+                  autocomplete="off"
+                  @focus="openSearch(row)"
+                  @input="debouncedSearch(row)"
+                />
+                <div
+                  v-else
+                  class="flex items-start gap-2"
+                >
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate font-medium text-gray-900 dark:text-white">
+                      {{ row.itemName || '—' }}
+                    </div>
+                    <div
+                      v-if="row.variantCode || row.itemCode"
+                      class="truncate text-xs text-gray-500 dark:text-gray-400"
+                    >
+                      {{ [row.variantCode, row.itemCode].filter(Boolean).join(' · ') }}
+                    </div>
+                  </div>
+                  <button
+                    v-if="!disabled"
+                    type="button"
+                    class="shrink-0 text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                    @click="clearItem(row)"
+                  >
+                    {{ t('organizations.vendorCatalogChangeItem') }}
+                  </button>
+                </div>
+              </div>
+              <p v-if="rowErrors(index).variantId" class="mt-1 text-xs text-red-600">
+                {{ rowErrors(index).variantId }}
+              </p>
+            </td>
+            <td class="px-3 py-2">
+              <input
+                v-model="row.vendorItemCode"
+                type="text"
+                class="w-full min-w-[6rem] rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                :disabled="disabled"
+                @change="emitChange"
+              />
+            </td>
+            <td class="px-3 py-2">
+              <input
+                v-model="row.vendorItemName"
+                type="text"
+                class="w-full min-w-[7rem] rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                :disabled="disabled"
+                @change="emitChange"
+              />
+            </td>
+            <td class="px-3 py-2">
+              <div class="flex items-center gap-1">
+                <input
+                  v-model.number="row.purchasePrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="w-24 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  :disabled="disabled"
+                  @change="emitChange"
+                />
+                <span class="text-xs text-gray-400">{{ row.currency || 'USD' }}</span>
+              </div>
+            </td>
+            <td class="px-3 py-2 whitespace-nowrap text-gray-500 dark:text-gray-400">
+              {{ formatPrice(row.lastPurchasePrice, row.currency) }}
+            </td>
+            <td class="px-3 py-2 whitespace-nowrap text-gray-500 dark:text-gray-400">
+              {{ formatDate(row.lastPurchaseDate) }}
+            </td>
+            <td class="px-3 py-2">
+              <select
+                v-model="row.status"
+                class="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                :disabled="disabled"
+                @change="emitChange"
+              >
+                <option value="Active">{{ t('organizations.vendorCatalogStatusActive') }}</option>
+                <option value="Inactive">{{ t('organizations.vendorCatalogStatusInactive') }}</option>
+              </select>
+            </td>
+            <td class="px-2 py-2">
+              <button
+                type="button"
+                class="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+                :disabled="disabled"
+                :title="t('actions.remove')"
+                @click="removeRow(index)"
+              >
+                <TrashIcon class="size-4" aria-hidden="true" />
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Teleported so drawer/table overflow does not clip the menu -->
+    <Teleport to="body">
+      <ul
+        v-if="activeSearchRow && !activeSearchRow.variantId && activeSearchRow.searchOpen"
+        data-vendor-catalog-search-menu
+        class="fixed z-[10060] max-h-52 overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-800"
+        :style="searchMenuStyle"
+        role="listbox"
+      >
+        <li
+          v-if="activeSearchRow.searchLoading"
+          class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+        >
+          {{ t('states.loading') }}
+        </li>
+        <li
+          v-else-if="!activeSearchRow.searchResults.length"
+          class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+        >
+          {{ t('organizations.vendorCatalogNoMatches') }}
+        </li>
+        <li
+          v-for="hit in activeSearchRow.searchResults"
+          :key="String(hit._id)"
+          class="cursor-pointer px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
+          role="option"
+          @mousedown.prevent="selectHit(activeSearchRow, hit)"
+        >
+          <div class="text-sm font-medium text-gray-900 dark:text-white">
+            {{ hit.item_name || hit.variant_code }}
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            {{
+              [hit.variant_code, hit.item_code].filter(Boolean).join(' · ') ||
+              t('organizations.vendorCatalogVariant')
+            }}
+          </div>
+        </li>
+      </ul>
+    </Teleport>
+  </section>
+</template>
+
+<script setup>
+import { useI18n } from 'vue-i18n';
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { PlusIcon, TrashIcon, CubeIcon } from '@heroicons/vue/24/outline';
+import apiClient from '@/utils/apiClient';
+
+const props = defineProps({
+  modelValue: { type: Array, default: () => [] },
+  disabled: { type: Boolean, default: false },
+  /** Existing vendor org id (edit mode) — optional for client-side catalog load */
+  vendorId: { type: String, default: null }
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const { t, d } = useI18n();
+
+let localKeySeq = 0;
+function nextLocalKey() {
+  localKeySeq += 1;
+  return `vc-${Date.now()}-${localKeySeq}`;
+}
+
+function emptyRow() {
+  return {
+    _localKey: nextLocalKey(),
+    _id: null,
+    variantId: null,
+    itemId: null,
+    itemName: null,
+    itemCode: null,
+    variantCode: null,
+    vendorItemCode: '',
+    vendorItemName: '',
+    purchasePrice: 0,
+    currency: 'USD',
+    lastPurchasePrice: null,
+    lastPurchaseDate: null,
+    status: 'Active',
+    searchQuery: '',
+    searchOpen: false,
+    searchLoading: false,
+    searchResults: []
+  };
+}
+
+function fromEntry(entry) {
+  return {
+    ...emptyRow(),
+    _id: entry._id || entry.id || null,
+    variantId: entry.variantId ? String(entry.variantId) : null,
+    itemId: entry.itemId ? String(entry.itemId) : null,
+    itemName: entry.itemName || entry.item_name || null,
+    itemCode: entry.itemCode || entry.item_code || null,
+    variantCode: entry.variantCode || entry.variant_code || null,
+    vendorItemCode: entry.vendorItemCode || '',
+    vendorItemName: entry.vendorItemName || '',
+    purchasePrice: Number(entry.purchasePrice) || 0,
+    currency: entry.currency || 'USD',
+    lastPurchasePrice: entry.lastPurchasePrice ?? null,
+    lastPurchaseDate: entry.lastPurchaseDate ?? null,
+    status: entry.status === 'Inactive' ? 'Inactive' : 'Active',
+    searchQuery: '',
+    searchOpen: false
+  };
+}
+
+const lines = ref(
+  Array.isArray(props.modelValue) && props.modelValue.length
+    ? props.modelValue.map((r) =>
+        r.variantId || r._localKey ? { ...emptyRow(), ...fromEntry(r), _localKey: r._localKey || nextLocalKey() } : fromEntry(r)
+      )
+    : []
+);
+
+const searchTimers = {};
+const searchRefs = {};
+/** @type {import('vue').Ref<{ top: number, left: number, width: number }>} */
+const searchMenuRect = ref({ top: 0, left: 0, width: 240 });
+
+const activeSearchRow = computed(() =>
+  lines.value.find((r) => r.searchOpen && !r.variantId) || null
+);
+
+const searchMenuStyle = computed(() => ({
+  top: `${searchMenuRect.value.top}px`,
+  left: `${searchMenuRect.value.left}px`,
+  width: `${Math.max(searchMenuRect.value.width, 220)}px`
+}));
+
+function setSearchRef(key, el) {
+  if (el) searchRefs[key] = el;
+  else delete searchRefs[key];
+}
+
+function positionSearchMenu(row) {
+  const el = searchRefs[row._localKey];
+  if (!el || typeof el.getBoundingClientRect !== 'function') return;
+  const rect = el.getBoundingClientRect();
+  const menuMaxH = 208;
+  const gap = 4;
+  const width = Math.max(rect.width, 220);
+  const spaceBelow = window.innerHeight - rect.bottom - gap;
+  const openUp = spaceBelow < 140 && rect.top > spaceBelow;
+  let top = openUp ? rect.top - menuMaxH - gap : rect.bottom + gap;
+  top = Math.min(Math.max(8, top), window.innerHeight - 48);
+  let left = rect.left;
+  left = Math.min(Math.max(8, left), window.innerWidth - width - 8);
+  searchMenuRect.value = { top, left, width };
+}
+
+function schedulePosition(row) {
+  nextTick(() => positionSearchMenu(row));
+}
+
+function rowErrors() {
+  return {};
+}
+
+function emitChange() {
+  const payload = lines.value
+    .filter((r) => r.variantId)
+    .map((r) => ({
+      _id: r._id || undefined,
+      variantId: r.variantId,
+      itemId: r.itemId,
+      itemName: r.itemName,
+      itemCode: r.itemCode,
+      variantCode: r.variantCode,
+      vendorItemCode: r.vendorItemCode || null,
+      vendorItemName: r.vendorItemName || null,
+      purchasePrice: Number(r.purchasePrice) || 0,
+      currency: r.currency || 'USD',
+      lastPurchasePrice: r.lastPurchasePrice,
+      lastPurchaseDate: r.lastPurchaseDate,
+      status: r.status === 'Inactive' ? 'Inactive' : 'Active'
+    }));
+  emit('update:modelValue', payload);
+}
+
+function addEmptyRow() {
+  // Close any open search first
+  for (const r of lines.value) r.searchOpen = false;
+  lines.value = [...lines.value, emptyRow()];
+}
+
+function removeRow(index) {
+  lines.value = lines.value.filter((_, i) => i !== index);
+  emitChange();
+}
+
+function clearItem(row) {
+  for (const r of lines.value) {
+    if (r !== row) r.searchOpen = false;
+  }
+  row.variantId = null;
+  row.itemId = null;
+  row.itemName = null;
+  row.itemCode = null;
+  row.variantCode = null;
+  row.searchQuery = '';
+  row.searchOpen = true;
+  emitChange();
+  schedulePosition(row);
+  runSearch(row);
+}
+
+function openSearch(row) {
+  for (const r of lines.value) {
+    if (r !== row) r.searchOpen = false;
+  }
+  row.searchOpen = true;
+  schedulePosition(row);
+  if (!row.searchResults?.length) {
+    runSearch(row);
+  }
+}
+
+function debouncedSearch(row) {
+  const key = row._localKey;
+  clearTimeout(searchTimers[key]);
+  searchTimers[key] = setTimeout(() => runSearch(row), 250);
+}
+
+async function runSearch(row) {
+  row.searchLoading = true;
+  row.searchOpen = true;
+  schedulePosition(row);
+  try {
+    const res = await apiClient.get('/catalog/variants/search', {
+      params: { q: row.searchQuery || '', limit: 12 }
+    });
+    const data = res?.data ?? res;
+    const hits = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+    const used = new Set(
+      lines.value.map((r) => String(r.variantId || '')).filter(Boolean)
+    );
+    row.searchResults = hits.filter((h) => !used.has(String(h._id)) || String(h._id) === String(row.variantId));
+    schedulePosition(row);
+  } catch {
+    row.searchResults = [];
+  } finally {
+    row.searchLoading = false;
+  }
+}
+
+function selectHit(row, hit) {
+  row.variantId = String(hit._id);
+  row.itemId = hit.item_id ? String(hit.item_id) : null;
+  row.itemName = hit.item_name || null;
+  row.itemCode = hit.item_code || null;
+  row.variantCode = hit.variant_code || null;
+  row.currency = (hit.currency || row.currency || 'USD').toUpperCase();
+  if (!row.purchasePrice) {
+    row.purchasePrice = Number(hit.cost_price ?? hit.selling_price ?? 0) || 0;
+  }
+  if (!row.vendorItemName && hit.item_name) {
+    row.vendorItemName = hit.item_name;
+  }
+  row.searchOpen = false;
+  row.searchQuery = '';
+  emitChange();
+}
+
+function formatPrice(value, currency) {
+  if (value == null || value === '') return '—';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: (currency || 'USD').toUpperCase(),
+      maximumFractionDigits: 2
+    }).format(n);
+  } catch {
+    return String(n);
+  }
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+  try {
+    return d(new Date(value), 'short');
+  } catch {
+    return String(value).slice(0, 10);
+  }
+}
+
+function onDocumentClick(e) {
+  const target = e.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest('[data-vendor-catalog-search-menu]')) return;
+  for (const row of lines.value) {
+    if (!row.searchOpen) continue;
+    const wrap = document.querySelector(`[data-row-search="${row._localKey}"]`);
+    if (wrap && wrap.contains(target)) continue;
+    row.searchOpen = false;
+  }
+}
+
+function onReposition() {
+  const row = activeSearchRow.value;
+  if (row) positionSearchMenu(row);
+}
+
+watch(
+  () => props.modelValue,
+  (next) => {
+    if (!Array.isArray(next)) return;
+    // Avoid clobbering in-progress empty search rows when parent echoes payload
+    const nextIds = next.map((r) => String(r.variantId || '')).join('|');
+    const curIds = lines.value
+      .filter((r) => r.variantId)
+      .map((r) => String(r.variantId))
+      .join('|');
+    if (nextIds === curIds && next.length === lines.value.filter((r) => r.variantId).length) {
+      return;
+    }
+    lines.value = next.map((r) => fromEntry(r));
+  },
+  { deep: true }
+);
+
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick);
+  window.addEventListener('resize', onReposition);
+  window.addEventListener('scroll', onReposition, true);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick);
+  window.removeEventListener('resize', onReposition);
+  window.removeEventListener('scroll', onReposition, true);
+  Object.values(searchTimers).forEach(clearTimeout);
+});
+
+defineExpose({
+  getEntries() {
+    return lines.value
+      .filter((r) => r.variantId)
+      .map((r) => ({
+        variantId: r.variantId,
+        vendorItemCode: r.vendorItemCode || null,
+        vendorItemName: r.vendorItemName || null,
+        purchasePrice: Number(r.purchasePrice) || 0,
+        currency: r.currency || 'USD',
+        status: r.status === 'Inactive' ? 'Inactive' : 'Active'
+      }));
+  }
+});
+</script>

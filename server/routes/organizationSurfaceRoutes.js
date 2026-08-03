@@ -37,8 +37,19 @@ const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMi
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
+const { checkPermission } = require('../middleware/permissionMiddleware');
 const controller = require('../controllers/organizationV2Controller');
 const createController = require('../controllers/organizationCreateController');
+const vendorCatalogService = require('../services/vendorCatalogService');
+
+function sendVendorCatalogError(res, err) {
+  const status = err?.code === 'NOT_FOUND' ? 404 : err?.code === 'VALIDATION' ? 400 : 500;
+  return res.status(status).json({
+    success: false,
+    message: err.message,
+    code: err.code || 'UNKNOWN'
+  });
+}
 
 router.use(protect);
 router.use(resolveAppContext);
@@ -51,6 +62,42 @@ router.use(organizationIsolation);
 // ARCHITECTURAL INTENT: Dedicated endpoint for creation-only surface
 // This endpoint enforces strict field filtering and business organization creation only
 router.post('/', createController.create);
+
+// Vendor Catalog nested on organization (Sales app context — org create/edit)
+router.get('/:id/vendor-catalog', checkPermission('organizations', 'view'), async (req, res) => {
+  try {
+    const includeInactive = String(req.query.includeInactive || 'true') !== 'false';
+    const data = await vendorCatalogService.listEntries({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id,
+      status: req.query.status || null,
+      includeInactive
+    });
+    return res.json({ success: true, data });
+  } catch (err) {
+    return sendVendorCatalogError(res, err);
+  }
+});
+
+router.put('/:id/vendor-catalog', checkPermission('organizations', 'edit'), async (req, res) => {
+  try {
+    const entries = Array.isArray(req.body?.entries)
+      ? req.body.entries
+      : Array.isArray(req.body)
+        ? req.body
+        : [];
+    const data = await vendorCatalogService.replaceEntries({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id,
+      entries,
+      userId: req.user._id
+    });
+    return res.json({ success: true, data });
+  } catch (err) {
+    return sendVendorCatalogError(res, err);
+  }
+});
+
 
 // Get editable organization data (for edit mode)
 // Must be before /:id/surface route

@@ -343,6 +343,7 @@ app.use('/api/inventory/receipt-notes', require('./routes/receiptNoteRoutes'));
 app.use('/api/inventory/purchase-returns', require('./routes/purchaseReturnRoutes'));
 app.use('/api/inventory/purchase-bills', require('./routes/purchaseBillRoutes'));
 app.use('/api/inventory/vendor-payments', require('./routes/vendorPaymentRoutes'));
+app.use('/api/inventory/vendor-catalog', require('./routes/vendorCatalogRoutes'));
 app.use('/api/inventory/journals', require('./routes/journalRoutes'));
 app.use('/api/inventory/delivery-notes', dnRouter);
 app.use('/api/inventory/delivery-returns', drRouter);

@@ -4258,5 +4258,41 @@
   "activityDescriptionImageRemoved": {
     "message": "Image removed",
     "description": "Activity feed label when a description image was removed"
+  },
+  "linesPoVendorCatalogSubtitle": {
+    "message": "Items linked to this vendor. Switch to Browse all items to pick others.",
+    "description": "PO item picker subtitle when filtering vendor catalog"
+  },
+  "linesPoBrowseAllItems": {
+    "message": "Browse all items",
+    "description": "Toggle to show entire item catalog on PO"
+  },
+  "linesPoShowVendorCatalog": {
+    "message": "Vendor catalog",
+    "description": "Toggle back to vendor-linked items only"
+  },
+  "linesPoUnlinkedTitle": {
+    "message": "Item not linked to vendor",
+    "description": "Confirm dialog title when adding unlinked item to PO"
+  },
+  "linesPoUnlinkedMessage": {
+    "message": "This item is not currently associated with the selected vendor. Would you like to continue?",
+    "description": "Confirm dialog body for unlinked vendor item"
+  },
+  "linesPoAlsoLinkVendor": {
+    "message": "Also link this item to the vendor for future purchases",
+    "description": "Checkbox to create vendor catalog entry from PO"
+  },
+  "linesPoContinue": {
+    "message": "Continue",
+    "description": "Confirm unlinked PO item continue"
+  },
+  "linesPoNotLinkedBadge": {
+    "message": "Not linked",
+    "description": "Badge when PO browse-all shows a variant not in vendor catalog"
+  },
+  "linesPoLastPurchase": {
+    "message": "Last: {price} · {date}",
+    "description": "PO picker last purchase reference"
   }
 }
