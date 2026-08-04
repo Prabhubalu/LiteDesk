@@ -297,6 +297,7 @@ export function formatCurrencyValue(value, {
   orgCurrency = null,
   minimumFractionDigits,
   maximumFractionDigits,
+  applyAggregation,
 } = {}) {
   const numericValue = Number(value);
   if (!Number.isFinite(numericValue)) return null;
@@ -317,6 +318,9 @@ export function formatCurrencyValue(value, {
   }
   if (maximumFractionDigits !== undefined) {
     formatOpts.maximumFractionDigits = maximumFractionDigits;
+  }
+  if (applyAggregation === false) {
+    formatOpts.applyAggregation = false;
   }
 
   try {

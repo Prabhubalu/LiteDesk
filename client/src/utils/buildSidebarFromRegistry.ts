@@ -547,8 +547,11 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
       }
     );
 
-  if (normalizedAppId === 'INVENTORY' && hasPermission('inventory.view', snapshot)) {
+  if (normalizedAppId === 'INVENTORY') {
     for (const item of INVENTORY_WORKBENCH_MODULES) {
+      const canView =
+        hasPermission(`${item.key}.view`, snapshot) || hasPermission('inventory.view', snapshot);
+      if (!canView) continue;
       modules.push({
         kind: 'app',
         id: `${activeAppId}:${item.key}`,

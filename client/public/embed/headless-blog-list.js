@@ -52,8 +52,24 @@
     return linkPrefix + encodeURIComponent(safeSlug);
   }
 
-  function coverUrl(post) {
-    return (post && post.coverImage && post.coverImage.url) || '';
+  function absolutizeEmbedAssetUrl(url, apiOrigin) {
+    var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+    if (common && common.absolutizeEmbedAssetUrl) {
+      return common.absolutizeEmbedAssetUrl(url, apiOrigin);
+    }
+    var raw = String(url || '').trim();
+    var origin = String(apiOrigin || '').replace(/\/$/, '');
+    if (!raw || !origin) return raw;
+    if (raw.indexOf('://') >= 0 || raw.indexOf('data:') === 0) return raw;
+    if (raw.indexOf('/api/files/download') === 0 || raw.indexOf('/api/uploads/') === 0) {
+      return origin + raw;
+    }
+    return raw;
+  }
+
+  function coverUrl(post, apiOrigin) {
+    var raw = (post && post.coverImage && post.coverImage.url) || '';
+    return absolutizeEmbedAssetUrl(raw, apiOrigin);
   }
 
   function authorName(post) {
@@ -69,9 +85,13 @@
     }).join('') || 'A';
   }
 
-  function authorAvatarHtml(post) {
+  function authorAvatarUrl(post, apiOrigin) {
+    return absolutizeEmbedAssetUrl(String((post && post.authorAvatar) || '').trim(), apiOrigin);
+  }
+
+  function authorAvatarHtml(post, apiOrigin) {
     var name = authorName(post);
-    var avatar = String((post && post.authorAvatar) || '').trim();
+    var avatar = authorAvatarUrl(post, apiOrigin);
     if (avatar) {
       return '<img class="ld-blog-home__avatar" src="' + escapeHtml(avatar) + '" alt="" />';
     }
@@ -108,10 +128,10 @@
     });
   }
 
-  function buildFeaturedCard(post, linkPrefix, size) {
+  function buildFeaturedCard(post, linkPrefix, size, apiOrigin) {
     if (!post) return '';
     var href = buildPostHref(linkPrefix, post.slug);
-    var cover = coverUrl(post);
+    var cover = coverUrl(post, apiOrigin);
     var category = categoryLabel(post);
     var dateValue = post.publishedAt || post.updatedAt;
     var mediaHtml = cover
@@ -128,7 +148,7 @@
             : '') +
           '<span class="ld-blog-home__featured-title">' + escapeHtml(post.title || 'Untitled') + '</span>' +
           '<span class="ld-blog-home__featured-meta">' +
-            authorAvatarHtml(post) +
+            authorAvatarHtml(post, apiOrigin) +
             (authorName(post) ? '<span>' + escapeHtml(authorName(post)) + '</span>' : '') +
             (dateValue
               ? '<time datetime="' + escapeHtml(String(dateValue)) + '">' + escapeHtml(formatDate(dateValue)) + '</time>'
@@ -139,9 +159,9 @@
     );
   }
 
-  function buildFeedCard(post, linkPrefix, readMoreLabel) {
+  function buildFeedCard(post, linkPrefix, readMoreLabel, apiOrigin) {
     var href = buildPostHref(linkPrefix, post.slug);
-    var cover = coverUrl(post);
+    var cover = coverUrl(post, apiOrigin);
     var category = categoryLabel(post);
     var summary = String(post.summary || '').trim();
     var dateValue = post.publishedAt || post.updatedAt;
@@ -155,7 +175,7 @@
         '<a class="ld-blog-home__feed-media" href="' + escapeHtml(href) + '">' + media + '</a>' +
         '<div class="ld-blog-home__feed-body">' +
           '<div class="ld-blog-home__feed-byline">' +
-            authorAvatarHtml(post) +
+            authorAvatarHtml(post, apiOrigin) +
             (name ? '<span>' + escapeHtml(name) + '</span>' : '') +
             (dateValue
               ? '<time datetime="' + escapeHtml(String(dateValue)) + '">' + escapeHtml(formatDate(dateValue)) + '</time>'
@@ -172,7 +192,7 @@
     );
   }
 
-  function buildAuthors(posts) {
+  function buildAuthors(posts, apiOrigin) {
     var seen = {};
     var authors = [];
     (posts || []).forEach(function (post) {
@@ -183,7 +203,7 @@
       seen[key] = true;
       authors.push({
         name: name,
-        avatar: String(post.authorAvatar || '').trim(),
+        avatar: authorAvatarUrl(post, apiOrigin),
       });
     });
     return authors.slice(0, 6);
@@ -351,7 +371,7 @@
         : [];
       var categories = flattenCollections(collectionsTree).slice(0, 12);
       var topPosts = popular.length ? popular.slice(0, 3) : posts.slice(0, 3);
-      var authors = buildAuthors(posts.concat(popular));
+      var authors = buildAuthors(posts.concat(popular), apiOrigin);
       var showTop = page === 1 && !searchQuery && !collectionFilter && topPosts.length > 0;
 
       var searchHtml = searchEnabled
@@ -380,10 +400,10 @@
           '<section class="ld-blog-home__top" aria-labelledby="ld-blog-top-posts">' +
             '<h2 id="ld-blog-top-posts" class="ld-blog-home__section-title">' + escapeHtml(topPostsLabel) + '</h2>' +
             '<div class="ld-blog-home__featured-grid">' +
-              buildFeaturedCard(topPosts[0], linkPrefix, 'hero') +
+              buildFeaturedCard(topPosts[0], linkPrefix, 'hero', apiOrigin) +
               '<div class="ld-blog-home__featured-stack">' +
-                buildFeaturedCard(topPosts[1], linkPrefix, 'secondary') +
-                buildFeaturedCard(topPosts[2], linkPrefix, 'secondary') +
+                buildFeaturedCard(topPosts[1], linkPrefix, 'secondary', apiOrigin) +
+                buildFeaturedCard(topPosts[2], linkPrefix, 'secondary', apiOrigin) +
               '</div>' +
             '</div>' +
           '</section>'
@@ -392,7 +412,7 @@
 
       var feedHtml = posts.length
         ? posts.map(function (post) {
-          return buildFeedCard(post, linkPrefix, readMoreLabel);
+          return buildFeedCard(post, linkPrefix, readMoreLabel, apiOrigin);
         }).join('')
         : '<p class="ld-blog-home__empty">' + escapeHtml(emptyLabel) + '</p>';
 

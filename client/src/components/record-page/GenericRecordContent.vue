@@ -558,7 +558,7 @@
 
         <!-- Section stack: show when collapsed, or when expanded to details/related (adapter returns only that section) -->
         <section
-          v-if="record && !isTemplatesModule && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'details', 'related', 'lines', 'revisions', 'conversion', 'preview', 'responses'].includes(expandedLeftSection))"
+          v-if="record && !isTemplatesModule && genericSections.length && (!expandedLeftSection || ['description', 'catalog', 'vendor-catalog', 'details', 'related', 'lines', 'revisions', 'conversion', 'preview', 'responses'].includes(expandedLeftSection))"
           :class="[
             expandedLeftSection === 'lines'
               ? 'flex-1 min-h-0 flex flex-col overflow-hidden mt-2'
@@ -1185,9 +1185,17 @@ import FormRecordPreviewSection from '@/components/record-page/sections/FormReco
 import FormRecordShareLinkPanel from '@/components/record-page/sections/FormRecordShareLinkPanel.vue';
 import FormRecordResponsesHub from '@/components/record-page/sections/FormRecordResponsesHub.vue';
 import { createItemsRecordAdapter } from '@/components/record-page/adapters/itemsRecordAdapter';
+import { createOrganizationsRecordAdapter } from '@/components/record-page/adapters/organizationsRecordAdapter';
 import { createQuotesRecordAdapter } from '@/components/record-page/adapters/quotesRecordAdapter';
 import { createSalesOrdersRecordAdapter } from '@/components/record-page/adapters/salesOrdersRecordAdapter';
 import { createPurchaseOrdersRecordAdapter } from '@/components/record-page/adapters/purchaseOrdersRecordAdapter';
+import { createPurchaseReturnsRecordAdapter } from '@/components/record-page/adapters/purchaseReturnsRecordAdapter';
+import { createDeliveryReturnsRecordAdapter } from '@/components/record-page/adapters/deliveryReturnsRecordAdapter';
+import { createSalesReturnsRecordAdapter } from '@/components/record-page/adapters/salesReturnsRecordAdapter';
+import { createDeliveryNotesRecordAdapter } from '@/components/record-page/adapters/deliveryNotesRecordAdapter';
+import { createReceiptNotesRecordAdapter } from '@/components/record-page/adapters/receiptNotesRecordAdapter';
+import { createStockAdjustmentsRecordAdapter } from '@/components/record-page/adapters/stockAdjustmentsRecordAdapter';
+import { createStockTransfersRecordAdapter } from '@/components/record-page/adapters/stockTransfersRecordAdapter';
 import { createInvoicesRecordAdapter } from '@/components/record-page/adapters/invoicesRecordAdapter';
 import { createPaymentsRecordAdapter } from '@/components/record-page/adapters/paymentsRecordAdapter';
 import { createDocumentsRecordAdapter } from '@/components/record-page/adapters/documentsRecordAdapter';
@@ -1881,6 +1889,18 @@ const canLinkRecords = computed(() => {
   if (moduleKeyLower.value === 'purchase_orders') {
     return authStore.can?.('inventory', 'adjust') ?? false;
   }
+  if (moduleKeyLower.value === 'receipt_notes') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (moduleKeyLower.value === 'purchase_returns') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (moduleKeyLower.value === 'delivery_returns') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (moduleKeyLower.value === 'delivery_notes') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
   return authStore.can(props.moduleKey, 'edit');
 });
 
@@ -2053,7 +2073,15 @@ const recordTitle = computed(() => {
     items: r.item_name,
     quotes: r.quoteNumber || r.quoteTitle,
     sales_orders: r.salesOrderNumber || r.orderTitle,
-    purchase_orders: r.poNumber,
+    purchase_orders: r.subject || r.poNumber,
+    receipt_notes: r.receiptNoteNumber,
+    stockrooms: r.name || r.locationCode,
+    stock_adjustments: r.reasonCode || r.inventoryAdjustmentId,
+    stock_transfers: r.inventoryTransferId || r.fromLocationName,
+    purchase_returns: r.subject || r.purchaseReturnNumber,
+    delivery_notes: r.subject || r.deliveryNoteNumber,
+    delivery_returns: r.subject || r.deliveryReturnNumber,
+    sales_returns: r.salesReturnNumber,
     invoices: r.invoiceNumber || r.invoiceTitle
   };
   return (
@@ -2098,6 +2126,30 @@ const canEditRecord = computed(() => {
   const key = moduleKeyLower.value;
   if (key === 'purchase_orders') {
     return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (key === 'receipt_notes') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (key === 'purchase_returns') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (key === 'delivery_returns') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (key === 'delivery_notes') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (key === 'sales_returns') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (key === 'stockrooms') {
+    return authStore.can?.('inventory', 'manageLocations') ?? false;
+  }
+  if (key === 'stock_adjustments') {
+    return authStore.can?.('inventory', 'adjust') ?? false;
+  }
+  if (key === 'stock_transfers') {
+    return authStore.can?.('inventory', 'transfer') ?? false;
   }
   return authStore.can?.(props.moduleKey, 'edit') ?? false;
 });
@@ -2589,6 +2641,8 @@ const genericAdapter = computed(() => {
     ? createFormRecordAdapter
     : moduleKeyLower.value === 'items'
     ? createItemsRecordAdapter
+    : moduleKeyLower.value === 'organizations'
+    ? createOrganizationsRecordAdapter
     : moduleKeyLower.value === 'documents'
       ? createDocumentsRecordAdapter
       : moduleKeyLower.value === 'quotes'
@@ -2597,6 +2651,20 @@ const genericAdapter = computed(() => {
         ? createSalesOrdersRecordAdapter
         : moduleKeyLower.value === 'purchase_orders'
           ? createPurchaseOrdersRecordAdapter
+        : moduleKeyLower.value === 'receipt_notes'
+          ? createReceiptNotesRecordAdapter
+        : moduleKeyLower.value === 'stock_adjustments'
+          ? createStockAdjustmentsRecordAdapter
+        : moduleKeyLower.value === 'stock_transfers'
+          ? createStockTransfersRecordAdapter
+        : moduleKeyLower.value === 'purchase_returns'
+          ? createPurchaseReturnsRecordAdapter
+        : moduleKeyLower.value === 'delivery_returns'
+          ? createDeliveryReturnsRecordAdapter
+        : moduleKeyLower.value === 'delivery_notes'
+          ? createDeliveryNotesRecordAdapter
+        : moduleKeyLower.value === 'sales_returns'
+          ? createSalesReturnsRecordAdapter
         : moduleKeyLower.value === 'invoices'
           ? createInvoicesRecordAdapter
           : moduleKeyLower.value === 'payments'
@@ -2834,6 +2902,30 @@ const genericAdapter = computed(() => {
       if ((mk === 'quotes' || mk === 'invoices') && key === 'organizationrefid') {
         return quoteOrganizationLookupList.value;
       }
+      if (mk === 'purchase_orders' && (key === 'vendorid' || key === 'vendor')) {
+        return quoteOrganizationLookupList.value;
+      }
+      if (mk === 'purchase_orders' && (key === 'vendorcontactid' || key === 'vendorcontact')) {
+        return quoteContactLookupList.value;
+      }
+      if (mk === 'purchase_returns' && (key === 'vendorid' || key === 'vendor')) {
+        return quoteOrganizationLookupList.value;
+      }
+      if (mk === 'purchase_returns' && (key === 'vendorcontactid' || key === 'vendorcontact')) {
+        return quoteContactLookupList.value;
+      }
+      if (mk === 'delivery_returns' && (key === 'customerid' || key === 'customer')) {
+        return quoteOrganizationLookupList.value;
+      }
+      if (mk === 'delivery_returns' && (key === 'contactpersonid' || key === 'contactperson')) {
+        return quoteContactLookupList.value;
+      }
+      if (mk === 'delivery_notes' && (key === 'customerid' || key === 'customer')) {
+        return quoteOrganizationLookupList.value;
+      }
+      if (mk === 'delivery_notes' && (key === 'contactpersonid' || key === 'contactperson')) {
+        return quoteContactLookupList.value;
+      }
       if ((mk === 'quotes' || mk === 'invoices') && key === 'dealid') {
         return quoteDealLookupList.value;
       }
@@ -2918,6 +3010,10 @@ const sectionContext = computed(() => {
   if (moduleKeyLower.value === 'items') {
     base.onCatalogUpdated = () => fetchRecord();
     base.canEditCatalog = canEditRecord.value;
+  }
+  if (moduleKeyLower.value === 'organizations') {
+    base.canEdit = canEditRecord.value;
+    base.canEditVendorCatalog = canEditRecord.value;
   }
   if (moduleKeyLower.value === 'documents') {
     base.canEdit = canEditRecord.value;
@@ -3756,6 +3852,157 @@ function handleSectionUpdated(event) {
     return;
   }
 
+  if (moduleKeyLower.value === 'purchase_orders' && record.value) {
+    if (payload?.type === 'soft-refresh') {
+      if (payload.purchaseOrder) Object.assign(record.value, payload.purchaseOrder);
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
+      if (!payload.purchaseOrder) {
+        fetchRecord({ preserveScroll: true, soft: true });
+      }
+      return;
+    }
+    if (payload?.type === 'quote-discounts-updated') {
+      if (payload.quote) {
+        Object.assign(record.value, {
+          overallDiscountType: payload.quote.globalDiscountType ?? payload.quote.overallDiscountType ?? record.value.overallDiscountType,
+          overallDiscountValue: payload.quote.globalDiscountValue ?? payload.quote.overallDiscountValue ?? record.value.overallDiscountValue,
+          overallDiscountTotal: payload.quote.globalDiscountTotal ?? payload.quote.overallDiscountTotal ?? record.value.overallDiscountTotal,
+          globalDiscountType: payload.quote.globalDiscountType,
+          globalDiscountValue: payload.quote.globalDiscountValue,
+          globalDiscountTotal: payload.quote.globalDiscountTotal,
+          adjustmentTotal: payload.quote.adjustmentTotal ?? record.value.adjustmentTotal,
+          transactionTaxSnapshot: payload.quote.transactionTaxSnapshot ?? record.value.transactionTaxSnapshot,
+          chargeDocumentSnapshot: payload.quote.chargeDocumentSnapshot ?? record.value.chargeDocumentSnapshot,
+          subtotal: payload.quote.subtotal ?? record.value.subtotal,
+          grandTotal: payload.quote.grandTotal ?? record.value.grandTotal,
+          preTaxTotal: payload.quote.preTaxTotal ?? record.value.preTaxTotal,
+          taxTotal: payload.quote.taxTotal ?? record.value.taxTotal,
+          chargesTotal: payload.quote.chargesTotal ?? record.value.chargesTotal
+        });
+      }
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
+      return;
+    }
+    if (payload?.type === 'quote-taxes-charges-updated') {
+      if (payload.quote) {
+        Object.assign(record.value, {
+          transactionTaxSnapshot: payload.quote.transactionTaxSnapshot,
+          chargeDocumentSnapshot: payload.quote.chargeDocumentSnapshot,
+          chargesTotal: payload.quote.chargesTotal ?? record.value.chargesTotal,
+          taxTotal: payload.quote.taxTotal ?? record.value.taxTotal,
+          grandTotal: payload.quote.grandTotal ?? record.value.grandTotal,
+          subtotal: payload.quote.subtotal ?? record.value.subtotal,
+          taxDocumentSnapshot: payload.quote.taxDocumentSnapshot
+        });
+      }
+      if (payload.totals) Object.assign(record.value, payload.totals);
+      if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
+      return;
+    }
+    if (payload?.type === 'line-deleted') {
+      if (
+        applyQuoteLineDeleteToRecord(record.value, {
+          deletedLine: payload.deletedLine || payload.deleted,
+          totals: payload.totals,
+          sections: payload.sections,
+          lineIdField: 'purchaseOrderLineId'
+        })
+      ) {
+        return;
+      }
+      if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
+      return;
+    }
+    if (payload?.type === 'lines-added') {
+      applyQuoteLinesAddToRecord(record.value, {
+        lines: payload.lines,
+        totals: payload.totals,
+        sections: payload.sections,
+        lineIdField: 'purchaseOrderLineId'
+      });
+      return;
+    }
+    if (payload?.type === 'line-updated') {
+      applyQuoteLinesMutationToRecord(record.value, {
+        line: payload.line,
+        totals: payload.totals,
+        sections: payload.sections,
+        lineIdField: 'purchaseOrderLineId',
+        sectionUuidField: 'purchaseOrderSectionId'
+      });
+      return;
+    }
+    if (payload?.type === 'lines-recalculated') {
+      if (Array.isArray(payload.lines)) record.value.lines = payload.lines;
+      if (payload.totals) {
+        Object.assign(record.value, payload.totals);
+        if (payload.totals.globalDiscountTotal != null) {
+          record.value.overallDiscountTotal = payload.totals.globalDiscountTotal;
+        }
+      }
+      if (payload.purchaseOrder) Object.assign(record.value, payload.purchaseOrder);
+      if (payload.quote) {
+        Object.assign(record.value, {
+          overallDiscountType:
+            payload.quote.globalDiscountType ?? payload.quote.overallDiscountType ?? record.value.overallDiscountType,
+          overallDiscountValue:
+            payload.quote.globalDiscountValue ?? payload.quote.overallDiscountValue ?? record.value.overallDiscountValue,
+          overallDiscountTotal:
+            payload.quote.globalDiscountTotal ?? payload.quote.overallDiscountTotal ?? record.value.overallDiscountTotal,
+          adjustmentTotal: payload.quote.adjustmentTotal ?? record.value.adjustmentTotal,
+          transactionTaxSnapshot: payload.quote.transactionTaxSnapshot ?? record.value.transactionTaxSnapshot,
+          chargeDocumentSnapshot: payload.quote.chargeDocumentSnapshot ?? record.value.chargeDocumentSnapshot,
+          subtotal: payload.quote.subtotal ?? record.value.subtotal,
+          grandTotal: payload.quote.grandTotal ?? record.value.grandTotal,
+          preTaxTotal: payload.quote.preTaxTotal ?? record.value.preTaxTotal,
+          taxTotal: payload.quote.taxTotal ?? record.value.taxTotal,
+          chargesTotal: payload.quote.chargesTotal ?? record.value.chargesTotal
+        });
+      }
+      return;
+    }
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
+  if (moduleKeyLower.value === 'purchase_returns' && record.value) {
+    if (payload && typeof payload === 'object' && (payload.purchaseReturnNumber || Array.isArray(payload.lines) || payload.status)) {
+      Object.assign(record.value, payload);
+      return;
+    }
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
+  if (moduleKeyLower.value === 'delivery_returns' && record.value) {
+    if (payload && typeof payload === 'object' && (payload.deliveryReturnNumber || Array.isArray(payload.lines) || payload.status)) {
+      Object.assign(record.value, payload);
+      return;
+    }
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
+  if (moduleKeyLower.value === 'delivery_notes' && record.value) {
+    if (payload && typeof payload === 'object' && (payload.deliveryNoteNumber || Array.isArray(payload.lines) || payload.status)) {
+      Object.assign(record.value, payload);
+      return;
+    }
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
+  if (moduleKeyLower.value === 'receipt_notes' && record.value) {
+    if (payload && typeof payload === 'object' && (payload.receiptNoteNumber || Array.isArray(payload.lines) || payload.status)) {
+      Object.assign(record.value, payload);
+      return;
+    }
+    fetchRecord({ preserveScroll: true, soft: true });
+    return;
+  }
+
   if (moduleKeyLower.value !== 'quotes' || !record.value) {
     fetchRecord();
     return;
@@ -4132,7 +4379,7 @@ async function loadCaseLookups(lowerModuleKey, isCurrentRun) {
 }
 
 async function loadQuoteLookups(lowerModuleKey, isCurrentRun) {
-  if (!['quotes', 'invoices'].includes(lowerModuleKey)) {
+  if (!['quotes', 'invoices', 'purchase_orders', 'purchase_returns', 'delivery_returns', 'delivery_notes'].includes(lowerModuleKey)) {
     if (isCurrentRun()) {
       quoteContactLookupList.value = [];
       quoteOrganizationLookupList.value = [];
@@ -4142,10 +4389,13 @@ async function loadQuoteLookups(lowerModuleKey, isCurrentRun) {
   }
 
   try {
+    const needsDeals = lowerModuleKey === 'quotes' || lowerModuleKey === 'invoices';
     const [contactRes, orgRes, dealRes] = await Promise.all([
       apiClient.get('/people', { params: { limit: 200, sortBy: 'firstName', sortOrder: 'asc' } }),
       apiClient.get('/v2/organization', { params: { limit: 200 } }),
-      apiClient.get('/deals', { params: { limit: 200 } }),
+      needsDeals
+        ? apiClient.get('/deals', { params: { limit: 200 } })
+        : Promise.resolve({ data: [] })
     ]);
     if (!isCurrentRun()) return;
 
@@ -4174,6 +4424,31 @@ async function loadQuoteLookups(lowerModuleKey, isCurrentRun) {
         return { _id: id, name: o?.name ?? (id != null ? String(id) : '—'), ...o };
       })
       .filter((o) => Boolean(o._id));
+
+    if (lowerModuleKey === 'purchase_orders' || lowerModuleKey === 'purchase_returns') {
+      quoteOrganizationLookupList.value = quoteOrganizationLookupList.value.filter((o) => {
+        const types = Array.isArray(o.types) ? o.types : [];
+        if (types.some((t) => String(t || '').toLowerCase() === 'vendor')) return true;
+        const invRole = o.participations?.INVENTORY?.role || o.participations?.inventory?.role;
+        return String(invRole || '').toLowerCase() === 'vendor';
+      });
+    }
+    if (lowerModuleKey === 'delivery_returns' || lowerModuleKey === 'delivery_notes') {
+      quoteOrganizationLookupList.value = quoteOrganizationLookupList.value.filter((o) => {
+        const types = Array.isArray(o.types) ? o.types : [];
+        if (types.some((t) => String(t || '').toLowerCase() === 'customer')) return true;
+        const salesRole = o.participations?.SALES?.role || o.participations?.sales?.role;
+        const invRole = o.participations?.INVENTORY?.role || o.participations?.inventory?.role;
+        return (
+          String(salesRole || '').toLowerCase() === 'customer' ||
+          String(invRole || '').toLowerCase() === 'customer'
+        );
+      });
+    }
+    if (!needsDeals) {
+      quoteDealLookupList.value = [];
+      return;
+    }
 
     const dealData = dealRes?.data ?? dealRes;
     const dealRows = Array.isArray(dealData)

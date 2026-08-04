@@ -47,7 +47,46 @@ const {
 const {
     INITIAL_PURCHASE_ORDER_QUICK_CREATE,
     isInitialPurchaseOrderRequiredField,
+    applyPurchaseOrderModuleFieldDefaults,
 } = require('../constants/purchaseOrderModuleDefaults');
+const {
+    INITIAL_PURCHASE_RETURN_QUICK_CREATE,
+    isInitialPurchaseReturnRequiredField,
+    applyPurchaseReturnModuleFieldDefaults,
+} = require('../constants/purchaseReturnModuleDefaults');
+const {
+    INITIAL_DELIVERY_RETURN_QUICK_CREATE,
+    isInitialDeliveryReturnRequiredField,
+    applyDeliveryReturnModuleFieldDefaults,
+} = require('../constants/deliveryReturnModuleDefaults');
+const {
+    INITIAL_SALES_RETURN_QUICK_CREATE,
+    isInitialSalesReturnRequiredField,
+    applySalesReturnModuleFieldDefaults,
+} = require('../constants/salesReturnModuleDefaults');
+const {
+    INITIAL_DELIVERY_NOTE_QUICK_CREATE,
+    isInitialDeliveryNoteRequiredField,
+    applyDeliveryNoteModuleFieldDefaults,
+} = require('../constants/deliveryNoteModuleDefaults');
+const {
+    INITIAL_RECEIPT_NOTE_QUICK_CREATE,
+    isInitialReceiptNoteRequiredField,
+    applyReceiptNoteModuleFieldDefaults,
+} = require('../constants/receiptNoteModuleDefaults');
+const {
+    INITIAL_STOCKROOM_QUICK_CREATE,
+    isInitialStockroomRequiredField,
+    applyStockroomModuleFieldDefaults,
+} = require('../constants/stockroomModuleDefaults');
+const {
+    INITIAL_STOCK_ADJUSTMENT_QUICK_CREATE,
+    applyStockAdjustmentModuleFieldDefaults,
+} = require('../constants/stockAdjustmentModuleDefaults');
+const {
+    INITIAL_STOCK_TRANSFER_QUICK_CREATE,
+    applyStockTransferModuleFieldDefaults,
+} = require('../constants/stockTransferModuleDefaults');
 const {
     INITIAL_INVOICE_QUICK_CREATE,
     isInitialInvoiceRequiredField,
@@ -800,6 +839,9 @@ function getFieldDataType(key, fieldName, path) {
 
     const purchaseOrderFieldMappings = {
         currency: 'Picklist',
+        deliveryMethod: 'Picklist',
+        overallDiscountType: 'Picklist',
+        status: 'Picklist'
     };
     if (key === 'purchase_orders' && purchaseOrderFieldMappings[fieldName]) {
         return purchaseOrderFieldMappings[fieldName];
@@ -1241,6 +1283,25 @@ function getBaseFieldsForKey(key) {
                     ]);
                     if (salesOrdersSchemaExcluded.has(name)) return false;
                 }
+                if (key === 'purchase_orders') {
+                    const purchaseOrdersSchemaExcluded = new Set([
+                        'poNumber',
+                        'subtotal',
+                        'overallDiscountType',
+                        'overallDiscountValue',
+                        'overallDiscountTotal',
+                        'preTaxTotal',
+                        'taxTotal',
+                        'chargesTotal',
+                        'adjustmentTotal',
+                        'grandTotal',
+                        'transactionTaxSnapshot',
+                        'taxDocumentSnapshot',
+                        'chargeDocumentSnapshot',
+                        'modifiedBy'
+                    ]);
+                    if (purchaseOrdersSchemaExcluded.has(name)) return false;
+                }
                 if (key === 'invoices') {
                     const invoicesSchemaExcluded = new Set([
                         'invoiceId',
@@ -1445,7 +1506,127 @@ function getBaseFieldsForKey(key) {
                 if (name === 'organizationRefId') fieldLabel = 'Organization';
                 if (name === 'vendorId') fieldLabel = 'Vendor';
                 if (name === 'vendorContactId') fieldLabel = 'Vendor Contact';
-                if (name === 'buyerId') fieldLabel = 'Buyer';
+                if (name === 'buyerId') fieldLabel = 'Purchase Owner';
+                // Purchase Order–specific labels (must not leak to other modules with shared field names)
+                if (key === 'purchase_orders') {
+                    if (name === 'subject') fieldLabel = 'Purchase Order Subject';
+                    if (name === 'poNumber') fieldLabel = 'Purchase Order Number';
+                    if (name === 'poDate') fieldLabel = 'Order Date';
+                    if (name === 'expectedDeliveryDate') fieldLabel = 'Expected Receipt Date';
+                    if (name === 'notes') fieldLabel = 'Vendor Notes';
+                    if (name === 'internalNotes') fieldLabel = 'Internal Notes';
+                    if (name === 'deliveryWarehouseId') fieldLabel = 'Delivery Warehouse';
+                    if (name === 'deliveryMethod') fieldLabel = 'Delivery Method';
+                    if (name === 'shippingTerms') fieldLabel = 'Shipping Terms';
+                    if (name === 'deliveryInstructions') fieldLabel = 'Delivery Instructions';
+                    if (name === 'overallDiscountType') fieldLabel = 'Overall Discount Type';
+                    if (name === 'overallDiscountValue') fieldLabel = 'Overall Discount';
+                    if (name === 'overallDiscountTotal') fieldLabel = 'Overall Discount Total';
+                    if (name === 'preTaxTotal') fieldLabel = 'Pre-Tax Total';
+                    if (name === 'adjustmentTotal') fieldLabel = 'Adjustments';
+                    if (name === 'grandTotal') fieldLabel = 'Grand Total';
+                    if (name === 'subtotal') fieldLabel = 'Sub Total';
+                    if (name === 'taxTotal') fieldLabel = 'Taxes';
+                    if (name === 'chargesTotal') fieldLabel = 'Charges';
+                }
+                if (key === 'purchase_returns') {
+                    if (name === 'subject') fieldLabel = 'Purchase Return Subject';
+                    if (name === 'purchaseReturnNumber') fieldLabel = 'Purchase Return Number';
+                    if (name === 'returnDate') fieldLabel = 'Return Date';
+                    if (name === 'ownerId') fieldLabel = 'Purchase Return Owner';
+                    if (name === 'returnType') fieldLabel = 'Return Type';
+                    if (name === 'returnReason') fieldLabel = 'Reason';
+                    if (name === 'supplierReference') fieldLabel = 'Supplier Reference Number';
+                    if (name === 'returnWarehouseId') fieldLabel = 'Return Warehouse';
+                    if (name === 'vendorNotes') fieldLabel = 'Vendor Notes';
+                    if (name === 'internalNotes') fieldLabel = 'Internal Notes';
+                    if (name === 'notes') fieldLabel = 'Vendor Notes';
+                    if (name === 'receiptNoteId') fieldLabel = 'Receipt Note';
+                    if (name === 'purchaseOrderId') fieldLabel = 'Purchase Order';
+                    if (name === 'grandTotal') fieldLabel = 'Grand Total';
+                    if (name === 'subtotal') fieldLabel = 'Sub Total';
+                    if (name === 'taxTotal') fieldLabel = 'Taxes';
+                    if (name === 'chargesTotal') fieldLabel = 'Charges';
+                }
+                if (key === 'delivery_returns') {
+                    if (name === 'subject') fieldLabel = 'Delivery Return Subject';
+                    if (name === 'deliveryReturnNumber') fieldLabel = 'Delivery Return Number';
+                    if (name === 'returnDate') fieldLabel = 'Return Date';
+                    if (name === 'ownerId') fieldLabel = 'Delivery Return Owner';
+                    if (name === 'customerId') fieldLabel = 'Customer';
+                    if (name === 'contactPersonId') fieldLabel = 'Contact Person';
+                    if (name === 'sourceType') fieldLabel = 'Source Type';
+                    if (name === 'returnType') fieldLabel = 'Return Type';
+                    if (name === 'returnReason') fieldLabel = 'Return Reason';
+                    if (name === 'customerReference') fieldLabel = 'Customer Reference Number';
+                    if (name === 'returnWarehouseId') fieldLabel = 'Return Warehouse';
+                    if (name === 'customerNotes') fieldLabel = 'Customer Notes';
+                    if (name === 'internalNotes') fieldLabel = 'Internal Notes';
+                    if (name === 'notes') fieldLabel = 'Customer Notes';
+                    if (name === 'deliveryNoteId') fieldLabel = 'Delivery Note';
+                    if (name === 'invoiceId') fieldLabel = 'Invoice';
+                    if (name === 'inventoryPostStatus') fieldLabel = 'Inventory Post Status';
+                    if (name === 'grandTotal') fieldLabel = 'Grand Total';
+                    if (name === 'subtotal') fieldLabel = 'Sub Total';
+                    if (name === 'taxTotal') fieldLabel = 'Taxes';
+                    if (name === 'chargesTotal') fieldLabel = 'Charges';
+                }
+                if (key === 'sales_returns') {
+                    if (name === 'salesReturnNumber') fieldLabel = 'Sales Return Number';
+                    if (name === 'returnDate') fieldLabel = 'Return Date';
+                    if (name === 'customerId') fieldLabel = 'Customer';
+                    if (name === 'invoiceId') fieldLabel = 'Invoice';
+                    if (name === 'deliveryNoteId') fieldLabel = 'Delivery Note';
+                    if (name === 'salesOrderId') fieldLabel = 'Sales Order';
+                    if (name === 'returnLocationId') fieldLabel = 'Return Location';
+                    if (name === 'overallReturnReason') fieldLabel = 'Return Reason';
+                    if (name === 'returnType') fieldLabel = 'Return Type';
+                    if (name === 'status') fieldLabel = 'Status';
+                    if (name === 'notes') fieldLabel = 'Notes';
+                    if (name === 'grandTotal') fieldLabel = 'Grand Total';
+                    if (name === 'subtotal') fieldLabel = 'Sub Total';
+                    if (name === 'taxTotal') fieldLabel = 'Taxes';
+                    if (name === 'chargesTotal') fieldLabel = 'Charges';
+                }
+                if (key === 'delivery_notes') {
+                    if (name === 'subject') fieldLabel = 'Delivery Note Subject';
+                    if (name === 'deliveryNoteNumber') fieldLabel = 'Delivery Note Number';
+                    if (name === 'deliveryDate') fieldLabel = 'Delivery Date';
+                    if (name === 'ownerId') fieldLabel = 'Delivery Owner';
+                    if (name === 'customerId') fieldLabel = 'Customer';
+                    if (name === 'contactPersonId') fieldLabel = 'Contact Person';
+                    if (name === 'sourceType') fieldLabel = 'Source Type';
+                    if (name === 'salesOrderId') fieldLabel = 'Sales Order';
+                    if (name === 'warehouseId') fieldLabel = 'Warehouse';
+                    if (name === 'deliveryMethod') fieldLabel = 'Delivery Method';
+                    if (name === 'carrier') fieldLabel = 'Carrier';
+                    if (name === 'trackingNumber') fieldLabel = 'Tracking Number';
+                    if (name === 'vehicleNumber') fieldLabel = 'Vehicle Number';
+                    if (name === 'driverDetails') fieldLabel = 'Driver Details';
+                    if (name === 'dispatchDate') fieldLabel = 'Dispatch Date';
+                    if (name === 'expectedDeliveryDate') fieldLabel = 'Expected Delivery Date';
+                    if (name === 'deliveryInstructions') fieldLabel = 'Delivery Instructions';
+                    if (name === 'customerNotes') fieldLabel = 'Customer Notes';
+                    if (name === 'internalNotes') fieldLabel = 'Internal Notes';
+                    if (name === 'notes') fieldLabel = 'Customer Notes';
+                    if (name === 'inventoryPostStatus') fieldLabel = 'Inventory Post Status';
+                    if (name === 'grandTotal') fieldLabel = 'Grand Total';
+                    if (name === 'subtotal') fieldLabel = 'Sub Total';
+                    if (name === 'taxTotal') fieldLabel = 'Taxes';
+                    if (name === 'chargesTotal') fieldLabel = 'Charges';
+                }
+                if (key === 'receipt_notes') {
+                    if (name === 'receiptNoteNumber') fieldLabel = 'Receipt Note Number';
+                    if (name === 'receiptDate') fieldLabel = 'Receipt Date';
+                    if (name === 'vendorId') fieldLabel = 'Vendor';
+                    if (name === 'purchaseOrderId') fieldLabel = 'Purchase Order';
+                    if (name === 'receiptLocationId') fieldLabel = 'Receipt Location';
+                    if (name === 'receivedBy') fieldLabel = 'Received By';
+                    if (name === 'vendorDeliveryChallanNo') fieldLabel = 'Vendor Delivery Challan No';
+                    if (name === 'transportDetails') fieldLabel = 'Transport Details';
+                    if (name === 'status') fieldLabel = 'Status';
+                    if (name === 'notes') fieldLabel = 'Notes';
+                }
                 if (name === 'lifecycle_state') fieldLabel = 'Status';
                 if (name === 'categoryId') fieldLabel = 'Category';
                 // UX normalization: hide technical relationship naming in Events module UI
@@ -1478,13 +1659,19 @@ function getBaseFieldsForKey(key) {
                             'Deal': 'deals',
                             'Quote': 'quotes',
                             'SalesOrder': 'sales_orders',
+                            'PurchaseOrder': 'purchase_orders',
+                            'ReceiptNote': 'receipt_notes',
+                            'DeliveryNote': 'delivery_notes',
+                            'DeliveryReturn': 'delivery_returns',
+                            'PurchaseReturn': 'purchase_returns',
                             'Invoice': 'invoices',
                             'Payment': 'payments',
                             'Case': 'cases',
                             'Task': 'tasks',
                             'Event': 'events',
                             'Form': 'forms',
-                            'Report': 'reports'
+                            'Report': 'reports',
+                            'InventoryLocation': 'inventory_locations'
                         };
                         if (moduleMap[ref]) {
                             lookupSettings = {
@@ -1508,13 +1695,19 @@ function getBaseFieldsForKey(key) {
                             'Deal': 'deals',
                             'Quote': 'quotes',
                             'SalesOrder': 'sales_orders',
+                            'PurchaseOrder': 'purchase_orders',
+                            'ReceiptNote': 'receipt_notes',
+                            'DeliveryNote': 'delivery_notes',
+                            'DeliveryReturn': 'delivery_returns',
+                            'PurchaseReturn': 'purchase_returns',
                             'Invoice': 'invoices',
                             'Payment': 'payments',
                             'Case': 'cases',
                             'Task': 'tasks',
                             'Event': 'events',
                             'Form': 'forms',
-                            'Report': 'reports'
+                            'Report': 'reports',
+                            'InventoryLocation': 'inventory_locations'
                         };
                         if (moduleMap[ref]) {
                             dataType = 'Lookup (Relationship)';
@@ -1853,6 +2046,18 @@ function getBaseFieldsForKey(key) {
                                     ? true
                                     : (key === 'purchase_orders' && isInitialPurchaseOrderRequiredField(name))
                                         ? true
+                                        : (key === 'purchase_returns' && isInitialPurchaseReturnRequiredField(name))
+                                            ? true
+                                            : (key === 'delivery_returns' && isInitialDeliveryReturnRequiredField(name))
+                                                ? true
+                                            : (key === 'sales_returns' && isInitialSalesReturnRequiredField(name))
+                                                ? true
+                                            : (key === 'delivery_notes' && isInitialDeliveryNoteRequiredField(name))
+                                                ? true
+                                            : (key === 'receipt_notes' && isInitialReceiptNoteRequiredField(name))
+                                            ? true
+                                        : (key === 'stockrooms' && isInitialStockroomRequiredField(name))
+                                            ? true
                                         : (key === 'invoices' && isInitialInvoiceRequiredField(name))
                                             ? true
                                             : (key === 'payments' && isInitialPaymentRequiredField(name))
@@ -2756,6 +2961,23 @@ exports.listModules = async (req, res) => {
                     .filter(Boolean)
               )
             : null;
+
+        // Ensure inventory ledger + workbench ModuleDefinitions when Inventory is titled
+        // (Settings fields schema, role permission catalog, module list merge).
+        if (
+            currentContext === 'inventory' ||
+            !requestedKeys ||
+            [...(requestedKeys || [])].some((k) => isInventorySchemaModuleKey(k))
+        ) {
+            try {
+                const {
+                    ensureInventoryAppModuleDefinitions
+                } = require('../services/inventoryModuleBootstrapService');
+                await ensureInventoryAppModuleDefinitions();
+            } catch (invBootErr) {
+                console.warn('[listModules] inventory bootstrap failed:', invBootErr.message);
+            }
+        }
         
         // Static system modules (always present)
         const SYSTEM_MODULE_CATALOG = [
@@ -3739,6 +3961,63 @@ exports.listModules = async (req, res) => {
                     finalQuickCreate = [...INITIAL_PURCHASE_ORDER_QUICK_CREATE];
                     console.log('📋 Purchase Orders: Applying canonical default Quick Create:', finalQuickCreate);
                 }
+                if (sys.key === 'purchase_orders' && Array.isArray(finalQuickCreate) && finalQuickCreate.length) {
+                    const keys = finalQuickCreate.map((k) => String(k));
+                    const hasSubject = keys.some((k) => k.toLowerCase() === 'subject');
+                    if (!hasSubject) {
+                        finalQuickCreate = ['subject', ...keys];
+                    }
+                }
+                if (sys.key === 'purchase_returns' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_PURCHASE_RETURN_QUICK_CREATE];
+                    console.log('📋 Purchase Returns: Applying canonical default Quick Create:', finalQuickCreate);
+                }
+                if (sys.key === 'purchase_returns' && Array.isArray(finalQuickCreate) && finalQuickCreate.length) {
+                    const keys = finalQuickCreate.map((k) => String(k));
+                    const hasSubject = keys.some((k) => k.toLowerCase() === 'subject');
+                    if (!hasSubject) {
+                        finalQuickCreate = ['subject', ...keys];
+                    }
+                }
+                if (sys.key === 'delivery_returns' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_DELIVERY_RETURN_QUICK_CREATE];
+                    console.log('📋 Delivery Returns: Applying canonical default Quick Create:', finalQuickCreate);
+                }
+                if (sys.key === 'delivery_returns' && Array.isArray(finalQuickCreate) && finalQuickCreate.length) {
+                    const keys = finalQuickCreate.map((k) => String(k));
+                    const hasSubject = keys.some((k) => k.toLowerCase() === 'subject');
+                    if (!hasSubject) {
+                        finalQuickCreate = ['subject', ...keys];
+                    }
+                }
+                if (sys.key === 'sales_returns' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_SALES_RETURN_QUICK_CREATE];
+                    console.log('📋 Sales Returns: Applying canonical default Quick Create:', finalQuickCreate);
+                }
+                if (sys.key === 'delivery_notes' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_DELIVERY_NOTE_QUICK_CREATE];
+                    console.log('📋 Delivery Notes: Applying canonical default Quick Create:', finalQuickCreate);
+                }
+                if (sys.key === 'delivery_notes' && Array.isArray(finalQuickCreate) && finalQuickCreate.length) {
+                    const keys = finalQuickCreate.map((k) => String(k));
+                    const hasSubject = keys.some((k) => k.toLowerCase() === 'subject');
+                    if (!hasSubject) {
+                        finalQuickCreate = ['subject', ...keys];
+                    }
+                }
+                if (sys.key === 'receipt_notes' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_RECEIPT_NOTE_QUICK_CREATE];
+                    console.log('📋 Receipt Notes: Applying canonical default Quick Create:', finalQuickCreate);
+                }
+                if (sys.key === 'stockrooms' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_STOCKROOM_QUICK_CREATE];
+                }
+                if (sys.key === 'stock_adjustments' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_STOCK_ADJUSTMENT_QUICK_CREATE];
+                }
+                if (sys.key === 'stock_transfers' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
+                    finalQuickCreate = [...INITIAL_STOCK_TRANSFER_QUICK_CREATE];
+                }
                 if (sys.key === 'invoices' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
                     finalQuickCreate = [...INITIAL_INVOICE_QUICK_CREATE];
                     console.log('📋 Invoices: Applying canonical default Quick Create:', finalQuickCreate);
@@ -4014,11 +4293,576 @@ exports.listModules = async (req, res) => {
                     finalFields = enrichCasesModuleFields(finalFields);
                 }
                 if (sys.key === 'purchase_orders' && Array.isArray(finalFields)) {
+                    const { PO_STATUS_LABELS } = require('../constants/procurementLifecycle');
                     finalFields = finalFields.map((field) => {
-                        if (String(field?.key || '').toLowerCase() !== 'currency') return field;
-                        if (field.dataType === 'Picklist') return field;
-                        return { ...field, dataType: 'Picklist' };
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(PO_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'deliverymethod') {
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: [
+                                    { value: 'supplier_delivery', label: 'Supplier Delivery' },
+                                    { value: 'courier', label: 'Courier' },
+                                    { value: 'transport', label: 'Transport' },
+                                    { value: 'pickup', label: 'Pickup' }
+                                ]
+                            };
+                        }
+                        if (key === 'overalldiscounttype') {
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: [
+                                    { value: 'percent', label: 'Percentage' },
+                                    { value: 'amount', label: 'Flat amount' }
+                                ]
+                            };
+                        }
+                        return field;
                     });
+                    finalFields = applyPurchaseOrderModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'purchase_returns' && Array.isArray(finalFields)) {
+                    const {
+                        PR_STATUS_LABELS
+                    } = require('../constants/procurementLifecycle');
+                    const { PR_RETURN_TYPES } = require('../models/PurchaseReturn');
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(PR_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'returntype') {
+                            const typeLabels = {
+                                goods_return: 'Goods Return',
+                                replacement: 'Replacement',
+                                warranty_return: 'Warranty Return',
+                                quality_rejection: 'Quality Rejection',
+                                supplier_recall: 'Supplier Recall'
+                            };
+                            const opts = PR_RETURN_TYPES.map((value) => ({
+                                value,
+                                label: typeLabels[value] || value
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applyPurchaseReturnModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'delivery_returns' && Array.isArray(finalFields)) {
+                    const {
+                        DR_STATUS_LABELS,
+                        DR_RETURN_TYPE_LABELS,
+                        DR_SOURCE_TYPES
+                    } = require('../constants/deliveryReturnLifecycle');
+                    const { DR_RETURN_TYPES } = require('../models/DeliveryReturn');
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(DR_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'returntype') {
+                            const opts = DR_RETURN_TYPES.map((value) => ({
+                                value,
+                                label: DR_RETURN_TYPE_LABELS[value] || value
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'sourcetype') {
+                            const opts = [
+                                { value: DR_SOURCE_TYPES.DELIVERY_NOTE, label: 'Delivery Note' },
+                                { value: DR_SOURCE_TYPES.INVOICE, label: 'Invoice' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'inventorypoststatus') {
+                            const opts = [
+                                { value: 'received', label: 'Received' },
+                                { value: 'inspected', label: 'Inspected' },
+                                { value: 'restocked', label: 'Restocked' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'customerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'organizations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'contactpersonid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'people',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'ownerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'users',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'deliverynoteid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'delivery_notes',
+                                    displayField: 'deliveryNoteNumber'
+                                }
+                            };
+                        }
+                        if (key === 'invoiceid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'invoices',
+                                    displayField: 'invoiceNumber'
+                                }
+                            };
+                        }
+                        if (key === 'salesorderid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'sales_orders',
+                                    displayField: 'salesOrderNumber'
+                                }
+                            };
+                        }
+                        if (key === 'returnwarehouseid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applyDeliveryReturnModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'sales_returns' && Array.isArray(finalFields)) {
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'status') {
+                            const opts = [
+                                { value: 'draft', label: 'Draft' },
+                                { value: 'pending_approval', label: 'Pending Approval' },
+                                { value: 'approved', label: 'Approved' },
+                                { value: 'inventory_updated', label: 'Inventory Updated' },
+                                { value: 'closed', label: 'Closed' },
+                                { value: 'cancelled', label: 'Cancelled' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'returntype') {
+                            const opts = [
+                                { value: 'refund', label: 'Refund' },
+                                { value: 'replacement', label: 'Replacement' },
+                                { value: 'credit', label: 'Credit' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'overallreturnreason') {
+                            const opts = [
+                                { value: 'Customer return', label: 'Customer return' },
+                                { value: 'Damaged', label: 'Damaged' },
+                                { value: 'Wrong item', label: 'Wrong item' },
+                                { value: 'Warranty', label: 'Warranty' },
+                                { value: 'Other', label: 'Other' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'invoiceid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'invoices',
+                                    displayField: 'invoiceNumber'
+                                }
+                            };
+                        }
+                        if (key === 'returnlocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'customerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'organizations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applySalesReturnModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'delivery_notes' && Array.isArray(finalFields)) {
+                    const {
+                        DN_STATUS_LABELS,
+                        DN_SOURCE_TYPES,
+                        DN_SOURCE_TYPE_LABELS,
+                        DN_DELIVERY_METHOD_LABELS,
+                        DN_INVENTORY_POST_STATUSES
+                    } = require('../constants/deliveryNoteLifecycle');
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(DN_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'sourcetype') {
+                            const opts = [
+                                { value: DN_SOURCE_TYPES.DIRECT, label: DN_SOURCE_TYPE_LABELS.direct },
+                                { value: DN_SOURCE_TYPES.SALES_ORDER, label: DN_SOURCE_TYPE_LABELS.sales_order }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'deliverymethod') {
+                            const opts = Object.entries(DN_DELIVERY_METHOD_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'inventorypoststatus') {
+                            const opts = DN_INVENTORY_POST_STATUSES.map((value) => ({
+                                value,
+                                label: DN_STATUS_LABELS[value] || value
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'customerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'organizations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'contactpersonid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'people',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'ownerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'users',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'salesorderid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'sales_orders',
+                                    displayField: 'salesOrderNumber'
+                                }
+                            };
+                        }
+                        if (key === 'invoiceid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'invoices',
+                                    displayField: 'invoiceNumber'
+                                }
+                            };
+                        }
+                        if (key === 'warehouseid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applyDeliveryNoteModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'receipt_notes' && Array.isArray(finalFields)) {
+                    const { RN_STATUSES } = require('../constants/procurementLifecycle');
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'status') {
+                            const opts = Object.values(RN_STATUSES).map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'purchaseorderid' || key === 'receiptlocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule:
+                                        key === 'purchaseorderid' ? 'purchase_orders' : 'inventory_locations',
+                                    displayField: key === 'purchaseorderid' ? 'poNumber' : 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applyReceiptNoteModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'stockrooms' && Array.isArray(finalFields)) {
+                    const {
+                        INVENTORY_LOCATION_TYPES,
+                        INVENTORY_LOCATION_STATUSES
+                    } = require('../constants/inventoryLifecycle');
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'locationtype') {
+                            const opts = INVENTORY_LOCATION_TYPES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'status') {
+                            const opts = INVENTORY_LOCATION_STATUSES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applyStockroomModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'stock_adjustments' && Array.isArray(finalFields)) {
+                    const {
+                        INVENTORY_ADJUSTMENT_REASONS,
+                        INVENTORY_ADJUSTMENT_STATUSES
+                    } = require('../constants/inventoryLifecycle');
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'reasoncode') {
+                            const opts = INVENTORY_ADJUSTMENT_REASONS.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'status') {
+                            const opts = INVENTORY_ADJUSTMENT_STATUSES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'inventorylocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applyStockAdjustmentModuleFieldDefaults(finalFields);
+                }
+                if (sys.key === 'stock_transfers' && Array.isArray(finalFields)) {
+                    const { INVENTORY_TRANSFER_STATUSES } = require('../constants/inventoryLifecycle');
+                    finalFields = finalFields.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'status') {
+                            const opts = INVENTORY_TRANSFER_STATUSES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'fromlocationid' || key === 'tolocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    finalFields = applyStockTransferModuleFieldDefaults(finalFields);
                 }
                 finalFields = applyOwnerFieldRequiredToModuleFields(finalFields, sys.key);
                 let resolvedRelationships = shouldUseOverrideRelationships(override, sys)
@@ -4114,6 +4958,30 @@ exports.listModules = async (req, res) => {
                 if (sys.key === 'purchase_orders') {
                     defaultQuickCreate = [...INITIAL_PURCHASE_ORDER_QUICK_CREATE];
                 }
+                if (sys.key === 'purchase_returns') {
+                    defaultQuickCreate = [...INITIAL_PURCHASE_RETURN_QUICK_CREATE];
+                }
+                if (sys.key === 'delivery_returns') {
+                    defaultQuickCreate = [...INITIAL_DELIVERY_RETURN_QUICK_CREATE];
+                }
+                if (sys.key === 'sales_returns') {
+                    defaultQuickCreate = [...INITIAL_SALES_RETURN_QUICK_CREATE];
+                }
+                if (sys.key === 'delivery_notes') {
+                    defaultQuickCreate = [...INITIAL_DELIVERY_NOTE_QUICK_CREATE];
+                }
+                if (sys.key === 'receipt_notes') {
+                    defaultQuickCreate = [...INITIAL_RECEIPT_NOTE_QUICK_CREATE];
+                }
+                if (sys.key === 'stockrooms') {
+                    defaultQuickCreate = [...INITIAL_STOCKROOM_QUICK_CREATE];
+                }
+                if (sys.key === 'stock_adjustments') {
+                    defaultQuickCreate = [...INITIAL_STOCK_ADJUSTMENT_QUICK_CREATE];
+                }
+                if (sys.key === 'stock_transfers') {
+                    defaultQuickCreate = [...INITIAL_STOCK_TRANSFER_QUICK_CREATE];
+                }
                 if (sys.key === 'invoices') {
                     defaultQuickCreate = [...INITIAL_INVOICE_QUICK_CREATE];
                 }
@@ -4162,11 +5030,574 @@ exports.listModules = async (req, res) => {
                     fieldsToPush = (Array.isArray(fieldsToPush) ? fieldsToPush : []).map(normalizeEventFieldConfig);
                 }
                 if (sys.key === 'purchase_orders' && Array.isArray(fieldsToPush)) {
+                    const { PO_STATUS_LABELS } = require('../constants/procurementLifecycle');
                     fieldsToPush = fieldsToPush.map((field) => {
-                        if (String(field?.key || '').toLowerCase() !== 'currency') return field;
-                        if (field.dataType === 'Picklist') return field;
-                        return { ...field, dataType: 'Picklist' };
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(PO_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'deliverymethod') {
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: [
+                                    { value: 'supplier_delivery', label: 'Supplier Delivery' },
+                                    { value: 'courier', label: 'Courier' },
+                                    { value: 'transport', label: 'Transport' },
+                                    { value: 'pickup', label: 'Pickup' }
+                                ]
+                            };
+                        }
+                        if (key === 'overalldiscounttype') {
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: [
+                                    { value: 'percent', label: 'Percentage' },
+                                    { value: 'amount', label: 'Flat amount' }
+                                ]
+                            };
+                        }
+                        return field;
                     });
+                    fieldsToPush = applyPurchaseOrderModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'purchase_returns' && Array.isArray(fieldsToPush)) {
+                    const { PR_STATUS_LABELS } = require('../constants/procurementLifecycle');
+                    const { PR_RETURN_TYPES } = require('../models/PurchaseReturn');
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(PR_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'returntype') {
+                            const typeLabels = {
+                                goods_return: 'Goods Return',
+                                replacement: 'Replacement',
+                                warranty_return: 'Warranty Return',
+                                quality_rejection: 'Quality Rejection',
+                                supplier_recall: 'Supplier Recall'
+                            };
+                            const opts = PR_RETURN_TYPES.map((value) => ({
+                                value,
+                                label: typeLabels[value] || value
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applyPurchaseReturnModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'delivery_returns' && Array.isArray(fieldsToPush)) {
+                    const {
+                        DR_STATUS_LABELS,
+                        DR_RETURN_TYPE_LABELS,
+                        DR_SOURCE_TYPES
+                    } = require('../constants/deliveryReturnLifecycle');
+                    const { DR_RETURN_TYPES } = require('../models/DeliveryReturn');
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(DR_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'returntype') {
+                            const opts = DR_RETURN_TYPES.map((value) => ({
+                                value,
+                                label: DR_RETURN_TYPE_LABELS[value] || value
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'sourcetype') {
+                            const opts = [
+                                { value: DR_SOURCE_TYPES.DELIVERY_NOTE, label: 'Delivery Note' },
+                                { value: DR_SOURCE_TYPES.INVOICE, label: 'Invoice' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'inventorypoststatus') {
+                            const opts = [
+                                { value: 'received', label: 'Received' },
+                                { value: 'inspected', label: 'Inspected' },
+                                { value: 'restocked', label: 'Restocked' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'customerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'organizations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'contactpersonid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'people',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'ownerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'users',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'deliverynoteid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'delivery_notes',
+                                    displayField: 'deliveryNoteNumber'
+                                }
+                            };
+                        }
+                        if (key === 'invoiceid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'invoices',
+                                    displayField: 'invoiceNumber'
+                                }
+                            };
+                        }
+                        if (key === 'salesorderid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'sales_orders',
+                                    displayField: 'salesOrderNumber'
+                                }
+                            };
+                        }
+                        if (key === 'returnwarehouseid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applyDeliveryReturnModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'sales_returns' && Array.isArray(fieldsToPush)) {
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'status') {
+                            const opts = [
+                                { value: 'draft', label: 'Draft' },
+                                { value: 'pending_approval', label: 'Pending Approval' },
+                                { value: 'approved', label: 'Approved' },
+                                { value: 'inventory_updated', label: 'Inventory Updated' },
+                                { value: 'closed', label: 'Closed' },
+                                { value: 'cancelled', label: 'Cancelled' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'returntype') {
+                            const opts = [
+                                { value: 'refund', label: 'Refund' },
+                                { value: 'replacement', label: 'Replacement' },
+                                { value: 'credit', label: 'Credit' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'overallreturnreason') {
+                            const opts = [
+                                { value: 'Customer return', label: 'Customer return' },
+                                { value: 'Damaged', label: 'Damaged' },
+                                { value: 'Wrong item', label: 'Wrong item' },
+                                { value: 'Warranty', label: 'Warranty' },
+                                { value: 'Other', label: 'Other' }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'invoiceid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'invoices',
+                                    displayField: 'invoiceNumber'
+                                }
+                            };
+                        }
+                        if (key === 'returnlocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'customerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'organizations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applySalesReturnModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'delivery_notes' && Array.isArray(fieldsToPush)) {
+                    const {
+                        DN_STATUS_LABELS,
+                        DN_SOURCE_TYPES,
+                        DN_SOURCE_TYPE_LABELS,
+                        DN_DELIVERY_METHOD_LABELS,
+                        DN_INVENTORY_POST_STATUSES
+                    } = require('../constants/deliveryNoteLifecycle');
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'currency' && field.dataType !== 'Picklist') {
+                            return { ...field, dataType: 'Picklist' };
+                        }
+                        if (key === 'status') {
+                            const opts = Object.entries(DN_STATUS_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'sourcetype') {
+                            const opts = [
+                                { value: DN_SOURCE_TYPES.DIRECT, label: DN_SOURCE_TYPE_LABELS.direct },
+                                { value: DN_SOURCE_TYPES.SALES_ORDER, label: DN_SOURCE_TYPE_LABELS.sales_order }
+                            ];
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'deliverymethod') {
+                            const opts = Object.entries(DN_DELIVERY_METHOD_LABELS).map(([value, label]) => ({
+                                value,
+                                label
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'inventorypoststatus') {
+                            const opts = DN_INVENTORY_POST_STATUSES.map((value) => ({
+                                value,
+                                label: DN_STATUS_LABELS[value] || value
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'customerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'organizations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'contactpersonid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'people',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'ownerid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'users',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        if (key === 'salesorderid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'sales_orders',
+                                    displayField: 'salesOrderNumber'
+                                }
+                            };
+                        }
+                        if (key === 'invoiceid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'invoices',
+                                    displayField: 'invoiceNumber'
+                                }
+                            };
+                        }
+                        if (key === 'warehouseid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applyDeliveryNoteModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'receipt_notes' && Array.isArray(fieldsToPush)) {
+                    const { RN_STATUSES } = require('../constants/procurementLifecycle');
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'status') {
+                            const opts = Object.values(RN_STATUSES).map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'purchaseorderid' || key === 'receiptlocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule:
+                                        key === 'purchaseorderid' ? 'purchase_orders' : 'inventory_locations',
+                                    displayField: key === 'purchaseorderid' ? 'poNumber' : 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applyReceiptNoteModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'stockrooms' && Array.isArray(fieldsToPush)) {
+                    const {
+                        INVENTORY_LOCATION_TYPES,
+                        INVENTORY_LOCATION_STATUSES
+                    } = require('../constants/inventoryLifecycle');
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'locationtype') {
+                            const opts = INVENTORY_LOCATION_TYPES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'status') {
+                            const opts = INVENTORY_LOCATION_STATUSES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applyStockroomModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'stock_adjustments' && Array.isArray(fieldsToPush)) {
+                    const {
+                        INVENTORY_ADJUSTMENT_REASONS,
+                        INVENTORY_ADJUSTMENT_STATUSES
+                    } = require('../constants/inventoryLifecycle');
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'reasoncode') {
+                            const opts = INVENTORY_ADJUSTMENT_REASONS.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'status') {
+                            const opts = INVENTORY_ADJUSTMENT_STATUSES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'inventorylocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applyStockAdjustmentModuleFieldDefaults(fieldsToPush);
+                }
+                if (sys.key === 'stock_transfers' && Array.isArray(fieldsToPush)) {
+                    const { INVENTORY_TRANSFER_STATUSES } = require('../constants/inventoryLifecycle');
+                    fieldsToPush = fieldsToPush.map((field) => {
+                        const key = String(field?.key || '').toLowerCase();
+                        if (key === 'status') {
+                            const opts = INVENTORY_TRANSFER_STATUSES.map((value) => ({
+                                value,
+                                label: value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                            }));
+                            return {
+                                ...field,
+                                dataType: 'Picklist',
+                                options: opts,
+                                enum: opts.map((o) => o.value)
+                            };
+                        }
+                        if (key === 'fromlocationid' || key === 'tolocationid') {
+                            return {
+                                ...field,
+                                dataType: 'Lookup (Relationship)',
+                                lookupSettings: {
+                                    targetModule: 'inventory_locations',
+                                    displayField: 'name'
+                                }
+                            };
+                        }
+                        return field;
+                    });
+                    fieldsToPush = applyStockTransferModuleFieldDefaults(fieldsToPush);
                 }
                 fieldsToPush = applyOwnerFieldRequiredToModuleFields(fieldsToPush, sys.key);
                 const defaultRelationships = sys.key === 'quotes'

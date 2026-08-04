@@ -175,7 +175,7 @@
     var colors = resolveChromeColors(presentation, presentation.useHeroOverlap && Boolean(data.coverImage && data.coverImage.url));
     var metaParts = [];
     if (data.authorName) {
-      var avatar = String(data.authorAvatar || '').trim();
+      var avatar = absolutizeEmbedAssetUrl(String(data.authorAvatar || '').trim(), apiOrigin);
       var avatarHtml = avatar
         ? '<img class="ld-article__author-avatar" src="' + escapeHtml(avatar) + '" alt="" width="24" height="24" loading="lazy" decoding="async" />'
         : '';

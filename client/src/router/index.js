@@ -169,7 +169,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
+      requiresPermission: { module: 'purchase_orders', action: 'view' },
       moduleKey: 'purchase_orders',
       appKey: 'INVENTORY',
       routeType: 'list'
@@ -181,7 +181,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
+      requiresPermission: { module: 'purchase_orders', action: 'view' },
       moduleKey: 'purchase_orders',
       appKey: 'INVENTORY',
       routeType: 'create'
@@ -193,7 +193,7 @@ const routes = [
     component: () => import('@/pages/ModuleRecordPage.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
+      requiresPermission: { module: 'purchase_orders', action: 'view' },
       moduleKey: 'purchase_orders',
       appKey: 'INVENTORY',
       routeType: 'detail'
@@ -202,81 +202,289 @@ const routes = [
   {
     path: '/inventory/receipt-notes',
     name: 'inventory-receipt-notes',
-    component: () => import('@/views/inventory/ReceiptNotes.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'receipt_notes', action: 'view' },
+      moduleKey: 'receipt_notes',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/receipt-notes/new',
+    name: 'inventory-receipt-notes-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'receipt_notes', action: 'view' },
+      moduleKey: 'receipt_notes',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/receipt-notes/:id',
+    name: 'inventory-receipt-note-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'receipt_notes', action: 'view' },
+      moduleKey: 'receipt_notes',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {
     path: '/inventory/purchase-returns',
     name: 'inventory-purchase-returns',
-    component: () => import('@/views/inventory/PurchaseReturns.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'purchase_returns', action: 'view' },
+      moduleKey: 'purchase_returns',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/purchase-returns/new',
+    name: 'inventory-purchase-returns-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'purchase_returns', action: 'view' },
+      moduleKey: 'purchase_returns',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/purchase-returns/:id',
+    name: 'inventory-purchase-return-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'purchase_returns', action: 'view' },
+      moduleKey: 'purchase_returns',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {
     path: '/inventory/delivery-notes',
     name: 'inventory-delivery-notes',
-    component: () => import('@/views/inventory/DeliveryNotes.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'delivery_notes', action: 'view' },
+      moduleKey: 'delivery_notes',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/delivery-notes/new',
+    name: 'inventory-delivery-notes-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'delivery_notes', action: 'view' },
+      moduleKey: 'delivery_notes',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/delivery-notes/:id',
+    name: 'inventory-delivery-note-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'delivery_notes', action: 'view' },
+      moduleKey: 'delivery_notes',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {
     path: '/inventory/delivery-returns',
     name: 'inventory-delivery-returns',
-    component: () => import('@/views/inventory/DeliveryReturns.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'delivery_returns', action: 'view' },
+      moduleKey: 'delivery_returns',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/delivery-returns/new',
+    name: 'inventory-delivery-returns-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'delivery_returns', action: 'view' },
+      moduleKey: 'delivery_returns',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/delivery-returns/:id',
+    name: 'inventory-delivery-return-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'delivery_returns', action: 'view' },
+      moduleKey: 'delivery_returns',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {
     path: '/inventory/sales-returns',
     name: 'inventory-sales-returns',
-    component: () => import('@/views/inventory/SalesReturns.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'sales_returns', action: 'view' },
+      moduleKey: 'sales_returns',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/sales-returns/new',
+    name: 'inventory-sales-returns-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'sales_returns', action: 'view' },
+      moduleKey: 'sales_returns',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/sales-returns/:id',
+    name: 'inventory-sales-return-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'sales_returns', action: 'view' },
+      moduleKey: 'sales_returns',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {
     path: '/inventory/stockrooms',
     name: 'inventory-stockrooms',
-    component: () => import('@/views/inventory/Stockrooms.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'stockrooms', action: 'view' },
+      moduleKey: 'stockrooms',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/stockrooms/new',
+    name: 'inventory-stockrooms-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'stockrooms', action: 'view' },
+      moduleKey: 'stockrooms',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/stockrooms/:id',
+    name: 'inventory-stockroom-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'stockrooms', action: 'view' },
+      moduleKey: 'stockrooms',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {
     path: '/inventory/adjustments',
     name: 'inventory-adjustments',
-    component: () => import('@/views/inventory/StockAdjustments.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'stock_adjustments', action: 'view' },
+      moduleKey: 'stock_adjustments',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/adjustments/new',
+    name: 'inventory-adjustments-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'stock_adjustments', action: 'view' },
+      moduleKey: 'stock_adjustments',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/adjustments/:id',
+    name: 'inventory-adjustment-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'stock_adjustments', action: 'view' },
+      moduleKey: 'stock_adjustments',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {
     path: '/inventory/transfers',
     name: 'inventory-transfers',
-    component: () => import('@/views/inventory/StockTransfers.vue'),
+    component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
-      requiresPermission: { module: 'inventory', action: 'view' },
-      appKey: 'INVENTORY'
+      requiresPermission: { module: 'stock_transfers', action: 'view' },
+      moduleKey: 'stock_transfers',
+      appKey: 'INVENTORY',
+      routeType: 'list'
+    }
+  },
+  {
+    path: '/inventory/transfers/new',
+    name: 'inventory-transfers-create',
+    component: () => import('@/views/GenericModule.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'stock_transfers', action: 'view' },
+      moduleKey: 'stock_transfers',
+      appKey: 'INVENTORY',
+      routeType: 'create'
+    }
+  },
+  {
+    path: '/inventory/transfers/:id',
+    name: 'inventory-transfer-detail',
+    component: () => import('@/pages/ModuleRecordPage.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresPermission: { module: 'stock_transfers', action: 'view' },
+      moduleKey: 'stock_transfers',
+      appKey: 'INVENTORY',
+      routeType: 'detail'
     }
   },
   {

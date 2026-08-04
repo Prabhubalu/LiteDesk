@@ -4258,5 +4258,1597 @@
   "activityDescriptionImageRemoved": {
     "message": "Image removed",
     "description": "Activity feed label when a description image was removed"
+  },
+  "linesPoVendorCatalogSubtitle": {
+    "message": "Items linked to this vendor. Switch to Browse all items to pick others.",
+    "description": "PO item picker subtitle when filtering vendor catalog"
+  },
+  "linesPoBrowseAllItems": {
+    "message": "Browse all items",
+    "description": "Toggle to show entire item catalog on PO"
+  },
+  "linesPoShowVendorCatalog": {
+    "message": "Vendor catalog",
+    "description": "Toggle back to vendor-linked items only"
+  },
+  "linesPoUnlinkedTitle": {
+    "message": "Item not linked to vendor",
+    "description": "Confirm dialog title when adding unlinked item to PO"
+  },
+  "linesPoUnlinkedMessage": {
+    "message": "This item is not currently associated with the selected vendor. Would you like to continue?",
+    "description": "Confirm dialog body for unlinked vendor item"
+  },
+  "linesPoAlsoLinkVendor": {
+    "message": "Also link this item to the vendor for future purchases",
+    "description": "Checkbox to create vendor catalog entry from PO"
+  },
+  "linesPoContinue": {
+    "message": "Continue",
+    "description": "Confirm unlinked PO item continue"
+  },
+  "linesPoNotLinkedBadge": {
+    "message": "Not linked",
+    "description": "Badge when PO browse-all shows a variant not in vendor catalog"
+  },
+  "linesPoLastPurchase": {
+    "message": "Last: {price} · {date}",
+    "description": "PO picker last purchase reference"
+  },
+  "linesPoCatalogPrice": {
+    "message": "Catalog {price}",
+    "description": "PO line hint when unit price differs from vendor catalog"
+  },
+  "linesPoUseCatalogPrice": {
+    "message": "Use vendor catalog price",
+    "description": "Tooltip to reset PO line unit price to catalog"
+  },
+  "linesPoSelectVendorFirst": {
+    "message": "Select a vendor on this purchase order first to see catalog items.",
+    "description": "PO line add empty state when vendor is missing"
+  },
+  "linesPoVendorCatalogEmpty": {
+    "message": "No items linked to this vendor yet. Add items on the vendor’s Organization → Vendor Catalog, or use Browse all items.",
+    "description": "PO line picker when vendor catalog is empty"
+  },
+  "linesPoBrowseAllEmptyHint": {
+    "message": "Search the item catalog, or switch back to Vendor catalog for linked items only.",
+    "description": "PO browse-all empty state with no query"
+  },
+  "poMoreActions": {
+    "message": "More",
+    "description": "PO lines header more-actions menu"
+  },
+  "poSubmitApproval": {
+    "message": "Submit for approval",
+    "description": "PO workflow submit"
+  },
+  "poApprove": {
+    "message": "Approve",
+    "description": "PO workflow approve"
+  },
+  "poMarkOrdered": {
+    "message": "Mark ordered",
+    "description": "PO workflow issued to vendor"
+  },
+  "poCreateReceiptNote": {
+    "message": "Create receipt note",
+    "description": "PO workflow create RN"
+  },
+  "poCreateReceiptNoteHint": {
+    "message": "Receive goods for {number}. Inventory updates after verification.",
+    "description": "RN modal helper"
+  },
+  "poReceiptLocation": {
+    "message": "Delivery warehouse",
+    "description": "RN location field"
+  },
+  "poReceiptLocationSelect": {
+    "message": "Select warehouse",
+    "description": "RN location placeholder"
+  },
+  "poCancel": {
+    "message": "Cancel purchase order",
+    "description": "PO cancel action"
+  },
+  "poCancelConfirm": {
+    "message": "Cancel this purchase order? This cannot be undone from the UI without support.",
+    "description": "PO cancel confirm"
+  },
+  "poActionFailed": {
+    "message": "Purchase order action failed",
+    "description": "Generic PO action error"
+  },
+  "poSubmitSuccess": {
+    "message": "Submitted for approval",
+    "description": "PO submit toast"
+  },
+  "poApproveSuccess": {
+    "message": "Purchase order approved",
+    "description": "PO approve toast"
+  },
+  "poMarkOrderedSuccess": {
+    "message": "Marked as ordered",
+    "description": "PO ordered toast"
+  },
+  "poCancelSuccess": {
+    "message": "Purchase order cancelled",
+    "description": "PO cancel toast"
+  },
+  "poDuplicateSuccess": {
+    "message": "Duplicated as {number}",
+    "description": "PO duplicate toast"
+  },
+  "poReceiptCreateSuccess": {
+    "message": "Receipt note created",
+    "description": "RN create toast"
+  },
+  "poReceiptCreateSuccessWithNumber": {
+    "message": "Receipt note {number} created",
+    "description": "RN create toast with number"
+  },
+  "poReceiptCreateFailed": {
+    "message": "Could not create receipt note",
+    "description": "RN create error"
+  },
+  "poSendEmail": {
+    "message": "Email",
+    "description": "PO email action button"
+  },
+  "poSendEmailTitle": {
+    "message": "Email purchase order",
+    "description": "PO email drawer title"
+  },
+  "poSendEmailSubtitle": {
+    "message": "Send this purchase order to your vendor.",
+    "description": "PO email drawer subtitle"
+  },
+  "poSendEmailTo": {
+    "message": "To",
+    "description": "PO email recipient"
+  },
+  "poSendEmailToPlaceholder": {
+    "message": "vendor{'@'}example.com",
+    "description": "PO email recipient placeholder"
+  },
+  "poSendEmailSubject": {
+    "message": "Subject",
+    "description": "PO email subject field"
+  },
+  "poSendEmailMessage": {
+    "message": "Message",
+    "description": "PO email body"
+  },
+  "poSendEmailAttachPdf": {
+    "message": "Attach PDF (when template available)",
+    "description": "PO email PDF option"
+  },
+  "poSendEmailSending": {
+    "message": "Sending…",
+    "description": "PO email sending state"
+  },
+  "poSendEmailSubmit": {
+    "message": "Send email",
+    "description": "PO email submit"
+  },
+  "poSendEmailDefaultSubject": {
+    "message": "Purchase Order {number}{title}",
+    "description": "Default PO email subject"
+  },
+  "poSendEmailDefaultMessage": {
+    "message": "Please find our purchase order details. Let us know if you have any questions.",
+    "description": "Default PO email body"
+  },
+  "poSendEmailFailed": {
+    "message": "Failed to send purchase order email",
+    "description": "PO email error"
+  },
+  "poSendEmailSuccess": {
+    "message": "Purchase order emailed",
+    "description": "PO email success toast"
+  },
+  "prMoreActions": {
+    "message": "More",
+    "description": "Purchase return more-actions menu"
+  },
+  "prApprove": {
+    "message": "Approve",
+    "description": "Purchase return approve"
+  },
+  "prMarkReturned": {
+    "message": "Mark returned",
+    "description": "Purchase return complete inventory return"
+  },
+  "prDuplicate": {
+    "message": "Duplicate",
+    "description": "Duplicate purchase return"
+  },
+  "prCancel": {
+    "message": "Cancel return",
+    "description": "Cancel purchase return"
+  },
+  "prApproved": {
+    "message": "Purchase return approved",
+    "description": "Approve success"
+  },
+  "prReturned": {
+    "message": "Purchase return completed",
+    "description": "Mark returned success"
+  },
+  "prDuplicated": {
+    "message": "Purchase return duplicated",
+    "description": "Duplicate success"
+  },
+  "prCancelled": {
+    "message": "Purchase return cancelled",
+    "description": "Cancel success"
+  },
+  "prActionFailed": {
+    "message": "Purchase return action failed",
+    "description": "Generic PR action error"
+  },
+  "prImportSources": {
+    "message": "Import from receipt note",
+    "description": "PR lines source import"
+  },
+  "prSelectReceiptNote": {
+    "message": "Select receipt note…",
+    "description": "PR RN picker placeholder"
+  },
+  "prImportLines": {
+    "message": "Import lines",
+    "description": "Import returnable lines"
+  },
+  "prRefreshSources": {
+    "message": "Refresh",
+    "description": "Refresh eligible sources"
+  },
+  "prNoLines": {
+    "message": "No return lines yet. Import from a receipt note with returnable quantity.",
+    "description": "Empty PR lines"
+  },
+  "prImportFailed": {
+    "message": "Could not import return lines",
+    "description": "Import error"
+  },
+  "prLineSaveFailed": {
+    "message": "Could not update return line",
+    "description": "Line patch error"
+  },
+  "prDefaultReason": {
+    "message": "Return",
+    "description": "Default line return reason"
+  },
+  "prColProduct": {
+    "message": "Product",
+    "description": "PR lines column"
+  },
+  "prColReceived": {
+    "message": "Received",
+    "description": "PR lines column"
+  },
+  "prColReturnable": {
+    "message": "Returnable",
+    "description": "PR lines column"
+  },
+  "prColReturnQty": {
+    "message": "Return qty",
+    "description": "PR lines column"
+  },
+  "prColUnitPrice": {
+    "message": "Unit price",
+    "description": "PR lines column"
+  },
+  "prColReason": {
+    "message": "Reason",
+    "description": "PR lines column"
+  },
+  "prColLineTotal": {
+    "message": "Line total",
+    "description": "PR lines column"
+  },
+  "prSubtotal": {
+    "message": "Subtotal",
+    "description": "PR money footer"
+  },
+  "prGrandTotal": {
+    "message": "Grand total",
+    "description": "PR money footer"
+  },
+  "prSendEmail": {
+    "message": "Email",
+    "description": "Purchase return send email button"
+  },
+  "prSendEmailTitle": {
+    "message": "Email purchase return",
+    "description": "PR email drawer title"
+  },
+  "prSendEmailSubtitle": {
+    "message": "Send this purchase return to your vendor.",
+    "description": "PR email drawer subtitle"
+  },
+  "prSendEmailTo": {
+    "message": "To",
+    "description": "PR email recipient label"
+  },
+  "prSendEmailToPlaceholder": {
+    "message": "vendor{'@'}example.com",
+    "description": "PR email to placeholder"
+  },
+  "prSendEmailSubject": {
+    "message": "Subject",
+    "description": "PR email subject label"
+  },
+  "prSendEmailMessage": {
+    "message": "Message",
+    "description": "PR email body label"
+  },
+  "prSendEmailAttachPdf": {
+    "message": "Attach PDF",
+    "description": "PR email attach PDF checkbox"
+  },
+  "prSendEmailSending": {
+    "message": "Sending…",
+    "description": "PR email sending state"
+  },
+  "prSendEmailSubmit": {
+    "message": "Send email",
+    "description": "PR email submit"
+  },
+  "prSendEmailDefaultSubject": {
+    "message": "Purchase Return {number}{title}",
+    "description": "Default PR email subject"
+  },
+  "prSendEmailDefaultMessage": {
+    "message": "Please find our purchase return details. Let us know if you have any questions.",
+    "description": "Default PR email body"
+  },
+  "prSendEmailFailed": {
+    "message": "Failed to send purchase return email",
+    "description": "PR email error"
+  },
+  "prSendEmailSuccess": {
+    "message": "Purchase return emailed",
+    "description": "PR email success toast"
+  },
+  "poSysFieldSubject": {
+    "message": "Purchase Order Subject",
+    "description": "PO subject field"
+  },
+  "poSysFieldNumber": {
+    "message": "PO Number",
+    "description": "PO number field"
+  },
+  "poSysFieldDate": {
+    "message": "Order Date",
+    "description": "PO date field"
+  },
+  "poSysFieldVendor": {
+    "message": "Vendor",
+    "description": "PO vendor field"
+  },
+  "poSysFieldVendorContact": {
+    "message": "Vendor Contact",
+    "description": "PO vendor contact"
+  },
+  "poSysFieldOwner": {
+    "message": "Purchase Owner",
+    "description": "PO owner field"
+  },
+  "poSysFieldStatus": {
+    "message": "Status",
+    "description": "PO status field"
+  },
+  "poSysFieldCurrency": {
+    "message": "Currency",
+    "description": "PO currency field"
+  },
+  "poSysFieldExpectedReceipt": {
+    "message": "Expected Receipt Date",
+    "description": "PO expected receipt"
+  },
+  "poSysFieldVendorNotes": {
+    "message": "Vendor Notes",
+    "description": "PO vendor notes"
+  },
+  "poSysFieldInternalNotes": {
+    "message": "Internal Notes",
+    "description": "PO internal notes"
+  },
+  "poSysFieldWarehouse": {
+    "message": "Delivery Warehouse",
+    "description": "PO delivery warehouse"
+  },
+  "poSysFieldDeliveryMethod": {
+    "message": "Delivery Method",
+    "description": "PO delivery method"
+  },
+  "poSysFieldGrandTotal": {
+    "message": "Grand Total",
+    "description": "PO grand total"
+  },
+  "prSysFieldSubject": {
+    "message": "Purchase Return Subject",
+    "description": "PR subject field"
+  },
+  "prSysFieldNumber": {
+    "message": "Purchase Return Number",
+    "description": "PR number field"
+  },
+  "prSysFieldReturnDate": {
+    "message": "Return Date",
+    "description": "PR return date"
+  },
+  "prSysFieldVendor": {
+    "message": "Vendor",
+    "description": "PR vendor field"
+  },
+  "prSysFieldVendorContact": {
+    "message": "Vendor Contact",
+    "description": "PR vendor contact"
+  },
+  "prSysFieldOwner": {
+    "message": "Purchase Return Owner",
+    "description": "PR owner field"
+  },
+  "prSysFieldStatus": {
+    "message": "Status",
+    "description": "PR status field"
+  },
+  "prSysFieldReturnType": {
+    "message": "Return Type",
+    "description": "PR return type"
+  },
+  "prSysFieldReason": {
+    "message": "Reason",
+    "description": "PR reason field"
+  },
+  "prSysFieldSupplierRef": {
+    "message": "Supplier Reference Number",
+    "description": "PR supplier reference"
+  },
+  "prSysFieldWarehouse": {
+    "message": "Return Warehouse",
+    "description": "PR return warehouse"
+  },
+  "prSysFieldCurrency": {
+    "message": "Currency",
+    "description": "PR currency"
+  },
+  "prSysFieldVendorNotes": {
+    "message": "Vendor Notes",
+    "description": "PR vendor notes"
+  },
+  "prSysFieldInternalNotes": {
+    "message": "Internal Notes",
+    "description": "PR internal notes"
+  },
+  "prSysFieldReceiptNote": {
+    "message": "Receipt Note",
+    "description": "PR receipt note ref"
+  },
+  "prSysFieldPurchaseOrder": {
+    "message": "Purchase Order",
+    "description": "PR purchase order ref"
+  },
+  "prSysFieldGrandTotal": {
+    "message": "Grand Total",
+    "description": "PR grand total"
+  },
+  "prCreateSourcesTitle": {
+    "message": "Source documents",
+    "description": "PR create source picker title"
+  },
+  "prCreateSourcesHint": {
+    "message": "Select receipt notes or purchase orders with returnable quantities. Lines are filled on save.",
+    "description": "PR create sources helper"
+  },
+  "prCreateSourcesNeedVendor": {
+    "message": "Select a vendor to load returnable receipt notes and purchase orders.",
+    "description": "PR sources need vendor"
+  },
+  "prCreateSourcesLoading": {
+    "message": "Loading eligible sources…",
+    "description": "PR sources loading"
+  },
+  "prCreateSourcesEmpty": {
+    "message": "No returnable quantities for this vendor yet.",
+    "description": "PR sources empty"
+  },
+  "prCreateSourcesLoadFailed": {
+    "message": "Could not load eligible sources.",
+    "description": "PR sources load error"
+  },
+  "prCreateSourcesReceiptNotes": {
+    "message": "Receipt notes",
+    "description": "PR sources RN group"
+  },
+  "prCreateSourcesPurchaseOrders": {
+    "message": "Purchase orders",
+    "description": "PR sources PO group"
+  },
+  "prCreateSourcesSelectAll": {
+    "message": "Select all",
+    "description": "PR sources select all"
+  },
+  "prCreateSourcesClear": {
+    "message": "Clear",
+    "description": "PR sources clear selection"
+  },
+  "prCreateSourcesReturnableSummary": {
+    "message": "{lines} line(s) · {qty} returnable",
+    "description": "PR source row summary"
+  },
+  "prCreateSourcesSelected": {
+    "message": "{notes} receipt note(s) and {pos} purchase order(s) selected",
+    "description": "PR sources selection summary"
+  },
+  "rnVerify": {
+    "message": "Verify & post inventory",
+    "description": "Receipt note verify action"
+  },
+  "rnVerified": {
+    "message": "Receipt note verified and inventory updated",
+    "description": "Receipt note verify success"
+  },
+  "rnActionFailed": {
+    "message": "Receipt note action failed",
+    "description": "Receipt note action error"
+  },
+  "rnNoLines": {
+    "message": "No receipt lines",
+    "description": "Empty RN lines"
+  },
+  "rnColProduct": {
+    "message": "Product",
+    "description": "RN line product column"
+  },
+  "rnColOrdered": {
+    "message": "Ordered",
+    "description": "RN ordered qty column"
+  },
+  "rnColPrevReceived": {
+    "message": "Prev. received",
+    "description": "RN previously received column"
+  },
+  "rnColPending": {
+    "message": "Pending",
+    "description": "RN pending qty column"
+  },
+  "rnColReceived": {
+    "message": "Received",
+    "description": "RN received qty column"
+  },
+  "rnColAccepted": {
+    "message": "Accepted",
+    "description": "RN accepted qty column"
+  },
+  "rnColRejected": {
+    "message": "Rejected",
+    "description": "RN rejected qty column"
+  },
+  "rnCreateSourceTitle": {
+    "message": "Receive from purchase order",
+    "description": "RN create source panel title"
+  },
+  "rnCreateSourceHint": {
+    "message": "Select a receivable purchase order and the stockroom where goods will be received.",
+    "description": "RN create source panel hint"
+  },
+  "rnCreateSourceLoading": {
+    "message": "Loading purchase orders…",
+    "description": "RN create loading"
+  },
+  "rnCreateSourceLoadFailed": {
+    "message": "Could not load purchase orders or locations",
+    "description": "RN create load error"
+  },
+  "rnCreateSourceEmpty": {
+    "message": "No receivable purchase orders. Approve and order a PO first.",
+    "description": "RN create empty POs"
+  },
+  "rnCreateSourceRequired": {
+    "message": "Select a purchase order and receipt location",
+    "description": "RN create validation"
+  },
+  "rnSelectPurchaseOrder": {
+    "message": "Select purchase order",
+    "description": "RN PO select placeholder"
+  },
+  "rnSelectLocation": {
+    "message": "Select receipt location",
+    "description": "RN location select placeholder"
+  },
+  "rnSysFieldNumber": {
+    "message": "Receipt Note Number",
+    "description": "RN number field"
+  },
+  "rnSysFieldDate": {
+    "message": "Receipt Date",
+    "description": "RN date field"
+  },
+  "rnSysFieldVendor": {
+    "message": "Vendor",
+    "description": "RN vendor field"
+  },
+  "rnSysFieldPurchaseOrder": {
+    "message": "Purchase Order",
+    "description": "RN purchase order field"
+  },
+  "rnSysFieldLocation": {
+    "message": "Receipt Location",
+    "description": "RN location field"
+  },
+  "rnSysFieldReceivedBy": {
+    "message": "Received By",
+    "description": "RN received by field"
+  },
+  "rnSysFieldChallan": {
+    "message": "Vendor Delivery Challan No",
+    "description": "RN challan field"
+  },
+  "rnSysFieldTransport": {
+    "message": "Transport Details",
+    "description": "RN transport field"
+  },
+  "rnSysFieldStatus": {
+    "message": "Status",
+    "description": "RN status field"
+  },
+  "rnSysFieldNotes": {
+    "message": "Notes",
+    "description": "RN notes field"
+  },
+  "drApprove": {
+    "message": "Approve",
+    "description": "Delivery return approve"
+  },
+  "drMarkReceived": {
+    "message": "Mark received",
+    "description": "DR mark goods received"
+  },
+  "drMarkInspected": {
+    "message": "Mark inspected",
+    "description": "DR mark inspected"
+  },
+  "drMarkRestocked": {
+    "message": "Mark restocked",
+    "description": "DR complete inventory restock"
+  },
+  "drDuplicate": {
+    "message": "Duplicate",
+    "description": "Duplicate delivery return"
+  },
+  "drCancel": {
+    "message": "Cancel return",
+    "description": "Cancel delivery return"
+  },
+  "drApproved": {
+    "message": "Delivery return approved",
+    "description": "Approve success"
+  },
+  "drReceived": {
+    "message": "Return goods received",
+    "description": "Receive success"
+  },
+  "drInspected": {
+    "message": "Return inspected",
+    "description": "Inspect success"
+  },
+  "drRestocked": {
+    "message": "Inventory restocked",
+    "description": "Restock success"
+  },
+  "drDuplicated": {
+    "message": "Delivery return duplicated",
+    "description": "Duplicate success"
+  },
+  "drCancelled": {
+    "message": "Delivery return cancelled",
+    "description": "Cancel success"
+  },
+  "drActionFailed": {
+    "message": "Delivery return action failed",
+    "description": "Action error"
+  },
+  "drMoreActions": {
+    "message": "More",
+    "description": "DR more-actions menu"
+  },
+  "drSendEmail": {
+    "message": "Email",
+    "description": "Email delivery return"
+  },
+  "drSendEmailTitle": {
+    "message": "Email Delivery Return",
+    "description": "Email drawer title"
+  },
+  "drSendEmailSubtitle": {
+    "message": "Send this delivery return to the customer.",
+    "description": "Email drawer subtitle"
+  },
+  "drSendEmailTo": {
+    "message": "To",
+    "description": "Email to label"
+  },
+  "drSendEmailToPlaceholder": {
+    "message": "customer@example.com",
+    "description": "Email to placeholder"
+  },
+  "drSendEmailSubject": {
+    "message": "Subject",
+    "description": "Email subject label"
+  },
+  "drSendEmailMessage": {
+    "message": "Message",
+    "description": "Email message label"
+  },
+  "drSendEmailAttachPdf": {
+    "message": "Attach PDF (when template available)",
+    "description": "Attach PDF checkbox"
+  },
+  "drSendEmailSending": {
+    "message": "Sending…",
+    "description": "Email sending state"
+  },
+  "drSendEmailSubmit": {
+    "message": "Send email",
+    "description": "Email submit"
+  },
+  "drSendEmailDefaultSubject": {
+    "message": "Delivery Return {number}{title}",
+    "description": "Default email subject"
+  },
+  "drSendEmailDefaultMessage": {
+    "message": "Please find our delivery return details below.",
+    "description": "Default email body"
+  },
+  "drSendEmailSuccess": {
+    "message": "Email sent",
+    "description": "Email sent toast"
+  },
+  "drSendEmailFailed": {
+    "message": "Failed to send email",
+    "description": "Email failed toast"
+  },
+  "drNoLines": {
+    "message": "No return lines yet. Import from a delivery note or select sources on create.",
+    "description": "Empty DR lines"
+  },
+  "drImportSources": {
+    "message": "Import from delivery note",
+    "description": "DR import sources label"
+  },
+  "drSelectDeliveryNote": {
+    "message": "Select delivery note…",
+    "description": "DN picker placeholder"
+  },
+  "drImportLines": {
+    "message": "Import lines",
+    "description": "Import lines button"
+  },
+  "drRefreshSources": {
+    "message": "Refresh",
+    "description": "Refresh sources"
+  },
+  "drImportFailed": {
+    "message": "Could not import lines",
+    "description": "Import failed"
+  },
+  "drLineSaveFailed": {
+    "message": "Could not save line",
+    "description": "Line save failed"
+  },
+  "drDefaultReason": {
+    "message": "Customer rejection",
+    "description": "Default line return reason"
+  },
+  "drColProduct": {
+    "message": "Product",
+    "description": "DR product column"
+  },
+  "drColDelivered": {
+    "message": "Delivered",
+    "description": "DR delivered qty column"
+  },
+  "drColReturnable": {
+    "message": "Returnable",
+    "description": "DR returnable qty column"
+  },
+  "drColReturnQty": {
+    "message": "Return qty",
+    "description": "DR return qty column"
+  },
+  "drColUnitPrice": {
+    "message": "Unit price",
+    "description": "DR unit price column"
+  },
+  "drColReason": {
+    "message": "Reason",
+    "description": "DR reason column"
+  },
+  "drColLineTotal": {
+    "message": "Line total",
+    "description": "DR line total column"
+  },
+  "drSubtotal": {
+    "message": "Subtotal",
+    "description": "DR subtotal"
+  },
+  "drGrandTotal": {
+    "message": "Grand total",
+    "description": "DR grand total"
+  },
+  "drSysFieldSubject": {
+    "message": "Delivery Return Subject",
+    "description": "DR subject field"
+  },
+  "drSysFieldNumber": {
+    "message": "Delivery Return Number",
+    "description": "DR number field"
+  },
+  "drSysFieldReturnDate": {
+    "message": "Return Date",
+    "description": "DR return date"
+  },
+  "drSysFieldCustomer": {
+    "message": "Customer",
+    "description": "DR customer field"
+  },
+  "drSysFieldContact": {
+    "message": "Contact Person",
+    "description": "DR contact field"
+  },
+  "drSysFieldOwner": {
+    "message": "Delivery Return Owner",
+    "description": "DR owner field"
+  },
+  "drSysFieldStatus": {
+    "message": "Status",
+    "description": "DR status field"
+  },
+  "drSysFieldSourceType": {
+    "message": "Source Type",
+    "description": "DR source type"
+  },
+  "drSysFieldReturnType": {
+    "message": "Return Type",
+    "description": "DR return type"
+  },
+  "drSysFieldReason": {
+    "message": "Return Reason",
+    "description": "DR return reason"
+  },
+  "drSysFieldCustomerRef": {
+    "message": "Customer Reference Number",
+    "description": "DR customer reference"
+  },
+  "drSysFieldWarehouse": {
+    "message": "Return Warehouse",
+    "description": "DR warehouse"
+  },
+  "drSysFieldCurrency": {
+    "message": "Currency",
+    "description": "DR currency"
+  },
+  "drSysFieldCustomerNotes": {
+    "message": "Customer Notes",
+    "description": "DR customer notes"
+  },
+  "drSysFieldInternalNotes": {
+    "message": "Internal Notes",
+    "description": "DR internal notes"
+  },
+  "drSysFieldDeliveryNote": {
+    "message": "Delivery Note",
+    "description": "DR delivery note ref"
+  },
+  "drSysFieldInvoice": {
+    "message": "Invoice",
+    "description": "DR invoice ref"
+  },
+  "drSysFieldInventoryPost": {
+    "message": "Inventory Post Status",
+    "description": "When inventory posts"
+  },
+  "drSysFieldGrandTotal": {
+    "message": "Grand Total",
+    "description": "DR grand total field"
+  },
+  "drCreateSourcesTitle": {
+    "message": "Source documents",
+    "description": "DR create source picker title"
+  },
+  "drCreateSourcesHint": {
+    "message": "Select delivery notes or invoices with delivered returnable quantities. Lines are filled on save.",
+    "description": "DR create sources helper"
+  },
+  "drCreateSourcesNeedCustomer": {
+    "message": "Select a customer to load returnable delivery notes and invoices.",
+    "description": "DR sources need customer"
+  },
+  "drCreateSourcesLoading": {
+    "message": "Loading eligible sources…",
+    "description": "DR sources loading"
+  },
+  "drCreateSourcesEmpty": {
+    "message": "No returnable delivered quantities for this customer yet.",
+    "description": "DR sources empty"
+  },
+  "drCreateSourcesLoadFailed": {
+    "message": "Could not load eligible sources.",
+    "description": "DR sources load error"
+  },
+  "drCreateSourcesDeliveryNotes": {
+    "message": "Delivery notes",
+    "description": "DR sources DN group"
+  },
+  "drCreateSourcesInvoices": {
+    "message": "Invoices",
+    "description": "DR sources invoice group"
+  },
+  "drCreateSourcesSelectAll": {
+    "message": "Select all",
+    "description": "DR sources select all"
+  },
+  "drCreateSourcesClear": {
+    "message": "Clear",
+    "description": "DR sources clear selection"
+  },
+  "drCreateSourcesReturnableSummary": {
+    "message": "{lines} line(s) · {qty} returnable",
+    "description": "DR source row summary"
+  },
+  "drCreateSourcesSelected": {
+    "message": "{count} source(s) selected",
+    "description": "DR sources selection summary"
+  },
+  "drSourceTypeDeliveryNote": {
+    "message": "Delivery Note",
+    "description": "Source type DN"
+  },
+  "drSourceTypeInvoice": {
+    "message": "Invoice",
+    "description": "Source type Invoice"
+  },
+  "dnApprove": {
+    "message": "Approve",
+    "description": "Delivery note approve"
+  },
+  "dnMarkPicked": {
+    "message": "Mark picked",
+    "description": "DN mark picked"
+  },
+  "dnMarkPacked": {
+    "message": "Mark packed",
+    "description": "DN mark packed"
+  },
+  "dnMarkDispatched": {
+    "message": "Mark dispatched",
+    "description": "DN mark dispatched"
+  },
+  "dnMarkDelivered": {
+    "message": "Mark delivered",
+    "description": "DN mark delivered"
+  },
+  "dnDuplicate": {
+    "message": "Duplicate",
+    "description": "Duplicate delivery note"
+  },
+  "dnCancel": {
+    "message": "Cancel delivery",
+    "description": "Cancel delivery note"
+  },
+  "dnApproved": {
+    "message": "Delivery note approved",
+    "description": "Approve success"
+  },
+  "dnPicked": {
+    "message": "Marked as picked",
+    "description": "Pick success"
+  },
+  "dnPacked": {
+    "message": "Marked as packed",
+    "description": "Pack success"
+  },
+  "dnDispatched": {
+    "message": "Marked as dispatched",
+    "description": "Dispatch success"
+  },
+  "dnDelivered": {
+    "message": "Marked as delivered",
+    "description": "Deliver success"
+  },
+  "dnDuplicated": {
+    "message": "Delivery note duplicated",
+    "description": "Duplicate success"
+  },
+  "dnCancelled": {
+    "message": "Delivery note cancelled",
+    "description": "Cancel success"
+  },
+  "dnActionFailed": {
+    "message": "Delivery note action failed",
+    "description": "Action error"
+  },
+  "dnMoreActions": {
+    "message": "More",
+    "description": "DN more-actions menu"
+  },
+  "dnSendEmail": {
+    "message": "Email",
+    "description": "Email delivery note"
+  },
+  "dnSendEmailTitle": {
+    "message": "Email Delivery Note",
+    "description": "Email drawer title"
+  },
+  "dnSendEmailSubtitle": {
+    "message": "Send this delivery note to the customer.",
+    "description": "Email drawer subtitle"
+  },
+  "dnSendEmailTo": {
+    "message": "To",
+    "description": "Email to label"
+  },
+  "dnSendEmailToPlaceholder": {
+    "message": "customer@example.com",
+    "description": "Email to placeholder"
+  },
+  "dnSendEmailSubject": {
+    "message": "Subject",
+    "description": "Email subject label"
+  },
+  "dnSendEmailMessage": {
+    "message": "Message",
+    "description": "Email message label"
+  },
+  "dnSendEmailAttachPdf": {
+    "message": "Attach PDF (when template available)",
+    "description": "Attach PDF checkbox"
+  },
+  "dnSendEmailSending": {
+    "message": "Sending…",
+    "description": "Email sending state"
+  },
+  "dnSendEmailSubmit": {
+    "message": "Send email",
+    "description": "Email submit"
+  },
+  "dnSendEmailDefaultSubject": {
+    "message": "Delivery Note {number}{title}",
+    "description": "Default email subject"
+  },
+  "dnSendEmailDefaultMessage": {
+    "message": "Please find our delivery note details below.",
+    "description": "Default email body"
+  },
+  "dnSendEmailSuccess": {
+    "message": "Email sent",
+    "description": "Email sent toast"
+  },
+  "dnSendEmailFailed": {
+    "message": "Failed to send email",
+    "description": "Email failed toast"
+  },
+  "dnNoLines": {
+    "message": "No delivery lines yet. Import pending quantity from sales orders.",
+    "description": "Empty DN lines"
+  },
+  "dnImportSources": {
+    "message": "Sales order",
+    "description": "DN import sources label"
+  },
+  "dnSelectSalesOrder": {
+    "message": "Select sales order…",
+    "description": "DN SO select placeholder"
+  },
+  "dnImportLines": {
+    "message": "Import lines",
+    "description": "DN import lines button"
+  },
+  "dnRefreshSources": {
+    "message": "Refresh",
+    "description": "DN refresh sources"
+  },
+  "dnImportFailed": {
+    "message": "Could not import lines",
+    "description": "DN import failed"
+  },
+  "dnLineSaveFailed": {
+    "message": "Could not save line",
+    "description": "DN line save failed"
+  },
+  "dnColProduct": {
+    "message": "Product",
+    "description": "DN product column"
+  },
+  "dnColOrdered": {
+    "message": "Ordered",
+    "description": "DN ordered qty column"
+  },
+  "dnColPreviouslyDelivered": {
+    "message": "Prev. delivered",
+    "description": "DN previously delivered column"
+  },
+  "dnColAvailable": {
+    "message": "Available",
+    "description": "DN available qty column"
+  },
+  "dnColDeliverQty": {
+    "message": "Delivery qty",
+    "description": "DN delivery qty column"
+  },
+  "dnColUnitPrice": {
+    "message": "Unit price",
+    "description": "DN unit price column"
+  },
+  "dnColLineTotal": {
+    "message": "Line total",
+    "description": "DN line total column"
+  },
+  "dnSubtotal": {
+    "message": "Subtotal",
+    "description": "DN subtotal label"
+  },
+  "dnGrandTotal": {
+    "message": "Grand total",
+    "description": "DN grand total label"
+  },
+  "dnCreateSourcesTitle": {
+    "message": "Source documents",
+    "description": "DN create sources title"
+  },
+  "dnCreateSourcesHint": {
+    "message": "Link sales orders to load pending delivery quantities, or create a direct delivery.",
+    "description": "DN create sources hint"
+  },
+  "dnCreateSourcesNeedCustomer": {
+    "message": "Select a customer to load sales orders.",
+    "description": "DN need customer for sources"
+  },
+  "dnCreateSourcesLoading": {
+    "message": "Loading sales orders…",
+    "description": "DN sources loading"
+  },
+  "dnCreateSourcesEmpty": {
+    "message": "No sales orders with pending delivery quantity for this customer.",
+    "description": "DN sources empty"
+  },
+  "dnCreateSourcesLoadFailed": {
+    "message": "Could not load sales orders",
+    "description": "DN sources load error"
+  },
+  "dnCreateSourcesSalesOrders": {
+    "message": "Sales orders",
+    "description": "DN sources SO group"
+  },
+  "dnCreateSourcesSelectAll": {
+    "message": "Select all",
+    "description": "DN sources select all"
+  },
+  "dnCreateSourcesClear": {
+    "message": "Clear",
+    "description": "DN sources clear selection"
+  },
+  "dnCreateSourcesDeliverableSummary": {
+    "message": "{lines} line(s) · {qty} deliverable",
+    "description": "DN source row summary"
+  },
+  "dnCreateSourcesSelected": {
+    "message": "{count} source(s) selected",
+    "description": "DN sources selection summary"
+  },
+  "dnCreateSourcesDirectHint": {
+    "message": "Direct delivery — add product lines on the delivery note after create.",
+    "description": "DN direct source hint"
+  },
+  "dnSourceTypeDirect": {
+    "message": "Direct Delivery",
+    "description": "Source type direct"
+  },
+  "dnSourceTypeSalesOrder": {
+    "message": "Sales Order",
+    "description": "Source type SO"
+  },
+  "dnSysFieldSubject": {
+    "message": "Delivery Note Subject",
+    "description": "DN subject field"
+  },
+  "dnSysFieldNumber": {
+    "message": "Delivery Note Number",
+    "description": "DN number field"
+  },
+  "dnSysFieldDeliveryDate": {
+    "message": "Delivery Date",
+    "description": "DN delivery date field"
+  },
+  "dnSysFieldCustomer": {
+    "message": "Customer",
+    "description": "DN customer field"
+  },
+  "dnSysFieldContact": {
+    "message": "Contact Person",
+    "description": "DN contact field"
+  },
+  "dnSysFieldOwner": {
+    "message": "Delivery Owner",
+    "description": "DN owner field"
+  },
+  "dnSysFieldStatus": {
+    "message": "Status",
+    "description": "DN status field"
+  },
+  "dnSysFieldSourceType": {
+    "message": "Source Type",
+    "description": "DN source type field"
+  },
+  "dnSysFieldSalesOrder": {
+    "message": "Sales Order",
+    "description": "DN SO field"
+  },
+  "dnSysFieldWarehouse": {
+    "message": "Warehouse",
+    "description": "DN warehouse field"
+  },
+  "dnSysFieldDeliveryMethod": {
+    "message": "Delivery Method",
+    "description": "DN delivery method field"
+  },
+  "dnSysFieldCarrier": {
+    "message": "Carrier",
+    "description": "DN carrier field"
+  },
+  "dnSysFieldTracking": {
+    "message": "Tracking Number",
+    "description": "DN tracking field"
+  },
+  "dnSysFieldCurrency": {
+    "message": "Currency",
+    "description": "DN currency field"
+  },
+  "dnSysFieldCustomerNotes": {
+    "message": "Customer Notes",
+    "description": "DN customer notes field"
+  },
+  "dnSysFieldInternalNotes": {
+    "message": "Internal Notes",
+    "description": "DN internal notes field"
+  },
+  "dnSysFieldInventoryPost": {
+    "message": "Inventory Post Status",
+    "description": "DN inventory post status field"
+  },
+  "dnSysFieldGrandTotal": {
+    "message": "Grand Total",
+    "description": "DN grand total field"
+  },
+  "srSysFieldNumber": {
+    "message": "Sales Return Number",
+    "description": "SR number field"
+  },
+  "srSysFieldReturnDate": {
+    "message": "Return Date",
+    "description": "SR return date field"
+  },
+  "srSysFieldCustomer": {
+    "message": "Customer",
+    "description": "SR customer field"
+  },
+  "srSysFieldInvoice": {
+    "message": "Invoice",
+    "description": "SR invoice field"
+  },
+  "srSysFieldDeliveryNote": {
+    "message": "Delivery Note",
+    "description": "SR delivery note field"
+  },
+  "srSysFieldSalesOrder": {
+    "message": "Sales Order",
+    "description": "SR sales order field"
+  },
+  "srSysFieldLocation": {
+    "message": "Return Location",
+    "description": "SR return location field"
+  },
+  "srSysFieldReason": {
+    "message": "Return Reason",
+    "description": "SR overall return reason field"
+  },
+  "srSysFieldReturnType": {
+    "message": "Return Type",
+    "description": "SR return type field"
+  },
+  "srSysFieldStatus": {
+    "message": "Status",
+    "description": "SR status field"
+  },
+  "srSysFieldNotes": {
+    "message": "Notes",
+    "description": "SR notes field"
+  },
+  "srSysFieldGrandTotal": {
+    "message": "Grand Total",
+    "description": "SR grand total field"
+  },
+  "srApprove": {
+    "message": "Approve",
+    "description": "SR approve action"
+  },
+  "srApproved": {
+    "message": "Sales return approved",
+    "description": "SR approve success"
+  },
+  "srActionFailed": {
+    "message": "Sales return action failed",
+    "description": "SR action error"
+  },
+  "adjCreateTitle": {
+    "message": "Adjustment details",
+    "description": "Stock adjustment create panel title"
+  },
+  "adjCreateHint": {
+    "message": "Choose the stockroom, reason, and quantity changes to post as a draft.",
+    "description": "Stock adjustment create panel hint"
+  },
+  "adjCreateLoading": {
+    "message": "Loading stockrooms…",
+    "description": "Stock adjustment create loading locations"
+  },
+  "adjCreateLoadFailed": {
+    "message": "Could not load stockrooms.",
+    "description": "Stock adjustment create load error"
+  },
+  "adjCreateRequired": {
+    "message": "Stockroom, reason, and at least one line with a variant and quantity are required.",
+    "description": "Stock adjustment create validation"
+  },
+  "adjLinesTitle": {
+    "message": "Lines",
+    "description": "Stock adjustment lines section title"
+  },
+  "adjAddLine": {
+    "message": "Add line",
+    "description": "Add adjustment line button"
+  },
+  "adjLinesEmpty": {
+    "message": "No lines on this adjustment.",
+    "description": "Empty lines on adjustment record"
+  },
+  "adjVariantPlaceholder": {
+    "message": "Variant ID",
+    "description": "Variant id input placeholder"
+  },
+  "adjNotes": {
+    "message": "Notes",
+    "description": "Adjustment notes field"
+  },
+  "adjUnitCost": {
+    "message": "Unit cost",
+    "description": "Adjustment line unit cost column"
+  },
+  "adjPost": {
+    "message": "Post",
+    "description": "Post draft adjustment to ledger"
+  },
+  "adjPosted": {
+    "message": "Adjustment posted",
+    "description": "Post adjustment success toast"
+  },
+  "adjActionFailed": {
+    "message": "Adjustment action failed",
+    "description": "Adjustment action error toast"
+  },
+  "adjSysFieldId": {
+    "message": "Adjustment ID",
+    "description": "Adjustment id field label"
+  },
+  "adjSysFieldStatus": {
+    "message": "Status",
+    "description": "Adjustment status field"
+  },
+  "adjSysFieldPostedAt": {
+    "message": "Posted at",
+    "description": "Adjustment posted timestamp"
+  },
+  "adjReason_physical_count": {
+    "message": "Physical count",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_correction": {
+    "message": "Correction",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_opening_balance": {
+    "message": "Opening balance",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_damaged": {
+    "message": "Damaged",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_found": {
+    "message": "Found",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_shrinkage": {
+    "message": "Shrinkage",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_write_off": {
+    "message": "Write-off",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_reclass": {
+    "message": "Reclass",
+    "description": "Adjustment reason option"
+  },
+  "adjReason_other": {
+    "message": "Other",
+    "description": "Adjustment reason option"
+  },
+  "adjSysFieldCreatedAt": {
+    "message": "Created",
+    "description": "Adjustment created timestamp"
+  },
+  "adjLinesHint": {
+    "message": "Positive adds stock; negative removes it.",
+    "description": "Hint under adjustment lines header"
+  },
+  "adjLineN": {
+    "message": "Line {n}",
+    "description": "Adjustment line index label"
+  },
+  "adjItem": {
+    "message": "Item",
+    "description": "Adjustment line item/variant field"
+  },
+  "adjPickItem": {
+    "message": "Search catalog…",
+    "description": "Placeholder when no variant selected"
+  },
+  "adjPickItemTitle": {
+    "message": "Select item",
+    "description": "Variant picker modal title"
+  },
+  "adjPickItemSearch": {
+    "message": "Search by name or code…",
+    "description": "Variant picker search placeholder"
+  },
+  "adjNoItemsFound": {
+    "message": "No items match your search.",
+    "description": "Empty variant search result"
+  },
+  "adjQtyChange": {
+    "message": "Qty change",
+    "description": "Quantity delta field label"
+  },
+  "adjQtyPlaceholder": {
+    "message": "e.g. 5 or -2",
+    "description": "Quantity delta placeholder"
+  },
+  "adjQtyHint": {
+    "message": "Cannot be zero",
+    "description": "Hint that delta cannot be zero"
+  },
+  "adjNotesPlaceholder": {
+    "message": "Optional note for audit trail",
+    "description": "Notes field placeholder on adjustment create"
+  },
+  "xferCreateHint": {
+    "message": "Move stock between stockrooms. Saved as draft — post when ready.",
+    "description": "Stock transfer create panel hint"
+  },
+  "xferCreateLoading": {
+    "message": "Loading stockrooms…",
+    "description": "Stock transfer create loading locations"
+  },
+  "xferCreateLoadFailed": {
+    "message": "Could not load stockrooms.",
+    "description": "Stock transfer create load error"
+  },
+  "xferCreateRequired": {
+    "message": "Select different from/to stockrooms and at least one line with quantity greater than zero.",
+    "description": "Stock transfer create validation"
+  },
+  "xferSameLocation": {
+    "message": "Source and destination stockrooms must be different.",
+    "description": "Same location validation on transfer create"
+  },
+  "xferLinesTitle": {
+    "message": "Lines",
+    "description": "Stock transfer lines section title"
+  },
+  "xferLinesHint": {
+    "message": "Quantity moves from the source stockroom to the destination.",
+    "description": "Hint under transfer lines header"
+  },
+  "xferLineN": {
+    "message": "Line {n}",
+    "description": "Transfer line index label"
+  },
+  "xferItem": {
+    "message": "Item",
+    "description": "Transfer line item/variant field"
+  },
+  "xferPickItem": {
+    "message": "Search catalog…",
+    "description": "Placeholder when no variant selected"
+  },
+  "xferPickItemTitle": {
+    "message": "Select item",
+    "description": "Variant picker modal title"
+  },
+  "xferPickItemSearch": {
+    "message": "Search by name or code…",
+    "description": "Variant picker search placeholder"
+  },
+  "xferNoItemsFound": {
+    "message": "No items match your search.",
+    "description": "Empty variant search result"
+  },
+  "xferQty": {
+    "message": "Quantity",
+    "description": "Transfer line quantity field"
+  },
+  "xferQtyPlaceholder": {
+    "message": "e.g. 5",
+    "description": "Transfer quantity placeholder"
+  },
+  "xferQtyHint": {
+    "message": "Must be greater than zero",
+    "description": "Hint that transfer qty must be positive"
+  },
+  "xferAddLine": {
+    "message": "Add line",
+    "description": "Add transfer line button"
+  },
+  "xferLinesEmpty": {
+    "message": "No lines on this transfer.",
+    "description": "Empty lines on transfer record"
+  },
+  "xferNotes": {
+    "message": "Notes",
+    "description": "Transfer notes field"
+  },
+  "xferNotesPlaceholder": {
+    "message": "Optional note for audit trail",
+    "description": "Notes field placeholder on transfer create"
+  },
+  "xferUnitCost": {
+    "message": "Unit cost",
+    "description": "Transfer line unit cost column"
+  },
+  "xferPost": {
+    "message": "Post",
+    "description": "Post draft transfer to ledger"
+  },
+  "xferPosted": {
+    "message": "Transfer posted",
+    "description": "Post transfer success toast"
+  },
+  "xferActionFailed": {
+    "message": "Transfer action failed",
+    "description": "Transfer action error toast"
+  },
+  "xferSysFieldId": {
+    "message": "Transfer ID",
+    "description": "Transfer id field label"
+  },
+  "xferSysFieldStatus": {
+    "message": "Status",
+    "description": "Transfer status field"
+  },
+  "xferSysFieldPostedAt": {
+    "message": "Posted at",
+    "description": "Transfer posted timestamp"
+  },
+  "xferSysFieldCreatedAt": {
+    "message": "Created",
+    "description": "Transfer created timestamp"
+  },
+  "xferNeedSecondStockroom": {
+    "message": "Create another active stockroom before transferring stock.",
+    "description": "Shown when tenant has fewer than two stockrooms"
   }
 }

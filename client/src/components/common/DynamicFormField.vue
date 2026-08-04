@@ -1090,6 +1090,7 @@ import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import { normalizeDateTimeInput } from '@/utils/datePickerUtils';
 import apiClient from '@/utils/apiClient';
+import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 import {
   fetchUsersListCached,
   fetchOrganizationsListCached,
@@ -1287,9 +1288,18 @@ function onEventGeoLocationUpdate(geoLocation) {
 /** When Settings omits lookupSettings, map known field keys to /people or /v2/organization list APIs. */
 function inferLookupTargetFromFieldKey(fieldKey) {
   const k = String(fieldKey || '').toLowerCase();
-  if (k === 'contactid' || k === 'personid' || k === 'vendorcontactid') return 'people';
-  if (k === 'organizationrefid' || k === 'accountid' || k === 'vendorid') return 'organizations';
+  if (k === 'contactid' || k === 'personid' || k === 'vendorcontactid' || k === 'contactpersonid') return 'people';
+  if (k === 'organizationrefid' || k === 'accountid' || k === 'vendorid' || k === 'customerid') return 'organizations';
   if (k === 'dealid') return 'deals';
+  if (k === 'deliverynoteid') return 'delivery_notes';
+  if (k === 'receiptnoteid') return 'receipt_notes';
+  if (k === 'purchaseorderid') return 'purchase_orders';
+  if (k === 'salesorderid') return 'sales_orders';
+  if (k === 'invoiceid') return 'invoices';
+  if (k === 'returnwarehouseid' || k === 'receiptlocationid' || k === 'deliverywarehouseid' || k === 'returnlocationid') {
+    return 'inventory_locations';
+  }
+  if (k === 'ownerid' || k === 'buyerid' || k === 'receivedby') return 'users';
   return '';
 }
 
@@ -2218,13 +2228,33 @@ const getLookupDisplay = (item) => {
   if (isUserLookupField.value || isAssignedToField.value) {
     return getUserDisplayName(item);
   }
-  
-  if (!props.field.lookupSettings?.displayField) {
-    // Auto: try common fields
-    return item.name || item.title || item.first_name || item.email || item._id;
+
+  if (!item || typeof item !== 'object') return item ?? '';
+
+  if (props.field.lookupSettings?.displayField) {
+    const displayField = props.field.lookupSettings.displayField;
+    const chosen = item[displayField];
+    if (chosen != null && chosen !== '') return chosen;
   }
-  const displayField = props.field.lookupSettings.displayField;
-  return item[displayField] || item._id;
+
+  // Prefer human labels; document modules use *Number fields rather than name.
+  return (
+    item.name ||
+    item.title ||
+    item.poNumber ||
+    item.receiptNoteNumber ||
+    item.purchaseReturnNumber ||
+    item.quoteNumber ||
+    item.salesOrderNumber ||
+    item.invoiceNumber ||
+    item.paymentNumber ||
+    item.locationCode ||
+    item.sku ||
+    item.itemNumber ||
+    item.first_name ||
+    item.email ||
+    item._id
+  );
 };
 
 // Normalize value - handle both ID strings and populated objects
@@ -2284,7 +2314,7 @@ const getLookupSelectedLabel = () => {
     if (isAssignedToField.value) {
       return getUserDisplayName(props.value);
     }
-    return props.value.name || props.value.title || props.value._id;
+    return getLookupDisplay(props.value);
   }
   // Avoid leaking raw ids for user lookups when we cannot resolve option labels yet.
   if (isUserLookupField.value) {
@@ -2410,7 +2440,8 @@ const fetchLookupOptions = async () => {
       response = await apiClient.get('/catalog/categories/tree');
     } else {
       const params = { limit: 1000 };
-      response = await apiClient.get(`/${moduleKey}`, { params });
+      const endpoint = getModuleRecordCrudPathBase(moduleKey);
+      response = await apiClient.get(endpoint, { params });
     }
     
     fieldDbg('Lookup response for', moduleKey, ':', response);
@@ -2461,7 +2492,8 @@ const fetchLookupOptionById = async (id) => {
       // No direct GET by id for categories; reload tree and pick from it.
       endpoint = '/catalog/categories/tree';
     } else {
-      endpoint = `/${mk}/${id}`;
+      const base = getModuleRecordCrudPathBase(mk);
+      endpoint = `${base}/${id}`;
     }
     const response = await apiClient.get(endpoint);
     if (response?.success) {
@@ -2623,7 +2655,7 @@ const fetchLookupModalData = async () => {
       } else if (String(moduleKey).toLowerCase() === 'catalog/categories') {
         endpoint = '/catalog/categories/tree';
       } else {
-        endpoint = `/${moduleKey}`;
+        endpoint = getModuleRecordCrudPathBase(moduleKey);
       }
       if (props.dependencyState?.lookupQuery && typeof props.dependencyState.lookupQuery === 'object') {
         const mk = String(moduleKey || '').toLowerCase();

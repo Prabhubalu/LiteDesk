@@ -238,6 +238,9 @@ const RECORD_DETAIL_ROUTE_NAMES = new Set([
   'sales-order-detail',
   'invoice-detail',
   'payment-detail',
+  'inventory-purchase-order-detail',
+  'inventory-receipt-note-detail',
+  'inventory-purchase-return-detail',
 ]);
 
 const collapseSidebarForRecordOnTablet = () => {

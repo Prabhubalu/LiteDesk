@@ -687,7 +687,9 @@ test('ATP guard off policy allows insufficient line add check', async () => {
     organizationId: tenant._id,
     quoteTitle: 'ATP Guard Test',
     status: 'Draft',
-    currency: 'USD'
+    currency: 'USD',
+    assignedTo: userId,
+    createdBy: userId
   });
 
   const result = await guardQuoteLineQuantity({
@@ -730,7 +732,9 @@ test('ATP guard block policy rejects insufficient quantity', async () => {
     organizationId: tenant._id,
     quoteTitle: 'Block Test',
     status: 'Draft',
-    currency: 'USD'
+    currency: 'USD',
+    assignedTo: userId,
+    createdBy: userId
   });
 
   await assert.rejects(
@@ -762,7 +766,9 @@ test('ATP guard warn policy allows forceProceed', async () => {
     organizationId: tenant._id,
     quoteTitle: 'Warn Test',
     status: 'Draft',
-    currency: 'USD'
+    currency: 'USD',
+    assignedTo: userId,
+    createdBy: userId
   });
 
   await assert.rejects(
@@ -1160,7 +1166,9 @@ test('sales-only tenant skips SO confirm reservation and ATP guard no-ops', asyn
     organizationId: tenant._id,
     quoteTitle: 'Sales-only ATP',
     status: 'Draft',
-    currency: 'USD'
+    currency: 'USD',
+    assignedTo: userId,
+    createdBy: userId
   });
 
   const atpResult = await guardQuoteLineQuantity({

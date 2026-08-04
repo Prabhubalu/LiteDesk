@@ -39,7 +39,12 @@ function viewAllForModule(mod, rolePlain) {
 }
 
 const SALES_NATIVE_MODULES = new Set(['deals', 'projects']);
-const INVENTORY_NATIVE_MODULES = new Set(['inventory']);
+const {
+  INVENTORY_NATIVE_MODULE_KEYS,
+  INVENTORY_WORKBENCH_KEYS
+} = require('../constants/inventoryWorkbenchModules');
+const INVENTORY_NATIVE_MODULES = new Set(INVENTORY_NATIVE_MODULE_KEYS);
+const INVENTORY_WORKBENCH_MODULES_SET = new Set(INVENTORY_WORKBENCH_KEYS);
 const MARKETING_NATIVE_MODULES = new Set(['campaigns', 'audiences', 'segments', 'assets']);
 const AUDIT_APP_MODULES = new Set(['audits', 'schedule', 'findings']);
 const PLATFORM_ADMIN_MODULES = new Set(PLATFORM_ADMIN_KEYS);
@@ -347,11 +352,16 @@ function readGrantFromRuntime(runtime, storageModuleKey, envelopeAction, effecti
     const grant = runtime.modulesByApp[effectiveAppKey][storageModuleKey];
     if (grant[envelopeAction] === true) return true;
     if (envelopeAction === 'edit' && grant.customizeFields === true) return true;
+    // Workbench: fall back to inventory app envelope before failing
+    if (INVENTORY_WORKBENCH_MODULES_SET.has(storageModuleKey)) {
+      const inv = runtime.modulesByApp[effectiveAppKey]?.inventory;
+      if (inv?.[envelopeAction] === true) return true;
+    }
     return false;
   }
 
   const envelope = runtime?.envelope || {};
-  const modGrant = envelope[storageModuleKey];
+  let modGrant = envelope[storageModuleKey];
   if (!modGrant) {
     if (storageModuleKey === 'contacts' && envelope.people) {
       return envelope.people[envelopeAction] === true;
@@ -359,7 +369,11 @@ function readGrantFromRuntime(runtime, storageModuleKey, envelopeAction, effecti
     if (storageModuleKey === 'responses' && envelope.forms) {
       return envelope.forms[envelopeAction] === true;
     }
-  } else {
+    if (INVENTORY_WORKBENCH_MODULES_SET.has(storageModuleKey) && envelope.inventory) {
+      modGrant = envelope.inventory;
+    }
+  }
+  if (modGrant) {
     if (modGrant[envelopeAction] === true) return true;
     if (storageModuleKey === 'settings' && envelopeAction === 'edit' && modGrant.customizeFields === true) {
       return true;
@@ -374,6 +388,13 @@ function readGrantFromRuntime(runtime, storageModuleKey, envelopeAction, effecti
       if (storageModuleKey === 'settings' && envelopeAction === 'edit' && grant.customizeFields === true) {
         return true;
       }
+    }
+  }
+
+  if (INVENTORY_WORKBENCH_MODULES_SET.has(storageModuleKey) && runtime?.modulesByApp) {
+    for (const appModules of Object.values(runtime.modulesByApp)) {
+      const inv = appModules?.inventory;
+      if (inv?.[envelopeAction] === true) return true;
     }
   }
 
@@ -445,6 +466,10 @@ function resolveRuntimePermission(user, module, action, options = {}) {
       if (itemsAction === 'view' && (perms.view === true || perms.read === true)) return true;
       return false;
     }
+  }
+  // Workbench docs: fall back to inventory ledger grants until roles pin per-module rows
+  if (!perms && INVENTORY_WORKBENCH_MODULES_SET.has(storageModule)) {
+    perms = user.permissions?.inventory || null;
   }
   if (!perms) return false;
   if (perms[envelopeAction] === true) return true;

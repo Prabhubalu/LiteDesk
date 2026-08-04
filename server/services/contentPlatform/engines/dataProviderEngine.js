@@ -25,7 +25,8 @@ const COMMERCIAL_MODULE_KEYS = new Set(['quotes', 'invoices', 'sales_orders']);
 const RECORD_LOADERS = {
   quotes: loadQuoteContext,
   invoices: loadInvoiceContext,
-  people: loadPeopleContext
+  people: loadPeopleContext,
+  purchase_returns: loadPurchaseReturnContext
 };
 
 function capitalizeModuleKey(moduleKey) {
@@ -139,14 +140,18 @@ function normalizeLine(line) {
   const unitPrice = doc.unitPrice ?? doc.unitPriceSnapshot ?? doc.listPriceSnapshot ?? 0;
   const liveDescription = plainTextFromRichDescription(doc.liveItemDescription || '');
   const snapshotDescription = plainTextFromRichDescription(doc.descriptionSnapshot || doc.description || '');
+  const itemName = doc.itemNameSnapshot || doc.nameSnapshot || doc.name || '';
+  const qty = doc.quantity ?? doc.quantityReturned ?? doc.quantityOrdered ?? 0;
 
   return {
     ...doc,
-    description: liveDescription || snapshotDescription || '',
-    name: doc.itemNameSnapshot || doc.nameSnapshot || doc.name || '',
+    description: liveDescription || snapshotDescription || itemName || '',
+    name: itemName,
     skuSnapshot: doc.skuSnapshot || doc.sku || '',
     unitPrice,
-    quantity: doc.quantity ?? 0,
+    quantity: qty,
+    quantityReturned: doc.quantityReturned ?? qty,
+    returnReason: doc.returnReason || '',
     lineTotal: doc.lineTotal ?? doc.lineSubtotal ?? 0,
     lineSubtotal: doc.lineSubtotal ?? doc.lineTotal ?? 0
   };
@@ -331,7 +336,54 @@ async function loadPeopleContext({ organizationId, recordId }) {
   };
 }
 
-const PREVIEW_LINE_COLLECTION_MODULES = new Set(['quotes', 'invoices', 'sales_orders']);
+async function loadPurchaseReturnContext({ organizationId, recordId }) {
+  const { PurchaseReturn, PurchaseReturnLine } = require('../../../models/PurchaseReturn');
+  const purchaseReturn = await PurchaseReturn.findOne({
+    _id: recordId,
+    organizationId,
+    deletedAt: null
+  })
+    .populate({ path: 'vendorId', select: ORGANIZATION_MERGE_SELECT })
+    .populate({
+      path: 'vendorContactId',
+      select: 'first_name last_name firstName lastName email phone mobile'
+    })
+    .lean();
+  if (!purchaseReturn) return null;
+
+  const lines = await PurchaseReturnLine.find({ organizationId, purchaseReturnId: recordId })
+    .sort({ lineOrder: 1, createdAt: 1 })
+    .lean();
+
+  const vendor =
+    purchaseReturn.vendorId && typeof purchaseReturn.vendorId === 'object'
+      ? purchaseReturn.vendorId
+      : null;
+
+  return {
+    record: {
+      ...purchaseReturn,
+      purchaseReturnNumber: purchaseReturn.purchaseReturnNumber ?? '',
+      subject: purchaseReturn.subject ?? '',
+      grandTotal: purchaseReturn.grandTotal ?? 0,
+      subtotal: purchaseReturn.subtotal ?? 0,
+      currency: purchaseReturn.currency ?? 'USD',
+      returnReason: purchaseReturn.returnReason ?? '',
+      // Prefer vendor on Organization alias for return docs
+      customerOrganization: vendor
+    },
+    lines,
+    sections: [],
+    moduleKey: 'purchase_returns'
+  };
+}
+
+const PREVIEW_LINE_COLLECTION_MODULES = new Set([
+  'quotes',
+  'invoices',
+  'sales_orders',
+  'purchase_returns'
+]);
 
 const PREVIEW_SAMPLE_LINES = [
   {
@@ -545,6 +597,9 @@ async function resolveRelatedOrganization({ organizationId, record, relatedPeopl
 
   const fromDocumentRef = await resolveCrmOrganizationRef(record.organizationRefId, organizationId);
   if (fromDocumentRef) return fromDocumentRef;
+
+  const fromVendorId = await resolveCrmOrganizationRef(record.vendorId, organizationId);
+  if (fromVendorId) return fromVendorId;
 
   const fromCustomerId = await resolveCrmOrganizationRef(record.customerId, organizationId);
   if (fromCustomerId) return fromCustomerId;
@@ -786,6 +841,7 @@ async function assembleRuntimeContext(params) {
 
   if (scope.Quote) scope.Quote = normalizeRecordForMergeTags(scope.Quote);
   if (scope.Invoice) scope.Invoice = normalizeRecordForMergeTags(scope.Invoice);
+  if (scope.PurchaseReturns) scope.PurchaseReturns = normalizeRecordForMergeTags(scope.PurchaseReturns);
   if (scope.People) scope.People = normalizeRecordForMergeTags(scope.People);
   if (scope.Record) scope.Record = normalizeRecordForMergeTags(scope.Record);
   if (moduleAlias && scope[moduleAlias]) {

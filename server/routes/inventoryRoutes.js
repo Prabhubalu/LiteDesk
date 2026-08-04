@@ -9,6 +9,7 @@ const {
   listLocationsHandler,
   createLocationHandler,
   getLocationHandler,
+  updateLocationHandler,
   listBalancesHandler,
   listLedgerHandler,
   createAdjustmentHandler,
@@ -51,6 +52,7 @@ router.use(checkTrialStatus);
 router.get('/locations', checkPermission('inventory', 'view'), listLocationsHandler);
 router.post('/locations', checkPermission('inventory', 'manageLocations'), createLocationHandler);
 router.get('/locations/:id', checkPermission('inventory', 'view'), getLocationHandler);
+router.put('/locations/:id', checkPermission('inventory', 'manageLocations'), updateLocationHandler);
 
 router.get('/balances', checkPermission('inventory', 'view'), listBalancesHandler);
 router.get('/ledger', checkPermission('inventory', 'view'), listLedgerHandler);

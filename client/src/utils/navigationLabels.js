@@ -54,6 +54,14 @@ export const MODULE_LABEL_KEYS = {
   segments: 'navigation.moduleSegments',
   articles: 'navigation.moduleArticles',
   blog: 'navigation.moduleBlog',
+  sales_returns: 'navigation.inventorySalesReturns',
+  purchase_returns: 'navigation.inventoryPurchaseReturns',
+  receipt_notes: 'navigation.inventoryReceiptNotes',
+  delivery_notes: 'navigation.inventoryDeliveryNotes',
+  delivery_returns: 'navigation.inventoryDeliveryReturns',
+  stockrooms: 'navigation.inventoryStockrooms',
+  stock_adjustments: 'navigation.inventoryAdjustments',
+  stock_transfers: 'navigation.inventoryTransfers',
 };
 
 /** Core drawer section order (subtle categorization in AppModuleDrawer / AppFlyout). */

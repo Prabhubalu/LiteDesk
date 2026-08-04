@@ -367,5 +367,153 @@
   "listParticipationMore": {
     "message": "+{count} more",
     "description": "Overflow indicator for additional organization participations in list cell"
+  },
+  "vendorCatalogTitle": {
+    "message": "Vendor Catalog",
+    "description": "Section title for items a vendor supplies"
+  },
+  "vendorCatalogHint": {
+    "message": "Items this vendor supplies and their default purchase prices. Used when creating Purchase Orders.",
+    "description": "Helper under vendor catalog section"
+  },
+  "vendorCatalogAddItem": {
+    "message": "Add item",
+    "description": "Add row to vendor catalog"
+  },
+  "vendorCatalogAddFirst": {
+    "message": "Add the first item",
+    "description": "Empty-state CTA for vendor catalog"
+  },
+  "vendorCatalogEmpty": {
+    "message": "No items linked yet. Add items this vendor supplies for faster purchasing.",
+    "description": "Empty vendor catalog"
+  },
+  "vendorCatalogColItem": {
+    "message": "Item",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColVendorCode": {
+    "message": "Vendor item code",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColVendorName": {
+    "message": "Vendor item name",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColPurchasePrice": {
+    "message": "Purchase price",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColLastPrice": {
+    "message": "Last purchase price",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColLastDate": {
+    "message": "Last purchase date",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogColStatus": {
+    "message": "Status",
+    "description": "Vendor catalog column"
+  },
+  "vendorCatalogSearchItems": {
+    "message": "Search items…",
+    "description": "Item search in vendor catalog"
+  },
+  "vendorCatalogNoMatches": {
+    "message": "No matching items",
+    "description": "Vendor catalog search empty"
+  },
+  "vendorCatalogVariant": {
+    "message": "Variant",
+    "description": "Fallback label"
+  },
+  "vendorCatalogStatusActive": {
+    "message": "Active",
+    "description": "Vendor catalog status"
+  },
+  "vendorCatalogStatusInactive": {
+    "message": "Inactive",
+    "description": "Vendor catalog status"
+  },
+  "vendorCatalogChangeItem": {
+    "message": "Change",
+    "description": "Change selected catalog item"
+  },
+  "vendorCatalogSaveFailed": {
+    "message": "Organization saved, but vendor catalog could not be updated.",
+    "description": "Partial failure toast/message"
+  },
+  "vendorCatalogEmptyTitle": {
+    "message": "No catalog items",
+    "description": "Title for empty vendor catalog on record page"
+  },
+  "vendorCatalogLoadFailed": {
+    "message": "Could not load vendor catalog.",
+    "description": "Error loading vendor catalog section"
+  },
+  "vendorCatalogEdit": {
+    "message": "Edit catalog",
+    "description": "Edit vendor catalog on organization record"
+  },
+  "vendorCatalogSaved": {
+    "message": "Vendor catalog saved",
+    "description": "Toast after inline vendor catalog save"
+  },
+  "vendorCatalogSaving": {
+    "message": "Saving…",
+    "description": "Quiet autosave status while vendor catalog is persisting"
+  },
+  "vendorCatalogAutosaved": {
+    "message": "Saved",
+    "description": "Quiet autosave confirmation for vendor catalog"
+  },
+  "vendorCatalogFilterAll": {
+    "message": "All",
+    "description": "Vendor catalog status filter: all statuses"
+  },
+  "vendorCatalogFilterStatus": {
+    "message": "Filter by status",
+    "description": "Aria label for vendor catalog status filters"
+  },
+  "vendorCatalogImport": {
+    "message": "Import CSV",
+    "description": "Button to import vendor catalog from CSV"
+  },
+  "vendorCatalogImportEmpty": {
+    "message": "CSV has no data rows",
+    "description": "Error when vendor catalog CSV import is empty"
+  },
+  "vendorCatalogImportFailed": {
+    "message": "Import failed",
+    "description": "Generic vendor catalog import failure"
+  },
+  "vendorCatalogImportResult": {
+    "message": "Imported {count} item(s). {errors} row error(s).",
+    "description": "Vendor catalog CSV import result summary"
+  },
+  "vendorCatalogConflict": {
+    "message": "Catalog changed elsewhere — reloaded. Re-apply your edits if needed.",
+    "description": "Optimistic concurrency conflict on vendor catalog autosave"
+  },
+  "vendorCatalogColMoq": {
+    "message": "MOQ",
+    "description": "Minimum order quantity column"
+  },
+  "vendorCatalogColLeadTime": {
+    "message": "Lead time (days)",
+    "description": "Supplier lead time column"
+  },
+  "vendorCatalogColPreferred": {
+    "message": "Preferred",
+    "description": "Preferred vendor flag column"
+  },
+  "vendorCatalogMoqPlaceholder": {
+    "message": "—",
+    "description": "Empty MOQ placeholder"
+  },
+  "vendorCatalogLeadPlaceholder": {
+    "message": "—",
+    "description": "Empty lead time placeholder"
   }
 }

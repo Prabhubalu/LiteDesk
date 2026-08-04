@@ -33,6 +33,7 @@ async function createTestVariant({ organizationId, costPrice = 10, unitOfMeasure
     item_name: `Test Item ${Date.now()}`,
     item_code: `SKU-${crypto.randomUUID().slice(0, 8)}`,
     lifecycle_state: 'Active',
+    assignedTo: userId,
     createdBy: userId
   });
 
@@ -77,6 +78,7 @@ async function createTestSalesOrderWithLine({
     currency: 'USD',
     sourceType: 'manual',
     lineageType: 'standalone',
+    assignedTo: userId,
     createdBy: userId,
     modifiedBy: userId
   });

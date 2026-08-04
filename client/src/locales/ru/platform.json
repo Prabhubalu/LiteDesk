@@ -1142,5 +1142,37 @@
   "poCreateLinesDraftFailed": {
     "message": "Could not prepare purchase order lines.",
     "description": "Purchase order create drawer lines stub failed"
+  },
+  "listCreatePurchaseReturn": {
+    "message": "New Return",
+    "description": "Purchase returns list create button"
+  },
+  "listCreateReceiptNote": {
+    "message": "New Receipt",
+    "description": "Receipt notes list create button"
+  },
+  "listCreateDeliveryReturn": {
+    "message": "New Return",
+    "description": "Delivery returns list create button"
+  },
+  "listCreateDeliveryNote": {
+    "message": "New Delivery Note",
+    "description": "Delivery notes list create button"
+  },
+  "listCreateSalesReturn": {
+    "message": "New Return",
+    "description": "Sales returns list create button"
+  },
+  "listCreateStockroom": {
+    "message": "New Stockroom",
+    "description": "Stockrooms list create button"
+  },
+  "listCreateStockAdjustment": {
+    "message": "New Adjustment",
+    "description": "Stock adjustments list create button"
+  },
+  "listCreateStockTransfer": {
+    "message": "New Transfer",
+    "description": "Stock transfers list create button"
   }
 }

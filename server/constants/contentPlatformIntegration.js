@@ -20,6 +20,18 @@ const MODULE_DOCUMENT_CONFIG = {
     moduleScope: 'invoices',
     seedKey: 'invoice-default',
     envModeKey: 'CONTENT_PLATFORM_INVOICES_MODE'
+  },
+  purchase_orders: {
+    purpose: 'purchase_order',
+    moduleScope: 'purchase_orders',
+    seedKey: 'purchase-order',
+    envModeKey: 'CONTENT_PLATFORM_PURCHASE_ORDERS_MODE'
+  },
+  purchase_returns: {
+    purpose: 'purchase_return',
+    moduleScope: 'purchase_returns',
+    seedKey: 'purchase-return',
+    envModeKey: 'CONTENT_PLATFORM_PURCHASE_RETURNS_MODE'
   }
 };
 

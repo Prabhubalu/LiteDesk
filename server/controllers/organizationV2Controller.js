@@ -1067,6 +1067,25 @@ exports.update = async (req, res) => {
         console.warn('[organizationV2Controller] tally outbox hook failed', tallyErr?.message);
       }
     }
+
+    if (Array.isArray(req.body.vendorCatalog)) {
+      try {
+        const vendorCatalogService = require('../services/vendorCatalogService');
+        await vendorCatalogService.replaceEntries({
+          organizationId: tenantOrganizationId,
+          vendorId: org._id,
+          entries: req.body.vendorCatalog,
+          userId: req.user?._id || null
+        });
+      } catch (catalogErr) {
+        console.error(
+          '[organizationV2Controller] vendor catalog save failed',
+          catalogErr?.message,
+          catalogErr?.stack
+        );
+        // Non-fatal: client follows up with PUT /vendor-catalog
+      }
+    }
     
     const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
     res.json({

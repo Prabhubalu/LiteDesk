@@ -149,6 +149,33 @@
                                 </p>
                               </div>
                             </template>
+                            <template v-else-if="isPurchaseReturnModule && !isEditing" #after-quick-create>
+                              <PurchaseReturnCreateSourcesPanel
+                                ref="purchaseReturnSourcesRef"
+                                :vendor-id="formData.vendorId"
+                              />
+                            </template>
+                            <template v-else-if="isDeliveryReturnModule && !isEditing" #after-quick-create>
+                              <DeliveryReturnCreateSourcesPanel
+                                ref="deliveryReturnSourcesRef"
+                                :customer-id="formData.customerId"
+                              />
+                            </template>
+                            <template v-else-if="isDeliveryNoteModule && !isEditing" #after-quick-create>
+                              <DeliveryNoteCreateSourcesPanel
+                                ref="deliveryNoteSourcesRef"
+                                :customer-id="formData.customerId"
+                              />
+                            </template>
+                            <template v-else-if="isReceiptNoteModule && !isEditing" #after-quick-create>
+                              <ReceiptNoteCreatePanel ref="receiptNoteCreateRef" />
+                            </template>
+                            <template v-else-if="isStockAdjustmentModule && !isEditing" #after-quick-create>
+                              <StockAdjustmentCreatePanel ref="stockAdjustmentCreateRef" />
+                            </template>
+                            <template v-else-if="isStockTransferModule && !isEditing" #after-quick-create>
+                              <StockTransferCreatePanel ref="stockTransferCreateRef" />
+                            </template>
                           </DynamicForm>
                           <!-- Deal relationship editor (People + Organizations) -->
                           <div
@@ -248,6 +275,24 @@ const SalesOrderLinesRecordSection = defineAsyncComponent(
 );
 const PurchaseOrderLinesRecordSection = defineAsyncComponent(
   () => import('@/components/record-page/sections/PurchaseOrderLinesRecordSection.vue')
+);
+const PurchaseReturnCreateSourcesPanel = defineAsyncComponent(
+  () => import('@/components/common/PurchaseReturnCreateSourcesPanel.vue')
+);
+const DeliveryReturnCreateSourcesPanel = defineAsyncComponent(
+  () => import('@/components/common/DeliveryReturnCreateSourcesPanel.vue')
+);
+const DeliveryNoteCreateSourcesPanel = defineAsyncComponent(
+  () => import('@/components/common/DeliveryNoteCreateSourcesPanel.vue')
+);
+const ReceiptNoteCreatePanel = defineAsyncComponent(
+  () => import('@/components/common/ReceiptNoteCreatePanel.vue')
+);
+const StockAdjustmentCreatePanel = defineAsyncComponent(
+  () => import('@/components/common/StockAdjustmentCreatePanel.vue')
+);
+const StockTransferCreatePanel = defineAsyncComponent(
+  () => import('@/components/common/StockTransferCreatePanel.vue')
 );
 import apiClient from '@/utils/apiClient';
 import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
@@ -518,6 +563,12 @@ const isQuoteModule = computed(() => moduleKeyLower.value === 'quotes');
 const isInvoiceModule = computed(() => moduleKeyLower.value === 'invoices');
 const isSalesOrderModule = computed(() => moduleKeyLower.value === 'sales_orders');
 const isPurchaseOrderModule = computed(() => moduleKeyLower.value === 'purchase_orders');
+const isPurchaseReturnModule = computed(() => moduleKeyLower.value === 'purchase_returns');
+const isDeliveryReturnModule = computed(() => moduleKeyLower.value === 'delivery_returns');
+const isDeliveryNoteModule = computed(() => moduleKeyLower.value === 'delivery_notes');
+const isReceiptNoteModule = computed(() => moduleKeyLower.value === 'receipt_notes');
+const isStockAdjustmentModule = computed(() => moduleKeyLower.value === 'stock_adjustments');
+const isStockTransferModule = computed(() => moduleKeyLower.value === 'stock_transfers');
 const isCommercialLinesForm = computed(
   () =>
     isQuoteModule.value ||
@@ -571,6 +622,14 @@ const commercialFormEnsurePromise = ref(null);
 /** Auto-created commercial doc id while create drawer is open; discarded unless Save succeeds */
 const commercialCreateDraftId = ref(null);
 const commercialCreateSaved = ref(false);
+/** Purchase Return create: multi-select sources panel */
+const purchaseReturnSourcesRef = ref(null);
+const deliveryReturnSourcesRef = ref(null);
+const deliveryNoteSourcesRef = ref(null);
+/** Receipt Note create: PO + location picker */
+const receiptNoteCreateRef = ref(null);
+const stockAdjustmentCreateRef = ref(null);
+const stockTransferCreateRef = ref(null);
 const commercialLinesFormContext = {
   expandedLeftSection: '',
   onSectionUpdated({ payload } = {}) {
@@ -580,7 +639,14 @@ const commercialLinesFormContext = {
 
 // Two modes: Quick Create Mode (only quick create fields) | Full Form Mode (all fields from config except system)
 // Show toggle when quick-create is configured. Commercial line docs always open in full form (no toggle).
-const showFullModeToggle = computed(() => effectiveQuickCreateMode.value && !isCommercialLinesForm.value);
+// Stock adjustments use a dedicated create panel only — full mode would dump noise fields.
+const showFullModeToggle = computed(
+  () =>
+    effectiveQuickCreateMode.value &&
+    !isCommercialLinesForm.value &&
+    !isStockAdjustmentModule.value &&
+    !isStockTransferModule.value
+);
 
 function clearModeAnimTimer() {
   if (modeAnimTimer) {
@@ -643,19 +709,29 @@ const effectiveQuickCreateMode = computed(() => {
     'quotes',
     'invoices',
     'sales_orders',
-    'purchase_orders'
+    'purchase_orders',
+    'purchase_returns',
+    'delivery_returns',
+    'delivery_notes',
+    'sales_returns',
+    'receipt_notes',
+    'stockrooms',
+    'stock_adjustments',
+    'stock_transfers'
   ];
   return useQuickCreateByDefault.includes(props.moduleKey?.toLowerCase());
 });
 
 // DynamicForm treats quickCreateMode as strict: empty quickCreate → no fields. Only enable strict
 // mode when Settings (or parent prop) actually defines quickCreate keys; otherwise show required-field fallback.
+// Stock adjustments/transfers create use only the create panel (empty quickCreate by design).
 const strictQuickCreateForForm = computed(() => {
   if (!effectiveQuickCreateMode.value) return false;
   if (props.quickCreateMode) return true;
   if (fullMode.value) return false;
-  // Commercial line docs: only Settings → Quick Create selected fields (never required-field fallback).
   if (isCommercialLinesForm.value) return true;
+  if (isStockAdjustmentModule.value) return true;
+  if (isStockTransferModule.value) return true;
   const qc = effectiveModuleOverrideForDrawer.value?.quickCreate
     ?? moduleOverrideFromSettings.value?.quickCreate;
   return Array.isArray(qc) && qc.length > 0;
@@ -673,6 +749,14 @@ const moduleNameMap = {
   'invoices': 'Invoice',
   'sales_orders': 'Sales Order',
   'purchase_orders': 'Purchase Order',
+  'purchase_returns': 'Purchase Return',
+  'delivery_returns': 'Delivery Return',
+  'delivery_notes': 'Delivery Note',
+  'sales_returns': 'Sales Return',
+  'receipt_notes': 'Receipt Note',
+  'stockrooms': 'Stockroom',
+  'stock_adjustments': 'Adjustment',
+  'stock_transfers': 'Transfer',
   'users': 'User'
 };
 
@@ -740,6 +824,42 @@ const effectiveExcludeFields = computed(() => {
     getItemLegacyCategoryFieldKeys().forEach((k) => excluded.add(k));
     ['status', 'product_image', 'stock_quantity', 'reorder_level', 'serial_numbers'].forEach((k) => excluded.add(k));
     return Array.from(excluded);
+  }
+  // Receipt Note create: PO + location come from ReceiptNoteCreatePanel only
+  if (props.moduleKey === 'receipt_notes' && !isEditing.value) {
+    ['purchaseOrderId', 'receiptLocationId', 'vendorId', 'status', 'receivedBy', 'receiptNoteNumber'].forEach(
+      (k) => excluded.add(k)
+    );
+  }
+  // Stock adjustment create: body comes from StockAdjustmentCreatePanel only
+  if (props.moduleKey === 'stock_adjustments' && !isEditing.value) {
+    [
+      'inventoryLocationId',
+      'reasonCode',
+      'status',
+      'lines',
+      'notes',
+      'inventoryAdjustmentId',
+      'inventoryTransactionId',
+      'postedAt',
+      'postedBy'
+    ].forEach((k) => excluded.add(k));
+  }
+  // Stock transfer create: body comes from StockTransferCreatePanel only
+  if (props.moduleKey === 'stock_transfers' && !isEditing.value) {
+    [
+      'fromLocationId',
+      'toLocationId',
+      'status',
+      'lines',
+      'notes',
+      'inventoryTransferId',
+      'inventoryTransactionId',
+      'shippedAt',
+      'receivedAt',
+      'postedAt',
+      'postedBy'
+    ].forEach((k) => excluded.add(k));
   }
   if (props.moduleKey === 'cases') {
     (getCaseSystemFields() || []).forEach((k) => excluded.add(k));
@@ -830,6 +950,15 @@ async function fetchModuleForDrawer() {
       tasks: 'platform',
       organizations: 'platform',
       events: 'platform',
+      sales_returns: 'inventory',
+      stockrooms: 'inventory',
+      stock_adjustments: 'inventory',
+      stock_transfers: 'inventory',
+      purchase_orders: 'inventory',
+      receipt_notes: 'inventory',
+      purchase_returns: 'inventory',
+      delivery_notes: 'inventory',
+      delivery_returns: 'inventory',
     };
     const resolvedAppKey =
       moduleAppKeyHintByKey[keyLower] || inferredAppKey;
@@ -853,6 +982,26 @@ async function fetchModuleForDrawer() {
         let quickCreate = resolveQc(Array.isArray(mod.quickCreate) ? mod.quickCreate : []);
         if (!quickCreate.length) {
           quickCreate = resolveQc(getItemQuickCreateFields());
+        }
+        mod.quickCreate = quickCreate;
+        mod.quickCreateLayout = { version: 1, rows: [] };
+      }
+      if ((mod.key || '').toLowerCase() === 'stockrooms') {
+        const fieldKeys = new Set(
+          (mod.fields || []).map((f) => String(f?.key || '').toLowerCase()).filter(Boolean)
+        );
+        const resolveQc = (keys) => keys.filter((k) => fieldKeys.has(String(k).toLowerCase()));
+        const defaultQc = [
+          'name',
+          'locationCode',
+          'locationType',
+          'description',
+          'isDefault',
+          'allowNegative'
+        ];
+        let quickCreate = resolveQc(Array.isArray(mod.quickCreate) ? mod.quickCreate : []);
+        if (!quickCreate.length) {
+          quickCreate = resolveQc(defaultQc);
         }
         mod.quickCreate = quickCreate;
         mod.quickCreateLayout = { version: 1, rows: [] };
@@ -1261,7 +1410,10 @@ async function loadCommercialFormRecord(recordId) {
 /** Local create stub — no server Draft until Save. */
 function seedCommercialCreateStub() {
   if (!isCommercialLinesCreate.value) return;
-  if (commercialFormRecord.value && !commercialFormRecord.value._id) return;
+  if (commercialFormRecord.value && !commercialFormRecord.value._id) {
+    syncCommercialCreateHeaderFromForm();
+    return;
+  }
 
   const adapter = resolveCommercialLinesAdapter(
     isPurchaseOrderModule.value
@@ -1285,6 +1437,10 @@ function seedCommercialCreateStub() {
     sectionTotal: 0
   };
 
+  const vendorId = isPurchaseOrderModule.value
+    ? resolveFormRelationId(formData.value?.vendorId)
+    : null;
+
   commercialFormRecord.value = {
     status: isPurchaseOrderModule.value ? 'draft' : 'Draft',
     currency: orgCurrency,
@@ -1296,11 +1452,57 @@ function seedCommercialCreateStub() {
     globalDiscountTotal: 0,
     taxTotal: 0,
     chargesTotal: 0,
-    adjustmentTotal: 0
+    adjustmentTotal: 0,
+    ...(vendorId ? { vendorId } : {})
   };
   commercialCreateDraftId.value = null;
   commercialCreateSaved.value = false;
   commercialFormLoading.value = false;
+}
+
+/**
+ * Lookup drawers (e.g. PO vendor catalog) read header fields off commercialFormRecord.
+ * Quick-create form fields live on formData — keep vendorId (and similar) in sync.
+ */
+function resolveFormRelationId(value) {
+  if (value == null || value === '') return null;
+  if (Array.isArray(value)) {
+    return value.length ? resolveFormRelationId(value[0]) : null;
+  }
+  if (typeof value === 'object') {
+    const id = value._id ?? value.id ?? value.value ?? value.recordId ?? null;
+    return id != null && String(id).trim() ? String(id).trim() : null;
+  }
+  const s = String(value).trim();
+  return s || null;
+}
+
+function syncCommercialCreateHeaderFromForm() {
+  if (!isCommercialLinesCreate.value) return;
+  const rec = commercialFormRecord.value;
+  if (!rec || rec._id) return;
+
+  const patch = {};
+  if (isPurchaseOrderModule.value) {
+    const vendorId = resolveFormRelationId(formData.value?.vendorId);
+    if (String(rec.vendorId || '') !== String(vendorId || '')) {
+      patch.vendorId = vendorId;
+    }
+  }
+
+  const currencyRaw = formData.value?.currency;
+  if (currencyRaw != null && currencyRaw !== '') {
+    const currency =
+      typeof currencyRaw === 'object' && !Array.isArray(currencyRaw)
+        ? String(currencyRaw.code || currencyRaw.value || currencyRaw._id || '').trim()
+        : String(currencyRaw).trim();
+    if (currency && String(rec.currency || '').toUpperCase() !== currency.toUpperCase()) {
+      patch.currency = currency;
+    }
+  }
+
+  if (!Object.keys(patch).length) return;
+  commercialFormRecord.value = { ...rec, ...patch };
 }
 
 /** Load commercial record for edit drawer only — create uses local stub until Save. */
@@ -1448,7 +1650,10 @@ async function flushCommercialCreateLines(createdRecord) {
       overridePricing: false
     });
     if (isPurchaseOrderFlush && line.unitPrice != null) {
-      body.unitPrice = Number(line.unitPrice) || 0;
+      body.unitPrice = Number(line.unitPrice) || Number(line.unitPriceSnapshot) || 0;
+    }
+    if (isPurchaseOrderFlush && line.linkToVendorCatalog === true) {
+      body.linkToVendorCatalog = true;
     }
     try {
       const res = await apiClient.post(`${apiPath}/${headerId}/lines`, body);
@@ -1513,8 +1718,8 @@ async function flushCommercialCreateLines(createdRecord) {
   }
   }
 
-  // Global discount
-  if (!isPurchaseOrderFlush && local.globalDiscountType && Number(local.globalDiscountValue) > 0) {
+  // Global / overall discount
+  if (local.globalDiscountType && Number(local.globalDiscountValue) > 0) {
     try {
       await apiClient.patch(`${apiPath}/${headerId}/discounts`, {
         globalDiscountType: local.globalDiscountType,
@@ -1528,7 +1733,6 @@ async function flushCommercialCreateLines(createdRecord) {
   }
 
   // Doc taxes / charges
-  if (!isPurchaseOrderFlush) {
   const taxIds =
     local._localTransactionTaxIds ||
     (local.transactionTaxSnapshot?.taxes || []).map((x) => x.taxId).filter(Boolean);
@@ -1548,11 +1752,23 @@ async function flushCommercialCreateLines(createdRecord) {
     }
   }
 
+  if (!isPurchaseOrderFlush) {
   try {
     await apiClient.post(`${apiPath}/${headerId}/recalculate`, { overridePricing: false });
   } catch (error) {
     drawerWarn('[CreateRecordDrawer] Failed to recalculate after commercial flush:', error);
   }
+  }
+
+  if (isPurchaseOrderFlush && Number(local.adjustmentTotal) !== 0) {
+    try {
+      await apiClient.patch(`${apiPath}/${headerId}/discounts`, {
+        adjustmentTotal: Number(local.adjustmentTotal) || 0
+      });
+    } catch (error) {
+      drawerWarn('[CreateRecordDrawer] Failed to flush PO adjustment:', error);
+      throw error;
+    }
   }
 
   try {
@@ -1748,6 +1964,9 @@ const handleDialogClose = () => {
 
 const updateFormData = (data) => {
   formData.value = { ...data };
+  if (isCommercialLinesCreate.value) {
+    syncCommercialCreateHeaderFromForm();
+  }
 };
 
 const scrollToFirstErrorField = async () => {
@@ -2136,6 +2355,11 @@ watch(() => formData.value?.stage, (newStage) => {
 // Watch for form data changes and clear errors for fields that are now valid
 watch(() => formData.value, (newFormData, oldFormData) => {
   if (!moduleDefinition.value || !oldFormData) return;
+
+  // PO (and other commercial create): keep lines workspace header in sync with QC fields
+  if (isCommercialLinesCreate.value) {
+    syncCommercialCreateHeaderFromForm();
+  }
   
   // Check which fields have changed
   const changedFields = new Set();
@@ -2713,6 +2937,149 @@ const handleSubmit = async () => {
         resolveCurrentUserId(authStore.user)
       );
     }
+
+    // Purchase Return create: attach selected source document ids for line materialization
+    if (isPurchaseReturnModule.value && !isEditing.value) {
+      const sources = purchaseReturnSourcesRef.value?.getSelectedSources?.();
+      if (sources) {
+        if (Array.isArray(sources.receiptNoteIds) && sources.receiptNoteIds.length) {
+          submitData.receiptNoteIds = sources.receiptNoteIds;
+        }
+        if (Array.isArray(sources.purchaseOrderIds) && sources.purchaseOrderIds.length) {
+          submitData.purchaseOrderIds = sources.purchaseOrderIds;
+        }
+      }
+      // Normalize lookup ids (DynamicForm may pass objects)
+      if (submitData.vendorId && typeof submitData.vendorId === 'object') {
+        submitData.vendorId = submitData.vendorId._id || submitData.vendorId.id || submitData.vendorId;
+      }
+      if (submitData.ownerId && typeof submitData.ownerId === 'object') {
+        submitData.ownerId = submitData.ownerId._id || submitData.ownerId.id || submitData.ownerId;
+      }
+      if (submitData.vendorContactId && typeof submitData.vendorContactId === 'object') {
+        submitData.vendorContactId =
+          submitData.vendorContactId._id ||
+          submitData.vendorContactId.id ||
+          submitData.vendorContactId;
+      }
+      if (submitData.returnWarehouseId && typeof submitData.returnWarehouseId === 'object') {
+        submitData.returnWarehouseId =
+          submitData.returnWarehouseId._id ||
+          submitData.returnWarehouseId.id ||
+          submitData.returnWarehouseId;
+      }
+    }
+
+    // Delivery Return create: attach selected DN/Invoice source ids
+    if (isDeliveryReturnModule.value && !isEditing.value) {
+      const sources = deliveryReturnSourcesRef.value?.getSelectedSources?.();
+      if (sources) {
+        if (sources.sourceType) submitData.sourceType = sources.sourceType;
+        if (Array.isArray(sources.deliveryNoteIds) && sources.deliveryNoteIds.length) {
+          submitData.deliveryNoteIds = sources.deliveryNoteIds;
+        }
+        if (Array.isArray(sources.invoiceIds) && sources.invoiceIds.length) {
+          submitData.invoiceIds = sources.invoiceIds;
+        }
+      }
+      if (submitData.customerId && typeof submitData.customerId === 'object') {
+        submitData.customerId =
+          submitData.customerId._id || submitData.customerId.id || submitData.customerId;
+      }
+      if (submitData.ownerId && typeof submitData.ownerId === 'object') {
+        submitData.ownerId = submitData.ownerId._id || submitData.ownerId.id || submitData.ownerId;
+      }
+      if (submitData.contactPersonId && typeof submitData.contactPersonId === 'object') {
+        submitData.contactPersonId =
+          submitData.contactPersonId._id ||
+          submitData.contactPersonId.id ||
+          submitData.contactPersonId;
+      }
+      if (submitData.returnWarehouseId && typeof submitData.returnWarehouseId === 'object') {
+        submitData.returnWarehouseId =
+          submitData.returnWarehouseId._id ||
+          submitData.returnWarehouseId.id ||
+          submitData.returnWarehouseId;
+      }
+    }
+
+    // Delivery Note create: attach selected SO sources / warehouse normalize
+    if (isDeliveryNoteModule.value && !isEditing.value) {
+      const sources = deliveryNoteSourcesRef.value?.getSelectedSources?.();
+      if (sources) {
+        if (sources.sourceType) submitData.sourceType = sources.sourceType;
+        if (Array.isArray(sources.salesOrderIds) && sources.salesOrderIds.length) {
+          submitData.salesOrderIds = sources.salesOrderIds;
+        }
+      }
+      if (submitData.customerId && typeof submitData.customerId === 'object') {
+        submitData.customerId =
+          submitData.customerId._id || submitData.customerId.id || submitData.customerId;
+      }
+      if (submitData.ownerId && typeof submitData.ownerId === 'object') {
+        submitData.ownerId = submitData.ownerId._id || submitData.ownerId.id || submitData.ownerId;
+      }
+      if (submitData.contactPersonId && typeof submitData.contactPersonId === 'object') {
+        submitData.contactPersonId =
+          submitData.contactPersonId._id ||
+          submitData.contactPersonId.id ||
+          submitData.contactPersonId;
+      }
+      if (submitData.warehouseId && typeof submitData.warehouseId === 'object') {
+        submitData.warehouseId =
+          submitData.warehouseId._id || submitData.warehouseId.id || submitData.warehouseId;
+      }
+    }
+
+    // Receipt Note create: PO + location from source panel (required)
+    if (isReceiptNoteModule.value && !isEditing.value) {
+      const source = receiptNoteCreateRef.value?.getPayload?.();
+      if (!source?.purchaseOrderId || !source?.receiptLocationId) {
+        errors.value._general = t('records.rnCreateSourceRequired');
+        saving.value = false;
+        return;
+      }
+      submitData.purchaseOrderId = source.purchaseOrderId;
+      submitData.receiptLocationId = source.receiptLocationId;
+      // Drop auto vendor/status fields — server derives them
+      delete submitData.vendorId;
+      delete submitData.status;
+      delete submitData.receiptNoteNumber;
+    }
+
+    // Stock adjustment create: stockroom + reason + lines from panel
+    if (isStockAdjustmentModule.value && !isEditing.value) {
+      const payload = stockAdjustmentCreateRef.value?.getPayload?.();
+      if (!payload?.inventoryLocationId || !payload?.reasonCode || !payload.lines?.length) {
+        errors.value._general = t('records.adjCreateRequired');
+        saving.value = false;
+        return;
+      }
+      submitData.inventoryLocationId = payload.inventoryLocationId;
+      submitData.reasonCode = payload.reasonCode;
+      submitData.lines = payload.lines;
+      if (payload.notes) submitData.notes = payload.notes;
+      else delete submitData.notes;
+      delete submitData.status;
+      delete submitData.inventoryAdjustmentId;
+    }
+
+    // Stock transfer create: from/to + lines from panel
+    if (isStockTransferModule.value && !isEditing.value) {
+      const payload = stockTransferCreateRef.value?.getPayload?.();
+      if (!payload?.fromLocationId || !payload?.toLocationId || !payload.lines?.length) {
+        errors.value._general = t('records.xferCreateRequired');
+        saving.value = false;
+        return;
+      }
+      submitData.fromLocationId = payload.fromLocationId;
+      submitData.toLocationId = payload.toLocationId;
+      submitData.lines = payload.lines;
+      if (payload.notes) submitData.notes = payload.notes;
+      else delete submitData.notes;
+      delete submitData.status;
+      delete submitData.inventoryTransferId;
+    }
     
     // People create in Sales context: use create→attach flow (existing endpoint)
     const usePeopleCreateFlow = props.moduleKey === 'people' && !isEditing.value && isSalesContext.value;
@@ -2724,7 +3091,7 @@ const handleSubmit = async () => {
     });
 
     let response;
-    if (isEditing.value && props.record?._id) {
+    if (isEditing.value && (props.record?._id || props.record?.inventoryLocationId || props.record?.id)) {
       if (props.moduleKey === 'cases') {
         const id = props.record._id;
         const prevStatus = props.record?.status;
@@ -2761,7 +3128,11 @@ const handleSubmit = async () => {
         const merged = patchResult?.data ?? putResult?.data;
         response = { success: true, data: merged };
       } else {
-        response = await apiClient.put(`${endpoint}/${props.record._id}`, submitData);
+        const recordApiId =
+          props.record?.inventoryLocationId ||
+          props.record?._id ||
+          props.record?.id;
+        response = await apiClient.put(`${endpoint}/${recordApiId}`, submitData);
       }
     } else if (usePeopleCreateFlow) {
       // People create in Sales context: create→attach as Lead (standardized: appKey + role)
@@ -2803,7 +3174,13 @@ const handleSubmit = async () => {
       
       // Always open the saved record in a new tab
       if (savedRecord) {
-        const recordId = savedRecord._id || savedRecord.id || savedRecord.eventId;
+        const recordId =
+          savedRecord.inventoryLocationId ||
+          savedRecord.inventoryAdjustmentId ||
+          savedRecord.inventoryTransferId ||
+          savedRecord._id ||
+          savedRecord.id ||
+          savedRecord.eventId;
         
         if (recordId) {
           // Get record title/name based on module type
@@ -2822,7 +3199,23 @@ const handleSubmit = async () => {
             'quotes': () => savedRecord.quoteNumber || savedRecord.quoteTitle || 'Quote',
             'invoices': () => savedRecord.invoiceNumber || savedRecord.invoiceTitle || 'Invoice',
             'sales_orders': () => savedRecord.salesOrderNumber || savedRecord.orderTitle || 'Sales Order',
-            'purchase_orders': () => savedRecord.poNumber || 'Purchase Order',
+            'purchase_orders': () => savedRecord.poNumber || savedRecord.subject || 'Purchase Order',
+            'purchase_returns': () =>
+              savedRecord.purchaseReturnNumber || savedRecord.subject || 'Purchase Return',
+            'delivery_returns': () =>
+              savedRecord.deliveryReturnNumber || savedRecord.subject || 'Delivery Return',
+            'delivery_notes': () =>
+              savedRecord.deliveryNoteNumber || savedRecord.subject || 'Delivery Note',
+            'sales_returns': () => savedRecord.salesReturnNumber || 'Sales Return',
+            'receipt_notes': () => savedRecord.receiptNoteNumber || 'Receipt Note',
+            'stockrooms': () => savedRecord.name || savedRecord.locationCode || 'Stockroom',
+            'stock_adjustments': () =>
+              savedRecord.reasonCode ||
+              savedRecord.inventoryAdjustmentId ||
+              'Adjustment',
+            'stock_transfers': () =>
+              savedRecord.inventoryTransferId ||
+              'Transfer',
             'users': () => savedRecord.firstName && savedRecord.lastName 
               ? `${savedRecord.firstName} ${savedRecord.lastName}`.trim()
               : savedRecord.email || savedRecord.username || 'User'
@@ -2847,6 +3240,14 @@ const handleSubmit = async () => {
             'invoices': `/invoices/${recordId}`,
             'sales_orders': `/sales-orders/${recordId}`,
             'purchase_orders': `/inventory/purchase-orders/${recordId}`,
+            'purchase_returns': `/inventory/purchase-returns/${recordId}`,
+            'delivery_returns': `/inventory/delivery-returns/${recordId}`,
+            'delivery_notes': `/inventory/delivery-notes/${recordId}`,
+            'sales_returns': `/inventory/sales-returns/${recordId}`,
+            'receipt_notes': `/inventory/receipt-notes/${recordId}`,
+            'stockrooms': `/inventory/stockrooms/${recordId}`,
+            'stock_adjustments': `/inventory/adjustments/${recordId}`,
+            'stock_transfers': `/inventory/transfers/${recordId}`,
             'users': `/users/${recordId}`
           };
           
@@ -2864,6 +3265,14 @@ const handleSubmit = async () => {
             'invoices': 'document-text',
             'sales_orders': 'shopping-cart',
             'purchase_orders': 'document-text',
+            'purchase_returns': 'arrow-uturn-left',
+            'delivery_returns': 'arrow-uturn-right',
+            'delivery_notes': 'truck',
+            'sales_returns': 'receipt-refund',
+            'receipt_notes': 'inbox-arrow-down',
+            'stockrooms': 'building-storefront',
+            'stock_adjustments': 'adjustments-horizontal',
+            'stock_transfers': 'arrows-right-left',
             'users': 'user'
           };
           

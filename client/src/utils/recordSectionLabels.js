@@ -16,6 +16,7 @@ export function createRecordSectionLabels(t) {
     invoice: t('records.salesOrderInvoiceTitle'),
     credits: t('records.invoiceCreditNotesTitle'),
     catalog: t('records.catalogSectionTitle'),
+    vendorCatalog: t('organizations.vendorCatalogTitle'),
     file: t('documents.fileSectionTitle'),
     content: t('documents.editorSectionTitle'),
     openEditor: t('documents.openEditor'),

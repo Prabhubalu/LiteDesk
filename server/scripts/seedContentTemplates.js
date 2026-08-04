@@ -20,7 +20,7 @@ const { getMongoUris } = require('../lib/mongoConnect');
 
 async function connect() {
   const uris = getMongoUris();
-  const uri = uris.master || process.env.MONGODB_URI || process.env.MONGO_URI;
+  const uri = uris.masterUri || process.env.MONGODB_URI || process.env.MONGO_URI;
   if (!uri) {
     throw new Error('MONGODB_URI is not configured');
   }

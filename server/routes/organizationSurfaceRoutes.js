@@ -37,8 +37,26 @@ const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMi
 const { lazySalesInitialization } = require('../middleware/lazySalesInitializationMiddleware');
 const { requireSalesApp } = require('../middleware/requireSalesAppMiddleware');
 const { organizationIsolation } = require('../middleware/organizationMiddleware');
+const { checkPermission } = require('../middleware/permissionMiddleware');
 const controller = require('../controllers/organizationV2Controller');
 const createController = require('../controllers/organizationCreateController');
+const vendorCatalogService = require('../services/vendorCatalogService');
+
+function sendVendorCatalogError(res, err) {
+  const status =
+    err?.code === 'NOT_FOUND'
+      ? 404
+      : err?.code === 'VALIDATION'
+        ? 400
+        : err?.code === 'CONFLICT'
+          ? 409
+          : 500;
+  return res.status(status).json({
+    success: false,
+    message: err.message,
+    code: err.code || 'UNKNOWN'
+  });
+}
 
 router.use(protect);
 router.use(resolveAppContext);
@@ -51,6 +69,96 @@ router.use(organizationIsolation);
 // ARCHITECTURAL INTENT: Dedicated endpoint for creation-only surface
 // This endpoint enforces strict field filtering and business organization creation only
 router.post('/', createController.create);
+
+// Vendor Catalog nested on organization (Sales app context — org create/edit)
+router.get('/:id/vendor-catalog', checkPermission('organizations', 'view'), async (req, res) => {
+  try {
+    const includeInactive = String(req.query.includeInactive || 'true') !== 'false';
+    const data = await vendorCatalogService.listEntries({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id,
+      status: req.query.status || null,
+      includeInactive
+    });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id
+    });
+    return res.json({ success: true, data, revision });
+  } catch (err) {
+    return sendVendorCatalogError(res, err);
+  }
+});
+
+router.put('/:id/vendor-catalog', checkPermission('organizations', 'edit'), async (req, res) => {
+  try {
+    const entries = Array.isArray(req.body?.entries)
+      ? req.body.entries
+      : Array.isArray(req.body)
+        ? req.body
+        : [];
+    const data = await vendorCatalogService.replaceEntries({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id,
+      entries,
+      userId: req.user._id,
+      expectedRevision: req.body?.expectedRevision || null
+    });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id
+    });
+    return res.json({ success: true, data, revision });
+  } catch (err) {
+    return sendVendorCatalogError(res, err);
+  }
+});
+
+router.post('/:id/vendor-catalog/import', checkPermission('organizations', 'edit'), async (req, res) => {
+  try {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    const { resolved, errors } = await vendorCatalogService.resolveImportRows({
+      organizationId: req.user.organizationId,
+      rows
+    });
+    if (!resolved.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid import rows',
+        code: 'VALIDATION',
+        errors
+      });
+    }
+    for (const row of resolved) {
+      // eslint-disable-next-line no-await-in-loop
+      await vendorCatalogService.upsertEntry({
+        organizationId: req.user.organizationId,
+        vendorId: req.params.id,
+        payload: row,
+        userId: req.user._id
+      });
+    }
+    const data = await vendorCatalogService.listEntries({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id,
+      includeInactive: true
+    });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id
+    });
+    return res.json({
+      success: true,
+      data,
+      revision,
+      imported: resolved.length,
+      errors
+    });
+  } catch (err) {
+    return sendVendorCatalogError(res, err);
+  }
+});
+
 
 // Get editable organization data (for edit mode)
 // Must be before /:id/surface route

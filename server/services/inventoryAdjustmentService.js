@@ -54,9 +54,16 @@ async function createAdjustment({
 }
 
 async function postAdjustment({ organizationId, inventoryAdjustmentId, userId }) {
+  const found = await getAdjustmentById({ organizationId, inventoryAdjustmentId });
+  if (!found) {
+    const err = new Error('Inventory adjustment not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
   const adjustment = await InventoryAdjustment.findOne({
     organizationId,
-    inventoryAdjustmentId
+    inventoryAdjustmentId: found.inventoryAdjustmentId
   });
 
   if (!adjustment) {
@@ -132,13 +139,54 @@ async function postAdjustment({ organizationId, inventoryAdjustmentId, userId })
 }
 
 async function getAdjustmentById({ organizationId, inventoryAdjustmentId }) {
-  return InventoryAdjustment.findOne({ organizationId, inventoryAdjustmentId }).lean();
+  const raw = inventoryAdjustmentId == null ? '' : String(inventoryAdjustmentId).trim();
+  if (!raw) return null;
+
+  let row = await InventoryAdjustment.findOne({ organizationId, inventoryAdjustmentId: raw }).lean();
+  if (!row && require('mongoose').Types.ObjectId.isValid(raw)) {
+    row = await InventoryAdjustment.findOne({ organizationId, _id: raw }).lean();
+  }
+  return row;
 }
 
-async function listAdjustments({ organizationId, status = null, limit = 50 }) {
+async function listAdjustments({ organizationId, status = null, limit = 200 }) {
   const query = { organizationId };
-  if (status) query.status = status;
-  return InventoryAdjustment.find(query).sort({ createdAt: -1 }).limit(limit).lean();
+  if (status) {
+    const statuses = String(status)
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (statuses.length === 1) query.status = statuses[0];
+    else if (statuses.length > 1) query.status = { $in: statuses };
+  }
+  const cap = Math.min(Math.max(Number(limit) || 200, 1), 500);
+  const rows = await InventoryAdjustment.find(query).sort({ createdAt: -1 }).limit(cap).lean();
+
+  const locIds = [
+    ...new Set(rows.map((r) => r.inventoryLocationId).filter(Boolean).map(String))
+  ];
+  let nameById = new Map();
+  if (locIds.length) {
+    const InventoryLocation = require('../models/InventoryLocation');
+    const locs = await InventoryLocation.find({
+      organizationId,
+      inventoryLocationId: { $in: locIds }
+    })
+      .select({ inventoryLocationId: 1, name: 1, locationCode: 1 })
+      .lean();
+    nameById = new Map(
+      locs.map((l) => [
+        String(l.inventoryLocationId),
+        l.name || l.locationCode || String(l.inventoryLocationId)
+      ])
+    );
+  }
+
+  return rows.map((row) => ({
+    ...row,
+    inventoryLocationName:
+      nameById.get(String(row.inventoryLocationId)) || row.inventoryLocationId || null
+  }));
 }
 
 module.exports = {

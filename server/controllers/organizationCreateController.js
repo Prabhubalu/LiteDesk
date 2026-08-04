@@ -226,6 +226,31 @@ exports.create = async (req, res) => {
     // Create organization
     const org = await Organization.create(body);
 
+    // Vendor Catalog: optional payload when creating an Inventory Vendor
+    if (Array.isArray(req.body.vendorCatalog) && req.body.vendorCatalog.length > 0) {
+      try {
+        const vendorCatalogService = require('../services/vendorCatalogService');
+        const saved = await vendorCatalogService.replaceEntries({
+          organizationId: req.user.organizationId,
+          vendorId: org._id,
+          entries: req.body.vendorCatalog,
+          userId: req.user?._id || null
+        });
+        console.log(
+          '[organizationCreateController] vendor catalog saved',
+          { vendorId: String(org._id), count: Array.isArray(saved) ? saved.length : 0 }
+        );
+      } catch (catalogErr) {
+        console.error(
+          '[organizationCreateController] vendor catalog save failed',
+          catalogErr?.message,
+          catalogErr?.stack
+        );
+        // Org is created; surface warning so client can retry catalog-only save
+        org._vendorCatalogError = catalogErr.message || 'Failed to save vendor catalog';
+      }
+    }
+
     try {
       if (req.user?.organizationId) {
         const { enqueueAfterPartySave } = require('../services/connectors/tally/tallyOutboxHooks');
@@ -272,6 +297,9 @@ exports.create = async (req, res) => {
       name: org.name,
       types: org.types || []
     };
+    if (org._vendorCatalogError) {
+      response.vendorCatalogError = org._vendorCatalogError;
+    }
     
     res.status(201).json({
       success: true,

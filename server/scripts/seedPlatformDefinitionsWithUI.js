@@ -1189,6 +1189,25 @@ async function seedPlatformDefinitionsWithUI(useExistingConnection = false) {
       console.log(`\n📊 Modules: ${modulesCreated} created, ${modulesUpdated} updated\n`);
     }
 
+    // Inventory workbench ModuleDefinitions (PO, RN, DN, stockrooms, …)
+    try {
+      const {
+        ensureInventoryAppModuleDefinitions
+      } = require('../services/inventoryModuleBootstrapService');
+      const { results: invResults } = await ensureInventoryAppModuleDefinitions();
+      const invCreated = invResults.filter((r) => r.created).length;
+      const invUpdated = invResults.filter((r) => r.updated).length;
+      modulesCreated += invCreated;
+      modulesUpdated += invUpdated;
+      if (!useExistingConnection) {
+        console.log(
+          `  ✅ Inventory modules: ${invCreated} created, ${invUpdated} updated, ${invResults.length} total`
+        );
+      }
+    } catch (invErr) {
+      console.warn('  ⚠️  Inventory module bootstrap failed:', invErr.message);
+    }
+
     // Register default Task relationships (safe/idempotent)
     await registerDefaultTaskRelationships();
 

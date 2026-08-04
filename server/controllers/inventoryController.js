@@ -1,6 +1,7 @@
 const {
   listLocations,
   createLocation,
+  updateLocation,
   getLocationById
 } = require('../services/inventoryLocationService');
 const { listBalances } = require('../services/inventoryRollupService');
@@ -54,9 +55,23 @@ async function listLocationsHandler(req, res) {
   try {
     const rows = await listLocations({
       organizationId: getOrganizationId(req),
-      status: req.query.status || null
+      status: req.query.status || null,
+      isDefault: req.query.isDefault != null ? req.query.isDefault : null
     });
-    res.json({ success: true, data: rows });
+    const totalRecords = Array.isArray(rows) ? rows.length : 0;
+    res.json({
+      success: true,
+      data: rows,
+      pagination: {
+        currentPage: 1,
+        page: 1,
+        limit: totalRecords || 25,
+        totalRecords,
+        total: totalRecords,
+        totalPages: 1,
+        hasMore: false
+      }
+    });
   } catch (err) {
     res.status(mapErrorStatus(err)).json({ success: false, message: err.message, code: err.code });
   }
@@ -84,6 +99,20 @@ async function getLocationHandler(req, res) {
     if (!row) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
+    res.json({ success: true, data: row });
+  } catch (err) {
+    res.status(mapErrorStatus(err)).json({ success: false, message: err.message, code: err.code });
+  }
+}
+
+async function updateLocationHandler(req, res) {
+  try {
+    const row = await updateLocation({
+      organizationId: getOrganizationId(req),
+      userId: req.user?._id,
+      inventoryLocationId: req.params.id,
+      payload: req.body || {}
+    });
     res.json({ success: true, data: row });
   } catch (err) {
     res.status(mapErrorStatus(err)).json({ success: false, message: err.message, code: err.code });
@@ -136,9 +165,22 @@ async function listAdjustmentsHandler(req, res) {
     const rows = await listAdjustments({
       organizationId: getOrganizationId(req),
       status: req.query.status || null,
-      limit: Number(req.query.limit) || 50
+      limit: Number(req.query.limit) || 200
     });
-    res.json({ success: true, data: rows });
+    const totalRecords = Array.isArray(rows) ? rows.length : 0;
+    res.json({
+      success: true,
+      data: rows,
+      pagination: {
+        currentPage: 1,
+        page: 1,
+        limit: totalRecords || 25,
+        totalRecords,
+        total: totalRecords,
+        totalPages: 1,
+        hasMore: false
+      }
+    });
   } catch (err) {
     res.status(mapErrorStatus(err)).json({ success: false, message: err.message, code: err.code });
   }
@@ -286,9 +328,22 @@ async function listTransfersHandler(req, res) {
     const rows = await listTransfers({
       organizationId: getOrganizationId(req),
       status: req.query.status || null,
-      limit: Number(req.query.limit) || 100
+      limit: Number(req.query.limit) || 200
     });
-    res.json({ success: true, data: rows });
+    const totalRecords = Array.isArray(rows) ? rows.length : 0;
+    res.json({
+      success: true,
+      data: rows,
+      pagination: {
+        currentPage: 1,
+        page: 1,
+        limit: totalRecords || 25,
+        totalRecords,
+        total: totalRecords,
+        totalPages: 1,
+        hasMore: false
+      }
+    });
   } catch (err) {
     res.status(mapErrorStatus(err)).json({ success: false, message: err.message, code: err.code });
   }
@@ -503,6 +558,7 @@ module.exports = {
   listLocationsHandler,
   createLocationHandler,
   getLocationHandler,
+  updateLocationHandler,
   listBalancesHandler,
   listLedgerHandler,
   createAdjustmentHandler,

@@ -212,6 +212,81 @@ function buildPurchaseOrderTemplateDefinition() {
   };
 }
 
+function buildPurchaseReturnTemplateDefinition() {
+  return {
+    id: 'pr-root',
+    type: CONTENT_COMPONENT_TYPES.PAGE,
+    name: 'Purchase Return',
+    layout: {},
+    style: {},
+    bindings: {},
+    visibility: {},
+    children: [
+      {
+        id: 'pr-title',
+        type: CONTENT_COMPONENT_TYPES.HEADING,
+        bindings: { level: 1, text: 'Purchase Return' },
+        style: { typography: { fontSize: 24, fontWeight: 700, color: '#111827' } }
+      },
+      {
+        id: 'pr-meta',
+        type: CONTENT_COMPONENT_TYPES.PARAGRAPH,
+        bindings: {
+          text: '{{CurrentOrganization.name}} · {{System.Today|date}}'
+        },
+        style: { typography: { color: '#374151' } }
+      },
+      {
+        id: 'pr-number',
+        type: CONTENT_COMPONENT_TYPES.PARAGRAPH,
+        bindings: {
+          text: 'Return #: {{PurchaseReturns.purchaseReturnNumber}} · {{PurchaseReturns.subject}}'
+        }
+      },
+      {
+        id: 'pr-vendor',
+        type: CONTENT_COMPONENT_TYPES.PARAGRAPH,
+        bindings: { text: 'Vendor: {{Organization.name}}' }
+      },
+      {
+        id: 'pr-reason',
+        type: CONTENT_COMPONENT_TYPES.PARAGRAPH,
+        bindings: {
+          text: 'Reason: {{PurchaseReturns.returnReason}}'
+        }
+      },
+      {
+        id: 'pr-lines-table',
+        type: CONTENT_COMPONENT_TYPES.TABLE,
+        bindings: {
+          collection: 'lines',
+          columns: [
+            { header: 'Item', path: 'description' },
+            { header: 'Return qty', path: 'quantity' },
+            { header: 'Unit price', path: 'unitPrice', format: 'currency' },
+            { header: 'Line total', path: 'lineTotal', format: 'currency' },
+            { header: 'Reason', path: 'returnReason' }
+          ]
+        }
+      },
+      {
+        id: 'pr-total',
+        type: CONTENT_COMPONENT_TYPES.PARAGRAPH,
+        bindings: { text: 'Return total: {{PurchaseReturns.grandTotal|currency}}' },
+        style: { typography: { fontWeight: 700, fontSize: 16, marginTop: 12 } }
+      },
+      {
+        id: 'pr-notes',
+        type: CONTENT_COMPONENT_TYPES.PARAGRAPH,
+        bindings: {
+          text: 'Please process this return against the referenced purchase documents.'
+        },
+        style: { typography: { marginTop: 24, color: '#6b7280', fontSize: 11 } }
+      }
+    ]
+  };
+}
+
 function buildSimpleLetterTemplateDefinition() {
   return {
     id: 'letter-root',
@@ -287,9 +362,19 @@ const SEED_TEMPLATES = [
     description: 'Purchase order with vendor details and line items.',
     purpose: 'purchase_order',
     category: 'operations',
-    moduleScope: '',
+    moduleScope: 'purchase_orders',
     outputFormat: 'pdf',
     jsonDefinition: buildPurchaseOrderTemplateDefinition()
+  },
+  {
+    key: 'purchase-return',
+    name: 'Purchase Return',
+    description: 'Purchase return with vendor details and return line items.',
+    purpose: 'purchase_return',
+    category: 'operations',
+    moduleScope: 'purchase_returns',
+    outputFormat: 'pdf',
+    jsonDefinition: buildPurchaseReturnTemplateDefinition()
   },
   {
     key: 'simple-letter',
@@ -309,5 +394,6 @@ module.exports = {
   buildInvoiceTemplateDefinition,
   buildSalesReceiptTemplateDefinition,
   buildPurchaseOrderTemplateDefinition,
+  buildPurchaseReturnTemplateDefinition,
   buildSimpleLetterTemplateDefinition
 };
