@@ -95,17 +95,50 @@
     return '<p class="' + classes + '"' + colorStyleAttr(options.color) + '>' + escapeHtml(text) + '</p>';
   }
 
+  function resolveEmbedFileOrigin(apiOrigin) {
+    var explicit = '';
+    try {
+      if (typeof window !== 'undefined' && window.__ARIVU_FILE_ORIGIN) {
+        explicit = String(window.__ARIVU_FILE_ORIGIN || '').replace(/\/$/, '');
+      }
+    } catch (e) { /* ignore */ }
+    if (explicit) return explicit;
+    var origin = String(apiOrigin || '').replace(/\/$/, '');
+    if (!origin) return 'https://api.arivusystems.com';
+    try {
+      var host = new URL(origin).hostname.toLowerCase();
+      if (host === 'www.arivusystems.com' || host === 'arivusystems.com') {
+        return 'https://api.arivusystems.com';
+      }
+    } catch (e) { /* ignore */ }
+    return origin;
+  }
+
   function absolutizeEmbedAssetUrl(url, apiOrigin) {
     var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
     if (common && common.absolutizeEmbedAssetUrl) {
       return common.absolutizeEmbedAssetUrl(url, apiOrigin);
     }
     var raw = String(url || '').trim();
-    var origin = String(apiOrigin || '').replace(/\/$/, '');
-    if (!raw || !origin) return raw;
-    if (raw.indexOf('://') >= 0 || raw.indexOf('data:') === 0) return raw;
+    if (!raw) return raw;
+    if (raw.indexOf('data:') === 0) return raw;
+    var fileOrigin = resolveEmbedFileOrigin(apiOrigin);
+    if (raw.indexOf('http://') === 0 || raw.indexOf('https://') === 0) {
+      try {
+        var parsed = new URL(raw);
+        var path = parsed.pathname || '';
+        if (
+          (path.indexOf('/api/files/download') === 0 || path.indexOf('/api/uploads/') === 0)
+          && (parsed.hostname.toLowerCase() === 'www.arivusystems.com'
+            || parsed.hostname.toLowerCase() === 'arivusystems.com')
+        ) {
+          return fileOrigin + path + parsed.search;
+        }
+      } catch (e) { /* keep raw */ }
+      return raw;
+    }
     if (raw.indexOf('/api/files/download') === 0 || raw.indexOf('/api/uploads/') === 0) {
-      return origin + raw;
+      return fileOrigin + raw;
     }
     return raw;
   }

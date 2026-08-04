@@ -6,21 +6,51 @@ const { resolveStudioAsset } = require('./resolveStudioAsset');
 
 const CONTENT_STUDIO_SUBTITLE_SIZES = new Set(['sm', 'md', 'lg', 'xl']);
 
+function resolveFileUrlBase(publicAppBaseUrl) {
+  const { getPublicFileBaseUrl, isNonFileServingOrigin } = require('./contentPublishingService');
+  const preferred = String(publicAppBaseUrl || '').trim().replace(/\/$/, '');
+  if (preferred && !isNonFileServingOrigin(preferred)) return preferred;
+  return getPublicFileBaseUrl({ requestOrigin: preferred }) || preferred;
+}
+
+function isManagedFilePath(pathname) {
+  const path = String(pathname || '');
+  return path.startsWith('/api/files/download') || path.startsWith('/api/uploads/');
+}
+
 function absolutizePublicAssetUrl(url, publicAppBaseUrl) {
   const raw = String(url || '').trim();
-  if (!raw || !publicAppBaseUrl) return raw;
-  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('data:')) {
+  if (!raw) return raw;
+  if (raw.startsWith('data:')) return raw;
+
+  const base = resolveFileUrlBase(publicAppBaseUrl);
+
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    try {
+      const parsed = new URL(raw);
+      if (isManagedFilePath(parsed.pathname) && base) {
+        const { isNonFileServingOrigin } = require('./contentPublishingService');
+        if (isNonFileServingOrigin(parsed.origin)) {
+          return `${base}${parsed.pathname}${parsed.search}`;
+        }
+      }
+    } catch {
+      // keep raw
+    }
     return raw;
   }
+
+  if (!base) return raw;
   if (raw.startsWith('/')) {
-    return `${String(publicAppBaseUrl).replace(/\/$/, '')}${raw}`;
+    return `${base}${raw}`;
   }
   return raw;
 }
 
 function absolutizePublicAssetUrlsInHtml(html, publicAppBaseUrl) {
-  if (!html || !publicAppBaseUrl) return html;
-  const base = String(publicAppBaseUrl).replace(/\/$/, '');
+  if (!html) return html;
+  const base = resolveFileUrlBase(publicAppBaseUrl);
+  if (!base) return html;
   return String(html).replace(
     /(\s(?:src|href)=["'])(\/api\/(?:files\/download|uploads)[^"']*)(["'])/gi,
     (_match, prefix, path, suffix) => `${prefix}${base}${path}${suffix}`,

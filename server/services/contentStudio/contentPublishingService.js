@@ -39,11 +39,56 @@ function normalizePublicOrigin(raw) {
   }
 }
 
+/**
+ * Marketing hosts (e.g. www) do not proxy /api/files/* — Vercel serves a static 404.
+ * Prefer app/API origins that rewrite or host the file download controller.
+ */
+const NON_FILE_SERVING_HOSTS = new Set([
+  'www.arivusystems.com',
+  'arivusystems.com',
+]);
+
+const DEFAULT_ARIVU_FILE_ORIGIN = 'https://api.arivusystems.com';
+
+function isNonFileServingOrigin(raw) {
+  const origin = normalizePublicOrigin(raw);
+  if (!origin) return false;
+  try {
+    return NON_FILE_SERVING_HOSTS.has(new URL(origin).hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
 function getPublicAppBaseUrl(options = {}) {
   const fromEnv = normalizePublicOrigin(process.env.PUBLIC_APP_URL)
     || normalizePublicOrigin(process.env.CLIENT_URL);
   if (fromEnv) return fromEnv;
   return normalizePublicOrigin(options.requestOrigin);
+}
+
+/**
+ * Base origin used for /api/files/download and /api/uploads assets on public surfaces
+ * (blog avatars, headless HTML). Never uses bare marketing hosts.
+ */
+function getPublicFileBaseUrl(options = {}) {
+  const candidates = [
+    process.env.PUBLIC_FILE_BASE_URL,
+    process.env.PUBLIC_API_URL,
+    process.env.PUBLIC_APP_URL,
+    process.env.CLIENT_URL,
+    options.requestOrigin,
+  ];
+  for (const candidate of candidates) {
+    const origin = normalizePublicOrigin(candidate);
+    if (!origin || isNonFileServingOrigin(origin)) continue;
+    return origin;
+  }
+  // known marketing-only config fallback (Arivu production)
+  if (candidates.some((c) => isNonFileServingOrigin(c))) {
+    return DEFAULT_ARIVU_FILE_ORIGIN;
+  }
+  return '';
 }
 
 function resolveRequestOrigin(req) {
@@ -241,6 +286,8 @@ module.exports = {
   normalizeContentPublishing,
   normalizeWebhookUrl,
   getPublicAppBaseUrl,
+  getPublicFileBaseUrl,
+  isNonFileServingOrigin,
   resolveRequestOrigin,
   resolveHeadlessApiBase,
   resolveHeadlessBlogApiBase,

@@ -1,5 +1,10 @@
 const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
-const ORG = process.env.ARIVU_HELP_ORG || process.env.ARIVU_ORG || '';
+// Prefer articles key; fall back so dual Help+Blog installs still resolve when only one org env is set.
+const ORG =
+  process.env.ARIVU_HELP_ORG
+  || process.env.ARIVU_ORG
+  || process.env.ARIVU_BLOG_ORG
+  || '';
 const PATH_PREFIX = process.env.HELP_URL_PREFIX || '/help/';
 
 export type ExportMeta = {

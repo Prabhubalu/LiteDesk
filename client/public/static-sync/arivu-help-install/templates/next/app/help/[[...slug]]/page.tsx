@@ -12,7 +12,11 @@ import {
 } from '../../../lib/arivu-help';
 
 const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
-const ORG = process.env.ARIVU_HELP_ORG || process.env.ARIVU_ORG || '';
+const ORG =
+  process.env.ARIVU_HELP_ORG
+  || process.env.ARIVU_ORG
+  || process.env.ARIVU_BLOG_ORG
+  || '';
 const PATH_PREFIX = process.env.HELP_URL_PREFIX || '/help/';
 
 export async function generateStaticParams() {
@@ -65,12 +69,15 @@ export default async function HelpPage({
     return <ArivuHelpContent html={syncedHtml} />;
   }
 
-  if (slug.length === 0) {
-    const home = await fetchHomeExport();
-    if (!home) {
-      notFound();
-    }
-  } else {
+  // Config must be present. Do NOT notFound() when home export fails:
+  // that gate only checked SEO export and took down /help after deploy
+  // when the API was briefly unreachable (e.g. concurrent blog publish rebuild).
+  // Live embed hydrates client-side when export meta is unavailable.
+  if (!API_ORIGIN || !ORG) {
+    notFound();
+  }
+
+  if (slug.length > 0) {
     const resolved = await resolveHelpPage(slug);
     if (!pickPageHtml(resolved?.data ?? null)) {
       notFound();

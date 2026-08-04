@@ -1,5 +1,9 @@
 const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
-const ORG = process.env.ARIVU_BLOG_ORG || process.env.ARIVU_ORG || '';
+const ORG =
+  process.env.ARIVU_BLOG_ORG
+  || process.env.ARIVU_ORG
+  || process.env.ARIVU_HELP_ORG
+  || '';
 const PATH_PREFIX = process.env.BLOG_URL_PREFIX || '/blog/';
 
 export type ExportMeta = {
@@ -81,7 +85,9 @@ export function shouldPreferSyncedHtml(): boolean {
 }
 
 function extractBodyFromSyncedHtml(fullHtml: string): string {
-  const openMatch = fullHtml.match(/<div\s+class="[^"]*\bld-help-(?:root|embed)\b[^"]*"[^>]*>/i);
+  const openMatch = fullHtml.match(
+    /<div\s+class="[^"]*\b(?:ld-blog-(?:root|embed)|ld-help-(?:root|embed))\b[^"]*"[^>]*>/i,
+  );
   if (openMatch && openMatch.index != null) {
     const contentStart = openMatch.index + openMatch[0].length;
     let depth = 1;
