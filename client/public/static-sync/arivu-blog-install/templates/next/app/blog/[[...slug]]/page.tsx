@@ -12,7 +12,11 @@ import {
 } from '../../../lib/arivu-blog';
 
 const API_ORIGIN = process.env.ARIVU_API_ORIGIN || '';
-const ORG = process.env.ARIVU_BLOG_ORG || process.env.ARIVU_ORG || '';
+const ORG =
+  process.env.ARIVU_BLOG_ORG
+  || process.env.ARIVU_ORG
+  || process.env.ARIVU_HELP_ORG
+  || '';
 const PATH_PREFIX = process.env.BLOG_URL_PREFIX || '/blog/';
 
 export async function generateStaticParams() {
@@ -65,12 +69,13 @@ export default async function BlogPage({
     return <ArivuBlogContent html={syncedHtml} />;
   }
 
-  if (slug.length === 0) {
-    const home = await fetchHomeExport();
-    if (!home) {
-      notFound();
-    }
-  } else {
+  // Same as help: home export is only for SEO. Never 404 the index when config is set
+  // and the live embed can still load after a transient API miss during rebuild.
+  if (!API_ORIGIN || !ORG) {
+    notFound();
+  }
+
+  if (slug.length > 0) {
     const resolved = await resolveBlogPage(slug);
     if (!pickPageHtml(resolved?.data ?? null)) {
       notFound();

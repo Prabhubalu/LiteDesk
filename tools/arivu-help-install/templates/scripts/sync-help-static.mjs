@@ -9,7 +9,7 @@ loadEnvFiles();
 
 const { syncFull } = require(path.join(__dirname, '../help-sync/lib/sync.js'));
 
-const org = process.env.ARIVU_HELP_ORG || process.env.ARIVU_ORG || '';
+const org = process.env.ARIVU_HELP_ORG || process.env.ARIVU_ORG || process.env.ARIVU_BLOG_ORG || '';
 const apiOrigin = process.env.ARIVU_API_ORIGIN || '';
 const dest = process.env.ARIVU_SYNC_DEST || './public';
 const pathPrefix = process.env.HELP_URL_PREFIX || '/help/';
@@ -23,7 +23,7 @@ if (syncMode === 'layout') {
 
 if (!org || !apiOrigin) {
   if (syncMode === 'static' || syncMode === 'hybrid') {
-    console.error('[arivu-sync] ARIVU_HELP_ORG (or ARIVU_ORG) and ARIVU_API_ORIGIN are required for static/hybrid sync');
+    console.error('[arivu-sync] ARIVU_HELP_ORG (or ARIVU_ORG / ARIVU_BLOG_ORG) and ARIVU_API_ORIGIN are required for static/hybrid sync');
     process.exit(1);
   }
   console.warn('[arivu-sync] Skipping help static sync: set ARIVU_HELP_ORG (or ARIVU_ORG) and ARIVU_API_ORIGIN');
