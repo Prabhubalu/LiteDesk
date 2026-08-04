@@ -5,7 +5,7 @@
 
 import { isCommerciallyLockedStatus } from '@/constants/quoteLifecycle';
 
-/** Draft PO: catalog lines + unit price; no quote sections/taxes/bundles yet. */
+/** Draft PO: catalog lines + unit price; document-level overall discount supported. */
 /** @type {CommercialLinesCapabilities} */
 const PURCHASE_ORDER_CAPABILITIES = {
   discounts: true,
@@ -14,15 +14,15 @@ const PURCHASE_ORDER_CAPABILITIES = {
   lineReorder: false,
   optionalSections: false,
   sectionDiscounts: false,
-  globalDiscounts: false,
-  taxesCharges: false,
-  recalculate: false,
+  globalDiscounts: true,
+  taxesCharges: true,
+  recalculate: true,
   bundles: false,
   headerActions: false,
   createCatalogItem: true,
   columnPrefs: true,
   unitPriceEdit: true,
-  taxEdit: false
+  taxEdit: true
 };
 
 /** @typedef {'quote' | 'salesOrder' | 'invoice' | 'purchaseOrder'} CommercialLinesKind */
@@ -218,7 +218,15 @@ export const purchaseOrderCommercialLinesAdapter = {
   isEditable(record) {
     return String(record?.status || '').toLowerCase() === 'draft';
   },
-  buildAddLineBody({ variantId, quantity = 1, unitPrice, linkToVendorCatalog }) {
+  buildAddLineBody({
+    variantId,
+    quantity = 1,
+    unitPrice,
+    linkToVendorCatalog,
+    vendorItemCode,
+    vendorItemName,
+    minOrderQty
+  }) {
     const body = {
       variantId,
       quantityOrdered: quantity,
@@ -229,6 +237,15 @@ export const purchaseOrderCommercialLinesAdapter = {
     }
     if (linkToVendorCatalog === true) {
       body.linkToVendorCatalog = true;
+    }
+    if (vendorItemCode != null && String(vendorItemCode).trim()) {
+      body.vendorItemCode = String(vendorItemCode).trim();
+    }
+    if (vendorItemName != null && String(vendorItemName).trim()) {
+      body.vendorItemName = String(vendorItemName).trim();
+    }
+    if (minOrderQty != null && Number.isFinite(Number(minOrderQty))) {
+      body.minOrderQty = Number(minOrderQty);
     }
     return body;
   },
@@ -241,6 +258,7 @@ export const purchaseOrderCommercialLinesAdapter = {
     if (fields.discountType !== undefined) body.discountType = fields.discountType;
     if (fields.discountValue !== undefined) body.discountValue = fields.discountValue;
     if (fields.unitPrice !== undefined) body.unitPrice = fields.unitPrice;
+    if (fields.taxIds !== undefined) body.taxIds = fields.taxIds;
     return body;
   }
 };

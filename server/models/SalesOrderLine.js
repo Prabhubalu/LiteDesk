@@ -103,6 +103,8 @@ const SalesOrderLineSchema = new Schema(
       index: true
     },
     quantityFulfilled: { type: Number, default: 0, min: 0 },
+    /** Cumulative delivery returns against fulfilled qty */
+    quantityReturned: { type: Number, default: 0, min: 0 },
     quantityCancelled: { type: Number, default: 0, min: 0 },
     quantityBackordered: { type: Number, default: 0, min: 0 },
     quantityInvoiced: { type: Number, default: 0, min: 0 },

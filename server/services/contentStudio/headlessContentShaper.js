@@ -189,7 +189,7 @@ async function shapeHeadlessArticleDetail(doc, {
     seo: await shapeHeadlessSeo(doc.seo, doc.organizationId, publicAppBaseUrl),
     coverImage: await resolveCoverImage(doc, publicAppBaseUrl),
     authorName,
-    authorAvatar: String(authorAvatar || '').trim(),
+    authorAvatar: absolutizePublicAssetUrl(String(authorAvatar || '').trim(), publicAppBaseUrl),
     collectionName: collectionName || meta?.name || '',
     readMinutes: Number.isFinite(Number(doc.readingTimeMinutes))
       ? Number(doc.readingTimeMinutes)

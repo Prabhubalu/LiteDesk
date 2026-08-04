@@ -10,7 +10,13 @@ export const DOCUMENT_ATTACHMENT_MODULES = new Set([
   'forms',
   'cases',
   'quotes',
-  'items'
+  'items',
+  'purchase_orders',
+  'purchase_returns',
+  'delivery_returns',
+  'receipt_notes',
+  'delivery_notes',
+  'sales_returns'
 ]);
 
 /** Stable relationship keys for record → documents links (server-aligned). */
@@ -23,7 +29,13 @@ export const RELATIONSHIP_KEY_BY_MODULE = Object.freeze({
   forms: 'form_documents',
   cases: 'case_documents',
   quotes: 'quote_documents',
-  items: 'item_documents'
+  items: 'item_documents',
+  purchase_orders: 'purchase_order_documents',
+  purchase_returns: 'purchase_return_documents',
+  delivery_returns: 'delivery_return_documents',
+  receipt_notes: 'receipt_note_documents',
+  delivery_notes: 'delivery_note_documents',
+  sales_returns: 'sales_return_documents'
 });
 
 export function supportsDocumentAttachments(moduleKey) {

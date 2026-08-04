@@ -291,7 +291,7 @@ async function shapePublicBlogSummaries(org, rows, collectionMap, requestOrigin 
         ...shapeHeadlessArticleSummary(row, meta),
         coverImage,
         authorName: author.name,
-        authorAvatar: author.avatar,
+        authorAvatar: absolutizePublicAssetUrl(author.avatar, publicAppBaseUrl),
       };
     }))
   ));

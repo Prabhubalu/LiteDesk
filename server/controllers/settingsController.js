@@ -367,6 +367,12 @@ exports.getCoreModules = async (req, res) => {
         await ensurePlatformReportsModuleDefinition();
         await ensurePlatformDashboardsModuleDefinition();
         await ensurePlatformAnalyticsModuleDefinition();
+        try {
+            const { ensureInventoryAppModuleDefinitions } = require('../services/inventoryModuleBootstrapService');
+            await ensureInventoryAppModuleDefinitions();
+        } catch (invErr) {
+            console.warn('[settings] ensureInventoryAppModuleDefinitions failed:', invErr.message);
+        }
 
         const organization = await Organization.findById(req.user.organizationId);
         if (!organization) {
@@ -1433,6 +1439,12 @@ exports.ensurePlatformCommercialCoreModules = async () => {
     await ensurePlatformReportsModuleDefinition();
     await ensurePlatformDashboardsModuleDefinition();
     await ensurePlatformAnalyticsModuleDefinition();
+    try {
+        const { ensureInventoryAppModuleDefinitions } = require('../services/inventoryModuleBootstrapService');
+        await ensureInventoryAppModuleDefinitions();
+    } catch (error) {
+        console.warn('[settings] ensureInventoryAppModuleDefinitions failed:', error.message);
+    }
 };
 
 // Helper function to get module usage description
@@ -1819,6 +1831,15 @@ exports.getApplication = async (req, res) => {
                 success: false,
                 message: 'Invalid application key'
             });
+        }
+
+        if (appKeyUpper === 'INVENTORY') {
+            try {
+                const { ensureInventoryAppModuleDefinitions } = require('../services/inventoryModuleBootstrapService');
+                await ensureInventoryAppModuleDefinitions();
+            } catch (err) {
+                console.warn('[settings] ensureInventoryAppModuleDefinitions failed:', err.message);
+            }
         }
 
         // App metadata

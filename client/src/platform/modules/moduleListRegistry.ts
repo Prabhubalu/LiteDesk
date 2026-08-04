@@ -1715,11 +1715,13 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
     defaultColumns: {
       defaultVisibleColumns: [
         'poNumber',
-        'status',
+        'subject',
         'vendorId',
-        'currency',
-        'grandTotal',
         'poDate',
+        'expectedDeliveryDate',
+        'status',
+        'buyerId',
+        'grandTotal',
         'updatedAt'
       ],
       lockedColumn: 'poNumber',
@@ -1731,7 +1733,8 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
         { name: 'Total POs', key: 'totalPurchaseOrders', formatter: 'number' },
         { name: 'Draft', key: 'draft', formatter: 'number' },
         { name: 'Pending approval', key: 'pendingApproval', formatter: 'number' },
-        { name: 'Approved', key: 'approved', formatter: 'number' }
+        { name: 'Ordered', key: 'ordered', formatter: 'number' },
+        { name: 'Received', key: 'received', formatter: 'number' }
       ],
       computeFunction: (data, _currentUserId, context) => {
         const rows = Array.isArray(data) ? data : [];
@@ -1740,7 +1743,11 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
           totalPurchaseOrders: Number.isFinite(total) ? total : rows.length,
           draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
           pendingApproval: rows.filter((r) => String(r?.status || '').toLowerCase() === 'pending_approval').length,
-          approved: rows.filter((r) => String(r?.status || '').toLowerCase() === 'approved').length
+          ordered: rows.filter((r) => {
+            const s = String(r?.status || '').toLowerCase();
+            return s === 'ordered' || s === 'approved';
+          }).length,
+          received: rows.filter((r) => String(r?.status || '').toLowerCase() === 'fully_received').length
         };
       }
     },
@@ -1749,11 +1756,482 @@ export const MODULE_LIST_REGISTRY: Record<string, ModuleListConfig> = {
       { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
       { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'pending_approval' } },
       { id: 'approved', name: 'Approved', filters: { status: 'approved' } },
+      { id: 'ordered', name: 'Ordered', filters: { status: 'ordered' } },
       { id: 'partially-received', name: 'Partially Received', filters: { status: 'partially_received' } },
-      { id: 'fully-received', name: 'Fully Received', filters: { status: 'fully_received' } },
+      { id: 'received', name: 'Received', filters: { status: 'fully_received' } },
       { id: 'cancelled', name: 'Cancelled', filters: { status: 'cancelled' } }
     ],
     apiEndpoint: '/inventory/purchase-orders',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
+  receipt_notes: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'receiptNoteNumber',
+        'status',
+        'receiptDate',
+        'purchaseOrderId',
+        'vendorId',
+        'receiptLocationId',
+        'updatedAt'
+      ],
+      lockedColumn: 'receiptNoteNumber',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total Notes', key: 'totalNotes', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Verified', key: 'verified', formatter: 'number' },
+        { name: 'Inventory Updated', key: 'inventoryUpdated', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalNotes: Number.isFinite(total) ? total : rows.length,
+          draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
+          verified: rows.filter((r) => {
+            const s = String(r?.status || '').toLowerCase();
+            return s === 'verified' || s === 'pending_verification';
+          }).length,
+          inventoryUpdated: rows.filter(
+            (r) => String(r?.status || '').toLowerCase() === 'inventory_updated'
+          ).length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Receipt Notes', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'pending-verification', name: 'Pending Verification', filters: { status: 'pending_verification' } },
+      { id: 'verified', name: 'Verified', filters: { status: 'verified' } },
+      { id: 'inventory-updated', name: 'Inventory Updated', filters: { status: 'inventory_updated' } },
+      { id: 'cancelled', name: 'Cancelled', filters: { status: 'cancelled' } }
+    ],
+    apiEndpoint: '/inventory/receipt-notes',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
+  purchase_returns: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'purchaseReturnNumber',
+        'subject',
+        'vendorId',
+        'returnDate',
+        'status',
+        'ownerId',
+        'grandTotal',
+        'updatedAt'
+      ],
+      lockedColumn: 'purchaseReturnNumber',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total Returns', key: 'totalReturns', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Approved', key: 'approved', formatter: 'number' },
+        { name: 'Returned', key: 'returned', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalReturns: Number.isFinite(total) ? total : rows.length,
+          draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
+          approved: rows.filter((r) => String(r?.status || '').toLowerCase() === 'approved').length,
+          returned: rows.filter((r) => String(r?.status || '').toLowerCase() === 'returned').length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Purchase Returns', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'approved', name: 'Approved', filters: { status: 'approved' } },
+      { id: 'returned', name: 'Returned', filters: { status: 'returned' } },
+      { id: 'cancelled', name: 'Cancelled', filters: { status: 'cancelled' } }
+    ],
+    apiEndpoint: '/inventory/purchase-returns',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
+  delivery_notes: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'deliveryNoteNumber',
+        'subject',
+        'customerId',
+        'deliveryDate',
+        'status',
+        'ownerId',
+        'grandTotal',
+        'updatedAt'
+      ],
+      lockedColumn: 'deliveryNoteNumber',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total Notes', key: 'totalNotes', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Dispatched', key: 'dispatched', formatter: 'number' },
+        { name: 'Delivered', key: 'delivered', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalNotes: Number.isFinite(total) ? total : rows.length,
+          draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
+          dispatched: rows.filter(
+            (r) => String(r?.status || '').toLowerCase() === 'dispatched'
+          ).length,
+          delivered: rows.filter(
+            (r) => String(r?.status || '').toLowerCase() === 'delivered'
+          ).length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Delivery Notes', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'approved', name: 'Approved', filters: { status: 'approved' } },
+      { id: 'picked', name: 'Picked', filters: { status: 'picked' } },
+      { id: 'packed', name: 'Packed', filters: { status: 'packed' } },
+      { id: 'dispatched', name: 'Dispatched', filters: { status: 'dispatched' } },
+      { id: 'delivered', name: 'Delivered', filters: { status: 'delivered' } },
+      { id: 'cancelled', name: 'Cancelled', filters: { status: 'cancelled' } }
+    ],
+    apiEndpoint: '/inventory/delivery-notes',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
+  delivery_returns: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'deliveryReturnNumber',
+        'subject',
+        'customerId',
+        'returnDate',
+        'status',
+        'ownerId',
+        'grandTotal',
+        'updatedAt'
+      ],
+      lockedColumn: 'deliveryReturnNumber',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total Returns', key: 'totalReturns', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Approved', key: 'approved', formatter: 'number' },
+        { name: 'Restocked', key: 'restocked', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalReturns: Number.isFinite(total) ? total : rows.length,
+          draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
+          approved: rows.filter((r) => String(r?.status || '').toLowerCase() === 'approved').length,
+          restocked: rows.filter((r) =>
+            ['restocked', 'inventory_updated', 'closed'].includes(
+              String(r?.status || '').toLowerCase()
+            )
+          ).length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Delivery Returns', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'approved', name: 'Approved', filters: { status: 'approved' } },
+      { id: 'received', name: 'Received', filters: { status: 'received' } },
+      { id: 'inspected', name: 'Inspected', filters: { status: 'inspected' } },
+      { id: 'restocked', name: 'Restocked', filters: { status: 'restocked' } },
+      { id: 'cancelled', name: 'Cancelled', filters: { status: 'cancelled' } }
+    ],
+    apiEndpoint: '/inventory/delivery-returns',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
+    sales_returns: {
+      defaultColumns: {
+        defaultVisibleColumns: [
+          'salesReturnNumber',
+          'status',
+          'customerId',
+          'invoiceId',
+          'returnLocationId',
+          'grandTotal',
+          'updatedAt'
+        ],
+        lockedColumn: 'salesReturnNumber',
+        excludedFromDefault: ['customFields']
+      },
+      statistics: {
+        scope: 'query',
+        stats: [
+          { name: 'Total Returns', key: 'totalReturns', formatter: 'number' },
+          { name: 'Draft', key: 'draft', formatter: 'number' },
+          { name: 'Approved', key: 'approved', formatter: 'number' },
+          { name: 'Inventory Updated', key: 'inventoryUpdated', formatter: 'number' }
+        ],
+        computeFunction: (data, _currentUserId, context) => {
+          const rows = Array.isArray(data) ? data : [];
+          const total = Number(context?.totalRecords);
+          return {
+            totalReturns: Number.isFinite(total) ? total : rows.length,
+            draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
+            approved: rows.filter((r) =>
+              ['approved', 'pending_approval'].includes(String(r?.status || '').toLowerCase())
+            ).length,
+            inventoryUpdated: rows.filter(
+              (r) => String(r?.status || '').toLowerCase() === 'inventory_updated'
+            ).length
+          };
+        }
+      },
+      systemViews: [
+        { id: 'all', name: 'All Sales Returns', filters: {}, isDefault: true },
+        { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+        { id: 'pending-approval', name: 'Pending Approval', filters: { status: 'pending_approval' } },
+        { id: 'approved', name: 'Approved', filters: { status: 'approved' } },
+        { id: 'inventory-updated', name: 'Inventory Updated', filters: { status: 'inventory_updated' } },
+        { id: 'cancelled', name: 'Cancelled', filters: { status: 'cancelled' } }
+      ],
+      apiEndpoint: '/inventory/sales-returns',
+      normalizeFilters: (filters = {}) => {
+        const next = { ...filters };
+        if (next.status != null && next.status !== '') {
+          next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+        }
+        return next;
+      },
+      normalizeViewFilters: (filters = {}) => {
+        const next = { ...filters };
+        if (next.status != null && next.status !== '') {
+          next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+        }
+        return next;
+      }
+    },
+
+  stockrooms: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'name',
+        'locationCode',
+        'locationType',
+        'status',
+        'isDefault',
+        'updatedAt'
+      ],
+      lockedColumn: 'name',
+      excludedFromDefault: ['customFields']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total', key: 'totalStockrooms', formatter: 'number' },
+        { name: 'Active', key: 'active', formatter: 'number' },
+        { name: 'Inactive', key: 'inactive', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalStockrooms: Number.isFinite(total) ? total : rows.length,
+          active: rows.filter((r) => String(r?.status || '').toLowerCase() === 'active').length,
+          inactive: rows.filter((r) => String(r?.status || '').toLowerCase() === 'inactive').length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Stockrooms', filters: {}, isDefault: true },
+      { id: 'active', name: 'Active', filters: { status: 'active' } },
+      { id: 'inactive', name: 'Inactive', filters: { status: 'inactive' } },
+      { id: 'default', name: 'Default', filters: { isDefault: true } }
+    ],
+    apiEndpoint: '/inventory/locations',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
+  stock_adjustments: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'reasonCode',
+        'status',
+        'inventoryLocationName',
+        'createdAt',
+        'postedAt'
+      ],
+      lockedColumn: 'reasonCode',
+      excludedFromDefault: ['customFields', 'lines', 'inventoryAdjustmentId']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total', key: 'totalAdjustments', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Posted', key: 'posted', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalAdjustments: Number.isFinite(total) ? total : rows.length,
+          draft: rows.filter((r) => String(r?.status || '').toLowerCase() === 'draft').length,
+          posted: rows.filter((r) => String(r?.status || '').toLowerCase() === 'posted').length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Adjustments', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'posted', name: 'Posted', filters: { status: 'posted' } }
+    ],
+    apiEndpoint: '/inventory/adjustments',
+    normalizeFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    },
+    normalizeViewFilters: (filters = {}) => {
+      const next = { ...filters };
+      if (next.status != null && next.status !== '') {
+        next.status = Array.isArray(next.status) ? next.status.join(',') : String(next.status);
+      }
+      return next;
+    }
+  },
+
+  stock_transfers: {
+    defaultColumns: {
+      defaultVisibleColumns: [
+        'status',
+        'fromLocationName',
+        'toLocationName',
+        'createdAt',
+        'postedAt'
+      ],
+      lockedColumn: 'status',
+      excludedFromDefault: ['customFields', 'lines', 'inventoryTransferId']
+    },
+    statistics: {
+      scope: 'query',
+      stats: [
+        { name: 'Total', key: 'totalTransfers', formatter: 'number' },
+        { name: 'Draft', key: 'draft', formatter: 'number' },
+        { name: 'Posted', key: 'posted', formatter: 'number' }
+      ],
+      computeFunction: (data, _currentUserId, context) => {
+        const rows = Array.isArray(data) ? data : [];
+        const total = Number(context?.totalRecords);
+        return {
+          totalTransfers: Number.isFinite(total) ? total : rows.length,
+          draft: rows.filter((r) => {
+            const s = String(r?.status || '').toLowerCase();
+            return s === 'draft' || s === 'in_transit';
+          }).length,
+          posted: rows.filter((r) => String(r?.status || '').toLowerCase() === 'posted').length
+        };
+      }
+    },
+    systemViews: [
+      { id: 'all', name: 'All Transfers', filters: {}, isDefault: true },
+      { id: 'draft', name: 'Draft', filters: { status: 'draft' } },
+      { id: 'posted', name: 'Posted', filters: { status: 'posted' } }
+    ],
+    apiEndpoint: '/inventory/transfers',
     normalizeFilters: (filters = {}) => {
       const next = { ...filters };
       if (next.status != null && next.status !== '') {

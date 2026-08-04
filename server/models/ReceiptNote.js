@@ -29,7 +29,7 @@ const ReceiptNoteSchema = new Schema({
   organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
   receiptNoteNumber: { type: String, required: true, trim: true, index: true },
   receiptDate: { type: Date, default: Date.now },
-  vendorId: { type: Schema.Types.ObjectId, required: true, index: true },
+  vendorId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
   purchaseOrderId: { type: Schema.Types.ObjectId, ref: 'PurchaseOrder', required: true, index: true },
   receiptLocationId: { type: Schema.Types.ObjectId, ref: 'InventoryLocation', required: true },
   receivedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },

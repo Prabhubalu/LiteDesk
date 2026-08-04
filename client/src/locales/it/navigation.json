@@ -874,5 +874,113 @@
   "astraStudio": {
     "message": "Astra Studio",
     "description": "Living canvas Astra Studio workspace navigation label"
+  },
+  "inventoryStockroomsDesc": {
+    "message": "Inventory locations (warehouses, stores, branches).",
+    "description": "Stockrooms page subtitle"
+  },
+  "inventoryStockroomsEmpty": {
+    "message": "No stockrooms yet. Create a location to receive and ship stock.",
+    "description": "Empty state for stockrooms list"
+  },
+  "inventoryStockroomCreate": {
+    "message": "New stockroom",
+    "description": "Create stockroom button"
+  },
+  "inventoryStockroomEdit": {
+    "message": "Edit stockroom",
+    "description": "Edit stockroom drawer title"
+  },
+  "inventoryStockroomCreateHint": {
+    "message": "Add a warehouse, store, or other inventory site for this organization.",
+    "description": "Create stockroom drawer subtitle"
+  },
+  "inventoryStockroomEditHint": {
+    "message": "Update name, type, status, and default receiving site.",
+    "description": "Edit stockroom drawer subtitle"
+  },
+  "inventoryStockroomName": {
+    "message": "Name",
+    "description": "Stockroom name column/field"
+  },
+  "inventoryStockroomCode": {
+    "message": "Code",
+    "description": "Stockroom code column/field"
+  },
+  "inventoryStockroomCodeImmutable": {
+    "message": "Code cannot be changed after create.",
+    "description": "Hint under locked stockroom code"
+  },
+  "inventoryStockroomType": {
+    "message": "Type",
+    "description": "Stockroom type column/field"
+  },
+  "inventoryStockroomType_warehouse": {
+    "message": "Warehouse",
+    "description": "Stockroom type option"
+  },
+  "inventoryStockroomType_store": {
+    "message": "Store",
+    "description": "Stockroom type option"
+  },
+  "inventoryStockroomType_virtual": {
+    "message": "Virtual",
+    "description": "Stockroom type option"
+  },
+  "inventoryStockroomType_transit": {
+    "message": "Transit",
+    "description": "Stockroom type option"
+  },
+  "inventoryStockroomType_quarantine": {
+    "message": "Quarantine",
+    "description": "Stockroom type option"
+  },
+  "inventoryStockroomStatus": {
+    "message": "Status",
+    "description": "Stockroom status column/field"
+  },
+  "inventoryStockroomStatusActive": {
+    "message": "Active",
+    "description": "Stockroom status active"
+  },
+  "inventoryStockroomStatusInactive": {
+    "message": "Inactive",
+    "description": "Stockroom status inactive"
+  },
+  "inventoryStockroomDefault": {
+    "message": "Default",
+    "description": "Stockroom default column"
+  },
+  "inventoryStockroomDefaultBadge": {
+    "message": "Default",
+    "description": "Default stockroom badge"
+  },
+  "inventoryStockroomDescription": {
+    "message": "Description",
+    "description": "Stockroom description field"
+  },
+  "inventoryStockroomSetDefault": {
+    "message": "Set as default stockroom",
+    "description": "Checkbox to mark default stockroom"
+  },
+  "inventoryStockroomSetDefaultHint": {
+    "message": "Used for receiving and shipping when no location is specified.",
+    "description": "Hint for default stockroom checkbox"
+  },
+  "inventoryStockroomDefaultStatusHint": {
+    "message": "The default stockroom must stay active. Set another default first to deactivate this one.",
+    "description": "Hint when status select is locked for default"
+  },
+  "inventoryStockroomAllowNegative": {
+    "message": "Allow negative inventory",
+    "description": "Checkbox for negative stock override"
+  },
+  "inventoryStockroomAllowNegativeHint": {
+    "message": "When enabled, this location may go below zero. Org policy still applies where stricter.",
+    "description": "Hint for allow-negative checkbox"
+  },
+  "inventoryStockroomActions": {
+    "message": "Actions",
+    "description": "Stockrooms table actions column"
   }
 }

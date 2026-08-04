@@ -187,7 +187,7 @@
               <th :class="[lineTableHeadClass, 'quote-lines-col-qty text-right']">{{ t('records.linesQty') }}</th>
               <th :class="[lineTableHeadClass, 'quote-lines-col-unit-price text-right']">{{ t('records.linesUnitPrice') }}</th>
               <th v-if="linesEditable && showDiscountColumn" :class="[lineTableHeadClass, 'quote-lines-col-discount text-right']">{{ t('records.linesDiscount') }}</th>
-              <th :class="[lineTableHeadClass, 'quote-lines-col-tax text-right']">{{ t('records.linesTax') }}</th>
+              <th v-if="showTaxColumn" :class="[lineTableHeadClass, 'quote-lines-col-tax text-right']">{{ t('records.linesTax') }}</th>
               <th :class="[lineTableHeadClass, stickyColClass('total'), 'quote-lines-col-total text-right']">{{ t('records.linesTotal') }}</th>
               <th v-if="linesEditable" :class="[stickyColClass('actions'), 'quote-lines-col-actions px-3 py-2.5 text-right']">
                 <span class="sr-only">{{ t('records.linesMoreActions') }}</span>
@@ -281,7 +281,42 @@
                 <span v-else class="tabular-nums">{{ line.quantity }}</span>
               </td>
               <td class="quote-lines-col-unit-price px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
-                {{ formatMoney(line.unitPriceSnapshot) }}
+                <div class="flex flex-col items-end gap-0.5">
+                  <div
+                    v-if="linesEditable && canEditLineUnitPrice"
+                    class="quote-lines-unit-price-group"
+                  >
+                    <span class="quote-lines-unit-price-symbol" aria-hidden="true">{{ discountCurrencySymbol }}</span>
+                    <input
+                      class="quote-lines-unit-price-value"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      :aria-label="t('records.linesUnitPrice')"
+                      :value="lineUnitPrice(line)"
+                      :disabled="busy"
+                      @change="(e) => patchUnitPrice(line, e?.target?.value)"
+                    />
+                  </div>
+                  <span v-else>{{ formatMoney(lineUnitPrice(line)) }}</span>
+                  <button
+                    v-if="isPurchaseOrderLines && hasCatalogPriceDrift(line)"
+                    type="button"
+                    class="max-w-[9rem] truncate text-[10px] font-medium leading-tight text-amber-700 hover:underline disabled:opacity-50 dark:text-amber-300"
+                    :disabled="busy || !linesEditable || !canEditLineUnitPrice"
+                    :title="t('records.linesPoUseCatalogPrice')"
+                    @click="applyCatalogUnitPrice(line)"
+                  >
+                    {{ t('records.linesPoCatalogPrice', { price: formatMoney(catalogUnitPrice(line)) }) }}
+                  </button>
+                  <span
+                    v-else-if="isPurchaseOrderLines && catalogLastPurchaseLabel(line)"
+                    class="max-w-[10rem] truncate text-[10px] leading-tight text-gray-400 dark:text-gray-500"
+                    :title="catalogLastPurchaseLabel(line)"
+                  >
+                    {{ catalogLastPurchaseLabel(line) }}
+                  </span>
+                </div>
               </td>
               <td v-if="linesEditable && showDiscountColumn" class="quote-lines-col-discount px-3 py-2.5 align-middle text-right overflow-visible">
                 <div :class="discountGroupClass">
@@ -331,13 +366,17 @@
                   </div>
                 </div>
               </td>
-              <td class="quote-lines-col-tax px-3 py-2.5 align-middle text-right">
+              <td v-if="showTaxColumn" class="quote-lines-col-tax px-3 py-2.5 align-middle text-right">
                 <LineTaxPickerCell
+                  v-if="caps.taxEdit"
                   :tax-snapshot="line.taxSnapshot"
                   :line-tax-total="line.lineTaxTotal"
-                  :disabled="busy || !caps.taxEdit"
+                  :disabled="busy"
                   @save="(taxIds) => patchLineTaxes(line, taxIds)"
                 />
+                <span v-else class="tabular-nums text-xs text-gray-600 dark:text-gray-300">
+                  {{ formatMoney(line.lineTaxTotal) }}
+                </span>
               </td>
               <td :class="[stickyColClass('total'), 'quote-lines-col-total px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
                 {{ formatMoney(line.lineTotal) }}
@@ -508,9 +547,17 @@
               </td>
               <td class="quote-lines-col-qty px-3 py-2.5 align-middle text-right tabular-nums">{{ line.quantity }}</td>
               <td class="quote-lines-col-unit-price px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
-                {{ formatMoney(line.unitPriceSnapshot) }}
+                <div class="flex flex-col items-end gap-0.5">
+                  <span>{{ formatMoney(lineUnitPrice(line)) }}</span>
+                  <span
+                    v-if="isPurchaseOrderLines && hasCatalogPriceDrift(line)"
+                    class="max-w-[9rem] truncate text-[10px] leading-tight text-amber-700 dark:text-amber-300"
+                  >
+                    {{ t('records.linesPoCatalogPrice', { price: formatMoney(catalogUnitPrice(line)) }) }}
+                  </span>
+                </div>
               </td>
-              <td class="quote-lines-col-tax px-3 py-2.5 align-middle text-right tabular-nums text-xs text-gray-600 dark:text-gray-300">
+              <td v-if="showTaxColumn" class="quote-lines-col-tax px-3 py-2.5 align-middle text-right tabular-nums text-xs text-gray-600 dark:text-gray-300">
                 {{ formatMoney(line.lineTaxTotal) }}
               </td>
               <td :class="[stickyColClass('total'), 'quote-lines-col-total px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
@@ -625,7 +672,7 @@
                 </div>
               </div>
             </div>
-            <div class="quote-lines-section-summary-tax px-3 py-2.5" aria-hidden="true" />
+            <div v-if="showTaxColumn" class="quote-lines-section-summary-tax px-3 py-2.5" aria-hidden="true" />
             <div class="quote-lines-section-summary-total px-3 py-2.5 text-right text-sm font-medium tabular-nums text-gray-900 dark:text-gray-100">
               {{ formatMoney(block.section.sectionTotal) }}
             </div>
@@ -650,7 +697,7 @@
           <span class="text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsLineDiscount') }}</span>
           <span class="font-medium text-gray-900 dark:text-gray-100 tabular-nums">−{{ formatMoney(totals.lineDiscountTotal) }}</span>
         </div>
-        <div class="flex items-center justify-between gap-2 text-sm">
+        <div v-if="showGlobalDiscountRow" class="flex items-center justify-between gap-2 text-sm">
           <span class="text-gray-600 dark:text-gray-400 shrink-0">{{ t('records.linesTotalsGlobalDiscount') }}</span>
           <div class="inline-flex items-center gap-2 ml-auto">
             <div v-if="linesEditable && caps.globalDiscounts" :class="discountGroupClass">
@@ -707,7 +754,7 @@
             </span>
           </div>
         </div>
-        <div class="flex items-center justify-between gap-2 text-sm" data-doc-tax-root>
+        <div v-if="showTaxTotalsRow" class="flex items-center justify-between gap-2 text-sm" data-doc-tax-root>
           <div class="flex min-w-0 items-center gap-2">
             <span class="shrink-0 text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsTax') }}</span>
             <button
@@ -743,9 +790,27 @@
           </div>
           <span class="shrink-0 font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.chargesTotal) }}</span>
         </div>
-        <div v-if="totals.adjustmentTotal !== 0" class="flex items-center justify-between text-sm">
-          <span class="text-gray-600 dark:text-gray-400">{{ t('records.linesTotalsAdjustment') }}</span>
-          <span class="font-medium text-gray-900 dark:text-gray-100 tabular-nums">{{ formatMoney(totals.adjustmentTotal) }}</span>
+        <div
+          v-if="totals.adjustmentTotal !== 0 || (linesEditable && isPurchaseOrderLines)"
+          class="flex items-center justify-between gap-2 text-sm"
+        >
+          <span class="text-gray-600 dark:text-gray-400 shrink-0">{{ t('records.linesTotalsAdjustment') }}</span>
+          <div class="inline-flex items-center gap-2 ml-auto">
+            <input
+              v-if="linesEditable && isPurchaseOrderLines"
+              type="number"
+              step="0.01"
+              class="w-24 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm tabular-nums dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              :value="adjustmentInputValue"
+              :disabled="busy"
+              :aria-label="t('records.linesTotalsAdjustment')"
+              @change="onAdjustmentChange"
+            />
+            <span
+              v-else
+              class="font-medium text-gray-900 dark:text-gray-100 tabular-nums"
+            >{{ formatMoney(totals.adjustmentTotal) }}</span>
+          </div>
         </div>
           </div>
           <div
@@ -902,7 +967,9 @@
                       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         {{
                           isPurchaseOrderLines
-                            ? t('records.linesPoVendorCatalogSubtitle')
+                            ? poVariantScope === 'all'
+                              ? t('records.linesPoBrowseAllEmptyHint')
+                              : t('records.linesPoVendorCatalogSubtitle')
                             : t('records.linesPickItemsSubtitle')
                         }}
                       </p>
@@ -997,13 +1064,31 @@
                           </h4>
                           <p class="mt-1 max-w-sm text-sm text-gray-500 dark:text-gray-400">
                             {{
-                              variantSearchQuery.trim()
-                                ? t('records.linesPickItemsNoMatch', { query: variantSearchQuery.trim() })
-                                : t('records.linesPickItemsEmptyHint')
+                              isPurchaseOrderLines && !variantSearchQuery.trim()
+                                ? poPickerEmptyHint
+                                : variantSearchQuery.trim()
+                                  ? t('records.linesPickItemsNoMatch', { query: variantSearchQuery.trim() })
+                                  : t('records.linesPickItemsEmptyHint')
                             }}
                           </p>
                           <button
-                            v-if="showCreateCatalogItemAction"
+                            v-if="
+                              isPurchaseOrderLines &&
+                              poVendorId &&
+                              poVariantScope === 'linked' &&
+                              !variantSearchQuery.trim()
+                            "
+                            type="button"
+                            class="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                            @click="setPoVariantScope('all')"
+                          >
+                            {{ t('records.linesPoBrowseAllItems') }}
+                          </button>
+                          <button
+                            v-if="
+                              showCreateCatalogItemAction &&
+                              !(isPurchaseOrderLines && !poVendorId)
+                            "
                             type="button"
                             class="mt-4 inline-flex items-center gap-2 rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600"
                             @click="openAddNewItemFromPicker"
@@ -1244,7 +1329,7 @@
     <Teleport to="body">
       <div
         v-if="poUnlinkedConfirm.open"
-        class="fixed inset-0 z-[80] flex items-center justify-center p-4"
+        class="fixed inset-0 z-[10100] flex items-center justify-center p-4"
         role="dialog"
         aria-modal="true"
       >
@@ -1374,21 +1459,136 @@ const emit = defineEmits(['updated']);
 const linesAdapter = computed(() => resolveCommercialLinesAdapter(props.adapter));
 
 const isPurchaseOrderLines = computed(() => linesAdapter.value.kind === 'purchaseOrder');
+const canEditLineUnitPrice = computed(
+  () =>
+    isPurchaseOrderLines.value &&
+    linesAdapter.value.capabilities?.unitPriceEdit === true
+);
 const poVendorId = computed(() => {
-  const v = props.record?.vendorId;
-  if (!v) return '';
-  if (typeof v === 'object') return String(v._id || v.id || '');
-  return String(v);
+  const rec = props.record;
+  if (!rec || typeof rec !== 'object') return '';
+  const candidates = [
+    rec.vendorId,
+    rec.vendor_id,
+    rec.vendor,
+    rec.VendorId,
+    rec.vendorRef,
+    rec.vendorOrganizationId
+  ];
+  for (const c of candidates) {
+    if (c == null || c === '') continue;
+    if (typeof c === 'object') {
+      const id = c._id ?? c.id ?? c.value ?? null;
+      if (id != null && String(id).trim()) return String(id).trim();
+      continue;
+    }
+    const s = String(c).trim();
+    if (s) return s;
+  }
+  return '';
 });
 const poVariantScope = ref('linked');
+/** Active vendor catalog pricing by variantId (string). */
+const poCatalogByVariant = ref(
+  /** @type {Map<string, { price: number, lastPrice: number|null, lastDate: string|null }>} */ (new Map())
+);
 
 function setPoVariantScope(scope) {
   poVariantScope.value = scope === 'all' ? 'all' : 'linked';
   if (showVariantPicker.value) runVariantSearch();
 }
 
+function lineUnitPrice(line) {
+  const n = Number(line?.unitPriceSnapshot ?? line?.unitPrice);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function catalogUnitPrice(line) {
+  if (!isPurchaseOrderLines.value) return null;
+  const vid = line?.variantId != null ? String(line.variantId) : '';
+  if (!vid) return null;
+  const e = poCatalogByVariant.value.get(vid);
+  const p = e?.price;
+  return p == null || !Number.isFinite(p) ? null : p;
+}
+
+function catalogLastPurchaseLabel(line) {
+  if (!isPurchaseOrderLines.value) return '';
+  const vid = line?.variantId != null ? String(line.variantId) : '';
+  if (!vid) return '';
+  const e = poCatalogByVariant.value.get(vid);
+  if (!e || (e.lastPrice == null && !e.lastDate)) return '';
+  const priceLabel =
+    e.lastPrice != null && Number.isFinite(e.lastPrice)
+      ? formatMoney(e.lastPrice)
+      : '—';
+  let dateLabel = '—';
+  if (e.lastDate) {
+    try {
+      dateLabel = new Date(e.lastDate).toLocaleDateString(undefined, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      dateLabel = String(e.lastDate).slice(0, 10);
+    }
+  }
+  return t('records.linesPoLastPurchase', { price: priceLabel, date: dateLabel });
+}
+
+function hasCatalogPriceDrift(line) {
+  const cat = catalogUnitPrice(line);
+  if (cat == null) return false;
+  return Math.abs(lineUnitPrice(line) - cat) > 0.005;
+}
+
+async function loadPoCatalogPrices() {
+  if (!isPurchaseOrderLines.value || !poVendorId.value) {
+    poCatalogByVariant.value = new Map();
+    return;
+  }
+  try {
+    const res = await apiClient.get(`/inventory/vendor-catalog/${poVendorId.value}`, {
+      params: { includeInactive: false }
+    });
+    const rows = unwrapCatalogApiList(res);
+    const next = new Map();
+    for (const row of rows) {
+      const vid = row?.variantId != null ? String(row.variantId) : '';
+      if (!vid) continue;
+      if (String(row.status || 'Active') === 'Inactive') continue;
+      const price = Number(row.purchasePrice);
+      next.set(vid, {
+        price: Number.isFinite(price) ? price : 0,
+        lastPrice:
+          row.lastPurchasePrice != null && Number.isFinite(Number(row.lastPurchasePrice))
+            ? Number(row.lastPurchasePrice)
+            : null,
+        lastDate: row.lastPurchaseDate || null
+      });
+    }
+    poCatalogByVariant.value = next;
+  } catch {
+    poCatalogByVariant.value = new Map();
+  }
+}
+
+watch(
+  [isPurchaseOrderLines, poVendorId],
+  () => {
+    void loadPoCatalogPrices();
+  },
+  { immediate: true }
+);
+
+/**
+ * PO line pickers must only use the vendor catalog (linked or browse-all scoped to vendor
+ * search API). Never fall back to the global sellable catalog — that ignores the vendor.
+ */
 async function searchVariantsForDocument({ q = '', limit = 25 } = {}) {
-  if (isPurchaseOrderLines.value && poVendorId.value) {
+  if (isPurchaseOrderLines.value) {
+    if (!poVendorId.value) return [];
     const res = await apiClient.get(
       `/inventory/vendor-catalog/${poVendorId.value}/variants/search`,
       {
@@ -1399,13 +1599,21 @@ async function searchVariantsForDocument({ q = '', limit = 25 } = {}) {
         }
       }
     );
-    return unwrapCatalogApiData(res);
+    const data = unwrapCatalogApiData(res);
+    return Array.isArray(data) ? data : [];
   }
   const res = await apiClient.get('/catalog/variants/search', {
     params: { q, limit }
   });
   return unwrapCatalogApiData(res);
 }
+
+const poPickerEmptyHint = computed(() => {
+  if (!isPurchaseOrderLines.value) return '';
+  if (!poVendorId.value) return t('records.linesPoSelectVendorFirst');
+  if (poVariantScope.value === 'linked') return t('records.linesPoVendorCatalogEmpty');
+  return t('records.linesPoBrowseAllEmptyHint');
+});
 
 function poLastPurchaseLabel(hit) {
   if (!isPurchaseOrderLines.value) return '';
@@ -1541,7 +1749,7 @@ function computeLocalSectionTotals(section, sectionLines) {
   let sectionLineDiscountTotal = 0;
   for (const l of included) {
     const qty = Number(l.quantity) || 0;
-    const unit = Number(l.unitPriceSnapshot) || 0;
+    const unit = lineUnitPrice(l);
     const gross = qty * unit;
     const net = Number(l.lineSubtotal) || 0;
     sectionLineDiscountTotal += Math.max(0, gross - net);
@@ -1639,7 +1847,7 @@ function resolveLocalItemTaxes(line) {
 
 function recomputeLocalLineMoney(line) {
   const qty = Number(line?.quantity) || 0;
-  const unit = Number(line?.unitPriceSnapshot) || 0;
+  const unit = lineUnitPrice(line);
   const gross = qty * unit;
   const dtype = String(line?.discountType || '').trim();
   const dval = Number(line?.discountValue) || 0;
@@ -1720,7 +1928,8 @@ function localTotalsFromLines(lineList, recordOverride = null) {
     }
   }
 
-  const grandTotal = Math.max(0, afterGlobal + chargesTotal + taxTotal);
+  const adjustmentTotal = Number(record.adjustmentTotal) || 0;
+  const grandTotal = Math.max(0, afterGlobal + chargesTotal + taxTotal + adjustmentTotal);
   return {
     subtotal,
     lineDiscountTotal,
@@ -1728,7 +1937,7 @@ function localTotalsFromLines(lineList, recordOverride = null) {
     globalDiscountAmount,
     taxTotal: Math.round(taxTotal * 100) / 100,
     chargesTotal: Math.round(chargesTotal * 100) / 100,
-    adjustmentTotal: 0,
+    adjustmentTotal,
     grandTotal: Math.round(grandTotal * 100) / 100
   };
 }
@@ -1866,6 +2075,22 @@ const showPricingColumns = computed(
 const showDiscountColumn = computed(
   () => columnPrefsShowDiscount.value && caps.value.discounts
 );
+/** Tax column only when editable or document already has tax amounts (PO caps exclude tax chrome). */
+const showTaxColumn = computed(() => {
+  if (caps.value.taxEdit) return true;
+  const rows = Array.isArray(props.record?.lines) ? props.record.lines : [];
+  if (rows.some((l) => Number(l?.lineTaxTotal) > 0 || (Array.isArray(l?.taxSnapshot?.taxes) && l.taxSnapshot.taxes.length > 0))) {
+    return true;
+  }
+  if (Number(props.record?.taxTotal) > 0) return true;
+  return false;
+});
+const showGlobalDiscountRow = computed(
+  () => caps.value.globalDiscounts || Number(props.record?.globalDiscountTotal) > 0
+);
+const showTaxTotalsRow = computed(
+  () => caps.value.taxEdit || Number(props.record?.taxTotal) > 0
+);
 const showCreateCatalogItemAction = computed(
   () => canCreateQuoteItem.value && caps.value.createCatalogItem
 );
@@ -1938,7 +2163,7 @@ const canReorderSections = computed(
 
 const { stickyColumnsActive } = useQuoteLinesStickyColumns(
   () => workspacePanelRef.value,
-  [showPricingColumns, showSkuColumn, showDiscountColumn, sectionBlocks, isLinesExpanded]
+  [showPricingColumns, showSkuColumn, showDiscountColumn, showTaxColumn, sectionBlocks, isLinesExpanded]
 );
 
 function onQuoteLinesTableScroll(event) {
@@ -2617,7 +2842,7 @@ const tableColspan = computed(() => {
   if (showPricingColumns.value) n += 2;
   n += 2; // qty, unit price
   if (linesEditable.value && showDiscountColumn.value) n += 1;
-  n += 1; // tax
+  if (showTaxColumn.value) n += 1;
   n += 1; // total
   if (linesEditable.value) n += 1; // actions
   return n;
@@ -2993,7 +3218,7 @@ async function loadDocTaxOptions() {
   docTaxesLoading.value = true;
   try {
     const taxesRes = await apiClient.get('/taxes', {
-      params: { scope: 'TRANSACTION', applicableOn: 'SALES' }
+      params: { scope: 'TRANSACTION', applicableOn: isPurchaseOrderLines.value ? 'PURCHASE' : 'SALES' }
     });
     docTaxOptions.value = unwrapApiList(taxesRes).map((r) => ({
       id: String(r._id),
@@ -3014,7 +3239,7 @@ async function ensureItemTaxOptions() {
   if (itemTaxOptions.value.length) return itemTaxOptions.value;
   try {
     const taxesRes = await apiClient.get('/taxes', {
-      params: { scope: 'ITEM', applicableOn: 'SALES' }
+      params: { scope: 'ITEM', applicableOn: isPurchaseOrderLines.value ? 'PURCHASE' : 'SALES' }
     });
     itemTaxOptions.value = unwrapApiList(taxesRes).map((r) => ({
       id: String(r._id),
@@ -3034,7 +3259,7 @@ async function loadDocChargeOptions() {
   docChargesLoading.value = true;
   try {
     const chargesRes = await apiClient.get('/charges', {
-      params: { scope: 'TRANSACTION', applicableOn: 'SALES' }
+      params: { scope: 'TRANSACTION', applicableOn: isPurchaseOrderLines.value ? 'PURCHASE' : 'SALES' }
     });
     docChargeOptions.value = unwrapApiList(chargesRes).map((r) => ({
       id: String(r._id),
@@ -3126,7 +3351,53 @@ async function saveGlobalDiscount() {
     if (res?.success) {
       emit('updated', {
         type: 'quote-discounts-updated',
-        quote: res?.data?.quote ?? res?.data?.salesOrder ?? res?.data?.invoice ?? null,
+        quote: res?.data?.quote ?? res?.data?.salesOrder ?? res?.data?.invoice ?? res?.data?.purchaseOrder ?? null,
+        lines: res?.data?.lines ?? null,
+        ...mutationPayload(res.data)
+      });
+      return;
+    }
+    notifications.error(res?.message || t('records.linesGlobalDiscountUpdateFailed'));
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesGlobalDiscountUpdateFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+const adjustmentInputValue = computed(() => {
+  const n = Number(props.record?.adjustmentTotal);
+  return Number.isFinite(n) ? n : 0;
+});
+
+async function onAdjustmentChange(event) {
+  if (!isPurchaseOrderLines.value || !linesEditable.value) return;
+  const raw = event?.target?.value;
+  const value = Number(raw) || 0;
+  if (!isApiMode.value) {
+    const quotePatch = { adjustmentTotal: value };
+    const lines = currentLocalLines().map((l) => recomputeLocalLineMoney(l));
+    emit('updated', {
+      type: 'quote-discounts-updated',
+      quote: quotePatch,
+      lines,
+      totals: localTotalsFromLines(lines, { ...props.record, ...quotePatch, lines })
+    });
+    return;
+  }
+  if (!recordApiId.value) return;
+  busy.value = true;
+  try {
+    const res = await apiClient.patch(`${documentRecordBase.value}/discounts`, {
+      adjustmentTotal: value
+    });
+    if (res?.success) {
+      emit('updated', {
+        type: 'quote-discounts-updated',
+        quote: {
+          adjustmentTotal: value,
+          ...(res?.data?.quote || res?.data?.purchaseOrder || {})
+        },
         lines: res?.data?.lines ?? null,
         ...mutationPayload(res.data)
       });
@@ -3422,7 +3693,8 @@ function stickyColClass(column) {
 }
 
 function formatMoney(value) {
-  return formatQuoteMoney(value, currencyCode.value);
+  // Commercial line prices must be exact (no ₹0.00K aggregation)
+  return formatQuoteMoney(value, currencyCode.value, undefined, { exact: true });
 }
 
 function variantHitLabel(hit) {
@@ -3442,12 +3714,23 @@ function variantHitAvatarRecord(hit) {
 function variantHitSubtitle(hit) {
   const code = String(hit?.variant_code || '').trim();
   const itemCode = String(hit?.item_code || '').trim();
-  if (code && itemCode && code !== itemCode) return `${code} · ${itemCode}`;
-  return code || itemCode || '';
+  const vendorCode = isPurchaseOrderLines.value
+    ? String(hit?.vendorItemCode || '').trim()
+    : '';
+  const base =
+    code && itemCode && code !== itemCode
+      ? `${code} · ${itemCode}`
+      : code || itemCode || '';
+  if (vendorCode && vendorCode !== code && vendorCode !== itemCode) {
+    return base ? `${base} · ${vendorCode}` : vendorCode;
+  }
+  return base;
 }
 
 function formatVariantHitPrice(hit) {
-  const amount = hit?.selling_price;
+  const amount = isPurchaseOrderLines.value
+    ? hit?.purchase_price ?? hit?.unitPrice ?? hit?.selling_price
+    : hit?.selling_price;
   if (amount == null || amount === '') return '—';
   const code = String(hit?.currency || currencyCode.value || '').trim().toUpperCase();
   return formatQuoteMoney(amount, code);
@@ -3521,6 +3804,19 @@ function recentHitsForAdd() {
 function draftSearchDropdownLabel(block) {
   const state = draftRow(block);
   if (!state || state.searchLoading) return '';
+  if (isPurchaseOrderLines.value) {
+    if (!poVendorId.value) return t('records.linesPoSelectVendorFirst');
+    if (!state.searchQuery.trim() && state.searchResults.length) {
+      return t('records.linesPoShowVendorCatalog');
+    }
+    if (!state.searchQuery.trim() && !state.searchResults.length) {
+      return t('records.linesPoVendorCatalogEmpty');
+    }
+    if (state.searchQuery.trim() && state.searchResults.length) {
+      return t('records.linesSearchResults');
+    }
+    return '';
+  }
   if (!state.searchQuery.trim() && state.searchResults.length) {
     return t('records.linesRecentProducts');
   }
@@ -3648,17 +3944,31 @@ function syncOpenDraftSearchMenus() {
 function openDraftSearchWithRecent(block) {
   const state = draftRow(block);
   if (!state) return;
+  state.searchOpen = true;
+  scheduleDraftSearchMenuPosition(block);
+
+  // PO: never seed from global "recent" hits — only this vendor's catalog.
+  if (isPurchaseOrderLines.value) {
+    state.searchHighlight = -1;
+    void runDraftSearch(block);
+    return;
+  }
+
   if (state.searchQuery.trim()) {
-    state.searchOpen = true;
-    scheduleDraftSearchMenuPosition(block);
     if (!state.searchResults.length) debouncedDraftSearch(block);
     return;
   }
   const recent = recentHitsForAdd();
   state.searchResults = recent;
-  state.searchOpen = true;
   state.searchHighlight = -1;
-  scheduleDraftSearchMenuPosition(block);
+}
+
+function filterHitsForPoScope(hits) {
+  const rows = Array.isArray(hits) ? hits : [];
+  if (!isPurchaseOrderLines.value) return rows;
+  // Browse-all may include unlinked; default vendor catalog must not.
+  if (poVariantScope.value === 'all') return rows;
+  return rows.filter((h) => h?.linked !== false);
 }
 
 function quoteSectionIdForBlockKey(blockKey) {
@@ -3728,6 +4038,37 @@ function debouncedDraftSearch(block) {
 async function runDraftSearch(block) {
   const state = draftRow(block);
   if (!state) return;
+
+  // Purchase orders: always search vendor catalog (even with empty query).
+  // Do not seed from "recent variants" — those ignore the selected vendor.
+  if (isPurchaseOrderLines.value) {
+    if (!poVendorId.value) {
+      state.searchResults = [];
+      state.searchOpen = true;
+      state.searchLoading = false;
+      state.searchHighlight = -1;
+      scheduleDraftSearchMenuPosition(block);
+      return;
+    }
+    state.searchLoading = true;
+    try {
+      const hits = await searchVariantsForDocument({
+        q: state.searchQuery,
+        limit: state.searchQuery.trim() ? 12 : 25
+      });
+      state.searchResults = filterHitsForPoScope(hits);
+      state.searchOpen = true;
+      if (state.searchHighlight >= state.searchResults.length) {
+        state.searchHighlight = state.searchResults.length ? 0 : -1;
+      }
+      scheduleDraftSearchMenuPosition(block);
+    } finally {
+      state.searchLoading = false;
+      scheduleDraftSearchMenuPosition(block);
+    }
+    return;
+  }
+
   if (!state.searchQuery.trim()) {
     state.searchResults = recentHitsForAdd();
     // Keep open on click even with no recent hits so "Add New Item" remains reachable.
@@ -3754,7 +4095,7 @@ async function runDraftSearch(block) {
   }
 }
 
-async function addLineFromHit(block, hit) {
+async function addLineFromHit(block, hit, options = {}) {
   const key = block?.key;
   const variantId = String(hit?._id || '');
   if (!key || !variantId || !linesEditable.value) return null;
@@ -3762,7 +4103,11 @@ async function addLineFromHit(block, hit) {
   const commitKey = `${key}:${variantId}`;
   if (pendingDraftCommits.has(commitKey)) return null;
 
-  const gate = await ensurePoLineAllowed(hit, block);
+  const preGate = options.gate;
+  const gate =
+    preGate && typeof preGate === 'object'
+      ? preGate
+      : await ensurePoLineAllowed(hit, block);
   if (!gate.ok) return null;
 
   pendingDraftCommits.add(commitKey);
@@ -3809,8 +4154,12 @@ async function addLineFromHit(block, hit) {
       const sectionIdField = linesAdapter.value.sectionIdField;
       const sectionRef = blockSectionRef(block) || null;
       const qty = 1;
-      const order =
-        (Array.isArray(props.record?.lines) ? props.record.lines.length : 0) + 1;
+      const baseLines = Array.isArray(options.baseLines)
+        ? options.baseLines
+        : Array.isArray(props.record?.lines)
+          ? props.record.lines
+          : [];
+      const order = baseLines.length + 1;
       let line = {
         _localId: lid,
         _id: lid,
@@ -3818,6 +4167,8 @@ async function addLineFromHit(block, hit) {
         variantId,
         [sectionIdField]: sectionRef,
         quantity: qty,
+        quantityOrdered: qty,
+        unitPrice,
         unitPriceSnapshot: unitPrice,
         listPriceSnapshot: priceMeta.listPriceSnapshot ?? unitPrice,
         itemNameSnapshot: hit?.item_name || hit?.name || null,
@@ -3827,10 +4178,27 @@ async function addLineFromHit(block, hit) {
         discountType: null,
         discountValue: 0,
         discountAmount: 0,
+        linkToVendorCatalog: gate.alsoLink === true,
+        vendorItemCode: isPurchaseOrderLines.value ? hit?.vendorItemCode || null : undefined,
+        vendorItemName: isPurchaseOrderLines.value ? hit?.vendorItemName || null : undefined,
+        minOrderQty: isPurchaseOrderLines.value
+          ? hit?.min_order_qty ?? hit?.minOrderQty ?? null
+          : undefined,
         ...priceMeta
       };
+      if (isPurchaseOrderLines.value && Number.isFinite(Number(hit?.purchase_price))) {
+        const catPrice = Number(hit.purchase_price);
+        const prev = poCatalogByVariant.value.get(String(variantId));
+        poCatalogByVariant.value = new Map(poCatalogByVariant.value).set(String(variantId), {
+          price: catPrice,
+          lastPrice: prev?.lastPrice ?? hit?.last_purchase_price ?? null,
+          lastDate: prev?.lastDate ?? hit?.last_purchase_date ?? null,
+          vendorItemCode: hit?.vendorItemCode || null,
+          minOrderQty: hit?.min_order_qty ?? hit?.minOrderQty ?? null
+        });
+      }
       line = recomputeLocalLineMoney(line);
-      const nextLines = [...(Array.isArray(props.record?.lines) ? props.record.lines : []), line];
+      const nextLines = [...baseLines, line];
       return {
         line,
         data: { lines: nextLines, totals: localTotalsFromLines(nextLines) }
@@ -3848,7 +4216,12 @@ async function addLineFromHit(block, hit) {
           isPurchaseOrderLines.value
             ? Number(hit?.purchase_price ?? hit?.unitPrice ?? hit?.selling_price ?? 0) || 0
             : undefined,
-        linkToVendorCatalog: gate.alsoLink === true
+        linkToVendorCatalog: gate.alsoLink === true,
+        vendorItemCode: isPurchaseOrderLines.value ? hit?.vendorItemCode : undefined,
+        vendorItemName: isPurchaseOrderLines.value ? hit?.vendorItemName : undefined,
+        minOrderQty: isPurchaseOrderLines.value
+          ? hit?.min_order_qty ?? hit?.minOrderQty
+          : undefined
       })
     };
     if (linesAdapter.value.kind === 'quote') {
@@ -3856,6 +4229,18 @@ async function addLineFromHit(block, hit) {
     }
     const res = await apiClient.post(`${documentRecordBase.value}/lines`, body);
     if (res?.success) {
+      if (isPurchaseOrderLines.value) {
+        if (Number.isFinite(Number(hit?.purchase_price))) {
+          const prev = poCatalogByVariant.value.get(String(variantId));
+          poCatalogByVariant.value = new Map(poCatalogByVariant.value).set(String(variantId), {
+            price: Number(hit.purchase_price),
+            lastPrice: prev?.lastPrice ?? hit?.last_purchase_price ?? null,
+            lastDate: prev?.lastDate ?? hit?.last_purchase_date ?? null
+          });
+        } else if (gate.alsoLink === true) {
+          void loadPoCatalogPrices();
+        }
+      }
       return { line: res?.data?.line || null, data: res.data };
     }
     notifications.error(res?.message || t('records.linesAddFailed'));
@@ -3980,24 +4365,43 @@ async function confirmVariantPickerSelection() {
   const selected = Object.values(variantPickerSelectedById.value);
   if (!block || !selected.length || busy.value) return;
 
+  // Gate (unlinked confirm) before busy / while picker can still host confirmation UI.
+  const prepared = [];
+  for (const hit of selected) {
+    const gate = await ensurePoLineAllowed(hit, block);
+    if (!gate.ok) continue;
+    prepared.push({ hit, gate });
+  }
+  if (!prepared.length) return;
+
   busy.value = true;
   try {
     const added = [];
-    let lastData = null;
-    for (const hit of selected) {
-      const result = await addLineFromHit(block, hit);
-      if (result?.line) added.push(result.line);
-      if (result?.data) lastData = result.data;
+    let workingLines = Array.isArray(props.record?.lines) ? [...props.record.lines] : [];
+    let lastTotals = null;
+    for (const { hit, gate } of prepared) {
+      const result = await addLineFromHit(block, hit, {
+        gate,
+        baseLines: workingLines
+      });
+      if (result?.line) {
+        added.push(result.line);
+        if (Array.isArray(result.data?.lines)) {
+          workingLines = result.data.lines;
+        } else {
+          workingLines = [...workingLines, result.line];
+        }
+        if (result.data?.totals) lastTotals = result.data.totals;
+      }
     }
     closeVariantPicker();
     if (added.length) {
       emit('updated', {
         type: 'lines-added',
         lines: added,
-        ...mutationPayload(lastData)
+        totals: lastTotals || localTotalsFromLines(workingLines),
+        sections: null
       });
-    } else if (selected.length) {
-      await refresh();
     }
     resetDraftRowForNextAdd(block);
   } finally {
@@ -4063,7 +4467,7 @@ async function runVariantSearch() {
       q: variantSearchQuery.value,
       limit: 25
     });
-    variantSearchResults.value = Array.isArray(hits) ? hits : [];
+    variantSearchResults.value = filterHitsForPoScope(hits);
   } finally {
     variantSearchLoading.value = false;
   }
@@ -4448,6 +4852,64 @@ async function patchQty(line, raw) {
   }
 }
 
+async function patchUnitPrice(line, raw) {
+  if (!linesEditable.value || !canEditLineUnitPrice.value || !lineApiId(line)) return;
+  if (isApiMode.value && !recordApiId.value) return;
+  const p = Number(raw);
+  if (!Number.isFinite(p) || p < 0) return;
+  if (Math.abs(lineUnitPrice(line) - p) < 0.000001) return;
+
+  if (!isApiMode.value) {
+    const updated = recomputeLocalLineMoney({
+      ...line,
+      unitPrice: p,
+      unitPriceSnapshot: p
+    });
+    const nextLines = (Array.isArray(props.record?.lines) ? props.record.lines : []).map((l) =>
+      lineApiId(l) === lineApiId(line) ? updated : l
+    );
+    emit('updated', {
+      type: 'line-updated',
+      line: updated,
+      lines: nextLines,
+      totals: localTotalsFromLines(nextLines)
+    });
+    return;
+  }
+
+  busy.value = true;
+  try {
+    const body = {
+      ...linesAdapter.value.buildPatchLineBody({ unitPrice: p })
+    };
+    const res = await apiClient.patch(`${documentRecordBase.value}/lines/${lineApiId(line)}`, body);
+    if (res?.success) {
+      const updatedLine = res?.data?.line;
+      if (updatedLine) {
+        emit('updated', {
+          type: 'line-updated',
+          line: updatedLine,
+          ...mutationPayload(res.data)
+        });
+      } else {
+        await refresh();
+      }
+    } else {
+      notifications.error(res?.message || t('records.linesUpdateFailed'));
+    }
+  } catch (e) {
+    notifications.error(e?.message || t('records.linesUpdateFailed'));
+  } finally {
+    busy.value = false;
+  }
+}
+
+function applyCatalogUnitPrice(line) {
+  const cat = catalogUnitPrice(line);
+  if (cat == null) return;
+  void patchUnitPrice(line, cat);
+}
+
 function requestRemoveLine(line) {
   if (!linesEditable.value) return;
   linePendingDelete.value = line;
@@ -4686,7 +5148,87 @@ defineExpose({
 }
 
 .quote-lines-col-unit-price {
-  width: 7.25rem;
+  width: 7.5rem;
+}
+
+.quote-lines-unit-price-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 7rem;
+  height: 2rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(209 213 219);
+  background-color: rgb(255 255 255);
+  box-sizing: border-box;
+  margin-left: auto;
+}
+
+.quote-lines-unit-price-group:focus-within {
+  border-color: rgb(99 102 241);
+  box-shadow: 0 0 0 1px rgb(99 102 241);
+}
+
+.dark .quote-lines-unit-price-group {
+  border-color: rgb(75 85 99);
+  background-color: rgb(31 41 55);
+}
+
+.dark .quote-lines-unit-price-group:focus-within {
+  border-color: rgb(129 140 248);
+  box-shadow: 0 0 0 1px rgb(129 140 248);
+}
+
+.quote-lines-unit-price-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 1.35rem;
+  padding: 0 0.25rem 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(107 114 128);
+  background-color: rgb(249 250 251);
+  border-right: 1px solid rgb(229 231 235);
+  user-select: none;
+}
+
+.dark .quote-lines-unit-price-symbol {
+  color: rgb(156 163 175);
+  background-color: rgb(55 65 81);
+  border-right-color: rgb(75 85 99);
+}
+
+.quote-lines-unit-price-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 0.4rem;
+  font-size: 0.875rem;
+  line-height: 2rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: rgb(17 24 39);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dark .quote-lines-unit-price-value {
+  color: rgb(243 244 246);
+}
+
+.quote-lines-unit-price-value:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .quote-lines-col-discount {

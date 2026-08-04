@@ -43,7 +43,14 @@ const createController = require('../controllers/organizationCreateController');
 const vendorCatalogService = require('../services/vendorCatalogService');
 
 function sendVendorCatalogError(res, err) {
-  const status = err?.code === 'NOT_FOUND' ? 404 : err?.code === 'VALIDATION' ? 400 : 500;
+  const status =
+    err?.code === 'NOT_FOUND'
+      ? 404
+      : err?.code === 'VALIDATION'
+        ? 400
+        : err?.code === 'CONFLICT'
+          ? 409
+          : 500;
   return res.status(status).json({
     success: false,
     message: err.message,
@@ -73,7 +80,11 @@ router.get('/:id/vendor-catalog', checkPermission('organizations', 'view'), asyn
       status: req.query.status || null,
       includeInactive
     });
-    return res.json({ success: true, data });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id
+    });
+    return res.json({ success: true, data, revision });
   } catch (err) {
     return sendVendorCatalogError(res, err);
   }
@@ -90,9 +101,59 @@ router.put('/:id/vendor-catalog', checkPermission('organizations', 'edit'), asyn
       organizationId: req.user.organizationId,
       vendorId: req.params.id,
       entries,
-      userId: req.user._id
+      userId: req.user._id,
+      expectedRevision: req.body?.expectedRevision || null
     });
-    return res.json({ success: true, data });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id
+    });
+    return res.json({ success: true, data, revision });
+  } catch (err) {
+    return sendVendorCatalogError(res, err);
+  }
+});
+
+router.post('/:id/vendor-catalog/import', checkPermission('organizations', 'edit'), async (req, res) => {
+  try {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    const { resolved, errors } = await vendorCatalogService.resolveImportRows({
+      organizationId: req.user.organizationId,
+      rows
+    });
+    if (!resolved.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid import rows',
+        code: 'VALIDATION',
+        errors
+      });
+    }
+    for (const row of resolved) {
+      // eslint-disable-next-line no-await-in-loop
+      await vendorCatalogService.upsertEntry({
+        organizationId: req.user.organizationId,
+        vendorId: req.params.id,
+        payload: row,
+        userId: req.user._id
+      });
+    }
+    const data = await vendorCatalogService.listEntries({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id,
+      includeInactive: true
+    });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.id
+    });
+    return res.json({
+      success: true,
+      data,
+      revision,
+      imported: resolved.length,
+      errors
+    });
   } catch (err) {
     return sendVendorCatalogError(res, err);
   }

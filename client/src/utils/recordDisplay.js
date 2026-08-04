@@ -165,6 +165,21 @@ function getRecordEndpoint(appKey, moduleKey) {
     salesorders: '/sales-orders',
     purchase_orders: '/inventory/purchase-orders',
     purchaseorders: '/inventory/purchase-orders',
+    receipt_notes: '/inventory/receipt-notes',
+    receiptnotes: '/inventory/receipt-notes',
+    purchase_returns: '/inventory/purchase-returns',
+    purchasereturns: '/inventory/purchase-returns',
+    delivery_notes: '/inventory/delivery-notes',
+    deliverynotes: '/inventory/delivery-notes',
+    delivery_returns: '/inventory/delivery-returns',
+    deliveryreturns: '/inventory/delivery-returns',
+    sales_returns: '/inventory/sales-returns',
+    salesreturns: '/inventory/sales-returns',
+    stockrooms: '/inventory/locations',
+    stock_adjustments: '/inventory/adjustments',
+    stockadjustments: '/inventory/adjustments',
+    stock_transfers: '/inventory/transfers',
+    stocktransfers: '/inventory/transfers',
     invoices: '/invoices',
     invoice: '/invoices'
   };
@@ -325,6 +340,27 @@ const RELATED_RECORD_KEY_FIELDS = Object.freeze({
   ],
   purchase_orders: [
     { key: 'poNumber', label: 'PO #' },
+    { key: 'status', label: 'Status' }
+  ],
+  receipt_notes: [
+    { key: 'receiptNoteNumber', label: 'RN #' },
+    { key: 'status', label: 'Status' }
+  ],
+  stockrooms: [
+    { key: 'locationCode', label: 'Code' },
+    { key: 'status', label: 'Status' }
+  ],
+  stock_adjustments: [
+    { key: 'reasonCode', label: 'Reason' },
+    { key: 'status', label: 'Status' }
+  ],
+  stock_transfers: [
+    { key: 'fromLocationName', label: 'From' },
+    { key: 'toLocationName', label: 'To' },
+    { key: 'status', label: 'Status' }
+  ],
+  purchase_returns: [
+    { key: 'purchaseReturnNumber', label: 'PR #' },
     { key: 'status', label: 'Status' }
   ],
   invoices: [

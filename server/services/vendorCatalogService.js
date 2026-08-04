@@ -45,6 +45,13 @@ async function assertVendorOrg(organizationId, vendorId) {
     .select('_id types participations name')
     .lean();
   if (!vendor) throw validationError('Vendor organization not found', 'NOT_FOUND');
+  const types = Array.isArray(vendor.types)
+    ? vendor.types.map((t) => String(t || '').toLowerCase())
+    : [];
+  const invRole = String(vendor.participations?.INVENTORY?.role || '').toLowerCase();
+  if (!types.includes('vendor') && invRole !== 'vendor') {
+    throw validationError('Organization must have Vendor participation type');
+  }
   return vendor;
 }
 
@@ -66,6 +73,8 @@ function normalizeEntryInput(row) {
   if (!row || typeof row !== 'object') return null;
   const variantId = row.variantId || row.variant_id || row._id;
   if (!variantId) return null;
+  const minRaw = row.minOrderQty ?? row.min_order_qty ?? row.minimumOrderQuantity;
+  const leadRaw = row.leadTimeDays ?? row.lead_time_days ?? row.leadTime;
   return {
     variantId: String(variantId),
     vendorItemCode:
@@ -80,6 +89,19 @@ function normalizeEntryInput(row) {
     currency:
       row.currency != null && String(row.currency).trim()
         ? String(row.currency).trim().toUpperCase()
+        : null,
+    preferredVendor: row.preferredVendor === true || row.preferred_vendor === true,
+    minOrderQty:
+      minRaw != null && minRaw !== '' && Number.isFinite(Number(minRaw))
+        ? Math.max(0, Number(minRaw))
+        : null,
+    leadTimeDays:
+      leadRaw != null && leadRaw !== '' && Number.isFinite(Number(leadRaw))
+        ? Math.max(0, Number(leadRaw))
+        : null,
+    remarks:
+      row.remarks != null && String(row.remarks).trim() !== ''
+        ? String(row.remarks).trim()
         : null,
     status: normalizeStatus(row.status, 'Active'),
     customFields:
@@ -132,13 +154,42 @@ async function getEntryByVariant({ organizationId, vendorId, variantId, activeOn
  * Replace full catalog for a vendor (create/edit org surface).
  * Empty array clears catalog.
  */
-async function replaceEntries({ organizationId, vendorId, entries, userId }) {
+async function replaceEntries({
+  organizationId,
+  vendorId,
+  entries,
+  userId,
+  expectedRevision = null
+}) {
   await assertVendorOrg(organizationId, vendorId);
 
   const orgOid = toObjectId(organizationId);
   const vendorOid = toObjectId(vendorId);
   if (!orgOid || !vendorOid) {
     throw validationError('Invalid organizationId or vendorId');
+  }
+
+  // Optimistic concurrency: reject replace if catalog changed since client loaded it
+  if (expectedRevision != null && String(expectedRevision).trim() !== '') {
+    const expectedMs = Date.parse(String(expectedRevision));
+    if (Number.isFinite(expectedMs)) {
+      const latest = await VendorCatalogEntry.findOne({
+        organizationId: orgOid,
+        vendorId: vendorOid
+      })
+        .sort({ updatedAt: -1 })
+        .select('updatedAt')
+        .lean();
+      if (latest?.updatedAt) {
+        const serverMs = new Date(latest.updatedAt).getTime();
+        if (serverMs > expectedMs + 50) {
+          throw validationError(
+            'Vendor catalog was updated elsewhere. Reload and try again.',
+            'CONFLICT'
+          );
+        }
+      }
+    }
   }
 
   const input = Array.isArray(entries) ? entries : [];
@@ -167,6 +218,10 @@ async function replaceEntries({ organizationId, vendorId, entries, userId }) {
           ? row.purchasePrice
           : Math.max(0, Number(variant.cost_price) || 0),
       currency: row.currency || String(variant.currency || 'USD').toUpperCase(),
+      preferredVendor: row.preferredVendor === true,
+      minOrderQty: row.minOrderQty,
+      leadTimeDays: row.leadTimeDays,
+      remarks: row.remarks,
       status: row.status,
       customFields: row.customFields || {},
       modifiedBy: userId || null
@@ -207,6 +262,86 @@ async function replaceEntries({ organizationId, vendorId, entries, userId }) {
   return listEntries({ organizationId: orgOid, vendorId: vendorOid, includeInactive: true });
 }
 
+/**
+ * Resolve sellable variants for CSV import: match by variant_code or item_code (default variant).
+ * Rows: { itemCode?, variantCode?, vendorItemCode?, vendorItemName?, purchasePrice?, currency?, status? }
+ */
+async function resolveImportRows({ organizationId, rows }) {
+  const input = Array.isArray(rows) ? rows : [];
+  const resolved = [];
+  const errors = [];
+
+  for (let i = 0; i < input.length; i += 1) {
+    const raw = input[i] || {};
+    const lineNo = i + 1;
+    const variantCode = String(raw.variantCode || raw.variant_code || '').trim();
+    const itemCode = String(raw.itemCode || raw.item_code || '').trim();
+    if (!variantCode && !itemCode) {
+      errors.push({ line: lineNo, message: 'itemCode or variantCode required' });
+      continue;
+    }
+
+    let variant = null;
+    if (variantCode) {
+      variant = await ItemVariant.findOne({
+        organizationId,
+        variant_code: variantCode
+      }).lean();
+    }
+    if (!variant && itemCode) {
+      const item = await Item.findOne({
+        organizationId,
+        deletedAt: null,
+        item_code: itemCode
+      })
+        .select('_id')
+        .lean();
+      if (item) {
+        variant = await ItemVariant.findOne({
+          organizationId,
+          itemId: item._id,
+          is_default: true
+        }).lean();
+        if (!variant) {
+          variant = await ItemVariant.findOne({
+            organizationId,
+            itemId: item._id
+          })
+            .sort({ is_default: -1, createdAt: 1 })
+            .lean();
+        }
+      }
+    }
+    if (!variant) {
+      errors.push({
+        line: lineNo,
+        message: `No variant for ${variantCode || itemCode}`
+      });
+      continue;
+    }
+
+    const row = normalizeEntryInput({
+      variantId: variant._id,
+      vendorItemCode: raw.vendorItemCode || raw.vendor_item_code,
+      vendorItemName: raw.vendorItemName || raw.vendor_item_name,
+      purchasePrice: raw.purchasePrice ?? raw.purchase_price ?? 0,
+      currency: raw.currency,
+      preferredVendor: raw.preferredVendor ?? raw.preferred_vendor,
+      minOrderQty: raw.minOrderQty ?? raw.min_order_qty ?? raw.moq,
+      leadTimeDays: raw.leadTimeDays ?? raw.lead_time_days ?? raw.leadTime,
+      remarks: raw.remarks,
+      status: raw.status
+    });
+    if (!row) {
+      errors.push({ line: lineNo, message: 'Invalid row' });
+      continue;
+    }
+    resolved.push(row);
+  }
+
+  return { resolved, errors };
+}
+
 function toObjectId(id) {
   if (!id) return null;
   if (id instanceof mongoose.Types.ObjectId) return id;
@@ -235,6 +370,10 @@ async function upsertEntry({ organizationId, vendorId, payload, userId }) {
         vendorItemName: row.vendorItemName,
         purchasePrice,
         currency,
+        preferredVendor: row.preferredVendor === true,
+        minOrderQty: row.minOrderQty,
+        leadTimeDays: row.leadTimeDays,
+        remarks: row.remarks,
         status: row.status,
         customFields: row.customFields || {},
         modifiedBy: userId || null
@@ -295,9 +434,14 @@ async function searchVariantsForVendor({
 
   const filter = {
     organizationId,
-    itemId: { $in: activeItemIds },
-    lifecycle_state: { $in: CATALOG_SELLABLE_LIFECYCLE_STATES }
+    itemId: { $in: activeItemIds }
   };
+
+  // Linked vendor catalog = procurement source of truth. Do not require sales "sellable"
+  // lifecycle (items kept only for purchasing / inactive sales stay visible when linked).
+  if (mode === 'all') {
+    filter.lifecycle_state = { $in: CATALOG_SELLABLE_LIFECYCLE_STATES };
+  }
 
   if (mode === 'linked') {
     filter._id = { $in: activeLinkedIds };
@@ -375,7 +519,11 @@ async function searchVariantsForVendor({
         /** Align with commercial picker which reads selling_price for display. */
         selling_price: purchasePrice,
         last_purchase_price: cat?.lastPurchasePrice ?? null,
-        last_purchase_date: cat?.lastPurchaseDate ?? null
+        last_purchase_date: cat?.lastPurchaseDate ?? null,
+        preferred_vendor: cat?.preferredVendor === true,
+        min_order_qty: cat?.minOrderQty ?? null,
+        lead_time_days: cat?.leadTimeDays ?? null,
+        remarks: cat?.remarks ?? null
       };
     });
 }
@@ -433,6 +581,65 @@ async function recordPurchasesFromReceipt({
   }
 }
 
+/**
+ * System hook: after Purchase Return inventory posted, stamp return metrics.
+ */
+async function recordReturnsFromPurchaseReturn({
+  organizationId,
+  vendorId,
+  lines,
+  returnDate,
+  userId
+}) {
+  if (!vendorId || !Array.isArray(lines) || !lines.length) return;
+  const when = returnDate ? new Date(returnDate) : new Date();
+
+  for (const line of lines) {
+    const variantId = line.variantId;
+    if (!variantId) continue;
+    const qty = Number(line.quantityReturned || 0);
+    if (!(qty > 0)) continue;
+
+    let entry = await VendorCatalogEntry.findOne({ organizationId, vendorId, variantId });
+    if (!entry) {
+      try {
+        const { variant, item } = await hydrateVariant(organizationId, variantId);
+        entry = await VendorCatalogEntry.create({
+          organizationId,
+          vendorId,
+          variantId,
+          itemId: item._id,
+          purchasePrice: Number(line.unitPrice) || 0,
+          currency: String(variant.currency || 'USD').toUpperCase(),
+          status: 'Active',
+          lastReturnDate: when,
+          returnCount: 1,
+          createdBy: userId || null,
+          modifiedBy: userId || null
+        });
+      } catch {
+        continue;
+      }
+    } else {
+      entry.returnCount = Number(entry.returnCount || 0) + 1;
+      const prevDate = entry.lastReturnDate ? new Date(entry.lastReturnDate) : null;
+      if (!prevDate || when >= prevDate) {
+        entry.lastReturnDate = when;
+      }
+      entry.modifiedBy = userId || null;
+      await entry.save();
+    }
+  }
+}
+
+async function catalogRevisionForVendor({ organizationId, vendorId }) {
+  const latest = await VendorCatalogEntry.findOne({ organizationId, vendorId })
+    .sort({ updatedAt: -1 })
+    .select('updatedAt')
+    .lean();
+  return latest?.updatedAt ? new Date(latest.updatedAt).toISOString() : null;
+}
+
 module.exports = {
   listEntries,
   getEntryByVariant,
@@ -440,5 +647,8 @@ module.exports = {
   upsertEntry,
   deleteEntry,
   searchVariantsForVendor,
-  recordPurchasesFromReceipt
+  recordPurchasesFromReceipt,
+  recordReturnsFromPurchaseReturn,
+  resolveImportRows,
+  catalogRevisionForVendor
 };

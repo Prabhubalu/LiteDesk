@@ -8,7 +8,14 @@ const { requireAppEntitlement } = require('../middleware/requireAppEntitlementMi
 const { requireInventoryApp } = require('../middleware/requireInventoryAppMiddleware');
 
 function sendError(res, err) {
-  const status = err?.code === 'NOT_FOUND' ? 404 : err?.code === 'VALIDATION' ? 400 : 500;
+  const status =
+    err?.code === 'NOT_FOUND'
+      ? 404
+      : err?.code === 'VALIDATION'
+        ? 400
+        : err?.code === 'CONFLICT'
+          ? 409
+          : 500;
   return res.status(status).json({
     success: false,
     message: err.message,
@@ -35,7 +42,11 @@ router.get('/:vendorId', checkPermission('inventory', 'view'), async (req, res) 
       status,
       includeInactive
     });
-    return res.json({ success: true, data });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.vendorId
+    });
+    return res.json({ success: true, data, revision });
   } catch (err) {
     return sendError(res, err);
   }
@@ -53,9 +64,58 @@ router.put('/:vendorId', checkPermission('inventory', 'adjust'), async (req, res
       organizationId: req.user.organizationId,
       vendorId: req.params.vendorId,
       entries,
-      userId: req.user._id
+      userId: req.user._id,
+      expectedRevision: req.body?.expectedRevision || req.headers['if-unmodified-since'] || null
     });
-    return res.json({ success: true, data });
+    const revision = await vendorCatalogService.catalogRevisionForVendor({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.vendorId
+    });
+    return res.json({ success: true, data, revision });
+  } catch (err) {
+    return sendError(res, err);
+  }
+});
+
+/** POST /api/inventory/vendor-catalog/:vendorId/import — resolve CSV-shaped rows to catalog entries */
+router.post('/:vendorId/import', checkPermission('inventory', 'adjust'), async (req, res) => {
+  try {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    const { resolved, errors } = await vendorCatalogService.resolveImportRows({
+      organizationId: req.user.organizationId,
+      rows
+    });
+    if (!resolved.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid import rows',
+        code: 'VALIDATION',
+        errors
+      });
+    }
+    // Merge mode: upsert each (preserves existing last-purchase)
+    const results = [];
+    for (const row of resolved) {
+      // eslint-disable-next-line no-await-in-loop
+      const entry = await vendorCatalogService.upsertEntry({
+        organizationId: req.user.organizationId,
+        vendorId: req.params.vendorId,
+        payload: row,
+        userId: req.user._id
+      });
+      results.push(entry);
+    }
+    const data = await vendorCatalogService.listEntries({
+      organizationId: req.user.organizationId,
+      vendorId: req.params.vendorId,
+      includeInactive: true
+    });
+    return res.json({
+      success: true,
+      data,
+      imported: results.length,
+      errors
+    });
   } catch (err) {
     return sendError(res, err);
   }

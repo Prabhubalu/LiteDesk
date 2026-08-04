@@ -18,7 +18,9 @@ import { salesOrderCommercialLinesAdapter } from '@/platform/commercialLines/ada
 defineProps({
   record: { type: Object, default: null },
   context: { type: Object, default: () => ({}) },
-  draftMode: { type: Boolean, default: false }
+  draftMode: { type: Boolean, default: false },
+  /** Absorbed from SectionStack — do not fall through over salesOrderCommercialLinesAdapter. */
+  adapter: { type: Object, default: null }
 });
 
 const emit = defineEmits(['updated']);

@@ -1,40 +1,9 @@
 <!--
   Vendor Catalog on Organization record page.
-  Read view by default; inline edit when user can edit organizations.
+  Always-on editor when permitted; debounced auto-save (no duplicate section title).
 -->
 <template>
   <div class="vendor-catalog-record-section space-y-3">
-    <div class="flex flex-wrap items-center justify-end gap-2">
-      <template v-if="canEdit && !editing">
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-          @click="startEdit"
-        >
-          <PencilSquareIcon class="size-3.5" aria-hidden="true" />
-          {{ entries.length ? t('organizations.vendorCatalogEdit') : t('organizations.vendorCatalogAddItem') }}
-        </button>
-      </template>
-      <template v-else-if="canEdit && editing">
-        <button
-          type="button"
-          class="rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-800"
-          :disabled="saving"
-          @click="cancelEdit"
-        >
-          {{ t('actions.cancel') }}
-        </button>
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 dark:bg-indigo-500"
-          :disabled="saving"
-          @click="saveEdit"
-        >
-          {{ saving ? t('states.saving') : t('actions.save') }}
-        </button>
-      </template>
-    </div>
-
     <div v-if="loading" class="flex justify-center py-10">
       <div class="h-7 w-7 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
     </div>
@@ -46,150 +15,186 @@
       {{ error }}
     </div>
 
-    <template v-else-if="editing">
-      <VendorCatalogSection
-        ref="editorRef"
-        v-model="draftLines"
-        :disabled="saving"
-        :vendor-id="vendorId()"
-      />
-      <p v-if="saveError" class="text-sm text-red-600 dark:text-red-400">{{ saveError }}</p>
-    </template>
+    <!-- Editable + auto-save -->
+    <VendorCatalogSection
+      v-else-if="canEdit"
+      ref="editorRef"
+      v-model="draftLines"
+      hide-header
+      :disabled="false"
+      :vendor-id="vendorId()"
+      :status-text="statusLabel"
+      :status-tone="statusTone"
+      @update:model-value="onDraftChange"
+      @import-done="onImportDone"
+    />
 
-    <div
-      v-else-if="!entries.length"
-      class="rounded-lg border border-dashed border-gray-200 bg-gray-50/80 px-4 py-10 text-center dark:border-gray-700 dark:bg-gray-800/40"
-    >
-      <CubeIcon class="mx-auto size-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
-      <p class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-        {{ t('organizations.vendorCatalogEmptyTitle') }}
-      </p>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        {{ t('organizations.vendorCatalogEmpty') }}
-      </p>
-      <button
-        v-if="canEdit"
-        type="button"
-        class="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-        @click="startEdit"
+    <!-- Read-only -->
+    <template v-else>
+      <div
+        v-if="!entries.length"
+        class="rounded-lg border border-dashed border-gray-200 bg-gray-50/80 px-4 py-10 text-center dark:border-gray-700 dark:bg-gray-800/40"
       >
-        {{ t('organizations.vendorCatalogAddFirst') }}
-      </button>
-    </div>
+        <CubeIcon class="mx-auto size-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+        <p class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+          {{ t('organizations.vendorCatalogEmptyTitle') }}
+        </p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {{ t('organizations.vendorCatalogEmpty') }}
+        </p>
+      </div>
 
-    <div
-      v-else
-      class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700"
-    >
-      <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
-        <thead class="bg-gray-50 dark:bg-gray-800/80">
-          <tr class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-            <th class="px-3 py-2.5 font-medium">{{ t('organizations.vendorCatalogColItem') }}</th>
-            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
-              {{ t('organizations.vendorCatalogColVendorCode') }}
-            </th>
-            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
-              {{ t('organizations.vendorCatalogColVendorName') }}
-            </th>
-            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
-              {{ t('organizations.vendorCatalogColPurchasePrice') }}
-            </th>
-            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
-              {{ t('organizations.vendorCatalogColLastPrice') }}
-            </th>
-            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
-              {{ t('organizations.vendorCatalogColLastDate') }}
-            </th>
-            <th class="px-3 py-2.5 font-medium">{{ t('organizations.vendorCatalogColStatus') }}</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
-          <tr v-for="row in entries" :key="String(row._id || row.variantId)">
-            <td class="px-3 py-2.5">
-              <div class="font-medium text-gray-900 dark:text-white">
-                {{ row.itemName || '—' }}
-              </div>
-              <div
-                v-if="row.variantCode || row.itemCode"
-                class="text-xs text-gray-500 dark:text-gray-400 font-mono"
-              >
-                {{ [row.variantCode, row.itemCode].filter(Boolean).join(' · ') }}
-              </div>
-            </td>
-            <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300">
-              {{ row.vendorItemCode || '—' }}
-            </td>
-            <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300">
-              {{ row.vendorItemName || '—' }}
-            </td>
-            <td class="px-3 py-2.5 tabular-nums text-gray-900 dark:text-white whitespace-nowrap">
-              {{ formatPrice(row.purchasePrice, row.currency) }}
-            </td>
-            <td class="px-3 py-2.5 tabular-nums text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {{ formatPrice(row.lastPurchasePrice, row.currency) }}
-            </td>
-            <td class="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {{ formatDate(row.lastPurchaseDate) }}
-            </td>
-            <td class="px-3 py-2.5">
-              <span
-                class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset"
-                :class="
-                  row.status === 'Inactive'
-                    ? 'bg-gray-50 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600'
-                    : 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800'
-                "
-              >
-                {{
-                  row.status === 'Inactive'
-                    ? t('organizations.vendorCatalogStatusInactive')
-                    : t('organizations.vendorCatalogStatusActive')
-                }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p v-if="!editing" class="text-xs text-gray-500 dark:text-gray-400">
-      {{ t('organizations.vendorCatalogHint') }}
-    </p>
+      <div
+        v-else
+        class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700"
+      >
+        <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-800/80">
+            <tr class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <th class="px-3 py-2.5 font-medium">{{ t('organizations.vendorCatalogColItem') }}</th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColVendorCode') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColVendorName') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColPurchasePrice') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColMoq') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColLeadTime') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColPreferred') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColLastPrice') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+                {{ t('organizations.vendorCatalogColLastDate') }}
+              </th>
+              <th class="px-3 py-2.5 font-medium">{{ t('organizations.vendorCatalogColStatus') }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
+            <tr v-for="row in entries" :key="String(row._id || row.variantId)">
+              <td class="px-3 py-2.5">
+                <div class="font-medium text-gray-900 dark:text-white">
+                  {{ row.itemName || '—' }}
+                </div>
+                <div
+                  v-if="row.variantCode || row.itemCode"
+                  class="text-xs text-gray-500 dark:text-gray-400 font-mono"
+                >
+                  {{ [row.variantCode, row.itemCode].filter(Boolean).join(' · ') }}
+                </div>
+              </td>
+              <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300">
+                {{ row.vendorItemCode || '—' }}
+              </td>
+              <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300">
+                {{ row.vendorItemName || '—' }}
+              </td>
+              <td class="px-3 py-2.5 tabular-nums text-gray-900 dark:text-white whitespace-nowrap">
+                {{ formatPrice(row.purchasePrice, row.currency) }}
+              </td>
+              <td class="px-3 py-2.5 tabular-nums text-gray-700 dark:text-gray-300">
+                {{ row.minOrderQty != null ? row.minOrderQty : '—' }}
+              </td>
+              <td class="px-3 py-2.5 tabular-nums text-gray-700 dark:text-gray-300">
+                {{ row.leadTimeDays != null ? row.leadTimeDays : '—' }}
+              </td>
+              <td class="px-3 py-2.5 text-center text-gray-700 dark:text-gray-300">
+                {{ row.preferredVendor ? '✓' : '—' }}
+              </td>
+              <td class="px-3 py-2.5 tabular-nums text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                {{ formatPrice(row.lastPurchasePrice, row.currency) }}
+              </td>
+              <td class="px-3 py-2.5 text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                {{ formatDate(row.lastPurchaseDate) }}
+              </td>
+              <td class="px-3 py-2.5">
+                <span
+                  class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset"
+                  :class="
+                    row.status === 'Inactive'
+                      ? 'bg-gray-50 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600'
+                      : 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800'
+                  "
+                >
+                  {{
+                    row.status === 'Inactive'
+                      ? t('organizations.vendorCatalogStatusInactive')
+                      : t('organizations.vendorCatalogStatusActive')
+                  }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup>
 import { useI18n } from 'vue-i18n';
-import { ref, computed, watch, onMounted } from 'vue';
-import { CubeIcon, PencilSquareIcon } from '@heroicons/vue/24/outline';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { CubeIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
 import VendorCatalogSection from '@/components/organizations/VendorCatalogSection.vue';
-import { useNotifications } from '@/composables/useNotifications';
 
 const props = defineProps({
   record: { type: Object, default: null },
   context: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['updated']);
-
 const { t, d } = useI18n();
-const notifications = useNotifications();
 
 const loading = ref(false);
-const saving = ref(false);
 const error = ref('');
-const saveError = ref('');
 const entries = ref([]);
-const editing = ref(false);
 const draftLines = ref([]);
 const editorRef = ref(null);
+
+const saveState = ref('idle'); // idle | pending | saving | saved | error
+const saveError = ref('');
+const lastSavedFingerprint = ref('');
+const catalogRevision = ref(null);
+let saveTimer = null;
+let savedClearTimer = null;
+let readyForAutosave = false;
+let saveInFlight = false;
+let resaveAfterFlight = false;
 
 const canEdit = computed(
   () =>
     props.context?.canEditVendorCatalog === true ||
     props.context?.canEdit === true
 );
+
+const statusLabel = computed(() => {
+  if (saveState.value === 'saving' || saveState.value === 'pending') {
+    return t('organizations.vendorCatalogSaving');
+  }
+  if (saveState.value === 'saved') {
+    return t('organizations.vendorCatalogAutosaved');
+  }
+  if (saveState.value === 'error') {
+    return saveError.value || t('organizations.vendorCatalogSaveFailed');
+  }
+  return '';
+});
+
+const statusTone = computed(() => {
+  if (saveState.value === 'saving' || saveState.value === 'pending') return 'busy';
+  if (saveState.value === 'saved') return 'success';
+  if (saveState.value === 'error') return 'error';
+  return 'muted';
+});
 
 function vendorId() {
   const r = props.record;
@@ -239,69 +244,205 @@ function toDraft(rows) {
   }));
 }
 
-function startEdit() {
-  draftLines.value = toDraft(entries.value);
-  saveError.value = '';
-  editing.value = true;
+function fingerprint(rows) {
+  const list = (Array.isArray(rows) ? rows : [])
+    .filter((r) => r.variantId)
+    .map((r) => ({
+      v: String(r.variantId),
+      c: String(r.vendorItemCode || ''),
+      n: String(r.vendorItemName || ''),
+      p: Number(r.purchasePrice) || 0,
+      s: r.status === 'Inactive' ? 'Inactive' : 'Active',
+      cur: String(r.currency || 'USD')
+    }))
+    .sort((a, b) => a.v.localeCompare(b.v));
+  return JSON.stringify(list);
 }
 
-function cancelEdit() {
-  editing.value = false;
-  draftLines.value = [];
-  saveError.value = '';
+function resolvePayload() {
+  const fromChild = editorRef.value?.getEntries?.();
+  if (Array.isArray(fromChild)) return fromChild;
+  return (Array.isArray(draftLines.value) ? draftLines.value : []).filter((r) => r.variantId);
 }
 
-async function saveEdit() {
+function scheduleAutosave() {
+  if (!readyForAutosave || !canEdit.value) return;
   const id = vendorId();
   if (!id) return;
-  const entriesPayload =
-    editorRef.value?.getEntries?.() ??
-    (Array.isArray(draftLines.value) ? draftLines.value : []);
-  saving.value = true;
+
+  const fp = fingerprint(resolvePayload());
+  if (fp === lastSavedFingerprint.value) {
+    if (saveState.value === 'pending') saveState.value = 'idle';
+    return;
+  }
+
+  saveState.value = 'pending';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    void flushAutosave();
+  }, 700);
+}
+
+async function flushAutosave() {
+  const id = vendorId();
+  if (!id || !canEdit.value) return;
+
+  const payload = resolvePayload();
+  const fp = fingerprint(payload);
+  if (fp === lastSavedFingerprint.value) {
+    saveState.value = 'idle';
+    return;
+  }
+
+  if (saveInFlight) {
+    resaveAfterFlight = true;
+    saveState.value = 'pending';
+    return;
+  }
+
+  saveInFlight = true;
+  saveState.value = 'saving';
   saveError.value = '';
   try {
-    const res = await apiClient.put(`/organizations/${id}/vendor-catalog`, {
-      entries: entriesPayload
-    });
+    const body = {
+      entries: payload
+    };
+    if (catalogRevision.value) {
+      body.expectedRevision = catalogRevision.value;
+    }
+    const res = await apiClient.put(`/organizations/${id}/vendor-catalog`, body);
+    if (res?.success === false) {
+      throw new Error(res?.message || t('organizations.vendorCatalogSaveFailed'));
+    }
     const data = res?.data ?? res;
-    entries.value = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
-    editing.value = false;
-    draftLines.value = [];
-    notifications.success(t('organizations.vendorCatalogSaved'));
-    emit('updated', { type: 'vendor-catalog', entries: entries.value });
+    const next = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+    if (res?.revision) catalogRevision.value = res.revision;
+    // In-place sync only — do not rewrite draftLines / remount rows (that jumps scroll).
+    entries.value = next;
+    editorRef.value?.applyServerState?.(next);
+    lastSavedFingerprint.value = fingerprint(payload);
+    saveState.value = 'saved';
+    clearTimeout(savedClearTimer);
+    savedClearTimer = setTimeout(() => {
+      if (saveState.value === 'saved') saveState.value = 'idle';
+    }, 2000);
   } catch (e) {
-    saveError.value =
-      e?.response?.data?.message || e?.message || t('organizations.vendorCatalogSaveFailed');
+    const code = e?.response?.data?.code || e?.code;
+    if (code === 'CONFLICT' || e?.status === 409 || e?.response?.status === 409) {
+      saveError.value = t('organizations.vendorCatalogConflict');
+      saveState.value = 'error';
+      // Offer reload of server truth without force-overwrite
+      void load({ soft: true });
+    } else {
+      saveError.value =
+        e?.response?.data?.message || e?.message || t('organizations.vendorCatalogSaveFailed');
+      saveState.value = 'error';
+    }
   } finally {
-    saving.value = false;
+    saveInFlight = false;
+    if (resaveAfterFlight) {
+      resaveAfterFlight = false;
+      scheduleAutosave();
+    }
   }
 }
 
-async function load() {
+function onDraftChange() {
+  scheduleAutosave();
+}
+
+function onImportDone({ entries: rows, revision } = {}) {
+  readyForAutosave = false;
+  const list = Array.isArray(rows) ? rows : [];
+  entries.value = list;
+  draftLines.value = toDraft(list);
+  lastSavedFingerprint.value = fingerprint(list);
+  if (revision) catalogRevision.value = revision;
+  saveState.value = 'saved';
+  clearTimeout(savedClearTimer);
+  savedClearTimer = setTimeout(() => {
+    if (saveState.value === 'saved') saveState.value = 'idle';
+  }, 2000);
+  requestAnimationFrame(() => {
+    readyForAutosave = true;
+  });
+}
+
+async function load(options = {}) {
   const id = vendorId();
   if (!id) {
     entries.value = [];
+    draftLines.value = [];
+    catalogRevision.value = null;
     return;
   }
-  loading.value = true;
-  error.value = '';
+  if (!options.soft) {
+    loading.value = true;
+    error.value = '';
+    readyForAutosave = false;
+  }
   try {
     const res = await apiClient.get(`/organizations/${id}/vendor-catalog`, {
       params: { includeInactive: true }
     });
     const data = res?.data ?? res;
-    entries.value = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+    const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+    if (res?.revision) catalogRevision.value = res.revision;
+    else {
+      // Fallback: max updatedAt from rows
+      let maxMs = 0;
+      for (const r of rows) {
+        const ms = r?.updatedAt ? Date.parse(r.updatedAt) : 0;
+        if (ms > maxMs) maxMs = ms;
+      }
+      catalogRevision.value = maxMs ? new Date(maxMs).toISOString() : null;
+    }
+    entries.value = rows;
+    if (!options.soft) {
+      draftLines.value = toDraft(rows);
+      lastSavedFingerprint.value = fingerprint(rows);
+      saveState.value = 'idle';
+    } else {
+      // Soft reload after conflict: preserve draft if still dirty; otherwise merge
+      const curFp = fingerprint(resolvePayload());
+      if (curFp === lastSavedFingerprint.value) {
+        draftLines.value = toDraft(rows);
+        lastSavedFingerprint.value = fingerprint(rows);
+        editorRef.value?.applyServerState?.(rows);
+      }
+    }
   } catch (e) {
-    error.value = e?.message || t('organizations.vendorCatalogLoadFailed');
-    entries.value = [];
+    if (!options.soft) {
+      error.value = e?.message || t('organizations.vendorCatalogLoadFailed');
+      entries.value = [];
+      draftLines.value = [];
+    }
   } finally {
-    loading.value = false;
+    if (!options.soft) {
+      loading.value = false;
+      requestAnimationFrame(() => {
+        readyForAutosave = true;
+      });
+    }
   }
 }
 
-watch(() => vendorId(), () => {
-  editing.value = false;
-  load();
-});
+watch(
+  () => vendorId(),
+  () => {
+    clearTimeout(saveTimer);
+    load();
+  }
+);
+
 onMounted(load);
+
+onBeforeUnmount(() => {
+  clearTimeout(saveTimer);
+  clearTimeout(savedClearTimer);
+  // Best-effort flush pending changes when leaving the record
+  if (saveState.value === 'pending' && canEdit.value) {
+    void flushAutosave();
+  }
+});
 </script>

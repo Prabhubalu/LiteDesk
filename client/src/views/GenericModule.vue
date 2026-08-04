@@ -170,7 +170,14 @@ function handleCreate() {
 
 function handleRowClick(row) {
   // ModuleList emits the row as the first argument (not `{ row }`).
-  const id = row?._id ?? row?.id;
+  const id =
+    moduleKey.value === 'stockrooms'
+      ? row?.inventoryLocationId ?? row?._id ?? row?.id
+      : moduleKey.value === 'stock_adjustments'
+        ? row?.inventoryAdjustmentId ?? row?._id ?? row?.id
+        : moduleKey.value === 'stock_transfers'
+          ? row?.inventoryTransferId ?? row?._id ?? row?.id
+          : row?._id ?? row?.id;
   if (id && moduleRouteBase.value) {
     router.push(`${moduleRouteBase.value}/${id}`);
   }
@@ -248,7 +255,14 @@ function handleInlineCreateClose() {
 }
 
 function handleCreateSaved(savedRecord) {
-  const recordId = savedRecord?._id || savedRecord?.id;
+  const recordId =
+    moduleKey.value === 'stockrooms'
+      ? savedRecord?.inventoryLocationId || savedRecord?._id || savedRecord?.id
+      : moduleKey.value === 'stock_adjustments'
+        ? savedRecord?.inventoryAdjustmentId || savedRecord?._id || savedRecord?.id
+        : moduleKey.value === 'stock_transfers'
+          ? savedRecord?.inventoryTransferId || savedRecord?._id || savedRecord?.id
+          : savedRecord?._id || savedRecord?.id;
   if (recordId) {
     router.push(`${moduleRouteBase.value}/${recordId}`);
     return;

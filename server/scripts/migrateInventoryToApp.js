@@ -1,7 +1,5 @@
-#!/usr/bin/env node
-
 /**
- * Register Inventory business app and move stock module off platform core.
+ * Register Inventory business app and ensure ledger + workbench ModuleDefinitions.
  * Optionally enable INVENTORY for tenants that already have SALES (backward compat).
  *
  * Usage:
@@ -17,10 +15,8 @@ const Organization = require('../models/Organization');
 const TenantAppConfiguration = require('../models/TenantAppConfiguration');
 const getMasterDatabaseUri = require('../utils/getMasterDatabaseUri');
 const {
-  INITIAL_INVENTORY_FIELDS,
-  INITIAL_INVENTORY_QUICK_CREATE,
-  applyInventoryModuleFieldDefaults
-} = require('../constants/inventoryModuleDefaults');
+  ensureInventoryAppModuleDefinitions
+} = require('../services/inventoryModuleBootstrapService');
 
 const INVENTORY_APP = {
   appKey: 'inventory',
@@ -46,18 +42,6 @@ const INVENTORY_APP = {
   }
 };
 
-const INVENTORY_MODULE_UI = {
-  routeBase: '/inventory',
-  icon: 'cube',
-  // App lens already has Dashboard; hide until distinct workbench routes exist (INV UI).
-  showInSidebar: false,
-  sidebarOrder: 1,
-  createLabel: 'Stock Operations',
-  listLabel: 'Inventory',
-  navigationEntity: false,
-  excludeFromApps: false
-};
-
 const enableForSalesTenants = process.argv.includes('--enable-for-sales-tenants');
 
 async function upsertInventoryAppDefinition() {
@@ -69,76 +53,6 @@ async function upsertInventoryAppDefinition() {
   }
   await AppDefinition.create(INVENTORY_APP);
   console.log('✅ Created AppDefinition: inventory');
-}
-
-async function migrateInventoryModuleToApp() {
-  const platformModule = await ModuleDefinition.findOne({
-    appKey: 'platform',
-    moduleKey: 'inventory'
-  });
-
-  const inventoryPayload = {
-    appKey: 'inventory',
-    moduleKey: 'inventory',
-    key: 'inventory',
-    name: 'Inventory',
-    label: 'Inventory',
-    pluralLabel: 'Inventory',
-    entityType: 'TRANSACTION',
-    primaryField: 'locationCode',
-    type: 'system',
-    enabled: true,
-    ui: INVENTORY_MODULE_UI,
-    quickCreate: [...INITIAL_INVENTORY_QUICK_CREATE],
-    quickCreateLayout: { version: 1, rows: [] },
-    fields: applyInventoryModuleFieldDefaults(INITIAL_INVENTORY_FIELDS),
-    relationships: [],
-    lifecycle: {
-      statusField: 'status',
-      allowedStatuses: ['active', 'inactive']
-    },
-    supports: {
-      ownership: false,
-      assignment: false,
-      comments: false,
-      attachments: false,
-      activity: true,
-      trash: false
-    },
-    permissions: {
-      create: true,
-      edit: true,
-      delete: false,
-      view: true
-    }
-  };
-
-  const existingInventoryApp = await ModuleDefinition.findOne({
-    appKey: 'inventory',
-    moduleKey: 'inventory'
-  });
-
-  if (existingInventoryApp) {
-    await ModuleDefinition.updateOne({ _id: existingInventoryApp._id }, { $set: inventoryPayload });
-    console.log('✅ Updated inventory.inventory module');
-  } else if (platformModule) {
-    await ModuleDefinition.updateOne({ _id: platformModule._id }, { $set: inventoryPayload });
-    console.log('✅ Moved platform.inventory → inventory.inventory');
-  } else {
-    await ModuleDefinition.create(inventoryPayload);
-    console.log('✅ Created inventory.inventory module');
-  }
-
-  if (platformModule && String(platformModule.appKey).toLowerCase() === 'platform') {
-    const stillPlatform = await ModuleDefinition.findOne({
-      _id: platformModule._id,
-      appKey: 'platform'
-    });
-    if (stillPlatform) {
-      await ModuleDefinition.deleteOne({ _id: platformModule._id });
-      console.log('✅ Removed legacy platform.inventory module');
-    }
-  }
 }
 
 async function enableInventoryForSalesTenants() {
@@ -183,13 +97,19 @@ async function migrateInventoryToApp() {
   console.log('✅ Connected to master database\n');
 
   await upsertInventoryAppDefinition();
-  await migrateInventoryModuleToApp();
+  const { results } = await ensureInventoryAppModuleDefinitions();
+  for (const row of results) {
+    const flag = row.created ? 'created' : row.updated ? 'updated' : 'ok';
+    console.log(
+      `  ✅ inventory.${row.moduleKey} (${flag}${row.moved ? ', moved from platform' : ''})`
+    );
+  }
 
   await ModuleDefinition.updateMany(
-    { appKey: 'inventory', moduleKey: 'inventory' },
+    { appKey: 'inventory' },
     { $set: { 'ui.showInSidebar': false } }
   );
-  console.log('✅ inventory.inventory ui.showInSidebar=false (no duplicate nav under Dashboard)\n');
+  console.log('✅ inventory modules ui.showInSidebar=false (client workbench owns nav)\n');
 
   if (enableForSalesTenants) {
     console.log('\n📦 Enabling INVENTORY for active SALES tenants...');

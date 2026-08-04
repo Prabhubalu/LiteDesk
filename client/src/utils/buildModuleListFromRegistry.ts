@@ -94,7 +94,17 @@ function resolveListPermissionModule(moduleKey: string): string {
   if (moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards') {
     return 'reports';
   }
-  if (moduleKey === 'purchase_orders') {
+  if (
+    moduleKey === 'purchase_orders' ||
+    moduleKey === 'purchase_returns' ||
+    moduleKey === 'receipt_notes' ||
+    moduleKey === 'delivery_notes' ||
+    moduleKey === 'delivery_returns' ||
+    moduleKey === 'sales_returns' ||
+    moduleKey === 'stockrooms' ||
+    moduleKey === 'stock_adjustments' ||
+    moduleKey === 'stock_transfers'
+  ) {
     return 'inventory';
   }
   return moduleKey;
@@ -118,6 +128,12 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
                      moduleKey === 'deals' ? 'New Deal' :
                      moduleKey === 'tasks' ? 'New Task' :
                      moduleKey === 'purchase_orders' ? 'New PO' :
+                     moduleKey === 'receipt_notes' ? 'New Receipt' :
+                     moduleKey === 'purchase_returns' ? 'New Return' :
+                     moduleKey === 'sales_returns' ? 'New Return' :
+                     moduleKey === 'stockrooms' ? 'New Stockroom' :
+                     moduleKey === 'stock_adjustments' ? 'New Adjustment' :
+                     moduleKey === 'stock_transfers' ? 'New Transfer' :
                      `New ${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`;
   
   const actions: Array<{
@@ -135,10 +151,21 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
       label: createLabel,
       type: 'create' as ActionType,
       route: getCreateRoute(moduleKey, appKey),
-      // Inventory RBAC uses adjust (not create) for mutations.
-      permission: moduleKey === 'purchase_orders'
-        ? 'inventory.adjust'
-        : `${permissionModule}.create`,
+      // Inventory RBAC uses adjust (not create) for commercial docs; locations use manageLocations.
+      permission:
+        moduleKey === 'purchase_orders' ||
+        moduleKey === 'purchase_returns' ||
+        moduleKey === 'receipt_notes' ||
+        moduleKey === 'delivery_notes' ||
+        moduleKey === 'delivery_returns' ||
+        moduleKey === 'sales_returns' ||
+        moduleKey === 'stock_adjustments'
+          ? 'inventory.adjust'
+          : moduleKey === 'stock_transfers'
+            ? 'inventory.transfer'
+            : moduleKey === 'stockrooms'
+              ? 'inventory.manageLocations'
+              : `${permissionModule}.create`,
       variant: 'primary',
       order: 1,
     },
@@ -152,7 +179,7 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
           order: 2,
         }]
       : []),
-    ...(moduleKey === 'campaigns' || moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards' || moduleKey === 'purchase_orders'
+    ...(moduleKey === 'campaigns' || moduleKey === 'reports' || moduleKey === 'widgets' || moduleKey === 'dashboards' || moduleKey === 'purchase_orders' || moduleKey === 'purchase_returns' || moduleKey === 'receipt_notes' || moduleKey === 'delivery_notes' || moduleKey === 'delivery_returns' || moduleKey === 'sales_returns' || moduleKey === 'stockrooms' || moduleKey === 'stock_adjustments' || moduleKey === 'stock_transfers'
       ? []
       : [{
           key: 'export',
@@ -187,6 +214,30 @@ function getCreateRoute(moduleKey: string, appKey?: string): string {
   }
   if (key === 'purchase_orders') {
     return '/inventory/purchase-orders/new';
+  }
+  if (key === 'receipt_notes') {
+    return '/inventory/receipt-notes/new';
+  }
+  if (key === 'purchase_returns') {
+    return '/inventory/purchase-returns/new';
+  }
+  if (key === 'delivery_returns') {
+    return '/inventory/delivery-returns/new';
+  }
+  if (key === 'delivery_notes') {
+    return '/inventory/delivery-notes/new';
+  }
+  if (key === 'sales_returns') {
+    return '/inventory/sales-returns/new';
+  }
+  if (key === 'stockrooms') {
+    return '/inventory/stockrooms/new';
+  }
+  if (key === 'stock_adjustments') {
+    return '/inventory/adjustments/new';
+  }
+  if (key === 'stock_transfers') {
+    return '/inventory/transfers/new';
   }
   return `/${key}/new`;
 }
@@ -454,6 +505,14 @@ function getModuleDisplayName(moduleKey: string): string {
     dashboards: 'Dashboards',
     campaigns: 'Campaigns',
     purchase_orders: 'Purchase Orders',
+    receipt_notes: 'Receipt Notes',
+    purchase_returns: 'Purchase Returns',
+    delivery_notes: 'Delivery Notes',
+    delivery_returns: 'Delivery Returns',
+    sales_returns: 'Sales Returns',
+    stockrooms: 'Stockrooms',
+    stock_adjustments: 'Stock Adjustments',
+    stock_transfers: 'Stock Transfers',
   };
   
   return nameMap[moduleKey.toLowerCase()] || moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1);

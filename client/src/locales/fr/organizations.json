@@ -459,5 +459,61 @@
   "vendorCatalogSaved": {
     "message": "Vendor catalog saved",
     "description": "Toast after inline vendor catalog save"
+  },
+  "vendorCatalogSaving": {
+    "message": "Saving…",
+    "description": "Quiet autosave status while vendor catalog is persisting"
+  },
+  "vendorCatalogAutosaved": {
+    "message": "Saved",
+    "description": "Quiet autosave confirmation for vendor catalog"
+  },
+  "vendorCatalogFilterAll": {
+    "message": "All",
+    "description": "Vendor catalog status filter: all statuses"
+  },
+  "vendorCatalogFilterStatus": {
+    "message": "Filter by status",
+    "description": "Aria label for vendor catalog status filters"
+  },
+  "vendorCatalogImport": {
+    "message": "Import CSV",
+    "description": "Button to import vendor catalog from CSV"
+  },
+  "vendorCatalogImportEmpty": {
+    "message": "CSV has no data rows",
+    "description": "Error when vendor catalog CSV import is empty"
+  },
+  "vendorCatalogImportFailed": {
+    "message": "Import failed",
+    "description": "Generic vendor catalog import failure"
+  },
+  "vendorCatalogImportResult": {
+    "message": "Imported {count} item(s). {errors} row error(s).",
+    "description": "Vendor catalog CSV import result summary"
+  },
+  "vendorCatalogConflict": {
+    "message": "Catalog changed elsewhere — reloaded. Re-apply your edits if needed.",
+    "description": "Optimistic concurrency conflict on vendor catalog autosave"
+  },
+  "vendorCatalogColMoq": {
+    "message": "MOQ",
+    "description": "Minimum order quantity column"
+  },
+  "vendorCatalogColLeadTime": {
+    "message": "Lead time (days)",
+    "description": "Supplier lead time column"
+  },
+  "vendorCatalogColPreferred": {
+    "message": "Preferred",
+    "description": "Preferred vendor flag column"
+  },
+  "vendorCatalogMoqPlaceholder": {
+    "message": "—",
+    "description": "Empty MOQ placeholder"
+  },
+  "vendorCatalogLeadPlaceholder": {
+    "message": "—",
+    "description": "Empty lead time placeholder"
   }
 }

@@ -143,16 +143,32 @@ const drRouter = mount(express.Router(), [
   }
 ]);
 
+function flattenSrResult(result) {
+  if (!result?.salesReturn) return result;
+  const lines = (result.lines || []).map((line) => ({
+    ...line,
+    quantity: line.quantityReturned,
+    salesReturnLineId: line._id
+  }));
+  return { ...result.salesReturn, lines };
+}
+
 const srRouter = mount(express.Router(), [
   {
     method: 'get',
     path: '/',
     fn: async (req, res) => {
       try {
-        const data = await fulfillmentDocsService.listSalesReturns({
-          organizationId: req.user.organizationId
+        const result = await fulfillmentDocsService.listSalesReturns({
+          organizationId: req.user.organizationId,
+          status: req.query.status || null,
+          page: req.query.page,
+          limit: req.query.limit,
+          sortBy: req.query.sortBy,
+          sortOrder: req.query.sortOrder,
+          search: req.query.search || req.query.q || null
         });
-        return res.json({ success: true, data });
+        return res.json({ success: true, data: result.data, pagination: result.pagination });
       } catch (err) {
         return sendError(res, err);
       }
@@ -169,7 +185,22 @@ const srRouter = mount(express.Router(), [
           userId: req.user._id,
           payload: req.body || {}
         });
-        return res.status(201).json({ success: true, data });
+        return res.status(201).json({ success: true, data: flattenSrResult(data) });
+      } catch (err) {
+        return sendError(res, err);
+      }
+    }
+  },
+  {
+    method: 'get',
+    path: '/:id',
+    fn: async (req, res) => {
+      try {
+        const data = await fulfillmentDocsService.getSalesReturn({
+          organizationId: req.user.organizationId,
+          id: req.params.id
+        });
+        return res.json({ success: true, data: flattenSrResult(data) });
       } catch (err) {
         return sendError(res, err);
       }
@@ -186,7 +217,7 @@ const srRouter = mount(express.Router(), [
           id: req.params.id,
           userId: req.user._id
         });
-        return res.json({ success: true, data });
+        return res.json({ success: true, data: flattenSrResult(data) });
       } catch (err) {
         return sendError(res, err);
       }

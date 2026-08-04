@@ -619,9 +619,9 @@
     return 'https://twitter.com/intent/tweet?url=' + encodedUrl + '&text=' + encodedTitle;
   }
 
-  function buildAuthorRow(data) {
+  function buildAuthorRow(data, apiOrigin) {
     if (!data.authorName) return '';
-    var avatar = String(data.authorAvatar || '').trim();
+    var avatar = absolutizeEmbedAssetUrl(String(data.authorAvatar || '').trim(), apiOrigin);
     var avatarHtml = avatar
       ? '<img class="ld-blog-post__avatar" src="' + escapeHtml(avatar) + '" alt="" width="44" height="44" loading="lazy" decoding="async" />'
       : '<span class="ld-blog-post__avatar ld-blog-post__avatar--fallback" aria-hidden="true">' + escapeHtml(authorInitials(data.authorName)) + '</span>';
@@ -769,7 +769,7 @@
         '<header class="ld-blog-post__header">' +
           '<h1 class="ld-blog-post__title">' + escapeHtml(title) + '</h1>' +
           (subtitle ? '<p class="ld-blog-post__subtitle">' + escapeHtml(subtitle) + '</p>' : '') +
-          buildAuthorRow(data) +
+          buildAuthorRow(data, apiOrigin) +
           buildEngagementBar(Object.assign({}, barOptions, { placement: 'header' })) +
           buildCover(data.coverImage, apiOrigin) +
         '</header>' +

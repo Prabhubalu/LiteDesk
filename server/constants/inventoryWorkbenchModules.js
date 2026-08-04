@@ -22,6 +22,9 @@ const INVENTORY_WORKBENCH_KEYS = INVENTORY_WORKBENCH_MODULES.map((m) => m.key);
 
 const INVENTORY_SCHEMA_MODULE_KEYS = new Set(['inventory', ...INVENTORY_WORKBENCH_KEYS]);
 
+/** Ledger + workbench keys governed by INVENTORY app entitlement / native RBAC. */
+const INVENTORY_NATIVE_MODULE_KEYS = INVENTORY_SCHEMA_MODULE_KEYS;
+
 /**
  * Resolve the primary Mongoose model for Inventory workbench / ledger modules.
  * @param {string} key
@@ -37,9 +40,9 @@ function resolveInventoryModuleModel(key) {
     case 'purchase_returns':
       return require('../models/PurchaseReturn').PurchaseReturn;
     case 'delivery_notes':
-      return require('../services/fulfillmentDocsService').DeliveryNote;
+      return require('../models/DeliveryNote').DeliveryNote;
     case 'delivery_returns':
-      return require('../services/fulfillmentDocsService').DeliveryReturn;
+      return require('../models/DeliveryReturn').DeliveryReturn;
     case 'sales_returns':
       return require('../services/fulfillmentDocsService').SalesReturn;
     case 'stockrooms':
@@ -57,10 +60,16 @@ function isInventorySchemaModuleKey(key) {
   return INVENTORY_SCHEMA_MODULE_KEYS.has(String(key || '').toLowerCase());
 }
 
+function isInventoryNativeModuleKey(key) {
+  return INVENTORY_NATIVE_MODULE_KEYS.has(String(key || '').toLowerCase());
+}
+
 module.exports = {
   INVENTORY_WORKBENCH_MODULES,
   INVENTORY_WORKBENCH_KEYS,
   INVENTORY_SCHEMA_MODULE_KEYS,
+  INVENTORY_NATIVE_MODULE_KEYS,
   resolveInventoryModuleModel,
   isInventorySchemaModuleKey,
+  isInventoryNativeModuleKey,
 };

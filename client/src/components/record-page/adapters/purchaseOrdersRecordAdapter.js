@@ -3,6 +3,7 @@
  */
 import { createGenericRecordAdapter } from './genericRecordAdapter';
 import PurchaseOrderLinesRecordSection from '@/components/record-page/sections/PurchaseOrderLinesRecordSection.vue';
+import PurchaseOrderWorkflowHeaderActions from '@/components/record-page/sections/PurchaseOrderWorkflowHeaderActions.vue';
 
 const PO_SECTION_STACK = ['details', 'lines', 'related', 'description'];
 
@@ -41,6 +42,7 @@ export function createPurchaseOrdersRecordAdapter(opts = {}) {
         key: 'lines',
         title: linesTitle,
         component: PurchaseOrderLinesRecordSection,
+        headerActionsComponent: PurchaseOrderWorkflowHeaderActions,
         className: 'pt-0 pb-0',
         actions: !isExpanded && openLeftSection
           ? [{

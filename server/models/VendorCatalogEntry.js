@@ -41,10 +41,22 @@ const VendorCatalogEntrySchema = new Schema(
     /** User-maintained negotiated default price for POs. */
     purchasePrice: { type: Number, min: 0, default: 0 },
     currency: { type: String, trim: true, default: 'USD' },
+    /** Preferred supplier for this variant among vendors. */
+    preferredVendor: { type: Boolean, default: false },
+    /** Minimum order quantity for this vendor–item link. */
+    minOrderQty: { type: Number, default: null, min: 0 },
+    /** Supplier lead time in calendar days. */
+    leadTimeDays: { type: Number, default: null, min: 0 },
+    /** Internal notes for this catalog link. */
+    remarks: { type: String, default: null },
     /** System: unit price from latest completed receipt. */
     lastPurchasePrice: { type: Number, default: null },
     /** System: date of latest completed receipt line. */
     lastPurchaseDate: { type: Date, default: null },
+    /** System: date of latest completed purchase return. */
+    lastReturnDate: { type: Date, default: null },
+    /** System: completed return line count (not unit count). */
+    returnCount: { type: Number, default: 0, min: 0 },
     status: {
       type: String,
       enum: VENDOR_CATALOG_STATUS,

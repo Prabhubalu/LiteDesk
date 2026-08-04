@@ -1626,6 +1626,20 @@ function applyPaginationFromResponse(response, fetchedRowCountForTotal, requeste
       fallback,
       { totalRecordsOverride: peopleTotalOverride }
     );
+  } else if (typeof fetchedRowCountForTotal === 'number') {
+    // Unpaginated list APIs (e.g. inventory locations) — total is the full result set.
+    pagination.value = normalizeListPagination(
+      {
+        currentPage: requestedPage ?? 1,
+        page: requestedPage ?? 1,
+        totalRecords: peopleTotalOverride ?? fetchedRowCountForTotal,
+        total: peopleTotalOverride ?? fetchedRowCountForTotal,
+        totalPages: 1,
+        hasMore: false
+      },
+      fallback,
+      { totalRecordsOverride: peopleTotalOverride ?? fetchedRowCountForTotal }
+    );
   }
 }
 

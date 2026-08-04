@@ -4,8 +4,11 @@
 -->
 <template>
   <section class="space-y-3" data-field-key="vendorCatalog">
-    <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0">
+    <div
+      class="flex flex-wrap items-start justify-between gap-3"
+      :class="hideHeader ? 'items-center' : ''"
+    >
+      <div v-if="!hideHeader" class="min-w-0">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
           {{ t('organizations.vendorCatalogTitle') }}
         </h3>
@@ -13,16 +16,64 @@
           {{ t('organizations.vendorCatalogHint') }}
         </p>
       </div>
-      <button
-        type="button"
-        class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-        :disabled="disabled"
-        @click="addEmptyRow"
-      >
-        <PlusIcon class="size-3.5" aria-hidden="true" />
-        {{ t('organizations.vendorCatalogAddItem') }}
-      </button>
+      <div v-else class="min-h-4 min-w-0 flex-1">
+        <p class="text-xs" :class="statusText ? statusClass : 'text-transparent'" aria-live="polite">
+          {{ statusText || '\u00a0' }}
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <div
+          v-if="lines.length"
+          class="flex items-center gap-1 rounded-lg bg-gray-100 p-0.5 dark:bg-gray-800"
+          role="group"
+          :aria-label="t('organizations.vendorCatalogFilterStatus')"
+        >
+          <button
+            v-for="opt in statusFilterOptions"
+            :key="opt.id"
+            type="button"
+            class="rounded-md px-2 py-1 text-xs font-medium transition-colors"
+            :class="
+              statusFilter === opt.id
+                ? 'bg-white text-indigo-700 shadow-sm dark:bg-gray-700 dark:text-indigo-300'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            "
+            @click="statusFilter = opt.id"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+        <label
+          v-if="!disabled && vendorId"
+          class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-800"
+        >
+          <span>{{ t('organizations.vendorCatalogImport') }}</span>
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            class="sr-only"
+            :disabled="importing"
+            @change="onImportFile"
+          />
+        </label>
+        <button
+          type="button"
+          class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+          :disabled="disabled"
+          @click="addEmptyRow"
+        >
+          <PlusIcon class="size-3.5" aria-hidden="true" />
+          {{ t('organizations.vendorCatalogAddItem') }}
+        </button>
+      </div>
     </div>
+    <p
+      v-if="importMessage"
+      class="text-xs"
+      :class="importError ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'"
+    >
+      {{ importMessage }}
+    </p>
 
     <div
       v-if="!lines.length"
@@ -60,6 +111,15 @@
               {{ t('organizations.vendorCatalogColPurchasePrice') }}
             </th>
             <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColMoq') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColLeadTime') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
+              {{ t('organizations.vendorCatalogColPreferred') }}
+            </th>
+            <th class="px-3 py-2.5 font-medium whitespace-nowrap">
               {{ t('organizations.vendorCatalogColLastPrice') }}
             </th>
             <th class="px-3 py-2.5 font-medium whitespace-nowrap">
@@ -70,7 +130,12 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100 bg-white dark:divide-gray-800 dark:bg-gray-900">
-          <tr v-for="(row, index) in lines" :key="row._localKey" class="align-top">
+          <tr
+            v-for="row in visibleLines"
+            :key="row._localKey"
+            class="align-top"
+            @keydown="onRowKeydown($event, row)"
+          >
             <td class="px-3 py-2 min-w-[12rem] max-w-[16rem]">
               <div :data-row-search="row._localKey">
                 <input
@@ -146,6 +211,40 @@
                 <span class="text-xs text-gray-400">{{ row.currency || 'USD' }}</span>
               </div>
             </td>
+            <td class="px-3 py-2">
+              <input
+                v-model.number="row.minOrderQty"
+                type="number"
+                min="0"
+                step="1"
+                class="w-20 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                :disabled="disabled"
+                :placeholder="t('organizations.vendorCatalogMoqPlaceholder')"
+                @change="emitChange"
+              />
+            </td>
+            <td class="px-3 py-2">
+              <input
+                v-model.number="row.leadTimeDays"
+                type="number"
+                min="0"
+                step="1"
+                class="w-20 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                :disabled="disabled"
+                :placeholder="t('organizations.vendorCatalogLeadPlaceholder')"
+                @change="emitChange"
+              />
+            </td>
+            <td class="px-3 py-2 text-center">
+              <input
+                v-model="row.preferredVendor"
+                type="checkbox"
+                class="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
+                :disabled="disabled"
+                :title="t('organizations.vendorCatalogColPreferred')"
+                @change="emitChange"
+              />
+            </td>
             <td class="px-3 py-2 whitespace-nowrap text-gray-500 dark:text-gray-400">
               {{ formatPrice(row.lastPurchasePrice, row.currency) }}
             </td>
@@ -169,7 +268,7 @@
                 class="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400"
                 :disabled="disabled"
                 :title="t('actions.remove')"
-                @click="removeRow(index)"
+                @click="removeRow(row)"
               >
                 <TrashIcon class="size-4" aria-hidden="true" />
               </button>
@@ -231,13 +330,56 @@ import apiClient from '@/utils/apiClient';
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   disabled: { type: Boolean, default: false },
+  /** Hide title/hint when section stack already provides the heading. */
+  hideHeader: { type: Boolean, default: false },
+  /** Optional quiet status (e.g. Saving… / Saved). */
+  statusText: { type: String, default: '' },
+  /** CSS-friendly tone for statusText */
+  statusTone: {
+    type: String,
+    default: 'muted',
+    validator: (v) => ['muted', 'success', 'error', 'busy'].includes(v)
+  },
   /** Existing vendor org id (edit mode) — optional for client-side catalog load */
   vendorId: { type: String, default: null }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'import-done']);
 
 const { t, d } = useI18n();
+
+const statusClass = computed(() => {
+  switch (props.statusTone) {
+    case 'success':
+      return 'text-emerald-600 dark:text-emerald-400';
+    case 'error':
+      return 'text-red-600 dark:text-red-400';
+    case 'busy':
+      return 'text-indigo-600 dark:text-indigo-400';
+    default:
+      return 'text-gray-500 dark:text-gray-400';
+  }
+});
+
+const statusFilter = ref('all'); // all | Active | Inactive
+const importing = ref(false);
+const importMessage = ref('');
+const importError = ref(false);
+
+const statusFilterOptions = computed(() => [
+  { id: 'all', label: t('organizations.vendorCatalogFilterAll') },
+  { id: 'Active', label: t('organizations.vendorCatalogStatusActive') },
+  { id: 'Inactive', label: t('organizations.vendorCatalogStatusInactive') }
+]);
+
+const visibleLines = computed(() => {
+  if (statusFilter.value === 'all') return lines.value;
+  return lines.value.filter((r) => {
+    if (!r.variantId) return true; // keep incomplete draft rows visible
+    const st = r.status === 'Inactive' ? 'Inactive' : 'Active';
+    return st === statusFilter.value;
+  });
+});
 
 let localKeySeq = 0;
 function nextLocalKey() {
@@ -258,6 +400,10 @@ function emptyRow() {
     vendorItemName: '',
     purchasePrice: 0,
     currency: 'USD',
+    preferredVendor: false,
+    minOrderQty: null,
+    leadTimeDays: null,
+    remarks: '',
     lastPurchasePrice: null,
     lastPurchaseDate: null,
     status: 'Active',
@@ -281,6 +427,10 @@ function fromEntry(entry) {
     vendorItemName: entry.vendorItemName || '',
     purchasePrice: Number(entry.purchasePrice) || 0,
     currency: entry.currency || 'USD',
+    preferredVendor: entry.preferredVendor === true,
+    minOrderQty: entry.minOrderQty ?? null,
+    leadTimeDays: entry.leadTimeDays ?? null,
+    remarks: entry.remarks || '',
     lastPurchasePrice: entry.lastPurchasePrice ?? null,
     lastPurchaseDate: entry.lastPurchaseDate ?? null,
     status: entry.status === 'Inactive' ? 'Inactive' : 'Active',
@@ -355,6 +505,16 @@ function emitChange() {
       vendorItemName: r.vendorItemName || null,
       purchasePrice: Number(r.purchasePrice) || 0,
       currency: r.currency || 'USD',
+      preferredVendor: r.preferredVendor === true,
+      minOrderQty:
+        r.minOrderQty != null && r.minOrderQty !== '' && Number.isFinite(Number(r.minOrderQty))
+          ? Number(r.minOrderQty)
+          : null,
+      leadTimeDays:
+        r.leadTimeDays != null && r.leadTimeDays !== '' && Number.isFinite(Number(r.leadTimeDays))
+          ? Number(r.leadTimeDays)
+          : null,
+      remarks: r.remarks ? String(r.remarks).trim() : null,
       lastPurchasePrice: r.lastPurchasePrice,
       lastPurchaseDate: r.lastPurchaseDate,
       status: r.status === 'Inactive' ? 'Inactive' : 'Active'
@@ -368,9 +528,141 @@ function addEmptyRow() {
   lines.value = [...lines.value, emptyRow()];
 }
 
-function removeRow(index) {
-  lines.value = lines.value.filter((_, i) => i !== index);
+function removeRow(rowOrIndex) {
+  if (typeof rowOrIndex === 'number') {
+    lines.value = lines.value.filter((_, i) => i !== rowOrIndex);
+  } else {
+    const key = rowOrIndex?._localKey;
+    lines.value = lines.value.filter((r) => r._localKey !== key);
+  }
   emitChange();
+}
+
+function onRowKeydown(event, row) {
+  if (props.disabled) return;
+  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+    event.preventDefault();
+    addEmptyRow();
+    return;
+  }
+  if (event.key === 'Delete' || event.key === 'Backspace') {
+    const tag = (event.target && event.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+      if (event.key === 'Backspace' && String(event.target.value || '').length) return;
+      // Only remove row on Delete (not Backspace) inside inputs to avoid friction
+      if (event.key !== 'Delete') return;
+    }
+    if (!row.variantId && !String(row.searchQuery || '').trim()) {
+      event.preventDefault();
+      removeRow(row);
+    }
+  }
+}
+
+function parseCsvText(text) {
+  const linesIn = String(text || '')
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (!linesIn.length) return [];
+  const split = (line) => {
+    const cells = [];
+    let cur = '';
+    let inQ = false;
+    for (let i = 0; i < line.length; i += 1) {
+      const ch = line[i];
+      if (ch === '"') {
+        inQ = !inQ;
+        continue;
+      }
+      if (ch === ',' && !inQ) {
+        cells.push(cur.trim());
+        cur = '';
+        continue;
+      }
+      cur += ch;
+    }
+    cells.push(cur.trim());
+    return cells;
+  };
+  const header = split(linesIn[0]).map((h) => h.toLowerCase().replace(/\s+/g, ''));
+  const idx = (names) => {
+    for (const n of names) {
+      const i = header.indexOf(n);
+      if (i >= 0) return i;
+    }
+    return -1;
+  };
+  const iItem = idx(['itemcode', 'item_code', 'sku']);
+  const iVar = idx(['variantcode', 'variant_code']);
+  const iVCode = idx(['vendoritemcode', 'vendor_item_code', 'vendorcode']);
+  const iVName = idx(['vendoritemname', 'vendor_item_name', 'vendorname']);
+  const iPrice = idx(['purchaseprice', 'purchase_price', 'price']);
+  const iCur = idx(['currency']);
+  const iStatus = idx(['status']);
+  const rows = [];
+  for (let r = 1; r < linesIn.length; r += 1) {
+    const cells = split(linesIn[r]);
+    rows.push({
+      itemCode: iItem >= 0 ? cells[iItem] : '',
+      variantCode: iVar >= 0 ? cells[iVar] : '',
+      vendorItemCode: iVCode >= 0 ? cells[iVCode] : '',
+      vendorItemName: iVName >= 0 ? cells[iVName] : '',
+      purchasePrice: iPrice >= 0 ? cells[iPrice] : 0,
+      currency: iCur >= 0 ? cells[iCur] : '',
+      status: iStatus >= 0 ? cells[iStatus] : 'Active'
+    });
+  }
+  return rows;
+}
+
+async function onImportFile(event) {
+  const file = event?.target?.files?.[0];
+  if (event?.target) event.target.value = '';
+  if (!file || !props.vendorId || props.disabled) return;
+  importing.value = true;
+  importMessage.value = '';
+  importError.value = false;
+  try {
+    const text = await file.text();
+    const rows = parseCsvText(text);
+    if (!rows.length) {
+      importError.value = true;
+      importMessage.value = t('organizations.vendorCatalogImportEmpty');
+      return;
+    }
+    const res = await apiClient.post(
+      `/organizations/${props.vendorId}/vendor-catalog/import`,
+      { rows }
+    );
+    if (res?.success === false) {
+      importError.value = true;
+      importMessage.value = res?.message || t('organizations.vendorCatalogImportFailed');
+      return;
+    }
+    const data = res?.data ?? res;
+    const next = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+    const errCount = Array.isArray(res?.errors) ? res.errors.length : 0;
+    const imported = Number(res?.imported) || next.length;
+    lines.value = next.map((r) => fromEntry(r));
+    emit('import-done', {
+      entries: next,
+      revision: res?.revision || null
+    });
+    emitChange();
+    importError.value = errCount > 0 && imported === 0;
+    importMessage.value = t('organizations.vendorCatalogImportResult', {
+      count: imported,
+      errors: errCount
+    });
+  } catch (e) {
+    importError.value = true;
+    importMessage.value =
+      e?.response?.data?.message || e?.message || t('organizations.vendorCatalogImportFailed');
+  } finally {
+    importing.value = false;
+  }
 }
 
 function clearItem(row) {
@@ -487,20 +779,48 @@ function onReposition() {
   if (row) positionSearchMenu(row);
 }
 
+function linkedVariantKey(rows) {
+  return (Array.isArray(rows) ? rows : [])
+    .filter((r) => r?.variantId)
+    .map((r) => String(r.variantId))
+    .sort()
+    .join('|');
+}
+
+/**
+ * Patch server metadata onto existing rows without remounting the grid
+ * (preserves focus + scroll during autosave).
+ */
+function applyServerState(serverRows) {
+  const byVariant = new Map();
+  for (const row of Array.isArray(serverRows) ? serverRows : []) {
+    if (!row?.variantId) continue;
+    byVariant.set(String(row.variantId), row);
+  }
+  for (const line of lines.value) {
+    if (!line.variantId) continue;
+    const s = byVariant.get(String(line.variantId));
+    if (!s) continue;
+    line._id = s._id || s.id || line._id;
+    if (s.lastPurchasePrice != null) line.lastPurchasePrice = s.lastPurchasePrice;
+    if (s.lastPurchaseDate != null) line.lastPurchaseDate = s.lastPurchaseDate;
+  }
+}
+
 watch(
   () => props.modelValue,
   (next) => {
     if (!Array.isArray(next)) return;
-    // Avoid clobbering in-progress empty search rows when parent echoes payload
-    const nextIds = next.map((r) => String(r.variantId || '')).join('|');
-    const curIds = lines.value
-      .filter((r) => r.variantId)
-      .map((r) => String(r.variantId))
-      .join('|');
-    if (nextIds === curIds && next.length === lines.value.filter((r) => r.variantId).length) {
+    // Only remount when linked variants change identity — not on parent re-emit.
+    if (linkedVariantKey(next) === linkedVariantKey(lines.value)) {
+      // Soft-merge missing server ids / last-purchase without replacing rows
+      applyServerState(next);
       return;
     }
-    lines.value = next.map((r) => fromEntry(r));
+    // Preserve incomplete (searching) rows when hydrating a new linked set
+    const incomplete = lines.value.filter((r) => !r.variantId);
+    const mapped = next.filter((r) => r?.variantId).map((r) => fromEntry(r));
+    lines.value = incomplete.length ? [...mapped, ...incomplete] : mapped;
   },
   { deep: true }
 );
@@ -529,6 +849,7 @@ defineExpose({
         currency: r.currency || 'USD',
         status: r.status === 'Inactive' ? 'Inactive' : 'Active'
       }));
-  }
+  },
+  applyServerState
 });
 </script>

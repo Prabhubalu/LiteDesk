@@ -12,7 +12,13 @@ const DOCUMENT_ATTACHMENT_MODULES = [
   'forms',
   'cases',
   'quotes',
-  'items'
+  'items',
+  'purchase_orders',
+  'purchase_returns',
+  'delivery_returns',
+  'receipt_notes',
+  'delivery_notes',
+  'sales_returns'
 ];
 
 const SOURCE_APP_BY_MODULE = {
@@ -25,7 +31,13 @@ const SOURCE_APP_BY_MODULE = {
   forms: 'platform',
   quotes: 'platform',
   cases: 'helpdesk',
-  documents: 'platform'
+  documents: 'platform',
+  purchase_orders: 'inventory',
+  purchase_returns: 'inventory',
+  delivery_returns: 'inventory',
+  receipt_notes: 'inventory',
+  delivery_notes: 'inventory',
+  sales_returns: 'inventory'
 };
 
 const MODULE_APP_FALLBACKS = {
@@ -38,7 +50,13 @@ const MODULE_APP_FALLBACKS = {
   events: ['platform'],
   forms: ['platform'],
   quotes: ['platform'],
-  documents: ['platform']
+  documents: ['platform'],
+  purchase_orders: ['inventory', 'platform'],
+  purchase_returns: ['inventory', 'platform'],
+  delivery_returns: ['inventory', 'platform'],
+  receipt_notes: ['inventory', 'platform'],
+  delivery_notes: ['inventory', 'platform'],
+  sales_returns: ['inventory', 'platform']
 };
 
 const RELATIONSHIP_KEY_BY_MODULE = {
@@ -50,7 +68,13 @@ const RELATIONSHIP_KEY_BY_MODULE = {
   forms: 'form_documents',
   cases: 'case_documents',
   quotes: 'quote_documents',
-  items: 'item_documents'
+  items: 'item_documents',
+  purchase_orders: 'purchase_order_documents',
+  purchase_returns: 'purchase_return_documents',
+  delivery_returns: 'delivery_return_documents',
+  receipt_notes: 'receipt_note_documents',
+  delivery_notes: 'delivery_note_documents',
+  sales_returns: 'sales_return_documents'
 };
 
 const SOURCE_LABEL_BY_MODULE = {
@@ -62,7 +86,13 @@ const SOURCE_LABEL_BY_MODULE = {
   forms: 'Forms',
   cases: 'Cases',
   quotes: 'Quotes',
-  items: 'Items'
+  items: 'Items',
+  purchase_orders: 'Purchase Orders',
+  purchase_returns: 'Purchase Returns',
+  delivery_returns: 'Delivery Returns',
+  receipt_notes: 'Receipt Notes',
+  delivery_notes: 'Delivery Notes',
+  sales_returns: 'Sales Returns'
 };
 
 const DEFAULT_DOCUMENT_RELATIONSHIPS = DOCUMENT_ATTACHMENT_MODULES.map((sourceModule) => ({
