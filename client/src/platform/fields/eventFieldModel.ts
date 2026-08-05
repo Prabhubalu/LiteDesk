@@ -39,8 +39,9 @@
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
  * 5. Quick Create eligibility
- *    - Minimal scheduling-safe fields: eventName (required), eventType, startDateTime, endDateTime, location
- *    - Excluded: audit roles, geo fields, forms, recurrence, multi-org routing, notes
+ *    - Meeting-focused: eventName, eventType, assignedTo, attendees, meetingMode,
+ *      startDateTime, endDateTime, meetingLink, location, agendaNotes, geoRequired
+ *    - Audit roles / forms remain dependency-gated (not Meeting primary path)
  *    - See: docs/architecture/event-settings.md Section 7
  * 
  * ============================================================================
@@ -248,6 +249,7 @@ export const EVENT_FIELD_METADATA: Record<string, EventFieldMetadata> = {
     editable: true,
     allowOnCreate: true,
     isProtected: true,
+    // Schema-required; create form always defaults to Meeting
     filterable: true,
     filterType: 'select',
     filterPriority: 3,
@@ -275,6 +277,41 @@ export const EVENT_FIELD_METADATA: Record<string, EventFieldMetadata> = {
     filterPriority: 5,
   },
   location: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: true,
+  },
+  meetingMode: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: true,
+  },
+  meetingLink: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: true,
+  },
+  conferenceProvider: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: true,
+  },
+  attendees: {
+    owner: 'core',
+    intent: 'detail',
+    fieldScope: 'CORE',
+    editable: true,
+    allowOnCreate: true,
+  },
+  agendaNotes: {
     owner: 'core',
     intent: 'detail',
     fieldScope: 'CORE',
@@ -314,7 +351,7 @@ export const EVENT_FIELD_METADATA: Record<string, EventFieldMetadata> = {
     intent: 'detail',
     fieldScope: 'CORE',
     editable: true,
-    allowOnCreate: false,
+    allowOnCreate: true,
     filterable: true,
     filterType: 'user',
     filterPriority: 7,
@@ -722,7 +759,8 @@ export function getEventParticipationFields(appKey: string): string[] {
 
 /**
  * Get all fields eligible for Quick Create
- * Minimal scheduling-safe fields: eventName (required), eventType, startDateTime, endDateTime, location
+ * Meeting-oriented: eventName, eventType, assignedTo, attendees, meetingMode,
+ * start/end, meetingLink, location, agendaNotes (+ geo optional)
  */
 export function getEventQuickCreateFields(): string[] {
   return Object.entries(EVENT_FIELD_METADATA)

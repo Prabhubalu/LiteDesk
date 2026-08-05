@@ -17,6 +17,7 @@
       @search-changed="handleSearchChanged"
       @kanban-settings-changed="refreshKanbanSettings"
       @stats-visibility-changed="(val) => (statsOpen = val)"
+      @shell-ready="listShellReady = true"
     >
       <!-- Custom Header Slot - View Switcher + Actions -->
       <template #header-actions>
@@ -201,9 +202,9 @@
 
     </ModuleList>
 
-    <!-- Kanban View (shown when Board is selected) -->
+    <!-- Kanban View (shown when Board is selected; wait for ModuleList chrome to avoid skeleton+board flash) -->
     <div
-      v-if="currentView === 'kanban'"
+      v-if="currentView === 'kanban' && listShellReady"
       class="kanban-view-container mt-4"
       style="min-height: 400px;"
     >
@@ -213,7 +214,7 @@
         stage-key="status"
         item-id-key="_id"
         :loading="kanbanLoading"
-        loading-:label="t('tasks.tasksLoadingBoard')"
+        :loading-label="t('tasks.tasksLoadingBoard')"
         :get-stage-color="getStatusColor"
         :card-size="kanbanCardSize"
         :collapse-empty-columns="kanbanCollapseEmptyColumns"
@@ -371,6 +372,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { openTab } = useTabs();
+const listShellReady = ref(false);
 
 // View state (module-specific URL param so Tasks and Deals don't affect each other)
 const viewStorageKey = 'arivu-tasks-view';
@@ -390,7 +392,7 @@ const layoutViewLabel = computed(() =>
 
 // Kanban data
 const kanbanTasks = ref([]);
-const kanbanLoading = ref(false);
+const kanbanLoading = ref(getInitialView() === 'kanban');
 const TASK_STAGES = ['todo', 'in_progress', 'waiting', 'completed', 'cancelled'];
 const taskStages = ref([...TASK_STAGES]);
 const statusColorMap = ref({});
@@ -643,7 +645,9 @@ function hexToRgba(hex, alpha) {
 
 const fetchKanbanTasks = async () => {
   if (currentView.value !== 'kanban') return;
-  kanbanLoading.value = true;
+  if (kanbanTasks.value.length === 0) {
+    kanbanLoading.value = true;
+  }
   try {
     const moduleListFilters = moduleListRef.value?.getFilters?.() || {};
     const moduleListSearch = currentSearchQuery.value || moduleListRef.value?.getSearchQuery?.() || '';
@@ -743,11 +747,19 @@ const handleTaskDrawerSaved = () => {
   refreshList();
 };
 
-  // When switching back to this tab (keep-alive), refetch board; list soft-refetch via ModuleList dirty flag
+// keep-alive runs onActivated on first mount too — skip board refetch that flash after onMounted.
+let skipKeepAliveFirstActivate = true;
+
+// When switching back to this tab (keep-alive), refetch board; list soft-refetch via ModuleList dirty flag
 onActivated(() => {
   const view = currentView.value;
   if (route.query[VIEW_QUERY_KEY] !== view) {
     router.replace({ query: { ...route.query, [VIEW_QUERY_KEY]: view } });
+  }
+  if (skipKeepAliveFirstActivate) {
+    skipKeepAliveFirstActivate = false;
+    nextTick(() => setTimeout(() => toggleTableView(view === 'list'), 80));
+    return;
   }
   if (view === 'kanban') fetchKanbanTasks();
   nextTick(() => setTimeout(() => toggleTableView(view === 'list'), 80));
@@ -756,7 +768,7 @@ onActivated(() => {
 onMounted(() => {
   initializeView();
   fetchTaskStatusOptions();
-  if (currentView.value === 'kanban') fetchKanbanTasks();
+  // Board rows load once via ModuleList @filters-changed (saved views ready) — not here.
   nextTick(() => setTimeout(() => toggleTableView(currentView.value === 'list'), 100));
 });
 

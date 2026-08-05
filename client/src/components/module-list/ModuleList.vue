@@ -231,7 +231,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['create', 'import', 'export', 'row-click', 'edit', 'delete', 'bulk-action', 'filters-changed', 'search-changed', 'kanban-settings-changed', 'stats-visibility-changed', 'people-context-changed']);
+const emit = defineEmits(['create', 'import', 'export', 'row-click', 'edit', 'delete', 'bulk-action', 'filters-changed', 'search-changed', 'kanban-settings-changed', 'stats-visibility-changed', 'people-context-changed', 'shell-ready']);
 
 /** Capture at setup — getCurrentInstance() is null inside async event handlers */
 const setupInstance = getCurrentInstance();
@@ -266,7 +266,6 @@ const listInitialFetchComplete = ref(false);
 /** Keep table in loading state until first fetch starts and finishes — avoids empty-state flash. */
 const listViewLoading = computed(() => {
   if (dataLoading.value) return true;
-  if (statisticsLoading.value && !shouldFetchListData()) return true;
   if (
     !listInitialFetchComplete.value
     && shouldFetchListData()
@@ -821,6 +820,8 @@ const buildList = async () => {
       } else {
         listDefinition.value = definition;
       }
+
+      emit('shell-ready');
 
       // Initialize sort from definition
       if (definition?.defaultSort) {

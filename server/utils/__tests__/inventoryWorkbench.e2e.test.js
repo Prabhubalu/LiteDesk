@@ -79,7 +79,7 @@ test('bootstrap creates inventory ledger + all workbench ModuleDefinitions', asy
     appKey: 'inventory',
     organizationId: null
   })
-    .select('moduleKey ui.showInSidebar permissions')
+    .select('moduleKey ui.showInSidebar permissions fields')
     .lean();
 
   const keys = new Set(defs.map((d) => d.moduleKey));
@@ -91,9 +91,53 @@ test('bootstrap creates inventory ledger + all workbench ModuleDefinitions', asy
     assert.equal(d.ui?.showInSidebar, false, `${d.moduleKey} should hide MD sidebar (client owns nav)`);
   }
 
+  // Field catalogs must be non-empty (Settings + create drawers)
+  const ledger = defs.find((d) => d.moduleKey === 'inventory');
+  assert.ok(Array.isArray(ledger?.fields) && ledger.fields.length > 0, 'ledger fields seeded');
+  for (const key of INVENTORY_WORKBENCH_KEYS) {
+    const def = defs.find((d) => d.moduleKey === key);
+    assert.ok(
+      Array.isArray(def?.fields) && def.fields.length > 0,
+      `workbench fields seeded for ${key}`
+    );
+  }
+
   // Idempotent
   const second = await ensureInventoryAppModuleDefinitions();
   assert.equal(second.results.filter((r) => r.created).length, 0);
+});
+
+test('bootstrap backfills empty workbench fields on re-run', async () => {
+  await ensureInventoryAppModuleDefinitions();
+  await ModuleDefinition.updateOne(
+    { appKey: 'inventory', moduleKey: 'purchase_orders', organizationId: null },
+    { $set: { fields: [] } }
+  );
+  const afterEmpty = await ModuleDefinition.findOne({
+    appKey: 'inventory',
+    moduleKey: 'purchase_orders',
+    organizationId: null
+  })
+    .select('fields')
+    .lean();
+  assert.equal(Array.isArray(afterEmpty?.fields) ? afterEmpty.fields.length : -1, 0);
+
+  const { results } = await ensureInventoryAppModuleDefinitions();
+  const poResult = results.find((r) => r.moduleKey === 'purchase_orders');
+  assert.equal(poResult?.fieldsSeeded, true);
+
+  const po = await ModuleDefinition.findOne({
+    appKey: 'inventory',
+    moduleKey: 'purchase_orders',
+    organizationId: null
+  })
+    .select('fields')
+    .lean();
+  assert.ok(Array.isArray(po?.fields) && po.fields.length > 0, 'PO fields backfilled');
+  assert.ok(
+    po.fields.some((f) => String(f.key || '').toLowerCase() === 'subject'),
+    'PO fields include subject'
+  );
 });
 
 test('capability + org guards: workbench modules require INVENTORY app', async () => {

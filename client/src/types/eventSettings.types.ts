@@ -31,7 +31,7 @@ export type AppKey = 'AUDIT' | 'SALES' | 'PLATFORM' | 'HELPDESK' | 'PORTAL' | 'P
  * - 'generic': Standard event execution (start → in progress → complete)
  * - 'audit-workflow': Audit-specific workflow (check-in → form → review → approval → closed)
  */
-export type ExecutionMode = 'generic' | 'audit-workflow';
+export type ExecutionMode = 'generic' | 'audit-workflow' | 'none';
 
 /**
  * Event type key (internal identifier)
@@ -120,7 +120,8 @@ export interface EventTypeDefinition {
   /**
    * Execution mode determines how events of this type are executed
    * 
-   * - 'generic': Standard execution (start → in progress → complete)
+   * - 'none': Calendar / CRM meetings (join link, mark complete via status — no field execution)
+   * - 'generic': Field execution (start → in progress → complete), e.g. Field Sales Beat
    * - 'audit-workflow': Audit workflow (check-in → form → review → approval → closed)
    * 
    * Execution behavior is NOT configurable in Event Settings.

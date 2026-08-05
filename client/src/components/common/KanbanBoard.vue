@@ -6,10 +6,11 @@
         <slot name="group-control" :stages="stages" />
       </div>
 
-      <div v-if="loading" class="flex items-center justify-center h-64">
+      <!-- Only replace the board on first load; soft reloads keep cards mounted (no flash). -->
+      <div v-if="loading && !hasVisibleItems" class="flex items-center justify-center h-64">
         <div class="text-gray-500 dark:text-gray-400">{{ loadingLabel }}</div>
       </div>
-      <div v-else class="flex gap-5 items-start">
+      <div v-else class="flex gap-5 items-start" :class="loading && hasVisibleItems ? 'opacity-70 pointer-events-none' : ''">
         <template v-for="(stage, idx) in stages" :key="stage">
           <!-- Collapsed empty column: narrow bar with vertical label, count, expand button -->
           <div
@@ -184,6 +185,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update', 'card-click']);
+
+const hasVisibleItems = computed(() => Array.isArray(props.items) && props.items.length > 0);
 
 // Card size controls column width only (not card padding). Default: medium.
 const columnWidthPx = computed(() => {

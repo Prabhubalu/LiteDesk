@@ -194,11 +194,28 @@
              ============================================================================
              GenericExecutionPanel: ONLY when executionMode === 'generic'
              AuditExecutionPanel: ONLY when executionMode === 'audit-workflow'
+             Meetings (none): no field execution — back to record for Join
              NEVER mix controls
              ============================================================================ -->
         
+        <!-- Meetings: no field execution surface -->
+        <div
+          v-if="executionMode === 'none'"
+          class="rounded-xl border border-sky-200 bg-sky-50/80 p-6 dark:border-sky-800 dark:bg-sky-950/30"
+        >
+          <p class="text-sm font-medium text-sky-900 dark:text-sky-100">
+            {{ t('events.meetingExecutionSurfaceNotApplicable') }}
+          </p>
+          <router-link
+            :to="`/events/${route.params.id}`"
+            class="mt-4 inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+          >
+            {{ t('events.meetingExecutionSurfaceBackToRecord') }}
+          </router-link>
+        </div>
+
         <!-- Generic Execution Panel -->
-        <div v-if="executionMode === 'generic'" class="space-y-6">
+        <div v-else-if="executionMode === 'generic'" class="space-y-6">
           <!-- Execution Readiness Section (Read-Only) -->
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">{{ t('events.eventExecutionSurfaceExecutionReadiness2') }}</h3>

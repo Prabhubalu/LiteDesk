@@ -1,6 +1,20 @@
+<!--
+  ============================================================================
+  EVENT RECORD HERO PANEL
+  ============================================================================
+  - Meeting: conference join / mode details (no Start Event execution)
+  - Audit: continue audit workflow
+  - Field Sales Beat (and other generic types): start / complete execution
+  ============================================================================
+-->
 <template>
+  <EventMeetingDetailsPanel
+    v-if="visible && isMeeting"
+    :event="event"
+  />
+
   <div
-    v-if="visible"
+    v-else-if="visible"
     ref="panelRootRef"
     class="rounded-2xl border p-5 shadow-sm"
     :class="panelClass"
@@ -33,7 +47,7 @@
       </div>
     </template>
 
-    <!-- Generic: terminal states -->
+    <!-- Generic (e.g. Field Sales Beat): terminal states -->
     <template v-else-if="executionState === 'COMPLETED'">
       <div class="flex items-start gap-3">
         <CheckCircleIcon class="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
@@ -141,10 +155,11 @@ import {
   XCircleIcon
 } from '@heroicons/vue/24/outline';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
+import EventMeetingDetailsPanel from '@/components/events/EventMeetingDetailsPanel.vue';
 import { useGenericEventExecution } from '@/composables/useGenericEventExecution';
 import { isAuditEventType } from '@/utils/eventUtils';
-
 import { confirmAction } from '@/composables/useConfirmAction';
+
 const props = defineProps({
   event: { type: Object, required: true },
   eventId: { type: String, required: true }
@@ -157,15 +172,28 @@ const panelRootRef = ref(null);
 
 const isAudit = computed(() => isAuditEventType(props.event?.eventType));
 
+const isMeeting = computed(() => {
+  const raw = String(props.event?.eventType || '').trim();
+  if (!raw) return false;
+  const lower = raw.toLowerCase();
+  return (
+    lower === 'meeting' ||
+    lower === 'meeting / appointment' ||
+    raw === 'MEETING'
+  );
+});
+
 const auditTerminalStates = new Set(['approved', 'closed', 'rejected']);
 
 const visible = computed(() => {
   if (!props.event || !props.eventId) return false;
   if (props.event?.appointment?.isAppointment) return false;
+  if (isMeeting.value) return true;
   if (isAudit.value) {
     const state = String(props.event?.auditState || '').trim().toLowerCase();
     return !auditTerminalStates.has(state);
   }
+  // Field Sales Beat and other non-meeting generic types
   return true;
 });
 

@@ -114,6 +114,16 @@ const {
     applyOwnerFieldRequiredToModuleFields
 } = require('../utils/recordCreateOwnerDefaults');
 
+/** Core event create fields that are always required (schema + UX asterisk). */
+function isInitialEventRequiredField(name) {
+    const k = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return k === 'eventname'
+        || k === 'eventtype'
+        || k === 'startdatetime'
+        || k === 'enddatetime'
+        || k === 'assignedto';
+}
+
 const MODULE_APP_KEY_BY_KEY = Object.freeze({
     people: 'sales',
     organizations: 'sales',
@@ -693,6 +703,9 @@ function getFieldDataType(key, fieldName, path) {
         'startDateTime': 'Date-Time',
         'endDateTime': 'Date-Time',
         'location': 'Text-Area',
+        'meetingMode': 'Picklist',
+        'meetingLink': 'Text',
+        'conferenceProvider': 'Picklist',
         'reminderAt': 'Date-Time',
         'recurrence': 'Rich Text',
         'attendees': 'Multi-Picklist',
@@ -1635,6 +1648,11 @@ function getBaseFieldsForKey(key) {
                 if (key === 'events' && name === 'reviewerId') fieldLabel = 'Reviewer';
                 if (key === 'events' && name === 'auditorId') fieldLabel = 'Auditor';
                 if (key === 'events' && name === 'correctiveOwnerId') fieldLabel = 'Corrective Owner';
+                if (key === 'events' && name === 'meetingMode') fieldLabel = 'Meeting Mode';
+                if (key === 'events' && name === 'meetingLink') fieldLabel = 'Join Link';
+                if (key === 'events' && name === 'conferenceProvider') fieldLabel = 'Conference';
+                if (key === 'events' && name === 'attendees') fieldLabel = 'Participants';
+                if (key === 'events' && name === 'agendaNotes') fieldLabel = 'Agenda';
                 if (key === 'cases' && name === 'reopenReason') fieldLabel = 'Reopen reason';
 
                 // Add lookupSettings for User lookup fields
@@ -1923,10 +1941,35 @@ function getBaseFieldsForKey(key) {
                     }];
                 }
 
-                // GEO Required: for audit event types, make it read-only + required (always ON).
+                // GEO Required: visible only when physical presence matters (not pure Virtual meetings).
+                // Visibility deps are OR'd — any matching rule shows the field.
                 if (key === 'events' && name === 'geoRequired') {
                     dependencies = [
-                        ...(dependencies || []),
+                        {
+                            name: 'Show for audit event types',
+                            type: 'visibility',
+                            fieldKey: 'eventType',
+                            operator: 'in',
+                            value: ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'],
+                            logic: 'AND'
+                        },
+                        {
+                            name: 'Show for Field Sales Beat',
+                            type: 'visibility',
+                            fieldKey: 'eventType',
+                            operator: 'equals',
+                            value: 'Field Sales Beat',
+                            logic: 'AND'
+                        },
+                        {
+                            name: 'Show for in-person or hybrid meetings',
+                            type: 'visibility',
+                            logic: 'AND',
+                            conditions: [
+                                { fieldKey: 'eventType', operator: 'equals', value: 'Meeting' },
+                                { fieldKey: 'meetingMode', operator: 'in', value: ['In-person', 'Hybrid'] }
+                            ]
+                        },
                         {
                             name: 'Read-only for audit event types',
                             type: 'readonly',
@@ -1942,6 +1985,34 @@ function getBaseFieldsForKey(key) {
                             operator: 'in',
                             value: ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'],
                             logic: 'AND'
+                        }
+                    ];
+                }
+
+                // Location: physical address — hide for pure Virtual meetings
+                if (key === 'events' && name === 'location') {
+                    dependencies = [
+                        {
+                            name: 'Show for audit and field sales event types',
+                            type: 'visibility',
+                            fieldKey: 'eventType',
+                            operator: 'in',
+                            value: [
+                                'Internal Audit',
+                                'External Audit — Single Org',
+                                'External Audit Beat',
+                                'Field Sales Beat'
+                            ],
+                            logic: 'AND'
+                        },
+                        {
+                            name: 'Show for in-person or hybrid meetings',
+                            type: 'visibility',
+                            logic: 'AND',
+                            conditions: [
+                                { fieldKey: 'eventType', operator: 'equals', value: 'Meeting' },
+                                { fieldKey: 'meetingMode', operator: 'in', value: ['In-person', 'Hybrid'] }
+                            ]
                         }
                     ];
                 }
@@ -1969,6 +2040,87 @@ function getBaseFieldsForKey(key) {
                             fieldKey: 'eventType',
                             operator: 'equals',
                             value: 'External Audit — Single Org',
+                            logic: 'AND'
+                        }
+                    ];
+                }
+
+                // Meeting create surface: meetingMode / join link / participants / agenda
+                if (key === 'events' && name === 'meetingMode') {
+                    dependencies = [
+                        {
+                            name: 'Show for Meeting events',
+                            type: 'visibility',
+                            fieldKey: 'eventType',
+                            operator: 'equals',
+                            value: 'Meeting',
+                            logic: 'AND'
+                        }
+                    ];
+                    // Default Virtual for new meetings (tenant can clear)
+                    if (options && options.length === 0) {
+                        options = ['In-person', 'Virtual', 'Hybrid'];
+                    }
+                }
+                if (key === 'events' && name === 'conferenceProvider') {
+                    const { MEETING_CONFERENCE_PROVIDERS } = require('../constants/meetingConferenceProviders');
+                    dataType = 'Picklist';
+                    options = MEETING_CONFERENCE_PROVIDERS.map((p) => ({
+                        value: p.value,
+                        label: p.label
+                    }));
+                    dependencies = [
+                        {
+                            name: 'Show when Virtual or Hybrid meeting',
+                            type: 'visibility',
+                            logic: 'AND',
+                            conditions: [
+                                { fieldKey: 'eventType', operator: 'equals', value: 'Meeting' },
+                                { fieldKey: 'meetingMode', operator: 'in', value: ['Virtual', 'Hybrid'] }
+                            ]
+                        }
+                    ];
+                }
+                if (key === 'events' && name === 'meetingLink') {
+                    dependencies = [
+                        {
+                            name: 'Show for Virtual or Hybrid meetings with a provider',
+                            type: 'visibility',
+                            logic: 'AND',
+                            conditions: [
+                                { fieldKey: 'eventType', operator: 'equals', value: 'Meeting' },
+                                { fieldKey: 'meetingMode', operator: 'in', value: ['Virtual', 'Hybrid'] },
+                                {
+                                    fieldKey: 'conferenceProvider',
+                                    operator: 'in',
+                                    value: ['google_meet', 'ms_teams', 'zoom']
+                                }
+                            ]
+                        }
+                    ];
+                }
+                if (key === 'events' && name === 'attendees') {
+                    dataType = 'Multi-Picklist';
+                    dependencies = [
+                        {
+                            name: 'Show for non-audit event types',
+                            type: 'visibility',
+                            fieldKey: 'eventType',
+                            operator: 'not_in',
+                            value: ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'],
+                            logic: 'AND'
+                        }
+                    ];
+                }
+                if (key === 'events' && name === 'agendaNotes') {
+                    dataType = 'Text-Area';
+                    dependencies = [
+                        {
+                            name: 'Show for Meeting events',
+                            type: 'visibility',
+                            fieldKey: 'eventType',
+                            operator: 'equals',
+                            value: 'Meeting',
                             logic: 'AND'
                         }
                     ];
@@ -2038,6 +2190,8 @@ function getBaseFieldsForKey(key) {
                     // For dependency-driven required fields (like events.reviewerId), the module definition must NOT mark them required globally.
                     required: (key === 'events' && name === 'reviewerId')
                         ? false
+                        : (key === 'events' && isInitialEventRequiredField(name))
+                            ? true
                         : isModuleOwnerField(key, name)
                             ? true
                             : (key === 'quotes' && isInitialQuoteRequiredField(name))
@@ -3305,7 +3459,12 @@ exports.listModules = async (req, res) => {
                 allowselfreview: 'allowSelfReview',
                 auditorid: 'auditorId',
                 reviewerid: 'reviewerId',
-                correctiveownerid: 'correctiveOwnerId'
+                correctiveownerid: 'correctiveOwnerId',
+                meetingmode: 'meetingMode',
+                meetinglink: 'meetingLink',
+                conferenceprovider: 'conferenceProvider',
+                agendanotes: 'agendaNotes',
+                attendees: 'attendees'
             };
             return canonicalMap[normalized] || camel || raw;
         };
@@ -3457,6 +3616,13 @@ exports.listModules = async (req, res) => {
                         }
                         if (isModuleOwnerField(sys.key, savedField.key)) {
                             savedField.required = true;
+                        }
+                        if (sys.key === 'events' && isInitialEventRequiredField(savedField.key)) {
+                            savedField.required = true;
+                        }
+                        if (sys.key === 'events' && String(savedField.key || '').toLowerCase() === 'eventtype') {
+                            const rawDefault = savedField.defaultValue ?? baseField.defaultValue ?? 'Meeting';
+                            savedField.defaultValue = normalizeMeetingEventTypeLabel(rawDefault) || 'Meeting';
                         }
                         // Default keyField from base so default key fields (e.g. people: organization, email, phone, assignedTo) show in field configuration
                         if (savedField.keyField === undefined) {
@@ -3631,17 +3797,45 @@ exports.listModules = async (req, res) => {
                             }
                         }
 
-                        // For geoRequired in events module: remove legacy visibility gating and enforce audit readonly + required
+                        // For geoRequired in events: physical/check-in only — hide for Virtual meetings.
+                        // Visibility rules OR together (audit | field sales | in-person/hybrid Meeting).
                         if (sys.key === 'events' && savedField.key === 'geoRequired') {
                             const deps = Array.isArray(savedField.dependencies) ? savedField.dependencies : [];
-                            // Remove any legacy visibility dependency that hides GEO outside audits
-                            const cleaned = deps.filter(d => !(d && d.type === 'visibility' && d.fieldKey === 'eventType'));
+                            const cleaned = deps.filter(d => !(d && String(d.type || '').toLowerCase() === 'visibility'));
 
                             const hasReadonlyAudit = cleaned.some(d =>
                                 d && d.type === 'readonly' && d.fieldKey === 'eventType'
                             );
                             const hasRequiredAudit = cleaned.some(d =>
                                 d && d.type === 'required' && d.fieldKey === 'eventType'
+                            );
+
+                            cleaned.push(
+                                {
+                                    name: 'Show for audit event types',
+                                    type: 'visibility',
+                                    fieldKey: 'eventType',
+                                    operator: 'in',
+                                    value: ['Internal Audit', 'External Audit — Single Org', 'External Audit Beat'],
+                                    logic: 'AND'
+                                },
+                                {
+                                    name: 'Show for Field Sales Beat',
+                                    type: 'visibility',
+                                    fieldKey: 'eventType',
+                                    operator: 'equals',
+                                    value: 'Field Sales Beat',
+                                    logic: 'AND'
+                                },
+                                {
+                                    name: 'Show for in-person or hybrid meetings',
+                                    type: 'visibility',
+                                    logic: 'AND',
+                                    conditions: [
+                                        { fieldKey: 'eventType', operator: 'equals', value: 'Meeting' },
+                                        { fieldKey: 'meetingMode', operator: 'in', value: ['In-person', 'Hybrid'] }
+                                    ]
+                                }
                             );
 
                             if (!hasReadonlyAudit) {
@@ -3665,6 +3859,37 @@ exports.listModules = async (req, res) => {
                                 });
                             }
 
+                            savedField.dependencies = cleaned;
+                        }
+
+                        // Location: hide for pure Virtual meetings
+                        if (sys.key === 'events' && String(savedField.key || '').toLowerCase() === 'location') {
+                            const deps = Array.isArray(savedField.dependencies) ? savedField.dependencies : [];
+                            const cleaned = deps.filter(d => !(d && String(d.type || '').toLowerCase() === 'visibility'));
+                            cleaned.push(
+                                {
+                                    name: 'Show for audit and field sales event types',
+                                    type: 'visibility',
+                                    fieldKey: 'eventType',
+                                    operator: 'in',
+                                    value: [
+                                        'Internal Audit',
+                                        'External Audit — Single Org',
+                                        'External Audit Beat',
+                                        'Field Sales Beat'
+                                    ],
+                                    logic: 'AND'
+                                },
+                                {
+                                    name: 'Show for in-person or hybrid meetings',
+                                    type: 'visibility',
+                                    logic: 'AND',
+                                    conditions: [
+                                        { fieldKey: 'eventType', operator: 'equals', value: 'Meeting' },
+                                        { fieldKey: 'meetingMode', operator: 'in', value: ['In-person', 'Hybrid'] }
+                                    ]
+                                }
+                            );
                             savedField.dependencies = cleaned;
                         }
 
@@ -4085,10 +4310,15 @@ exports.listModules = async (req, res) => {
                         'eventName',
                         'eventType',
                         'assignedTo',
-                        'geoRequired',
+                        'attendees',
+                        'meetingMode',
+                        'conferenceProvider',
                         'startDateTime',
                         'endDateTime',
+                        'meetingLink',
                         'location',
+                        'agendaNotes',
+                        'geoRequired',
                         // Audit-related (dependency-gated)
                         'relatedToId',
                         'linkedFormId',
@@ -4104,8 +4334,8 @@ exports.listModules = async (req, res) => {
 
                     const qc = Array.isArray(finalQuickCreate) ? finalQuickCreate.filter(Boolean) : [];
                     const isUnderConfigured = qc.length < 5;
-                    // Also upgrade known legacy defaults that predate audit-only quick-create fields.
-                    // This keeps "default behavior" working (field shows up) without overriding truly customized quickCreate configs.
+                    // Also upgrade known legacy defaults that predate meeting / audit quick-create fields.
+                    // This keeps "default behavior" working (field shows up) without overriding truly customized configs.
                     const qcLower = qc.map(k => String(k).toLowerCase());
                     const hasCore =
                         qcLower.includes('eventname') &&
@@ -4119,9 +4349,44 @@ exports.listModules = async (req, res) => {
                         !qcLower.includes('linkedformid') &&
                         !qcLower.includes('relatedtoid') &&
                         !qcLower.includes('allowselfreview');
+                    // Pre-meeting-create defaults: has core form but missing meeting scaffolding
+                    const lacksMeetingScaffold =
+                        hasCore &&
+                        !qcLower.includes('meetingmode') &&
+                        !qcLower.includes('attendees');
+                    const lacksConferenceProvider =
+                        hasCore &&
+                        qcLower.includes('meetingmode') &&
+                        !qcLower.includes('conferenceprovider');
 
                     if (isUnderConfigured || looksLegacy) {
                         finalQuickCreate = eventsDefaultQuickCreate;
+                    } else if (lacksMeetingScaffold) {
+                        // Upgrade-in-place: inject meeting fields without wiping a customized order.
+                        // Place after assignedTo when present; otherwise append before geoRequired.
+                        const inject = ['attendees', 'meetingMode', 'conferenceProvider', 'meetingLink', 'agendaNotes'];
+                        const qc2 = Array.isArray(finalQuickCreate) ? [...finalQuickCreate] : [];
+                        const has = (k) => qc2.some((x) => String(x).toLowerCase() === k);
+                        const toAdd = inject.filter((k) => !has(k.toLowerCase()));
+                        if (toAdd.length) {
+                            const assignedIdx = qc2.findIndex((x) => String(x).toLowerCase() === 'assignedto');
+                            const insertAt = assignedIdx >= 0 ? assignedIdx + 1 : Math.max(0, qc2.findIndex((x) => String(x).toLowerCase() === 'startdatetime'));
+                            if (insertAt >= 0) {
+                                qc2.splice(insertAt, 0, ...toAdd);
+                            } else {
+                                qc2.push(...toAdd);
+                            }
+                        }
+                        finalQuickCreate = qc2;
+                    } else if (lacksConferenceProvider) {
+                        const qc2 = Array.isArray(finalQuickCreate) ? [...finalQuickCreate] : [];
+                        const modeIdx = qc2.findIndex((x) => String(x).toLowerCase() === 'meetingmode');
+                        if (modeIdx >= 0) {
+                            qc2.splice(modeIdx + 1, 0, 'conferenceProvider');
+                        } else {
+                            qc2.push('conferenceProvider');
+                        }
+                        finalQuickCreate = qc2;
                     } else {
                         // If the org is using simple quickCreate mode (no advanced layout), we historically appended
                         // audit scaffolding keys so dependency-gated fields could render. Doing that after a tenant
@@ -4142,6 +4407,11 @@ exports.listModules = async (req, res) => {
                             const hasPartnerVis = qc2.some(k => String(k).toLowerCase() === 'partnervisibility');
                             const hasRelatedTo = qc2.some(k => String(k).toLowerCase() === 'relatedtoid');
                             const hasLinkedForm = qc2.some(k => String(k).toLowerCase() === 'linkedformid');
+                            const hasMeetingMode = qc2.some(k => String(k).toLowerCase() === 'meetingmode');
+                            const hasMeetingLink = qc2.some(k => String(k).toLowerCase() === 'meetinglink');
+                            const hasConferenceProvider = qc2.some(k => String(k).toLowerCase() === 'conferenceprovider');
+                            const hasAttendees = qc2.some(k => String(k).toLowerCase() === 'attendees');
+                            const hasAgenda = qc2.some(k => String(k).toLowerCase() === 'agendanotes');
                             if (!hasGeo) qc2.push('geoRequired');
                             if (!hasAllow) qc2.push('allowSelfReview');
                             if (!hasReviewer) qc2.push('reviewerId');
@@ -4151,6 +4421,11 @@ exports.listModules = async (req, res) => {
                             if (!hasLinkedForm) qc2.push('linkedFormId');
                             if (!hasMinVisit) qc2.push('minVisitDuration');
                             if (!hasPartnerVis) qc2.push('partnerVisibility');
+                            if (!hasMeetingMode) qc2.push('meetingMode');
+                            if (!hasConferenceProvider) qc2.push('conferenceProvider');
+                            if (!hasMeetingLink) qc2.push('meetingLink');
+                            if (!hasAttendees) qc2.push('attendees');
+                            if (!hasAgenda) qc2.push('agendaNotes');
                             finalQuickCreate = qc2;
                         }
                     }
@@ -4864,6 +5139,40 @@ exports.listModules = async (req, res) => {
                     });
                     finalFields = applyStockTransferModuleFieldDefaults(finalFields);
                 }
+                // Inventory: never serve empty field catalogs (Settings + create drawers)
+                if (
+                    isInventorySchemaModuleKey(sys.key) &&
+                    (!Array.isArray(finalFields) || finalFields.length === 0)
+                ) {
+                    let recovered = getBaseFieldsForKey(sys.key) || [];
+                    if (sys.key === 'inventory' && !recovered.length) {
+                        recovered = applyInventoryModuleFieldDefaults(INITIAL_INVENTORY_FIELDS).map((f, i) => ({
+                            ...f,
+                            order: i,
+                            dataType: f.dataType || f.type || 'text'
+                        }));
+                    }
+                    if (sys.key === 'purchase_orders') {
+                        recovered = applyPurchaseOrderModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'purchase_returns') {
+                        recovered = applyPurchaseReturnModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'delivery_notes') {
+                        recovered = applyDeliveryNoteModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'delivery_returns') {
+                        recovered = applyDeliveryReturnModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'sales_returns') {
+                        recovered = applySalesReturnModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'receipt_notes') {
+                        recovered = applyReceiptNoteModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'stockrooms') {
+                        recovered = applyStockroomModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'stock_adjustments') {
+                        recovered = applyStockAdjustmentModuleFieldDefaults(recovered);
+                    } else if (sys.key === 'stock_transfers') {
+                        recovered = applyStockTransferModuleFieldDefaults(recovered);
+                    }
+                    finalFields = Array.isArray(recovered) ? recovered : [];
+                }
                 finalFields = applyOwnerFieldRequiredToModuleFields(finalFields, sys.key);
                 let resolvedRelationships = shouldUseOverrideRelationships(override, sys)
                     ? override.relationships
@@ -4907,10 +5216,15 @@ exports.listModules = async (req, res) => {
                         'eventName',
                         'eventType',
                         'assignedTo',
-                        'geoRequired',
+                        'attendees',
+                        'meetingMode',
+                        'conferenceProvider',
                         'startDateTime',
                         'endDateTime',
+                        'meetingLink',
                         'location',
+                        'agendaNotes',
+                        'geoRequired',
                         'relatedToId',
                         'linkedFormId',
                         'reviewerId',

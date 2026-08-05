@@ -128,6 +128,8 @@ const routerViewKey = computed(() => {
   }
   if (route.path.startsWith('/live-chat/')) return route.path;
   if (route.path.startsWith('/settings')) return route.path;
+  // View toggles write ?dealsView= / ?tasksView=; keying on fullPath remounts ModuleList twice.
+  if (route.path === '/deals' || route.path === '/tasks') return route.path;
   if (route.path.startsWith('/forms/create')) return 'form-create';
   const recordId = route.params?.id ?? route.params?.recordId;
   if (recordId && typeof recordId === 'string') {
@@ -296,8 +298,9 @@ const syncPageScrollContainer = () => {
   });
 };
 
+// path only — dealsView/tasksView query writes must not reflow/scroll-reset the shell (visual flash)
 watch(
-  () => route.fullPath,
+  () => route.path,
   () => {
     collapseSidebarForRecordOnTablet();
     queueContentOffsetUpdate();

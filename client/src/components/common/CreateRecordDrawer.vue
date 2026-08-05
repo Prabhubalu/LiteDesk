@@ -307,7 +307,8 @@ import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
 import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
-import { isAuditEventType, isEventLocationGeoValid, resolveEventGeoRequired } from '@/utils/eventUtils';
+import { isAuditEventType, isEventLocationGeoValid, resolveEventGeoRequired, evaluateMeetingConferenceSaveGate } from '@/utils/eventUtils';
+import { confirmAction } from '@/composables/useConfirmAction';
 import { getEventTypeByKey, getEventTypeByLabel, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
 import { useTabs } from '@/composables/useTabs';
 import { useRoute } from 'vue-router';
@@ -2165,6 +2166,38 @@ const initializeForm = (module) => {
     }
   }
 
+  // Events create: always seed mandatory type + meeting defaults so dependency-gated
+  // Meeting fields (mode, conference, join link, agenda) are visible immediately.
+  if (props.moduleKey === 'events' && !props.record) {
+    const fd = { ...formData.value };
+    const typeEmpty = fd.eventType == null || String(fd.eventType).trim() === '';
+    if (typeEmpty) {
+      fd.eventType = 'Meeting';
+    }
+    const typeLabel = String(fd.eventType || '').trim();
+    const isMeeting =
+      typeLabel === 'Meeting' ||
+      typeLabel === 'MEETING' ||
+      typeLabel.toLowerCase() === 'meeting';
+    if (isMeeting) {
+      fd.eventType = 'Meeting';
+      if (fd.meetingMode == null || String(fd.meetingMode).trim() === '') {
+        fd.meetingMode = 'Virtual';
+      }
+      const mode = String(fd.meetingMode || '');
+      if (
+        (mode === 'Virtual' || mode === 'Hybrid') &&
+        (fd.conferenceProvider == null || String(fd.conferenceProvider).trim() === '')
+      ) {
+        fd.conferenceProvider = 'google_meet';
+      }
+    }
+    if (!Array.isArray(fd.attendees)) {
+      fd.attendees = [];
+    }
+    formData.value = fd;
+  }
+
   if (!props.record) {
     formData.value = applyCreateOwnerDefaultsToForm(
       formData.value,
@@ -2214,6 +2247,25 @@ function applyInitialDataOverlay() {
   const entries = Object.entries(seed).filter(([, v]) => v !== undefined && v !== null && v !== '');
   if (!entries.length) return;
   formData.value = { ...formData.value, ...Object.fromEntries(entries) };
+
+  // Re-apply Meeting defaults after calendar/context seed if type still empty or Meeting
+  if (props.moduleKey === 'events') {
+    const fd = { ...formData.value };
+    if (fd.eventType == null || String(fd.eventType).trim() === '') {
+      fd.eventType = 'Meeting';
+    }
+    if (String(fd.eventType) === 'Meeting' || String(fd.eventType).toUpperCase() === 'MEETING') {
+      fd.eventType = 'Meeting';
+      if (!fd.meetingMode) fd.meetingMode = 'Virtual';
+      if (
+        (fd.meetingMode === 'Virtual' || fd.meetingMode === 'Hybrid') &&
+        !fd.conferenceProvider
+      ) {
+        fd.conferenceProvider = 'google_meet';
+      }
+    }
+    formData.value = fd;
+  }
 }
 
 watch(moduleOverrideFromSettings, (mod) => {
@@ -2514,6 +2566,64 @@ const handleSubmit = async () => {
         saving.value = false;
         return;
       }
+
+      // Conference readiness: alert before save when Meet/Teams/Zoom needs calendar connect or paste
+      const confProvider = String(formData.value?.conferenceProvider || '').trim();
+      const meetingMode = String(formData.value?.meetingMode || '').trim();
+      const needsConferenceCheck =
+        (meetingMode === 'Virtual' || meetingMode === 'Hybrid') &&
+        !!confProvider &&
+        !String(formData.value?.meetingLink || '').trim();
+
+      if (needsConferenceCheck) {
+        let connectors = [];
+        try {
+          const connRes = await apiClient.get('/user/calendar-connections');
+          connectors = connRes?.data?.connectors || [];
+        } catch {
+          connectors = [];
+        }
+
+        const gate = evaluateMeetingConferenceSaveGate({
+          eventType: formData.value?.eventType,
+          meetingMode: formData.value?.meetingMode,
+          conferenceProvider: formData.value?.conferenceProvider,
+          meetingLink: formData.value?.meetingLink,
+          assignedTo: formData.value?.assignedTo,
+          currentUserId: authStore.user?._id || authStore.user?.id || null,
+          connectors
+        });
+
+        if (gate.status === 'confirm') {
+          const msgKey =
+            gate.reason === 'zoom_paste'
+              ? 'events.meetingConferenceGateZoomPaste'
+              : gate.reason === 'not_configured'
+                ? gate.calendarProvider === 'microsoft'
+                  ? 'events.meetingConferenceGateNotConfiguredMsTeams'
+                  : 'events.meetingConferenceGateNotConfiguredGoogle'
+                : gate.reason === 'host_other'
+                  ? gate.calendarProvider === 'microsoft'
+                    ? 'events.meetingConferenceGateHostOtherMsTeams'
+                    : 'events.meetingConferenceGateHostOtherGoogle'
+                  : gate.calendarProvider === 'microsoft'
+                    ? 'events.meetingConferenceGateNotConnectedMsTeams'
+                    : 'events.meetingConferenceGateNotConnectedGoogle';
+
+          const confirmed = await confirmAction({
+            title: t('events.meetingConferenceGateTitle'),
+            message: t(msgKey),
+            confirmLabel: t('events.meetingConferenceGateSaveAnyway'),
+            tone: 'warning'
+          });
+          if (!confirmed) {
+            errors.value.meetingLink = t('events.meetingConferenceGateJoinLinkHint');
+            scrollToFirstErrorField();
+            saving.value = false;
+            return;
+          }
+        }
+      }
     }
     
     drawerDbg('[CreateRecordDrawer] ✅ Validation passed, proceeding with submission...');
@@ -2591,7 +2701,11 @@ const handleSubmit = async () => {
         'corrective-owner-id': 'correctiveOwnerId',
         'allow-self-review': 'allowSelfReview',
         'start-date-time': 'startDateTime',
-        'end-date-time': 'endDateTime'
+        'end-date-time': 'endDateTime',
+        'meeting-mode': 'meetingMode',
+        'meeting-link': 'meetingLink',
+        'conference-provider': 'conferenceProvider',
+        'agenda-notes': 'agendaNotes'
       };
 
       // Also normalize lowercased keys that can come from saved module definitions (defensive)
@@ -2604,7 +2718,12 @@ const handleSubmit = async () => {
         linkedformid: 'linkedFormId',
         relatedtoid: 'relatedToId',
         startdatetime: 'startDateTime',
-        enddatetime: 'endDateTime'
+        enddatetime: 'endDateTime',
+        meetingmode: 'meetingMode',
+        meetinglink: 'meetingLink',
+        conferenceprovider: 'conferenceProvider',
+        agendanotes: 'agendaNotes',
+        attendees: 'attendees'
       };
       
       // Convert kebab-case keys to camelCase
@@ -3171,6 +3290,30 @@ const handleSubmit = async () => {
       }
 
       const savedRecord = response.data || response;
+
+      // Meeting: surface conference provision outcome (generate Meet/Teams + invites)
+      if (props.moduleKey === 'events' && !isEditing.value && response.conference) {
+        const conf = response.conference;
+        try {
+          const { useNotifications } = await import('@/composables/useNotifications');
+          const notifications = useNotifications();
+          if (conf.status === 'generated') {
+            notifications.success(
+              t('events.meetingCreateConferenceGenerated', {
+                count: response.invitedCount ?? conf.invites ?? 0
+              })
+            );
+          } else if (conf.status === 'connect_required' || conf.status === 'no_calendar') {
+            notifications.warning(conf.message || t('events.meetingCreateConferenceConnectRequired', { message: conf.message || '' }));
+          } else if (conf.status === 'paste_required' && conf.provider === 'zoom') {
+            notifications.info(t('events.meetingCreateConferencePasteZoom'));
+          } else if (conf.status === 'generate_failed') {
+            notifications.warning(conf.error || conf.message || t('events.meetingRecordNoJoinLink'));
+          }
+        } catch {
+          /* non-blocking */
+        }
+      }
       
       // Always open the saved record in a new tab
       if (savedRecord) {

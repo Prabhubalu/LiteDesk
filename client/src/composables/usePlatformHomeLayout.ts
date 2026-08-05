@@ -1,19 +1,56 @@
 import { ref } from 'vue';
 import apiClient from '@/utils/apiClient';
-import type { PlatformHomeLayout, PlatformHomeLayoutItem } from '@/types/platformHome.types';
+import type {
+  PlatformHomeLayout,
+  PlatformHomeLayoutItem,
+  PlatformHomeWidthMode,
+} from '@/types/platformHome.types';
 import {
   clonePlatformHomeLayout,
   compactPlatformHomeLayoutItems,
   createDefaultPlatformHomeLayout,
+  DEFAULT_PLATFORM_HOME_WIDTH_MODE,
   nextPlatformHomeLayoutY,
   normalizePlatformHomeLayout,
+  PLATFORM_HOME_WIDTH_MODES,
   PLATFORM_HOME_WIDGET_MIN_H,
   PLATFORM_HOME_WIDGET_MIN_W,
 } from '@/utils/platformHomeWidgetRegistry';
 
+/** Prevents wide→compact flash on load: last known mode applies before layout API returns. */
+const WIDTH_MODE_STORAGE_KEY = 'arivu-platform-home-width-mode';
+
+function readCachedWidthMode(): PlatformHomeWidthMode | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const raw = localStorage.getItem(WIDTH_MODE_STORAGE_KEY);
+    return PLATFORM_HOME_WIDTH_MODES.includes(raw as PlatformHomeWidthMode)
+      ? (raw as PlatformHomeWidthMode)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedWidthMode(mode: PlatformHomeWidthMode): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem(WIDTH_MODE_STORAGE_KEY, mode);
+  } catch {
+    // ignore quota / private mode
+  }
+}
+
+function createSeededLayout(): PlatformHomeLayout {
+  const base = createDefaultPlatformHomeLayout();
+  const cached = readCachedWidthMode();
+  if (!cached) return base;
+  return { ...base, widthMode: cached };
+}
+
 export function usePlatformHomeLayout() {
-  const layout = ref<PlatformHomeLayout>(createDefaultPlatformHomeLayout());
-  const savedLayout = ref<PlatformHomeLayout>(createDefaultPlatformHomeLayout());
+  const layout = ref<PlatformHomeLayout>(createSeededLayout());
+  const savedLayout = ref<PlatformHomeLayout>(clonePlatformHomeLayout(layout.value));
   const customizeMode = ref(false);
   const loading = ref(false);
   const saving = ref(false);
@@ -25,10 +62,11 @@ export function usePlatformHomeLayout() {
       const normalized = normalizePlatformHomeLayout(response?.data);
       layout.value = normalized;
       savedLayout.value = clonePlatformHomeLayout(normalized);
+      writeCachedWidthMode(normalized.widthMode ?? DEFAULT_PLATFORM_HOME_WIDTH_MODE);
       return normalized;
     } catch (error) {
       console.error('[PlatformHomeLayout] fetch error:', error);
-      const fallback = createDefaultPlatformHomeLayout();
+      const fallback = createSeededLayout();
       layout.value = fallback;
       savedLayout.value = clonePlatformHomeLayout(fallback);
       return fallback;
@@ -41,12 +79,14 @@ export function usePlatformHomeLayout() {
     saving.value = true;
     try {
       const payload = clonePlatformHomeLayout(nextLayout);
+      const widthMode = payload.widthMode ?? DEFAULT_PLATFORM_HOME_WIDTH_MODE;
       const response = await apiClient.put('/platform/home/layout', {
         items: payload.items,
-        widthMode: payload.widthMode ?? 'wide',
+        widthMode,
       });
       if (response?.success) {
         savedLayout.value = clonePlatformHomeLayout(payload);
+        writeCachedWidthMode(widthMode);
       }
       return response;
     } catch (error) {
@@ -81,6 +121,7 @@ export function usePlatformHomeLayout() {
 
   function cancelCustomizeMode() {
     layout.value = clonePlatformHomeLayout(savedLayout.value);
+    writeCachedWidthMode(layout.value.widthMode ?? DEFAULT_PLATFORM_HOME_WIDTH_MODE);
     customizeMode.value = false;
   }
 
@@ -165,7 +206,9 @@ export function usePlatformHomeLayout() {
   }
 
   function setWidthMode(widthMode: PlatformHomeLayout['widthMode']) {
-    layout.value.widthMode = widthMode ?? 'wide';
+    const next = widthMode ?? DEFAULT_PLATFORM_HOME_WIDTH_MODE;
+    layout.value.widthMode = next;
+    writeCachedWidthMode(next);
   }
 
   return {
