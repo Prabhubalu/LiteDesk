@@ -1033,6 +1033,23 @@ function getOrganizationVirtualBaseFields() {
 
 function getBaseFieldsForKey(key) {
     try {
+        if (isInventorySchemaModuleKey(key) && key !== 'inventory') {
+            // Prefer dedicated inventory catalog (master schema, no full model map).
+            try {
+                const {
+                    getInventoryModuleFieldCatalog
+                } = require('../services/inventoryModuleFieldCatalogService');
+                const invFields = getInventoryModuleFieldCatalog(key);
+                if (Array.isArray(invFields) && invFields.length > 0) {
+                    return invFields;
+                }
+            } catch (invCatalogErr) {
+                console.warn(
+                    `[getBaseFieldsForKey] inventory catalog for ${key}:`,
+                    invCatalogErr?.message || invCatalogErr
+                );
+            }
+        }
         const taskDefaultFieldOrder = [
             'title',
             'status',
@@ -2299,6 +2316,17 @@ function getBaseFieldsForKey(key) {
         }
         return ordered;
     } catch (e) {
+        console.warn(`[getBaseFieldsForKey] failed for key=${key}:`, e?.message || e);
+        if (isInventorySchemaModuleKey(key)) {
+            try {
+                const {
+                    getInventoryModuleFieldCatalog
+                } = require('../services/inventoryModuleFieldCatalogService');
+                return getInventoryModuleFieldCatalog(key) || [];
+            } catch (_e) {
+                return [];
+            }
+        }
         return [];
     }
 }
@@ -3158,6 +3186,25 @@ exports.listModules = async (req, res) => {
             ? SYSTEM_MODULE_CATALOG.filter((m) => requestedKeys.has(m.key))
             : SYSTEM_MODULE_CATALOG;
         const systemModules = systemModuleDefs.map(m => {
+            let baseFields = m.key === 'users' ? [] : getBaseFieldsForKey(m.key);
+            // Inventory: never leave empty schema fields on the system base (org empty MD merges can't recover).
+            if (
+                m.key !== 'users' &&
+                isInventorySchemaModuleKey(m.key) &&
+                (!Array.isArray(baseFields) || baseFields.length === 0)
+            ) {
+                try {
+                    const {
+                        getInventoryModuleFieldCatalog
+                    } = require('../services/inventoryModuleFieldCatalogService');
+                    baseFields = getInventoryModuleFieldCatalog(m.key) || [];
+                } catch (catErr) {
+                    console.warn(
+                        `[listModules] inventory field catalog failed for ${m.key}:`,
+                        catErr?.message || catErr
+                    );
+                }
+            }
             const baseModule = {
                 _id: `system:${m.key}`,
                 organizationId: req.user.organizationId,
@@ -3165,7 +3212,7 @@ exports.listModules = async (req, res) => {
                 name: m.name,
                 type: 'system',
                 enabled: true,
-                fields: m.key === 'users' ? [] : getBaseFieldsForKey(m.key), // Users module has no fields for lookup purposes
+                fields: baseFields,
                 fieldCount: 0,
                 createdAt: null,
                 updatedAt: null,
@@ -5144,34 +5191,26 @@ exports.listModules = async (req, res) => {
                     isInventorySchemaModuleKey(sys.key) &&
                     (!Array.isArray(finalFields) || finalFields.length === 0)
                 ) {
-                    let recovered = getBaseFieldsForKey(sys.key) || [];
-                    if (sys.key === 'inventory' && !recovered.length) {
-                        recovered = applyInventoryModuleFieldDefaults(INITIAL_INVENTORY_FIELDS).map((f, i) => ({
-                            ...f,
-                            order: i,
-                            dataType: f.dataType || f.type || 'text'
-                        }));
+                    try {
+                        const {
+                            getInventoryModuleFieldCatalog
+                        } = require('../services/inventoryModuleFieldCatalogService');
+                        finalFields = getInventoryModuleFieldCatalog(sys.key) || [];
+                    } catch (catErr) {
+                        console.warn(
+                            `[listModules] inventory field recover failed for ${sys.key}:`,
+                            catErr?.message || catErr
+                        );
+                        let recovered = getBaseFieldsForKey(sys.key) || [];
+                        if (sys.key === 'inventory' && !recovered.length) {
+                            recovered = applyInventoryModuleFieldDefaults(INITIAL_INVENTORY_FIELDS).map((f, i) => ({
+                                ...f,
+                                order: i,
+                                dataType: f.dataType || f.type || 'text'
+                            }));
+                        }
+                        finalFields = Array.isArray(recovered) ? recovered : [];
                     }
-                    if (sys.key === 'purchase_orders') {
-                        recovered = applyPurchaseOrderModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'purchase_returns') {
-                        recovered = applyPurchaseReturnModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'delivery_notes') {
-                        recovered = applyDeliveryNoteModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'delivery_returns') {
-                        recovered = applyDeliveryReturnModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'sales_returns') {
-                        recovered = applySalesReturnModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'receipt_notes') {
-                        recovered = applyReceiptNoteModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'stockrooms') {
-                        recovered = applyStockroomModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'stock_adjustments') {
-                        recovered = applyStockAdjustmentModuleFieldDefaults(recovered);
-                    } else if (sys.key === 'stock_transfers') {
-                        recovered = applyStockTransferModuleFieldDefaults(recovered);
-                    }
-                    finalFields = Array.isArray(recovered) ? recovered : [];
                 }
                 finalFields = applyOwnerFieldRequiredToModuleFields(finalFields, sys.key);
                 let resolvedRelationships = shouldUseOverrideRelationships(override, sys)
