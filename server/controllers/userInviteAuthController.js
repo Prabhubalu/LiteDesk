@@ -55,12 +55,16 @@ exports.acceptInvite = async (req, res) => {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       timeZone: req.body.timeZone,
-      language: req.body.language
+      language: req.body.language,
+      sessionMeta: {
+        ip: req.ip || null,
+        userAgent: req.get('user-agent') || null
+      }
     };
 
     const result = await userInviteService.acceptInvite({ rawToken: token, password, profile });
     if (!result.ok) {
-      const status = result.code === 'VALIDATION_ERROR' ? 400 : 400;
+      const status = result.code === 'SESSION_LIMIT' ? 409 : 400;
       return res.status(status).json({
         success: false,
         code: result.code,
@@ -70,7 +74,14 @@ exports.acceptInvite = async (req, res) => {
               email: result.email,
               organizationName: result.organizationName || null
             }
-          : undefined
+          : undefined,
+        ...(result.code === 'SESSION_LIMIT'
+          ? {
+              deviceClass: result.deviceClass,
+              limits: result.limits,
+              sessions: result.sessions
+            }
+          : {})
       });
     }
 

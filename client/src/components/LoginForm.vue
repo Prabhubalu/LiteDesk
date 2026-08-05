@@ -117,15 +117,18 @@ const resolveInstanceLoginTarget = (instance) => {
 };
 
 const applyTransferredSessionFromHash = async () => {
-  const hash = window.location.hash.startsWith('#')
-    ? window.location.hash.slice(1)
-    : window.location.hash;
-  const hashParams = new URLSearchParams(hash);
-  const encoded = hashParams.get(SESSION_TRANSFER_HASH_KEY);
-  if (!encoded) return;
+  // Prefer the shared store helper (also used by the router guard). If the
+  // hash was already consumed, there is nothing more to do.
+  if (!window.location.hash.includes(`${SESSION_TRANSFER_HASH_KEY}=`)) {
+    if (authStore.isAuthenticated && route.name === 'login') {
+      redirecting.value = true;
+      await router.replace(resolvePostLoginRoute());
+    }
+    return;
+  }
 
   redirecting.value = true;
-  const applied = authStore.applySessionTransferPayload(encoded);
+  const applied = authStore.applySessionTransferFromLocationHash();
   if (!applied) {
     redirecting.value = false;
     return;
@@ -133,8 +136,6 @@ const applyTransferredSessionFromHash = async () => {
 
   await authStore.syncI18nFromOrganization();
   await syncTrialBeforeRoute();
-
-  window.history.replaceState({}, '', window.location.pathname + window.location.search);
   await router.replace(resolvePostLoginRoute());
 };
 

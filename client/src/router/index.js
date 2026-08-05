@@ -2021,9 +2021,20 @@ const getDefaultRoute = (authStore) => {
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
+  // Cross-host session transfer (accept-invite / login instance hop) must run
+  // before requiresAuth — otherwise /onboarding#ld_session=… is wiped to login
+  // and the token hash is lost.
+  authStore.applySessionTransferFromLocationHash()
+
   // Invite links must not inherit a stale session — otherwise we briefly route to
   // platform/home, authenticated API calls fail, and the user lands on login.
-  if (to.name === 'accept-invite' && String(to.query?.token || '').trim()) {
+  // Only clear when *entering* the invite flow. Re-entrant guards while the accept
+  // page is mounted (post-setUser, pre-navigation) must not wipe the new session.
+  if (
+    to.name === 'accept-invite'
+    && String(to.query?.token || '').trim()
+    && from.name !== 'accept-invite'
+  ) {
     authStore.clearUser()
   }
 
