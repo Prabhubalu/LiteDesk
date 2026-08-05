@@ -191,21 +191,18 @@ function defaultPermissions({ deleteAllowed = false } = {}) {
 }
 
 /**
- * Schema-derived base fields for inventory modules.
- * Lazy-requires moduleController to avoid circular load at module init.
+ * Schema-derived base fields for inventory modules (no moduleController dependency).
  * @param {string} moduleKey
  * @returns {object[]}
  */
 function resolveSchemaBaseFields(moduleKey) {
   try {
-    // Lazy: moduleController requires this service; only resolve after both are loaded.
-    const { getBaseFieldsForKey } = require('../controllers/moduleController');
-    if (typeof getBaseFieldsForKey !== 'function') return [];
-    const fields = getBaseFieldsForKey(moduleKey);
-    return Array.isArray(fields) ? fields.map((f, order) => ({ ...f, order: f.order ?? order })) : [];
+    const { getInventoryModuleFieldCatalog } = require('./inventoryModuleFieldCatalogService');
+    const fields = getInventoryModuleFieldCatalog(moduleKey);
+    return Array.isArray(fields) ? fields : [];
   } catch (err) {
     console.warn(
-      `[inventory bootstrap] getBaseFieldsForKey failed for ${moduleKey}:`,
+      `[inventory bootstrap] field catalog failed for ${moduleKey}:`,
       err?.message || err
     );
     return [];
@@ -214,67 +211,46 @@ function resolveSchemaBaseFields(moduleKey) {
 
 /**
  * Canonical module fields for bootstrap create/backfill.
- * Workbench modules previously used fields: [] and relied on listModules merge —
- * production served empty fields when merge did not attach schema paths.
  */
 function buildWorkbenchModuleFields(moduleKey) {
-  const base = resolveSchemaBaseFields(moduleKey);
-  if (!base.length) return [];
-
-  const {
-    applyPurchaseOrderModuleFieldDefaults
-  } = require('../constants/purchaseOrderModuleDefaults');
-  const {
-    applyPurchaseReturnModuleFieldDefaults
-  } = require('../constants/purchaseReturnModuleDefaults');
-  const {
-    applyDeliveryNoteModuleFieldDefaults
-  } = require('../constants/deliveryNoteModuleDefaults');
-  const {
-    applyDeliveryReturnModuleFieldDefaults
-  } = require('../constants/deliveryReturnModuleDefaults');
-  const {
-    applySalesReturnModuleFieldDefaults
-  } = require('../constants/salesReturnModuleDefaults');
-  const {
-    applyReceiptNoteModuleFieldDefaults
-  } = require('../constants/receiptNoteModuleDefaults');
-  const {
-    applyStockroomModuleFieldDefaults
-  } = require('../constants/stockroomModuleDefaults');
-  const {
-    applyStockAdjustmentModuleFieldDefaults
-  } = require('../constants/stockAdjustmentModuleDefaults');
-  const {
-    applyStockTransferModuleFieldDefaults
-  } = require('../constants/stockTransferModuleDefaults');
-
-  switch (String(moduleKey || '').toLowerCase()) {
-    case 'purchase_orders':
-      return applyPurchaseOrderModuleFieldDefaults(base) || base;
-    case 'purchase_returns':
-      return applyPurchaseReturnModuleFieldDefaults(base) || base;
-    case 'delivery_notes':
-      return applyDeliveryNoteModuleFieldDefaults(base) || base;
-    case 'delivery_returns':
-      return applyDeliveryReturnModuleFieldDefaults(base) || base;
-    case 'sales_returns':
-      return applySalesReturnModuleFieldDefaults(base) || base;
-    case 'receipt_notes':
-      return applyReceiptNoteModuleFieldDefaults(base) || base;
-    case 'stockrooms':
-      return applyStockroomModuleFieldDefaults(base) || base;
-    case 'stock_adjustments':
-      return applyStockAdjustmentModuleFieldDefaults(base) || base;
-    case 'stock_transfers':
-      return applyStockTransferModuleFieldDefaults(base) || base;
-    default:
-      return base;
-  }
+  return resolveSchemaBaseFields(moduleKey);
 }
 
 function hasNonEmptyFields(doc) {
   return Array.isArray(doc?.fields) && doc.fields.length > 0;
+}
+
+/**
+ * Backfill empty field catalogs on platform + any tenant overrides.
+ * Org-level empty MDs take precedence in listModules and wipe UI fields.
+ */
+async function backfillEmptyInventoryModuleFields(moduleKey, fields) {
+  if (!Array.isArray(fields) || !fields.length) return 0;
+  const k = String(moduleKey || '').toLowerCase();
+  const emptyFieldsClause = {
+    $or: [
+      { fields: { $exists: false } },
+      { fields: null },
+      { fields: { $size: 0 } }
+    ]
+  };
+
+  const result = await ModuleDefinition.updateMany(
+    {
+      $and: [
+        emptyFieldsClause,
+        {
+          $or: [
+            { appKey: 'inventory', moduleKey: k },
+            { key: k, type: 'system' },
+            { moduleKey: k, type: 'system' }
+          ]
+        }
+      ]
+    },
+    { $set: { fields } }
+  );
+  return result?.modifiedCount || 0;
 }
 
 async function ensureLedgerModuleDefinition() {
@@ -333,7 +309,13 @@ async function ensureLedgerModuleDefinition() {
     if (Object.keys(patch).length) {
       await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
     }
-    return { created: false, updated: Object.keys(patch).length > 0, moduleKey: 'inventory' };
+    // Also fix tenant overrides that still hold fields: []
+    await backfillEmptyInventoryModuleFields('inventory', payload.fields);
+    return {
+      created: false,
+      updated: Object.keys(patch).length > 0,
+      moduleKey: 'inventory'
+    };
   }
 
   // Legacy: moved from platform.inventory
@@ -411,15 +393,17 @@ async function ensureWorkbenchModuleDefinition(moduleKey) {
     if (Object.keys(patch).length) {
       await ModuleDefinition.updateOne({ _id: existing._id }, { $set: patch });
     }
+    const orgBackfill = await backfillEmptyInventoryModuleFields(moduleKey, schemaFields);
     return {
       created: false,
-      updated: Object.keys(patch).length > 0,
+      updated: Object.keys(patch).length > 0 || orgBackfill > 0,
       moduleKey,
-      fieldsSeeded: Boolean(patch.fields)
+      fieldsSeeded: Boolean(patch.fields) || orgBackfill > 0
     };
   }
 
   await ModuleDefinition.create(base);
+  await backfillEmptyInventoryModuleFields(moduleKey, schemaFields);
   return { created: true, updated: false, moduleKey, fieldsSeeded: schemaFields.length > 0 };
 }
 
