@@ -180,7 +180,13 @@ async function navigateAfterAccept(session, redirectTo) {
       if (isDifferentHost) {
         const transferPayload = authStore.buildSessionTransferPayload();
         if (transferPayload) {
-          const redirectUrl = new URL('/login', target.origin);
+          // Land on the intended post-accept path (usually /onboarding for
+          // demo_converted founders), not /login — router applies ld_session
+          // before requiresAuth so the session is not lost.
+          const path = String(redirectTo || '/platform/home').startsWith('/')
+            ? String(redirectTo || '/platform/home')
+            : `/${redirectTo}`;
+          const redirectUrl = new URL(path, target.origin);
           redirectUrl.hash = `${SESSION_TRANSFER_HASH_KEY}=${encodeURIComponent(transferPayload)}`;
           window.location.replace(redirectUrl.toString());
           return;
@@ -282,13 +288,18 @@ async function submitAccept(skipProfile = false) {
 
     if (data.data?.session) {
       authStore.setUser(data.data.session);
+      const origin = data.data.session.onboarding?.origin
+        || (invite.value.isWorkspaceActivation ? 'demo_converted' : 'invited');
+      const persona = data.data.session.onboarding?.persona
+        || (origin === 'demo_converted' || origin === 'self_serve' ? 'founder' : 'member');
       captureInviteAccepted({
         entitled_apps: invite.value.entitledApps?.length || 0,
       });
       captureOnboardingStarted({
-        persona: 'member',
-        origin: 'invited',
-        organizationId: data.data.session.organizationId,
+        persona,
+        origin,
+        organizationId: data.data.session.organizationId
+          || data.data.session.organization?._id,
       });
       const redirectTo = data.data.session.onboarding?.redirectTo || '/platform/home';
       await navigateAfterAccept(data.data.session, redirectTo);

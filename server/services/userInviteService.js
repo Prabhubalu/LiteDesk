@@ -403,8 +403,9 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
     user.markModified('onboarding');
   }
 
-  const { buildAuthSessionPayload } = require('./authSessionService');
-  const session = await buildAuthSessionPayload(user, organization);
+  // Persist active status + password BEFORE issuing JWT so the first
+  // authenticated requests (onboarding) never resolve a still-invited user.
+  user.lastLogin = new Date();
   await user.save();
 
   await syncDirectoryEntry(user.email, {
@@ -444,6 +445,35 @@ async function acceptInvite({ rawToken, password, profile = {} }) {
       invitee: user,
       organizationId: user.organizationId
     }).catch(() => {});
+  }
+
+  const { buildAuthSessionPayload } = require('./authSessionService');
+  let session;
+  try {
+    session = await buildAuthSessionPayload(user, organization, {
+      markLogin: true,
+      sessionMeta: profile.sessionMeta || {}
+    });
+    // markLogin may set onboarding.startedAt / automatic steps — persist again.
+    if (typeof user.markModified === 'function') {
+      user.markModified('onboarding');
+      user.markModified('permissions');
+    }
+    await user.save();
+  } catch (sessionErr) {
+    if (sessionErr?.code === 'SESSION_LIMIT') {
+      return {
+        ok: false,
+        code: 'SESSION_LIMIT',
+        message: 'Password set. Free a session slot to continue on this device.',
+        email: user.email,
+        organizationName: organization.name,
+        deviceClass: sessionErr.deviceClass,
+        limits: sessionErr.limits,
+        sessions: sessionErr.sessions
+      };
+    }
+    throw sessionErr;
   }
 
   return {

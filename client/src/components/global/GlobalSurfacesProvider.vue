@@ -94,7 +94,12 @@ import { computed, ref, onMounted, onBeforeUnmount, defineAsyncComponent, watch 
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
-import { isStandalonePublicRoute, isTrialExpiredShelllessRoute, isAuthLifecyclePublicRoute } from '@/utils/standaloneRoutes';
+import {
+  isStandalonePublicRoute,
+  isTrialExpiredShelllessRoute,
+  isAuthLifecyclePublicRoute,
+  isOnboardingShelllessRoute
+} from '@/utils/standaloneRoutes';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useReleaseNotes } from '@/composables/useReleaseNotes';
@@ -143,6 +148,9 @@ const surfacesEnabled = computed(() =>
   && !isStandalonePublicRoute(route.path)
   && !isTrialExpiredShelllessRoute(route.path)
   && !isAuthLifecyclePublicRoute(route.path)
+  // Founder wizard must not boot release notes / UI-metadata / mailboxes —
+  // those 401s would wipe a brand-new post-accept session (demo activation).
+  && !isOnboardingShelllessRoute(route.path)
 );
 const aiSuiteEntitled = computed(() => isAiSuiteEntitled(authStore.user));
 const {

@@ -534,6 +534,34 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
+        /**
+         * Apply cross-host session transfer from location hash before auth guards.
+         * Hash key: ld_session=<base64 payload>
+         */
+        applySessionTransferFromLocationHash() {
+            if (typeof window === 'undefined') return false;
+            const raw = window.location.hash.startsWith('#')
+                ? window.location.hash.slice(1)
+                : window.location.hash;
+            if (!raw || !raw.includes('ld_session=')) return false;
+            try {
+                const hashParams = new URLSearchParams(raw);
+                const encoded = hashParams.get('ld_session');
+                if (!encoded) return false;
+                const applied = this.applySessionTransferPayload(encoded);
+                if (applied) {
+                    window.history.replaceState(
+                        {},
+                        '',
+                        `${window.location.pathname}${window.location.search}`
+                    );
+                }
+                return applied;
+            } catch (_error) {
+                return false;
+            }
+        },
+
     _applyAuthenticatedSession(data, endpoint) {
             this.sessionLimit = null;
             this.setUser(data);
