@@ -9,6 +9,7 @@ import { computed, inject, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getTabTitleMetaForPath, resolveTabTitle } from '@/utils/navigationLabels';
 import { buildSidebarStructureForSession } from '@/utils/buildSidebarForSession';
+import { resolveNotificationAppKeyFromPath } from '@/utils/notificationAppKey';
 
 const { t, te } = useI18n();
 import { invalidateTenantSchemaCaches } from '@/utils/tenantSchemaApiCache';
@@ -111,14 +112,8 @@ const detectAppFromRoute = (path) => {
   return null;
 };
 
-const notificationAppKey = computed(() => {
-  const key = detectAppFromRoute(route.path);
-  if (key) return key;
-  if (route.path.startsWith('/dashboard') || route.path.startsWith('/people') || route.path.startsWith('/organizations') || route.path.startsWith('/deals') || route.path.startsWith('/tasks') || route.path.startsWith('/events') || route.path.startsWith('/items') || route.path.startsWith('/forms')) {
-    return 'SALES';
-  }
-  return 'SALES';
-});
+// Must match store/API app keys (SALES/AUDIT/PORTAL/HELPDESK) — not shell CORE lens
+const notificationAppKey = computed(() => resolveNotificationAppKeyFromPath(route.path));
 
 const canAccessSidebarModule = (permission) => {
   if (!permission) return true;

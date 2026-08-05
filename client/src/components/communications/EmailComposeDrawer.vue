@@ -52,10 +52,25 @@
                 {{ error }}
               </div>
 
-              <!-- From (read-only; matches server send resolution) -->
+              <!-- From (identity picker when multiple sendable mailboxes) -->
               <div>
                 <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.helpdeskAnalyticsFrom') }}</label>
+                <select
+                  v-if="hasFromPicker"
+                  class="block w-full mt-2 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300 dark:outline-white/10 sm:text-sm/6 font-mono text-[13px]"
+                  :value="selectedFromId"
+                  @change="selectFromIdentity($event.target.value)"
+                >
+                  <option
+                    v-for="idty in sendIdentities"
+                    :key="idty.id"
+                    :value="idty.id"
+                  >
+                    {{ identityOptionLabel(idty) }}
+                  </option>
+                </select>
                 <input
+                  v-else
                   :value="fromDisplayLine"
                   type="text"
                   readonly
@@ -296,7 +311,7 @@
               <button
                 type="submit"
                 class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="!toRecipients.length || !form.subject"
+                :disabled="!canSendCompose"
               >{{ t('inbox.emailComposeDrawerSend') }}</button>
             </div>
           </form>
@@ -380,6 +395,9 @@ const fromSource = ref('');
 const replyToDisplay = ref('');
 const replyToNote = ref('');
 const composePreviewLoading = ref(false);
+const sendIdentities = ref([]);
+const selectedFromId = ref('');
+const selectedMailboxId = ref('');
 
 const fromDisplayLine = computed(() => {
   const email = String(fromEmailDisplay.value || '').trim();
@@ -389,27 +407,66 @@ const fromDisplayLine = computed(() => {
   return email;
 });
 
+const hasFromPicker = computed(() => sendIdentities.value.length > 1);
+
+function identityOptionLabel(identity) {
+  if (!identity) return '';
+  const email = String(identity.emailAddress || '').trim();
+  const label = String(identity.label || '').trim();
+  if (label && label.toLowerCase() !== email.toLowerCase()) {
+    return `${label} <${email}>`;
+  }
+  return email;
+}
+
 const fromSourceHint = computed(() => {
   if (fromSource.value === 'mailbox') {
-    return 'Sending from your connected mailbox.';
+    return t('inbox.emailComposeFromHintMailbox');
   }
   if (fromSource.value === 'tenant_config') {
-    return 'Sending from your organization email (Settings → Integrations → Email).';
+    return t('inbox.emailComposeFromHintOrg');
   }
   if (fromSource.value === 'user') {
-    return 'Sending from your user account (fallback when no mailbox or org From is set).';
+    return t('inbox.emailComposeFromHintUser');
   }
-  return 'From address is resolved when you send.';
+  return t('inbox.emailComposeFromHintPending');
 });
+
+const EMAIL_ADDRESS_RE =
+  /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.[a-z]{2,}$/i;
+
+function isValidEmailAddress(email) {
+  const s = String(email || '').trim();
+  if (!s || s.length > 254) return false;
+  return EMAIL_ADDRESS_RE.test(s);
+}
 
 function parseEmails(s) {
   return (s || '')
-    .split(/[,;\s]+/)
+    .split(/[,;]+/)
     .map((e) => e.trim().toLowerCase())
-    .filter((e) => e && e.includes('@'));
+    .filter((e) => e && isValidEmailAddress(e));
+}
+
+function hasInvalidEmails(s) {
+  const raw = String(s || '').trim();
+  if (!raw) return false;
+  return raw
+    .split(/[,;]+/)
+    .map((e) => e.trim())
+    .filter(Boolean)
+    .some((e) => !isValidEmailAddress(e));
 }
 
 const toRecipients = computed(() => parseEmails(form.value.to));
+const canSendCompose = computed(
+  () =>
+    toRecipients.value.length > 0 &&
+    Boolean(form.value.subject?.trim?.() || form.value.subject) &&
+    !hasInvalidEmails(form.value.to) &&
+    !hasInvalidEmails(form.value.cc) &&
+    !hasInvalidEmails(form.value.bcc)
+);
 
 watch(() => props.initialTo, (val) => {
   form.value.to = val || '';
@@ -444,16 +501,6 @@ async function loadComposePreview() {
   const presetFromName = String(props.initialFromName || props.initialDraft?.fromName || '').trim();
   const presetReplyTo = String(props.initialReplyTo || props.initialDraft?.replyTo || '').trim();
 
-  if (presetFrom && presetReplyTo) {
-    fromEmailDisplay.value = presetFrom;
-    fromNameDisplay.value = presetFromName;
-    fromSource.value = props.sendingMailbox?.emailAddress ? 'mailbox' : 'tenant_config';
-    replyToDisplay.value = presetReplyTo;
-    replyToNote.value = '';
-    composePreviewLoading.value = false;
-    return;
-  }
-
   composePreviewLoading.value = true;
   replyToNote.value = '';
   try {
@@ -467,26 +514,82 @@ async function loadComposePreview() {
       fromEmailDisplay.value = presetFrom || String(props.sendingMailbox?.emailAddress || '').trim();
       fromNameDisplay.value = presetFromName || String(props.sendingMailbox?.label || '').trim();
       fromSource.value = fromEmailDisplay.value ? (props.sendingMailbox ? 'mailbox' : '') : '';
+      if (props.sendingMailbox?.id && props.sendingMailbox.emailAddress) {
+        sendIdentities.value = [{
+          id: `mailbox:${props.sendingMailbox.id}`,
+          mailboxId: String(props.sendingMailbox.id),
+          emailAddress: props.sendingMailbox.emailAddress,
+          label: props.sendingMailbox.label || props.sendingMailbox.emailAddress,
+          source: 'mailbox',
+          kind: 'personal',
+          viaSmtp: Boolean(props.sendingMailbox.viaSmtp)
+        }];
+        selectedFromId.value = `mailbox:${props.sendingMailbox.id}`;
+        selectedMailboxId.value = String(props.sendingMailbox.id);
+      } else {
+        sendIdentities.value = [];
+        selectedFromId.value = '';
+        selectedMailboxId.value = '';
+      }
       replyToDisplay.value = presetReplyTo;
       composePreviewLoading.value = false;
       return;
     }
-    const mbId = props.sendingMailbox?.id || props.initialDraft?.mailboxId;
+    const mbId = selectedMailboxId.value || props.sendingMailbox?.id || props.initialDraft?.mailboxId;
     if (mbId) params.set('mailboxId', String(mbId));
 
     const data = await apiClient.get(`/communications/email/compose-preview?${params.toString()}`);
-    fromEmailDisplay.value = data?.data?.fromEmail || presetFrom || '';
-    fromNameDisplay.value = data?.data?.fromName || presetFromName || '';
-    fromSource.value = data?.data?.fromSource || '';
-    replyToDisplay.value = data?.data?.replyTo || presetReplyTo || '';
-    replyToNote.value = data?.data?.replyToNote || data?.data?.note || '';
+    const payload = data?.data || {};
+    const list = Array.isArray(payload.identities) ? payload.identities : [];
+    sendIdentities.value = list;
+    fromEmailDisplay.value = payload.fromEmail || presetFrom || '';
+    fromNameDisplay.value = payload.fromName || presetFromName || '';
+    fromSource.value = payload.fromSource || '';
+    replyToDisplay.value = payload.replyTo || presetReplyTo || '';
+    replyToNote.value = payload.replyToNote || payload.note || '';
+    selectedMailboxId.value = payload.mailboxId ? String(payload.mailboxId) : '';
+    if (list.length) {
+      const match =
+        list.find((i) => payload.mailboxId && String(i.mailboxId || '') === String(payload.mailboxId))
+        || list[0];
+      selectedFromId.value = match?.id || '';
+      if (match) {
+        fromEmailDisplay.value = match.emailAddress || fromEmailDisplay.value;
+        fromNameDisplay.value =
+          match.label && match.label !== match.emailAddress ? match.label : (payload.fromName || '');
+        fromSource.value = match.source || fromSource.value;
+        selectedMailboxId.value = match.mailboxId ? String(match.mailboxId) : '';
+      }
+    } else {
+      selectedFromId.value = '';
+    }
   } catch {
     fromEmailDisplay.value = presetFrom || String(props.sendingMailbox?.emailAddress || '').trim();
     fromNameDisplay.value = presetFromName || String(props.sendingMailbox?.label || '').trim();
     replyToDisplay.value = presetReplyTo;
-    replyToNote.value = 'Could not load Reply-To address.';
+    replyToNote.value = t('inbox.emailComposeReplyToLoadError');
   } finally {
     composePreviewLoading.value = false;
+  }
+}
+
+async function selectFromIdentity(identityId) {
+  const identity = sendIdentities.value.find((i) => i.id === String(identityId || ''));
+  if (!identity) return;
+  selectedFromId.value = identity.id;
+  selectedMailboxId.value = identity.mailboxId ? String(identity.mailboxId) : '';
+  fromEmailDisplay.value = identity.emailAddress || '';
+  fromNameDisplay.value =
+    identity.label && identity.label !== identity.emailAddress ? identity.label : '';
+  fromSource.value = identity.source || '';
+  if (identity.mailboxId) {
+    try {
+      await apiClient.put('/communications/email/default-outbound-mailbox', {
+        mailboxId: identity.mailboxId
+      });
+    } catch {
+      /* non-blocking */
+    }
   }
 }
 
@@ -510,6 +613,9 @@ watch(() => props.isOpen, (open) => {
     fromSource.value = '';
     replyToDisplay.value = '';
     replyToNote.value = '';
+    sendIdentities.value = [];
+    selectedFromId.value = '';
+    selectedMailboxId.value = '';
   }
 });
 
@@ -566,9 +672,19 @@ function handleSend() {
     return;
   }
 
+  const toTokens = String(form.value.to || '')
+    .split(/[,;]+/)
+    .map((e) => e.trim())
+    .filter(Boolean);
+  const invalid = toTokens.filter((e) => !isValidEmailAddress(e));
+  if (invalid.length) {
+    error.value = t('inbox.emailComposeInvalidRecipients', { list: invalid.slice(0, 3).join(', ') });
+    return;
+  }
+
   const toList = parseEmails(form.value.to);
   if (!toList.length) {
-    error.value = 'Add at least one valid recipient email';
+    error.value = t('inbox.emailComposeNeedValidRecipient');
     return;
   }
 
@@ -581,6 +697,7 @@ function handleSend() {
       subject: form.value.subject.trim(),
       body: form.value.body,
       attachments: attachments.value.length ? attachments.value : [],
+      ...(selectedMailboxId.value ? { mailboxId: selectedMailboxId.value } : {}),
       ...(props.initialDraft?.parentCommunicationId
         ? { parentCommunicationId: props.initialDraft.parentCommunicationId }
         : {})
@@ -602,6 +719,7 @@ function handleSend() {
     subject: form.value.subject.trim(),
     body: form.value.body,
     attachments: attachments.value.length ? attachments.value : [],
+    ...(selectedMailboxId.value ? { mailboxId: selectedMailboxId.value } : {}),
     ...(props.initialDraft?.parentCommunicationId
       ? { parentCommunicationId: props.initialDraft.parentCommunicationId }
       : {})

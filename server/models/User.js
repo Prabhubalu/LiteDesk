@@ -125,6 +125,16 @@ const UserSchema = new mongoose.Schema({
         ref: 'BusinessHourSet',
         default: null
     },
+
+    /**
+     * Default mailbox for outbound agent/workspace email (From identity).
+     * User-scoped; independent of owner-only Integrations From.
+     */
+    defaultOutboundMailboxId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Mailbox',
+        default: null
+    },
     
     // Role & Permissions (RBAC)
     // NEW: Dynamic Role System

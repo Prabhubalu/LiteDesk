@@ -245,7 +245,7 @@ async function loadCommunicationsForThreadKeys(commQuery, threadKeysOrdered) {
   }
   return Communication.find({ ...commQuery, $or: orPart })
     .select(
-      'threadId _id relatedTo subject direction fromAddress toAddresses sentAt receivedAt createdAt status mailboxId body gmailLabelIds'
+      'threadId _id relatedTo subject direction fromAddress toAddresses sentAt receivedAt createdAt status scheduledAt mailboxId body gmailLabelIds'
     )
     .lean();
 }
@@ -434,6 +434,22 @@ async function loadWorkspaceThreadSummaries(req, mailboxIdQuery) {
     const anchorCommunicationId = last?._id != null ? String(last._id) : '';
     const replyToAddress = computeReplyToAddress(sorted);
 
+    const scheduledMsgs = sorted.filter(
+      (m) =>
+        String(m.direction || '').toLowerCase() === 'outbound' &&
+        String(m.status || '').toLowerCase() === 'scheduled'
+    );
+    const hasScheduledPending = scheduledMsgs.length > 0;
+    let nextScheduledAt = null;
+    if (hasScheduledPending) {
+      const times = scheduledMsgs
+        .map((m) => (m.scheduledAt ? new Date(m.scheduledAt).getTime() : NaN))
+        .filter((n) => Number.isFinite(n))
+        .sort((a, b) => a - b);
+      if (times.length) nextScheduledAt = new Date(times[0]).toISOString();
+    }
+    const lastMessageStatus = last?.status != null ? String(last.status).toLowerCase() : '';
+
     const gmailLabelSet = new Set();
     for (const m of sorted) {
       for (const lid of m.gmailLabelIds || []) {
@@ -448,6 +464,9 @@ async function loadWorkspaceThreadSummaries(req, mailboxIdQuery) {
       messageCount: sorted.length,
       participantDisplay,
       lastMessageDirection: lastDir,
+      lastMessageStatus,
+      hasScheduledPending,
+      nextScheduledAt,
       firstActivityAt,
       lastActivityAt,
       lastViewedAt: lastViewedAt || null,

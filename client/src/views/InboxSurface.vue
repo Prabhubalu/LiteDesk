@@ -188,6 +188,7 @@
               @open-record="onReaderOpenRecord($event)"
               @navigate-prev="navigateThreadPrev"
               @navigate-next="navigateThreadNext"
+              @schedule-cancelled="refreshInboxThreadsAndCounts"
             />
           </div>
 
@@ -471,6 +472,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import {
   ChevronLeftIcon,
+  ClockIcon,
   EnvelopeIcon,
   HashtagIcon,
   InboxIcon,
@@ -964,12 +966,26 @@ const NON_GMAIL_MAIL_DEFS = [
     countKey: 'unread',
     badgeVariant: 'unread'
   },
-  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: markRaw(PaperAirplaneIcon) }
+  { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: markRaw(PaperAirplaneIcon) },
+  {
+    id: 'scheduled',
+    labelKey: 'inbox.inboxSurfaceFolderScheduled',
+    icon: markRaw(ClockIcon),
+    iconClass: 'text-amber-600 dark:text-amber-400',
+    countKey: 'scheduled'
+  }
 ];
 
 const GMAIL_MAIL_DEFS = [
   { id: 'all', labelKey: 'inbox.inboxSurfaceAllMail', icon: markRaw(InboxIcon) },
   { id: 'sent', labelKey: 'inbox.inboxSurfaceFolderSent', icon: markRaw(PaperAirplaneIcon) },
+  {
+    id: 'scheduled',
+    labelKey: 'inbox.inboxSurfaceFolderScheduled',
+    icon: markRaw(ClockIcon),
+    iconClass: 'text-amber-600 dark:text-amber-400',
+    countKey: 'scheduled'
+  },
   { id: 'DRAFT', labelKey: 'inbox.inboxSidebarFolderDrafts', icon: markRaw(PencilSquareIcon), gmailLabel: true },
   { id: 'SPAM', labelKey: 'inbox.inboxSidebarFolderSpam', icon: markRaw(HashtagIcon), gmailLabel: true },
   { id: 'TRASH', labelKey: 'inbox.inboxSidebarFolderTrash', icon: markRaw(TrashIcon), gmailLabel: true }
@@ -1015,6 +1031,8 @@ const inboxSidebarMailItems = computed(() => {
       active = emailFilter.value === 'unread' && !selectedGmailLabelId.value;
     } else if (item.id === 'sent') {
       active = emailFilter.value === 'sent' && !selectedGmailLabelId.value;
+    } else if (item.id === 'scheduled') {
+      active = emailFilter.value === 'scheduled' && !selectedGmailLabelId.value;
     }
     return {
       id: item.id,
@@ -1095,7 +1113,11 @@ const inboxThreadListGroups = computed(() =>
       unread: Boolean(row.unread),
       done: Boolean(row.done),
       lastActivityAt: row.lastActivityAt || row.firstActivityAt,
-      formattedDate: formatGmailStyleDate(row.lastActivityAt || row.firstActivityAt),
+      formattedDate: formatGmailStyleDate(
+        row.hasScheduledPending && row.nextScheduledAt
+          ? row.nextScheduledAt
+          : row.lastActivityAt || row.firstActivityAt
+      ),
       raw: row
     }))
   }))
@@ -1117,6 +1139,11 @@ const inboxFilterChips = computed(() => [
     id: 'sent',
     label: t('inbox.inboxSurfaceFolderSent'),
     active: emailFilter.value === 'sent'
+  },
+  {
+    id: 'scheduled',
+    label: t('inbox.inboxSurfaceFolderScheduled'),
+    active: emailFilter.value === 'scheduled'
   },
   {
     id: 'assigned',
@@ -1175,7 +1202,7 @@ const gmailFolderModalMailboxId = computed(() => {
   return first?.id ? String(first.id) : '';
 });
 
-const threadCounts = ref({ all: 0, unread: 0, sent: 0, assignedToMe: 0, snoozed: 0 });
+const threadCounts = ref({ all: 0, unread: 0, sent: 0, scheduled: 0, assignedToMe: 0, snoozed: 0 });
 const gmailSyncLoading = ref(false);
 const connectInboxWizardOpen = ref(false);
 const gmailServerSetupModalOpen = ref(false);
@@ -1271,6 +1298,7 @@ const emailFilterOptions = computed(() => [
   { value: 'all', label: t('inbox.inboxSurfaceFolderAll') },
   { value: 'unread', label: t('inbox.inboxSurfaceFolderUnread') },
   { value: 'sent', label: t('inbox.inboxSurfaceFolderSent') },
+  { value: 'scheduled', label: t('inbox.inboxSurfaceFolderScheduled') },
   { value: 'assigned_to_me', label: t('inbox.inboxSurfaceFolderAssignedToMe') },
   { value: 'snoozed', label: t('inbox.inboxSurfaceFolderSnoozed') }
 ]);
@@ -1314,6 +1342,14 @@ function onSidebarSelectMail(mailId) {
     refreshInboxThreadsAndCounts();
     return;
   }
+  if (mailId === 'scheduled') {
+    mailboxScopeAllMail.value = true;
+    selectedMailboxFilter.value = null;
+    selectedGmailLabelId.value = null;
+    emailFilter.value = 'scheduled';
+    refreshInboxThreadsAndCounts();
+    return;
+  }
   selectGmailLabel(mailId);
 }
 
@@ -1331,6 +1367,12 @@ function onInboxFilterChip(chipId) {
   }
   if (chipId === 'sent') {
     emailFilter.value = emailFilter.value === 'sent' ? 'all' : 'sent';
+    selectedGmailLabelId.value = null;
+    refreshInboxThreadsAndCounts();
+    return;
+  }
+  if (chipId === 'scheduled') {
+    emailFilter.value = emailFilter.value === 'scheduled' ? 'all' : 'scheduled';
     selectedGmailLabelId.value = null;
     refreshInboxThreadsAndCounts();
     return;
@@ -1909,6 +1951,7 @@ function folderCountBadge(filterValue) {
   if (filterValue === 'all') return threadCounts.value.all;
   if (filterValue === 'unread') return threadCounts.value.unread;
   if (filterValue === 'sent') return threadCounts.value.sent || 0;
+  if (filterValue === 'scheduled') return threadCounts.value.scheduled || 0;
   if (filterValue === 'assigned_to_me') return threadCounts.value.assignedToMe;
   if (filterValue === 'snoozed') return threadCounts.value.snoozed || 0;
   return 0;
@@ -1945,12 +1988,30 @@ function openGmailReconnectForCompose() {
 async function submitCompose(payload, { docked = false } = {}) {
   try {
     const body = { ...payload };
-    const row = docked ? openThreadRow.value : composeRow.value;
-    const mb = row?.mailboxId || selectedMailboxFilter.value;
-    if (mb) body.mailboxId = mb;
+    if (!body.mailboxId) {
+      const row = docked ? openThreadRow.value : composeRow.value;
+      const mb = row?.mailboxId || selectedMailboxFilter.value || composeSendingMailbox.value?.id;
+      if (mb) body.mailboxId = mb;
+    }
     const res = await apiClient.post('/communications/email', body);
     if (res?.success) {
-      notifications.success(res?.queued ? 'Email queued' : 'Email sent');
+      if (res?.scheduled && res?.scheduledAt) {
+        let when = res.scheduledAt;
+        try {
+          when = new Intl.DateTimeFormat(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          }).format(new Date(res.scheduledAt));
+        } catch {
+          /* keep ISO */
+        }
+        notifications.success(t('inbox.emailComposeScheduleSuccess', { when }));
+      } else {
+        notifications.success(res?.queued ? 'Email queued' : 'Email sent');
+      }
       if (docked) {
         dockedReplyClosePulse.value += 1;
         threadReloadPulse.value += 1;
@@ -2210,6 +2271,7 @@ function applyThreadCountsFromPayload(data) {
     all: Number(data.all) || 0,
     unread: Number(data.unread) || 0,
     sent: Number(data.sent) || 0,
+    scheduled: Number(data.scheduled) || 0,
     assignedToMe: Number(data.assignedToMe) || 0,
     snoozed: Number(data.snoozed) || 0
   };
@@ -2448,6 +2510,20 @@ function emailSenderLine(row) {
 }
 
 function emailSnippetLine(row) {
+  if (row?.hasScheduledPending && row?.nextScheduledAt) {
+    try {
+      const when = new Intl.DateTimeFormat(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      }).format(new Date(row.nextScheduledAt));
+      return t('inbox.inboxSurfaceScheduledSnippet', { when });
+    } catch {
+      return t('inbox.inboxSurfaceScheduledSnippet', { when: String(row.nextScheduledAt) });
+    }
+  }
   const blob = String(row?.searchBlob || '').trim();
   if (blob) {
     const preview = blob.slice(0, 140);

@@ -1190,5 +1190,141 @@
   "inboxSidebarClearSearch": {
     "message": "Clear search",
     "description": "Aria label for inbox sidebar search clear button"
+  },
+  "emailComposeReminderLabel": {
+    "message": "Remind me",
+    "description": "Compose toolbar: enable follow-up reminder (unchecked label)"
+  },
+  "emailComposeReminderIn": {
+    "message": "Remind me in",
+    "description": "Compose toolbar: label when reminder days input is visible"
+  },
+  "emailComposeReminderDays": {
+    "message": "days",
+    "description": "Compose toolbar: unit after reminder day count"
+  },
+  "emailComposeReminderDaysAria": {
+    "message": "Number of days until follow-up reminder",
+    "description": "Aria label for compose reminder days input"
+  },
+  "emailComposeScheduleSend": {
+    "message": "Schedule send",
+    "description": "Compose split-button: schedule send popover title and aria"
+  },
+  "emailComposeScheduleLaterToday": {
+    "message": "Later today",
+    "description": "Schedule send smart suggestion"
+  },
+  "emailComposeScheduleTomorrowMorning": {
+    "message": "Tomorrow morning",
+    "description": "Schedule send smart suggestion (8:00)"
+  },
+  "emailComposeScheduleTomorrowAfternoon": {
+    "message": "Tomorrow afternoon",
+    "description": "Schedule send smart suggestion (13:00)"
+  },
+  "emailComposeScheduleMondayMorning": {
+    "message": "Monday morning",
+    "description": "Schedule send smart suggestion next Monday 8:00"
+  },
+  "emailComposeSchedulePickDateTime": {
+    "message": "Pick date & time",
+    "description": "Schedule send: expand custom date/time fields"
+  },
+  "emailComposeScheduleDate": {
+    "message": "Date",
+    "description": "Schedule send custom date field label"
+  },
+  "emailComposeScheduleTime": {
+    "message": "Time",
+    "description": "Schedule send custom time field label"
+  },
+  "emailComposeScheduleConfirm": {
+    "message": "Schedule",
+    "description": "Confirm custom schedule send time"
+  },
+  "emailComposeSchedulePastError": {
+    "message": "Choose a time at least 1 minute in the future",
+    "description": "Validation when schedule time is in the past"
+  },
+  "emailComposeScheduleInvalid": {
+    "message": "Enter a valid date and time",
+    "description": "Validation when schedule datetime is incomplete"
+  },
+  "emailComposeScheduleTooFar": {
+    "message": "Choose a time within the next year",
+    "description": "Validation when schedule is too far ahead"
+  },
+  "emailComposeScheduleSuccess": {
+    "message": "Email scheduled for {when}",
+    "description": "Toast after scheduling send; {when} is localized datetime"
+  },
+  "emailComposeInvalidRecipients": {
+    "message": "Fix invalid address: {list}",
+    "description": "Compose: invalid To/Cc/Bcc addresses block send; {list} is comma-separated addresses"
+  },
+  "emailComposeNeedValidRecipient": {
+    "message": "Add at least one complete email (name@example.com)",
+    "description": "Compose: To field empty of valid addresses"
+  },
+  "emailComposeSubjectRequired": {
+    "message": "Add a subject",
+    "description": "Compose: subject required before send"
+  },
+  "inboxSurfaceFolderScheduled": {
+    "message": "Scheduled",
+    "description": "Inbox sidebar folder — emails waiting to send at a future time"
+  },
+  "inboxSurfaceScheduledSnippet": {
+    "message": "Sends {when}",
+    "description": "Thread list snippet for scheduled emails; {when} is localized datetime"
+  },
+  "emailThreadScheduledBadge": {
+    "message": "Scheduled · {when}",
+    "description": "Message header badge for unsent scheduled email"
+  },
+  "emailThreadScheduledBanner": {
+    "message": "This email will send {when}",
+    "description": "Reader banner for scheduled send time"
+  },
+  "emailThreadScheduledPending": {
+    "message": "Scheduled to send",
+    "description": "Fallback when scheduledAt is missing"
+  },
+  "emailThreadCancelSchedule": {
+    "message": "Cancel send",
+    "description": "Cancel a scheduled outbound email before it sends"
+  },
+  "emailThreadCancelScheduleSuccess": {
+    "message": "Scheduled send cancelled",
+    "description": "Toast after cancelling schedule"
+  },
+  "emailThreadCancelScheduleFailed": {
+    "message": "Could not cancel scheduled send",
+    "description": "Toast when cancel schedule API fails"
+  },
+  "emailComposeFromHintMailbox": {
+    "message": "Sending from your connected mailbox.",
+    "description": "Compose From hint when mailbox identity is used"
+  },
+  "emailComposeFromHintOrg": {
+    "message": "Sending from your organization email. Connect a personal mailbox in Inbox to send as yourself.",
+    "description": "Compose From hint when org Integrations From is used"
+  },
+  "emailComposeFromHintUser": {
+    "message": "Sending from your user account (no mailbox or org From configured).",
+    "description": "Compose From hint for user email fallback"
+  },
+  "emailComposeFromHintPending": {
+    "message": "From address is resolved when you send.",
+    "description": "Compose From hint while preview loads"
+  },
+  "emailComposeReplyToLoadError": {
+    "message": "Could not load Reply-To address.",
+    "description": "Compose preview Reply-To fetch failed"
+  },
+  "emailComposeFromHintMailboxPlatform": {
+    "message": "Sending as your personal mailbox address via organization email delivery. Connect Gmail on this mailbox to send through your provider.",
+    "description": "Compose From when personal mailbox address is used with org SMTP"
   }
 }

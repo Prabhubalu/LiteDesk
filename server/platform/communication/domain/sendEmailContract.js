@@ -37,6 +37,45 @@ function normalizeSendEmailPayload(payload = {}) {
       : ''
   };
 
+  const MAX_FOLLOW_UP_REMINDER_DAYS = 365;
+  let reminderDays = null;
+  const reminderEnabled =
+    payload.reminderEnabled === true
+    || payload.reminderEnabled === 'true'
+    || payload.followUpReminderDays != null
+    || payload.reminderDays != null;
+
+  if (reminderEnabled) {
+    const rawDays =
+      payload.followUpReminderDays != null
+        ? payload.followUpReminderDays
+        : payload.reminderDays;
+    const daysNum = typeof rawDays === 'number' ? rawDays : Number(String(rawDays ?? '').trim());
+    if (!Number.isFinite(daysNum) || !Number.isInteger(daysNum) || daysNum < 1) {
+      // keep null; push error below
+      reminderDays = null;
+    } else if (daysNum > MAX_FOLLOW_UP_REMINDER_DAYS) {
+      reminderDays = null;
+    } else {
+      reminderDays = daysNum;
+    }
+  }
+
+  /** Optional future send time (ISO / Date). null = send now. */
+  let scheduledAt = null;
+  const rawScheduled =
+    payload.scheduledAt != null && String(payload.scheduledAt).trim() !== ''
+      ? payload.scheduledAt
+      : null;
+  if (rawScheduled != null) {
+    const d = rawScheduled instanceof Date ? rawScheduled : new Date(String(rawScheduled));
+    if (!Number.isFinite(d.getTime())) {
+      scheduledAt = undefined; // invalid marker
+    } else {
+      scheduledAt = d;
+    }
+  }
+
   const normalized = {
     standalone,
     relatedTo,
@@ -47,7 +86,11 @@ function normalizeSendEmailPayload(payload = {}) {
     body: typeof payload.body === 'string' ? payload.body : '',
     attachments: Array.isArray(payload.attachments) ? payload.attachments : [],
     parentCommunicationId: payload.parentCommunicationId || null,
-    mailboxId: rawMailboxId
+    mailboxId: rawMailboxId,
+    /** @type {number|null} Days until follow-up reminder; null when not requested */
+    followUpReminderDays: reminderDays,
+    /** @type {Date|null} */
+    scheduledAt: scheduledAt === undefined ? null : scheduledAt
   };
 
   const errors = [];
@@ -67,6 +110,26 @@ function normalizeSendEmailPayload(payload = {}) {
 
   if (normalized.mailboxId && !/^[0-9a-fA-F]{24}$/.test(normalized.mailboxId)) {
     errors.push('mailboxId must be a valid Mongo ObjectId');
+  }
+
+  if (reminderEnabled && normalized.followUpReminderDays == null) {
+    errors.push('Follow-up reminder days must be an integer between 1 and 365');
+  }
+
+  if (rawScheduled != null) {
+    if (scheduledAt === undefined || !(scheduledAt instanceof Date) || !Number.isFinite(scheduledAt.getTime())) {
+      errors.push('scheduledAt must be a valid date/time');
+      normalized.scheduledAt = null;
+    } else {
+      const MIN_AHEAD_MS = 60 * 1000;
+      const MAX_AHEAD_MS = 365 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      if (scheduledAt.getTime() < now + MIN_AHEAD_MS) {
+        errors.push('scheduledAt must be at least 1 minute in the future');
+      } else if (scheduledAt.getTime() > now + MAX_AHEAD_MS) {
+        errors.push('scheduledAt cannot be more than 1 year in the future');
+      }
+    }
   }
 
   return {

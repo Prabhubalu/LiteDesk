@@ -187,6 +187,14 @@ export const EVENT_FIELD_METADATA: Record<string, EventFieldMetadata> = {
     isSystem: true,
     isVisibleInConfig: false,
   },
+  descriptionVersions: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
+  },
   
   // Status: tenant label vocabulary under system categories (lifecycle API).
   // owner 'core' so create/detail can set editable:true (system owner forbids that).
