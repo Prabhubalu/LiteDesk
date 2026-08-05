@@ -19,6 +19,10 @@ const {
   isFieldHidden
 } = require('../services/fieldPermissionResolver');
 
+const {
+  isInventorySchemaModuleKey
+} = require('../constants/inventoryWorkbenchModules');
+
 function rbacFieldParams(user, moduleKey, field, appKey = null) {
   return {
     appKey: appKey || user?._fieldPermissionAppKey || null,
@@ -26,6 +30,66 @@ function rbacFieldParams(user, moduleKey, field, appKey = null) {
     fieldKey: field?.key,
     organization: user?.organization || null
   };
+}
+
+/**
+ * Module-level grant check aligned with runtimePermissionResolver
+ * (inventory workbench falls back to inventory.* envelope; people→contacts, etc.).
+ *
+ * @param {object} user
+ * @param {string} moduleKey
+ * @param {'view'|'create'|'edit'|'delete'} action
+ * @returns {boolean}
+ */
+function hasModuleActionPermission(user, moduleKey, action) {
+  if (!user) return false;
+  if (user.isOwner === true || user._isTenantPrivileged === true) return true;
+
+  const key = String(moduleKey || '').toLowerCase();
+  try {
+    const { resolveRuntimePermission } = require('../services/runtimePermissionResolver');
+    // Do not pass a mismatched request appKey (e.g. SALES from another surface) for inventory modules —
+    // resolver hard-fails when requestAppKey !== effectiveAppKey for native inventory keys.
+    const appKeyHint = isInventorySchemaModuleKey(key)
+      ? 'INVENTORY'
+      : user._fieldPermissionAppKey || null;
+    if (
+      resolveRuntimePermission(user, key, action, {
+        appKey: appKeyHint,
+        orgContext: user._orgPermissionContext || null,
+        organization: user.organization || null
+      })
+    ) {
+      return true;
+    }
+  } catch (_e) {
+    // Fall through to flat envelope checks
+  }
+
+  const normalizedModule = key === 'people' ? 'contacts' : key;
+  const perms =
+    user.permissions?.[normalizedModule] ||
+    user.permissions?.[key] ||
+    (key === 'people' ? user.permissions?.people : null) ||
+    // Inventory workbench: roles often only grant the inventory ledger envelope
+    (isInventorySchemaModuleKey(key) ? user.permissions?.inventory : null) ||
+    null;
+
+  if (perms && typeof perms === 'object') {
+    if (perms[action] === true) return true;
+    if (action === 'view' && (perms.view === true || perms.read === true || perms.viewAll === true)) {
+      return true;
+    }
+  }
+
+  // Settings admins configuring module schemas need to read field catalogs
+  if (action === 'view') {
+    const settings = user.permissions?.settings;
+    if (settings?.edit === true || settings?.customizeFields === true || settings?.view === true) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -46,18 +110,8 @@ function canReadField(field, user, moduleKey, appKey = null) {
   if (isFieldHidden(user, rbacFieldParams(user, moduleKey, field, appKey))) {
     return false;
   }
-  
-  // Check module-level view permission
-  const normalizedModule = moduleKey === 'people' ? 'contacts' : moduleKey;
-  const hasViewPermission = user.permissions?.[normalizedModule]?.view || 
-                           user.permissions?.[normalizedModule]?.viewAll ||
-                           user.permissions?.[moduleKey]?.view ||
-                           user.permissions?.[moduleKey]?.viewAll ||
-                           false;
-  
-  if (!hasViewPermission) return false;
-  
-  return true;
+
+  return hasModuleActionPermission(user, moduleKey, 'view');
 }
 
 /**
@@ -101,9 +155,8 @@ function canWriteField(field, user, moduleKey, appKey = null) {
     return true;
   }
   
-  // Check module-level edit permission
-  const normalizedModule = moduleKey === 'people' ? 'contacts' : moduleKey;
-  const hasEditPermission = user.permissions?.[normalizedModule]?.edit || false;
+  // Check module-level edit permission (inventory/workbench envelope–aware)
+  const hasEditPermission = hasModuleActionPermission(user, moduleKey, 'edit');
   
   if (!hasEditPermission) return false;
   
@@ -125,10 +178,10 @@ function canWriteField(field, user, moduleKey, appKey = null) {
     }
     
     // App-specific fields - check if user has access to that app
-    const appKey = fieldContext.toUpperCase();
+    const appKeyUpper = fieldContext.toUpperCase();
     const hasAppAccess = user.appAccess?.some(
-      access => access.appKey === appKey && access.status === 'ACTIVE'
-    ) || user.allowedApps?.includes(appKey) || false;
+      access => access.appKey === appKeyUpper && access.status === 'ACTIVE'
+    ) || user.allowedApps?.includes(appKeyUpper) || false;
     
     return hasAppAccess && hasEditPermission;
   }
@@ -140,10 +193,10 @@ function canWriteField(field, user, moduleKey, appKey = null) {
     if (fieldContext === 'global') {
       return hasEditPermission;
     }
-    const appKey = fieldContext.toUpperCase();
+    const appKeyUpper = fieldContext.toUpperCase();
     const hasAppAccess = user.appAccess?.some(
-      (access) => access.appKey === appKey && access.status === 'ACTIVE'
-    ) || user.allowedApps?.includes(appKey) || false;
+      (access) => access.appKey === appKeyUpper && access.status === 'ACTIVE'
+    ) || user.allowedApps?.includes(appKeyUpper) || false;
     return hasAppAccess && hasEditPermission;
   }
   
