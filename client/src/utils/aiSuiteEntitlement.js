@@ -10,6 +10,7 @@ export function isAiSuiteEntitled(user) {
   if (user?.entitledAddons && typeof user.entitledAddons === 'object') {
     return user.entitledAddons.ai === true;
   }
-  // Legacy session without entitledAddons payload — do not hard-hide.
-  return true;
+  // No entitlement payload yet — do not mount Astra (avoids speculative
+  // /ai/v2/* calls that 401 and wipe a valid CRM session via apiClient logout).
+  return false;
 }

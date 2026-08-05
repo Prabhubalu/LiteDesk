@@ -27,6 +27,9 @@ export type AstraConversationDetail = AstraConversationSummary & {
 
 const PAGE_SIZE = 40;
 
+/** Never log the user out if Astra history is unavailable. */
+const ASTRA_OPT_OPTS = { skipAuthLogout: true as const };
+
 export function useAstraConversations() {
   const conversations = ref<AstraConversationSummary[]>([]);
   const loading = ref(false);
@@ -39,7 +42,7 @@ export function useAstraConversations() {
     const params = new URLSearchParams();
     params.set('limit', String(PAGE_SIZE));
     if (cursor) params.set('cursor', cursor);
-    return (await apiClient.get(`/ai/v2/conversations?${params.toString()}`)) as {
+    return (await apiClient.get(`/ai/v2/conversations?${params.toString()}`, ASTRA_OPT_OPTS)) as {
       conversations?: AstraConversationSummary[];
       nextCursor?: string | null;
       hasMore?: boolean;
@@ -57,8 +60,8 @@ export function useAstraConversations() {
       hasMore.value = Boolean(data?.hasMore && data?.nextCursor);
     } catch (err: unknown) {
       const e = err as { message?: string; status?: number; code?: string };
-      // Entitlement/permission races — treat as empty history, not a hard UI error.
-      if (e?.status === 403 || e?.status === 404) {
+      // Entitlement/permission/auth races — empty history only; never escalate to session death.
+      if (e?.status === 401 || e?.status === 403 || e?.status === 404) {
         error.value = '';
       } else {
         error.value = e?.message || 'Failed to load conversations';
@@ -97,7 +100,10 @@ export function useAstraConversations() {
   async function loadOne(conversationId: string): Promise<AstraConversationDetail | null> {
     if (!conversationId) return null;
     try {
-      const data = (await apiClient.get(`/ai/v2/conversations/${conversationId}`)) as {
+      const data = (await apiClient.get(
+        `/ai/v2/conversations/${conversationId}`,
+        ASTRA_OPT_OPTS,
+      )) as {
         conversation?: AstraConversationDetail;
       };
       return data?.conversation || null;
@@ -109,7 +115,7 @@ export function useAstraConversations() {
   async function remove(conversationId: string): Promise<boolean> {
     if (!conversationId) return false;
     try {
-      await apiClient.delete(`/ai/v2/conversations/${conversationId}`);
+      await apiClient.delete(`/ai/v2/conversations/${conversationId}`, ASTRA_OPT_OPTS);
       conversations.value = conversations.value.filter((c) => c.id !== conversationId);
       return true;
     } catch {
@@ -143,7 +149,7 @@ export function useAstraConversations() {
       if (scope === 'older') {
         url += `&before=${encodeURIComponent(start.toISOString())}`;
       }
-      await apiClient.delete(url);
+      await apiClient.delete(url, ASTRA_OPT_OPTS);
     } catch {
       /* per-id deletes already applied */
     }
