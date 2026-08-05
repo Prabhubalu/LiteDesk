@@ -6,6 +6,7 @@ const {
   getRescheduleSlots,
   rescheduleAppointment
 } = require('../services/appointmentManageService');
+const { isEventInOpenLifecycle } = require('../domain/events/eventStatus');
 
 async function findAppointmentEvent(req) {
   return Event.findOne({
@@ -90,7 +91,7 @@ exports.cancelAppointment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Appointment not found' });
     }
 
-    if (event.status !== 'Planned') {
+    if (!isEventInOpenLifecycle(event)) {
       return res.status(400).json({
         success: false,
         message: `Cannot cancel an appointment with status "${event.status}".`
@@ -157,7 +158,7 @@ exports.completeAppointment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Appointment not found' });
     }
 
-    if (event.status !== 'Planned') {
+    if (!isEventInOpenLifecycle(event)) {
       return res.status(400).json({
         success: false,
         message: `Cannot complete an appointment with status "${event.status}".`
@@ -207,7 +208,7 @@ exports.markAppointmentNoShow = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Appointment not found' });
     }
 
-    if (event.status !== 'Planned') {
+    if (!isEventInOpenLifecycle(event)) {
       return res.status(400).json({
         success: false,
         message: `Cannot mark no-show when status is "${event.status}".`
@@ -222,11 +223,16 @@ exports.markAppointmentNoShow = async (req, res) => {
     if (!event.appointment) {
       event.appointment = { isAppointment: true };
     }
+    const prevStatus = event.status;
     event.appointment.noShow = true;
     event.appointment.noShowMarkedAt = now;
+    event.status = 'No Show';
+    event.statusCategory = 'CANCELLED';
+    event.cancelledAt = now;
+    event.cancelledBy = req.user._id;
     event.modifiedBy = req.user._id;
     event.modifiedTime = now;
-    pushStatusAudit(event, req.user._id, 'Planned', 'Planned', {
+    pushStatusAudit(event, req.user._id, prevStatus, 'No Show', {
       action: 'no_show',
       reason: req.body?.reason || 'Marked as no-show'
     });
@@ -236,7 +242,7 @@ exports.markAppointmentNoShow = async (req, res) => {
     try {
       emitAppointmentDomainEvent('appointment.no_show', event, {
         triggeredBy: req.user._id,
-        previousState: { status: 'Planned', noShow: false },
+        previousState: { status: prevStatus, noShow: false },
         appKey: 'SALES'
       });
     } catch (err) {
@@ -264,7 +270,7 @@ exports.getGuestManageLink = async (req, res) => {
       event.markModified('appointment');
       await event.save();
     }
-    if (event.status !== 'Planned') {
+    if (!isEventInOpenLifecycle(event)) {
       return res.status(400).json({
         success: false,
         message: 'Manage link is only available for planned appointments.'
@@ -289,7 +295,7 @@ exports.getEventRescheduleSlots = async (req, res) => {
     if (!event) {
       return res.status(404).json({ success: false, message: 'Appointment not found' });
     }
-    if (event.status !== 'Planned' || event.appointment?.noShow) {
+    if (!isEventInOpenLifecycle(event) || event.appointment?.noShow) {
       return res.status(400).json({
         success: false,
         message: 'Only planned appointments can be rescheduled.'

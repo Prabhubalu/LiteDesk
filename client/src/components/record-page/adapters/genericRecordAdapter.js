@@ -21,6 +21,8 @@ import { getGlobalSystemFieldKeys } from '@/platform/fields/fieldCapabilityEngin
 import { getDefaultTagChipClass } from '@/components/record-page/composables/useRecordTags';
 import { shouldHideDetailField, shouldHideRecordPaneDetailField } from '@/components/record-page/fieldVisibilityGuards';
 import { canEditField } from '@/platform/fields/fieldCapabilityEngine';
+import { isManualStatusEditable } from '@/platform/events/eventStatus';
+import { getEventTypeDefinitionByKey, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
 import { isFieldVisibleInContext } from '@/utils/fieldContextFilter';
 import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { normalizeModuleKeyForRegistry, classifyFieldForModule } from '@/platform/fields/FieldRegistry';
@@ -155,6 +157,32 @@ function normalizeArrayFieldValue(value) {
     }
   }
   return value;
+}
+
+/** Label for user/entity/picklist row (never `[object Object]`). */
+function formatRelationOrPicklistLabel(item) {
+  if (item == null || item === '') return '';
+  if (typeof item !== 'object') return String(item).trim();
+  const name = [item.firstName ?? item.first_name, item.lastName ?? item.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  const label = name || item.name || item.title || item.label || item.email || item.value;
+  if (label != null && String(label).trim() !== '' && String(label) !== '[object Object]') {
+    return String(label).trim();
+  }
+  const id = item._id ?? item.id ?? item.userId;
+  return id != null ? String(id) : '';
+}
+
+/** Stable option value (id/string) for multi-select / refs. */
+function multiSelectItemValue(item) {
+  if (item == null || item === '') return null;
+  if (typeof item !== 'object') return String(item);
+  const id = item.value ?? item._id ?? item.id ?? item.userId;
+  if (id != null && id !== '') return String(id);
+  const label = formatRelationOrPicklistLabel(item);
+  return label || null;
 }
 
 function buildPicklistTagChipStyleResolver(fieldDef, moduleKey) {
@@ -556,16 +584,58 @@ export function createGenericRecordAdapter(opts = {}) {
         const scoped = [current, ...allowed].filter(Boolean);
         options = scoped.map((s) => ({ value: s, label: s }));
       }
+
+      // Events status: type vocabulary only (Meeting: no Planned from module union)
+      if (moduleKeyStr === 'events' && normalizedFieldKey === 'status') {
+        const et = record?.eventType;
+        const def =
+          getEventTypeDefinitionByKey(String(et || 'MEETING')) ||
+          EVENT_TYPE_DEFINITIONS.find(
+            (d) =>
+              d.label.toLowerCase() === String(et || '').toLowerCase() ||
+              d.key.toLowerCase() === String(et || '').toLowerCase()
+          ) ||
+          getEventTypeDefinitionByKey('MEETING');
+        const allowed = def?.statusConfig?.allowedStatuses;
+        if (Array.isArray(allowed) && allowed.length > 0) {
+          options = allowed.map((label) => ({ value: label, label }));
+        }
+        // Display coerce: Meeting Planned → Scheduled in UI until re-saved
+        if (
+          (String(et) === 'Meeting' || String(et).toLowerCase() === 'meeting') &&
+          String(rawValue || '').trim() === 'Planned'
+        ) {
+          rawValue = 'Scheduled';
+        }
+      }
       let displayValue = rawValue;
       if (isMultiSelect && Array.isArray(rawValue)) {
+        // Populate picklist options from relation objects so chips resolve labels
+        if (rawValue.some((item) => item != null && typeof item === 'object')) {
+          const byVal = new Map(
+            (options || []).map((opt) => [String(opt?.value ?? opt?._id ?? opt?.id ?? ''), opt])
+          );
+          for (const item of rawValue) {
+            const id = multiSelectItemValue(item);
+            if (!id || byVal.has(id)) continue;
+            const label = formatRelationOrPicklistLabel(item) || id;
+            const opt = { value: id, label };
+            byVal.set(id, opt);
+            options = [...(options || []), opt];
+          }
+        }
         const labels = rawValue.map((item) => {
-          const itemId = item != null && typeof item === 'object' ? (item.value ?? item._id ?? item.id) : item;
+          const itemId = multiSelectItemValue(item);
           if (itemId == null) return '';
           const matchedOption = (options || []).find((opt) => {
             const optId = opt?.value ?? opt?._id ?? opt?.id;
             return optId != null && String(optId) === String(itemId);
           });
-          return matchedOption?.label ?? String(itemId);
+          if (matchedOption?.label) return matchedOption.label;
+          if (item != null && typeof item === 'object') {
+            return formatRelationOrPicklistLabel(item) || itemId;
+          }
+          return itemId;
         }).filter(Boolean);
         displayValue = labels.join(', ');
       } else if (fieldKey === 'tags' && Array.isArray(rawValue)) {
@@ -669,6 +739,10 @@ export function createGenericRecordAdapter(opts = {}) {
           engineAllowsEdit = true;
         }
       }
+      // Events status: editable only for non-audit types (Meeting / Field Sales Beat)
+      if (registryMk === 'events' && normalizedFieldKey === 'status') {
+        engineAllowsEdit = isManualStatusEditable(record?.eventType);
+      }
       const readOnlyByKey = new Set([
         'activities',
         'slacycles',
@@ -698,7 +772,11 @@ export function createGenericRecordAdapter(opts = {}) {
         label: field ? getFieldDisplayLabel(field) : toReadableLabel(fieldKey),
         prefixIcon: iconForKey(fieldKey, field),
         value: fieldKey === 'tags' || isMultiSelect
-          ? (Array.isArray(rawValue) ? rawValue : (rawValue != null && rawValue !== '' ? [].concat(rawValue) : []))
+          ? (Array.isArray(rawValue)
+            ? (isMultiSelect
+              ? rawValue.map((item) => multiSelectItemValue(item)).filter(Boolean)
+              : rawValue)
+            : (rawValue != null && rawValue !== '' ? [].concat(rawValue) : []))
           : rawValue,
         displayValue: displayValue == null || String(displayValue).trim() === '' ? '' : String(displayValue),
         type: fieldType,

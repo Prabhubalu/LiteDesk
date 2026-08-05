@@ -60,20 +60,29 @@
                   {{ t('common.bulkDeleteContinueInBackground') }}
                 </button>
               </div>
-              <div v-else class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-0">
+              <div v-else class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2 sm:gap-3">
                 <button type="button"
-                  class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:ml-3 sm:w-auto"
+                  class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:ml-0 sm:w-auto"
                   :class="confirmButtonClass"
                   :disabled="deleting"
                   @click="handleConfirm">
                   <span v-if="deleting">{{ confirmBusyLabel }}</span>
                   <span v-else>{{ confirmActionLabel }}</span>
                 </button>
+                <button
+                  v-if="secondaryActionLabel"
+                  type="button"
+                  class="mt-3 sm:mt-0 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 sm:w-auto"
+                  :disabled="deleting"
+                  @click="handleSecondary"
+                >
+                  {{ secondaryActionLabel }}
+                </button>
                 <button type="button"
-                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 sm:mt-0 sm:w-auto"
+                  class="mt-3 sm:mt-0 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500 sm:w-auto"
                   :disabled="deleting"
                   @click="handleClose">
-                  {{ t('actions.cancel') }}
+                  {{ dismissLabel }}
                 </button>
               </div>
             </DialogPanel>
@@ -135,6 +144,16 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  /** Optional middle action (e.g. "Save without notifying"). Emits `secondary`. */
+  secondaryLabel: {
+    type: String,
+    default: ''
+  },
+  /** Optional cancel/dismiss button label. */
+  cancelLabel: {
+    type: String,
+    default: ''
+  },
   /** Optional busy label while confirming. */
   confirmingLabel: {
     type: String,
@@ -148,7 +167,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['close', 'confirm']);
+const emit = defineEmits(['close', 'confirm', 'secondary']);
 
 const showBulkProgress = computed(() => props.isBulk && bulkDeleteStore.isActive);
 
@@ -159,6 +178,8 @@ const bulkProgressLabel = computed(() => {
 });
 
 const confirmActionLabel = computed(() => props.confirmLabel || t('actions.delete'));
+const secondaryActionLabel = computed(() => String(props.secondaryLabel || '').trim());
+const dismissLabel = computed(() => props.cancelLabel || t('actions.cancel'));
 const confirmBusyLabel = computed(() => props.confirmingLabel || t('common.deleteInProgress'));
 
 const iconWrapClass = computed(() => {
@@ -273,6 +294,11 @@ const handleClose = () => {
 const handleConfirm = () => {
   if (props.deleting || showBulkProgress.value) return;
   emit('confirm');
+};
+
+const handleSecondary = () => {
+  if (props.deleting || showBulkProgress.value) return;
+  emit('secondary');
 };
 </script>
 

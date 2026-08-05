@@ -482,7 +482,12 @@ const convertRequest = async () => {
     }
   } catch (err) {
     console.error('Error converting request:', err);
-    notifications.error(err.message || t('common.demoRequestsToastFailedToConvertRequest'));
+    const serverDetail = err?.response?.data?.error;
+    notifications.error(
+      serverDetail
+        ? `${err.message}: ${serverDetail}`
+        : (err.message || t('common.demoRequestsToastFailedToConvertRequest'))
+    );
   } finally {
     converting.value = false;
   }

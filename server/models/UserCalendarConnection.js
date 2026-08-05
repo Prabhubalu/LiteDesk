@@ -28,10 +28,22 @@ const userCalendarConnectionSchema = new Schema(
     },
     encryptedRefreshToken: { type: String, default: '' },
     accountEmail: { type: String, default: '', trim: true, lowercase: true },
-    connectedAt: { type: Date, default: null }
+    connectedAt: { type: Date, default: null },
+
+    // Google → Arivu inbound (push notifications + incremental sync)
+    googleSyncToken: { type: String, default: '' },
+    googleWatchChannelId: { type: String, default: '' },
+    googleWatchResourceId: { type: String, default: '' },
+    googleWatchExpiration: { type: Date, default: null },
+    googleWebhookToken: { type: String, default: '' },
+    inboundSyncLockUntil: { type: Date, default: null },
+    lastInboundSyncAt: { type: Date, default: null },
+    lastInboundSyncError: { type: String, default: '' }
   },
   { timestamps: true }
 );
+
+userCalendarConnectionSchema.index({ googleWatchChannelId: 1 }, { sparse: true });
 
 userCalendarConnectionSchema.index(
   { organizationId: 1, userId: 1, provider: 1 },

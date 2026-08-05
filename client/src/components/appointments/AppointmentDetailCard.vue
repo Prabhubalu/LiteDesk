@@ -135,6 +135,7 @@ import { formatUserDateTime } from '@/utils/localeFormat';
 const props = defineProps({
   appointment: { type: Object, default: null },
   status: { type: String, default: '' },
+  statusCategory: { type: String, default: '' },
   canCancel: { type: Boolean, default: true },
   eventId: { type: String, default: '' }
 });
@@ -175,7 +176,14 @@ const guestLinkLoading = ref(false);
 const guestLinkCopied = ref(false);
 const guestLinkError = ref('');
 
-const isPlanned = computed(() => props.status === 'Planned');
+const isPlanned = computed(() => {
+  const s = String(props.status || '').trim();
+  const cat = String(props.statusCategory || '').toUpperCase();
+  if (cat === 'OPEN') return true;
+  if (cat === 'DONE' || cat === 'CANCELLED') return false;
+  // OPEN labels for meetings + legacy
+  return ['Planned', 'Scheduled', 'Rescheduled', 'PLANNED', 'SCHEDULED'].includes(s);
+});
 const canComplete = computed(
   () => isPlanned.value && !props.appointment?.noShow
 );

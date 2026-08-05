@@ -118,26 +118,23 @@ Event Type is a picklist field that determines event behavior and required field
 
 Event lifecycle is **system-controlled** and cannot be configured via Settings.
 
-#### Status Field (System-Controlled)
+#### Status Field (System Categories + Configurable Labels)
 
-**Status Values (System-Owned):**
-- `Planned` - Event created but not completed (default on creation) - **SYSTEM-LOCKED**
-- `Completed` - Event completed (via audit flow or manual completion) - **SYSTEM-LOCKED**
-- `Cancelled` - Event cancelled by user/admin - **SYSTEM-LOCKED**
+**Lifecycle model (world-class lock):** See `docs/architecture/event-status-lifecycle.md`.
 
-**System Behavior:**
-- Status is **always** set to `Planned` on creation (cannot be set by client)
-- Status transitions only via system actions (complete, cancel)
-- Settings cannot configure status values or transitions
-- **All event statuses are system-locked and cannot be:**
-  - Deleted
-  - Renamed
-  - Reordered below configurable statuses
-  - Modified in any way
+- **`statusCategory`** (`OPEN` | `DONE` | `CANCELLED`) — system-owned semantics
+- **`status`** — display labels (tenant-configurable for non-audit types under each category)
 
-**Rationale:** Status is execution state, not structure. Status transitions belong to Work interfaces, not Settings. These statuses are required for event execution and lifecycle management. Event Settings display these statuses for visibility only; they cannot be configured.
+**System seed labels:** `Planned` (OPEN), `Completed` (DONE), `Cancelled` (CANCELLED)
 
-**Architecture Lock:** Any change to these status rules requires architecture review. See Lock Statement (Section 8).
+**Non-audit (Meeting, Field Sales Beat):**
+- Admins add/rename/archive labels under categories in Settings → Events → Status
+- Users may manually change status among type-allowed labels
+- Complete/Cancel actions set the category default terminal labels
+
+**Audit types:** system labels only; transitions via workflow / complete / cancel
+
+**Architecture Lock:** Category set and audit system rules require architecture review. Tenant label vocabulary for non-audit types is supported.
 
 #### Audit State (System-Controlled)
 

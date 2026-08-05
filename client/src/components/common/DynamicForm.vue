@@ -438,6 +438,7 @@ import {
   canEditField,
   isFieldVisibleInConfig
 } from '@/platform/fields/fieldCapabilityEngine';
+import { isAuditEventType } from '@/utils/eventUtils';
 import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
 import {
   shouldShowOrganizationFieldForTypes,
@@ -572,7 +573,12 @@ const isFormSystemField = (field) => {
     const parentScope = String(parentField.fieldScope || '').toUpperCase();
     return !(parentOwner === 'participation' || parentScope === 'AUDIT');
   }
-  if (moduleKey?.toLowerCase() === 'events' && fieldKeyNorm === 'status') return true;
+  // Events status: non-audit types are editable vocabulary (Scheduled/No Show/…).
+  // Audit types keep system-controlled status (hide from create/edit forms).
+  if (moduleKey?.toLowerCase() === 'events' && fieldKeyNorm === 'status') {
+    const eventType = localFormData.value?.eventType;
+    return isAuditEventType(eventType);
+  }
   if (!isFieldVisibleInConfig(moduleKey, field)) return true;
   if (isSystemField(moduleKey, field)) return true;
   if (!canEditField(moduleKey, field)) return true;

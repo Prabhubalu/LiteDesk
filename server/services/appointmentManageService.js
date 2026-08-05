@@ -9,6 +9,7 @@ const { emitAppointmentDomainEvent } = require('./appointmentDomainEvents');
 const { sendAppointmentCancellationEmail } = require('./appointmentConfirmationEmailService');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const { isEventInOpenLifecycle } = require('../domain/events/eventStatus');
 
 async function findEventByManageToken(token) {
   if (!token || String(token).length < 16) return null;
@@ -61,8 +62,8 @@ function publicManagePayload(event, config) {
     slug: config?.slug || appt.publicPageSlug,
     displayName: config?.displayName,
     slotDurationMinutes: config?.slotDurationMinutes || 30,
-    canReschedule: event.status === 'Planned' && !appt.noShow,
-    canCancel: event.status === 'Planned' && !appt.noShow
+    canReschedule: isEventInOpenLifecycle(event) && !appt.noShow,
+    canCancel: isEventInOpenLifecycle(event) && !appt.noShow
   };
 }
 
@@ -97,7 +98,7 @@ async function rescheduleAppointment(event, config, startISO, options = {}) {
     source = 'guest_manage',
     notifyGuest = true
   } = options;
-  if (event.status !== 'Planned') {
+  if (!isEventInOpenLifecycle(event)) {
     const err = new Error('This appointment can no longer be rescheduled.');
     err.statusCode = 400;
     throw err;
@@ -199,7 +200,7 @@ async function rescheduleAppointment(event, config, startISO, options = {}) {
 }
 
 async function cancelAppointmentByGuest(event, reason) {
-  if (event.status !== 'Planned') {
+  if (!isEventInOpenLifecycle(event)) {
     const err = new Error('This appointment can no longer be cancelled.');
     err.statusCode = 400;
     throw err;

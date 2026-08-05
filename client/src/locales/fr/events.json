@@ -1454,5 +1454,33 @@
   "meetingConferenceGateZoomPaste": {
     "message": "Zoom rooms are not auto-created yet. Paste a Zoom join link, or save without a room for now.",
     "description": "Pre-save when Zoom selected without link"
+  },
+  "meetingInvitePromptTitle": {
+    "message": "Notify participants?",
+    "description": "Title for send calendar invites vs silent save"
+  },
+  "meetingInvitePromptMessageCreate": {
+    "message": "Send calendar invites to {count} participant(s)? They will receive the meeting time and join link when the room is available.",
+    "description": "Body when creating a meeting with participants"
+  },
+  "meetingInvitePromptMessageEdit": {
+    "message": "Notify {count} participant(s) of this update via calendar invite?",
+    "description": "Body when editing guest-relevant meeting fields"
+  },
+  "meetingInvitePromptSend": {
+    "message": "Send invites",
+    "description": "Primary: create/update calendar invite"
+  },
+  "meetingInvitePromptSilent": {
+    "message": "Save without notifying",
+    "description": "Secondary: persist CRM only, no calendar notify"
+  },
+  "meetingInviteSentToast": {
+    "message": "Calendar invites sent to {count} participant(s).",
+    "description": "Toast when invites were intentionally sent"
+  },
+  "meetingInviteSilentToast": {
+    "message": "Meeting saved without notifying participants.",
+    "description": "Toast when user chose silent save"
   }
 }

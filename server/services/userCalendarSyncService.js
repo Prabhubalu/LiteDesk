@@ -145,7 +145,9 @@ async function createGoogleEvent(connection, event, options = {}) {
   if (client.error) return { error: client.error };
 
   const tz = timezoneForEvent(event);
-  const attendees = Array.isArray(options.attendees) ? options.attendees : [];
+  const sendInvites = options.sendInvites !== false;
+  const attendees =
+    sendInvites && Array.isArray(options.attendees) ? options.attendees : [];
   const createConference = !!options.createConference;
   const location =
     options.locationOverride != null && options.locationOverride !== ''
@@ -177,7 +179,7 @@ async function createGoogleEvent(connection, event, options = {}) {
     const res = await client.calendar.events.insert({
       calendarId: 'primary',
       conferenceDataVersion: createConference ? 1 : 0,
-      sendUpdates: attendees.length ? 'all' : 'none',
+      sendUpdates: sendInvites && attendees.length ? 'all' : 'none',
       requestBody
     });
 
@@ -191,23 +193,32 @@ async function createGoogleEvent(connection, event, options = {}) {
   }
 }
 
-async function patchGoogleEvent(connection, event, externalEventId) {
+async function patchGoogleEvent(connection, event, externalEventId, options = {}) {
   const client = await getGoogleCalendarClient(connection);
   if (client.error) return { error: client.error };
 
   const tz = timezoneForEvent(event);
+  const sendInvites = options.sendInvites !== false;
+  const attendees = Array.isArray(options.attendees) ? options.attendees : null;
   try {
+    const requestBody = {
+      summary: event.eventName || 'Event',
+      description: buildEventDescription(event),
+      location: event.location || event.meetingLink || undefined,
+      start: { dateTime: new Date(event.startDateTime).toISOString(), timeZone: tz },
+      end: { dateTime: new Date(event.endDateTime).toISOString(), timeZone: tz }
+    };
+    if (attendees) {
+      requestBody.attendees = attendees.map((a) => ({
+        email: a.email,
+        displayName: a.displayName || undefined
+      }));
+    }
     await client.calendar.events.patch({
       calendarId: 'primary',
       eventId: externalEventId,
-      sendUpdates: 'all',
-      requestBody: {
-        summary: event.eventName || 'Event',
-        description: buildEventDescription(event),
-        location: event.location || event.meetingLink || undefined,
-        start: { dateTime: new Date(event.startDateTime).toISOString(), timeZone: tz },
-        end: { dateTime: new Date(event.endDateTime).toISOString(), timeZone: tz }
-      }
+      sendUpdates: sendInvites ? 'all' : 'none',
+      requestBody
     });
     return { ok: true };
   } catch (err) {
@@ -241,7 +252,9 @@ async function createMicrosoftEvent(connection, event, options = {}) {
   const tz = timezoneForEvent(event);
   const startLocal = new Date(event.startDateTime).toISOString().slice(0, 19);
   const endLocal = new Date(event.endDateTime).toISOString().slice(0, 19);
-  const attendees = Array.isArray(options.attendees) ? options.attendees : [];
+  const sendInvites = options.sendInvites !== false;
+  const attendees =
+    sendInvites && Array.isArray(options.attendees) ? options.attendees : [];
   const createConference = !!options.createConference;
   const description = options.description != null ? options.description : buildEventDescription(event);
   const locationText =
@@ -285,7 +298,7 @@ async function createMicrosoftEvent(connection, event, options = {}) {
   }
 }
 
-async function patchMicrosoftEvent(connection, event, externalEventId) {
+async function patchMicrosoftEvent(connection, event, externalEventId, options = {}) {
   const tokenResult = await getMicrosoftAccessToken(connection);
   if (tokenResult.error) return { error: tokenResult.error };
 
@@ -293,21 +306,34 @@ async function patchMicrosoftEvent(connection, event, externalEventId) {
   const startLocal = new Date(event.startDateTime).toISOString().slice(0, 19);
   const endLocal = new Date(event.endDateTime).toISOString().slice(0, 19);
   const description = buildEventDescription(event);
+  const sendInvites = options.sendInvites !== false;
+  const attendees = Array.isArray(options.attendees) ? options.attendees : null;
 
   try {
+    const body = {
+      subject: event.eventName || 'Event',
+      body: description
+        ? { contentType: 'text', content: String(description) }
+        : undefined,
+      location: (event.location || event.meetingLink)
+        ? { displayName: String(event.location || event.meetingLink) }
+        : undefined,
+      start: { dateTime: startLocal, timeZone: tz },
+      end: { dateTime: endLocal, timeZone: tz }
+    };
+    // Include attendees only when notifying; dropping list silently may strip guests if Graph replaces.
+    if (sendInvites && attendees) {
+      body.attendees = attendees.map((a) => ({
+        emailAddress: {
+          address: a.email,
+          name: a.displayName || a.email
+        },
+        type: 'required'
+      }));
+    }
     await graphRequest(tokenResult.accessToken, `/me/events/${encodeURIComponent(externalEventId)}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        subject: event.eventName || 'Event',
-        body: description
-          ? { contentType: 'text', content: String(description) }
-          : undefined,
-        location: (event.location || event.meetingLink)
-          ? { displayName: String(event.location || event.meetingLink) }
-          : undefined,
-        start: { dateTime: startLocal, timeZone: tz },
-        end: { dateTime: endLocal, timeZone: tz }
-      })
+      body: JSON.stringify(body)
     });
     return { ok: true };
   } catch (err) {
@@ -359,9 +385,13 @@ function applyMeetingLinkToEvent(event, meetLink, autoGenerated) {
 /**
  * Create external calendar events for the assignee.
  * For Meetings: mints Google Meet / Teams when calendar is connected, invites participants.
+ * @param {object} event
+ * @param {{ sendInvites?: boolean }} [syncOptions]
  */
-async function syncEventOnCreate(event) {
+async function syncEventOnCreate(event, syncOptions = {}) {
   if (!shouldSyncEvent(event)) return { skipped: true };
+
+  const sendInvites = syncOptions.sendInvites !== false;
 
   const userId = event.assignedTo;
   const organizationId = event.organizationId;
@@ -374,11 +404,15 @@ async function syncEventOnCreate(event) {
         status: 'no_calendar',
         message:
           'Connect Google or Microsoft Calendar on the host user to auto-create Meet/Teams and send invites.'
-      }
+      },
+      sentInvites: false,
+      invitedCount: 0
     };
   }
 
-  const attendees = await resolveAttendeeEmails(event);
+  const allAttendees = await resolveAttendeeEmails(event);
+  // When silent, keep host on their calendar without attendee invite emails
+  const attendees = sendInvites ? allAttendees : [];
   const online = isMeetingEvent(event) && isOnlineMeetingMode(event);
   const provider = String(event.conferenceProvider || '').trim();
   const hasManualLink = !!(event.meetingLink && String(event.meetingLink).trim());
@@ -395,14 +429,14 @@ async function syncEventOnCreate(event) {
 
   for (const conn of ordered) {
     if (conn.provider === 'google' && !sync.googleEventId) {
-      // Only mint Meet once, on the preferred connection; secondary calendars stay invite-free rooms.
       const createMeet =
         online &&
         provider === 'google_meet' &&
         !hasManualLink &&
         !primaryConferenceCreated;
       const result = await createGoogleEvent(conn, event, {
-        attendees: createMeet || hasManualLink ? attendees : attendees,
+        attendees,
+        sendInvites,
         createConference: createMeet,
         locationOverride: conferenceLink || (event.location || undefined),
         description: buildEventDescription({
@@ -453,12 +487,12 @@ async function syncEventOnCreate(event) {
         provider === 'ms_teams' &&
         !hasManualLink &&
         !primaryConferenceCreated;
-      // Skip secondary calendar when we already provisioned conference on the primary provider
       if (primaryConferenceCreated && !createTeams && provider === 'google_meet') {
-        // Optional: still add secondary invite calendar without second conference room
+        // optional secondary calendar
       }
       const result = await createMicrosoftEvent(conn, event, {
         attendees,
+        sendInvites,
         createConference: createTeams,
         locationOverride: conferenceLink || (event.location || undefined),
         description: buildEventDescription({
@@ -545,23 +579,31 @@ async function syncEventOnCreate(event) {
     ok: true,
     changed,
     conference: conferenceStatus,
-    invitedCount: attendees.length
+    invitedCount: sendInvites ? allAttendees.length : 0,
+    sentInvites: sendInvites && allAttendees.length > 0
   };
 }
 
 /**
  * Patch or create external events when CRM event times/title change.
  * If Virtual/Hybrid still has no join link, mint Meet/Teams (same as create).
+ * @param {object} event
+ * @param {{ sendInvites?: boolean }} [syncOptions]
  */
-async function syncEventOnUpdate(event) {
+async function syncEventOnUpdate(event, syncOptions = {}) {
   if (!shouldSyncEvent(event)) return { skipped: true };
+
+  const sendInvites = syncOptions.sendInvites !== false;
 
   const userId = event.assignedTo;
   const organizationId = event.organizationId;
   const connections = await loadConnectedProviders(organizationId, userId);
-  if (!connections.length) return { skipped: true, reason: 'no_connections' };
+  if (!connections.length) {
+    return { skipped: true, reason: 'no_connections', sentInvites: false, invitedCount: 0 };
+  }
 
-  const attendees = await resolveAttendeeEmails(event);
+  const allAttendees = await resolveAttendeeEmails(event);
+  const attendees = sendInvites ? allAttendees : [];
   const online = isMeetingEvent(event) && isOnlineMeetingMode(event);
   const provider = String(event.conferenceProvider || '').trim();
   const hasLink = !!(event.meetingLink && String(event.meetingLink).trim());
@@ -570,24 +612,25 @@ async function syncEventOnUpdate(event) {
     !hasLink &&
     (provider === 'google_meet' || provider === 'ms_teams');
 
-  // First-class room mint when link was never created (e.g. calendar connected after create)
   if (needsConference) {
-    const createResult = await syncEventOnCreate(event);
+    const createResult = await syncEventOnCreate(event, { sendInvites });
     return createResult;
   }
 
   const sync = ensureCalendarSync(event);
   let changed = false;
   const ordered = orderConnectionsForConference(connections, provider, online);
+  const patchOpts = { sendInvites, attendees: allAttendees };
 
   for (const conn of ordered) {
     if (conn.provider === 'google') {
       if (sync.googleEventId) {
-        const result = await patchGoogleEvent(conn, event, sync.googleEventId);
+        const result = await patchGoogleEvent(conn, event, sync.googleEventId, patchOpts);
         if (result.gone) {
           sync.googleEventId = null;
           const created = await createGoogleEvent(conn, event, {
             attendees,
+            sendInvites,
             createConference: false,
             locationOverride: event.meetingLink || event.location
           });
@@ -595,10 +638,13 @@ async function syncEventOnUpdate(event) {
             sync.googleEventId = created.eventId;
             changed = true;
           }
+        } else if (!result.error) {
+          changed = true;
         }
       } else {
         const created = await createGoogleEvent(conn, event, {
           attendees,
+          sendInvites,
           createConference: false,
           locationOverride: event.meetingLink || event.location
         });
@@ -611,11 +657,12 @@ async function syncEventOnUpdate(event) {
 
     if (conn.provider === 'microsoft') {
       if (sync.microsoftEventId) {
-        const result = await patchMicrosoftEvent(conn, event, sync.microsoftEventId);
+        const result = await patchMicrosoftEvent(conn, event, sync.microsoftEventId, patchOpts);
         if (result.gone) {
           sync.microsoftEventId = null;
           const created = await createMicrosoftEvent(conn, event, {
             attendees,
+            sendInvites,
             createConference: false,
             locationOverride: event.meetingLink || event.location
           });
@@ -623,10 +670,13 @@ async function syncEventOnUpdate(event) {
             sync.microsoftEventId = created.eventId;
             changed = true;
           }
+        } else if (!result.error) {
+          changed = true;
         }
       } else {
         const created = await createMicrosoftEvent(conn, event, {
           attendees,
+          sendInvites,
           createConference: false,
           locationOverride: event.meetingLink || event.location
         });
@@ -641,7 +691,12 @@ async function syncEventOnUpdate(event) {
   if (changed && typeof event.markModified === 'function') {
     event.markModified('calendarSync');
   }
-  return { ok: true, changed };
+  return {
+    ok: true,
+    changed,
+    invitedCount: sendInvites ? allAttendees.length : 0,
+    sentInvites: sendInvites && allAttendees.length > 0
+  };
 }
 
 /**
@@ -688,10 +743,12 @@ async function syncEventOnDelete(event) {
 
 /**
  * Best-effort sync; never throws to callers.
+ * @param {object} eventDoc
+ * @param {{ sendInvites?: boolean }} [syncOptions]
  */
-async function safeSyncOnCreate(eventDoc) {
+async function safeSyncOnCreate(eventDoc, syncOptions = {}) {
   try {
-    const result = await syncEventOnCreate(eventDoc);
+    const result = await syncEventOnCreate(eventDoc, syncOptions);
     if (result?.changed) {
       await eventDoc.save();
     }
@@ -702,7 +759,11 @@ async function safeSyncOnCreate(eventDoc) {
   }
 }
 
-async function safeSyncOnUpdate(eventDoc) {
+/**
+ * @param {object} eventDoc
+ * @param {{ sendInvites?: boolean }} [syncOptions]
+ */
+async function safeSyncOnUpdate(eventDoc, syncOptions = {}) {
   try {
     const Event = require('../models/Event');
     let doc = eventDoc;
@@ -710,7 +771,7 @@ async function safeSyncOnUpdate(eventDoc) {
       doc = await Event.findById(eventDoc._id);
       if (!doc) return { skipped: true };
     }
-    const result = await syncEventOnUpdate(doc);
+    const result = await syncEventOnUpdate(doc, syncOptions);
     if (result?.changed) {
       await doc.save();
     }

@@ -11,6 +11,7 @@ const {
 } = require('../utils/appointmentEmailUtils');
 const { buildIcsAttachment } = require('../utils/appointmentEmailUtils');
 const { buildManageUrl } = require('../utils/appointmentManageToken');
+const { isEventInOpenLifecycle } = require('../domain/events/eventStatus');
 
 function buildGuestReminderContent({
   guestName,
@@ -97,7 +98,7 @@ async function sendAppointmentReminderEmail(event, { hoursBefore = 24 } = {}) {
   const guestEmail = appt?.bookedByEmail;
   if (!guestEmail) return { sent: false, skipped: 'no_guest_email' };
   if (appt.reminderEmailSentAt) return { sent: false, skipped: 'already_sent' };
-  if (event.status !== 'Planned') return { sent: false, skipped: 'not_planned' };
+  if (!isEventInOpenLifecycle(event)) return { sent: false, skipped: 'not_planned' };
 
   const organizationId = event.organizationId;
   const timezone = appt.customerTimezone || 'UTC';

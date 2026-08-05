@@ -46,6 +46,19 @@ router.patch('/core-modules/:moduleKey/applications/:appKey', controller.toggleA
 // Organization Status-Types endpoints (specific to organizations module)
 router.get('/core-modules/organizations/status-types', sessionBootstrapLimiter, controller.getOrganizationStatusTypes);
 router.patch('/core-modules/organizations/status-types', controller.updateOrganizationStatusTypes);
+
+// Events status lifecycle (category system-owned; values tenant-configurable for non-audit types)
+const eventStatusLifecycleController = require('../controllers/eventStatusLifecycleController');
+router.get(
+  '/core-modules/events/status-lifecycle',
+  sessionBootstrapLimiter,
+  eventStatusLifecycleController.getEventStatusLifecycle
+);
+router.put(
+  '/core-modules/events/status-lifecycle/:eventTypeKey',
+  requireAdmin(),
+  eventStatusLifecycleController.updateEventStatusLifecycle
+);
 router.get('/core-modules/organizations/participation-types/usage', sessionBootstrapLimiter, controller.getOrganizationParticipationTypesUsage);
 router.get('/core-modules/organizations/participation-types', sessionBootstrapLimiter, controller.getOrganizationParticipationTypes);
 router.put('/core-modules/organizations/participation-types', controller.updateOrganizationParticipationTypes);

@@ -159,7 +159,7 @@ async function completeGoogleOAuthCallback({ code, state }) {
     return { ok: false, error: `Google Calendar connection failed: ${err.message}` };
   }
 
-  await UserCalendarConnection.findOneAndUpdate(
+  const connection = await UserCalendarConnection.findOneAndUpdate(
     { organizationId, userId, provider: 'google' },
     {
       $set: {
@@ -170,6 +170,16 @@ async function completeGoogleOAuthCallback({ code, state }) {
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
+
+  // Near real-time Google → Arivu: register watch + initial pull (non-blocking for redirect)
+  setImmediate(() => {
+    const {
+      ensureGoogleInboundForConnection
+    } = require('./userCalendarInboundSyncService');
+    ensureGoogleInboundForConnection(connection).catch((err) => {
+      console.warn('[userCalendar] inbound bootstrap failed:', err.message);
+    });
+  });
 
   return { ok: true, accountEmail, provider: 'google' };
 }
@@ -302,13 +312,30 @@ async function completeMicrosoftOAuthCallback({ code, state }) {
 }
 
 async function disconnectProvider({ organizationId, userId, provider }) {
+  if (provider === 'google') {
+    try {
+      const { teardownGoogleInboundForUser } = require('./userCalendarInboundSyncService');
+      await teardownGoogleInboundForUser({ organizationId, userId });
+    } catch (err) {
+      console.warn('[userCalendar] teardown inbound failed:', err.message);
+    }
+  }
+
   await UserCalendarConnection.findOneAndUpdate(
     { organizationId, userId, provider },
     {
       $set: {
         encryptedRefreshToken: '',
         accountEmail: '',
-        connectedAt: null
+        connectedAt: null,
+        googleSyncToken: '',
+        googleWatchChannelId: '',
+        googleWatchResourceId: '',
+        googleWatchExpiration: null,
+        googleWebhookToken: '',
+        inboundSyncLockUntil: null,
+        lastInboundSyncAt: null,
+        lastInboundSyncError: ''
       }
     }
   );
@@ -326,6 +353,23 @@ async function listConnectionStatus({ organizationId, userId }) {
   const google = byProvider.google;
   const microsoft = byProvider.microsoft;
   const googleAvailable = await isGoogleCalendarConfigured(organizationId);
+
+  // Existing connections: bootstrap/renew inbound when needed (not on every list poll)
+  if (google?.encryptedRefreshToken && String(google.encryptedRefreshToken).trim()) {
+    const exp = google.googleWatchExpiration ? new Date(google.googleWatchExpiration).getTime() : 0;
+    const lastSync = google.lastInboundSyncAt ? new Date(google.lastInboundSyncAt).getTime() : 0;
+    const needsInbound =
+      !google.googleSyncToken ||
+      !google.googleWatchChannelId ||
+      !exp ||
+      exp < Date.now() + 24 * 60 * 60 * 1000 ||
+      !lastSync ||
+      Date.now() - lastSync > 5 * 60 * 1000;
+    if (needsInbound) {
+      const { ensureGoogleInboundForUser } = require('./userCalendarInboundSyncService');
+      ensureGoogleInboundForUser({ organizationId, userId }).catch(() => {});
+    }
+  }
 
   return {
     connectors: [

@@ -218,6 +218,53 @@ export function formatDateForDisplay(value, dataType) {
  * @param {string} [dataType]
  * @returns {string}
  */
+/**
+ * Prefer display name from a populated user/org-like object (or JSON string thereof).
+ * @param {*} value
+ * @returns {string|null}
+ */
+function humanNameFromActivityValue(value) {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (!s || s === '[Reference]') return null;
+    if ((s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']'))) {
+      try {
+        return humanNameFromActivityValue(JSON.parse(s));
+      } catch {
+        // fall through to regex extraction for truncated blobs
+      }
+    }
+    // Existing event activity logs often store truncated user JSON: {"_id":"...","firstName":"…",…
+    if (s.includes('firstName') || s.includes('lastName') || s.includes('"email"')) {
+      const fn = s.match(/"firstName"\s*:\s*"([^"]*)"/);
+      const ln = s.match(/"lastName"\s*:\s*"([^"]*)"/);
+      const person = [fn?.[1], ln?.[1]].filter(Boolean).join(' ').trim();
+      if (person) return person;
+      const email = s.match(/"email"\s*:\s*"([^"]+)"/);
+      if (email?.[1]) return email[1];
+    }
+    const nameMatch = s.match(/"name"\s*:\s*"([^"]+)"/);
+    if (nameMatch?.[1] && (s.startsWith('{') || s.includes('"_id"'))) return nameMatch[1];
+    return null;
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return null;
+    const parts = value.map((item) => humanNameFromActivityValue(item)).filter(Boolean);
+    return parts.length === value.length && parts.length > 0 ? parts.join(', ') : null;
+  }
+  if (typeof value === 'object') {
+    const person = [value.firstName, value.lastName].filter(Boolean).join(' ').trim();
+    if (person) return person;
+    if (typeof value.username === 'string' && value.username.trim()) return value.username.trim();
+    if (typeof value.email === 'string' && value.email.trim()) return value.email.trim();
+    if (typeof value.name === 'string' && value.name.trim()) return value.name.trim();
+    const peopleName = [value.first_name, value.last_name].filter(Boolean).join(' ').trim();
+    if (peopleName) return peopleName;
+  }
+  return null;
+}
+
 export function formatActivityChangeValue(value, emptyLabel = 'Empty', dataType) {
   if (value === undefined || value === null || value === '') return emptyLabel;
   if (
@@ -233,6 +280,17 @@ export function formatActivityChangeValue(value, emptyLabel = 'Empty', dataType)
   }
   if (typeof value === 'string' && isIsoDateString(value)) {
     return formatDateForDisplay(value) || value;
+  }
+  const human = humanNameFromActivityValue(value);
+  if (human) return human;
+  if (typeof value === 'string' && value.trim() === '[Reference]') return emptyLabel;
+  if (typeof value === 'object') {
+    try {
+      const str = JSON.stringify(value);
+      return str.length > 120 ? `${str.slice(0, 120)}…` : str;
+    } catch {
+      return emptyLabel;
+    }
   }
   return String(value);
 }

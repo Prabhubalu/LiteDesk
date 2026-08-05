@@ -17,6 +17,12 @@ const { buildEventsListQuery } = require('../utils/listQueryBuilders/eventsListQ
 const { fetchListMeta, sendListMetaResponse } = require('../utils/listMetaService');
 const { deriveEventActionPermission } = require('../domain/events/eventPermissions');
 const { assignResolvedSource } = require('../services/sourceResolver');
+const eventStatusService = require('../services/eventStatusService');
+const {
+  isDoneStatus,
+  isCancelledStatus,
+  resolveStatusCategory,
+} = require('../domain/events/eventStatus');
 
 const GEO_REQUIRED_EVENT_TYPES = new Set([
     'Internal Audit',
@@ -658,6 +664,22 @@ exports.getEventById = async (req, res) => {
                 message: 'Event not found.' 
             });
         }
+
+        // Meeting vocabulary does not include Planned — coerce for API consumers
+        if (
+            event &&
+            (event.eventType === 'Meeting' || event.eventType === 'Meeting / Appointment') &&
+            event.status === 'Planned'
+        ) {
+            event = { ...event, status: 'Scheduled', statusCategory: event.statusCategory || 'OPEN' };
+            // Persist silently so badge/list stay consistent
+            Event.updateOne(
+                { _id: event._id, organizationId: req.user.organizationId },
+                { $set: { status: 'Scheduled', statusCategory: 'OPEN' } }
+            ).catch((err) => {
+                console.warn('[getEventById] meeting Planned→Scheduled migration failed:', err?.message || err);
+            });
+        }
         
         const { flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
         res.status(200).json({
@@ -716,11 +738,38 @@ exports.createEvent = async (req, res) => {
             }
         }
         
-        // ===== STRIP STATUS FROM CLIENT REQUESTS =====
-        // Status is system-controlled and cannot be set by clients
-        if (req.body.status !== undefined) {
-            console.warn(`⚠️  Client attempted to set status "${req.body.status}" on event creation. Status will be set to "Planned" by system.`);
-            delete req.body.status;
+        // Status on create:
+        // - Always OPEN category default (type-scoped vocabulary)
+        // - Non-audit may optionally pass an OPEN status label from type vocab
+        // - Audit: force default OPEN only
+        {
+            const createType = req.body.eventType || 'Meeting';
+            const openDefault = await eventStatusService.getDefaultOpenStatus(
+                req.user.organizationId,
+                createType
+            );
+            const requested = req.body.status;
+            if (
+                requested &&
+                eventStatusService.allowsManualStatusChange(createType) &&
+                !isAuditEventType(createType)
+            ) {
+                const resolved = await eventStatusService.resolveStatusValue(
+                    req.user.organizationId,
+                    createType,
+                    requested
+                );
+                if (resolved.ok && resolved.category === 'OPEN') {
+                    req.body.status = resolved.value.label;
+                    req.body.statusCategory = 'OPEN';
+                } else {
+                    req.body.status = openDefault.label;
+                    req.body.statusCategory = 'OPEN';
+                }
+            } else {
+                req.body.status = openDefault.label;
+                req.body.statusCategory = 'OPEN';
+            }
         }
         
         // ===== AUDIT EVENT CREATION GUARDRAILS =====
@@ -762,9 +811,8 @@ exports.createEvent = async (req, res) => {
             // Keep explicit auditorId stored for audit events (no defaults).
             auditorId: isAuditType ? auditorSelection : (req.body.auditorId || null),
             createdBy: req.user._id,
-            modifiedBy: req.user._id
-            // status will be set to "Planned" by model default and pre-save hook
-            // Explicitly set to undefined so model default applies
+            modifiedBy: req.user._id,
+            // status + statusCategory already resolved above (type-scoped OPEN default)
         };
 
         // Internal Audit: relatedToId is locked to the current user's organization
@@ -775,13 +823,29 @@ exports.createEvent = async (req, res) => {
             eventData.relatedToId = req.user.organizationId;
         }
         
-        // Explicitly ensure status is not in eventData (let model default handle it)
-        delete eventData.status;
         delete eventData.calendarSync;
         
-        // Normalize eventType if provided
+        // Client control: send calendar invites to participants (not a schema field)
+        const sendInvites =
+            eventData.sendInvites === false ||
+            eventData.sendInvites === 'false' ||
+            eventData.notifyParticipants === false ||
+            eventData.notifyParticipants === 'false'
+                ? false
+                : true;
+        delete eventData.sendInvites;
+        delete eventData.notifyParticipants;
+
+        // Normalize eventType if provided — keys (MEETING) → labels (Meeting)
         if (eventData.eventType && typeof eventData.eventType === 'string') {
-            eventData.eventType = eventData.eventType.charAt(0).toUpperCase() + eventData.eventType.slice(1);
+            const { EVENT_TYPE_LABEL_BY_KEY, normalizeEventTypeKey } = require('../domain/events/eventStatus');
+            const raw = eventData.eventType.trim();
+            const key = normalizeEventTypeKey(raw);
+            if (key && EVENT_TYPE_LABEL_BY_KEY[key]) {
+                eventData.eventType = EVENT_TYPE_LABEL_BY_KEY[key];
+            } else if (raw === 'Meeting / Appointment') {
+                eventData.eventType = 'Meeting';
+            }
         }
 
         // Event type is mandatory — never create without an explicit type (default Meeting).
@@ -1079,7 +1143,7 @@ exports.createEvent = async (req, res) => {
         let calendarSyncResult = null;
         try {
             const { safeSyncOnCreate } = require('../services/userCalendarSyncService');
-            calendarSyncResult = await safeSyncOnCreate(event);
+            calendarSyncResult = await safeSyncOnCreate(event, { sendInvites });
         } catch (syncErr) {
             console.warn('[createEvent] user calendar sync failed:', syncErr?.message || syncErr);
         }
@@ -1104,7 +1168,8 @@ exports.createEvent = async (req, res) => {
             message: 'Event created successfully.',
             data: flattenCustomFieldsForResponse(populatedEvent),
             conference: calendarSyncResult?.conference || null,
-            invitedCount: calendarSyncResult?.invitedCount ?? 0
+            invitedCount: calendarSyncResult?.invitedCount ?? 0,
+            sentInvites: calendarSyncResult?.sentInvites === true
         });
     } catch (error) {
         console.error('Error creating event - Full error:', error);
@@ -1138,6 +1203,17 @@ exports.updateEvent = async (req, res) => {
         delete req.body.eventId;
         delete req.body.source;
         delete req.body.calendarSync;
+
+        const sendInvitesFlag = (() => {
+            const raw = req.body.sendInvites ?? req.body.notifyParticipants;
+            if (raw === false || raw === 'false' || raw === 0 || raw === '0') return false;
+            if (raw === true || raw === 'true' || raw === 1 || raw === '1') return true;
+            // Default: send when not specified (API clients / older UI)
+            return true;
+        })();
+        delete req.body.sendInvites;
+        delete req.body.notifyParticipants;
+        const sendInvites = sendInvitesFlag;
         
         // Build query (support both _id and eventId)
         const query = { organizationId: req.user.organizationId, deletedAt: null };
@@ -1164,24 +1240,70 @@ exports.updateEvent = async (req, res) => {
             });
         }
         
-        // Disallow edits if event is Completed or Cancelled
-        if (currentEvent.status === 'Completed' || currentEvent.status === 'Cancelled') {
-            return res.status(403).json({
-                success: false,
-                message: `Event cannot be edited when status is "${currentEvent.status}".`
-            });
+        // Terminal open edits: non-audit may still change status (reopen / re-label);
+        // other field edits remain blocked for terminal categories.
+        {
+            const cat =
+                currentEvent.statusCategory ||
+                resolveStatusCategory(currentEvent.status);
+            const isTerminal = cat === 'DONE' || cat === 'CANCELLED';
+            const onlyStatus =
+                req.body.status !== undefined &&
+                Object.keys(req.body).every((k) =>
+                    ['status', 'cancellationReason'].includes(k)
+                );
+            if (
+                isTerminal &&
+                !(
+                    onlyStatus &&
+                    eventStatusService.allowsManualStatusChange(currentEvent.eventType)
+                )
+            ) {
+                return res.status(403).json({
+                    success: false,
+                    message: `Event cannot be edited when status is "${currentEvent.status}".`,
+                });
+            }
         }
-        
-        // ===== STRIP STATUS FROM CLIENT REQUESTS =====
-        // Status is system-controlled and cannot be set by clients via update
+
+        // Status updates:
+        // - Non-audit (Meeting, Field Sales Beat): validated vocabulary + category
+        // - Audit: strip (use complete/cancel / audit workflow)
         if (req.body.status !== undefined) {
-            console.warn(`⚠️  Client attempted to set status "${req.body.status}" on event update. Status change ignored. Use cancel/complete endpoints instead.`);
-            delete req.body.status;
+            if (!eventStatusService.allowsManualStatusChange(currentEvent.eventType)) {
+                console.warn(
+                    `⚠️  Client attempted to set status "${req.body.status}" on audit/system event. Status change ignored.`
+                );
+                delete req.body.status;
+                delete req.body.statusCategory;
+            } else {
+                const resolved = await eventStatusService.resolveStatusValue(
+                    req.user.organizationId,
+                    currentEvent.eventType,
+                    req.body.status
+                );
+                if (!resolved.ok) {
+                    return res.status(400).json({
+                        success: false,
+                        message: resolved.message,
+                    });
+                }
+                req.body.status = resolved.value.label;
+                req.body.statusCategory = resolved.category;
+                // Apply terminal timestamps via shared helper after assign
+            }
         }
         
-        // Normalize eventType if provided
+        // Normalize eventType to model enum labels (Meeting), never keys (MEETING)
         if (req.body.eventType && typeof req.body.eventType === 'string') {
-            req.body.eventType = req.body.eventType.charAt(0).toUpperCase() + req.body.eventType.slice(1);
+            const { EVENT_TYPE_LABEL_BY_KEY, normalizeEventTypeKey } = require('../domain/events/eventStatus');
+            const raw = req.body.eventType.trim();
+            const key = normalizeEventTypeKey(raw);
+            if (key && EVENT_TYPE_LABEL_BY_KEY[key]) {
+                req.body.eventType = EVENT_TYPE_LABEL_BY_KEY[key];
+            } else if (raw === 'Meeting / Appointment') {
+                req.body.eventType = 'Meeting';
+            }
         }
 
         // Internal Audit: relatedToId is locked to the current user's organization
@@ -1246,9 +1368,32 @@ exports.updateEvent = async (req, res) => {
             }
         }
         
-        // Track status changes for audit
-        if (req.body.status && req.body.status !== currentEvent.status) {
-            currentEvent.addAuditEntry('status_changed', req.user._id, currentEvent.status, req.body.status);
+        // Normalize meeting participants → User ObjectIds (edit body often sends populated objects)
+        if (Array.isArray(req.body.attendees)) {
+            req.body.attendees = req.body.attendees
+                .map((a) => {
+                    if (a == null || a === '') return null;
+                    if (typeof a === 'object') return a._id || a.userId || a.id || a.value || null;
+                    return a;
+                })
+                .filter(Boolean);
+        } else if (req.body.attendees === null || req.body.attendees === '') {
+            req.body.attendees = [];
+        }
+
+        // Status transition via shared helper (audit entry + terminal timestamps)
+        if (req.body.status && req.body.status !== currentEvent.status && req.body.statusCategory) {
+            eventStatusService.applyStatusTransition(currentEvent, {
+                newStatus: req.body.status,
+                category: req.body.statusCategory,
+                userId: req.user._id,
+                reason: req.body.cancellationReason || 'Status updated',
+            });
+            req.body.completedAt = currentEvent.completedAt;
+            req.body.cancelledAt = currentEvent.cancelledAt;
+            req.body.cancelledBy = currentEvent.cancelledBy;
+            req.body.cancellationReason = currentEvent.cancellationReason;
+            req.body.statusCategory = currentEvent.statusCategory;
         }
         
         // If linkedFormId is being updated, check if form is Ready and activate it
@@ -1442,6 +1587,7 @@ exports.updateEvent = async (req, res) => {
             { new: true, runValidators: true }
         )
             .populate('assignedTo', 'firstName lastName email')
+            .populate('attendees', 'firstName lastName email')
             .populate('auditorId', 'firstName lastName email')
             .populate('reviewerId', 'firstName lastName email')
             .populate('correctiveOwnerId', 'firstName lastName email')
@@ -1465,9 +1611,10 @@ exports.updateEvent = async (req, res) => {
             console.warn('Record activity log (event update) failed:', logErr?.message || logErr);
         }
 
+        let calendarSyncResult = null;
         try {
             const { safeSyncOnUpdate } = require('../services/userCalendarSyncService');
-            await safeSyncOnUpdate(updatedEvent);
+            calendarSyncResult = await safeSyncOnUpdate(updatedEvent, { sendInvites });
         } catch (syncErr) {
             console.warn('[updateEvent] user calendar sync failed:', syncErr?.message || syncErr);
         }
@@ -1475,7 +1622,20 @@ exports.updateEvent = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Event updated successfully.',
-            data: flattenCustomFieldsForResponse(updatedEvent)
+            data: flattenCustomFieldsForResponse(
+                await Event.findById(updatedEvent._id)
+                    .populate('assignedTo', 'firstName lastName email')
+                    .populate('attendees', 'firstName lastName email')
+                    .populate('auditorId', 'firstName lastName email')
+                    .populate('reviewerId', 'firstName lastName email')
+                    .populate('correctiveOwnerId', 'firstName lastName email')
+                    .populate('relatedToId', 'name')
+                    .populate('modifiedBy', 'firstName lastName')
+                    .populate('linkedFormId', 'name formId formType status')
+            ),
+            conference: calendarSyncResult?.conference || null,
+            invitedCount: calendarSyncResult?.invitedCount ?? 0,
+            sentInvites: calendarSyncResult?.sentInvites === true
         });
     } catch (error) {
         console.error('Error updating event:', error);
@@ -1616,82 +1776,101 @@ exports.bulkDeleteEvents = async (req, res) => {
     }
 };
 
-// Update event status
+// Update event status (non-audit types only — category-backed vocabulary)
 exports.updateEventStatus = async (req, res) => {
     try {
-        let { status } = req.body;
-        
-        // Normalize status (capitalize first letter)
-        if (status) {
-            status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-        }
-        
-        if (!['Scheduled', 'Completed', 'Cancelled', 'Rescheduled'].includes(status)) {
-            return res.status(400).json({ 
+        let { status, reason } = req.body;
+        if (!status || typeof status !== 'string') {
+            return res.status(400).json({
                 success: false,
-                message: 'Invalid status value. Must be one of: Scheduled, Completed, Cancelled, Rescheduled.' 
+                message: 'status is required.',
             });
         }
-        
-        // Build query (support both _id and eventId)
+        status = status.trim();
+
         const query = { organizationId: req.user.organizationId, deletedAt: null };
         if (req.params.id.match(/^[0-9a-f]{24}$/i)) {
             query._id = req.params.id;
         } else {
             query.eventId = req.params.id;
         }
-        
-        // Get current event to track status change
+
         const currentEvent = await Event.findOne(query);
         if (!currentEvent) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Event not found.' 
+                message: 'Event not found.',
             });
         }
-        
-        const oldStatus = currentEvent.status;
-        
-        // Add audit entry
-        currentEvent.addAuditEntry('status_changed', req.user._id, oldStatus, status);
-        
-        const updatedEvent = await Event.findOneAndUpdate(
-            query,
-            { 
-                status, 
-                modifiedBy: req.user._id,
-                auditHistory: currentEvent.auditHistory
-            },
-            { new: true }
-        )
+
+        if (!eventStatusService.allowsManualStatusChange(currentEvent.eventType)) {
+            return res.status(403).json({
+                success: false,
+                message:
+                    'Status for this event type is system-controlled. Use complete/cancel or the audit workflow.',
+                code: 'STATUS_MANUAL_NOT_ALLOWED',
+            });
+        }
+
+        const resolved = await eventStatusService.resolveStatusValue(
+            req.user.organizationId,
+            currentEvent.eventType,
+            status
+        );
+        if (!resolved.ok) {
+            return res.status(400).json({ success: false, message: resolved.message });
+        }
+
+        if (resolved.value.label === currentEvent.status) {
+            return res.status(200).json({
+                success: true,
+                message: 'Event status unchanged.',
+                data: currentEvent,
+            });
+        }
+
+        eventStatusService.applyStatusTransition(currentEvent, {
+            newStatus: resolved.value.label,
+            category: resolved.category,
+            userId: req.user._id,
+            reason: reason || 'Status updated',
+        });
+
+        currentEvent.modifiedBy = req.user._id;
+        await currentEvent.save();
+
+        const updatedEvent = await Event.findById(currentEvent._id)
             .populate('assignedTo', 'firstName lastName email')
             .populate('modifiedBy', 'firstName lastName');
-        
-        if (oldStatus !== status && updatedEvent?._id) {
+
+        if (updatedEvent?._id) {
             try {
                 const { syncDealPlaybookFromActivity } = require('../services/playbookExecutionService');
                 await syncDealPlaybookFromActivity({
                     activityId: updatedEvent._id,
                     activityType: 'event',
                     organizationId: req.user.organizationId,
-                    activityDoc: updatedEvent
+                    activityDoc: updatedEvent,
                 });
             } catch (playbookErr) {
-                console.error('[eventController] playbook sync on status failed:', playbookErr?.message || playbookErr);
+                console.error(
+                    '[eventController] playbook sync on status failed:',
+                    playbookErr?.message || playbookErr
+                );
             }
         }
 
         res.status(200).json({
             success: true,
             message: 'Event status updated successfully.',
-            data: updatedEvent
+            data: updatedEvent,
         });
     } catch (error) {
         console.error('Error updating event status:', error);
-        res.status(400).json({ 
+        res.status(400).json({
             success: false,
-            message: 'Error updating event status.', 
-            error: error.message 
+            message: 'Error updating event status.',
+            error: error.message,
         });
     }
 };
@@ -3179,7 +3358,7 @@ exports.completeEvent = async (req, res) => {
         }
         
         // Already completed (idempotent - return success)
-        if (event.status === 'Completed') {
+        if (isDoneStatus(event.status) || event.statusCategory === 'DONE') {
             return res.status(200).json({
                 success: true,
                 message: 'Event is already completed.',
@@ -3198,17 +3377,17 @@ exports.completeEvent = async (req, res) => {
             }
         }
         
-        const oldStatus = event.status;
-        
-        // Update status to Completed
-        event.status = 'Completed';
-        event.completedAt = new Date();
-        event.executionEndTime = new Date();
-        
-        // Add audit entry
-        event.addAuditEntry('status_changed', req.user._id, oldStatus, 'Completed', {
+        const terminal = await eventStatusService.getDefaultTerminalStatus(
+            req.user.organizationId,
+            event.eventType,
+            'DONE'
+        );
+
+        eventStatusService.applyStatusTransition(event, {
+            newStatus: terminal.label,
+            category: 'DONE',
+            userId: req.user._id,
             reason: 'Event manually completed',
-            completedAt: event.completedAt
         });
         
         event.modifiedBy = req.user._id;
@@ -3295,7 +3474,7 @@ exports.cancelEvent = async (req, res) => {
         }
         
         // Already cancelled (idempotent - return success)
-        if (event.status === 'Cancelled') {
+        if (isCancelledStatus(event.status) || event.statusCategory === 'CANCELLED') {
             return res.status(200).json({
                 success: true,
                 message: 'Event is already cancelled.',
@@ -3303,21 +3482,17 @@ exports.cancelEvent = async (req, res) => {
             });
         }
         
-        const oldStatus = event.status;
-        
-        // Update status to Cancelled
-        event.status = 'Cancelled';
-        event.cancelledAt = new Date();
-        event.cancelledBy = req.user._id;
-        if (reason) {
-            event.cancellationReason = reason.substring(0, 500); // Enforce max length
-        }
-        
-        // Add audit entry
-        event.addAuditEntry('status_changed', req.user._id, oldStatus, 'Cancelled', {
+        const terminal = await eventStatusService.getDefaultTerminalStatus(
+            req.user.organizationId,
+            event.eventType,
+            'CANCELLED'
+        );
+
+        eventStatusService.applyStatusTransition(event, {
+            newStatus: terminal.label,
+            category: 'CANCELLED',
+            userId: req.user._id,
             reason: reason || 'Event cancelled',
-            cancelledAt: event.cancelledAt,
-            cancelledBy: req.user._id
         });
         
         event.modifiedBy = req.user._id;

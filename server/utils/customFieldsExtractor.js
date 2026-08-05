@@ -17,6 +17,8 @@ const RESERVED_KEYS = new Set([
   'modifiedBy',   'deletedAt', 'deletedBy', 'deletionReason',
   'calendarSync',
   'source', // System-managed creation channel; set only via sourceResolver on the server
+  'sendInvites', // request-scoped calendar invite preference (not a field)
+  'notifyParticipants',
   'playbookState',
   'portalAccess',
   'personNumber',
