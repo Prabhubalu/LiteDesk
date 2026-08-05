@@ -208,20 +208,32 @@ const coloredOptions = computed(() =>
 const selectedValues = computed(() => {
   const value = props.modelValue;
   if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
+  let list;
+  if (Array.isArray(value)) list = value;
+  else if (typeof value === 'string' && value.trim()) {
     const trimmed = value.trim();
     if (trimmed.startsWith('[')) {
       try {
         const parsed = JSON.parse(trimmed);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) list = parsed;
       } catch {
         // fall through
       }
     }
-    return trimmed.split(',').map((part) => part.trim()).filter(Boolean);
+    if (!list) list = trimmed.split(',').map((part) => part.trim()).filter(Boolean);
+  } else {
+    list = [value].filter(Boolean);
   }
-  return [value].filter(Boolean);
+  // Coerce populated user/entity objects → stable ids for model/chip keying
+  return (list || [])
+    .map((item) => {
+      if (item != null && typeof item === 'object') {
+        const id = item.value ?? item._id ?? item.id ?? item.userId;
+        return id != null ? String(id) : item;
+      }
+      return item;
+    })
+    .filter((item) => item != null && String(item).trim() !== '');
 });
 
 const filteredOptions = computed(() => filterPicklistOptions(coloredOptions.value, searchQuery.value));
@@ -239,9 +251,23 @@ function optionColor(option) {
 }
 
 function displayChipLabel(selected) {
+  if (selected != null && typeof selected === 'object') {
+    const name = [selected.firstName ?? selected.first_name, selected.lastName ?? selected.last_name]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    const fromUser = name || selected.name || selected.label || selected.email;
+    if (fromUser) return String(fromUser);
+  }
   const value = getPicklistOptionValue(selected);
   const match = findPicklistOptionByValue(coloredOptions.value, value);
-  return match ? optionLabel(match) : optionLabel(selected);
+  if (match) return optionLabel(match);
+  // Prefer scalar over [object Object]
+  if (selected != null && typeof selected === 'object') {
+    const id = selected._id ?? selected.id ?? selected.value;
+    return id != null ? String(id) : optionLabel(selected);
+  }
+  return optionLabel(selected);
 }
 
 function resolveChipColor(selected) {

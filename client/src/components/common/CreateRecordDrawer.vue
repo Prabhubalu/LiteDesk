@@ -308,8 +308,9 @@ import { getFieldDependencyState } from '@/utils/dependencyEvaluation';
 import { useAuthStore } from '@/stores/authRegistry';
 import { resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import { isAuditEventType, isEventLocationGeoValid, resolveEventGeoRequired, evaluateMeetingConferenceSaveGate } from '@/utils/eventUtils';
-import { confirmAction } from '@/composables/useConfirmAction';
-import { getEventTypeByKey, getEventTypeByLabel, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
+import { resolveMeetingInvitePrompt } from '@/platform/events/meetingInvitePrompt';
+import { confirmAction, confirmActionChoice } from '@/composables/useConfirmAction';
+import { getEventTypeByKey, getEventTypeByLabel, getEventTypeDefinitionByKey, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
 import { useTabs } from '@/composables/useTabs';
 import { useRoute } from 'vue-router';
 import { getTaskSystemFields } from '@/platform/fields/taskFieldModel';
@@ -2009,11 +2010,12 @@ const normalizeEventTypeForSubmission = (rawEventType) => {
   const candidate = String(rawEventType).trim();
   if (!candidate) return '';
 
+  // Model enum stores labels ('Meeting'), not keys ('MEETING')
   const byKey = getEventTypeByKey(candidate);
-  if (byKey?.key) return byKey.key;
+  if (byKey?.label) return byKey.label;
 
   const byLabel = getEventTypeByLabel(candidate);
-  if (byLabel?.key) return byLabel.key;
+  if (byLabel?.label) return byLabel.label;
 
   const normalizedCandidate = normalizeEventTypeToken(candidate);
   const fallbackMatch = EVENT_TYPE_DEFINITIONS.find((definition) => {
@@ -2023,7 +2025,7 @@ const normalizeEventTypeForSubmission = (rawEventType) => {
     );
   });
 
-  return fallbackMatch?.key || candidate;
+  return fallbackMatch?.label || candidate;
 };
 
 const getPreferredPrefillField = (module) => {
@@ -2110,7 +2112,7 @@ const initializeForm = (module) => {
     initialForm.paymentCurrency = orgCurrency;
   }
   
-  // If editing, merge with existing record data
+    // If editing, merge with existing record data
   if (props.record) {
     const recordData =
       props.moduleKey === 'cases'
@@ -2127,14 +2129,26 @@ const initializeForm = (module) => {
       }
     });
     
-    // Ensure Multi-Picklist fields are arrays
+    // Ensure Multi-Picklist fields are arrays (and collapse populated user/entity rows to ids)
     for (const field of fields) {
-      if (field.dataType === 'Multi-Picklist') {
+      if (field.dataType === 'Multi-Picklist' || String(field.key || '').toLowerCase() === 'attendees') {
         const value = recordData[field.key];
         if (value !== null && value !== undefined && !Array.isArray(value)) {
           recordData[field.key] = [value].filter(Boolean);
         } else if (!value) {
           recordData[field.key] = [];
+        }
+        if (Array.isArray(recordData[field.key])) {
+          recordData[field.key] = recordData[field.key]
+            .map((item) => {
+              if (item == null || item === '') return null;
+              if (typeof item === 'object') {
+                return item._id || item.id || item.userId || item.value || null;
+              }
+              return item;
+            })
+            .filter(Boolean)
+            .map((id) => String(id));
         }
       }
     }
@@ -2194,6 +2208,15 @@ const initializeForm = (module) => {
     }
     if (!Array.isArray(fd.attendees)) {
       fd.attendees = [];
+    }
+    // Seed status from event-type lifecycle defaults (Meeting → Scheduled)
+    if (fd.status == null || String(fd.status).trim() === '') {
+      const def =
+        getEventTypeDefinitionByKey(String(fd.eventType || 'MEETING')) ||
+        EVENT_TYPE_DEFINITIONS.find(
+          (d) => d.label.toLowerCase() === String(fd.eventType || '').toLowerCase()
+        );
+      fd.status = def?.statusConfig?.defaultStatus || (isMeeting ? 'Scheduled' : 'Planned');
     }
     formData.value = fd;
   }
@@ -2420,6 +2443,24 @@ watch(() => formData.value, (newFormData, oldFormData) => {
       changedFields.add(key);
     }
   }
+
+  // Events create: when event type changes, apply that type's default status
+  if (
+    props.moduleKey === 'events' &&
+    !props.record &&
+    changedFields.has('eventType') &&
+    newFormData?.eventType !== oldFormData?.eventType
+  ) {
+    const def =
+      getEventTypeDefinitionByKey(String(newFormData.eventType || '')) ||
+      EVENT_TYPE_DEFINITIONS.find(
+        (d) => d.label.toLowerCase() === String(newFormData.eventType || '').toLowerCase()
+      );
+    const nextDefault = def?.statusConfig?.defaultStatus;
+    if (nextDefault && formData.value.status !== nextDefault) {
+      formData.value = { ...formData.value, status: nextDefault };
+    }
+  }
   
   // For each changed field that has an error, check if it's now valid
   for (const fieldKey of changedFields) {
@@ -2463,7 +2504,7 @@ const handleSubmit = async () => {
         '__v',
         'activitylogs',
         ...getGlobalSystemFieldKeys(),
-        ...(props.moduleKey === 'events' ? ['status'] : [])
+        // Events status is editable for non-audit types (lifecycle vocabulary)
       ];
       // Helpdesk Case: module schema may mark server-managed keys as required; never validate on create.
       if (props.moduleKey === 'cases' && !isEditing.value) {
@@ -2625,6 +2666,39 @@ const handleSubmit = async () => {
         }
       }
     }
+
+    // Meeting invites: ask send vs silent save when participants are in play
+    let eventSendInvites = undefined;
+    if (props.moduleKey === 'events') {
+      const inviteDecision = resolveMeetingInvitePrompt({
+        isEditing: isEditing.value,
+        eventType: formData.value?.eventType,
+        form: formData.value,
+        record: props.record
+      });
+      if (inviteDecision.prompt) {
+        const choice = await confirmActionChoice({
+          title: t('events.meetingInvitePromptTitle'),
+          message: t(
+            isEditing.value
+              ? 'events.meetingInvitePromptMessageEdit'
+              : 'events.meetingInvitePromptMessageCreate',
+            { count: inviteDecision.participantCount }
+          ),
+          confirmLabel: t('events.meetingInvitePromptSend'),
+          secondaryLabel: t('events.meetingInvitePromptSilent'),
+          cancelLabel: t('actions.cancel'),
+          tone: 'success'
+        });
+        if (choice === 'cancel') {
+          saving.value = false;
+          return;
+        }
+        eventSendInvites = choice === 'confirm';
+      } else {
+        eventSendInvites = inviteDecision.sendInvites;
+      }
+    }
     
     drawerDbg('[CreateRecordDrawer] ✅ Validation passed, proceeding with submission...');
     
@@ -2748,12 +2822,30 @@ const handleSubmit = async () => {
         }
       }
       
-      // Normalize eventType to canonical key (e.g., "Meeting" -> "MEETING")
+      // Normalize eventType to model enum labels (Meeting), never keys (MEETING)
       const normalizedEventType = normalizeEventTypeForSubmission(
         submitData.eventType ?? formData.value?.eventType
       );
       if (normalizedEventType) {
         submitData.eventType = normalizedEventType;
+      }
+
+      // Participants: always id strings (edit seed may leave populated user objects)
+      const rawAttendees = submitData.attendees ?? formData.value?.attendees;
+      if (rawAttendees !== undefined) {
+        const list = Array.isArray(rawAttendees) ? rawAttendees : rawAttendees ? [rawAttendees] : [];
+        submitData.attendees = list
+          .map((a) => {
+            if (a == null || a === '') return null;
+            if (typeof a === 'object') return a._id || a.userId || a.id || a.value || null;
+            return a;
+          })
+          .filter(Boolean)
+          .map((id) => String(id));
+      }
+
+      if (typeof eventSendInvites === 'boolean') {
+        submitData.sendInvites = eventSendInvites;
       }
 
     }
@@ -2769,10 +2861,8 @@ const handleSubmit = async () => {
     
     // Strip status field for events (system-controlled)
     if (props.moduleKey === 'events') {
-      if (submitData.status !== undefined) {
-        drawerDbg('[CreateRecordDrawer] ⚠️ Stripping status field from event payload:', submitData.status);
-        delete submitData.status;
-      }
+      // Keep status for non-audit; backend validates type vocabulary + OPEN default.
+      // (Old strip forced model default Planned — broke Meeting → Scheduled.)
     }
 
     // Helpdesk cases: status transitions must use PATCH /:id/status, not PUT
@@ -3292,7 +3382,7 @@ const handleSubmit = async () => {
       const savedRecord = response.data || response;
 
       // Meeting: surface conference provision outcome (generate Meet/Teams + invites)
-      if (props.moduleKey === 'events' && !isEditing.value && response.conference) {
+      if (props.moduleKey === 'events' && response.conference) {
         const conf = response.conference;
         try {
           const { useNotifications } = await import('@/composables/useNotifications');
@@ -3309,7 +3399,24 @@ const handleSubmit = async () => {
             notifications.info(t('events.meetingCreateConferencePasteZoom'));
           } else if (conf.status === 'generate_failed') {
             notifications.warning(conf.error || conf.message || t('events.meetingRecordNoJoinLink'));
+          } else if (response.sentInvites === true && (response.invitedCount ?? 0) > 0) {
+            notifications.success(
+              t('events.meetingInviteSentToast', { count: response.invitedCount })
+            );
+          } else if (response.sentInvites === false && isEditing.value) {
+            notifications.info(t('events.meetingInviteSilentToast'));
           }
+        } catch {
+          /* non-blocking */
+        }
+      } else if (
+        props.moduleKey === 'events' &&
+        response.sentInvites === false &&
+        isEditing.value
+      ) {
+        try {
+          const { useNotifications } = await import('@/composables/useNotifications');
+          useNotifications().info(t('events.meetingInviteSilentToast'));
         } catch {
           /* non-blocking */
         }

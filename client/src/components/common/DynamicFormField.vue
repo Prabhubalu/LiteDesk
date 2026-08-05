@@ -1129,6 +1129,7 @@ import {
 } from '@/utils/picklistInlineOptionCreate';
 import { canEditField } from '@/platform/fields/fieldCapabilityEngine';
 import { filterFormsForEventLinkedForm, resolveEventGeoRequired } from '@/utils/eventUtils';
+import { getEventTypeDefinitionByKey, EVENT_TYPE_DEFINITIONS } from '@/metadata/eventTypes';
 import { createEmptyGeoLocation } from '@/types/eventLocation.types';
 import { isModuleRegistered } from '@/platform/fields/FieldRegistry';
 
@@ -1489,7 +1490,32 @@ const mergedPicklistSourceOptions = computed(() => {
   const fieldKeyNorm = String(props.field?.key || '').toLowerCase();
   const isCurrencyCodeField =
     fieldKeyNorm === 'currency' || fieldKeyNorm === 'paymentcurrency';
-  const base = Array.isArray(props.field.options) ? props.field.options : [];
+  let base = Array.isArray(props.field.options) ? props.field.options : [];
+
+  // Events status vocabulary: scope options by event type (Meeting seeds vs audit/FSB)
+  if (String(props.moduleKey || '').toLowerCase() === 'events' && fieldKeyNorm === 'status') {
+    const eventType = props.formContext?.eventType;
+    let def =
+      getEventTypeDefinitionByKey(String(eventType || 'MEETING')) ||
+      EVENT_TYPE_DEFINITIONS.find(
+        (d) =>
+          d.label.toLowerCase() === String(eventType || '').toLowerCase() ||
+          d.key.toLowerCase() === String(eventType || '').toLowerCase()
+      );
+    if (!def) def = getEventTypeDefinitionByKey('MEETING');
+    const allowed = def?.statusConfig?.allowedStatuses;
+    if (Array.isArray(allowed) && allowed.length > 0) {
+      const byVal = new Map(
+        base.map((opt) => [String(opt?.value ?? opt?.label ?? opt).toLowerCase(), opt])
+      );
+      base = allowed.map((label) => {
+        const existing = byVal.get(String(label).toLowerCase());
+        if (existing) return typeof existing === 'object' ? existing : { value: existing, label: existing };
+        return { value: label, label };
+      });
+    }
+  }
+
   const currencyExtras = isCurrencyCodeField
     ? currencyOptions.value.map((c) => ({ value: c.code, label: c.code }))
     : [];
@@ -2112,7 +2138,8 @@ const normalizePicklistOption = (option) => {
 const getPicklistOptionValue = (option) => {
   if (typeof option === 'string') return option;
   if (typeof option === 'object' && option !== null) {
-    return option.value || option.label || String(option);
+    // User/entity rows use _id; picklist options use value/label
+    return option.value || option._id || option.id || option.userId || option.label || String(option);
   }
   return String(option);
 };
@@ -2268,14 +2295,24 @@ const normalizeMultiValue = (value) => {
   const optionsToSearch = props.field.dataType === 'Multi-Picklist'
     ? filteredPicklistOptions.value
     : (props.field.options || []);
+  const raw =
+    value && typeof value === 'object'
+      ? value.value || value._id || value.id || value.userId || value.label || value
+      : value;
   const option = optionsToSearch.find(opt => {
     const optValue = getPicklistOptionValue(opt);
-    return optValue === value || optValue === String(value);
+    return optValue === raw || String(optValue) === String(raw);
   });
   if (option) {
     return normalizePicklistOption(option);
   }
-  return String(value);
+  if (value && typeof value === 'object') {
+    const name = [value.firstName, value.lastName].filter(Boolean).join(' ').trim();
+    if (name) return name;
+    if (value.email) return value.email;
+    if (value.label) return String(value.label);
+  }
+  return String(raw ?? value ?? '');
 };
 
 // Check if a multi-value option is selected

@@ -147,3 +147,19 @@ exports.disconnect = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * Google Calendar push notifications (events.watch).
+ * Public endpoint — authenticated via X-Goog-Channel-Token.
+ */
+exports.googlePushNotification = async (req, res) => {
+  try {
+    const { handleGooglePushNotification } = require('../services/userCalendarInboundSyncService');
+    const result = await handleGooglePushNotification(req.headers);
+    return res.status(result.status || 200).end();
+  } catch (err) {
+    console.error('[userCalendar] google push:', err);
+    // Still 200 to avoid Google retry storms on app bugs
+    return res.status(200).end();
+  }
+};

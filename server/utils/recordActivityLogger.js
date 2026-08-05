@@ -12,6 +12,33 @@ const SYSTEM_KEYS = new Set([
   'deletedAt', 'deletedBy', 'deletionReason', 'customFields', 'auditHistory'
 ]);
 
+/** User-reference fields common on event (and similar) records */
+const EVENT_USER_REF_FIELDS = new Set([
+  'assignedTo',
+  'auditorId',
+  'reviewerId',
+  'correctiveOwnerId'
+]);
+const EVENT_USER_ARRAY_FIELDS = new Set(['attendees']);
+const EVENT_ORG_REF_FIELDS = new Set(['relatedToId']);
+
+/**
+ * Prefer a human name from a populated user/org-like document.
+ * @param {*} value
+ * @returns {string|null}
+ */
+function humanNameFromObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const person = [value.firstName, value.lastName].filter(Boolean).join(' ').trim();
+  if (person) return person;
+  if (typeof value.username === 'string' && value.username.trim()) return value.username.trim();
+  if (typeof value.email === 'string' && value.email.trim()) return value.email.trim();
+  if (typeof value.name === 'string' && value.name.trim()) return value.name.trim();
+  const peopleName = [value.first_name, value.last_name].filter(Boolean).join(' ').trim();
+  if (peopleName) return peopleName;
+  return null;
+}
+
 /**
  * Format a value for display in an activity log (from/to).
  * @param {*} value
@@ -26,6 +53,14 @@ function formatValueForLog(value, maxLength = 200) {
   if (value instanceof Date) return value.toISOString();
   if (mongoose.Types.ObjectId.isValid(value) && String(value).length === 24) return '[Reference]';
   if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      if (value.length === 0) return 'Empty';
+      const parts = value.map((item) => formatValueForLog(item, maxLength));
+      const joined = parts.join(', ');
+      return joined.length <= maxLength ? joined : joined.slice(0, maxLength) + '…';
+    }
+    const human = humanNameFromObject(value);
+    if (human) return human;
     const str = JSON.stringify(value);
     return str.length <= maxLength ? str : str.slice(0, maxLength) + '…';
   }
@@ -326,6 +361,41 @@ async function appendFieldChangeLogs({
     }
   }
 
+  let eventUserNameMap = new Map();
+  let eventOrgNameMap = new Map();
+  if (mod === 'events') {
+    const eventUserIds = new Set();
+    const eventOrgIds = new Set();
+    for (const fieldKey of keys) {
+      if (SYSTEM_KEYS.has(fieldKey)) continue;
+      if (EVENT_USER_REF_FIELDS.has(fieldKey)) {
+        for (const val of [prev[fieldKey], updated[fieldKey]]) {
+          const id = extractObjectIdRef(val);
+          if (id) eventUserIds.add(id.toString());
+        }
+      } else if (EVENT_USER_ARRAY_FIELDS.has(fieldKey)) {
+        for (const val of [prev[fieldKey], updated[fieldKey]]) {
+          const list = Array.isArray(val) ? val : val != null && val !== '' ? [val] : [];
+          for (const item of list) {
+            const id = extractObjectIdRef(item);
+            if (id) eventUserIds.add(id.toString());
+          }
+        }
+      } else if (EVENT_ORG_REF_FIELDS.has(fieldKey)) {
+        for (const val of [prev[fieldKey], updated[fieldKey]]) {
+          const id = extractObjectIdRef(val);
+          if (id) eventOrgIds.add(id.toString());
+        }
+      }
+    }
+    if (eventUserIds.size > 0) {
+      eventUserNameMap = await resolveTenantUserNames(eventUserIds, organizationId);
+    }
+    if (eventOrgIds.size > 0) {
+      eventOrgNameMap = await resolveCrmOrganizationNames(eventOrgIds, organizationId);
+    }
+  }
+
   let caseUserNameMap = new Map();
   let caseContactNameMap = new Map();
   let caseCrmOrgNameMap = new Map();
@@ -427,6 +497,24 @@ async function appendFieldChangeLogs({
     } else if (mod === 'cases' && fieldKey === 'organizationRefId') {
       fromStr = formatPeopleOrganizationForLog(fromVal, caseCrmOrgNameMap);
       toStr = formatPeopleOrganizationForLog(toVal, caseCrmOrgNameMap);
+      fieldLabel = getFieldLabel(fieldKey, fieldLabels);
+    } else if (mod === 'events' && EVENT_USER_REF_FIELDS.has(fieldKey)) {
+      fromStr = formatUserRefForLog(fromVal, eventUserNameMap);
+      toStr = formatUserRefForLog(toVal, eventUserNameMap);
+      fieldLabel = getFieldLabel(fieldKey, fieldLabels);
+    } else if (mod === 'events' && EVENT_USER_ARRAY_FIELDS.has(fieldKey)) {
+      const formatList = (val) => {
+        if (val === undefined || val === null || val === '') return 'Empty';
+        const list = Array.isArray(val) ? val : [val];
+        if (list.length === 0) return 'Empty';
+        return list.map((item) => formatUserRefForLog(item, eventUserNameMap)).join(', ');
+      };
+      fromStr = formatList(fromVal);
+      toStr = formatList(toVal);
+      fieldLabel = getFieldLabel(fieldKey, fieldLabels);
+    } else if (mod === 'events' && EVENT_ORG_REF_FIELDS.has(fieldKey)) {
+      fromStr = formatPeopleOrganizationForLog(fromVal, eventOrgNameMap);
+      toStr = formatPeopleOrganizationForLog(toVal, eventOrgNameMap);
       fieldLabel = getFieldLabel(fieldKey, fieldLabels);
     } else {
       fromStr = formatValueForLog(fromVal);

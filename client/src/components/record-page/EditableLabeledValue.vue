@@ -173,7 +173,7 @@
             :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
             :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
           >
-            {{ tag }}
+            {{ multiSelectChipLabel(tag) }}
           </span>
         </div>
         <slot v-else-if="type === 'user'">
@@ -309,7 +309,7 @@
             :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
             :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
           >
-            {{ tag }}
+            {{ multiSelectChipLabel(tag) }}
           </span>
           <span v-if="tagList.length === 0" class="text-record-empty">—</span>
         </div>
@@ -571,7 +571,7 @@
               :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
             :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
             >
-              {{ tag }}
+              {{ multiSelectChipLabel(tag) }}
             </span>
             <span v-if="tagList.length === 0" class="text-record-empty">—</span>
           </div>
@@ -618,7 +618,7 @@
               :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
               :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
             >
-              {{ tag }}
+              {{ multiSelectChipLabel(tag) }}
             </span>
           </template>
           <span v-if="type === 'tags' && tagList.length === 0" class="text-record-empty">—</span>
@@ -760,7 +760,7 @@
               :style="getTagChipStyle ? getTagChipStyle(tag) : undefined"
               :class="['inline-block text-xs px-2 py-0.5 rounded', (getTagChipClass ? getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
             >
-              {{ tag }}
+              {{ multiSelectChipLabel(tag) }}
             </span>
           </template>
           <span v-if="type === 'tags' && tagList.length === 0" class="text-record-empty">—</span>
@@ -1399,7 +1399,22 @@ const tagList = computed(() => {
 function normalizeMultiSelectValue(value) {
   if (value == null || value === '') return [];
   if (Array.isArray(value)) {
-    return value.map((item) => (item != null && typeof item === 'object' ? (item.value ?? item.label ?? item.name ?? item) : item)).filter((item) => item != null && String(item).trim() !== '');
+    return value
+      .map((item) => {
+        if (item == null || item === '') return null;
+        if (typeof item === 'object') {
+          const id = item.value ?? item._id ?? item.id ?? item.userId;
+          if (id != null && String(id).trim() !== '') return String(id);
+          const name = [item.firstName ?? item.first_name, item.lastName ?? item.last_name]
+            .filter(Boolean)
+            .join(' ')
+            .trim();
+          const label = name || item.name || item.label || item.email;
+          return label != null && String(label).trim() !== '' ? String(label) : null;
+        }
+        return item;
+      })
+      .filter((item) => item != null && String(item).trim() !== '');
   }
   if (typeof value === 'string') {
     const trimmed = value.trim();
@@ -1414,6 +1429,23 @@ function normalizeMultiSelectValue(value) {
     return trimmed ? [trimmed] : [];
   }
   return [value];
+}
+
+function multiSelectChipLabel(tag) {
+  if (tag == null || tag === '') return '';
+  if (typeof tag === 'object') {
+    const name = [tag.firstName ?? tag.first_name, tag.lastName ?? tag.last_name]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    return name || tag.name || tag.label || tag.email || String(tag._id ?? tag.id ?? tag.value ?? '');
+  }
+  const raw = String(tag);
+  const opt = (props.options || []).find((o) => {
+    const id = o?.value ?? o?._id ?? o?.id;
+    return id != null && String(id) === raw;
+  });
+  return opt?.label ?? opt?.name ?? raw;
 }
 
 const multiSelectValue = computed(() => normalizeMultiSelectValue(props.value));

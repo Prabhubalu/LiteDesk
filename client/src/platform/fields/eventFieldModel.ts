@@ -188,16 +188,27 @@ export const EVENT_FIELD_METADATA: Record<string, EventFieldMetadata> = {
     isVisibleInConfig: false,
   },
   
-  // Status fields (system-controlled)
+  // Status: tenant label vocabulary under system categories (lifecycle API).
+  // owner 'core' so create/detail can set editable:true (system owner forbids that).
+  // Audit hide/edit still gated in DynamicForm + genericRecordAdapter.
   status: {
-    owner: 'system',
-    intent: 'system',
+    owner: 'core',
+    intent: 'detail',
     fieldScope: 'CORE',
-    editable: false,
+    isSystem: false,
+    editable: true,
     isProtected: true,
     filterable: true,
     filterType: 'select',
     filterPriority: 1,
+  },
+  statusCategory: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isSystem: true,
+    isVisibleInConfig: false,
   },
   completedAt: {
     owner: 'system',

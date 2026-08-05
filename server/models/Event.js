@@ -64,17 +64,24 @@ const eventSchema = new Schema({
     default: 'Meeting'
   },
   
-  // Execution Status - System-controlled only
-  // Status transitions happen only through system actions (cancel, complete)
-  status: { 
-    type: String, 
-    enum: [
-      'Planned',      // Event created but not completed
-      'Completed',    // Event completed (via audit flow or manual completion)
-      'Cancelled'     // Event cancelled by user/admin
-    ],
+  // Execution status vocabulary (labels). Category is system-owned semantics.
+  // Non-audit types may use tenant-defined labels under OPEN|DONE|CANCELLED.
+  // See: server/domain/events/eventStatus.js
+  status: {
+    type: String,
     required: true,
-    default: 'Planned'
+    default: 'Scheduled',
+    trim: true,
+    index: true,
+  },
+
+  // System-owned lifecycle category (derived/enforced from status value)
+  // Not strictly required for legacy rows; pre-save backfills from status label.
+  statusCategory: {
+    type: String,
+    enum: ['OPEN', 'DONE', 'CANCELLED'],
+    default: 'OPEN',
+    index: true,
   },
   
   // Timestamps for status transitions
@@ -427,7 +434,9 @@ const eventSchema = new Schema({
   // User-level personal calendar sync (Google / Microsoft 365)
   calendarSync: {
     googleEventId: { type: String, default: null, trim: true },
-    microsoftEventId: { type: String, default: null, trim: true }
+    microsoftEventId: { type: String, default: null, trim: true },
+    /** When true, last write originated from Google inbound sync */
+    fromGoogle: { type: Boolean, default: false }
   },
 
   // Public booking / appointment extension (Events sub-module)
@@ -534,6 +543,7 @@ eventSchema.index({ assignedTo: 1, startDateTime: 1 }, { name: 'idx_events_owner
 eventSchema.index({ relatedToId: 1 }, { name: 'idx_events_relatedTo' });
 eventSchema.index({ organizationId: 1, startDateTime: 1 });
 eventSchema.index({ organizationId: 1, status: 1 });
+eventSchema.index({ organizationId: 1, statusCategory: 1 });
 eventSchema.index({ organizationId: 1, eventType: 1 });
 eventSchema.index({ organizationId: 1, auditState: 1 });
 eventSchema.index({ linkedFormId: 1 });
@@ -545,6 +555,10 @@ eventSchema.index({ executionStartTime: 1 });
 eventSchema.index({ organizationId: 1, deletedAt: 1 });
 eventSchema.index({ organizationId: 1, 'appointment.isAppointment': 1, startDateTime: 1 });
 eventSchema.index({ organizationId: 1, eventNumber: 1 }, { unique: true, sparse: true });
+eventSchema.index(
+  { organizationId: 1, 'calendarSync.googleEventId': 1 },
+  { sparse: true, name: 'idx_events_org_google_event' }
+);
 // eventId is already indexed via unique: true, no need for explicit index
 
 // Virtual for duration
@@ -564,16 +578,24 @@ eventSchema.pre('save', function(next) {
     this.createdTime = now;
     this.modifiedTime = now;
     
-    // ===== ENFORCE STATUS ON CREATION =====
-    // Force status to "Planned" for new events, reject any client-provided status
-    // Check undefined/null first, then check if it's not 'Planned'
-    if (!this.status || this.status === undefined || this.status === null) {
-      this.status = 'Planned';
-    } else if (this.status !== 'Planned') {
-      console.warn(`⚠️  Attempted to set status "${this.status}" on new event. Forcing to "Planned".`);
-      this.status = 'Planned';
+    // Default OPEN status; create path sets type-specific OPEN default before save
+    if (!this.status) {
+      this.status =
+        this.eventType === 'Meeting' || this.eventType === 'Meeting / Appointment'
+          ? 'Scheduled'
+          : 'Planned';
     }
-    
+    // Meetings never use "Planned" — normalize legacy values
+    if (
+      (this.eventType === 'Meeting' || this.eventType === 'Meeting / Appointment') &&
+      this.status === 'Planned'
+    ) {
+      this.status = 'Scheduled';
+    }
+    if (!this.statusCategory) {
+      this.statusCategory = 'OPEN';
+    }
+
     // Add creation audit entry
     if (!this.auditHistory) {
       this.auditHistory = [];
@@ -588,31 +610,35 @@ eventSchema.pre('save', function(next) {
         eventName: this.eventName,
         eventType: this.eventType,
         startDateTime: this.startDateTime,
-        status: this.status
+        status: this.status,
+        statusCategory: this.statusCategory,
       }
     });
   } else {
     // Update modifiedTime on existing documents
     this.modifiedTime = now;
-    
-    // ===== PREVENT MANUAL STATUS CHANGES =====
-    // If status is being modified, check if it's a valid system transition
-    if (this.isModified('status')) {
-      const oldStatus = this.get('status', null, { getters: false });
-      const newStatus = this.status;
-      
-      // Only allow transitions via system methods (will be set by cancelEvent/completeEvent)
-      // If status changed but not via system method, log warning and revert
-      // Note: We can't easily detect if it's a system call, so we'll rely on controller-level enforcement
-      // But we can ensure status is never set to invalid values
-      const validStatuses = ['Planned', 'Completed', 'Cancelled'];
-      if (!validStatuses.includes(newStatus)) {
-        console.error(`❌ Invalid status "${newStatus}" attempted. Reverting to previous status.`);
-        this.status = oldStatus || 'Planned';
-      }
+
+    // Meetings never use "Planned" — coerce to Scheduled (OPEN vocab)
+    if (
+      (this.eventType === 'Meeting' || this.eventType === 'Meeting / Appointment') &&
+      this.status === 'Planned'
+    ) {
+      this.status = 'Scheduled';
+    }
+
+    // Align category when status changes without explicit statusCategory
+    if (this.isModified('status') && !this.isModified('statusCategory')) {
+      const { resolveStatusCategory } = require('../domain/events/eventStatus');
+      this.statusCategory = resolveStatusCategory(this.status);
     }
   }
   
+  // Backfill statusCategory for legacy documents
+  if (!this.statusCategory && this.status) {
+    const { resolveStatusCategory } = require('../domain/events/eventStatus');
+    this.statusCategory = resolveStatusCategory(this.status);
+  }
+
   // Validate end date is after start date
   if (this.endDateTime && this.startDateTime && this.endDateTime <= this.startDateTime) {
     return next(new Error('End date must be after start date'));

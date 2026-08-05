@@ -14331,10 +14331,6 @@
     "message": "System-Owned Statuses:",
     "description": "Other tabs section"
   },
-  "modFieldsEventStatusesLockedBody": {
-    "message": "Planned, Completed, and Cancelled are locked. They cannot be renamed, deleted, reordered, or disabled in Settings.",
-    "description": "Other tabs section"
-  },
   "modFieldsEventStatusPicklistTitle": {
     "message": "Event Status Picklist",
     "description": "Other tabs section"
@@ -14342,6 +14338,66 @@
   "modFieldsEventStatusPicklistDesc": {
     "message": "Visibility-only view of the system status values.",
     "description": "Other tabs section"
+  },
+  "modFieldsEventStatusesLockedBody": {
+    "message": "Categories OPEN, DONE, and CANCELLED are system-owned. Labels under each category are configurable for non-audit event types (Meeting, Field Sales Beat).",
+    "description": "Other tabs section"
+  },
+  "modFieldsEventLifecycleDesc": {
+    "message": "Configure status labels by lifecycle category for each event type. Categories drive automation; labels are what users see.",
+    "description": "Event status lifecycle settings"
+  },
+  "modFieldsEventLifecycleEmpty": {
+    "message": "No event type status configurations were returned. Refresh the page or check that the API is running.",
+    "description": "Empty configs state"
+  },
+  "modFieldsEventLifecycleNote": {
+    "message": "Audit event types keep system status vocabulary. Non-audit types can add labels under OPEN, DONE, and CANCELLED. Complete and Cancel always map to the default DONE/CANCELLED value.",
+    "description": "Event status lifecycle note"
+  },
+  "modFieldsEventLifecycleCatOpen": {
+    "message": "Open",
+    "description": "Status category OPEN"
+  },
+  "modFieldsEventLifecycleCatDone": {
+    "message": "Done",
+    "description": "Status category DONE"
+  },
+  "modFieldsEventLifecycleCatCancelled": {
+    "message": "Cancelled",
+    "description": "Status category CANCELLED"
+  },
+  "modFieldsEventLifecycleAddStatus": {
+    "message": "Add status",
+    "description": "Add status value under category"
+  },
+  "modFieldsEventLifecycleDefault": {
+    "message": "Default",
+    "description": "Default status for category"
+  },
+  "modFieldsEventLifecycleArchive": {
+    "message": "Archive",
+    "description": "Archive status value"
+  },
+  "modFieldsEventLifecycleRestore": {
+    "message": "Restore",
+    "description": "Restore archived status"
+  },
+  "modFieldsEventLifecycleSaved": {
+    "message": "Status lifecycle saved.",
+    "description": "Save success"
+  },
+  "modFieldsEventLifecycleAuditLocked": {
+    "message": "Audit event status is system-controlled. Use the audit workflow for transitions; labels cannot be customized.",
+    "description": "Audit types read-only notice"
+  },
+  "modFieldsEventLifecycleCategoryHint": {
+    "message": "Every value must belong to this category. Category cannot be changed.",
+    "description": "Category section hint"
+  },
+  "modFieldsEventLifecycleAuditSummary": {
+    "message": "{count} audit event type(s) use fixed system status vocabulary.",
+    "description": "Audit summary footer"
   },
   "modFieldsTitleSystemLockedStatus": {
     "message": "System-locked",

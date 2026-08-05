@@ -511,6 +511,7 @@
           class="mt-4"
           :appointment="record.appointment"
           :status="record.status"
+          :status-category="record.statusCategory"
           :event-id="String(record._id || record.eventId || '')"
           @cancel="cancelAppointment"
           @complete="completeAppointment"
@@ -5241,6 +5242,10 @@ async function handleEmailSubmit(payload) {
 function handleRecordUpdated(updated) {
   if (updated && record.value) Object.assign(record.value, updated);
   showEditModal.value = false;
+  // Events update response may omit nested relation shapes depending on path — refresh for attendees etc.
+  if (String(props.moduleKey || '').toLowerCase() === 'events') {
+    fetchRecord?.();
+  }
 }
 
 async function handleAttachModalComplete() {

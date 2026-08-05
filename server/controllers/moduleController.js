@@ -119,6 +119,7 @@ function isInitialEventRequiredField(name) {
     const k = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     return k === 'eventname'
         || k === 'eventtype'
+        || k === 'status'
         || k === 'startdatetime'
         || k === 'enddatetime'
         || k === 'assignedto';
@@ -375,6 +376,11 @@ function normalizeEventFieldConfig(field) {
   if (String(next.key || '').toLowerCase() === 'eventtype') {
     next.options = normalizeEventTypeOptions(next.options);
     next.defaultValue = normalizeMeetingEventTypeLabel(next.defaultValue);
+  }
+  // Status is always present (lifecycle vocabulary); type default seeded on create
+  if (String(next.key || '').toLowerCase() === 'status') {
+    next.required = true;
+    next.dataType = next.dataType || 'Picklist';
   }
   next.dependencies = normalizeEventTypeDependencies(next.dependencies);
   return next;
@@ -2894,6 +2900,30 @@ async function enrichOrganizationsModuleFields(fields, organizationId) {
     return next;
 }
 
+/** Enrich events status picklist with tenant lifecycle vocabulary (union across types). */
+async function enrichEventsModuleFields(fields, organizationId) {
+    if (!Array.isArray(fields) || !organizationId) return fields;
+    try {
+        const eventStatusService = require('../services/eventStatusService');
+        const labels = await eventStatusService.getUnionStatusLabels(organizationId);
+        if (!labels.length) return fields;
+        return fields.map((f) => {
+            const k = String(f?.key || '').toLowerCase();
+            if (k !== 'status') return f;
+            const options = labels.map((o) => ({
+                value: o.value,
+                label: o.label,
+                color: o.color,
+                enabled: true,
+            }));
+            return { ...f, options, enum: options.map((o) => o.value) };
+        });
+    } catch (err) {
+        console.warn('[enrichEventsModuleFields]', err?.message || err);
+        return fields;
+    }
+}
+
 /** Canonical config for Cases system field labels / reopen reason. */
 function enrichCasesModuleFields(fields) {
     if (!Array.isArray(fields)) return fields;
@@ -4221,6 +4251,33 @@ exports.listModules = async (req, res) => {
                     finalQuickCreate = [...INITIAL_CASES_QUICK_CREATE];
                     console.log('📋 Cases: Applying canonical default Quick Create:', finalQuickCreate);
                 }
+                // Events: include status for Meeting / non-audit create UX
+                if (sys.key === 'events') {
+                    const eventsDefaultQc = [
+                        'eventName',
+                        'eventType',
+                        'status',
+                        'assignedTo',
+                        'startDateTime',
+                        'endDateTime',
+                        'location',
+                        'agendaNotes',
+                    ];
+                    if (!finalQuickCreate || finalQuickCreate.length === 0) {
+                        finalQuickCreate = [...eventsDefaultQc];
+                        console.log('📋 Events: Applying canonical default Quick Create:', finalQuickCreate);
+                    } else if (
+                        Array.isArray(finalQuickCreate) &&
+                        !finalQuickCreate.some((k) => String(k).toLowerCase() === 'status')
+                    ) {
+                        const keys = finalQuickCreate.map((k) => String(k));
+                        const typeIdx = keys.findIndex((k) => k.toLowerCase() === 'eventtype');
+                        const insertAt = typeIdx >= 0 ? typeIdx + 1 : Math.min(2, keys.length);
+                        keys.splice(insertAt, 0, 'status');
+                        finalQuickCreate = keys;
+                        console.log('📋 Events: Injected status into Quick Create:', finalQuickCreate);
+                    }
+                }
                 if (sys.key === 'quotes' && (!finalQuickCreate || finalQuickCreate.length === 0)) {
                     finalQuickCreate = [...INITIAL_QUOTE_QUICK_CREATE];
                     console.log('📋 Quotes: Applying canonical default Quick Create:', finalQuickCreate);
@@ -4610,6 +4667,7 @@ exports.listModules = async (req, res) => {
                 }
                 if (sys.key === 'events') {
                     finalFields = (Array.isArray(finalFields) ? finalFields : []).map(normalizeEventFieldConfig);
+                    finalFields = await enrichEventsModuleFields(finalFields, req.user.organizationId);
                 }
                 if (sys.key === 'cases') {
                     finalFields = enrichCasesModuleFields(finalFields);
@@ -5381,6 +5439,7 @@ exports.listModules = async (req, res) => {
                 }
                 if (sys.key === 'events') {
                     fieldsToPush = (Array.isArray(fieldsToPush) ? fieldsToPush : []).map(normalizeEventFieldConfig);
+                    fieldsToPush = await enrichEventsModuleFields(fieldsToPush, req.user.organizationId);
                 }
                 if (sys.key === 'purchase_orders' && Array.isArray(fieldsToPush)) {
                     const { PO_STATUS_LABELS } = require('../constants/procurementLifecycle');

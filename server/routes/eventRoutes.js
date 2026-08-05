@@ -31,8 +31,8 @@ router.post('/bulk-delete', eventController.bulkDeleteEvents);
 
 // Event-specific actions
 router.post('/:id/notes', eventController.addNote);
-// Status is system-controlled - use cancel/complete endpoints instead
-// router.patch('/:id/status', eventController.updateEventStatus); // DEPRECATED - use cancel/complete
+// Non-audit: category-backed status vocabulary; audit still uses complete/cancel/workflow
+router.patch('/:id/status', checkPermission('events', 'edit'), eventController.updateEventStatus);
 
 // Execution workflow routes
 router.post('/:id/start', eventController.startEvent);

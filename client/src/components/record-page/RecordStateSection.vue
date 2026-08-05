@@ -64,7 +64,16 @@
                       :style="field.getTagChipStyle ? field.getTagChipStyle(tag) : undefined"
                       :class="['inline-block text-xs px-2 py-0.5 rounded', (field.getTagChipClass ? field.getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
                     >
-                      {{ typeof tag === 'object' ? (tag?.name || tag?.label || tag) : tag }}
+                      {{
+                        typeof tag === 'object'
+                          ? (tag?.name
+                            || tag?.label
+                            || [tag?.firstName, tag?.lastName].filter(Boolean).join(' ').trim()
+                            || tag?.email
+                            || tag?._id
+                            || '—')
+                          : tag
+                      }}
                     </span>
                   </div>
                 </template>
@@ -112,7 +121,16 @@
                     :style="field.getTagChipStyle ? field.getTagChipStyle(tag) : undefined"
                     :class="['inline-block text-xs px-2 py-0.5 rounded', (field.getTagChipClass ? field.getTagChipClass(tag) : null) || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200']"
                   >
-                    {{ typeof tag === 'object' ? (tag?.name || tag?.label || tag) : tag }}
+                    {{
+                      typeof tag === 'object'
+                        ? (tag?.name
+                          || tag?.label
+                          || [tag?.firstName, tag?.lastName].filter(Boolean).join(' ').trim()
+                          || tag?.email
+                          || tag?._id
+                          || '—')
+                        : tag
+                    }}
                   </span>
                 </div>
                 <a
@@ -265,7 +283,21 @@ const getFieldValue = (field) => {
   }
 
   if (field.type === 'multi-select' && Array.isArray(raw)) {
-    return raw.map((item) => (item != null && typeof item === 'object' ? (item.label || item.name || item.value) : String(item))).filter(Boolean).join(', ');
+    return raw.map((item) => {
+      if (item != null && typeof item === 'object') {
+        const name = [item.firstName ?? item.first_name, item.lastName ?? item.last_name]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
+        return name || item.label || item.name || item.email || item.value || item._id || '';
+      }
+      const id = String(item);
+      const matched = (field.options || []).find((opt) => {
+        const optId = opt?.value ?? opt?._id ?? opt?.id;
+        return optId != null && String(optId) === id;
+      });
+      return matched?.label ?? matched?.name ?? id;
+    }).filter(Boolean).join(', ');
   }
 
   if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/.test(raw.trim())) {

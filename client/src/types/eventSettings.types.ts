@@ -154,36 +154,17 @@ export interface EventTypeDefinition {
   geoConfigurable: boolean;
   
   /**
-   * Status configuration for intent-aware UI guidance
-   * 
-   * Event intent is a UI guidance layer, not enforcement.
-   * This provides read-only configuration that maps event types to
-   * allowed lifecycle statuses and default values.
-   * 
-   * This does NOT:
-   * - Enforce backend validation rules
-   * - Block submission of invalid combinations
-   * - Persist intent data
-   * 
-   * This DOES:
-   * - Filter visible status options based on selected event type
-   * - Auto-select default status in CREATE mode
-   * - Never auto-change existing status in EDIT mode
-   * 
-   * If not provided, all statuses are shown (no filtering).
+   * Status configuration for intent-aware UI + lifecycle vocabulary.
+   * Labels are category-backed (OPEN | DONE | CANCELLED).
+   * See: docs/architecture/event-status-lifecycle.md
    */
   statusConfig?: {
-    /**
-     * Statuses that are visible/selectable for this event type
-     * If undefined, all statuses are shown
-     */
+    /** Status labels selectable for this event type */
     allowedStatuses?: string[];
-    
-    /**
-     * Default status to use when creating events of this type
-     * Must be included in allowedStatuses if both are defined
-     */
+    /** Default OPEN status label on create */
     defaultStatus?: string;
+    /** Tenant may manage labels under categories (non-audit only) */
+    statusVocabularyConfigurable?: boolean;
   };
 }
 

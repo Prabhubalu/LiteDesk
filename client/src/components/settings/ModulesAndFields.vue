@@ -2802,66 +2802,9 @@
           </div>
         </div>
 
-        <!-- Status Tab (Events module only) -->
-        <!-- 
-          ARCHITECTURE NOTE: Events Settings configure structure only, never execution.
-          This tab displays system-locked event statuses (Planned, Completed, Cancelled).
-          These statuses are required for execution and cannot be modified, deleted, or renamed.
-          Event execution depends on these statuses for lifecycle management.
-          See: docs/architecture/event-settings.md Section 2.2
-        -->
+        <!-- Status Tab (Events module only) — lifecycle categories + tenant vocabulary -->
         <div class="flex-1 overflow-y-auto" v-else-if="activeTopTab === 'status' && isEventsModule">
-          <div class="p-6 lg:p-8 max-w-4xl mx-auto space-y-8">
-            <!-- Header -->
-            <div class="space-y-2">
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ t('settings.modFieldsEventStatusDesc') }}</p>
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p class="text-xs text-blue-800 dark:text-blue-400">
-                  <strong>{{ t('settings.modFieldsSystemOwnedStatusesLabel') }}</strong> {{ t('settings.modFieldsEventStatusesLockedBody') }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Status Picklist Section -->
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-1">{{ t('settings.modFieldsEventStatusPicklistTitle') }}</h4>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsEventStatusPicklistDesc') }}</p>
-                </div>
-              </div>
-              
-              <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-                <div v-if="eventStatusPicklist.length === 0" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsLoadingStatusValues') }}</div>
-                <div v-else class="space-y-3">
-                  <div
-                    v-for="(status, index) in eventStatusPicklist"
-                    :key="status.value || index"
-                    class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-                  >
-                    <div 
-                      class="text-gray-400 dark:text-gray-500" 
-                      :title="t('settings.modFieldsTitleSystemLockedStatus')"
-                    >🔒</div>
-                    <div class="flex-1 min-w-0">
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ status.label }}
-                        <span class="ml-2 px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsSystemLocked') }}</span>
-                      </span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <HeadlessSwitch
-                        :checked="true"
-                        :disabled="true"
-                        switch-class="w-9 h-5"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{{ t('settings.modFieldsEventStatusTransitionsFootnote') }}</div>
-              </div>
-            </div>
-          </div>
+          <EventStatusLifecycleSettings />
         </div>
 
         <!-- Roles & Rules Tab (Events module only) -->
@@ -4776,6 +4719,7 @@ import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import ModuleFormModal from './ModuleFormModal.vue';
 import PeopleTypesSettings from './PeopleTypesSettings.vue';
 import OrganizationTypesSettings from './OrganizationTypesSettings.vue';
+import EventStatusLifecycleSettings from './EventStatusLifecycleSettings.vue';
 import { invalidateOrganizationTypesCache } from '@/utils/organizationTypesInvalidate';
 import { isRetiredOrganizationTypeValue } from '@/utils/organizationTypeConfig';
 import {

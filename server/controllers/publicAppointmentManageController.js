@@ -8,6 +8,7 @@ const {
   rescheduleAppointment,
   cancelAppointmentByGuest
 } = require('../services/appointmentManageService');
+const { isEventInOpenLifecycle } = require('../domain/events/eventStatus');
 
 async function resolveManageContext(token) {
   const event = await findEventByManageToken(token);
@@ -44,7 +45,7 @@ exports.getRescheduleSlots = async (req, res) => {
     if (ctx.error) {
       return res.status(ctx.status).json({ success: false, message: ctx.error });
     }
-    if (!ctx.event.appointment?.manageToken || ctx.event.status !== 'Planned') {
+    if (!ctx.event.appointment?.manageToken || !isEventInOpenLifecycle(ctx.event)) {
       return res.status(400).json({ success: false, message: 'This appointment cannot be rescheduled.' });
     }
 

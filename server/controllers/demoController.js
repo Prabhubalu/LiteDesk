@@ -40,6 +40,8 @@ function getTenantModel(connection, modelName, sourceModel) {
     return connection.model(modelName, clonedSchema);
 }
 
+const USER_APP_KEYS = new Set(['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL', 'AUDIT', 'LMS', 'INVENTORY', 'MARKETING']);
+
 async function upsertMasterLeadFromDemo({
     demoRequest,
     masterOrganizationId,
@@ -56,7 +58,7 @@ async function upsertMasterLeadFromDemo({
         email: normalizedEmail
     });
 
-    const leadPayload = {
+    const leadFields = {
         first_name: firstName,
         last_name: lastName,
         phone: demoRequest.phone || '',
@@ -69,25 +71,15 @@ async function upsertMasterLeadFromDemo({
                 role: 'Lead',
                 lead_status: 'New'
             }
-        },
-        $addToSet: {
-            tags: { $each: ['demo-request', 'converted-demo'] }
         }
     };
 
     if (existing) {
         await People.findByIdAndUpdate(existing._id, {
-            $set: {
-                first_name: leadPayload.first_name,
-                last_name: leadPayload.last_name,
-                phone: leadPayload.phone,
-                source: leadPayload.source,
-                organization: leadPayload.organization,
-                assignedTo: leadPayload.assignedTo,
-                lead_owner: leadPayload.lead_owner,
-                participations: leadPayload.participations
-            },
-            ...leadPayload.$addToSet
+            $set: leadFields,
+            $addToSet: {
+                tags: { $each: ['demo-request', 'converted-demo'] }
+            }
         });
         return existing._id;
     }
@@ -96,14 +88,7 @@ async function upsertMasterLeadFromDemo({
         organizationId: masterOrganizationId,
         createdBy: actorUserId,
         email: normalizedEmail,
-        first_name: leadPayload.first_name,
-        last_name: leadPayload.last_name,
-        phone: leadPayload.phone,
-        source: leadPayload.source,
-        organization: leadPayload.organization,
-        assignedTo: leadPayload.assignedTo,
-        lead_owner: leadPayload.lead_owner,
-        participations: leadPayload.participations,
+        ...leadFields,
         tags: ['demo-request', 'converted-demo']
     });
 
@@ -417,7 +402,11 @@ exports.convertToOrganization = async (req, res) => {
         } else {
             console.log('✅ Tenant workspace organization found:', tenantOrganization.name);
         }
-        await ensureDefaultCommunicationSettingsForOrganization(tenantOrganization._id);
+        try {
+            await ensureDefaultCommunicationSettingsForOrganization(tenantOrganization._id);
+        } catch (commErr) {
+            console.warn('[demoController] Communication defaults seed failed:', commErr?.message || commErr);
+        }
 
         const validTiers = ['trial', 'paid'];
         const tier = validTiers.includes(subscriptionTier) ? subscriptionTier : 'trial';
@@ -441,8 +430,11 @@ exports.convertToOrganization = async (req, res) => {
                     }
                     return null;
                 })
-                .filter(Boolean)
+                .filter((appKey) => appKey && USER_APP_KEYS.has(appKey))
             : [];
+        if (activeOrgAppKeys.length === 0) {
+            activeOrgAppKeys.push('SALES');
+        }
         
         // Generate database name from organization slug or ID
         const dbName = tenantOrganization.slug 
@@ -773,14 +765,19 @@ exports.convertToOrganization = async (req, res) => {
         demoRequest.convertedAt = new Date();
         demoRequest.convertedToInstanceId = instance._id;
 
-        const masterLeadId = await upsertMasterLeadFromDemo({
-            demoRequest,
-            masterOrganizationId: req.user?.organizationId,
-            actorUserId: req.user?._id
-        });
-        if (masterLeadId) {
-            demoRequest.contactId = masterLeadId;
-            console.log('✅ Master lead upserted from demo conversion:', masterLeadId.toString());
+        try {
+            const masterLeadId = await upsertMasterLeadFromDemo({
+                demoRequest,
+                masterOrganizationId: req.user?.organizationId,
+                actorUserId: req.user?._id
+            });
+            if (masterLeadId) {
+                demoRequest.contactId = masterLeadId;
+                console.log('✅ Master lead upserted from demo conversion:', masterLeadId.toString());
+            }
+        } catch (leadErr) {
+            // CRM lead is a non-critical side effect — never block tenant conversion.
+            console.warn('[demoController] Master lead upsert failed (conversion continues):', leadErr?.message || leadErr);
         }
 
         await demoRequest.save();

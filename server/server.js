@@ -400,6 +400,11 @@ app.get(
   '/api/user/calendar-connections/microsoft/callback',
   require('./controllers/userCalendarConnectionController').microsoftOAuthCallback
 );
+// Google Calendar push (events.watch) — must stay public; verified via channel token
+app.post(
+  '/api/user/calendar-connections/google/push',
+  require('./controllers/userCalendarConnectionController').googlePushNotification
+);
 app.use('/api/user/calendar-connections', require('./routes/userCalendarConnectionRoutes'));
 app.use('/api/appointments', require('./routes/appointmentRoutes'));
 app.use('/api/forms', formRoutes.protected); // Protected form routes (Audit / Survey)

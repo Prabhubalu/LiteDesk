@@ -73,8 +73,9 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
     geoRequired: false,
     geoConfigurable: true,
     statusConfig: {
-      allowedStatuses: ['Planned', 'Completed', 'Cancelled'],
-      defaultStatus: 'Planned'
+      allowedStatuses: ['Scheduled', 'Completed', 'Cancelled', 'No Show'],
+      defaultStatus: 'Scheduled',
+      statusVocabularyConfigurable: true
     }
   },
   {
@@ -118,7 +119,8 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
     geoConfigurable: false, // Locked: audit events always require geo
     statusConfig: {
       allowedStatuses: ['Planned', 'Completed', 'Cancelled'],
-      defaultStatus: 'Planned'
+      defaultStatus: 'Planned',
+      statusVocabularyConfigurable: false
     }
   },
   {
@@ -164,7 +166,8 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
     geoConfigurable: false, // Locked: audit events always require geo
     statusConfig: {
       allowedStatuses: ['Planned', 'Completed', 'Cancelled'],
-      defaultStatus: 'Planned'
+      defaultStatus: 'Planned',
+      statusVocabularyConfigurable: false
     }
   },
   {
@@ -212,7 +215,8 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
     geoConfigurable: false, // Locked: audit events always require geo
     statusConfig: {
       allowedStatuses: ['Planned', 'Completed', 'Cancelled'],
-      defaultStatus: 'Planned'
+      defaultStatus: 'Planned',
+      statusVocabularyConfigurable: false
     }
   },
   {
@@ -255,7 +259,8 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
     geoConfigurable: true, // Can be disabled for Field Sales Beat
     statusConfig: {
       allowedStatuses: ['Planned', 'Completed', 'Cancelled'],
-      defaultStatus: 'Planned'
+      defaultStatus: 'Planned',
+      statusVocabularyConfigurable: true
     }
   }
 ];
