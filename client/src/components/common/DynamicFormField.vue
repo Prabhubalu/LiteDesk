@@ -52,6 +52,23 @@
       />
     </div>
 
+    <!-- Event conference provider: Meet / Teams / Zoom -->
+    <div v-else-if="isEventConferenceProviderField" class="mt-2 grid grid-cols-3 gap-2">
+      <button
+        v-for="opt in conferenceProviderOptions"
+        :key="opt.value"
+        type="button"
+        :disabled="isReadOnly"
+        class="rounded-xl border-2 px-2 py-3 text-center transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+        :class="String(value || '') === opt.value
+          ? 'border-indigo-600 bg-indigo-50/50 shadow-sm dark:bg-indigo-950/30 dark:border-indigo-500'
+          : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'"
+        @click="selectConferenceProvider(opt.value)"
+      >
+        <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ opt.label }}</p>
+      </button>
+    </div>
+
     <!-- People: first name with inline salutation -->
     <PeopleFirstNameWithSalutationField
       v-else-if="isPeopleFirstNameWithSalutationField"
@@ -79,7 +96,7 @@
       @input="updateValue($event.target.value)"
       @blur="$emit('blur')"
       @keydown.enter="$event.target.blur()"
-      :placeholder="field.placeholder || `Enter ${displayLabel}`"
+      :placeholder="effectiveTextPlaceholder"
       :required="isRequired"
       :disabled="isReadOnly"
       :class="[
@@ -485,7 +502,7 @@
           class="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 max-h-72 flex flex-col"
         >
           <div
-            v-if="canCreatePicklistOption"
+            v-if="canCreatePicklistOption || isEventAttendeesField"
             class="shrink-0 p-2 border-b border-gray-200 dark:border-gray-600"
             @click.stop
             @mousedown.stop
@@ -495,11 +512,11 @@
               <input
                 type="text"
                 v-model="picklistSearchQuery"
-                @keydown.enter.stop.prevent="picklistCreateCandidate && handleCreatePicklistOption()"
+                @keydown.enter.stop.prevent="canCreatePicklistOption && picklistCreateCandidate && handleCreatePicklistOption()"
                 @keydown.escape.stop
                 @click.stop
                 @mousedown.stop
-                :placeholder="t('common.formSearchOptions')"
+                :placeholder="isEventAttendeesField ? t('common.formSearchUsers') : t('common.formSearchOptions')"
                 class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900/80 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 relative z-10"
                 autocomplete="off"
               />
@@ -1086,6 +1103,7 @@ import EventLocationField from '@/components/events/EventLocationField.vue';
 import PhoneInput from '@/components/common/PhoneInput.vue';
 import PeopleFirstNameWithSalutationField from '@/components/people/PeopleFirstNameWithSalutationField.vue';
 import { isPeopleFirstNameHostField } from '@/platform/fields/peopleSalutationField';
+import { MEETING_CONFERENCE_PROVIDERS } from '@/constants/meetingConferenceProviders';
 import DatePicker from '@/components/common/DatePicker.vue';
 import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import { normalizeDateTimeInput } from '@/utils/datePickerUtils';
@@ -1234,6 +1252,46 @@ const isEventLocationField = computed(() => {
   return String(props.field?.key || '').toLowerCase() === 'location';
 });
 
+const isEventAttendeesField = computed(() => {
+  if (props.moduleKey !== 'events') return false;
+  return String(props.field?.key || '').toLowerCase() === 'attendees';
+});
+
+const isEventConferenceProviderField = computed(() => {
+  if (props.moduleKey !== 'events') return false;
+  return String(props.field?.key || '').toLowerCase() === 'conferenceprovider';
+});
+
+const isEventMeetingLinkField = computed(() => {
+  if (props.moduleKey !== 'events') return false;
+  return String(props.field?.key || '').toLowerCase() === 'meetinglink';
+});
+
+const conferenceProviderOptions = computed(() =>
+  MEETING_CONFERENCE_PROVIDERS.map((p) => ({
+    value: p.value,
+    label: t(p.labelKey),
+  }))
+);
+
+const effectiveTextPlaceholder = computed(() => {
+  if (props.field.placeholder) return props.field.placeholder;
+  if (isEventMeetingLinkField.value) {
+    const provider = String(props.formContext?.conferenceProvider || '').toLowerCase();
+    if (provider === 'ms_teams') return t('events.meetingLinkPlaceholderMsTeams');
+    if (provider === 'zoom') return t('events.meetingLinkPlaceholderZoom');
+    if (provider === 'google_meet') return t('events.meetingLinkPlaceholderGoogleMeet');
+    return t('events.meetingLinkPlaceholderGoogleMeet');
+  }
+  return `Enter ${displayLabel.value}`;
+});
+
+function selectConferenceProvider(providerValue) {
+  if (isReadOnly.value) return;
+  updateValue(providerValue);
+  emit('blur');
+}
+
 const isPeopleFirstNameWithSalutationField = computed(() => {
   return isPeopleFirstNameHostField(props.moduleKey, props.field?.key || '')
     && props.field?.dataType === 'Text';
@@ -1328,6 +1386,18 @@ const helperText = computed(() => {
   if (key === 'auditorid') return 'User responsible for executing the audit.';
   if (key === 'reviewerid') return 'User responsible for reviewing and approving this audit.';
   if (key === 'correctiveownerid') return 'User responsible for addressing corrective actions raised in this audit.';
+  if (isEventMeetingLinkField.value) {
+    const provider = String(props.formContext?.conferenceProvider || '').toLowerCase();
+    if (provider === 'zoom') return t('events.meetingLinkHelperZoom');
+    if (provider === 'ms_teams') return t('events.meetingLinkHelperMsTeams');
+    return t('events.meetingLinkHelperGoogleMeet');
+  }
+  if (isEventConferenceProviderField.value) {
+    return t('events.conferenceProviderHelper');
+  }
+  if (isEventAttendeesField.value) {
+    return t('events.attendeesHelper');
+  }
   // For other Lookup fields, use configured placeholder as helper text (shown under label).
   if (isLookupField.value && props.field?.placeholder) return String(props.field.placeholder);
   return '';
@@ -1441,6 +1511,7 @@ const mergedPicklistSourceOptions = computed(() => {
 
 const canCreatePicklistOption = computed(() => {
   if (isReadOnly.value || !props.moduleKey) return false;
+  if (isEventAttendeesField.value) return false;
   return canCreatePicklistOptionInline(props.moduleKey, props.field, authStore.user);
 });
 
@@ -2923,6 +2994,25 @@ onMounted(async () => {
       await fetchLookupOptionById(normalizedLookupValue.value);
     }
   }
+
+  // Event participants: multi-select of users (options loaded client-side)
+  if (isEventAttendeesField.value) {
+    try {
+      const response = await fetchUsersListCached({ limit: 500 });
+      if (response.success && Array.isArray(response.data)) {
+        additionalPicklistOptions.value = response.data
+          .filter((u) => isValidObjectId(String(u?._id || '')))
+          .map((u) => {
+            const name = [u.firstName, u.lastName].filter(Boolean).join(' ').trim();
+            const label = name || u.email || u.username || String(u._id);
+            return { value: String(u._id), label };
+          });
+      }
+    } catch (err) {
+      console.error('Error loading meeting participants:', err);
+      additionalPicklistOptions.value = [];
+    }
+  }
   
   // Set default value if provided (skip numeric 0 — leave empty for placeholder)
   const isNumericType = ['Currency', 'Integer', 'Decimal'].includes(props.field.dataType);
@@ -2943,6 +3033,24 @@ onMounted(async () => {
     isUnset
   ) {
     emit('update:value', props.field.defaultValue);
+  }
+
+  // Meeting mode default: Virtual (remote-first)
+  if (
+    props.moduleKey === 'events' &&
+    fieldKeyNorm === 'meetingmode' &&
+    isUnset
+  ) {
+    emit('update:value', 'Virtual');
+  }
+
+  // Conference provider default when Virtual/Hybrid path
+  if (
+    props.moduleKey === 'events' &&
+    fieldKeyNorm === 'conferenceprovider' &&
+    isUnset
+  ) {
+    emit('update:value', 'google_meet');
   }
   
   // Ensure Multi-Picklist fields always have array values

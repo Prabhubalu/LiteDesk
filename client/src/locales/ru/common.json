@@ -2958,5 +2958,9 @@
   "tableMultiSortAddHint": {
     "message": "Shift+click to add sort",
     "description": "Instant tooltip on unsorted column sort icons when a sort is already active"
+  },
+  "formSearchUsers": {
+    "message": "Search people...",
+    "description": "Multi-user participant picker placeholder"
   }
 }

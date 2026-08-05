@@ -131,10 +131,41 @@ const eventSchema = new Schema({
     required: true 
   },
   
-  // Location (can be address or URL)
+  // Location (physical address / place name)
   location: { 
     type: String,
     maxlength: 1024,
+    default: ''
+  },
+
+  // ===== MEETING FIELDS (eventType = Meeting) =====
+  // Meeting mode (optional; create form defaults Virtual for Meeting type)
+  meetingMode: {
+    type: String,
+    enum: ['In-person', 'Virtual', 'Hybrid'],
+    required: false
+  },
+  meetingLink: {
+    type: String,
+    trim: true,
+    maxlength: 2048,
+    default: null
+  },
+  // Virtual/Hybrid only: google_meet | ms_teams | zoom (no custom provider)
+  conferenceProvider: {
+    type: String,
+    enum: ['google_meet', 'ms_teams', 'zoom'],
+    required: false
+  },
+  // Internal participants (User ids). Owner remains assignedTo.
+  attendees: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  // Agenda / purpose for meetings (separate from system notes array/history)
+  agendaNotes: {
+    type: String,
+    maxlength: 5000,
     default: ''
   },
   

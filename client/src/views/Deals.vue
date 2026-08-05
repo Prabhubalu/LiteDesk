@@ -70,6 +70,7 @@
       @search-changed="handleSearchChanged"
       @kanban-settings-changed="refreshKanbanSettings"
       @stats-visibility-changed="(val) => (statsOpen = val)"
+      @shell-ready="listShellReady = true"
     >
       <!-- Group by: Stage button (kanban view) – commented for now; may use in the future -->
       <!--
@@ -287,9 +288,9 @@
       </template>
     </ModuleList>
 
-    <!-- Kanban View (shown when Pipeline tab is selected) -->
+    <!-- Kanban View (shown when Pipeline tab is selected; wait for ModuleList chrome to avoid skeleton+board flash) -->
     <div
-      v-if="currentView === 'kanban' && !error"
+      v-if="currentView === 'kanban' && !error && listShellReady"
       class="kanban-view-container mt-4"
       style="min-height: 400px;"
     >
@@ -310,8 +311,8 @@
         :stages="stages"
         stage-key="stage"
         item-id-key="_id"
-        :loading="kanbanLoading"
-        loading-:label="t('deals.dealsLoadingPipeline')"
+        :loading="boardLoading"
+        :loading-label="t('deals.dealsLoadingPipeline')"
         :get-column-stats="(s) => ({ value: getStageValue(s) })"
         :get-stage-color="getStageColor"
         :card-size="kanbanCardSize"
@@ -507,6 +508,7 @@ import { formatUserDate } from '@/utils/localeFormat';
 const router = useRouter();
 const route = useRoute();
 const moduleListRef = ref(null);
+const listShellReady = ref(false);
 const { openTab } = useTabs();
 const authStore = useAuthStore();
 const { currency: orgCurrency } = useLocale();
@@ -530,7 +532,14 @@ const layoutViewLabel = computed(() =>
 
 // Kanban data state
 const kanbanDeals = ref([]);
-const kanbanLoading = ref(false);
+// Start in loading when board is default so first paint isn't empty→flash
+const kanbanLoading = ref(getInitialView() === 'kanban');
+const stagesHydrated = ref(false);
+const boardLoading = computed(
+  () =>
+    currentView.value === 'kanban' &&
+    (kanbanLoading.value || !stagesHydrated.value)
+);
 
 // Error state (plan limitation or load error)
 const error = ref(null);
@@ -717,8 +726,11 @@ const toggleTableView = (showTable) => {
 // Fetch deals for Kanban (same filters/search as ModuleList)
 const fetchKanbanDeals = async () => {
   if (currentView.value !== 'kanban') return;
-  
-  kanbanLoading.value = true;
+
+  // Soft reload: keep cards mounted (KanbanBoard only hard-loads when empty)
+  if (kanbanDeals.value.length === 0) {
+    kanbanLoading.value = true;
+  }
   try {
     const moduleListFilters = moduleListRef.value?.getFilters?.() || {};
     const moduleListSearch = currentSearchQuery.value || moduleListRef.value?.getSearchQuery?.() || '';
@@ -918,6 +930,8 @@ const fetchStageOptions = async () => {
     stages.value = [];
     stageColorMap.value = {};
     pipelines.value = [];
+  } finally {
+    stagesHydrated.value = true;
   }
 };
 
@@ -1174,13 +1188,13 @@ const handleRecordCreated = (event) => {
   }
 };
 
+// keep-alive runs onActivated on first mount too — skip refetch that flash after onMounted.
+let skipKeepAliveFirstActivate = true;
+
 onMounted(() => {
   initializeView();
   fetchStageOptions();
-  // Single initial fetch for kanban (watcher skips fetch on immediate run to avoid duplicate)
-  if (currentView.value === 'kanban') {
-    fetchKanbanDeals();
-  }
+  // Kanban rows load once via ModuleList @filters-changed (saved views ready) — not here.
   nextTick(() => {
     setTimeout(() => toggleTableView(currentView.value === 'list'), 100);
   });
@@ -1189,11 +1203,16 @@ onMounted(() => {
   }
 });
 
-// When switching back to this tab (keep-alive), refetch and sync URL to current view so session persists
+// When switching back to this tab (keep-alive), refetch and sync URL so session persists
 onActivated(() => {
   const view = currentView.value;
   if (route.query[VIEW_QUERY_KEY] !== view) {
     router.replace({ query: { ...route.query, [VIEW_QUERY_KEY]: view } });
+  }
+  if (skipKeepAliveFirstActivate) {
+    skipKeepAliveFirstActivate = false;
+    nextTick(() => setTimeout(() => toggleTableView(view === 'list'), 80));
+    return;
   }
   if (view === 'kanban') fetchKanbanDeals();
   nextTick(() => setTimeout(() => toggleTableView(view === 'list'), 80));

@@ -27,7 +27,7 @@
  * ============================================================================
  */
 
-import type { EventTypeDefinition, EventSettingsConfig, AppKey } from '@/types/eventSettings.types';
+import type { EventTypeDefinition, EventSettingsConfig, AppKey, ExecutionMode } from '@/types/eventSettings.types';
 
 /**
  * Canonical Event Type Definitions
@@ -46,9 +46,15 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
       'startDateTime',
       'endDateTime',
       'location',
+      'meetingMode',
+      'conferenceProvider',
+      'meetingLink',
+      'attendees',
+      'agendaNotes',
       'notes',
       'relatedToId',
-      'recurrence'
+      'recurrence',
+      'geoRequired'
     ],
     lockedFields: [
       'status',
@@ -61,7 +67,8 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
       'createdBy',
       'modifiedBy'
     ],
-    executionMode: 'generic',
+    // Meetings are calendar/CRM appointments — join + status, not field "Start Event" execution
+    executionMode: 'none',
     isAuditEvent: false,
     geoRequired: false,
     geoConfigurable: true,
@@ -424,11 +431,18 @@ export function isAuditEventTypeLabel(label: string): boolean {
 /**
  * DEV-ONLY INVARIANT GUARD: Assert execution mode matches event type
  * 
- * This ensures that audit events use audit-workflow and non-audit events use generic.
+ * - Audit events: audit-workflow
+ * - Meetings: none (calendar / join — not field execution)
+ * - Other non-audit (e.g. Field Sales Beat): generic
  */
 if (process.env.NODE_ENV === 'development') {
   EVENT_TYPE_DEFINITIONS.forEach(eventType => {
-    const expectedMode: 'generic' | 'audit-workflow' = eventType.isAuditEvent ? 'audit-workflow' : 'generic';
+    let expectedMode: ExecutionMode = 'generic';
+    if (eventType.isAuditEvent) {
+      expectedMode = 'audit-workflow';
+    } else if (eventType.key === 'MEETING') {
+      expectedMode = 'none';
+    }
     console.assert(
       eventType.executionMode === expectedMode,
       `[eventTypes] INVARIANT VIOLATION: Event type ${eventType.key} has mismatched execution mode`,

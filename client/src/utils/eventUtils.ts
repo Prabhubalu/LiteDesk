@@ -239,3 +239,91 @@ export function getEventStatusBadgeVariant(
   if (normalized === 'in-progress' || normalized === 'in progress') return 'warning';
   return 'info';
 }
+
+export type CalendarConnectorStatus = {
+  provider: string;
+  available?: boolean;
+  connected?: boolean;
+  comingSoon?: boolean;
+};
+
+export type MeetingConferenceSaveGate =
+  | { status: 'ready' }
+  | {
+      status: 'confirm';
+      reason:
+        | 'not_configured'
+        | 'not_connected'
+        | 'host_other'
+        | 'zoom_paste';
+      calendarProvider: 'google' | 'microsoft' | 'zoom';
+    };
+
+function isMeetingEventType(eventType: string | null | undefined): boolean {
+  const t = String(eventType || '').trim();
+  if (!t) return true; // create default is Meeting
+  return t === 'Meeting' || t === 'MEETING' || t.toLowerCase() === 'meeting';
+}
+
+function idString(raw: unknown): string {
+  if (raw == null || raw === '') return '';
+  if (typeof raw === 'object' && raw !== null) {
+    const o = raw as { _id?: unknown; id?: unknown; userId?: unknown };
+    return String(o._id || o.id || o.userId || '').trim();
+  }
+  return String(raw).trim();
+}
+
+/**
+ * Pre-save gate: Virtual/Hybrid + Meet/Teams/Zoom without a join link
+ * needs host calendar available/connected (or explicit paste for Zoom).
+ * Callers should confirm with the user when status is `confirm`.
+ */
+export function evaluateMeetingConferenceSaveGate(args: {
+  eventType?: string | null;
+  meetingMode?: string | null;
+  conferenceProvider?: string | null;
+  meetingLink?: string | null;
+  assignedTo?: unknown;
+  currentUserId?: string | null;
+  connectors?: CalendarConnectorStatus[] | null;
+}): MeetingConferenceSaveGate {
+  if (!isMeetingEventType(args.eventType)) return { status: 'ready' };
+
+  const mode = String(args.meetingMode || '').trim();
+  if (mode !== 'Virtual' && mode !== 'Hybrid') return { status: 'ready' };
+
+  const link = String(args.meetingLink || '').trim();
+  if (link) return { status: 'ready' };
+
+  const provider = String(args.conferenceProvider || '').trim().toLowerCase();
+  if (!provider) return { status: 'ready' };
+
+  if (provider === 'zoom') {
+    return { status: 'confirm', reason: 'zoom_paste', calendarProvider: 'zoom' };
+  }
+
+  const calendarProvider: 'google' | 'microsoft' | null =
+    provider === 'google_meet' ? 'google' : provider === 'ms_teams' ? 'microsoft' : null;
+  if (!calendarProvider) return { status: 'ready' };
+
+  const connectors = Array.isArray(args.connectors) ? args.connectors : [];
+  const row = connectors.find((c) => String(c.provider || '').toLowerCase() === calendarProvider);
+
+  if (row && row.available === false) {
+    return { status: 'confirm', reason: 'not_configured', calendarProvider };
+  }
+
+  const hostId = idString(args.assignedTo);
+  const me = idString(args.currentUserId);
+  const hostIsMe = !hostId || !me || hostId === me;
+
+  if (hostIsMe) {
+    if (row?.connected) return { status: 'ready' };
+    return { status: 'confirm', reason: 'not_connected', calendarProvider };
+  }
+
+  // Room is minted on the host’s calendar; when host ≠ creator we cannot inspect their OAuth.
+  return { status: 'confirm', reason: 'host_other', calendarProvider };
+}
+
