@@ -90,33 +90,56 @@
               </div>
 
               <!-- To row -->
-              <div class="flex items-center gap-2 border-b border-gray-200 px-3 py-2 dark:border-gray-700">
-                <label class="shrink-0 text-sm text-gray-500 dark:text-gray-400">To</label>
-                <input
-                  v-model="form.to"
-                  type="text"
-                  required
-                  class="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-gray-900 outline-none focus:ring-0 dark:text-white"
-                  :placeholder="t('inbox.emailComposeDrawerRecipientExampleComCommaSeparatedFor')"
-                />
-                <div v-if="!showCc || !showBcc" class="flex shrink-0 gap-2 text-xs">
-                  <button
-                    v-if="!showCc"
-                    type="button"
-                    class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
-                    @click="showCc = true"
-                  >
-                    Cc
-                  </button>
-                  <button
-                    v-if="!showBcc"
-                    type="button"
-                    class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
-                    @click="showBcc = true"
-                  >
-                    Bcc
-                  </button>
+              <div
+                class="border-b px-3 py-2 dark:border-gray-700"
+                :class="recipientFieldHint
+                  ? 'border-red-300 bg-red-50/40 dark:border-red-900/50 dark:bg-red-950/20'
+                  : 'border-gray-200'"
+              >
+                <div class="flex items-center gap-2">
+                  <label class="shrink-0 text-sm text-gray-500 dark:text-gray-400">To</label>
+                  <input
+                    v-model="form.to"
+                    type="text"
+                    required
+                    autocomplete="email"
+                    spellcheck="false"
+                    class="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm outline-none focus:ring-0"
+                    :class="recipientFieldHint
+                      ? 'text-red-700 dark:text-red-300'
+                      : 'text-gray-900 dark:text-white'"
+                    :placeholder="t('inbox.emailComposeDrawerRecipientExampleComCommaSeparatedFor')"
+                    :aria-invalid="Boolean(recipientFieldHint)"
+                    :aria-describedby="recipientFieldHint ? 'compose-to-hint' : undefined"
+                    @blur="markRecipientHint"
+                  />
+                  <div v-if="!showCc || !showBcc" class="flex shrink-0 gap-2 text-xs">
+                    <button
+                      v-if="!showCc"
+                      type="button"
+                      class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+                      @click="showCc = true"
+                    >
+                      Cc
+                    </button>
+                    <button
+                      v-if="!showBcc"
+                      type="button"
+                      class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+                      @click="showBcc = true"
+                    >
+                      Bcc
+                    </button>
+                  </div>
                 </div>
+                <p
+                  v-if="recipientFieldHint"
+                  id="compose-to-hint"
+                  class="mt-1 pl-7 text-xs text-red-600 dark:text-red-400"
+                  role="alert"
+                >
+                  {{ recipientFieldHint }}
+                </p>
               </div>
 
               <div v-if="showCc" class="flex items-center gap-2 border-b border-gray-200 px-3 py-2 dark:border-gray-700">
@@ -185,8 +208,25 @@
                 </summary>
                 <div class="mt-2 space-y-2 rounded-md bg-gray-50 p-2 dark:bg-gray-800/60">
                   <div>
-                    <span class="font-medium text-gray-600 dark:text-gray-300">{{ t('settings.helpdeskAnalyticsFrom') }}:</span>
-                    <span class="ml-1 font-mono">{{ fromDisplayLine || (composePreviewLoading ? '…' : '—') }}</span>
+                    <label class="font-medium text-gray-600 dark:text-gray-300" :for="'compose-from-' + _uid">
+                      {{ t('settings.helpdeskAnalyticsFrom') }}:
+                    </label>
+                    <select
+                      v-if="hasFromPicker"
+                      :id="'compose-from-' + _uid"
+                      class="mt-1 block w-full rounded border border-gray-200 bg-white px-2 py-1.5 font-mono text-[12px] text-gray-800 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200"
+                      :value="selectedFromId"
+                      @change="selectFromIdentity($event.target.value)"
+                    >
+                      <option
+                        v-for="idty in sendIdentities"
+                        :key="idty.id"
+                        :value="idty.id"
+                      >
+                        {{ identityOptionLabel(idty) }}
+                      </option>
+                    </select>
+                    <span v-else class="ml-1 font-mono">{{ fromDisplayLine || (composePreviewLoading ? '…' : '—') }}</span>
                     <p class="mt-0.5 text-[11px]">{{ fromSourceHint }}</p>
                   </div>
                   <div>
@@ -202,14 +242,22 @@
             </div>
 
             <!-- Footer toolbar -->
-            <div class="flex shrink-0 items-center gap-1 border-t border-gray-200 px-3 py-2 dark:border-gray-700">
-              <button
-                type="submit"
-                class="inline-flex items-center gap-1 rounded-full bg-[#0b57d0] px-5 py-2 text-sm font-medium text-white hover:bg-[#0842a0] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-600 dark:hover:bg-indigo-500"
-                :disabled="!toRecipients.length || !form.subject?.trim()"
-              >
-                {{ t('inbox.emailComposeDrawerSend') }}
-              </button>
+            <div class="flex shrink-0 flex-wrap items-center gap-x-1 gap-y-1.5 border-t border-gray-200 px-3 py-2 dark:border-gray-700">
+              <div class="relative isolate inline-flex h-9 shrink-0 items-stretch overflow-visible rounded-full bg-[#0b57d0] shadow-sm dark:bg-indigo-600">
+                <button
+                  type="submit"
+                  class="inline-flex h-full items-center rounded-l-full px-4 pr-3.5 text-sm font-medium text-white hover:bg-[#0842a0] disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-indigo-500"
+                  :disabled="!canSend"
+                  :title="!canSend && recipientFieldHint ? recipientFieldHint : undefined"
+                >
+                  {{ t('inbox.emailComposeDrawerSend') }}
+                </button>
+                <EmailScheduleSendPopover
+                  class="h-full"
+                  :disabled="!canSend"
+                  @schedule="onScheduleSend"
+                />
+              </div>
               <button
                 type="button"
                 class="rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
@@ -226,6 +274,47 @@
                 multiple
                 @change="handleFileSelect"
               />
+
+              <!-- Follow-up reminder: progressive disclosure beside Send actions -->
+              <div
+                class="ml-0.5 flex min-w-0 flex-wrap items-center gap-1.5 rounded-full px-1.5 py-0.5 text-xs text-gray-600 transition-colors dark:text-gray-300"
+                :class="reminderEnabled ? 'bg-blue-50 dark:bg-indigo-950/40' : ''"
+              >
+                <label class="inline-flex cursor-pointer select-none items-center gap-1.5">
+                  <input
+                    type="checkbox"
+                    class="size-3.5 shrink-0 rounded border-gray-300 text-[#0b57d0] focus:ring-[#0b57d0] dark:border-gray-600 dark:bg-gray-800 dark:text-indigo-500"
+                    :checked="reminderEnabled"
+                    :aria-label="t('inbox.emailComposeReminderLabel')"
+                    @change="setReminderEnabled($event.target.checked)"
+                  />
+                  <span class="whitespace-nowrap font-medium text-gray-700 dark:text-gray-200">
+                    {{ reminderEnabled ? t('inbox.emailComposeReminderIn') : t('inbox.emailComposeReminderLabel') }}
+                  </span>
+                </label>
+                <template v-if="reminderEnabled">
+                  <input
+                    ref="reminderDaysInputRef"
+                    :value="reminderDays"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="3"
+                    class="w-10 rounded-md border border-gray-300 bg-white px-1.5 py-0.5 text-center text-xs font-medium tabular-nums text-gray-900 outline-none ring-[#0b57d0] focus:ring-2 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                    :aria-label="t('inbox.emailComposeReminderDaysAria')"
+                    @input="onReminderDaysInput"
+                  />
+                  <span class="text-gray-500 dark:text-gray-400">{{ t('inbox.emailComposeReminderDays') }}</span>
+                  <span
+                    v-if="reminderDateHint"
+                    class="hidden truncate text-[11px] text-gray-500 sm:inline dark:text-gray-400"
+                    :title="reminderDateHint"
+                  >
+                    · {{ reminderDateHint }}
+                  </span>
+                </template>
+              </div>
+
               <div class="flex-1" />
               <button
                 type="button"
@@ -257,6 +346,7 @@ import {
   TrashIcon
 } from '@heroicons/vue/24/outline';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
+import EmailScheduleSendPopover from '@/components/communications/EmailScheduleSendPopover.vue';
 import { useEmailComposeForm } from '@/composables/useEmailComposeForm';
 
 const props = defineProps({
@@ -275,6 +365,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'sent', 'submit']);
 
 const { t } = useI18n();
+const _uid = `w${Math.random().toString(36).slice(2, 9)}`;
 
 const windowState = ref('normal'); // 'normal' | 'minimized' | 'maximized'
 const composeRootRef = ref(null);
@@ -287,12 +378,24 @@ const {
   attachments,
   uploading,
   fileInputRef,
+  reminderEnabled,
+  reminderDays,
+  reminderDaysInputRef,
+  setReminderEnabled,
+  onReminderDaysInput,
   fromDisplayLine,
   fromSourceHint,
+  sendIdentities,
+  selectedFromId,
+  hasFromPicker,
+  identityOptionLabel,
+  selectFromIdentity,
   replyToDisplay,
   replyToNote,
   composePreviewLoading,
-  toRecipients,
+  recipientFieldHint,
+  markRecipientHint,
+  canSend,
   isReply,
   close,
   handleFileSelect,
@@ -305,7 +408,28 @@ const headerTitle = computed(() => {
   return t('inbox.emailComposeWindowNewMessage');
 });
 
+/** Soft confirmation of absolute reminder date (Gmail/Superhuman polish). */
+const reminderDateHint = computed(() => {
+  if (!reminderEnabled.value) return '';
+  const n = typeof reminderDays.value === 'number'
+    ? reminderDays.value
+    : parseInt(String(reminderDays.value).trim(), 10);
+  if (!Number.isInteger(n) || n < 1) return '';
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + n);
+  try {
+    return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(d);
+  } catch {
+    return d.toDateString();
+  }
+});
+
 const dialogLabel = computed(() => headerTitle.value);
+
+function onScheduleSend(iso) {
+  handleSend({ scheduledAt: iso });
+}
 
 const editorClasses = computed(() => {
   const base = '[&_.tiptap]:px-2 [&_.ProseMirror]:text-sm';

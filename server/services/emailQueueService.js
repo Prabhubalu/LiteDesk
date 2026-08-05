@@ -76,6 +76,117 @@ function initQueue() {
 }
 
 /**
+ * Add delayed send job. Returns true if queued, false if queue unavailable.
+ * @param {string} communicationId
+ * @param {string|null} organizationId
+ * @param {Date|string|number} runAt
+ */
+function enqueueSendDelayed(communicationId, organizationId, runAt) {
+  const queue = initQueue();
+  if (!queue) return false;
+  try {
+    const runAtMs = runAt instanceof Date ? runAt.getTime() : new Date(runAt).getTime();
+    if (!Number.isFinite(runAtMs)) return false;
+    const delay = Math.max(0, runAtMs - Date.now());
+    queue.add(
+      { communicationId, organizationId: organizationId ? String(organizationId) : null },
+      {
+        jobId: `email-${communicationId}`,
+        delay,
+        ...COMMUNICATION_RETRY_PROFILES.EMAIL_SEND
+      }
+    );
+    return true;
+  } catch (err) {
+    console.error('[emailQueue] Delayed enqueue failed:', err.message);
+    return false;
+  }
+}
+
+/**
+ * Remove a delayed send job (e.g. user cancelled schedule).
+ */
+async function removeSendJob(communicationId) {
+  const queue = initQueue();
+  if (!queue) return false;
+  try {
+    const job = await queue.getJob(`email-${communicationId}`);
+    if (job) {
+      await job.remove();
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('[emailQueue] remove job failed:', err.message);
+    return false;
+  }
+}
+
+/**
+ * Claim due scheduled emails and enqueue/process them.
+ * Safety net when Redis delayed jobs miss, or when schedule was stored without a queue.
+ * Scans tenant DBs (communications are tenant-scoped).
+ */
+async function processDueScheduledEmails({ limitPerTenant = 25 } = {}) {
+  const Communication = require('../models/Communication');
+  const Organization = require('../models/Organization');
+  const { runWithOrganizationTenantContext } = require('../utils/organizationTenantContext');
+  const now = new Date();
+
+  let tenants = [];
+  try {
+    tenants = await Organization.find({
+      isTenant: true,
+      isActive: true,
+      'database.name': { $exists: true, $nin: [null, ''] }
+    })
+      .select('_id')
+      .lean();
+  } catch (err) {
+    console.error('[emailQueue] Due scheduled tenants query failed:', err.message);
+    return { processed: 0 };
+  }
+
+  let processed = 0;
+  for (const tenant of tenants) {
+    try {
+      await runWithOrganizationTenantContext(tenant._id, async () => {
+        const claimed = await Communication.find({
+          organizationId: tenant._id,
+          kind: 'email',
+          direction: 'outbound',
+          status: 'scheduled',
+          scheduledAt: { $lte: now }
+        })
+          .sort({ scheduledAt: 1 })
+          .limit(limitPerTenant)
+          .select('_id')
+          .lean();
+
+        for (const row of claimed) {
+          const updated = await Communication.findOneAndUpdate(
+            { _id: row._id, status: 'scheduled' },
+            { $set: { status: 'sending' } },
+            { new: true }
+          ).lean();
+          if (!updated) continue;
+          const orgId = String(tenant._id);
+          if (!enqueueSend(String(updated._id), orgId)) {
+            await processSendJob(String(updated._id), orgId);
+          }
+          processed += 1;
+        }
+      });
+    } catch (err) {
+      console.error('[emailQueue] process due scheduled tenant failed:', tenant._id, err.message);
+    }
+  }
+  return { processed };
+}
+
+let dueScheduledTimer = null;
+
+/**
  * Add send job to queue. Returns true if queued, false if queue unavailable.
  */
 function enqueueSend(communicationId, organizationId) {
@@ -169,7 +280,23 @@ async function processSendJobInner(communicationId) {
   const caseExecutionService = require('./caseExecutionService');
   const { applyCaseActivitySideEffects } = require('./caseAutoStatusService');
 
-  const doc = await Communication.findById(communicationId).lean();
+  let doc = await Communication.findById(communicationId).lean();
+  if (!doc) return;
+
+  if (doc.status === 'scheduled') {
+    const dueMs = doc.scheduledAt ? new Date(doc.scheduledAt).getTime() : 0;
+    if (Number.isFinite(dueMs) && dueMs > Date.now() + 5000) {
+      // Job fired early — leave as scheduled for poller / re-delay
+      return;
+    }
+    doc = await Communication.findOneAndUpdate(
+      { _id: communicationId, status: 'scheduled' },
+      { $set: { status: 'sending' } },
+      { new: true }
+    ).lean();
+    if (!doc) return;
+  }
+
   if (!doc || doc.status !== 'sending') {
     return;
   }
@@ -315,17 +442,36 @@ async function processSendJobInner(communicationId) {
   }
 }
 
+function startDueScheduledPoller() {
+  if (dueScheduledTimer) return;
+  dueScheduledTimer = setInterval(() => {
+    processDueScheduledEmails().catch((err) => {
+      console.error('[emailQueue] due scheduled poll error:', err.message);
+    });
+  }, 30_000);
+  if (typeof dueScheduledTimer.unref === 'function') dueScheduledTimer.unref();
+  processDueScheduledEmails().catch(() => {});
+}
+
 function startWorker() {
   const queue = initQueue();
-  if (!queue) return;
-  queue.process(async (job) => {
-    const { communicationId, organizationId } = job.data || {};
-    await processSendJob(communicationId, organizationId);
-  });
-  console.log('[emailQueue] Worker started');
+  if (queue) {
+    queue.process(async (job) => {
+      const { communicationId, organizationId } = job.data || {};
+      await processSendJob(communicationId, organizationId);
+    });
+    console.log('[emailQueue] Worker started (Bull)');
+  } else {
+    console.log('[emailQueue] Worker started (due-scheduled poll only; Redis unavailable)');
+  }
+  startDueScheduledPoller();
 }
 
 async function closeQueue() {
+  if (dueScheduledTimer) {
+    clearInterval(dueScheduledTimer);
+    dueScheduledTimer = null;
+  }
   if (emailQueue && emailQueue !== false) {
     try {
       await emailQueue.close();
@@ -341,6 +487,9 @@ module.exports = {
   COMMUNICATION_RETRY_PROFILES,
   initQueue,
   enqueueSend,
+  enqueueSendDelayed,
+  removeSendJob,
+  processDueScheduledEmails,
   processSendJob,
   startWorker,
   getQueueStats,

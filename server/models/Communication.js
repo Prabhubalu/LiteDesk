@@ -41,9 +41,12 @@ const CommunicationSchema = new Schema({
   sentAt: { type: Date },
   receivedAt: { type: Date },
 
+  /** Absolute UTC when a scheduled outbound email should be sent. */
+  scheduledAt: { type: Date, default: null },
+
   status: {
     type: String,
-    enum: ['sending', 'sent', 'failed', 'delivered', 'opened', 'bounced', 'complained'],
+    enum: ['scheduled', 'sending', 'sent', 'failed', 'delivered', 'opened', 'bounced', 'complained', 'cancelled'],
     default: 'sending'
   },
 
@@ -94,7 +97,21 @@ const CommunicationSchema = new Schema({
   providerThreadId: { type: String, trim: true, default: null },
 
   /** Gmail label ids at import time (e.g. INBOX, STARRED) for workspace inbox filtering. */
-  gmailLabelIds: [{ type: String, trim: true, maxlength: 128 }]
+  gmailLabelIds: [{ type: String, trim: true, maxlength: 128 }],
+
+  /**
+   * Optional follow-up reminder set at compose time (associated with this email record).
+   * remindAt is absolute UTC from send time + days; status drives future delivery jobs.
+   */
+  followUpReminder: {
+    days: { type: Number, min: 1, max: 365, default: null },
+    remindAt: { type: Date, default: null },
+    status: {
+      type: String,
+      enum: ['none', 'pending', 'delivered', 'cancelled'],
+      default: 'none'
+    }
+  }
 }, {
   timestamps: true
 });
@@ -112,6 +129,24 @@ CommunicationSchema.index({ parentCommunicationId: 1 });
 CommunicationSchema.index(
   { organizationId: 1, idempotencyKeyHash: 1 },
   { unique: true, partialFilterExpression: { idempotencyKeyHash: { $exists: true, $type: 'string' } } }
+);
+CommunicationSchema.index(
+  { organizationId: 1, 'followUpReminder.status': 1, 'followUpReminder.remindAt': 1 },
+  {
+    partialFilterExpression: {
+      'followUpReminder.status': 'pending',
+      'followUpReminder.remindAt': { $exists: true, $type: 'date' }
+    }
+  }
+);
+CommunicationSchema.index(
+  { status: 1, scheduledAt: 1 },
+  {
+    partialFilterExpression: {
+      status: 'scheduled',
+      scheduledAt: { $exists: true, $type: 'date' }
+    }
+  }
 );
 
 const Communication = mongoose.model('Communication', CommunicationSchema);

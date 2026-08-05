@@ -22,9 +22,14 @@ function enqueueOutboundEmail(communicationId, organizationId) {
   return emailDispatchQueue.enqueueCommunicationSend(communicationId, organizationId);
 }
 
+function enqueueOutboundEmailDelayed(communicationId, organizationId, runAt) {
+  return emailDispatchQueue.enqueueCommunicationSendDelayed(communicationId, organizationId, runAt);
+}
+
 module.exports = {
   validateOutboundEmailPayload,
   canSendEmailNow,
   getSupportedModules,
-  enqueueOutboundEmail
+  enqueueOutboundEmail,
+  enqueueOutboundEmailDelayed
 };

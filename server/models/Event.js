@@ -418,13 +418,6 @@ const eventSchema = new Schema({
   // Audit History
   auditHistory: [auditHistoryEntrySchema],
   
-  // Notes (for user-added notes/comments - backward compatibility)
-  notes: [{
-    text: { type: String, required: true },
-    created_by: { type: Schema.Types.ObjectId, ref: 'User' },
-    created_at: { type: Date, default: Date.now }
-  }],
-  
   // Metadata for storing additional data (form responses, etc.)
   metadata: {
     type: Schema.Types.Mixed,

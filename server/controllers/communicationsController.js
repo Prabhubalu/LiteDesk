@@ -42,7 +42,6 @@ const outboundEmailSendService = require('../platform/communication/outbound/out
 const { mapCommunicationDeliveryFields } = require('../services/amds/deliveryFields');
 const { getAmdsClient } = require('../config/amds');
 const { enrichCaseActivitiesWithEmailDelivery } = require('../services/helpdesk/caseEmailDeliveryService');
-const { resolveDefaultGmailMailboxForUser } = require('../services/mailboxGmailInboxSyncService');
 const emailQueueService = require('../services/emailQueueService');
 const { appendCommunicationEvent } = require('../services/communicationEventWriter');
 const {
@@ -166,7 +165,9 @@ exports.sendEmail = async (req, res) => {
       body,
       attachments,
       parentCommunicationId,
-      mailboxId: mailboxIdFromBody
+      mailboxId: mailboxIdFromBody,
+      followUpReminderDays,
+      scheduledAt: scheduledAtRaw
     } = validation.value;
 
     const orgId = req.user.organizationId;
@@ -268,6 +269,8 @@ exports.sendEmail = async (req, res) => {
           success: true,
           data: existing,
           queued: existing.status === 'sending',
+          scheduled: existing.status === 'scheduled',
+          scheduledAt: existing.scheduledAt || null,
           idempotencyReplay: true
         });
       }
@@ -352,46 +355,62 @@ exports.sendEmail = async (req, res) => {
         threadId = parent.threadId || parent._id;
         inReplyTo = parent.messageId || parent.externalMessageId;
         references = parent.references ? `${parent.references} ${parent.messageId || parent.externalMessageId}` : (parent.messageId || parent.externalMessageId);
-        if (parent.mailboxId) {
+        if (parent.mailboxId && !mailboxIdFromBody) {
           mailboxIdOutbound = parent.mailboxId;
         }
       }
     }
 
-    if (mailboxIdFromBody) {
-      if (!mongoose.Types.ObjectId.isValid(String(mailboxIdFromBody))) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid mailboxId'
-        });
-      }
-      const mb = await Mailbox.findOne({
-        _id: mailboxIdFromBody,
-        organizationId: orgId
-      }).lean();
-      if (!mb) {
-        return res.status(404).json({
-          success: false,
-          message: 'Mailbox not found'
-        });
-      }
-      if (!canUserAccessMailboxThreads(req.user, mb)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Not allowed to send on behalf of this mailbox'
-        });
-      }
-      mailboxIdOutbound = mb._id;
+    const outboundIdentityService = require('../platform/communication/outbound/outboundIdentityService');
+    const preferredMailboxId =
+      mailboxIdFromBody
+      || (mailboxIdOutbound ? String(mailboxIdOutbound) : undefined);
+
+    if (mailboxIdFromBody && !mongoose.Types.ObjectId.isValid(String(mailboxIdFromBody))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid mailboxId'
+      });
     }
 
-    if (
-      !mailboxIdOutbound
-      && (moduleKey === 'workspace' || outboundPolicy.requireMailboxProviderForAgentSend === true)
-    ) {
-      const autoMb = await resolveDefaultGmailMailboxForUser(orgId, req.user);
-      if (autoMb) {
-        mailboxIdOutbound = autoMb._id;
+    const outboundIdentity = await outboundIdentityService.resolveOutboundIdentity({
+      organizationId: orgId,
+      user: req.user,
+      mailboxId: preferredMailboxId,
+      moduleKey
+    });
+
+    if (mailboxIdFromBody) {
+      if (!outboundIdentity.mailboxId || String(outboundIdentity.mailboxId) !== String(mailboxIdFromBody)) {
+        const mb = await Mailbox.findOne({
+          _id: mailboxIdFromBody,
+          organizationId: orgId
+        }).lean();
+        if (!mb) {
+          return res.status(404).json({
+            success: false,
+            message: 'Mailbox not found'
+          });
+        }
+        if (!canUserAccessMailboxThreads(req.user, mb)) {
+          return res.status(403).json({
+            success: false,
+            message: 'Not allowed to send on behalf of this mailbox'
+          });
+        }
+        return res.status(403).json({
+          success: false,
+          message: 'Mailbox is not available for sending. Connect Gmail or Gmail SMTP on this mailbox.',
+          code: 'MAILBOX_NOT_SENDABLE'
+        });
       }
+    }
+
+    if (outboundIdentity.mailboxId) {
+      mailboxIdOutbound = outboundIdentity.mailboxId;
+    }
+    if (outboundIdentity.fromEmail) {
+      fromAddr = outboundIdentity.fromEmail;
     }
 
     const sendableMailbox = mailboxIdOutbound
@@ -421,14 +440,18 @@ exports.sendEmail = async (req, res) => {
       });
     }
 
-    if (sendableViaGmailApi || sendableViaGmailSmtp) {
-      const mailboxFrom = outboundEmailSendService.resolveMailboxFromAddress(sendableMailbox);
-      if (mailboxFrom) {
-        fromAddr = mailboxFrom;
-      }
-    }
+    // Step 1: Insert (status: 'sending' | 'scheduled')
+    const isScheduled = scheduledAtRaw instanceof Date && Number.isFinite(scheduledAtRaw.getTime());
+    const sendBaseMs = isScheduled ? scheduledAtRaw.getTime() : Date.now();
+    const followUpReminder =
+      followUpReminderDays != null && Number.isInteger(followUpReminderDays) && followUpReminderDays >= 1
+        ? {
+            days: followUpReminderDays,
+            remindAt: new Date(sendBaseMs + followUpReminderDays * 24 * 60 * 60 * 1000),
+            status: 'pending'
+          }
+        : { days: null, remindAt: null, status: 'none' };
 
-    // Step 1: Insert (status: 'sending')
     const doc = new Communication({
       organizationId: orgId,
       kind: 'email',
@@ -444,13 +467,15 @@ exports.sendEmail = async (req, res) => {
       messageId,
       inReplyTo,
       references,
-      status: 'sending',
+      status: isScheduled ? 'scheduled' : 'sending',
+      scheduledAt: isScheduled ? scheduledAtRaw : null,
       relatedTo: { moduleKey, recordId },
       mailboxId: mailboxIdOutbound || null,
       sentByUserId: req.user._id,
       attachments: attachments || [],
       idempotencyKey: idempotencyKey || undefined,
-      idempotencyKeyHash: idempotencyKeyHash || undefined
+      idempotencyKeyHash: idempotencyKeyHash || undefined,
+      followUpReminder
     });
 
     try {
@@ -468,6 +493,8 @@ exports.sendEmail = async (req, res) => {
             success: true,
             data: existing,
             queued: existing.status === 'sending',
+            scheduled: existing.status === 'scheduled',
+            scheduledAt: existing.scheduledAt || null,
             idempotencyReplay: true
           });
         }
@@ -491,6 +518,34 @@ exports.sendEmail = async (req, res) => {
     // Set threadId for first in thread
     if (!threadId) {
       await Communication.findByIdAndUpdate(doc._id, { threadId: doc._id });
+    }
+
+    // Scheduled send: queue for future (or leave for due-poller if Redis down)
+    if (isScheduled) {
+      const enqueued = communicationPlatformService.enqueueOutboundEmailDelayed(
+        doc._id.toString(),
+        orgId,
+        scheduledAtRaw
+      );
+      await appendCommunicationEvent({
+        organizationId: orgId,
+        communicationId: doc._id,
+        eventType: 'scheduled',
+        source: 'communications-api',
+        idempotencyKeyHash,
+        payload: {
+          scheduledAt: scheduledAtRaw.toISOString(),
+          queue: enqueued ? 'email-send' : null
+        }
+      });
+      const updated = await Communication.findById(doc._id).lean();
+      return res.status(200).json({
+        success: true,
+        data: updated,
+        scheduled: true,
+        scheduledAt: scheduledAtRaw.toISOString(),
+        queued: Boolean(enqueued)
+      });
     }
 
     // Step 2: Send — use queue when Redis available, else sync
@@ -906,14 +961,19 @@ function computeWorkspaceThreadCounts(threadsRaw, includeDone, userId) {
   return {
     all: inboxActive.length,
     unread: inboxActive.filter((t) => t.unread).length,
-    sent: inboxActive.filter((t) => t.lastMessageDirection === 'outbound').length,
+    sent: inboxActive.filter(
+      (t) =>
+        t.lastMessageDirection === 'outbound' &&
+        String(t.lastMessageStatus || '').toLowerCase() !== 'scheduled'
+    ).length,
+    scheduled: visible.filter((t) => t.hasScheduledPending).length,
     assignedToMe: inboxActive.filter((t) => String(t.assignedToUserId || '') === String(userId)).length,
     snoozed: snoozed.length
   };
 }
 
 /**
- * @param {string} filter all|unread|sent|assigned_to_me|snoozed
+ * @param {string} filter all|unread|sent|scheduled|assigned_to_me|snoozed
  */
 function filterWorkspaceThreadsForFolder({
   threadsRaw,
@@ -927,11 +987,19 @@ function filterWorkspaceThreadsForFolder({
   let base = includeDone ? searched : searched.filter((t) => !t.done);
   if (filter === 'snoozed') {
     base = base.filter((t) => t.snoozeActive);
+  } else if (filter === 'scheduled') {
+    // Pending schedule send — include even if thread was snoozed
+    base = base.filter((t) => t.hasScheduledPending);
   } else {
     base = base.filter((t) => !t.snoozeActive);
     if (filter === 'unread') base = base.filter((t) => t.unread);
-    else if (filter === 'sent') base = base.filter((t) => t.lastMessageDirection === 'outbound');
-    else if (filter === 'assigned_to_me') {
+    else if (filter === 'sent') {
+      base = base.filter(
+        (t) =>
+          t.lastMessageDirection === 'outbound' &&
+          String(t.lastMessageStatus || '').toLowerCase() !== 'scheduled'
+      );
+    } else if (filter === 'assigned_to_me') {
       base = base.filter((t) => String(t.assignedToUserId || '') === String(userId));
     }
   }
@@ -1000,7 +1068,7 @@ function findWorkspaceCursorPageStart(sortedDesc, cursorDecoded) {
 /**
  * GET /api/communications/workspace-threads
  * Phase 5: cross-record email thread summaries for the current workspace (recent window).
- * Query: includeDone, filter=all|unread|sent|assigned_to_me|snoozed, limit (1–100, default 50), optional mailboxId, optional gmailLabelId, optional search, optional cursor (opaque).
+ * Query: includeDone, filter=all|unread|sent|scheduled|assigned_to_me|snoozed, limit (1–100, default 50), optional mailboxId, optional gmailLabelId, optional search, optional cursor (opaque).
  * Response data.threads is filtered/sliced; data.counts reflects the same scope before folder filter and before search (for badges).
  */
 exports.getWorkspaceThreads = async (req, res) => {
@@ -1690,6 +1758,7 @@ exports.getThreadMessages = async (req, res) => {
           attachments: m.attachments || [],
           sentAt: m.sentAt,
           receivedAt: m.receivedAt,
+          scheduledAt: m.scheduledAt || null,
           status: m.status,
           ...mapCommunicationDeliveryFields(m)
         }))
@@ -1700,6 +1769,55 @@ exports.getThreadMessages = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to load thread messages',
+      error: err.message
+    });
+  }
+};
+
+/**
+ * POST /api/communications/:communicationId/cancel-schedule
+ * Cancels a not-yet-sent scheduled outbound email.
+ */
+exports.cancelScheduledEmail = async (req, res) => {
+  try {
+    const communicationId = String(req.params.communicationId || '').trim();
+    if (!communicationId || !mongoose.Types.ObjectId.isValid(communicationId)) {
+      return res.status(400).json({ success: false, message: 'Invalid communicationId' });
+    }
+    const orgId = req.user.organizationId;
+    const doc = await Communication.findOne({
+      _id: communicationId,
+      organizationId: orgId,
+      direction: 'outbound',
+      kind: 'email',
+      status: 'scheduled'
+    });
+    if (!doc) {
+      return res.status(404).json({
+        success: false,
+        message: 'Scheduled email not found or already sent'
+      });
+    }
+    doc.status = 'cancelled';
+    await doc.save();
+    try {
+      await emailQueueService.removeSendJob(String(doc._id));
+    } catch {
+      /* queue optional */
+    }
+    await appendCommunicationEvent({
+      organizationId: orgId,
+      communicationId: doc._id,
+      eventType: 'schedule_cancelled',
+      source: 'communications-api',
+      payload: { cancelledBy: String(req.user._id) }
+    });
+    return res.json({ success: true, data: doc.toObject ? doc.toObject() : doc });
+  } catch (err) {
+    console.error('[communicationsController] cancelScheduledEmail error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to cancel scheduled email',
       error: err.message
     });
   }
@@ -1764,57 +1882,6 @@ const EMAIL_TEMPLATES = [
 ];
 
 /**
- * GET /api/communications/templates
- * Returns predefined email templates (Phase 3.5).
- */
-async function resolvePreviewFromAddress(req, { orgId, moduleKey, mailboxId }) {
-  const user = req.user;
-  let fromEmail = String(user?.email || process.env.EMAIL_FROM || '').trim();
-  let fromName = '';
-  let fromSource = 'user';
-
-  const applyMailbox = (mb) => {
-    const addr = outboundEmailSendService.resolveMailboxFromAddress(mb);
-    if (!addr) return false;
-    fromEmail = addr;
-    fromName = String(mb.label || '').trim();
-    fromSource = 'mailbox';
-    return true;
-  };
-
-  const mailboxIdRaw = String(mailboxId || '').trim();
-  if (mailboxIdRaw && mongoose.Types.ObjectId.isValid(mailboxIdRaw)) {
-    const mb = await Mailbox.findOne({ _id: mailboxIdRaw, organizationId: orgId }).lean();
-    if (mb && canUserAccessMailboxThreads(user, mb) && applyMailbox(mb)) {
-      return { fromEmail, fromName, fromSource };
-    }
-  }
-
-  const runtimeConfig = await getCommunicationConfigForOrganization(orgId);
-  const outboundPolicy = runtimeConfig.outboundEmail || {};
-  if (
-    moduleKey === 'workspace'
-    || outboundPolicy.requireMailboxProviderForAgentSend === true
-  ) {
-    const autoMb = await resolveDefaultGmailMailboxForUser(orgId, user);
-    if (autoMb && applyMailbox(autoMb)) {
-      return { fromEmail, fromName, fromSource };
-    }
-  }
-
-  const emailService = require('../services/emailService');
-  const orgCfg = await emailService.getOrganizationEmailConfig(orgId);
-  const tenantFrom = String(orgCfg?.fromEmail || '').trim();
-  if (tenantFrom) {
-    fromEmail = tenantFrom;
-    fromName = String(orgCfg?.fromName || '').trim();
-    fromSource = 'tenant_config';
-  }
-
-  return { fromEmail, fromName, fromSource };
-}
-
-/**
  * GET /api/communications/email/compose-preview
  * GET /api/communications/email/reply-to-preview (alias)
  * Query: moduleKey & recordId, or standalone=true; optional mailboxId.
@@ -1839,10 +1906,12 @@ exports.previewComposeEmail = async (req, res) => {
       });
     }
 
-    const { fromEmail, fromName, fromSource } = await resolvePreviewFromAddress(req, {
-      orgId,
-      moduleKey,
-      mailboxId
+    const outboundIdentityService = require('../platform/communication/outbound/outboundIdentityService');
+    const identity = await outboundIdentityService.resolveOutboundIdentity({
+      organizationId: orgId,
+      user: req.user,
+      mailboxId: mailboxId || undefined,
+      moduleKey
     });
 
     let replyTo = '';
@@ -1876,9 +1945,12 @@ exports.previewComposeEmail = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        fromEmail,
-        fromName,
-        fromSource,
+        fromEmail: identity.fromEmail,
+        fromName: identity.fromName,
+        fromSource: identity.fromSource,
+        mailboxId: identity.mailboxId,
+        identities: identity.identities,
+        defaultOutboundMailboxId: identity.defaultOutboundMailboxId,
         replyTo,
         replyToSource,
         ...(replyToNote ? { replyToNote } : {})
@@ -1894,6 +1966,38 @@ exports.previewComposeEmail = async (req, res) => {
 };
 
 exports.previewReplyTo = exports.previewComposeEmail;
+
+/**
+ * PUT /api/communications/email/default-outbound-mailbox
+ * Body: { mailboxId: string | null }
+ * Persists the caller's default send-as mailbox identity.
+ */
+exports.setDefaultOutboundMailbox = async (req, res) => {
+  try {
+    const outboundIdentityService = require('../platform/communication/outbound/outboundIdentityService');
+    const result = await outboundIdentityService.setDefaultOutboundMailbox({
+      organizationId: req.user.organizationId,
+      userId: req.user._id,
+      mailboxId: req.body?.mailboxId
+    });
+    if (!result.ok) {
+      return res.status(result.status || 400).json({
+        success: false,
+        message: result.message || 'Failed to update default outbound mailbox'
+      });
+    }
+    return res.json({
+      success: true,
+      data: { defaultOutboundMailboxId: result.defaultOutboundMailboxId }
+    });
+  } catch (err) {
+    console.error('[communicationsController] setDefaultOutboundMailbox:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update default outbound mailbox'
+    });
+  }
+};
 
 exports.getTemplates = (req, res) => {
   return res.json({ success: true, data: { templates: EMAIL_TEMPLATES } });

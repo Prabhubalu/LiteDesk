@@ -23,6 +23,7 @@ router.use(organizationIsolation);
 
 router.get('/email/compose-preview', controller.previewComposeEmail);
 router.get('/email/reply-to-preview', controller.previewReplyTo);
+router.put('/email/default-outbound-mailbox', controller.setDefaultOutboundMailbox);
 router.post('/email', controller.sendEmail);
 router.get('/pipeline-metrics', controller.getPipelineMetrics);
 router.get('/pipeline-diagnostics', controller.getPipelineDiagnostics);
@@ -47,6 +48,7 @@ router.patch('/threads/:threadId/snooze', controller.markThreadSnooze);
 router.patch('/threads/:threadId/assign', controller.assignThreadOwner);
 router.patch('/threads/:threadId/tags', controller.updateThreadTags);
 router.get('/:communicationId/delivery-status', controller.getCommunicationDeliveryStatus);
+router.post('/:communicationId/cancel-schedule', controller.cancelScheduledEmail);
 router.post('/:communicationId/create-task', controller.createTaskFromEmail);
 router.post('/:communicationId/create-case', controller.createCaseFromEmail);
 

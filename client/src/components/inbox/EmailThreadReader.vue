@@ -152,9 +152,17 @@
                 <p class="mt-0.5 text-[12px] text-[#9B9A97] dark:text-gray-500">
                   {{ recipientsDisplay(msg) || t('inbox.inboxReaderToMe') }}
                 </p>
+                <p
+                  v-if="isScheduledMessage(msg)"
+                  class="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+                >
+                  <ClockIcon class="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {{ scheduledBadgeLabel(msg) }}
+                </p>
               </div>
               <div class="flex shrink-0 items-center gap-2">
                 <button
+                  v-if="!isScheduledMessage(msg)"
                   type="button"
                   class="rounded-md p-1 text-[#787774] hover:bg-black/[0.04] dark:text-gray-400 dark:hover:bg-white/5"
                   @click="openDockedReply"
@@ -166,6 +174,21 @@
                 </time>
               </div>
             </header>
+
+            <div
+              v-if="isScheduledMessage(msg)"
+              class="mx-5 mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[13px] text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+            >
+              <span>{{ scheduledBannerText(msg) }}</span>
+              <button
+                type="button"
+                class="shrink-0 rounded-md bg-white px-2.5 py-1 text-[12px] font-medium text-amber-900 ring-1 ring-amber-200 hover:bg-amber-100 disabled:opacity-50 dark:bg-amber-900/40 dark:text-amber-50 dark:ring-amber-800 dark:hover:bg-amber-900/60"
+                :disabled="cancelScheduleLoadingId === String(msg._id)"
+                @click="cancelSchedule(msg)"
+              >
+                {{ t('inbox.emailThreadCancelSchedule') }}
+              </button>
+            </div>
 
             <div
               class="email-body px-5 py-5 text-[14px] leading-relaxed text-[#37352F] dark:text-gray-200"
@@ -189,7 +212,7 @@
             </div>
 
             <footer
-              v-if="idx === thread.messages.length - 1"
+              v-if="idx === thread.messages.length - 1 && !isScheduledMessage(msg)"
               class="flex flex-wrap items-center gap-2 border-t border-[#F1F1EF] px-5 py-4 dark:border-gray-800"
             >
               <button
@@ -248,10 +271,12 @@ import {
   ArrowTopRightOnSquareIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  ClockIcon,
   EnvelopeOpenIcon,
   TrashIcon,
   XMarkIcon
 } from '@heroicons/vue/24/outline';
+import { useNotifications } from '@/composables/useNotifications';
 
 const props = defineProps({
   threadId: { type: String, required: true },
@@ -278,6 +303,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const notifications = useNotifications();
 
 const emit = defineEmits([
   'close',
@@ -292,7 +318,8 @@ const emit = defineEmits([
   'submit-compose',
   'pop-out-compose',
   'navigate-prev',
-  'navigate-next'
+  'navigate-next',
+  'schedule-cancelled'
 ]);
 
 const thread = ref(null);
@@ -303,6 +330,63 @@ const expandedIndex = ref(-1);
 const dockedReplyOpen = ref(false);
 const dockedReplySending = ref(false);
 const dockedReplyRef = ref(null);
+const cancelScheduleLoadingId = ref('');
+
+function isScheduledMessage(msg) {
+  return String(msg?.status || '').toLowerCase() === 'scheduled';
+}
+
+function formatScheduledWhen(msg) {
+  const raw = msg?.scheduledAt;
+  if (!raw) return '';
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return '';
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(d);
+  } catch {
+    return formatUserDateTime(d);
+  }
+}
+
+function scheduledBadgeLabel(msg) {
+  const when = formatScheduledWhen(msg);
+  if (when) return t('inbox.emailThreadScheduledBadge', { when });
+  return t('inbox.emailThreadScheduledPending');
+}
+
+function scheduledBannerText(msg) {
+  const when = formatScheduledWhen(msg);
+  if (when) return t('inbox.emailThreadScheduledBanner', { when });
+  return t('inbox.emailThreadScheduledPending');
+}
+
+async function cancelSchedule(msg) {
+  const id = String(msg?._id || '');
+  if (!id || cancelScheduleLoadingId.value) return;
+  cancelScheduleLoadingId.value = id;
+  try {
+    const res = await apiClient.post(`/communications/${encodeURIComponent(id)}/cancel-schedule`, {});
+    if (res?.success) {
+      notifications.success(t('inbox.emailThreadCancelScheduleSuccess'));
+      await loadThread();
+      emit('schedule-cancelled', { communicationId: id, threadId: props.threadId });
+    } else {
+      notifications.error(res?.message || t('inbox.emailThreadCancelScheduleFailed'));
+    }
+  } catch (err) {
+    notifications.error(
+      err?.response?.data?.message || err?.message || t('inbox.emailThreadCancelScheduleFailed')
+    );
+  } finally {
+    cancelScheduleLoadingId.value = '';
+  }
+}
 
 function resolveReplyToFromThread(row, messages) {
   const preset = String(row?.replyToAddress || '').trim();
@@ -480,6 +564,7 @@ function displayAddress(addr) {
 }
 
 function messageDate(msg) {
+  if (isScheduledMessage(msg) && msg?.scheduledAt) return msg.scheduledAt;
   return msg?.sentAt || msg?.receivedAt || msg?.createdAt || null;
 }
 

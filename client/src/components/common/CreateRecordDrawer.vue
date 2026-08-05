@@ -315,6 +315,10 @@ import { useTabs } from '@/composables/useTabs';
 import { useRoute } from 'vue-router';
 import { getTaskSystemFields } from '@/platform/fields/taskFieldModel';
 import {
+  getEventSystemFields,
+  getEventFieldMetadata,
+} from '@/platform/fields/eventFieldModel';
+import {
   getCaseSystemFields,
   stripCaseRecordForEditForm,
   filterCaseEditSubmitPayload,
@@ -777,10 +781,68 @@ const coreSystemFieldKeys = [
   'createdby',
   'createdAt',
   'createdat',
+  'createdTime',
+  'createdtime',
+  'modifiedBy',
+  'modifiedby',
+  'modifiedTime',
+  'modifiedtime',
   'updatedAt',
   'updatedat',
   'activityLogs',
   'activitylogs',
+];
+
+/** Event fields that must never appear on create/edit forms (platform-managed / dedicated surfaces). */
+const EVENT_FORM_EXCLUDED_KEYS = [
+  'descriptionVersions',
+  'auditHistory',
+  'metadata',
+  'kpiActuals',
+  'checkIn',
+  'checkOut',
+  'executionStartTime',
+  'executionEndTime',
+  'timeSpent',
+  'isPaused',
+  'pauseReasons',
+  'routeSequence',
+  'currentOrgIndex',
+  'isMultiOrg',
+  'formAssignment',
+  'statusCategory',
+  'completedAt',
+  'cancelledAt',
+  'cancelledBy',
+  'cancellationReason',
+  'source',
+  'eventId',
+  'eventNumber',
+  'appointment',
+  'calendarSync',
+  // Legacy module-definition keys not on Event schema (stale tenant defs)
+  'linkedTaskId',
+  'reminderAt',
+  'relatedToType',
+];
+
+/** Audit / beat participation — dedicated surfaces only; same hide list for create and edit drawers. */
+const EVENT_DRAWER_EXCLUDED_PARTICIPATION_KEYS = [
+  'orgList',
+  'minTimePerStop',
+  'backgroundTracking',
+  'allowedActions',
+  'kpiTargets',
+  'auditorId',
+  'reviewerId',
+  'correctiveOwnerId',
+  'allowSelfReview',
+  'minVisitDuration',
+  'partnerVisibility',
+  'auditState',
+  'linkedFormId',
+  'attachments',
+  'visibility',
 ];
 
 const effectiveExcludeFields = computed(() => {
@@ -819,6 +881,35 @@ const effectiveExcludeFields = computed(() => {
     const taskSystemFields = (getTaskSystemFields() || []).map((k) => String(k).toLowerCase());
     // Exclude only system fields; relatedTo and subtasks stay in DynamicForm so they appear in config order (like edit drawer)
     ['relatedToType', 'relatedToId', ...taskSystemFields].forEach((k) => excluded.add(k));
+    return Array.from(excluded);
+  }
+  if (props.moduleKey === 'events') {
+    (getEventSystemFields() || []).forEach((k) => excluded.add(k));
+    EVENT_FORM_EXCLUDED_KEYS.forEach((k) => excluded.add(k));
+    const eventFields = effectiveModuleOverrideForDrawer.value?.fields || [];
+    for (const field of eventFields) {
+      const key = String(field?.key || '');
+      if (!key) continue;
+      if (isSystemField('events', { key }) || !canEditField('events', { key })) {
+        excluded.add(key);
+      }
+    }
+    // Create + edit drawers share one surface: hide audit/sales-beat participation
+    // (dedicated surfaces own those). Meeting geo stays editable.
+    EVENT_DRAWER_EXCLUDED_PARTICIPATION_KEYS.forEach((k) => excluded.add(k));
+    const drawerAllowedParticipation = new Set(['georequired']);
+    for (const field of eventFields) {
+      const key = String(field?.key || '');
+      if (!key) continue;
+      // Tenant custom fields have no platform metadata — keep on create/edit.
+      if (field.isCustom === true || field.custom === true) continue;
+      const meta = getEventFieldMetadata(key);
+      if (meta?.owner === 'participation') {
+        const keyNorm = normalizeFieldKeyForSystemMatch(key);
+        if (drawerAllowedParticipation.has(keyNorm)) continue;
+        excluded.add(key);
+      }
+    }
     return Array.from(excluded);
   }
   if (props.moduleKey === 'items') {
@@ -2856,11 +2947,29 @@ const handleSubmit = async () => {
     delete submitData.organizationid;
     delete submitData.createdAt;
     delete submitData.updatedAt;
+    delete submitData.createdTime;
+    delete submitData.modifiedTime;
+    delete submitData.modifiedBy;
     delete submitData._id;
     delete submitData.__v;
     
-    // Strip status field for events (system-controlled)
+    // Events: strip platform system fields (full form seeds every module key as '' → null)
     if (props.moduleKey === 'events') {
+      const eventSystemKeys = new Set(
+        [
+          ...(getEventSystemFields() || []),
+          ...EVENT_FORM_EXCLUDED_KEYS,
+          ...EVENT_DRAWER_EXCLUDED_PARTICIPATION_KEYS,
+          'createdTime',
+          'modifiedTime',
+          'modifiedBy',
+          'createdBy',
+          'organizationId',
+        ].map((k) => String(k).toLowerCase())
+      );
+      Object.keys(submitData).forEach((key) => {
+        if (eventSystemKeys.has(key.toLowerCase())) delete submitData[key];
+      });
       // Keep status for non-audit; backend validates type vocabulary + OPEN default.
       // (Old strip forced model default Planned — broke Meeting → Scheduled.)
     }

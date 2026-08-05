@@ -5228,7 +5228,23 @@ async function handleEmailSubmit(payload) {
   try {
     const res = await apiClient.post('/communications/email', payload);
     if (res?.success) {
-      notifications.success(t('records.genericEmailSent'));
+      if (res?.scheduled && res?.scheduledAt) {
+        let when = res.scheduledAt;
+        try {
+          when = new Intl.DateTimeFormat(undefined, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          }).format(new Date(res.scheduledAt));
+        } catch {
+          /* keep ISO */
+        }
+        notifications.success(t('inbox.emailComposeScheduleSuccess', { when }));
+      } else {
+        notifications.success(t('records.genericEmailSent'));
+      }
       await fetchRecord();
     } else {
       notifications.error(res?.message || t('records.genericEmailSendFailed'));

@@ -107,12 +107,12 @@
       ]"
     />
     
-    <!-- Text-Area -->
+    <!-- Text-Area / Rich Text (legacy module type; had no control → label only) -->
     <textarea 
-      v-else-if="field.dataType === 'Text-Area'"
+      v-else-if="!isEventRecurrencePicklist && (field.dataType === 'Text-Area' || field.dataType === 'RichText' || field.dataType === 'Rich Text' || isEventNotesAsTextArea)"
       :id="field.key"
       :name="field.key"
-      :value="value"
+      :value="isEventNotesAsTextArea ? textareaFieldValue : (typeof value === 'string' || typeof value === 'number' ? value : (value == null ? '' : String(value)))"
       @input="updateValue($event.target.value)"
       @blur="$emit('blur')"
       @keydown.enter.ctrl="$event.target.blur()"
@@ -283,7 +283,7 @@
     />
     
     <!-- Picklist (using Headless UI Combobox with search input inside dropdown) -->
-    <div v-else-if="field.dataType === 'Picklist'" class="mt-2 relative">
+    <div v-else-if="field.dataType === 'Picklist' || isEventRecurrencePicklist" class="mt-2 relative">
       <Combobox :model-value="value || ''" @update:model-value="handlePicklistChange" :disabled="isReadOnly" nullable>
         <div class="relative">
           <ComboboxButton
@@ -1258,6 +1258,46 @@ const isEventAttendeesField = computed(() => {
   return String(props.field?.key || '').toLowerCase() === 'attendees';
 });
 
+/** Stale module defs type notes as RichText (or array) — always render a textarea. */
+const isEventNotesAsTextArea = computed(() => {
+  if (String(props.moduleKey || '').toLowerCase() !== 'events') return false;
+  return String(props.field?.key || '').toLowerCase() === 'notes';
+});
+
+/** Coerce legacy notes[] objects or non-strings for event notes textarea. */
+const textareaFieldValue = computed(() => {
+  const v = props.value;
+  if (v == null) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  if (Array.isArray(v)) {
+    return v
+      .map((item) => {
+        if (item == null) return '';
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object') return String(item.text || item.content || item.note || '');
+        return String(item);
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+  return '';
+});
+
+/** Stale module defs type recurrence as RichText — render schema enum as picklist. */
+const isEventRecurrencePicklist = computed(() => {
+  if (String(props.moduleKey || '').toLowerCase() !== 'events') return false;
+  return String(props.field?.key || '').toLowerCase() === 'recurrence';
+});
+
+const EVENT_RECURRENCE_OPTIONS = [
+  { value: 'Daily', label: 'Daily' },
+  { value: 'Weekly', label: 'Weekly' },
+  { value: 'Monthly', label: 'Monthly' },
+  { value: 'Custom', label: 'Custom' },
+];
+
+
 const isEventConferenceProviderField = computed(() => {
   if (props.moduleKey !== 'events') return false;
   return String(props.field?.key || '').toLowerCase() === 'conferenceprovider';
@@ -1491,6 +1531,11 @@ const mergedPicklistSourceOptions = computed(() => {
   const isCurrencyCodeField =
     fieldKeyNorm === 'currency' || fieldKeyNorm === 'paymentcurrency';
   let base = Array.isArray(props.field.options) ? props.field.options : [];
+
+  // Events recurrence: ensure enum options even when module def has wrong type/empty options
+  if (String(props.moduleKey || '').toLowerCase() === 'events' && fieldKeyNorm === 'recurrence') {
+    if (!base.length) base = EVENT_RECURRENCE_OPTIONS;
+  }
 
   // Events status vocabulary: scope options by event type (Meeting seeds vs audit/FSB)
   if (String(props.moduleKey || '').toLowerCase() === 'events' && fieldKeyNorm === 'status') {

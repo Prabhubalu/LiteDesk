@@ -103,32 +103,51 @@ const NOTIFICATION_ROUTE_MAP = {
 
 /**
  * Get route for a notification based on appKey and entity.
- * 
- * @param {string} appKey - 'SALES' | 'AUDIT' | 'PORTAL'
+ *
+ * Shell may report CORE (CRM module paths) or other lens ids; notifications
+ * for CRM records are stored/routed under SALES.
+ *
+ * @param {string} appKey - 'SALES' | 'AUDIT' | 'PORTAL' | shell lens id
  * @param {Object} entity - { type: string, id: string }
  * @returns {Object|null} Route definition or null if no route available
  */
+function resolveRouteAppKey(appKey) {
+  const key = String(appKey || '').toUpperCase();
+  if (!key || key === 'CORE') return 'SALES';
+  if (NOTIFICATION_ROUTE_MAP[key]) return key;
+  return key;
+}
+
 export function getNotificationRoute(appKey, entity) {
-  if (!appKey || !entity || !entity.type || !entity.id) {
+  if (!entity || !entity.type || !entity.id) {
     return null;
   }
 
-  const appRoutes = NOTIFICATION_ROUTE_MAP[appKey];
+  const entityTypeKey = normalizeEntityType(entity.type);
+  let resolvedAppKey = resolveRouteAppKey(appKey);
+  let appRoutes = NOTIFICATION_ROUTE_MAP[resolvedAppKey];
+
+  // CRM deep-links: if current shell app has no map entry, fall back to SALES
+  if (!appRoutes?.[entityTypeKey] && NOTIFICATION_ROUTE_MAP.SALES[entityTypeKey]) {
+    resolvedAppKey = 'SALES';
+    appRoutes = NOTIFICATION_ROUTE_MAP.SALES;
+  }
+
   if (!appRoutes) {
     console.warn(`[notificationRouteMap] Unknown appKey: ${appKey}`);
     return null;
   }
 
-  // Normalize entity type (handles "Task", "Audit", "CorrectiveAction", etc.)
-  const entityTypeKey = normalizeEntityType(entity.type);
   const routeBuilder = appRoutes[entityTypeKey];
   if (!routeBuilder || typeof routeBuilder !== 'function') {
-    console.warn(`[notificationRouteMap] No route for appKey=${appKey}, entityType=${entityTypeKey}`);
+    console.warn(
+      `[notificationRouteMap] No route for appKey=${resolvedAppKey}, entityType=${entityTypeKey}`
+    );
     return null;
   }
 
   try {
-    return routeBuilder(entity.id);
+    return routeBuilder(String(entity.id));
   } catch (err) {
     console.error(`[notificationRouteMap] Error building route:`, err);
     return null;

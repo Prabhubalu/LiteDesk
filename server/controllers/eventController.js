@@ -1118,6 +1118,14 @@ exports.createEvent = async (req, res) => {
         // Extract custom fields into customFields bucket for persistence
         const { extractCustomFields, flattenCustomFieldsForResponse } = require('../utils/customFieldsExtractor');
         const { standardPayload, customFieldsSet } = extractCustomFields(eventData, Event);
+        // Never trust client timestamps: empty/null from create forms fail required validation
+        // (Mongoose defaults do not apply when the path is explicitly null).
+        delete standardPayload.createdTime;
+        delete standardPayload.modifiedTime;
+        delete standardPayload.createdBy;
+        delete standardPayload.modifiedBy;
+        delete standardPayload.organizationId;
+        const now = new Date();
         const eventDataFinal = {
             ...standardPayload,
             // Preserve required system fields for Event model after custom-field extraction.
@@ -1125,7 +1133,9 @@ exports.createEvent = async (req, res) => {
             // so we must explicitly carry trusted server-assigned values forward.
             organizationId: eventData.organizationId,
             createdBy: eventData.createdBy,
-            modifiedBy: eventData.modifiedBy
+            modifiedBy: eventData.modifiedBy,
+            createdTime: now,
+            modifiedTime: now
         };
         if (Object.keys(customFieldsSet).length > 0) {
             eventDataFinal.customFields = customFieldsSet;
