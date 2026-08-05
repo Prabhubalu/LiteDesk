@@ -136,30 +136,39 @@ function archiveValue(value: EventStatusValue) {
   if (value.isSystem) return;
   const idx = draftValues.value.findIndex((v) => v.key === value.key);
   if (idx < 0) return;
-  draftValues.value[idx] = { ...draftValues.value[idx], archived: true, isDefault: false };
+  const current = draftValues.value[idx];
+  if (!current) return;
+  draftValues.value[idx] = { ...current, archived: true, isDefault: false };
   // Ensure category still has a default among active
   const active = draftValues.value.filter((v) => v.category === value.category && !v.archived);
   if (active.length && !active.some((v) => v.isDefault)) {
-    active[0].isDefault = true;
+    const first = active[0];
+    if (first) first.isDefault = true;
   }
 }
 
 function unarchiveValue(value: EventStatusValue) {
   const idx = draftValues.value.findIndex((v) => v.key === value.key);
   if (idx < 0) return;
-  draftValues.value[idx] = { ...draftValues.value[idx], archived: false };
+  const current = draftValues.value[idx];
+  if (!current) return;
+  draftValues.value[idx] = { ...current, archived: false };
 }
 
 function updateLabel(value: EventStatusValue, label: string) {
   const idx = draftValues.value.findIndex((v) => v.key === value.key);
   if (idx < 0) return;
-  draftValues.value[idx] = { ...draftValues.value[idx], label };
+  const current = draftValues.value[idx];
+  if (!current) return;
+  draftValues.value[idx] = { ...current, label };
 }
 
 function updateColor(value: EventStatusValue, color: string) {
   const idx = draftValues.value.findIndex((v) => v.key === value.key);
   if (idx < 0) return;
-  draftValues.value[idx] = { ...draftValues.value[idx], color };
+  const current = draftValues.value[idx];
+  if (!current) return;
+  draftValues.value[idx] = { ...current, color };
 }
 
 function resetDraft() {
