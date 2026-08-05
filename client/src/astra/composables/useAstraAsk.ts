@@ -78,6 +78,9 @@ const ASK_PATH = '/ai/v2/ask';
 const CONFIRM_PATH = '/ai/v2/actions/confirm';
 const NBA_PATH = '/ai/v2/next-best-actions';
 
+/** Astra is an optional surface — never tear down the CRM session on failure. */
+const ASTRA_OPT_OPTS = { skipAuthLogout: true as const };
+
 function toStringSafe(value: unknown): string {
   return typeof value === 'string' ? value : value == null ? '' : String(value);
 }
@@ -270,7 +273,7 @@ export function useAstraAsk(surface: AstraSurface = 'copilot') {
               name: context.recordName || undefined,
             }
           : undefined,
-      })) as Record<string, unknown>;
+      }, ASTRA_OPT_OPTS)) as Record<string, unknown>;
       return {
         answer: toStringSafe(data?.answer ?? data?.reply ?? data?.body),
         blocks: Array.isArray(data?.blocks) ? (data.blocks as import('@/astra/blocks/types').AstraUiBlock[]) : [],
@@ -311,7 +314,7 @@ export function useAstraAsk(surface: AstraSurface = 'copilot') {
         fields: proposal.fields,
         conversationId: context.conversationId,
         confirmed: true,
-      })) as Record<string, unknown>;
+      }, ASTRA_OPT_OPTS)) as Record<string, unknown>;
       captureAstraActionCompleted({
         surface,
         actionKind: proposal.kind,
@@ -352,6 +355,7 @@ export function useAstraAsk(surface: AstraSurface = 'copilot') {
           recordName: context.recordName,
           surface: context.surface || 'home',
         },
+        ...ASTRA_OPT_OPTS,
       })) as Record<string, unknown>;
       return normalizeNba(data?.items ?? data?.cards ?? data?.nba ?? data);
     } catch {

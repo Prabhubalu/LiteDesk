@@ -1239,7 +1239,11 @@ onMounted(() => {
       panelOpen.value = true;
     }
   }
-  void refreshHistory();
+  // Prefetch history only when the panel is already open. Eager mount fetch used to
+  // 401-logout valid CRM sessions (apiClient treats any 401 as session death).
+  if (panelOpen.value) {
+    void refreshHistory();
+  }
 });
 
 onBeforeUnmount(() => {
