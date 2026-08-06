@@ -1,12 +1,17 @@
 'use strict';
 
 /**
- * Active auth sessions (tenant-scoped). JWT jti maps to sessionId.
+ * Active auth sessions — platform/master only.
+ *
+ * JWT jti maps to sessionId. Must NOT be tenant-proxied: login/accept issue
+ * sessions outside organizationIsolation, while protect validates before
+ * tenant context is entered. wrapTenantModel would split create/read across
+ * master vs tenant DBs for dedicated instances and surface as random 401s.
+ *
  * @see docs/architecture/EXTERNAL_USER_PORTAL_FRAMEWORK.md §11
  */
 
 const mongoose = require('mongoose');
-const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
 const { Schema } = mongoose;
 
@@ -60,4 +65,5 @@ const UserSessionSchema = new Schema(
 UserSessionSchema.index({ organizationId: 1, userId: 1, revokedAt: 1, issuedAt: -1 });
 UserSessionSchema.index({ organizationId: 1, userId: 1, revokedAt: 1, deviceClass: 1 });
 
-module.exports = wrapTenantModel(mongoose.model('UserSession', UserSessionSchema));
+// Always the master mongoose connection (not wrapTenantModel).
+module.exports = mongoose.model('UserSession', UserSessionSchema);

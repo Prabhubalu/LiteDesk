@@ -109,7 +109,10 @@ const protect = async (req, res, next) => {
             req.user = await resolveUserFromToken(token, { lean: false });
 
             if (!req.user) {
-                return res.status(401).json({ message: 'User not found' });
+                return res.status(401).json({
+                    message: 'User not found',
+                    code: 'AUTH_USER_NOT_FOUND'
+                });
             }
 
             try {
@@ -138,12 +141,34 @@ const protect = async (req, res, next) => {
 
             return next();
         } catch (error) {
+            if (error?.status === 503 || error?.code === 'DB_UNAVAILABLE' || error?.code === 'TENANT_DB_UNAVAILABLE') {
+                console.error('[AuthMiddleware] Transient auth failure:', error.message);
+                return res.status(503).json({
+                    message: error.message || 'Service temporarily unavailable',
+                    code: error.code || 'DB_UNAVAILABLE'
+                });
+            }
+            if (error?.status === 401 && error?.code) {
+                console.warn('[AuthMiddleware] Auth rejected:', error.code);
+                return res.status(401).json({
+                    message: error.code === 'SESSION_REVOKED'
+                        ? 'Session expired. Please sign in again.'
+                        : 'Not authorized, session invalid',
+                    code: error.code
+                });
+            }
             console.error('Token verification error:', error.message);
-            return res.status(401).json({ message: 'Not authorized, token failed' });
+            return res.status(401).json({
+                message: 'Not authorized, token failed',
+                code: 'AUTH_TOKEN_FAILED'
+            });
         }
     }
 
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({
+        message: 'Not authorized, no token',
+        code: 'AUTH_NO_TOKEN'
+    });
 };
 
 module.exports = { protect };

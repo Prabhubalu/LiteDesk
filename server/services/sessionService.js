@@ -319,15 +319,20 @@ async function validateAuthSession(user, decoded) {
   }
 
   if (tokenJti) {
+    // Match by sessionId only first — userId ObjectId identity can differ slightly
+    // across BSON serializations while remaining the same user.
     const session = await UserSession.findOne({
-      sessionId: tokenJti,
-      userId: user._id,
+      sessionId: String(tokenJti),
       revokedAt: null
     })
-      .select('_id')
+      .select('_id userId')
       .lean();
 
     if (!session) {
+      return { ok: false, code: 'SESSION_INVALID' };
+    }
+
+    if (user?._id && session.userId && String(session.userId) !== String(user._id)) {
       return { ok: false, code: 'SESSION_INVALID' };
     }
 
