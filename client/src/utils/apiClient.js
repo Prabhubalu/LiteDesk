@@ -300,6 +300,13 @@ const apiClient = async (url, options = {}) => {
                 throw authError;
             }
 
+            // Transient infra (tenant DB blip) must not look like hard auth failure.
+            if (response.status === 503) {
+                const serviceError = new Error('Service temporarily unavailable. Please retry.');
+                serviceError.status = 503;
+                throw serviceError;
+            }
+
             // Check for other errors
             if (!response.ok) {
                 const is404 = response.status === 404;
