@@ -970,10 +970,11 @@ export const useAuthStore = defineStore('auth', {
             return this.organization?.enabledModules?.includes(moduleName) || false;
         },
         
-        // Refresh organization data
+        // Refresh *tenant workspace* organization (settings, subscription, enabled apps).
+        // Do NOT use GET /api/v2/organization — that is the CRM company list, not the tenant.
         async refreshOrganization() {
             try {
-                const response = await fetch(getApiUrlForFetch('/api/v2/organization'), {
+                const response = await fetch(getApiUrlForFetch('/api/organization'), {
                     headers: {
                         'Authorization': `Bearer ${this.user?.token}`,
                         'Content-Type': 'application/json'
@@ -982,8 +983,12 @@ export const useAuthStore = defineStore('auth', {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    this.organization = data.data;
-                    localStorage.setItem('organization', JSON.stringify(this.organization));
+                    const org = data?.data;
+                    // Guard: CRM list shape is an array; never replace workspace org with it.
+                    if (org && typeof org === 'object' && !Array.isArray(org) && org._id) {
+                        this.organization = org;
+                        localStorage.setItem('organization', JSON.stringify(this.organization));
+                    }
                 }
             } catch (error) {
                 console.error('Error refreshing organization:', error);
