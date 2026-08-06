@@ -109,8 +109,42 @@
         </div>
       </div>
 
-      <!-- Error Message -->
-      <div v-if="error" class="text-md text-red-500">
+      <!-- Existing account — recovery path -->
+      <div
+        v-if="errorCode === 'EXISTING_USER'"
+        role="alert"
+        class="rounded-md border border-indigo-200 bg-indigo-50 px-4 py-3 dark:border-indigo-500/30 dark:bg-indigo-500/10"
+      >
+        <p class="text-sm font-medium text-indigo-900 dark:text-indigo-100">
+          {{ t('auth.demoRequestExistingAccount') }}
+        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <router-link
+            :to="{ name: 'login', query: { email: formData.email.trim() } }"
+            class="text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            {{ t('auth.signIn') }}
+          </router-link>
+          <router-link
+            :to="{ name: 'forgot-password' }"
+            class="text-sm font-medium text-indigo-700/80 hover:text-indigo-600 dark:text-indigo-300/80 dark:hover:text-indigo-200"
+          >
+            {{ t('auth.forgotPassword') }}
+          </router-link>
+        </div>
+      </div>
+
+      <!-- Soft block — demo already requested -->
+      <div
+        v-else-if="errorCode === 'DEMO_EXISTS'"
+        role="status"
+        class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100"
+      >
+        {{ t('auth.demoRequestAlreadyExists') }}
+      </div>
+
+      <!-- Generic error -->
+      <div v-else-if="error" class="text-sm text-red-600 dark:text-red-400" role="alert">
         {{ error }}
       </div>
 
@@ -176,7 +210,7 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import apiClient from '../utils/apiClient';
 import PhoneInput from '@/components/common/PhoneInput.vue';
@@ -212,11 +246,23 @@ const formData = ref({
 
 const loading = ref(false);
 const error = ref('');
+const errorCode = ref('');
 const success = ref('');
+
+watch(
+  () => formData.value.email,
+  () => {
+    if (errorCode.value === 'EXISTING_USER' || errorCode.value === 'DEMO_EXISTS') {
+      error.value = '';
+      errorCode.value = '';
+    }
+  }
+);
 
 const handleSubmit = async () => {
   loading.value = true;
   error.value = '';
+  errorCode.value = '';
   success.value = '';
 
   try {
@@ -244,13 +290,15 @@ const handleSubmit = async () => {
       open.value = true;
     }
   } catch (err) {
-    console.error('Demo request error:', err);
-    console.error('Error details:', {
-      message: err.message,
-      stack: err.stack,
-      name: err.name
-    });
-    error.value = err.message || 'Failed to submit demo request. Please try again.';
+    const code = err?.response?.data?.code || '';
+    errorCode.value = code;
+    if (code === 'EXISTING_USER') {
+      error.value = t('auth.demoRequestExistingAccount');
+    } else if (code === 'DEMO_EXISTS') {
+      error.value = t('auth.demoRequestAlreadyExists');
+    } else {
+      error.value = err.message || t('auth.demoRequestSubmitFailed');
+    }
   } finally {
     loading.value = false;
   }

@@ -109,12 +109,33 @@ exports.submitDemoRequest = async (req, res) => {
                 message: 'Please provide all required fields' 
             });
         }
+
+        const normalizedEmail = String(email).toLowerCase().trim();
+        if (!normalizedEmail) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide all required fields'
+            });
+        }
+
+        // Platform identity SSOT — existing accounts cannot request a demo
+        const existingDirectoryUser = await UserDirectory.findOne({ email: normalizedEmail })
+            .select('_id status')
+            .lean();
+        if (existingDirectoryUser) {
+            return res.status(409).json({
+                success: false,
+                code: 'EXISTING_USER',
+                message: 'This email is already linked to an account. Sign in to continue.'
+            });
+        }
         
         // Check if email already requested
-        const existing = await DemoRequest.findOne({ email: email.toLowerCase() });
+        const existing = await DemoRequest.findOne({ email: normalizedEmail }).select('_id').lean();
         if (existing) {
             return res.status(409).json({ 
                 success: false,
+                code: 'DEMO_EXISTS',
                 message: 'A demo request with this email already exists. We will contact you soon!' 
             });
         }
@@ -126,7 +147,7 @@ exports.submitDemoRequest = async (req, res) => {
             industry,
             companySize,
             contactName,
-            email: email.toLowerCase(),
+            email: normalizedEmail,
             phone,
             jobTitle,
             message,

@@ -2256,6 +2256,7 @@ exports.getProfile = async (req, res) => {
         if (organization) {
             const { buildOrgCapabilities } = require('../utils/orgCapabilities');
             const { buildClientSessionEntitlements } = require('../utils/clientSessionEntitlements');
+            const { projectEffectiveClientSettings } = require('../utils/rbacFeatureFlags');
             userWithRole.entitledAddons = await buildClientSessionEntitlements(userWithRole, organization._id);
             userWithRole.organizationId = {
                 _id: organization._id,
@@ -2264,7 +2265,7 @@ exports.getProfile = async (req, res) => {
                 limits: organization.limits,
                 enabledApps: organization.enabledApps,
                 enabledModules: organization.enabledModules,
-                settings: organization.settings,
+                settings: projectEffectiveClientSettings(organization),
                 capabilities: buildOrgCapabilities(organization)
             };
         }
