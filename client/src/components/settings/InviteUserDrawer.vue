@@ -805,14 +805,25 @@ const isFormValid = computed(() => {
   return true;
 });
 
-watch(() => props.isOpen, (newVal) => {
+watch(() => props.isOpen, async (newVal) => {
   if (newVal) {
+    // Ensure org.settings has effective RBAC flags (env may differ from stored org flag).
+    try {
+      await authStore.refreshOrganization();
+    } catch {
+      // ignore; fall back to cached organization
+    }
     initializeForm();
   }
 });
 
-onMounted(() => {
+onMounted(async () => {
   if (props.inline) {
+    try {
+      await authStore.refreshOrganization();
+    } catch {
+      // ignore
+    }
     initializeForm();
   }
 });

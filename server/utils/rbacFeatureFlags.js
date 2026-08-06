@@ -28,6 +28,32 @@ function isSharingV1Enabled(organization) {
   return organization?.settings?.sharingV1Enabled === true;
 }
 
+/**
+ * Settings shape for client session/org payloads.
+ * Projects *effective* RBAC/sharing flags (env OR org) so the SPA matches server gates
+ * even when only `RBAC_V2` / `SHARING_V1` env is set and org.settings remains false.
+ * Does not write to the database.
+ *
+ * @param {object|null|undefined} organization
+ * @returns {object}
+ */
+function projectEffectiveClientSettings(organization) {
+  const raw = organization?.settings;
+  const plain =
+    raw && typeof raw.toObject === 'function'
+      ? raw.toObject()
+      : { ...(raw && typeof raw === 'object' ? raw : {}) };
+
+  // Evaluate against normalized plain settings so mongoose toObject()-only shapes work.
+  const orgForFlags = { settings: plain };
+
+  return {
+    ...plain,
+    rbacV2Enabled: isRbacV2Enabled(orgForFlags),
+    sharingV1Enabled: isSharingV1Enabled(orgForFlags)
+  };
+}
+
 /** New org registration uses v2 seed when global env is on. */
 function shouldSeedRbacV2ForNewOrganization() {
   return process.env.RBAC_V2 === 'true';
@@ -75,6 +101,7 @@ function legacyRoleCapabilitiesForPersistence(organization) {
 module.exports = {
   isRbacV2Enabled,
   isSharingV1Enabled,
+  projectEffectiveClientSettings,
   shouldSeedRbacV2ForNewOrganization,
   getNewOrganizationRbacSettings,
   withoutLegacyCapabilitiesWhenRbacV2,

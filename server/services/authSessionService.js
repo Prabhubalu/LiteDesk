@@ -18,6 +18,7 @@ const {
   serializePortalsForClient
 } = require('./externalRoleSessionService');
 const { normalizeSessionVersion } = require('./sessionService');
+const { projectEffectiveClientSettings } = require('../utils/rbacFeatureFlags');
 
 function generateToken(id, organizationId = null, sessionClaims = {}) {
   if (!process.env.JWT_SECRET) {
@@ -211,7 +212,7 @@ async function buildAuthenticatedSessionResponse(orgUser, organizationForLogin, 
       limits: organizationForLogin.limits,
       enabledApps: organizationForLogin.enabledApps || [],
       enabledModules: organizationForLogin.enabledModules,
-      settings: organizationForLogin.settings,
+      settings: projectEffectiveClientSettings(organizationForLogin),
       database: organizationForLogin.database
         ? {
             name: organizationForLogin.database.name,

@@ -40,12 +40,48 @@
 
           <div>
             <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('auth.acceptInvitePasswordLabel') }}</label>
-            <input id="password" v-model="password" type="password" minlength="8" required class="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+            <div class="relative mt-2">
+              <input
+                id="password"
+                v-model="password"
+                :type="showPassword ? 'text' : 'password'"
+                minlength="8"
+                required
+                autocomplete="new-password"
+                class="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pr-10 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                @click="showPassword = !showPassword"
+              >
+                <EyeSlashIcon v-if="showPassword" class="h-4 w-4" aria-hidden="true" />
+                <EyeIcon v-else class="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           <div>
             <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('auth.acceptInviteConfirmPasswordLabel') }}</label>
-            <input id="confirmPassword" v-model="confirmPassword" type="password" minlength="8" required class="mt-2 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+            <div class="relative mt-2">
+              <input
+                id="confirmPassword"
+                v-model="confirmPassword"
+                :type="showConfirmPassword ? 'text' : 'password'"
+                minlength="8"
+                required
+                autocomplete="new-password"
+                class="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pr-10 text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              />
+              <button
+                type="button"
+                class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                @click="showConfirmPassword = !showConfirmPassword"
+              >
+                <EyeSlashIcon v-if="showConfirmPassword" class="h-4 w-4" aria-hidden="true" />
+                <EyeIcon v-else class="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           <p v-if="errorMessage" class="text-sm text-red-600 dark:text-red-400">{{ errorMessage }}</p>
@@ -114,6 +150,7 @@
 import { onMounted, ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { captureInviteAccepted, captureOnboardingStarted } from '@/config/posthogOnboarding';
@@ -132,6 +169,8 @@ const step = ref('password');
 const errorMessage = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 const invite = ref({
   email: '',
   firstName: '',

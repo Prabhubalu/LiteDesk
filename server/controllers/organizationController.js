@@ -23,6 +23,7 @@ const { getAppConfig, isAppEnabledForOrg } = require('../utils/appAccessUtils');
 const { ensureSubscriptionForApp } = require('../services/subscriptionBootstrapService');
 const { onSubscriptionActivated, mapTierOrPlanKey } = require('../services/billing/email-credits');
 const { invalidateTenantPermissionCaches } = require('../services/rolePermissionCatalogService');
+const { projectEffectiveClientSettings } = require('../utils/rbacFeatureFlags');
 
 function invalidatePermissionCachesForOrg(organizationId) {
     try {
@@ -59,6 +60,7 @@ exports.getOrganization = async (req, res) => {
 
         // Add trial info if on trial
         let responseData = organization.toObject();
+        responseData.settings = projectEffectiveClientSettings(organization);
         if (organization.subscription.status === 'trial') {
             responseData.trialDaysRemaining = organization.getTrialDaysRemaining();
             responseData.isTrialExpired = organization.isTrialExpired();
@@ -96,7 +98,12 @@ exports.updateOrganization = async (req, res) => {
         ensureTenantWorkspaceFlag(organization);
         await organization.save();
 
-        res.json({ success: true, data: organization, message: 'Organization updated successfully' });
+        const responseData = organization.toObject
+            ? organization.toObject()
+            : { ...organization };
+        responseData.settings = projectEffectiveClientSettings(organization);
+
+        res.json({ success: true, data: responseData, message: 'Organization updated successfully' });
 
     } catch (error) {
         console.error('Update organization error:', error);
