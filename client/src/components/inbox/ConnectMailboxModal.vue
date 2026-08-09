@@ -310,7 +310,7 @@
             </button>
             <template v-else>
               <button
-                v-if="legacyView === 'connect-provider' && selectedProviderId === 'google-smtp' && flags.gmailSmtpOrgConfigured"
+                v-if="legacyView === 'connect-provider' && selectedProviderId === 'google-smtp'"
                 type="button"
                 class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
                 :disabled="smtpConnectLoading || !emailLooksValid || !appPassword.trim()"
@@ -342,6 +342,7 @@ import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useGmailInboxConnect } from '@/composables/useGmailInboxConnect';
+import { useSmtpSetupWizard } from '@/composables/useSmtpSetupWizard';
 import apiClient from '@/utils/apiClient';
 import { getAvailableInboxProviders, getInboxProvider } from '@/constants/inboxProviders';
 import InboxProviderCard from '@/components/inbox/InboxProviderCard.vue';
@@ -357,6 +358,7 @@ const emit = defineEmits(['update:modelValue', 'connected']);
 
 const authStore = useAuthStore();
 const notifications = useNotifications();
+const { openSmtpSetupWizard } = useSmtpSetupWizard();
 const {
   flags,
   loaded,
@@ -501,6 +503,13 @@ watch(
         || (authStore.user?.email && String(authStore.user.email).includes('@')
           ? String(authStore.user.email).trim()
           : '');
+    } else if (isGroupParserFlow.value) {
+      emailHint.value = '';
+      groupLabel.value =
+        String(props.targetMailbox?.label || '').trim() || groupLabel.value || 'Support';
+      groupEmail.value = props.targetMailbox?.emailAddress
+        ? String(props.targetMailbox.emailAddress).trim()
+        : '';
     } else {
       emailHint.value = props.targetMailbox?.emailAddress
         ? String(props.targetMailbox.emailAddress).trim()
@@ -556,9 +565,6 @@ function providerForCard(p) {
   if (p.id === 'google' && !gmailOAuthReady.value) {
     return { ...p, status: 'disabled' };
   }
-  if (p.id === 'google-smtp' && !flags.value.gmailSmtpOrgConfigured) {
-    return { ...p, status: 'disabled' };
-  }
   return p;
 }
 
@@ -590,6 +596,18 @@ async function saveEmailHintOnMailbox(mailboxId) {
     activeMailbox.value =
       groupMailboxes.value.find((g) => String(g.id) === id) || activeMailbox.value;
   }
+}
+
+async function saveGroupEmailOnMailbox(mailboxId) {
+  if (!mailboxId || !groupEmail.value.trim()) return;
+  await apiClient(`/mailboxes/${encodeURIComponent(mailboxId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ emailAddress: groupEmail.value.trim() })
+  });
+  await refreshMailboxes();
+  const id = String(mailboxId);
+  activeMailbox.value =
+    groupMailboxes.value.find((g) => String(g.id) === id) || activeMailbox.value;
 }
 
 async function runParserSetup() {
@@ -635,8 +653,8 @@ async function runParserSetup() {
       await savePersonalMailboxDetails(mb.id);
       mb = personalMailbox.value || activeMailbox.value;
       activeMailbox.value = mb;
-    } else if (emailHint.value.trim()) {
-      await saveEmailHintOnMailbox(mb.id);
+    } else if (isGroupParserFlow.value) {
+      await saveGroupEmailOnMailbox(mb.id);
       const id = String(mb.id);
       mb = groupMailboxes.value.find((g) => String(g.id) === id) || mb;
       activeMailbox.value = mb;
@@ -662,8 +680,8 @@ async function runParserSetup() {
 
     if (isPersonalParserFlow.value) {
       await savePersonalMailboxDetails(mb.id);
-    } else {
-      await saveEmailHintOnMailbox(mb.id);
+    } else if (isGroupParserFlow.value) {
+      await saveGroupEmailOnMailbox(mb.id);
     }
   } catch (err) {
     forwardingError.value = err?.message || 'Setup failed';
@@ -704,6 +722,39 @@ async function onProviderSelect(providerId) {
   const p = getInboxProvider(providerId);
   if (!p || p.status !== 'available') return;
   selectedProviderId.value = providerId;
+
+  const isSmtpProvider = providerId === 'google-smtp'
+    || providerId === 'outlook-smtp'
+    || providerId === 'yahoo-smtp'
+    || providerId === 'custom-smtp';
+
+  if (isSmtpProvider && props.mailboxKind !== 'group') {
+    setupLoading.value = true;
+    let mbId = personalMailbox.value?.id || props.targetMailbox?.id || '';
+    try {
+      if (!mbId) {
+        const mb = await ensurePersonalMailbox();
+        if (!mb?.id) {
+          notifications.error('Could not create personal mailbox');
+          return;
+        }
+        mbId = mb.id;
+      }
+    } finally {
+      setupLoading.value = false;
+    }
+    close();
+    openSmtpSetupWizard({
+      mailboxId: mbId,
+      email: personalMailbox.value?.emailAddress || '',
+      reason: 'inbox',
+      onConnected: () => {
+        emit('connected');
+      }
+    });
+    return;
+  }
+
   if (props.mailboxKind === 'group') {
     legacyView.value = props.targetMailbox?.id ? 'connect-provider' : 'create-mailbox';
     return;

@@ -12,11 +12,12 @@ function isTenantAdmin(user) {
 /**
  * Who may see threads scoped to this mailbox in workspace inbox / APIs.
  * - personal: owner only (never other users or admins)
+ * - smtp_sender: owner only (send-only; not used for inbox threads)
  * - group: all org users if memberUserIds is empty; else listed members + admins
  */
 function canUserAccessMailboxThreads(user, mailboxLean) {
   if (!mailboxLean || !user) return false;
-  if (mailboxLean.kind === 'personal') {
+  if (mailboxLean.kind === 'personal' || mailboxLean.kind === 'smtp_sender') {
     return String(mailboxLean.ownerUserId || '') === String(user._id);
   }
   if (isTenantAdmin(user)) return true;
@@ -29,12 +30,12 @@ function canUserAccessMailboxThreads(user, mailboxLean) {
 
 /**
  * Who may connect/disconnect Gmail and change sync labels on a mailbox.
- * - personal: owner or tenant admin
+ * - personal / smtp_sender: owner or tenant admin
  * - group: tenant admin only
  */
 function canManageGmailInboxSync(user, mailboxLean) {
   if (!mailboxLean || !user) return false;
-  if (mailboxLean.kind === 'personal') {
+  if (mailboxLean.kind === 'personal' || mailboxLean.kind === 'smtp_sender') {
     if (isTenantAdmin(user)) return true;
     return String(mailboxLean.ownerUserId || '') === String(user._id);
   }
@@ -69,6 +70,9 @@ function assertGmailSyncManageAccess(mailboxLean, user) {
     if (mailboxLean.kind === 'group') {
       return 'Only organization admins can connect Gmail for shared mailboxes';
     }
+    if (mailboxLean.kind === 'smtp_sender') {
+      return 'Only the owner can manage this SMTP sender';
+    }
     return 'Only the mailbox owner can manage Gmail inbox sync';
   }
   return null;
@@ -99,7 +103,7 @@ async function getAccessibleMailboxIds(user, organizationId, mailboxesLean) {
       ? mailboxesLean
       : await Mailbox.find({ organizationId }).select('kind ownerUserId memberUserIds').lean();
   return rows
-    .filter((mb) => canUserAccessMailboxThreads(user, mb))
+    .filter((mb) => mb.kind !== 'smtp_sender' && canUserAccessMailboxThreads(user, mb))
     .map((mb) => mb._id);
 }
 

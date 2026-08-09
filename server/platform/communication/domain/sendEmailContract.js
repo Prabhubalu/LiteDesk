@@ -76,6 +76,20 @@ function normalizeSendEmailPayload(payload = {}) {
     }
   }
 
+  const rawFromSource = String(payload.fromSource || '').trim().toLowerCase();
+  const fromSource = ['mailbox', 'tenant_config', 'user'].includes(rawFromSource)
+    ? rawFromSource
+    : null;
+
+  const fromEmailOverride =
+    payload.fromEmail != null && String(payload.fromEmail).trim()
+      ? String(payload.fromEmail).trim().toLowerCase()
+      : null;
+  const fromNameOverride =
+    payload.fromName != null && String(payload.fromName).trim()
+      ? String(payload.fromName).trim()
+      : null;
+
   const normalized = {
     standalone,
     relatedTo,
@@ -87,6 +101,10 @@ function normalizeSendEmailPayload(payload = {}) {
     attachments: Array.isArray(payload.attachments) ? payload.attachments : [],
     parentCommunicationId: payload.parentCommunicationId || null,
     mailboxId: rawMailboxId,
+    /** Explicit From identity: mailbox | tenant_config | user */
+    fromSource,
+    fromEmail: fromEmailOverride,
+    fromName: fromNameOverride,
     /** @type {number|null} Days until follow-up reminder; null when not requested */
     followUpReminderDays: reminderDays,
     /** @type {Date|null} */

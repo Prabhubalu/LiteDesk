@@ -228,7 +228,7 @@ async function sendViaResendApi(runtimeConfig, payload) {
 
 /**
  * Send an email.
- * @param {Object} opts - { to, cc?, bcc?, subject, text, html?, replyTo?, attachments?, organizationId?, channel?: 'crm'|'system', metadata?, idempotencyKey?, tags?, communicationId?, moduleKey? }
+ * @param {Object} opts - { to, cc?, bcc?, subject, text, html?, replyTo?, from?, fromEmail?, fromName?, attachments?, organizationId?, channel?: 'crm'|'system', metadata?, idempotencyKey?, tags?, communicationId?, moduleKey? }
  * @returns {Promise<{ success: boolean, messageId?: string, error?: string, provider?: string, deliveryStatus?: string }>}
  */
 async function sendEmail(opts) {
@@ -240,6 +240,9 @@ async function sendEmail(opts) {
     text,
     html,
     replyTo,
+    from: fromOverride,
+    fromEmail: fromEmailOverride,
+    fromName: fromNameOverride,
     attachments = [],
     organizationId,
     channel = 'crm',
@@ -259,9 +262,24 @@ async function sendEmail(opts) {
   }
 
   const runtimeConfig = await resolveRuntimeConfigForChannel(channel, organizationId);
-  const from = runtimeConfig.fromName
+  const defaultFrom = runtimeConfig.fromName
     ? `"${runtimeConfig.fromName}" <${runtimeConfig.fromEmail || 'noreply@arivusystems.com'}>`
     : (runtimeConfig.fromEmail || getFromAddress());
+
+  let from = defaultFrom;
+  if (fromOverride && String(fromOverride).trim()) {
+    from = String(fromOverride).trim();
+  } else if (fromEmailOverride && String(fromEmailOverride).trim()) {
+    const email = String(fromEmailOverride).trim();
+    let name = String(fromNameOverride || '').trim();
+    // When sending as the org From address, use Integrations display name if not provided
+    const orgFrom = String(runtimeConfig.fromEmail || '').trim().toLowerCase();
+    if (!name && orgFrom && email.toLowerCase() === orgFrom) {
+      name = String(runtimeConfig.fromName || '').trim();
+    }
+    from = name ? `"${name.replace(/"/g, '')}" <${email}>` : email;
+  }
+
   const replyToAddr = resolveSafeReplyToAddress(replyTo || runtimeConfig.replyTo);
 
   const hasAttachments = attachments && attachments.length > 0;

@@ -113,10 +113,16 @@ async function provisionMailboxWithParser({ organizationId, mailbox }) {
     });
   } catch (err) {
     clearTimeout(timeout);
-    const message =
+    let message =
       err?.name === 'AbortError'
         ? 'Parser provisioning timed out (15s)'
         : err?.message || String(err);
+    if (/fetch failed|ECONNREFUSED|ENOTFOUND|network/i.test(message)) {
+      message =
+        `Cannot reach inbound parser at ${url} (${message}). `
+        + 'For local/dev set LOCAL_PARSER_PROVISION=true in server/.env, '
+        + 'or fix Control Plane → Inbound Parser → Parser API base URL.';
+    }
     await Mailbox.updateOne(
       { _id: mailbox._id },
       {

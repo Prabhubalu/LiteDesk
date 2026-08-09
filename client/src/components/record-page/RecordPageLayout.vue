@@ -67,7 +67,9 @@ import { onMounted, onUpdated, onUnmounted, nextTick, ref, provide, computed } f
 const props = defineProps({
   leftExpanded: { type: Boolean, default: false },
   expandedSectionKey: { type: String, default: '' },
-  forceMobile: { type: Boolean, default: false }
+  forceMobile: { type: Boolean, default: false },
+  /** Tighter chrome for helpdesk case workspace (no left-column vertical padding). */
+  dense: { type: Boolean, default: false }
 });
 
 const { t } = useI18n();
@@ -117,8 +119,8 @@ const leftColumnClass = computed(() => [
   isLinesExpanded.value
     ? ['flex-[1_1_100%]', 'max-w-full', 'pr-0', 'min-h-0', 'overflow-hidden', 'py-0']
     : props.leftExpanded
-      ? ['flex-[1_1_100%]', 'max-w-full', 'pr-0', 'min-h-0', 'overflow-y-auto', 'py-6']
-      : ['py-6', 'pr-10', 'overflow-y-auto']
+      ? ['flex-[1_1_100%]', 'max-w-full', 'pr-0', 'min-h-0', 'overflow-y-auto', props.dense ? 'py-0' : 'py-6']
+      : [props.dense ? 'py-0' : 'py-6', props.dense ? 'pr-0' : 'pr-10', 'overflow-y-auto']
 ]);
 
 const wideLeftContentClass = 'record-page-layout__left-content w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-1 min-h-0';
@@ -132,6 +134,9 @@ const leftContentClass = computed(() => {
   }
   if (props.leftExpanded) {
     return 'record-page-layout__left-content max-w-6xl mx-auto w-full px-6 flex flex-col flex-1 min-h-0';
+  }
+  if (props.dense) {
+    return 'record-page-layout__left-content w-full min-h-0 flex-1 flex flex-col px-0';
   }
   return 'record-page-layout__left-content max-w-6xl mx-auto w-full px-6';
 });

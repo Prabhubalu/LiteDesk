@@ -43,16 +43,17 @@ export function isCaseInboundMessage(activity) {
 }
 
 export function isCaseOutboundMessage(activity) {
+  if (activity?.internal) return false;
   const type = String(activity?.activityType || '').trim();
   if (OUTBOUND_MESSAGE_TYPES.has(type)) return true;
-  return !activity?.internal && type === 'message';
+  return type === 'message';
 }
 
 /** Team-only comment on a case (not visible to the customer). */
 export function isCaseInternalComment(activity) {
   if (!activity?.internal) return false;
-  const type = String(activity.activityType || '').trim();
-  return type === 'comment' || type === 'note';
+  if (isCaseSystemActivity(activity)) return false;
+  return true;
 }
 
 function splitPersonName(full) {
@@ -309,16 +310,13 @@ export function filterActivitiesForTab(activities, tab) {
   if (tab === 'conversation') {
     return sorted.filter((a) => {
       if (isCaseSystemActivity(a)) return true;
+      if (isCaseInternalComment(a)) return true;
       if (isCaseInboundMessage(a) || isCaseOutboundMessage(a)) return true;
-      return !a?.internal;
+      return false;
     });
   }
   if (tab === 'notes') {
-    return sorted.filter(
-      (a) =>
-        a?.internal === true &&
-        (String(a.activityType) === 'comment' || String(a.activityType) === 'note')
-    );
+    return sorted.filter((a) => isCaseInternalComment(a));
   }
   return sorted;
 }

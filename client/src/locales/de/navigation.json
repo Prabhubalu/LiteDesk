@@ -982,5 +982,9 @@
   "inventoryStockroomActions": {
     "message": "Actions",
     "description": "Stockrooms table actions column"
+  },
+  "telephony": {
+    "message": "Telephony",
+    "description": "Telephony addon navigation label"
   }
 }

@@ -1,0 +1,714 @@
+{
+  "navLabel": {
+    "message": "Telephony",
+    "description": "Telephony addon navigation label"
+  },
+  "navCalls": {
+    "message": "Calls",
+    "description": "Telephony calls nav tab"
+  },
+  "navPhoneNumbers": {
+    "message": "Phone numbers",
+    "description": "Telephony phone numbers nav tab"
+  },
+  "navQueues": {
+    "message": "Queues",
+    "description": "Telephony queues nav tab"
+  },
+  "navAgents": {
+    "message": "Agents",
+    "description": "Telephony agents nav tab"
+  },
+  "navIvr": {
+    "message": "IVR",
+    "description": "Telephony IVR nav tab"
+  },
+  "navCampaigns": {
+    "message": "Campaigns",
+    "description": "Telephony campaigns nav tab"
+  },
+  "navAnalytics": {
+    "message": "Analytics",
+    "description": "Telephony analytics nav tab"
+  },
+  "navRecordings": {
+    "message": "Recordings",
+    "description": "Telephony recordings nav tab"
+  },
+  "navSettings": {
+    "message": "Settings",
+    "description": "Telephony settings nav tab"
+  },
+  "workspaceNavLabel": {
+    "message": "Telephony workspace",
+    "description": "Aria label for telephony subnav"
+  },
+  "callsTitle": {
+    "message": "Calls",
+    "description": "Calls list page title"
+  },
+  "callsDesc": {
+    "message": "Inbound and outbound call history.",
+    "description": "Calls list page subtitle"
+  },
+  "callsEmpty": {
+    "message": "No calls yet. Place an outbound call or wait for an inbound ring.",
+    "description": "Calls list empty state"
+  },
+  "callsLoadFailed": {
+    "message": "Failed to load calls.",
+    "description": "Calls list load error"
+  },
+  "callsFilterDirection": {
+    "message": "Direction",
+    "description": "Calls filter direction label"
+  },
+  "callsFilterStatus": {
+    "message": "Status",
+    "description": "Calls filter status label"
+  },
+  "callsFilterAll": {
+    "message": "All",
+    "description": "Calls filter all option"
+  },
+  "callsClickToCall": {
+    "message": "Click to call",
+    "description": "Click-to-call button label"
+  },
+  "callsColFrom": {
+    "message": "From",
+    "description": "Calls table from column"
+  },
+  "callsColTo": {
+    "message": "To",
+    "description": "Calls table to column"
+  },
+  "callsColDirection": {
+    "message": "Direction",
+    "description": "Calls table direction column"
+  },
+  "callsColStatus": {
+    "message": "Status",
+    "description": "Calls table status column"
+  },
+  "callsColDuration": {
+    "message": "Duration",
+    "description": "Calls table duration column"
+  },
+  "callsColStarted": {
+    "message": "Started",
+    "description": "Calls table started column"
+  },
+  "callDetailTitle": {
+    "message": "Call detail",
+    "description": "Call detail page title"
+  },
+  "callDetailLoadFailed": {
+    "message": "Failed to load call.",
+    "description": "Call detail load error"
+  },
+  "callDetailRecording": {
+    "message": "Recording",
+    "description": "Call detail recording section"
+  },
+  "callDetailNoRecording": {
+    "message": "No recording available.",
+    "description": "Call detail empty recording"
+  },
+  "callDetailTranscript": {
+    "message": "Transcript",
+    "description": "Call detail transcript section"
+  },
+  "callDetailNoTranscript": {
+    "message": "No transcript yet.",
+    "description": "Call detail empty transcript"
+  },
+  "callDetailSummary": {
+    "message": "Summary",
+    "description": "Call detail summary section"
+  },
+  "callDetailNoSummary": {
+    "message": "No summary yet.",
+    "description": "Call detail empty summary"
+  },
+  "callDetailNotes": {
+    "message": "Notes",
+    "description": "Call detail notes section"
+  },
+  "softphoneTitle": {
+    "message": "Softphone",
+    "description": "Softphone dock title"
+  },
+  "softphoneNumberPlaceholder": {
+    "message": "Enter number",
+    "description": "Softphone number input placeholder"
+  },
+  "softphoneDial": {
+    "message": "Dial",
+    "description": "Softphone dial button"
+  },
+  "softphoneHangup": {
+    "message": "Hang up",
+    "description": "Softphone hangup button"
+  },
+  "softphoneMute": {
+    "message": "Mute",
+    "description": "Softphone mute button"
+  },
+  "softphoneUnmute": {
+    "message": "Unmute",
+    "description": "Softphone unmute button"
+  },
+  "softphoneHold": {
+    "message": "Hold",
+    "description": "Softphone hold button"
+  },
+  "softphoneResume": {
+    "message": "Resume",
+    "description": "Softphone resume button"
+  },
+  "softphoneMinimize": {
+    "message": "Minimize",
+    "description": "Softphone minimize button"
+  },
+  "softphoneExpand": {
+    "message": "Expand",
+    "description": "Softphone expand button"
+  },
+  "softphoneStatusIdle": {
+    "message": "Ready",
+    "description": "Softphone idle status"
+  },
+  "softphoneStatusConnecting": {
+    "message": "Connecting…",
+    "description": "Softphone connecting status"
+  },
+  "softphoneStatusInCall": {
+    "message": "In call",
+    "description": "Softphone in-call status"
+  },
+  "softphoneStatusRinging": {
+    "message": "Ringing…",
+    "description": "Softphone ringing status"
+  },
+  "softphoneDeviceOffline": {
+    "message": "Device offline — using server dial",
+    "description": "Softphone device not ready hint"
+  },
+  "softphoneDialFailed": {
+    "message": "Failed to place call.",
+    "description": "Softphone dial error"
+  },
+  "incomingTitle": {
+    "message": "Incoming call",
+    "description": "Incoming call popup title"
+  },
+  "incomingAccept": {
+    "message": "Accept",
+    "description": "Incoming call accept"
+  },
+  "incomingDecline": {
+    "message": "Decline",
+    "description": "Incoming call decline"
+  },
+  "incomingOpenRecord": {
+    "message": "Open record",
+    "description": "Incoming call open CRM record"
+  },
+  "incomingCreateContact": {
+    "message": "Create contact",
+    "description": "Incoming call create contact"
+  },
+  "incomingCreateLead": {
+    "message": "Create lead",
+    "description": "Incoming call create lead"
+  },
+  "incomingUnknownCaller": {
+    "message": "Unknown caller",
+    "description": "Incoming call unknown caller label"
+  },
+  "postCallTitle": {
+    "message": "Post-call notes",
+    "description": "Post-call notes modal title"
+  },
+  "postCallNotes": {
+    "message": "Notes",
+    "description": "Post-call notes field"
+  },
+  "postCallDisposition": {
+    "message": "Disposition",
+    "description": "Post-call disposition field"
+  },
+  "postCallFollowUp": {
+    "message": "Follow-up date",
+    "description": "Post-call follow-up field"
+  },
+  "postCallNextAction": {
+    "message": "Next action",
+    "description": "Post-call next action field"
+  },
+  "postCallSave": {
+    "message": "Save notes",
+    "description": "Post-call save button"
+  },
+  "postCallSkip": {
+    "message": "Skip",
+    "description": "Post-call skip button"
+  },
+  "postCallSaveFailed": {
+    "message": "Failed to save notes.",
+    "description": "Post-call save error"
+  },
+  "providerTitle": {
+    "message": "Provider settings",
+    "description": "Provider settings page title"
+  },
+  "providerDesc": {
+    "message": "Configure your telephony provider credentials.",
+    "description": "Provider settings subtitle"
+  },
+  "providerKey": {
+    "message": "Provider",
+    "description": "Provider key select label"
+  },
+  "providerAccountSid": {
+    "message": "Account SID",
+    "description": "Twilio account SID"
+  },
+  "providerAuthToken": {
+    "message": "Auth token",
+    "description": "Twilio auth token"
+  },
+  "providerApiKey": {
+    "message": "API key",
+    "description": "Twilio API key"
+  },
+  "providerApiSecret": {
+    "message": "API secret",
+    "description": "Twilio API secret"
+  },
+  "providerTwimlAppSid": {
+    "message": "TwiML App SID",
+    "description": "Twilio TwiML app SID"
+  },
+  "providerFromNumber": {
+    "message": "From number",
+    "description": "Default outbound from number"
+  },
+  "providerSave": {
+    "message": "Save provider",
+    "description": "Save provider button"
+  },
+  "providerSaved": {
+    "message": "Provider settings saved.",
+    "description": "Provider save success"
+  },
+  "providerSaveFailed": {
+    "message": "Failed to save provider.",
+    "description": "Provider save error"
+  },
+  "providerHealthCheck": {
+    "message": "Health check",
+    "description": "Provider health check button"
+  },
+  "providerHealthOk": {
+    "message": "Provider healthy.",
+    "description": "Provider health success"
+  },
+  "providerHealthFailed": {
+    "message": "Health check failed.",
+    "description": "Provider health error"
+  },
+  "providerActive": {
+    "message": "Set as active provider",
+    "description": "Provider isActive checkbox"
+  },
+  "phoneNumbersTitle": {
+    "message": "Phone numbers",
+    "description": "Phone numbers page title"
+  },
+  "phoneNumbersDesc": {
+    "message": "Numbers available from your active provider.",
+    "description": "Phone numbers subtitle"
+  },
+  "phoneNumbersEmpty": {
+    "message": "No phone numbers found.",
+    "description": "Phone numbers empty state"
+  },
+  "phoneNumbersLoadFailed": {
+    "message": "Failed to load phone numbers.",
+    "description": "Phone numbers load error"
+  },
+  "queuesTitle": {
+    "message": "Queues",
+    "description": "Queues page title"
+  },
+  "queuesDesc": {
+    "message": "Route inbound calls to agent groups.",
+    "description": "Queues subtitle"
+  },
+  "queuesEmpty": {
+    "message": "No queues yet. Create one to start routing.",
+    "description": "Queues empty state"
+  },
+  "queuesLoadFailed": {
+    "message": "Failed to load queues.",
+    "description": "Queues load error"
+  },
+  "queuesCreate": {
+    "message": "Create queue",
+    "description": "Create queue button"
+  },
+  "queuesName": {
+    "message": "Queue name",
+    "description": "Queue name field"
+  },
+  "queuesStrategy": {
+    "message": "Strategy",
+    "description": "Queue strategy field"
+  },
+  "queuesCreateFailed": {
+    "message": "Failed to create queue.",
+    "description": "Queue create error"
+  },
+  "agentsTitle": {
+    "message": "Agents",
+    "description": "Agents page title"
+  },
+  "agentsDesc": {
+    "message": "Agent presence and availability.",
+    "description": "Agents subtitle"
+  },
+  "agentsEmpty": {
+    "message": "No agents with presence yet.",
+    "description": "Agents empty state"
+  },
+  "agentsLoadFailed": {
+    "message": "Failed to load agents.",
+    "description": "Agents load error"
+  },
+  "agentsMyPresence": {
+    "message": "My presence",
+    "description": "Set my presence label"
+  },
+  "agentsSetPresence": {
+    "message": "Update presence",
+    "description": "Update presence button"
+  },
+  "agentsUpdateFailed": {
+    "message": "Failed to update presence.",
+    "description": "Presence update error"
+  },
+  "ivrTitle": {
+    "message": "IVR flows",
+    "description": "IVR list page title"
+  },
+  "ivrDesc": {
+    "message": "Interactive voice response menus.",
+    "description": "IVR list subtitle"
+  },
+  "ivrEmpty": {
+    "message": "No IVR flows yet.",
+    "description": "IVR empty state"
+  },
+  "ivrLoadFailed": {
+    "message": "Failed to load IVR flows.",
+    "description": "IVR load error"
+  },
+  "ivrCreate": {
+    "message": "Create flow",
+    "description": "Create IVR flow button"
+  },
+  "ivrName": {
+    "message": "Flow name",
+    "description": "IVR flow name field"
+  },
+  "ivrPublish": {
+    "message": "Publish",
+    "description": "Publish IVR flow"
+  },
+  "ivrEdit": {
+    "message": "Edit",
+    "description": "Edit IVR flow"
+  },
+  "ivrPublished": {
+    "message": "Flow published.",
+    "description": "IVR publish success"
+  },
+  "ivrPublishFailed": {
+    "message": "Failed to publish flow.",
+    "description": "IVR publish error"
+  },
+  "ivrCreateFailed": {
+    "message": "Failed to create flow.",
+    "description": "IVR create error"
+  },
+  "ivrBuilderTitle": {
+    "message": "IVR builder",
+    "description": "IVR builder page title"
+  },
+  "ivrBuilderNodes": {
+    "message": "Nodes",
+    "description": "IVR nodes editor label"
+  },
+  "ivrBuilderEdges": {
+    "message": "Edges",
+    "description": "IVR edges editor label"
+  },
+  "ivrBuilderAddNode": {
+    "message": "Add node",
+    "description": "Add IVR node"
+  },
+  "ivrBuilderSave": {
+    "message": "Save flow",
+    "description": "Save IVR flow"
+  },
+  "ivrBuilderSaved": {
+    "message": "Flow saved.",
+    "description": "IVR save success"
+  },
+  "ivrBuilderSaveFailed": {
+    "message": "Failed to save flow.",
+    "description": "IVR save error"
+  },
+  "ivrNodeGreeting": {
+    "message": "Greeting",
+    "description": "IVR node type greeting"
+  },
+  "ivrNodeMenu": {
+    "message": "Menu",
+    "description": "IVR node type menu"
+  },
+  "ivrNodeQueue": {
+    "message": "Queue",
+    "description": "IVR node type queue"
+  },
+  "ivrNodeAgent": {
+    "message": "Agent",
+    "description": "IVR node type agent"
+  },
+  "ivrNodeVoicemail": {
+    "message": "Voicemail",
+    "description": "IVR node type voicemail"
+  },
+  "ivrNodeDisconnect": {
+    "message": "Disconnect",
+    "description": "IVR node type disconnect"
+  },
+  "campaignsTitle": {
+    "message": "Campaigns",
+    "description": "Campaigns page title"
+  },
+  "campaignsDesc": {
+    "message": "Outbound dialing campaigns.",
+    "description": "Campaigns subtitle"
+  },
+  "campaignsEmpty": {
+    "message": "No campaigns yet.",
+    "description": "Campaigns empty state"
+  },
+  "campaignsLoadFailed": {
+    "message": "Failed to load campaigns.",
+    "description": "Campaigns load error"
+  },
+  "campaignsStart": {
+    "message": "Start",
+    "description": "Start campaign"
+  },
+  "campaignsPause": {
+    "message": "Pause",
+    "description": "Pause campaign"
+  },
+  "campaignsResume": {
+    "message": "Resume",
+    "description": "Resume campaign"
+  },
+  "campaignsDialNext": {
+    "message": "Dial next",
+    "description": "Dial next campaign lead"
+  },
+  "campaignsActionFailed": {
+    "message": "Campaign action failed.",
+    "description": "Campaign action error"
+  },
+  "analyticsTitle": {
+    "message": "Analytics",
+    "description": "Analytics page title"
+  },
+  "analyticsDesc": {
+    "message": "Call volume and handling metrics.",
+    "description": "Analytics subtitle"
+  },
+  "analyticsLoadFailed": {
+    "message": "Failed to load analytics.",
+    "description": "Analytics load error"
+  },
+  "analyticsTotalCalls": {
+    "message": "Total calls",
+    "description": "Analytics total calls metric"
+  },
+  "analyticsConnected": {
+    "message": "Connected",
+    "description": "Analytics connected metric"
+  },
+  "analyticsMissed": {
+    "message": "Missed",
+    "description": "Analytics missed metric"
+  },
+  "analyticsAht": {
+    "message": "Avg handle time",
+    "description": "Analytics AHT metric"
+  },
+  "analyticsAwt": {
+    "message": "Avg wait time",
+    "description": "Analytics AWT metric"
+  },
+  "analyticsTalkTime": {
+    "message": "Total talk time",
+    "description": "Analytics talk time metric"
+  },
+  "recordingsTitle": {
+    "message": "Recordings",
+    "description": "Recordings page title"
+  },
+  "recordingsDesc": {
+    "message": "Call recordings you are permitted to listen to.",
+    "description": "Recordings subtitle"
+  },
+  "recordingsEmpty": {
+    "message": "No recordings available.",
+    "description": "Recordings empty state"
+  },
+  "recordingsLoadFailed": {
+    "message": "Failed to load recordings.",
+    "description": "Recordings load error"
+  },
+  "recordingsListen": {
+    "message": "Listen",
+    "description": "Listen to recording"
+  },
+  "directionInbound": {
+    "message": "Inbound",
+    "description": "Call direction inbound"
+  },
+  "directionOutbound": {
+    "message": "Outbound",
+    "description": "Call direction outbound"
+  },
+  "statusRinging": {
+    "message": "Ringing",
+    "description": "Call status ringing"
+  },
+  "statusQueued": {
+    "message": "Queued",
+    "description": "Call status queued"
+  },
+  "statusInProgress": {
+    "message": "In progress",
+    "description": "Call status in-progress"
+  },
+  "statusCompleted": {
+    "message": "Completed",
+    "description": "Call status completed"
+  },
+  "statusBusy": {
+    "message": "Busy",
+    "description": "Call status busy"
+  },
+  "statusNoAnswer": {
+    "message": "No answer",
+    "description": "Call status no-answer"
+  },
+  "statusFailed": {
+    "message": "Failed",
+    "description": "Call status failed"
+  },
+  "statusCanceled": {
+    "message": "Canceled",
+    "description": "Call status canceled"
+  },
+  "statusMissed": {
+    "message": "Missed",
+    "description": "Call status missed"
+  },
+  "dispositionConnected": {
+    "message": "Connected",
+    "description": "Disposition connected"
+  },
+  "dispositionVoicemail": {
+    "message": "Voicemail",
+    "description": "Disposition voicemail"
+  },
+  "dispositionNoAnswer": {
+    "message": "No answer",
+    "description": "Disposition no answer"
+  },
+  "dispositionBusy": {
+    "message": "Busy",
+    "description": "Disposition busy"
+  },
+  "dispositionWrongNumber": {
+    "message": "Wrong number",
+    "description": "Disposition wrong number"
+  },
+  "dispositionCallback": {
+    "message": "Callback",
+    "description": "Disposition callback"
+  },
+  "dispositionInterested": {
+    "message": "Interested",
+    "description": "Disposition interested"
+  },
+  "dispositionNotInterested": {
+    "message": "Not interested",
+    "description": "Disposition not interested"
+  },
+  "presenceIdle": {
+    "message": "Idle",
+    "description": "Presence idle"
+  },
+  "presenceBusy": {
+    "message": "Busy",
+    "description": "Presence busy"
+  },
+  "presenceOffline": {
+    "message": "Offline",
+    "description": "Presence offline"
+  },
+  "presenceOnBreak": {
+    "message": "On break",
+    "description": "Presence on break"
+  },
+  "presenceAcw": {
+    "message": "After call work",
+    "description": "Presence ACW"
+  },
+  "presenceTraining": {
+    "message": "Training",
+    "description": "Presence training"
+  },
+  "presenceMeeting": {
+    "message": "Meeting",
+    "description": "Presence meeting"
+  },
+  "errorGeneric": {
+    "message": "Something went wrong.",
+    "description": "Generic telephony error"
+  },
+  "errorNotEntitled": {
+    "message": "Telephony addon is not enabled for this organization.",
+    "description": "Telephony not entitled error"
+  },
+  "phoneLinkAria": {
+    "message": "Call {number}",
+    "description": "Phone link aria label"
+  },
+  "incomingCaseLabel": {
+    "message": "Case {id}",
+    "description": "Incoming call linked case label"
+  },
+  "ivrBuilderEdgesHint": {
+    "message": "JSON array of edges: from, to, optional digit",
+    "description": "IVR builder edges editor hint"
+  }
+}

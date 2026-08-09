@@ -52,41 +52,92 @@
                 {{ error }}
               </div>
 
-              <!-- From (identity picker when multiple sendable mailboxes) -->
+              <!-- From (identity picker) -->
               <div>
                 <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.helpdeskAnalyticsFrom') }}</label>
-                <select
-                  v-if="hasFromPicker"
-                  class="block w-full mt-2 rounded-md bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300 dark:outline-white/10 sm:text-sm/6 font-mono text-[13px]"
-                  :value="selectedFromId"
-                  @change="selectFromIdentity($event.target.value)"
-                >
-                  <option
-                    v-for="idty in sendIdentities"
-                    :key="idty.id"
-                    :value="idty.id"
+                <div class="relative mt-2">
+                  <select
+                    v-if="hasFromPicker"
+                    class="block w-full appearance-none rounded-md bg-white dark:bg-gray-800 px-3 py-2 pr-9 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300 dark:outline-white/10 sm:text-sm/6 font-mono text-[13px]"
+                    :value="selectedFromId"
+                    :disabled="composePreviewLoading"
+                    @change="selectFromIdentity($event.target.value)"
                   >
-                    {{ identityOptionLabel(idty) }}
-                  </option>
-                </select>
-                <input
-                  v-else
-                  :value="fromDisplayLine"
-                  type="text"
-                  readonly
-                  class="block w-full mt-2 rounded-md bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-gray-700 dark:text-gray-300 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10 cursor-default font-mono text-[13px]"
-                  :placeholder="composePreviewLoading ? 'Loading…' : '—'"
-                >
+                    <option
+                      v-for="idty in sendIdentities"
+                      :key="idty.id"
+                      :value="idty.id"
+                    >
+                      {{ identityOptionLabel(idty) }}
+                    </option>
+                  </select>
+                  <input
+                    v-else
+                    :value="fromDisplayLine"
+                    type="text"
+                    readonly
+                    class="block w-full rounded-md bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-gray-700 dark:text-gray-300 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10 cursor-default font-mono text-[13px]"
+                    :placeholder="composePreviewLoading ? 'Loading…' : '—'"
+                  >
+                  <span
+                    v-if="hasFromPicker"
+                    class="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-gray-400"
+                    aria-hidden="true"
+                  >
+                    <svg class="size-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                  </span>
+                </div>
                 <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                   {{ fromSourceHint }}
                   <span v-if="sendingMailbox?.viaSmtp" class="text-gray-400 dark:text-gray-500"> · Gmail SMTP</span>
                 </p>
+                <div
+                  v-if="needsSmtpSetup"
+                  class="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950/40"
+                >
+                  <p class="flex-1 text-xs text-amber-900 dark:text-amber-100">
+                    {{ t('inbox.emailComposeNeedsSmtpCta') }}
+                  </p>
+                  <button
+                    type="button"
+                    class="shrink-0 rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                    @click="openSmtpSetupFromCompose"
+                  >
+                    {{ t('inbox.emailComposeConnectEmail') }}
+                  </button>
+                </div>
+                <div
+                  v-else-if="needsOrgDomain"
+                  class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100"
+                >
+                  {{ t('inbox.emailComposeNeedsOrgCta') }}
+                  <RouterLink
+                    to="/settings?tab=integrations"
+                    class="ml-1 font-semibold text-emerald-700 underline dark:text-emerald-400"
+                  >
+                    {{ t('inbox.emailComposeOpenIntegrations') }}
+                  </RouterLink>
+                </div>
                 <p
                   v-if="!fromDisplayLine && sendingMailboxHint"
                   class="mt-1 text-xs text-amber-700 dark:text-amber-300"
                 >
                   {{ sendingMailboxHint }}
                 </p>
+              </div>
+
+              <!-- Reply-To (matches From) -->
+              <div>
+                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.integrationsReplyTo') }}</label>
+                <input
+                  :value="replyToDisplay"
+                  type="text"
+                  readonly
+                  class="block w-full mt-2 rounded-md bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-gray-700 dark:text-gray-300 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10 cursor-default font-mono text-[13px]"
+                  :placeholder="composePreviewLoading ? 'Loading…' : '—'"
+                >
               </div>
 
               <!-- To (editable, pre-filled) -->
@@ -139,27 +190,6 @@
                   class="block w-full mt-2 rounded-md bg-gray-100 dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white text-base outline-1 -outline-offset-1 outline-gray-300/20 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 dark:focus:bg-gray-800 dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
                   :placeholder="t('inbox.emailComposeDrawerBccExampleComCommaSeparated')"
                 />
-              </div>
-
-              <!-- Reply-To (routing address for recipient replies) -->
-              <div>
-                <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.integrationsReplyTo') }}</label>
-                <input
-                  :value="replyToDisplay"
-                  type="text"
-                  readonly
-                  class="block w-full mt-2 rounded-md bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-gray-700 dark:text-gray-300 text-base outline-1 -outline-offset-1 outline-gray-300/20 sm:text-sm/6 dark:outline-white/10 cursor-default font-mono text-[13px]"
-                  :placeholder="composePreviewLoading ? 'Loading…' : '—'"
-                >
-                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.emailComposeDrawerWhenRecipientsHitReplyTheirMessage') }}<template v-if="standaloneMode">{{ t('inbox.emailComposeDrawerYourInbox') }}</template>
-                  <template v-else>{{ t('inbox.emailComposeDrawerThisRecordsEmailThread') }}</template>.
-                </p>
-                <p
-                  v-if="replyToNote"
-                  class="mt-1 text-xs text-amber-700 dark:text-amber-300"
-                >
-                  {{ replyToNote }}
-                </p>
               </div>
 
               <!-- Subject -->
@@ -324,12 +354,14 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import { ref, watch, computed } from 'vue';
+import { RouterLink } from 'vue-router';
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import { ChevronUpDownIcon, CheckIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import apiClient from '@/utils/apiClient';
 import { uploadCommunicationAttachment } from '@/utils/communicationAttachments';
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
+import { useSmtpSetupWizard } from '@/composables/useSmtpSetupWizard';
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
   /** When true, send with `standalone: true` (workspace-scoped); `relatedTo` is not required. */
@@ -370,6 +402,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const { openSmtpSetupWizard } = useSmtpSetupWizard();
 
 const emit = defineEmits(['close', 'sent', 'submit']);
 
@@ -398,6 +431,7 @@ const composePreviewLoading = ref(false);
 const sendIdentities = ref([]);
 const selectedFromId = ref('');
 const selectedMailboxId = ref('');
+const payloadDeliveryMode = ref('');
 
 const fromDisplayLine = computed(() => {
   const email = String(fromEmailDisplay.value || '').trim();
@@ -407,23 +441,39 @@ const fromDisplayLine = computed(() => {
   return email;
 });
 
-const hasFromPicker = computed(() => sendIdentities.value.length > 1);
+const hasFromPicker = computed(() => sendIdentities.value.length >= 1);
+
+const deliveryMode = computed(() => {
+  const selected = sendIdentities.value.find((i) => i.id === selectedFromId.value);
+  if (selected?.deliveryMode) return selected.deliveryMode;
+  return payloadDeliveryMode.value || '';
+});
+const needsSmtpSetup = computed(() => deliveryMode.value === 'needs_smtp_setup');
+const needsOrgDomain = computed(() => deliveryMode.value === 'needs_org_domain');
 
 function identityOptionLabel(identity) {
   if (!identity) return '';
   const email = String(identity.emailAddress || '').trim();
   const label = String(identity.label || '').trim();
-  if (label && label.toLowerCase() !== email.toLowerCase()) {
+  if (identity.source === 'tenant_config') {
+    return label && label.toLowerCase() !== email.toLowerCase()
+      ? `${label} <${email}>`
+      : email;
+  }
+  if (label && email && label.toLowerCase() !== email.toLowerCase()) {
     return `${label} <${email}>`;
   }
-  return email;
+  return email || label || '';
 }
 
 const fromSourceHint = computed(() => {
-  if (fromSource.value === 'mailbox') {
+  const mode = deliveryMode.value;
+  if (mode === 'needs_smtp_setup') return t('inbox.emailComposeFromHintNeedsSmtp');
+  if (mode === 'needs_org_domain') return t('inbox.emailComposeFromHintNeedsOrg');
+  if (fromSource.value === 'mailbox' || mode === 'mailbox_smtp') {
     return t('inbox.emailComposeFromHintMailbox');
   }
-  if (fromSource.value === 'tenant_config') {
+  if (fromSource.value === 'tenant_config' || mode === 'org_provider') {
     return t('inbox.emailComposeFromHintOrg');
   }
   if (fromSource.value === 'user') {
@@ -465,7 +515,9 @@ const canSendCompose = computed(
     Boolean(form.value.subject?.trim?.() || form.value.subject) &&
     !hasInvalidEmails(form.value.to) &&
     !hasInvalidEmails(form.value.cc) &&
-    !hasInvalidEmails(form.value.bcc)
+    !hasInvalidEmails(form.value.bcc) &&
+    !needsSmtpSetup.value &&
+    !needsOrgDomain.value
 );
 
 watch(() => props.initialTo, (val) => {
@@ -531,7 +583,8 @@ async function loadComposePreview() {
         selectedFromId.value = '';
         selectedMailboxId.value = '';
       }
-      replyToDisplay.value = presetReplyTo;
+      replyToDisplay.value = fromEmailDisplay.value || presetReplyTo || '';
+      replyToNote.value = '';
       composePreviewLoading.value = false;
       return;
     }
@@ -545,8 +598,7 @@ async function loadComposePreview() {
     fromEmailDisplay.value = payload.fromEmail || presetFrom || '';
     fromNameDisplay.value = payload.fromName || presetFromName || '';
     fromSource.value = payload.fromSource || '';
-    replyToDisplay.value = payload.replyTo || presetReplyTo || '';
-    replyToNote.value = payload.replyToNote || payload.note || '';
+    payloadDeliveryMode.value = payload.deliveryMode || '';
     selectedMailboxId.value = payload.mailboxId ? String(payload.mailboxId) : '';
     if (list.length) {
       const match =
@@ -556,18 +608,22 @@ async function loadComposePreview() {
       if (match) {
         fromEmailDisplay.value = match.emailAddress || fromEmailDisplay.value;
         fromNameDisplay.value =
-          match.label && match.label !== match.emailAddress ? match.label : (payload.fromName || '');
+          match.fromName
+          || (match.label && match.label !== match.emailAddress ? match.label : '')
+          || (payload.fromName || '');
         fromSource.value = match.source || fromSource.value;
         selectedMailboxId.value = match.mailboxId ? String(match.mailboxId) : '';
       }
     } else {
       selectedFromId.value = '';
     }
+    replyToDisplay.value = fromEmailDisplay.value || presetReplyTo || '';
+    replyToNote.value = '';
   } catch {
     fromEmailDisplay.value = presetFrom || String(props.sendingMailbox?.emailAddress || '').trim();
     fromNameDisplay.value = presetFromName || String(props.sendingMailbox?.label || '').trim();
-    replyToDisplay.value = presetReplyTo;
-    replyToNote.value = t('inbox.emailComposeReplyToLoadError');
+    replyToDisplay.value = fromEmailDisplay.value || presetReplyTo;
+    replyToNote.value = '';
   } finally {
     composePreviewLoading.value = false;
   }
@@ -579,9 +635,24 @@ async function selectFromIdentity(identityId) {
   selectedFromId.value = identity.id;
   selectedMailboxId.value = identity.mailboxId ? String(identity.mailboxId) : '';
   fromEmailDisplay.value = identity.emailAddress || '';
-  fromNameDisplay.value =
-    identity.label && identity.label !== identity.emailAddress ? identity.label : '';
+  if (identity.source === 'tenant_config') {
+    fromNameDisplay.value =
+      identity.fromName
+      || (identity.label && identity.label !== identity.emailAddress ? identity.label : '')
+      || '';
+  } else if (identity.viaSmtp && identity.fromName) {
+    fromNameDisplay.value = identity.fromName;
+  } else if (identity.kind === 'group') {
+    fromNameDisplay.value =
+      identity.fromName
+      || (identity.label && identity.label !== identity.emailAddress ? identity.label : '')
+      || '';
+  } else {
+    fromNameDisplay.value = identity.fromName || '';
+  }
   fromSource.value = identity.source || '';
+  replyToDisplay.value = fromEmailDisplay.value || '';
+  replyToNote.value = '';
   if (identity.mailboxId) {
     try {
       await apiClient.put('/communications/email/default-outbound-mailbox', {
@@ -591,6 +662,18 @@ async function selectFromIdentity(identityId) {
       /* non-blocking */
     }
   }
+}
+
+function openSmtpSetupFromCompose() {
+  const selected = sendIdentities.value.find((i) => i.id === selectedFromId.value);
+  openSmtpSetupWizard({
+    mailboxId: selected?.mailboxId || props.sendingMailbox?.id || '',
+    email: selected?.emailAddress || props.sendingMailbox?.emailAddress || fromEmailDisplay.value || '',
+    reason: 'compose',
+    onConnected: () => {
+      void loadComposePreview();
+    }
+  });
 }
 
 watch(() => props.isOpen, (open) => {
@@ -697,6 +780,9 @@ function handleSend() {
       subject: form.value.subject.trim(),
       body: form.value.body,
       attachments: attachments.value.length ? attachments.value : [],
+      fromSource: fromSource.value || undefined,
+      fromEmail: fromEmailDisplay.value || undefined,
+      fromName: fromNameDisplay.value || undefined,
       ...(selectedMailboxId.value ? { mailboxId: selectedMailboxId.value } : {}),
       ...(props.initialDraft?.parentCommunicationId
         ? { parentCommunicationId: props.initialDraft.parentCommunicationId }
@@ -719,6 +805,9 @@ function handleSend() {
     subject: form.value.subject.trim(),
     body: form.value.body,
     attachments: attachments.value.length ? attachments.value : [],
+    fromSource: fromSource.value || undefined,
+    fromEmail: fromEmailDisplay.value || undefined,
+    fromName: fromNameDisplay.value || undefined,
     ...(selectedMailboxId.value ? { mailboxId: selectedMailboxId.value } : {}),
     ...(props.initialDraft?.parentCommunicationId
       ? { parentCommunicationId: props.initialDraft.parentCommunicationId }

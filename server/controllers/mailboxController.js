@@ -36,6 +36,12 @@ const {
   isMailboxGmailSmtpReady
 } = require('../services/mailboxGmailSmtpService');
 const {
+  connectMailboxSmtp,
+  disconnectMailboxSmtp,
+  verifyMailboxSmtpParams,
+  isMailboxSmtpReady
+} = require('../services/mailboxSmtpService');
+const {
   isGmailIntegrationEnabled,
   getEmailIntegrationCapabilities
 } = require('../config/emailFeatureFlags');
@@ -106,6 +112,16 @@ function serializeMailbox(doc) {
       connected: gmailSmtpReady,
       verifiedAt: o.smtpOutboundVerifiedAt || null
     },
+    smtpOutbound: {
+      connected: isMailboxSmtpReady(o),
+      provider: o.smtpOutboundProvider || '',
+      host: o.smtpOutboundHost || '',
+      port: o.smtpOutboundPort || null,
+      secure: o.smtpOutboundSecure === true,
+      fromName: o.smtpOutboundFromName || '',
+      verifiedAt: o.smtpOutboundVerifiedAt || null,
+      hasCredentials: Boolean(String(o.smtpOutboundEncryptedAppPassword || '').trim())
+    },
     inboundParser: {
       routingAddress: o.routingAddress || '',
       forwardingHint: o.parserForwardingHint || '',
@@ -122,7 +138,7 @@ function serializeMailbox(doc) {
 
 /**
  * GET /api/mailboxes
- * Lists group mailboxes for the org + the current user's personal mailbox (if any).
+ * Lists group mailboxes for the org + the current user's personal + smtp_sender mailboxes.
  */
 async function listMailboxes(req, res) {
   try {
@@ -133,11 +149,20 @@ async function listMailboxes(req, res) {
       .sort({ updatedAt: -1 })
       .lean();
 
+    const smtpSenders = await Mailbox.find({
+      organizationId: orgId,
+      kind: 'smtp_sender',
+      ownerUserId: userId
+    })
+      .sort({ updatedAt: -1 })
+      .lean();
+
     const groups = await Mailbox.find({ organizationId: orgId, kind: 'group' }).sort({ updatedAt: -1 }).lean();
     const groupsVisible = groups.filter((g) => canUserAccessMailboxThreads(req.user, g));
 
     const mailboxes = [
       ...personal.map((m) => serializeMailbox(m)),
+      ...smtpSenders.map((m) => serializeMailbox(m)),
       ...groupsVisible.map((m) => serializeMailbox(m))
     ];
 
@@ -190,6 +215,7 @@ async function listMailboxes(req, res) {
           canCreatePersonal,
           canDeletePersonal,
           canCreateGroup,
+          canCreateSmtpSender: true,
           ...getEmailIntegrationCapabilities(),
           ...parserStatus,
           gmailOAuthAppConfigured:
@@ -208,6 +234,7 @@ async function listMailboxes(req, res) {
 /**
  * POST /api/mailboxes
  * Body: { kind, label, emailAddress?, memberUserIds? }
+ * kind: personal | group | smtp_sender
  */
 async function createMailbox(req, res) {
   try {
@@ -215,8 +242,11 @@ async function createMailbox(req, res) {
     const userId = req.user._id;
     const { kind, label, emailAddress, memberUserIds } = req.body || {};
 
-    if (kind !== 'personal' && kind !== 'group') {
-      return res.status(400).json({ success: false, message: 'kind must be personal or group' });
+    if (kind !== 'personal' && kind !== 'group' && kind !== 'smtp_sender') {
+      return res.status(400).json({
+        success: false,
+        message: 'kind must be personal, group, or smtp_sender'
+      });
     }
     if (!label || typeof label !== 'string' || !String(label).trim()) {
       return res.status(400).json({ success: false, message: 'label is required' });
@@ -224,6 +254,31 @@ async function createMailbox(req, res) {
 
     if (kind === 'group' && !isTenantAdmin(req.user)) {
       return res.status(403).json({ success: false, message: 'Only admins can create group mailboxes' });
+    }
+
+    if (kind === 'smtp_sender') {
+      const email = emailAddress ? String(emailAddress).trim().toLowerCase() : '';
+      const doc = await Mailbox.create({
+        organizationId: orgId,
+        kind: 'smtp_sender',
+        label: String(label).trim(),
+        emailAddress: email,
+        ownerUserId: userId,
+        memberUserIds: [],
+        createdByUserId: userId,
+        status: 'draft',
+        syncStatus: 'not_configured',
+        inboxProvider: 'none',
+        outboundChannel: 'none',
+        parserProvisionStatus: 'skipped'
+      });
+      const refreshed = await Mailbox.findById(doc._id).lean();
+      return res.status(201).json({
+        success: true,
+        data: {
+          mailbox: serializeMailbox(refreshed || doc)
+        }
+      });
     }
 
     if (kind === 'personal') {
@@ -300,7 +355,7 @@ async function createMailbox(req, res) {
 function canEditMailbox(user, mailboxLean) {
   if (!mailboxLean) return false;
   if (mailboxLean.kind === 'group') return isTenantAdmin(user);
-  if (mailboxLean.kind === 'personal') {
+  if (mailboxLean.kind === 'personal' || mailboxLean.kind === 'smtp_sender') {
     const owner = mailboxLean.ownerUserId && String(mailboxLean.ownerUserId);
     return owner === String(user._id) || isTenantAdmin(user);
   }
@@ -468,12 +523,17 @@ async function deleteMailbox(req, res) {
     if (isGmailIntegrationEnabled() && mailbox.outboundChannel === 'gmail_smtp') {
       const { disconnectMailboxGmailSmtp } = require('../services/mailboxGmailSmtpService');
       await disconnectMailboxGmailSmtp(id, orgId).catch(() => {});
+    } else if (mailbox.outboundChannel === 'smtp' || mailbox.kind === 'smtp_sender') {
+      await disconnectMailboxSmtp(id, orgId).catch(() => {});
     }
 
-    const parserDeprovision = await deprovisionMailboxFromParser({
-      organizationId: orgId,
-      mailbox
-    });
+    const parserDeprovision =
+      mailbox.kind === 'smtp_sender'
+        ? { ok: true, skipped: true }
+        : await deprovisionMailboxFromParser({
+            organizationId: orgId,
+            mailbox
+          });
 
     const deleteEmails = mailbox.kind === 'personal' && parseDeleteEmailsFlag(req);
     let emailsDeleted = 0;
@@ -916,8 +976,120 @@ async function patchGmailInboxSyncSyncLabels(req, res) {
  * POST /api/mailboxes/:id/inbox-sync/google/disconnect
  */
 /**
+ * POST /api/mailboxes/outbound/smtp/verify
+ * Body: { emailAddress, password, provider?, smtpHost?, smtpPort?, smtpSecure? }
+ */
+async function verifyMailboxSmtpHandler(req, res) {
+  try {
+    const { emailAddress, password, provider, smtpHost, smtpPort, smtpSecure } = req.body || {};
+    const result = await verifyMailboxSmtpParams({
+      emailAddress,
+      password,
+      provider,
+      smtpHost,
+      smtpPort,
+      smtpSecure
+    });
+    return res.status(result.ok ? 200 : 400).json({
+      success: result.ok,
+      status: result.status,
+      message: result.ok ? 'Connected' : result.error,
+      code: result.code || result.status,
+      data: result.ok
+        ? {
+            provider: result.provider,
+            host: result.host,
+            port: result.port,
+            secure: result.secure
+          }
+        : undefined
+    });
+  } catch (err) {
+    console.error('[mailboxController] verifyMailboxSmtp:', err);
+    return res.status(500).json({ success: false, message: 'Failed to verify SMTP', status: 'UNKNOWN' });
+  }
+}
+
+/**
+ * POST /api/mailboxes/:id/outbound/smtp/connect
+ */
+async function connectMailboxSmtpHandler(req, res) {
+  try {
+    const orgId = req.user.organizationId;
+    const id = toId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Invalid mailbox id' });
+    }
+    const mailbox = await Mailbox.findOne({ _id: id, organizationId: orgId }).lean();
+    const accessErr = assertGmailSyncManageAccess(mailbox, req.user);
+    if (accessErr) {
+      return res.status(403).json({ success: false, message: accessErr });
+    }
+    const {
+      emailAddress,
+      password,
+      appPassword,
+      provider,
+      smtpHost,
+      smtpPort,
+      smtpSecure,
+      displayName
+    } = req.body || {};
+    const result = await connectMailboxSmtp({
+      organizationId: orgId,
+      mailboxId: id,
+      emailAddress,
+      password: password || appPassword,
+      provider,
+      smtpHost,
+      smtpPort,
+      smtpSecure,
+      displayName
+    });
+    if (!result.ok) {
+      return res.status(400).json({
+        success: false,
+        message: result.error,
+        code: result.code,
+        status: result.status
+      });
+    }
+    const updated = await Mailbox.findOne({ _id: id, organizationId: orgId }).lean();
+    return res.json({
+      success: true,
+      status: result.status,
+      data: { mailbox: serializeMailbox(updated) }
+    });
+  } catch (err) {
+    console.error('[mailboxController] connectMailboxSmtp:', err);
+    return res.status(500).json({ success: false, message: 'Failed to connect SMTP' });
+  }
+}
+
+async function disconnectMailboxSmtpHandler(req, res) {
+  try {
+    const orgId = req.user.organizationId;
+    const id = toId(req.params.id);
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Invalid mailbox id' });
+    }
+    const mailbox = await Mailbox.findOne({ _id: id, organizationId: orgId }).lean();
+    const accessErr = assertGmailSyncManageAccess(mailbox, req.user);
+    if (accessErr) {
+      return res.status(403).json({ success: false, message: accessErr });
+    }
+    await disconnectMailboxSmtp(id, orgId);
+    const updated = await Mailbox.findOne({ _id: id, organizationId: orgId }).lean();
+    return res.json({ success: true, data: { mailbox: serializeMailbox(updated) } });
+  } catch (err) {
+    console.error('[mailboxController] disconnectMailboxSmtp:', err);
+    return res.status(500).json({ success: false, message: 'Failed to disconnect SMTP' });
+  }
+}
+
+/**
  * POST /api/mailboxes/:id/outbound/gmail-smtp/connect
- * Body: { emailAddress, appPassword }
+ * Body: { emailAddress, appPassword } — thin wrapper over generic SMTP connect.
  */
 async function connectMailboxGmailSmtpHandler(req, res) {
   try {
@@ -942,7 +1114,8 @@ async function connectMailboxGmailSmtpHandler(req, res) {
       return res.status(400).json({
         success: false,
         message: result.error,
-        code: result.code
+        code: result.code,
+        status: result.status
       });
     }
     const updated = await Mailbox.findOne({ _id: id, organizationId: orgId }).lean();
@@ -1031,5 +1204,8 @@ module.exports = {
   patchGmailInboxSyncSyncLabels,
   gmailInboxSyncDisconnect,
   connectMailboxGmailSmtpHandler,
-  disconnectMailboxGmailSmtpHandler
+  disconnectMailboxGmailSmtpHandler,
+  verifyMailboxSmtpHandler,
+  connectMailboxSmtpHandler,
+  disconnectMailboxSmtpHandler
 };

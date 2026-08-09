@@ -294,7 +294,16 @@ function buildFullPrivilegedRolePermissions() {
             }
         },
         liveChat: { view: true, reply: true, admin: true },
-        announcements: { view: true, manage: true, publish: true, analytics: true }
+        announcements: { view: true, manage: true, publish: true, analytics: true },
+        telephony: {
+          view: true,
+          call: true,
+          listen: true,
+          download: true,
+          manage: true,
+          admin: true,
+          ai: true,
+        },
     };
 }
 

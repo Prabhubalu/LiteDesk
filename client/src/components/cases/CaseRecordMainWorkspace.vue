@@ -72,7 +72,7 @@
         type="button"
         role="tab"
         :aria-selected="activeTab === tab.id"
-        class="relative px-3 py-2.5 text-sm font-medium transition-colors"
+        class="relative px-3 py-1.5 text-sm font-medium transition-colors"
         :class="
           activeTab === tab.id
             ? 'text-indigo-600 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-indigo-600 dark:text-indigo-400 dark:after:bg-indigo-400'

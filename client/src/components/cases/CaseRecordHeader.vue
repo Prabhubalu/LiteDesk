@@ -1,9 +1,8 @@
 <template>
   <header class="shrink-0 border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
-    <!-- Primary: identity + workflow -->
     <div
-      class="flex min-h-[3rem] items-center gap-2.5 sm:gap-3"
-      :class="embedToolbar ? 'px-6 py-2' : 'px-4 py-2 sm:px-5'"
+      class="flex items-center gap-2 sm:gap-2.5"
+      :class="embedToolbar ? 'px-6 py-1' : 'px-4 py-1 sm:px-5'"
     >
       <div v-if="showNavigation" class="flex shrink-0 items-center gap-0.5">
         <button
@@ -28,20 +27,28 @@
         </button>
       </div>
 
-      <div v-if="!embedToolbar" class="flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden">
+      <div v-if="!embedToolbar" class="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
         <Avatar
           :record="{ name: caseRecord.title || caseModuleLabel }"
           :icon="TicketIcon"
           size="sm"
           class="hidden shrink-0 sm:flex"
         />
-        <h1
-          v-if="!previewMode"
-          class="min-w-0 truncate text-[15px] font-semibold leading-tight text-gray-900 dark:text-white sm:text-base"
-          :title="caseRecord.title"
-        >
-          {{ caseRecord.title || '—' }}
-        </h1>
+        <div v-if="!previewMode" class="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden">
+          <h1
+            class="min-w-0 truncate text-sm font-semibold leading-tight text-gray-900 dark:text-white"
+            :title="caseRecord.title"
+          >
+            {{ caseRecord.title || '—' }}
+          </h1>
+          <span
+            v-if="caseNumber"
+            class="shrink-0 font-mono text-[11px] font-medium leading-tight text-gray-500 dark:text-gray-400"
+            :title="caseNumber"
+          >
+            {{ caseNumber }}
+          </span>
+        </div>
       </div>
 
       <div
@@ -52,59 +59,16 @@
           v-if="presenceSessions.length"
           :sessions="presenceSessions"
         />
-        <div
-          class="case-header-chip inline-flex min-w-0 items-center rounded-md py-0.5 pl-1.5 pr-0.5 ring-1 ring-inset transition-[filter] hover:brightness-[0.97] dark:hover:brightness-110"
-          :style="statusChipStyle"
-        >
-          <span
-            class="mr-1 h-1.5 w-1.5 shrink-0 rounded-full"
-            :style="{ backgroundColor: statusColor || '#9CA3AF' }"
-            aria-hidden="true"
-          />
-          <HeadlessSelect
-            :model-value="caseRecord.status"
-            :options="statusOptions"
-            :disabled="statusUpdating || isClosed"
-            teleport
-            teleport-align="end"
-            :teleport-match-width="false"
-            :teleport-min-width-px="200"
-            :searchable="false"
-            :truncate-button-label="false"
-            :truncate-options="false"
-            :button-class="chipSelectButtonClass"
-            :options-class="headerSelectOptionsClass"
-            wrapper-class="case-header-chip-select min-w-[5.5rem]"
-            @update:model-value="$emit('status-change', $event)"
-          />
-        </div>
 
-        <div
-          class="case-header-chip inline-flex min-w-0 items-center rounded-md py-0.5 pl-1.5 pr-0.5 ring-1 ring-inset transition-[filter] hover:brightness-[0.97] dark:hover:brightness-110"
-          :style="priorityChipStyle"
-        >
-          <span
-            class="mr-1 h-1.5 w-1.5 shrink-0 rounded-full"
-            :style="{ backgroundColor: priorityColor || '#9CA3AF' }"
-            aria-hidden="true"
-          />
-          <HeadlessSelect
-            :model-value="caseRecord.priority"
-            :options="priorityOptions"
-            :disabled="isClosed"
-            teleport
-            teleport-align="end"
-            :teleport-match-width="false"
-            :teleport-min-width-px="128"
-            :searchable="false"
-            :truncate-button-label="false"
-            :truncate-options="false"
-            :button-class="chipSelectButtonClass"
-            :options-class="headerSelectOptionsClass"
-            wrapper-class="case-header-chip-select min-w-[4.75rem]"
-            @update:model-value="$emit('priority-change', $event)"
-          />
-        </div>
+        <CaseRecordWorkflowChips
+          :case-record="caseRecord"
+          :allowed-status-transitions="allowedStatusTransitions"
+          :priorities="priorities"
+          :status-updating="statusUpdating"
+          :is-closed="isClosed"
+          @status-change="$emit('status-change', $event)"
+          @priority-change="$emit('priority-change', $event)"
+        />
 
         <div
           class="ml-1 inline-flex items-center gap-0.5 border-l border-gray-200 pl-1.5 dark:border-gray-700"
@@ -176,82 +140,6 @@
         </div>
       </div>
     </div>
-
-    <div v-if="caseRecord?._id && aiSuiteEntitled" class="border-t border-gray-100 px-4 py-2 sm:px-5 dark:border-gray-800">
-      <RecordAiPanel
-        module-key="cases"
-        source-type="case"
-        :record-id="String(caseRecord._id)"
-      />
-    </div>
-
-    <!-- Secondary: case meta, assignee, SLA -->
-    <div
-      v-if="showMetaStrip"
-      class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-t border-gray-100 bg-gray-50/70 px-4 py-1.5 sm:px-5 dark:border-gray-800 dark:bg-gray-800/25"
-    >
-      <template v-if="!embedToolbar">
-        <span
-          class="shrink-0 font-mono text-[11px] font-medium text-gray-500 dark:text-gray-400"
-          :title="caseRecord.caseId"
-        >
-          {{ caseRecord.caseId || caseRecord._id?.slice(-8) }}
-        </span>
-        <span
-          v-if="metaLine"
-          class="hidden min-w-0 truncate text-xs text-gray-500 sm:inline dark:text-gray-400"
-          :title="metaLine"
-        >
-          {{ metaLine }}
-        </span>
-        <span
-          v-if="metaLine"
-          class="hidden text-gray-300 sm:inline dark:text-gray-600"
-          aria-hidden="true"
-        >
-          ·
-        </span>
-      </template>
-
-      <div
-        class="inline-flex min-w-0 max-w-full items-center gap-1.5"
-        :title="assigneeTitle"
-        :aria-label="assigneeTitle"
-      >
-        <Avatar
-          :user="assigneeUser || { email: '' }"
-          :icon="isAssigneeUnassigned ? UserIcon : undefined"
-          size="sm"
-          class="shrink-0"
-        />
-        <span
-          class="truncate text-xs font-medium"
-          :class="isAssigneeUnassigned ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-200'"
-        >
-          {{ assigneeName }}
-        </span>
-      </div>
-
-      <CaseSlaBadge
-        v-if="hasSlaCycle"
-        compact
-        class="min-w-0 max-w-full"
-        :cycle="caseRecord.currentSlaCycle"
-        :sla-progress="caseRecord.slaProgress"
-      />
-    </div>
-
-    <div
-      v-if="showSlaContextBanner"
-      class="border-t border-amber-200/70 bg-amber-50/80 px-4 py-1.5 sm:px-5 dark:border-amber-900/50 dark:bg-amber-950/30"
-    >
-      <CaseSlaContextBanner
-        class="!mt-0 !rounded-none !border-0 !bg-transparent !p-0"
-        :sla-context="caseRecord.slaContext"
-        :cycle-status="caseRecord.currentSlaCycle?.status"
-        :case-status="caseRecord.status"
-      />
-    </div>
   </header>
 </template>
 
@@ -265,23 +153,12 @@ import {
   EllipsisVerticalIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  UserIcon,
   TicketIcon
 } from '@heroicons/vue/24/outline';
 import Avatar from '@/components/common/Avatar.vue';
 import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
 import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
-import RecordAiPanel from '@/astra/surfaces/RecordAiPanel.vue';
-import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
-import CaseSlaBadge from '@/components/cases/CaseSlaBadge.vue';
-import CaseSlaContextBanner from '@/components/helpdesk/CaseSlaContextBanner.vue';
-import { useAuthStore } from '@/stores/authRegistry';
-import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
-import {
-  caseChipSurfaceStyle,
-  casePriorityColor,
-  caseStatusColor
-} from '@/utils/caseRecordUi';
+import CaseRecordWorkflowChips from '@/components/cases/CaseRecordWorkflowChips.vue';
 
 const props = defineProps({
   caseRecord: { type: Object, required: true },
@@ -312,89 +189,8 @@ const emit = defineEmits([
 ]);
 
 const { t } = useI18n();
-const authStore = useAuthStore();
-const aiSuiteEntitled = computed(() => isAiSuiteEntitled(authStore.user));
-
 const caseModuleLabel = computed(() => t('navigation.moduleCases'));
-
-const chipSelectButtonClass =
-  '!h-6 !min-h-0 !rounded !border-0 !bg-transparent !px-1.5 !pr-5 !py-0 !text-xs !font-semibold !leading-none !text-gray-800 !shadow-none !outline-none !ring-0 hover:!bg-transparent focus:!bg-transparent focus-visible:!ring-2 focus-visible:!ring-indigo-500/40 dark:!text-gray-100 dark:hover:!bg-transparent dark:focus:!bg-transparent sm:!text-xs';
-
-const headerSelectOptionsClass = 'z-[10060] !py-1';
-
-const statusOptions = computed(() => {
-  const current = props.caseRecord?.status;
-  const transitions = props.allowedStatusTransitions || [];
-  const values = current
-    ? [current, ...transitions.filter((status) => status !== current)]
-    : [...transitions];
-  return values.map((value) => ({ value, label: value }));
-});
-
-const priorityOptions = computed(() =>
-  (props.priorities || []).map((priority) => ({ value: priority, label: priority }))
+const caseNumber = computed(
+  () => props.caseRecord?.caseId || props.caseRecord?._id?.slice(-8) || ''
 );
-
-const statusColor = computed(() => caseStatusColor(props.caseRecord?.status));
-const priorityColor = computed(() => casePriorityColor(props.caseRecord?.priority));
-const statusChipStyle = computed(() => caseChipSurfaceStyle(statusColor.value));
-const priorityChipStyle = computed(() => caseChipSurfaceStyle(priorityColor.value));
-
-const unassignedLabel = computed(() => t('cases.recordDetailsUnassigned'));
-
-const assigneeUser = computed(() => {
-  const owner = props.caseRecord?.assignedTo;
-  if (owner && typeof owner === 'object') return owner;
-  return null;
-});
-
-const isAssigneeUnassigned = computed(() => !assigneeUser.value);
-
-const assigneeName = computed(() => {
-  const owner = assigneeUser.value;
-  if (!owner) return unassignedLabel.value;
-  const name = [owner.firstName, owner.lastName].filter(Boolean).join(' ').trim();
-  return name || owner.email || owner.username || unassignedLabel.value;
-});
-
-const assigneeTitle = computed(() => {
-  const label = t('cases.recordHeaderAssignedTo');
-  return `${label} ${assigneeName.value}`;
-});
-
-const metaLine = computed(() => {
-  return [props.caseRecord?.caseType, props.caseRecord?.channel].filter(Boolean).join(' · ');
-});
-
-const hasSlaCycle = computed(() => Boolean(props.caseRecord?.currentSlaCycle));
-
-const showSlaContextBanner = computed(() => {
-  const cycleStatus = props.caseRecord?.currentSlaCycle?.status;
-  const ctx = props.caseRecord?.slaContext;
-  if (cycleStatus === 'paused') return true;
-  if (!ctx?.useBusinessHours) return false;
-  return ctx.isOpen === false;
-});
-
-const showMetaStrip = computed(() => {
-  if (props.embedToolbar) {
-    return hasSlaCycle.value;
-  }
-  return true;
-});
 </script>
-
-<style scoped>
-/* HeadlessSelect ships gray field styles; keep chip triggers visually transparent. */
-.case-header-chip-select :deep(button) {
-  background-color: transparent !important;
-  outline: none !important;
-}
-
-.case-header-chip-select :deep(button:hover),
-.case-header-chip-select :deep(button:focus),
-.case-header-chip-select :deep(button[data-headlessui-state~='hover']),
-.case-header-chip-select :deep(button[data-headlessui-state~='focus']) {
-  background-color: transparent !important;
-}
-</style>

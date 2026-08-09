@@ -23,8 +23,13 @@ function getCrmReplyDomain() {
     .split(':')[0];
 }
 
+/**
+ * Legacy reply+token / replies+ HMAC routing. Off by default — inbound parser
+ * + mailbox routingAddress is the supported reply path. Set
+ * EMAIL_REPLY_USE_SHORT_TOKEN=true only for temporary rollback.
+ */
 function isShortCrmReplyTokenEnabled() {
-  return String(process.env.EMAIL_REPLY_USE_SHORT_TOKEN || 'true').trim().toLowerCase() !== 'false';
+  return String(process.env.EMAIL_REPLY_USE_SHORT_TOKEN || 'false').trim().toLowerCase() === 'true';
 }
 
 function buildCrmReplyToAddress(crmThreadToken) {
