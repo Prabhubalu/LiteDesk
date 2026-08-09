@@ -1,28 +1,28 @@
 <template>
   <div
-    class="overflow-hidden rounded-lg border border-amber-200/90 bg-amber-50/70 shadow-sm dark:border-amber-800/60 dark:bg-amber-950/25"
+    class="w-full overflow-hidden rounded-md border border-amber-300/80 bg-[#FFF9C4] shadow-[2px_2px_0_rgba(217,119,6,0.18)] dark:border-amber-700/70 dark:bg-amber-950/40 dark:shadow-none"
   >
     <div class="flex items-start gap-3 px-4 py-3">
       <Avatar :user="author" size="sm" class="mt-0.5 shrink-0" />
       <div class="min-w-0 flex-1">
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span class="text-sm font-semibold text-gray-900 dark:text-white">
+          <span class="text-sm font-semibold text-amber-950 dark:text-amber-50">
             {{ authorLabel }}
           </span>
           <span
             v-if="createdAt"
-            class="text-xs text-gray-500 dark:text-gray-400"
+            class="text-xs text-amber-800/70 dark:text-amber-200/70"
             :title="fullTimestamp"
           >
             {{ timelineStamp }}
           </span>
           <span
-            class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:bg-amber-900/50 dark:text-amber-100"
+            class="inline-flex items-center rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:bg-amber-400/15 dark:text-amber-100"
           >
             {{ t('cases.recordInternalComment') }}
           </span>
         </div>
-        <div class="mt-2 text-sm leading-relaxed text-gray-800 dark:text-gray-100">
+        <div class="mt-2 text-sm leading-relaxed text-amber-950 dark:text-amber-50">
           <CommentContent :content="activity?.message || ''" />
         </div>
       </div>

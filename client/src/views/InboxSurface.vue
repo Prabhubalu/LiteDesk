@@ -639,7 +639,8 @@ const composeSendingMailbox = computed(() => {
 
 const composeSendingMailboxHint = computed(() => {
   if (composeSendingMailbox.value) return '';
-  return 'Connect Gmail or Gmail SMTP in Inbox to send from your mailbox.';
+  // Org Resend/SMTP From is resolved via compose-preview; only hint when From is empty.
+  return 'Uses organization email (Resend/SMTP) when configured. Connect Gmail to send as this mailbox.';
 });
 
 function buildReplyDraftForRow(row) {
@@ -699,7 +700,7 @@ const openThreadComposeSendingMailbox = computed(() => {
 
 const openThreadComposeSendingMailboxHint = computed(() => {
   if (openThreadComposeSendingMailbox.value) return '';
-  return 'Connect Gmail or Gmail SMTP in Inbox to send from your mailbox.';
+  return 'Uses organization email (Resend/SMTP) when configured. Connect Gmail to send as this mailbox.';
 });
 
 const selectedThreadIds = ref([]);
@@ -1988,7 +1989,12 @@ function openGmailReconnectForCompose() {
 async function submitCompose(payload, { docked = false } = {}) {
   try {
     const body = { ...payload };
-    if (!body.mailboxId) {
+    const fromSource = String(body.fromSource || '').trim();
+    // Org / user From must not be re-bound to the open inbox mailbox (Gmail).
+    if (fromSource === 'tenant_config' || fromSource === 'user') {
+      delete body.mailboxId;
+      // Keep fromSource — server honors it to force org delivery path
+    } else if (!body.mailboxId) {
       const row = docked ? openThreadRow.value : composeRow.value;
       const mb = row?.mailboxId || selectedMailboxFilter.value || composeSendingMailbox.value?.id;
       if (mb) body.mailboxId = mb;

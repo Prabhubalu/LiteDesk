@@ -73,6 +73,10 @@ async function run() {
   const tallySyncQueueService = require('./services/connectors/tally/tallySyncQueueService');
   tallySyncQueueService.startWorker();
   console.log(`[worker] Tally sync worker is running (Bull: ${tallySyncQueueService.TALLY_SYNC_QUEUE_NAME})`);
+
+  const telephonyQueueService = require('./services/telephony/telephonyQueueService');
+  telephonyQueueService.startWorker();
+  console.log(`[worker] Telephony worker is running (Bull: ${telephonyQueueService.TELEPHONY_QUEUE_NAME})`);
 }
 
 async function stop(signal) {
@@ -123,6 +127,12 @@ async function stop(signal) {
     await tallySyncQueueService.closeQueue();
   } catch (e) {
     console.error('[worker] tally sync queue close', e.message);
+  }
+  try {
+    const telephonyQueueService = require('./services/telephony/telephonyQueueService');
+    await telephonyQueueService.closeQueue();
+  } catch (e) {
+    console.error('[worker] telephony queue close', e.message);
   }
   try {
     await mongoose.connection.close();

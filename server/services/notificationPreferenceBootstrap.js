@@ -115,6 +115,15 @@ function buildDefaultMap(appKey) {
     liveChatEvents.forEach((evt) => {
       defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
     });
+
+    const telephonyEvents = [
+      domainEvents.TELEPHONY_INCOMING_CALL,
+      domainEvents.TELEPHONY_CALL_MISSED,
+      domainEvents.TELEPHONY_RECORDING_READY,
+    ];
+    telephonyEvents.forEach((evt) => {
+      defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
+    });
   }
 
   return defaults;

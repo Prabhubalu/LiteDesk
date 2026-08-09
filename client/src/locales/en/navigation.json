@@ -35,6 +35,10 @@
     "message": "Live Chat",
     "description": "Live Chat addon sessions navigation label"
   },
+  "telephony": {
+    "message": "Telephony",
+    "description": "Telephony addon navigation label"
+  },
   "announcements": {
     "message": "Announcements",
     "description": "Announcements & Alerts addon navigation label"

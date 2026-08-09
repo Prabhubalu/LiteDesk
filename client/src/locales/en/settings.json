@@ -16847,6 +16847,106 @@
     "message": "CRM outbound provider",
     "description": "CRM outbound section title"
   },
+  "personalSmtpSendersTitle": {
+    "message": "Personal SMTP senders",
+    "description": "Settings card title for per-user SMTP From identities"
+  },
+  "personalSmtpSendersSubtitle": {
+    "message": "Connect Gmail or other personal SMTP accounts to send as yourself. You can add multiple From addresses.",
+    "description": "Settings card subtitle for personal SMTP"
+  },
+  "personalSmtpSendersAdd": {
+    "message": "Add SMTP sender",
+    "description": "Button to add another personal SMTP sender"
+  },
+  "personalSmtpSendersEmpty": {
+    "message": "No personal SMTP senders yet. Add one to send from your Gmail or other mailbox.",
+    "description": "Empty state for personal SMTP list"
+  },
+  "personalSmtpSendersNotConfiguredHint": {
+    "message": "SMTP not connected — use Connect to set up sending",
+    "description": "Hint under personal mailbox when SMTP is not ready"
+  },
+  "personalSmtpSendersLoadFailed": {
+    "message": "Could not load mailboxes",
+    "description": "Error loading personal SMTP list"
+  },
+  "personalSmtpSendersNoEmail": {
+    "message": "Not configured",
+    "description": "Placeholder when SMTP sender has no email yet"
+  },
+  "personalSmtpSendersConnected": {
+    "message": "Connected",
+    "description": "SMTP sender connected badge"
+  },
+  "personalSmtpSendersDisconnected": {
+    "message": "Not connected",
+    "description": "SMTP sender disconnected badge"
+  },
+  "personalSmtpSendersInboxBadge": {
+    "message": "Inbox mailbox",
+    "description": "Badge when SMTP is on the personal inbox mailbox"
+  },
+  "personalSmtpSendersCustomSmtp": {
+    "message": "Custom SMTP",
+    "description": "Provider label for custom SMTP"
+  },
+  "personalSmtpSendersDefaultLabel": {
+    "message": "SMTP sender",
+    "description": "Default label when creating smtp_sender mailbox"
+  },
+  "personalSmtpSendersConnect": {
+    "message": "Connect",
+    "description": "Connect SMTP action"
+  },
+  "personalSmtpSendersReconnect": {
+    "message": "Reconnect",
+    "description": "Reconnect SMTP action"
+  },
+  "personalSmtpSendersDisable": {
+    "message": "Disable",
+    "description": "Disable SMTP action"
+  },
+  "personalSmtpSendersRemove": {
+    "message": "Remove",
+    "description": "Remove smtp_sender action"
+  },
+  "personalSmtpSendersCreateFailed": {
+    "message": "Could not create SMTP sender",
+    "description": "Error creating smtp_sender"
+  },
+  "personalSmtpSendersDisableConfirmTitle": {
+    "message": "Disable SMTP sender?",
+    "description": "Confirm disable title"
+  },
+  "personalSmtpSendersDisableConfirmBody": {
+    "message": "Stop sending from {email}. You can reconnect later.",
+    "description": "Confirm disable body"
+  },
+  "personalSmtpSendersDisabled": {
+    "message": "SMTP sender disabled",
+    "description": "Success after disconnect"
+  },
+  "personalSmtpSendersDisableFailed": {
+    "message": "Could not disable SMTP sender",
+    "description": "Error disconnecting SMTP"
+  },
+  "personalSmtpSendersRemoveConfirmTitle": {
+    "message": "Remove SMTP sender?",
+    "description": "Confirm remove title"
+  },
+  "personalSmtpSendersRemoveConfirmBody": {
+    "message": "Permanently remove {email} from your SMTP senders.",
+    "description": "Confirm remove body"
+  },
+  "personalSmtpSendersRemoved": {
+    "message": "SMTP sender removed",
+    "description": "Success after delete"
+  },
+  "personalSmtpSendersRemoveFailed": {
+    "message": "Could not remove SMTP sender",
+    "description": "Error deleting smtp_sender"
+  },
   "integrationsCrmOutboundOwnerOnlyHint": {
     "message": "Critical provider fields are owner-only. You can update non-critical fields like From Name, Reply-To, and SMTP secure mode.",
     "description": "Owner-only fields hint"

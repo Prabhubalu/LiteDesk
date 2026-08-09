@@ -564,6 +564,16 @@ const searchLimiter = createUserScopedRouteLimiter({
     code: 'SEARCH_RATE_LIMIT_EXCEEDED',
 });
 
+/** SMTP credential verify / connect — prevent brute-force of mailbox passwords. */
+const smtpVerifyLimiter = createUserScopedRouteLimiter({
+    limiterName: 'smtp-verify',
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    failureMode: ROUTE_RATE_LIMIT_REDIS_FAILURE_MODE,
+    message: 'Too many SMTP connection tests. Please try again later.',
+    code: 'SMTP_VERIFY_RATE_LIMIT_EXCEEDED',
+});
+
 const fileUploadLimiter = createUserScopedRouteLimiter({
     limiterName: 'file-upload',
     windowMs: FILE_UPLOAD_RATE_LIMIT_WINDOW_MS,
@@ -866,5 +876,6 @@ module.exports = {
     publicQuoteActionLimiter,
     publicMarketingPreferenceLimiter,
     publicWebformViewLimiter,
-    publicWebformSubmitLimiter
+    publicWebformSubmitLimiter,
+    smtpVerifyLimiter
 };

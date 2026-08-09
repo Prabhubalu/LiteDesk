@@ -1,0 +1,221 @@
+'use strict';
+
+/**
+ * SSE hub for telephony realtime events.
+ * Best-effort, in-memory — clients may poll as fallback.
+ *
+ * Event types: IncomingCall, CallAnswered, CallEnded, CallMissed, CallHeld,
+ * RecordingReady, TranscriptReady, SummaryReady, PresenceChanged, QueueUpdated, CampaignProgress
+ */
+
+const TELEPHONY_SSE_DEBUG = process.env.TELEPHONY_SSE_DEBUG === 'true';
+const MAX_CONNECTIONS_PER_USER = parseInt(
+  process.env.MAX_TELEPHONY_SSE_CONNECTIONS_PER_USER || '2',
+  10
+);
+const MAX_CONNECTIONS_PER_ORG = parseInt(
+  process.env.MAX_TELEPHONY_SSE_CONNECTIONS_PER_ORG || '200',
+  10
+);
+const INACTIVE_CONNECTION_TIMEOUT = 60000;
+
+function debugLog(event, data) {
+  if (TELEPHONY_SSE_DEBUG) {
+    console.log(`[telephonySSEHub:${event}]`, JSON.stringify(data));
+  }
+}
+
+class TelephonySSEHub {
+  constructor() {
+    this.connections = new Map();
+    this.subscribersByKey = new Map();
+    this.connectionsByOrg = new Map();
+    this.heartbeatInterval = 25000;
+    this.heartbeatTimer = null;
+    this.cleanupTimer = null;
+    this.startedAt = Date.now();
+    this.startHeartbeat();
+    this.startCleanupTimer();
+  }
+
+  generateConnectionId() {
+    return `telephony_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  }
+
+  getSubscriberKey(userId, organizationId) {
+    return `${String(organizationId)}_${String(userId)}`;
+  }
+
+  subscribe(res, userId, organizationId) {
+    const connectionId = this.generateConnectionId();
+    const key = this.getSubscriberKey(userId, organizationId);
+    const orgIdStr = String(organizationId);
+
+    const userConnections = this.subscribersByKey.get(key) || new Set();
+    if (userConnections.size >= MAX_CONNECTIONS_PER_USER) {
+      this.unsubscribe(Array.from(userConnections)[0]);
+    }
+
+    const orgConnections = this.connectionsByOrg.get(orgIdStr) || new Set();
+    if (orgConnections.size >= MAX_CONNECTIONS_PER_ORG) {
+      this.unsubscribe(Array.from(orgConnections)[0]);
+    }
+
+    const now = Date.now();
+    this.connections.set(connectionId, {
+      res,
+      userId: String(userId),
+      organizationId: orgIdStr,
+      lastHeartbeat: now,
+      createdAt: now,
+    });
+
+    if (!this.subscribersByKey.has(key)) {
+      this.subscribersByKey.set(key, new Set());
+    }
+    this.subscribersByKey.get(key).add(connectionId);
+
+    if (!this.connectionsByOrg.has(orgIdStr)) {
+      this.connectionsByOrg.set(orgIdStr, new Set());
+    }
+    this.connectionsByOrg.get(orgIdStr).add(connectionId);
+
+    res.on('close', () => this.unsubscribe(connectionId));
+
+    debugLog('connect', { connectionId, userId: String(userId), organizationId: orgIdStr });
+    return connectionId;
+  }
+
+  unsubscribe(connectionId) {
+    const conn = this.connections.get(connectionId);
+    if (!conn) return;
+
+    const key = this.getSubscriberKey(conn.userId, conn.organizationId);
+    const orgIdStr = conn.organizationId;
+
+    const subscribers = this.subscribersByKey.get(key);
+    if (subscribers) {
+      subscribers.delete(connectionId);
+      if (subscribers.size === 0) this.subscribersByKey.delete(key);
+    }
+
+    const orgConnections = this.connectionsByOrg.get(orgIdStr);
+    if (orgConnections) {
+      orgConnections.delete(connectionId);
+      if (orgConnections.size === 0) this.connectionsByOrg.delete(orgIdStr);
+    }
+
+    this.connections.delete(connectionId);
+  }
+
+  _write(conn, payload) {
+    const message = `event: telephony\ndata: ${JSON.stringify(payload)}\n\n`;
+    conn.res.write(message);
+    conn.lastHeartbeat = Date.now();
+  }
+
+  publishToUser(organizationId, userId, payload) {
+    if (!organizationId || !userId || !payload) return 0;
+    const key = this.getSubscriberKey(userId, organizationId);
+    const subscribers = this.subscribersByKey.get(key);
+    if (!subscribers?.size) return 0;
+
+    let delivered = 0;
+    const dead = [];
+    for (const connectionId of subscribers) {
+      const conn = this.connections.get(connectionId);
+      if (!conn) {
+        dead.push(connectionId);
+        continue;
+      }
+      try {
+        this._write(conn, payload);
+        delivered += 1;
+      } catch {
+        dead.push(connectionId);
+      }
+    }
+    dead.forEach((id) => this.unsubscribe(id));
+    return delivered;
+  }
+
+  publishToOrg(organizationId, payload) {
+    if (!organizationId || !payload) return 0;
+    const orgIdStr = String(organizationId);
+    let delivered = 0;
+    const dead = [];
+    for (const [connectionId, conn] of this.connections.entries()) {
+      if (conn.organizationId !== orgIdStr) continue;
+      try {
+        this._write(conn, payload);
+        delivered += 1;
+      } catch {
+        dead.push(connectionId);
+      }
+    }
+    dead.forEach((id) => this.unsubscribe(id));
+    return delivered;
+  }
+
+  /** Alias matching inbox hub naming */
+  publishToOrganization(organizationId, payload) {
+    return this.publishToOrg(organizationId, payload);
+  }
+
+  sendHeartbeat() {
+    const ping = 'event: ping\ndata: {"timestamp":' + Date.now() + '}\n\n';
+    const dead = [];
+    for (const [connectionId, conn] of this.connections.entries()) {
+      try {
+        conn.res.write(ping);
+        conn.lastHeartbeat = Date.now();
+      } catch {
+        dead.push(connectionId);
+      }
+    }
+    dead.forEach((id) => this.unsubscribe(id));
+  }
+
+  cleanupInactiveConnections() {
+    const now = Date.now();
+    for (const [connectionId, conn] of this.connections.entries()) {
+      if (now - conn.lastHeartbeat > INACTIVE_CONNECTION_TIMEOUT) {
+        this.unsubscribe(connectionId);
+      }
+    }
+  }
+
+  startCleanupTimer() {
+    if (this.cleanupTimer) return;
+    this.cleanupTimer = setInterval(() => this.cleanupInactiveConnections(), 30000);
+  }
+
+  startHeartbeat() {
+    if (this.heartbeatTimer) return;
+    this.heartbeatTimer = setInterval(() => this.sendHeartbeat(), this.heartbeatInterval);
+  }
+
+  shutdown() {
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    if (this.cleanupTimer) clearInterval(this.cleanupTimer);
+    for (const conn of this.connections.values()) {
+      try {
+        conn.res.end();
+      } catch {
+        /* ignore */
+      }
+    }
+    this.connections.clear();
+    this.subscribersByKey.clear();
+    this.connectionsByOrg.clear();
+  }
+
+  getHealthStats() {
+    return {
+      total: this.connections.size,
+      uptimeSeconds: Math.floor((Date.now() - this.startedAt) / 1000),
+    };
+  }
+}
+
+module.exports = new TelephonySSEHub();

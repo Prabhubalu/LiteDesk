@@ -26,6 +26,15 @@ const {
 const {
   seedAnnouncementProcessRecipesForOrganization,
 } = require('./announcementProcessRecipeSeedService');
+const {
+  seedTelephonyRolesForOrganization,
+  patchTelephonyPermissionsOnOrganizationRoles,
+} = require('./telephonyRoleSeedService');
+const { backfillTelephonyUserPermissions } = require('./telephonyPermissionBackfillService');
+const { ensureDefaultQueue: ensureTelephonyDefaultQueue } = require('./telephony/queueRoutingService');
+const {
+  seedTelephonyProcessRecipesForOrganization,
+} = require('./telephonyProcessRecipeSeedService');
 
 const ENTERPRISE_PLAN_KEY = 'ENTERPRISE';
 
@@ -172,6 +181,18 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
         await patchAnnouncementPermissionsOnOrganizationRoles(organizationId);
         await backfillAnnouncementUserPermissions(organizationId);
         await seedAnnouncementProcessRecipesForOrganization(organizationId, {
+          initiatedByUserId: initiatedByUserId || null,
+        });
+      });
+    }
+
+    if (normalized === ADDON_KEYS.TELEPHONY) {
+      await runWithOrganizationTenantContext(organizationId, async () => {
+        await seedTelephonyRolesForOrganization(organizationId);
+        await patchTelephonyPermissionsOnOrganizationRoles(organizationId);
+        await backfillTelephonyUserPermissions(organizationId);
+        await ensureTelephonyDefaultQueue(organizationId);
+        await seedTelephonyProcessRecipesForOrganization(organizationId, {
           initiatedByUserId: initiatedByUserId || null,
         });
       });

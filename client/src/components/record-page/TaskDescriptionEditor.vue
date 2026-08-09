@@ -1,7 +1,8 @@
 <template>
   <div
-    class="task-description-editor rounded-lg border border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 overflow-hidden outline-1 -outline-offset-1 outline-gray-200/40 dark:outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus-within:outline-indigo-500"
+    class="task-description-editor cursor-text rounded-lg border border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 overflow-hidden outline-1 -outline-offset-1 outline-gray-200/40 dark:outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 dark:focus-within:outline-indigo-500"
     :class="{ 'task-description-editor--image-selected': imageNodeSelected }"
+    @mousedown="onEditorSurfaceMouseDown"
   >
     <input
       ref="imageInputRef"
@@ -250,6 +251,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import { TextSelection } from '@tiptap/pm/state';
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/vue-3';
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import StarterKit from '@tiptap/starter-kit';
@@ -338,7 +340,7 @@ const pendingFocus = ref(false);
 function applyEditorFocus() {
   const ed = editorInstance.current;
   if (!ed) return false;
-  ed.commands.focus();
+  ed.commands.focus('end');
   pendingFocus.value = false;
   return true;
 }
@@ -443,6 +445,29 @@ function focus() {
   if (!applyEditorFocus()) {
     pendingFocus.value = true;
   }
+}
+
+/** Click empty padding / unused height → focus the editor (compose fills tall area). */
+function onEditorSurfaceMouseDown(event) {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest('button, input, textarea, select, a, label, [data-tippy-root], .tippy-box')) {
+    return;
+  }
+  // Let ProseMirror handle clicks on its own content/selection
+  if (target.closest('.ProseMirror')) {
+    if (!editorInstance.current?.isFocused) {
+      applyEditorFocus();
+    }
+    return;
+  }
+  event.preventDefault();
+  const ed = editorInstance.current;
+  if (!ed || ed.isDestroyed) {
+    pendingFocus.value = true;
+    return;
+  }
+  ed.commands.focus('end');
 }
 
 function shouldShowTextBubbleMenu({ editor: ed }) {
@@ -744,6 +769,27 @@ const editor = useEditor({
         return true;
       }
       return false;
+    },
+    handleDOMEvents: {
+      mousedown(view, event) {
+        if (!view.editable) return false;
+        const target = event.target;
+        if (target instanceof Element) {
+          if (target.closest('button, input, textarea, select, a, label, [data-tippy-root], .tippy-box')) {
+            return false;
+          }
+        }
+        const coords = view.posAtCoords({ left: event.clientX, top: event.clientY });
+        if (coords) return false;
+        // Click landed in editor padding below/beside document content
+        const end = view.state.doc.content.size;
+        view.dispatch(
+          view.state.tr.setSelection(TextSelection.create(view.state.doc, end)).scrollIntoView()
+        );
+        view.focus();
+        event.preventDefault();
+        return true;
+      }
     },
     handlePaste: (_view, event) => {
       const file = extractImageFileFromClipboard(event.clipboardData);

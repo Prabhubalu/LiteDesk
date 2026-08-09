@@ -61,20 +61,51 @@ export function useEmailComposeForm(props, emit) {
     return email;
   });
 
-  const hasFromPicker = computed(() => sendIdentities.value.length > 1);
+  const hasFromPicker = computed(() => sendIdentities.value.length >= 1);
+  const payloadDeliveryMode = ref('');
 
   function identityOptionLabel(identity) {
     if (!identity) return '';
     const email = String(identity.emailAddress || '').trim();
     const label = String(identity.label || '').trim();
-    if (label && label.toLowerCase() !== email.toLowerCase()) {
+    if (identity.source === 'tenant_config') {
+      return label && label.toLowerCase() !== email.toLowerCase()
+        ? `${label} <${email}>`
+        : email;
+    }
+    if (label && email && label.toLowerCase() !== email.toLowerCase()) {
       return `${label} <${email}>`;
     }
-    return email;
+    return email || label || '';
   }
 
+  const deliveryMode = computed(() => {
+    const selected = sendIdentities.value.find((i) => i.id === selectedFromId.value);
+    if (selected?.deliveryMode) return selected.deliveryMode;
+    return payloadDeliveryMode.value || '';
+  });
+
+  const needsSmtpSetup = computed(() => deliveryMode.value === 'needs_smtp_setup');
+  const needsOrgDomain = computed(() => deliveryMode.value === 'needs_org_domain');
+
   const fromSourceHint = computed(() => {
-    if (fromSource.value === 'mailbox') {
+    const selected = sendIdentities.value.find((i) => i.id === selectedFromId.value);
+    const mode = selected?.deliveryMode || deliveryMode.value;
+    if (mode === 'needs_smtp_setup') {
+      return t('inbox.emailComposeFromHintNeedsSmtp');
+    }
+    if (mode === 'needs_org_domain') {
+      return t('inbox.emailComposeFromHintNeedsOrg');
+    }
+    if (selected?.viaPlatformSmtp || mode === 'org_provider') {
+      if (selected?.source === 'mailbox' && selected?.viaPlatformSmtp) {
+        return t('inbox.emailComposeFromHintMailboxViaOrg');
+      }
+      if (fromSource.value === 'tenant_config' || mode === 'org_provider') {
+        return t('inbox.emailComposeFromHintOrg');
+      }
+    }
+    if (fromSource.value === 'mailbox' || mode === 'mailbox_smtp') {
       return t('inbox.emailComposeFromHintMailbox');
     }
     if (fromSource.value === 'tenant_config') {
@@ -156,6 +187,7 @@ export function useEmailComposeForm(props, emit) {
     if (!toRecipients.value.length) return false;
     if (invalidRecipients.value.length) return false;
     if (!String(form.value.subject || '').trim()) return false;
+    if (needsSmtpSetup.value || needsOrgDomain.value) return false;
     return true;
   });
 
@@ -249,7 +281,6 @@ export function useEmailComposeForm(props, emit) {
       applyPreviewPayload(data?.data, { presetFrom, presetFromName, presetReplyTo });
     } catch {
       applyIdentityFallback(presetFrom, presetFromName, presetReplyTo);
-      replyToNote.value = t('inbox.emailComposeReplyToLoadError');
     } finally {
       composePreviewLoading.value = false;
     }
@@ -280,7 +311,8 @@ export function useEmailComposeForm(props, emit) {
       fromNameDisplay.value = presetFromName || '';
       fromSource.value = presetFrom ? 'tenant_config' : '';
     }
-    replyToDisplay.value = presetReplyTo || '';
+    replyToDisplay.value = fromEmailDisplay.value || presetReplyTo || '';
+    replyToNote.value = '';
   }
 
   function applyPreviewPayload(payload, presets = {}) {
@@ -295,8 +327,7 @@ export function useEmailComposeForm(props, emit) {
     fromEmailDisplay.value = payload?.fromEmail || presetFrom || '';
     fromNameDisplay.value = payload?.fromName || presetFromName || '';
     fromSource.value = payload?.fromSource || '';
-    replyToDisplay.value = payload?.replyTo || presetReplyTo || '';
-    replyToNote.value = payload?.replyToNote || payload?.note || '';
+    payloadDeliveryMode.value = payload?.deliveryMode || '';
 
     const resolvedMb = payload?.mailboxId ? String(payload.mailboxId) : '';
     selectedMailboxId.value = resolvedMb;
@@ -309,16 +340,24 @@ export function useEmailComposeForm(props, emit) {
       selectedFromId.value = match?.id || '';
       if (match) {
         fromEmailDisplay.value = match.emailAddress || fromEmailDisplay.value;
-        fromNameDisplay.value =
-          match.label && match.label !== match.emailAddress
-            ? match.label
-            : (payload?.fromName || '');
+        if (match.source === 'tenant_config' || match.kind === 'group' || match.viaSmtp) {
+          fromNameDisplay.value =
+            match.fromName
+            || (match.label && match.label !== match.emailAddress ? match.label : '')
+            || (payload?.fromName || '');
+        } else {
+          fromNameDisplay.value = match.fromName || payload?.fromName || '';
+        }
         fromSource.value = match.source || fromSource.value;
         selectedMailboxId.value = match.mailboxId ? String(match.mailboxId) : '';
       }
     } else {
       selectedFromId.value = '';
     }
+
+    // Reply-To matches From (sender identity)
+    replyToDisplay.value = fromEmailDisplay.value || presetReplyTo || '';
+    replyToNote.value = '';
   }
 
   async function selectFromIdentity(identityId) {
@@ -328,26 +367,58 @@ export function useEmailComposeForm(props, emit) {
     selectedFromId.value = identity.id;
     selectedMailboxId.value = identity.mailboxId ? String(identity.mailboxId) : '';
     fromEmailDisplay.value = identity.emailAddress || '';
-    fromNameDisplay.value =
-      identity.label && identity.label !== identity.emailAddress ? identity.label : '';
+    // Org From uses Integrations display name. Personal mailbox labels are not sender names.
+    if (identity.source === 'tenant_config') {
+      fromNameDisplay.value =
+        identity.fromName
+        || (identity.label && identity.label !== identity.emailAddress ? identity.label : '')
+        || '';
+    } else if (identity.viaSmtp && identity.fromName) {
+      fromNameDisplay.value = identity.fromName;
+    } else if (identity.kind === 'group') {
+      fromNameDisplay.value =
+        identity.fromName
+        || (identity.label && identity.label !== identity.emailAddress ? identity.label : '')
+        || '';
+    } else {
+      fromNameDisplay.value = identity.fromName || '';
+    }
     fromSource.value = identity.source || '';
+    replyToDisplay.value = fromEmailDisplay.value || '';
+    replyToNote.value = '';
 
-    if (identity.mailboxId) {
-      try {
-        await apiClient.put('/communications/email/default-outbound-mailbox', {
-          mailboxId: identity.mailboxId
-        });
-      } catch {
-        /* non-blocking preference write */
-      }
+    try {
+      await apiClient.put('/communications/email/default-outbound-mailbox', {
+        mailboxId: identity.mailboxId || null
+      });
+    } catch {
+      /* non-blocking preference write */
     }
   }
 
   function mailboxIdForSubmit() {
+    // When From picker is active, honor selection only — never fall back to
+    // inbox sendingMailbox (that re-binds Gmail after user picks org From).
+    if (hasFromPicker.value) {
+      return selectedMailboxId.value || null;
+    }
     if (selectedMailboxId.value) return selectedMailboxId.value;
     if (props.sendingMailbox?.id) return String(props.sendingMailbox.id);
     if (props.initialDraft?.mailboxId) return String(props.initialDraft.mailboxId);
     return null;
+  }
+
+  function outboundIdentityFieldsForSubmit() {
+    const mailboxId = mailboxIdForSubmit();
+    if (hasFromPicker.value) {
+      return {
+        fromSource: fromSource.value || undefined,
+        fromEmail: fromEmailDisplay.value || undefined,
+        fromName: fromNameDisplay.value || undefined,
+        ...(mailboxId ? { mailboxId } : {})
+      };
+    }
+    return mailboxId ? { mailboxId } : {};
   }
 
   function resetFormFromProps() {
@@ -588,10 +659,7 @@ export function useEmailComposeForm(props, emit) {
 
     error.value = null;
 
-    const mbFields = (() => {
-      const id = mailboxIdForSubmit();
-      return id ? { mailboxId: id } : {};
-    })();
+    const identityFields = outboundIdentityFieldsForSubmit();
 
     if (props.standaloneMode) {
       emit('submit', {
@@ -604,7 +672,7 @@ export function useEmailComposeForm(props, emit) {
         attachments: attachments.value.length ? attachments.value : [],
         ...reminderFields,
         ...scheduledFields,
-        ...mbFields,
+        ...identityFields,
         ...(props.initialDraft?.parentCommunicationId
           ? { parentCommunicationId: props.initialDraft.parentCommunicationId }
           : {})
@@ -627,7 +695,7 @@ export function useEmailComposeForm(props, emit) {
       attachments: attachments.value.length ? attachments.value : [],
       ...reminderFields,
       ...scheduledFields,
-      ...mbFields,
+      ...identityFields,
       ...(props.initialDraft?.parentCommunicationId
         ? { parentCommunicationId: props.initialDraft.parentCommunicationId }
         : {})
@@ -651,6 +719,9 @@ export function useEmailComposeForm(props, emit) {
     onReminderDaysInput,
     fromDisplayLine,
     fromSourceHint,
+    deliveryMode,
+    needsSmtpSetup,
+    needsOrgDomain,
     sendIdentities,
     selectedFromId,
     hasFromPicker,
@@ -672,6 +743,7 @@ export function useEmailComposeForm(props, emit) {
     removeAttachment,
     handleSend,
     clearAfterSend,
-    activateComposeForm
+    activateComposeForm,
+    loadComposePreview
   };
 }

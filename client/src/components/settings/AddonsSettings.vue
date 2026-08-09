@@ -122,6 +122,14 @@
                 {{ t('settings.addonsConfigure') }}
               </button>
               <button
+                v-if="addon.addonKey === 'telephony'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openTelephonySettings"
+              >
+                {{ t('settings.addonsConfigure') }}
+              </button>
+              <button
                 v-if="addon.addonKey === 'articles'"
                 type="button"
                 class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
@@ -461,6 +469,10 @@ function openLiveChatSettings() {
     path: '/settings',
     query: { tab: 'addons', addonView: 'live-chat', liveChatView: 'settings' },
   });
+}
+
+function openTelephonySettings() {
+  router.push('/telephony/settings');
 }
 
 function openArticlesSettings() {

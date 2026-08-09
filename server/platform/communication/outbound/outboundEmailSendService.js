@@ -15,10 +15,10 @@ const {
   countSendableGmailMailboxesForUser
 } = require('../../../services/mailboxGmailInboxSyncService');
 const {
-  isMailboxGmailSmtpReady,
-  sendViaMailboxGmailSmtp,
-  getOrganizationGmailSmtpRelay
-} = require('../../../services/mailboxGmailSmtpService');
+  isMailboxSmtpReady,
+  sendViaMailboxSmtp,
+  isConsumerDomain
+} = require('../../../services/mailboxSmtpService');
 const { getCommunicationConfigForOrganization } = require('../config/communicationConfigService');
 const { isGmailIntegrationEnabled } = require('../../../config/emailFeatureFlags');
 const emailProviderGateway = require('../providers/emailProviderGateway');
@@ -83,15 +83,61 @@ async function loadAttachmentsFromDoc(doc) {
   return emailAttachments;
 }
 
+async function resolveMailboxReplyTo(mailboxLean) {
+  if (!mailboxLean) return undefined;
+  const routing = String(mailboxLean.routingAddress || '').trim().toLowerCase();
+  if (routing) return resolveSafeReplyToAddress(routing);
+  return resolveSafeReplyToAddress(resolveMailboxFromAddress(mailboxLean));
+}
+
+/**
+ * Reply-To for outbound: match From by default (replies return to the sender identity).
+ * Fallbacks: mailbox parser routingAddress, org Reply-To, legacy reply+token.
+ */
 async function buildReplyToForDoc(doc, options = {}) {
   const organizationId = doc.organizationId;
   const moduleKey = doc.relatedTo?.moduleKey;
   const recordId = doc.relatedTo?.recordId;
 
+  // Prefer the same address shown as From
+  const fromRaw = String(doc.fromAddress || '').trim();
+  if (fromRaw) {
+    const fromEmail = fromRaw.includes('<')
+      ? fromRaw.replace(/^.*<([^>]+)>.*$/, '$1').trim()
+      : fromRaw;
+    const fromReply = resolveSafeReplyToAddress(fromEmail);
+    if (fromReply) return fromReply;
+  }
+
+  let mailboxLean = options.mailboxLean || null;
+  if (!mailboxLean && doc.mailboxId) {
+    mailboxLean = await findMailboxForOutbound(organizationId, doc.mailboxId);
+  }
+
+  const mailboxReply = await resolveMailboxReplyTo(mailboxLean);
+  if (mailboxReply) return mailboxReply;
+
+  try {
+    const emailService = require('../../../services/emailService');
+    const orgCfg = await emailService.getOrganizationEmailConfig(organizationId);
+    const tenantReply = resolveSafeReplyToAddress(orgCfg?.replyTo);
+    if (tenantReply) return tenantReply;
+  } catch {
+    /* continue */
+  }
+
+  const envReply = resolveSafeReplyToAddress(process.env.EMAIL_REPLY_TO);
+  if (envReply) return envReply;
+
+  const { isShortCrmReplyTokenEnabled } = require('../../../constants/emailReplyRouting');
+  if (!isShortCrmReplyTokenEnabled()) {
+    return undefined;
+  }
+
   try {
     const { ensureReplyToForCommunication } = require('../../../services/emailThreadRegistryService');
     const crmReply = await ensureReplyToForCommunication(doc, {
-      mailboxLean: options.mailboxLean || null,
+      mailboxLean,
       providerThreadId: options.providerThreadId || doc.providerThreadId
     });
     if (crmReply) {
@@ -101,17 +147,17 @@ async function buildReplyToForDoc(doc, options = {}) {
     console.warn('[outboundEmail] CRM short reply-to failed, using legacy token:', err.message);
   }
 
-  let replyToAddr;
   try {
-    replyToAddr = replyToTokenService.buildReplyToAddress({
-      orgId: organizationId,
-      moduleKey,
-      recordId
-    });
+    return resolveSafeReplyToAddress(
+      replyToTokenService.buildReplyToAddress({
+        orgId: organizationId,
+        moduleKey,
+        recordId
+      })
+    );
   } catch {
-    replyToAddr = process.env.EMAIL_REPLY_TO;
+    return undefined;
   }
-  return resolveSafeReplyToAddress(replyToAddr);
 }
 
 async function resolveProviderThreadId(doc) {
@@ -204,6 +250,15 @@ async function sendViaGmail(doc, mailboxLean) {
     };
   }
 
+  let fromHeader = fromAddress;
+  const named = String(doc.fromAddress || '').match(/^(?:"([^"]+)"|([^<]*?))\s*<([^>]+)>/);
+  if (named) {
+    const displayName = String(named[1] || named[2] || '').trim().replace(/"/g, '');
+    if (displayName) {
+      fromHeader = `"${displayName}" <${fromAddress}>`;
+    }
+  }
+
   const replyTo = await buildReplyToForDoc(doc, { mailboxLean });
   const emailAttachments = await loadAttachmentsFromDoc(doc);
   const textBody = (doc.body || '').replace(/<[^>]+>/g, '');
@@ -211,7 +266,7 @@ async function sendViaGmail(doc, mailboxLean) {
 
   const result = await gmailSendProvider.sendRawMessage({
     gmail: clientResult.gmail,
-    from: fromAddress,
+    from: fromHeader,
     to: doc.toAddresses,
     cc: doc.ccAddresses,
     bcc: doc.bccAddresses,
@@ -239,7 +294,11 @@ async function sendViaGmail(doc, mailboxLean) {
 }
 
 async function sendViaSmtp(doc) {
-  const replyTo = await buildReplyToForDoc(doc, { mailboxLean: null });
+  let mailboxLean = null;
+  if (doc.mailboxId) {
+    mailboxLean = await findMailboxForOutbound(doc.organizationId, doc.mailboxId);
+  }
+  const replyTo = await buildReplyToForDoc(doc, { mailboxLean });
   const emailAttachments = await loadAttachmentsFromDoc(doc);
   const textBody = (doc.body || '').replace(/<[^>]+>/g, '');
 
@@ -261,7 +320,34 @@ async function sendViaSmtp(doc) {
           litedesk_module: moduleKey
         };
 
-  return emailProviderGateway.sendEmail({
+  let fromEmail = String(doc.fromAddress || '').trim();
+  let fromName = '';
+  const named = fromEmail.match(/^(?:"([^"]+)"|([^<]*?))\s*<([^>]+)>/);
+  if (named) {
+    fromName = String(named[1] || named[2] || '').trim();
+    fromEmail = String(named[3] || '').trim();
+  }
+  fromEmail = fromEmail.toLowerCase();
+
+  // Prefer display name stored on the Communication; then org From name; then group label
+  if (!fromName) {
+    if (mailboxLean?.kind === 'group') {
+      fromName = String(mailboxLean.label || '').trim();
+    } else if (!mailboxLean && fromEmail) {
+      try {
+        const emailService = require('../../../services/emailService');
+        const orgCfg = await emailService.getOrganizationEmailConfig(doc.organizationId);
+        const orgFrom = String(orgCfg?.fromEmail || '').trim().toLowerCase();
+        if (orgFrom && fromEmail === orgFrom) {
+          fromName = String(orgCfg?.fromName || '').trim();
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  const result = await emailProviderGateway.sendEmail({
     organizationId: doc.organizationId,
     to: doc.toAddresses,
     cc: doc.ccAddresses,
@@ -269,6 +355,8 @@ async function sendViaSmtp(doc) {
     subject: doc.subject || '',
     text: textBody || undefined,
     html: doc.body || undefined,
+    fromEmail: fromEmail || undefined,
+    fromName: fromName || undefined,
     replyTo,
     attachments: emailAttachments.length ? emailAttachments : undefined,
     communicationId: String(doc._id),
@@ -283,6 +371,23 @@ async function sendViaSmtp(doc) {
     metadata,
     tags: moduleKey === 'cases' ? ['helpdesk', 'transactional'] : ['crm', moduleKey].filter(Boolean)
   });
+
+  if (
+    !result.success
+    && fromEmail
+    && /domain|verified|not allowed|from.*address|sender/i.test(String(result.error || ''))
+  ) {
+    return {
+      ...result,
+      code: result.code || 'FROM_NOT_ALLOWED_BY_PROVIDER',
+      error:
+        `${result.error} `
+        + `Selected From (${fromEmail}) must be allowed by your email provider `
+        + '(verify this address/domain in Resend, or connect Gmail for that mailbox).'
+    };
+  }
+
+  return result;
 }
 
 /**
@@ -310,13 +415,17 @@ async function sendOutboundCommunication(doc) {
     mailboxLean = await findMailboxForOutbound(organizationId, doc.mailboxId);
   }
 
-  if (isGmailIntegrationEnabled() && mailboxLean && isMailboxGmailSmtpReady(mailboxLean)) {
-    const replyTo = await buildReplyToForDoc(doc, { mailboxLean });
-    const emailAttachments = await loadAttachmentsFromDoc(doc);
-    const result = await sendViaMailboxGmailSmtp(doc, mailboxLean, {
-      replyTo,
-      attachments: emailAttachments.length ? emailAttachments : undefined
-    });
+  const fromEmail = String(
+    doc.fromAddress
+    || doc.fromEmail
+    || mailboxLean?.emailAddress
+    || mailboxLean?.inboxSyncAccountEmail
+    || ''
+  )
+    .trim()
+    .toLowerCase();
+
+  async function emitOutboundIfNeeded(result) {
     if (result.success && doc.relatedTo?.moduleKey === 'workspace') {
       const { emitInboxUpdated } = require('../../../services/inboxRealtimeService');
       void emitInboxUpdated({
@@ -329,18 +438,43 @@ async function sendOutboundCommunication(doc) {
     return result;
   }
 
-  if (isGmailIntegrationEnabled() && mailboxLean && isGmailMailboxReady(mailboxLean)) {
-    const result = await sendViaGmail(doc, mailboxLean);
-    if (result.success && doc.relatedTo?.moduleKey === 'workspace') {
-      const { emitInboxUpdated } = require('../../../services/inboxRealtimeService');
-      void emitInboxUpdated({
-        organizationId: doc.organizationId,
-        mailboxId: doc.mailboxId,
-        reason: 'outbound',
-        meta: { communicationId: String(doc._id) }
-      });
+  // Consumer From must never fall through to org AMDS/Resend/platform SMTP
+  if (fromEmail && isConsumerDomain(fromEmail)) {
+    if (mailboxLean && isMailboxSmtpReady(mailboxLean)) {
+      const replyTo = await buildReplyToForDoc(doc, { mailboxLean });
+      const emailAttachments = await loadAttachmentsFromDoc(doc);
+      return emitOutboundIfNeeded(
+        await sendViaMailboxSmtp(doc, mailboxLean, {
+          replyTo,
+          attachments: emailAttachments.length ? emailAttachments : undefined
+        })
+      );
     }
-    return result;
+    if (mailboxLean && isGmailMailboxReady(mailboxLean)) {
+      return emitOutboundIfNeeded(await sendViaGmail(doc, mailboxLean));
+    }
+    return {
+      success: false,
+      provider: 'smtp',
+      error:
+        'Connect this personal email with an App Password to send. Personal mailboxes cannot use organization delivery (AMDS/Resend).',
+      code: 'NEEDS_SMTP_SETUP'
+    };
+  }
+
+  if (mailboxLean && isMailboxSmtpReady(mailboxLean)) {
+    const replyTo = await buildReplyToForDoc(doc, { mailboxLean });
+    const emailAttachments = await loadAttachmentsFromDoc(doc);
+    return emitOutboundIfNeeded(
+      await sendViaMailboxSmtp(doc, mailboxLean, {
+        replyTo,
+        attachments: emailAttachments.length ? emailAttachments : undefined
+      })
+    );
+  }
+
+  if (mailboxLean && isGmailMailboxReady(mailboxLean)) {
+    return emitOutboundIfNeeded(await sendViaGmail(doc, mailboxLean));
   }
 
   if (mustUseProvider) {
@@ -349,8 +483,8 @@ async function sendOutboundCommunication(doc) {
       provider: 'gmail',
       error:
         moduleKey === 'workspace'
-          ? 'Connect a Gmail mailbox to send from Inbox. Platform SMTP is disabled for workspace email.'
-          : 'A connected Gmail mailbox is required to send email for this tenant.',
+          ? 'Connect a mailbox to send from Inbox. Platform SMTP is disabled for workspace email.'
+          : 'A connected mailbox is required to send email for this tenant.',
       code: 'MAILBOX_PROVIDER_REQUIRED'
     };
   }

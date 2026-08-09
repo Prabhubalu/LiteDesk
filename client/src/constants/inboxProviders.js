@@ -26,15 +26,49 @@ export const INBOX_PROVIDERS = [
     id: 'google-smtp',
     name: 'Gmail (SMTP)',
     subtitle: 'App Password',
-    integrationLabel: 'smtp.gmail.com — send via Google App Password',
+    integrationLabel: 'Guided setup — send via Google App Password',
     status: 'available',
     iconType: 'letter',
     iconLetter: 'G',
     iconStyle:
       'background: conic-gradient(from -45deg, #ea4335, #fbbc05, #34a853, #4285f4, #ea4335)',
-    emailPlaceholder: 'you@company.com',
+    emailPlaceholder: 'you@gmail.com',
     connectHint:
-      'Your admin must enable Gmail SMTP under Settings → Integrations. Use a Google App Password (not your login password).'
+      'We’ll walk you through creating a Google App Password. Works with personal Gmail while your org uses AMDS or Resend for company domains.'
+  },
+  {
+    id: 'outlook-smtp',
+    name: 'Outlook (SMTP)',
+    subtitle: 'App Password',
+    integrationLabel: 'Guided setup — smtp.office365.com',
+    status: 'available',
+    iconType: 'letter',
+    iconLetter: 'O',
+    iconBgClass: 'bg-[#0078d4]',
+    emailPlaceholder: 'you@outlook.com',
+    connectHint: 'Use a Microsoft App Password to send from Outlook or Hotmail.'
+  },
+  {
+    id: 'yahoo-smtp',
+    name: 'Yahoo (SMTP)',
+    subtitle: 'App Password',
+    integrationLabel: 'Guided setup — smtp.mail.yahoo.com',
+    status: 'available',
+    iconType: 'letter',
+    iconLetter: 'Y',
+    iconBgClass: 'bg-[#6001d2]',
+    emailPlaceholder: 'you@yahoo.com',
+    connectHint: 'Generate a Yahoo App Password to connect outbound email.'
+  },
+  {
+    id: 'custom-smtp',
+    name: 'Other email (SMTP)',
+    subtitle: 'Any provider',
+    integrationLabel: 'Custom SMTP host and password',
+    status: 'available',
+    iconType: 'icon',
+    emailPlaceholder: 'you@company.com',
+    connectHint: 'Enter your email — we’ll detect the provider or ask for SMTP details.'
   },
   {
     id: 'google',
