@@ -6,9 +6,17 @@ export type SettingsAccessContext = {
   isOwner: boolean;
   role: string | null | undefined;
   permissions: Record<string, unknown> | null | undefined;
-  entitledAddons?: { ai?: boolean } | null;
+  entitledAddons?: { ai?: boolean; cpq?: boolean } | null;
   inventoryEnabled?: boolean;
 };
+
+/** Catalog leaves that require the CPQ add-on. */
+const CPQ_CATALOG_ENTRY_IDS = new Set([
+  'catalog.price-books',
+  'catalog.pricing',
+  'catalog.item-groups',
+  'catalog.product-configurations',
+]);
 
 export type SettingsCatalogEntry = {
   id: string;
@@ -438,9 +446,12 @@ export function settingsAccessTabId(entry: SettingsCatalogEntry): string {
 export function getAccessibleSettingsCatalog(
   ctx: SettingsAccessContext
 ): SettingsCatalogEntry[] {
-  return SETTINGS_CATALOG.filter((entry) =>
-    canAccessSettingsTab(settingsAccessTabId(entry), ctx)
-  );
+  const cpqEntitled = ctx.entitledAddons?.cpq === true;
+  return SETTINGS_CATALOG.filter((entry) => {
+    if (!canAccessSettingsTab(settingsAccessTabId(entry), ctx)) return false;
+    if (CPQ_CATALOG_ENTRY_IDS.has(entry.id) && !cpqEntitled) return false;
+    return true;
+  });
 }
 
 export function getSettingsHubCatalog(

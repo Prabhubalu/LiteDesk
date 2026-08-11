@@ -3,7 +3,7 @@
     <template #header>
       <SettingsPageHeader
         :title="t('settings.catalogHubTitle')"
-        :subtitle="t('settings.catalogHubDesc')"
+        :subtitle="hubSubtitle"
       />
     </template>
 
@@ -25,72 +25,27 @@
     </template>
 
     <CatalogCategoriesSettings v-if="activeTab === 'categories'" embedded />
-    <CatalogPriceBooksSettings v-else-if="activeTab === 'price-books'" key="catalog-price-books" />
-    <div
-      v-else-if="activeTab === 'pricing' && !cpqEntitled"
-      class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20"
-    >
-      <h3 class="text-base font-semibold text-amber-950 dark:text-amber-100">
-        {{ t('settings.addonsCpqRequiredTitle') }}
-      </h3>
-      <p class="mt-2 text-sm text-amber-900 dark:text-amber-200">
-        {{ t('settings.addonsCpqRequiredBody') }}
-      </p>
-      <button
-        type="button"
-        class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-        @click="goInstallCpq"
-      >
-        {{ t('settings.addonsCpqRequiredCta') }}
-      </button>
-    </div>
-    <PricingEngineSettings v-else-if="activeTab === 'pricing'" key="catalog-pricing" />
-    <div
-      v-else-if="activeTab === 'item-groups' && !cpqEntitled"
-      class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20"
-    >
-      <h3 class="text-base font-semibold text-amber-950 dark:text-amber-100">
-        {{ t('settings.addonsCpqRequiredTitle') }}
-      </h3>
-      <p class="mt-2 text-sm text-amber-900 dark:text-amber-200">
-        {{ t('settings.addonsCpqRequiredBody') }}
-      </p>
-      <button
-        type="button"
-        class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-        @click="goInstallCpq"
-      >
-        {{ t('settings.addonsCpqRequiredCta') }}
-      </button>
-    </div>
-    <ItemGroupsSettings v-else-if="activeTab === 'item-groups'" key="catalog-item-groups" />
-    <div
-      v-else-if="activeTab === 'product-configurations' && !cpqEntitled"
-      class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20"
-    >
-      <h3 class="text-base font-semibold text-amber-950 dark:text-amber-100">
-        {{ t('settings.addonsCpqRequiredTitle') }}
-      </h3>
-      <p class="mt-2 text-sm text-amber-900 dark:text-amber-200">
-        {{ t('settings.addonsCpqRequiredBody') }}
-      </p>
-      <button
-        type="button"
-        class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-        @click="goInstallCpq"
-      >
-        {{ t('settings.addonsCpqRequiredCta') }}
-      </button>
-    </div>
+    <CatalogPriceBooksSettings
+      v-else-if="activeTab === 'price-books' && cpqEntitled"
+      key="catalog-price-books"
+    />
+    <PricingEngineSettings
+      v-else-if="activeTab === 'pricing' && cpqEntitled"
+      key="catalog-pricing"
+    />
+    <ItemGroupsSettings
+      v-else-if="activeTab === 'item-groups' && cpqEntitled"
+      key="catalog-item-groups"
+    />
     <ProductConfigurationsSettings
-      v-else-if="activeTab === 'product-configurations'"
+      v-else-if="activeTab === 'product-configurations' && cpqEntitled"
       key="catalog-product-configurations"
     />
   </SettingsScrollPanel>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
@@ -103,6 +58,13 @@ import ProductConfigurationsSettings from '@/components/settings/ProductConfigur
 import { useAuthStore } from '@/stores/authRegistry';
 import { isCpqAddonEntitled } from '@/utils/addonEntitlement';
 
+const CPQ_TAB_IDS = new Set([
+  'price-books',
+  'pricing',
+  'item-groups',
+  'product-configurations',
+]);
+
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -110,15 +72,24 @@ const authStore = useAuthStore();
 
 const cpqEntitled = computed(() => isCpqAddonEntitled(authStore.user));
 
+const hubSubtitle = computed(() =>
+  cpqEntitled.value
+    ? t('settings.catalogHubDesc')
+    : t('settings.catalogHubDescCore')
+);
+
 const tabs = computed(() => {
   const base = [
     { id: 'categories', labelKey: 'settings.catalogTabCategories' },
-    { id: 'price-books', labelKey: 'settings.catalogTabPriceBooks' },
-    { id: 'pricing', labelKey: 'settings.catalogTabPricing' },
   ];
-  // Always show CPQ tabs so users can discover install CTA when CPQ is missing.
-  base.push({ id: 'item-groups', labelKey: 'settings.catalogTabItemGroups' });
-  base.push({ id: 'product-configurations', labelKey: 'settings.catalogTabProductConfigs' });
+  if (cpqEntitled.value) {
+    base.push(
+      { id: 'price-books', labelKey: 'settings.catalogTabPriceBooks' },
+      { id: 'pricing', labelKey: 'settings.catalogTabPricing' },
+      { id: 'item-groups', labelKey: 'settings.catalogTabItemGroups' },
+      { id: 'product-configurations', labelKey: 'settings.catalogTabProductConfigs' },
+    );
+  }
   return base;
 });
 
@@ -139,7 +110,18 @@ function setActiveTab(id) {
   router.push({ path: '/settings', query });
 }
 
-function goInstallCpq() {
-  router.push({ path: '/settings', query: { tab: 'addons' } });
-}
+// Drop CPQ deep-links from the URL after uninstall so refresh doesn't re-hit them.
+watch(
+  [cpqEntitled, () => route.query.catalogView, () => route.query.tab],
+  ([entitled, catalogView, tab]) => {
+    if (tab !== 'catalog') return;
+    const view = String(catalogView || '');
+    if (!view || !CPQ_TAB_IDS.has(view)) return;
+    if (entitled) return;
+    const query = { ...route.query, tab: 'catalog' };
+    delete query.catalogView;
+    router.replace({ path: '/settings', query });
+  },
+  { immediate: true }
+);
 </script>

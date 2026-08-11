@@ -3271,6 +3271,10 @@
     "message": "Configure category trees, attribute templates, price books, item groups, and product configurations for sellable products.",
     "description": "Catalog settings hub description"
   },
+  "catalogHubDescCore": {
+    "message": "Configure category trees and attribute templates for sellable products.",
+    "description": "Catalog settings hub description without CPQ add-on"
+  },
   "catalogTabCategories": {
     "message": "Categories",
     "description": "Catalog hub categories tab"
