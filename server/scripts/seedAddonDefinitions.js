@@ -205,8 +205,7 @@ const CPQ_ADDON = {
   addonKey: ADDON_KEYS.CPQ,
   name: 'CPQ',
   description:
-    '
-Configure-price-quote for catalog: item groups, product configurations with rules, variant generation, price books, pricing rules, and promotions.',
+    'Configure-price-quote for catalog: item groups, product configurations with rules, variant generation, price books, pricing rules, and promotions.',
   icon: 'squares-plus',
   category: 'OTHER',
   enabled: true,
