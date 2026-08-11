@@ -1622,5 +1622,9 @@
   "smtpWizardSaveFailed": {
     "message": "Could not save email connection",
     "description": "Toast when SMTP save fails"
+  },
+  "emailComposeRecipientsPlaceholder": {
+    "message": "Recipients",
+    "description": "Short To-field placeholder in floating compose"
   }
 }
