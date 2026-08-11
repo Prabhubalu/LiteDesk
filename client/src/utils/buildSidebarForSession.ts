@@ -1,4 +1,4 @@
-import type { AppRegistry, SidebarStructure } from '@/types/sidebar.types';
+import type { AppRegistry, SidebarItem, SidebarStructure } from '@/types/sidebar.types';
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import { buildSidebarFromRegistry } from '@/utils/buildSidebarFromRegistry';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
@@ -196,8 +196,14 @@ export async function buildSidebarStructureForSession(
   const { isStockroomAddonEntitled } = await import('@/utils/addonEntitlement');
   if (!isStockroomAddonEntitled(user)) {
     const stockroomKeys = new Set(['stockrooms', 'stock_adjustments', 'stock_transfers']);
-    const dropStockroomNav = <T extends { moduleKey?: string }>(items: T[] | undefined): T[] =>
-      (items || []).filter((item) => !stockroomKeys.has(String(item?.moduleKey || '').toLowerCase()));
+    const dropStockroomNav = (items: SidebarItem[] | undefined): SidebarItem[] =>
+      (items || []).filter((item) => {
+        const moduleKey =
+          item.kind === 'coreModule' || item.kind === 'app'
+            ? String(item.moduleKey || '').toLowerCase()
+            : '';
+        return !stockroomKeys.has(moduleKey);
+      });
 
     if (structure.appNav?.appId === 'INVENTORY') {
       structure.appNav = {
