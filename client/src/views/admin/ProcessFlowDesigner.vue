@@ -907,17 +907,11 @@ async function runProcessNow() {
 }
 
 async function duplicateAndEdit() {
-  try {
-    const res = await apiClient.post(`/admin/processes/${process.value._id}/duplicate`);
-    if (!res.success) throw new Error(res.message);
-    router.push({ name: 'process-designer', params: { id: res.data._id } });
-    process.value = res.data;
-    syncFlowFromProcess();
-    ensureTriggerNodeOnCanvas();
-    resetSavedSnapshot();
-  } catch (e) {
-    notifyError(e.message || t('process.designerDuplicateFailed'));
-  }
+  if (!process.value?._id) return;
+  router.push({
+    name: 'process-designer-new',
+    query: { duplicateFrom: String(process.value._id) }
+  });
 }
 
 function goBack() {

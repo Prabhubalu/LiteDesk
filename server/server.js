@@ -338,7 +338,12 @@ app.use('/api/customer-statements', customerStatementRoutes);
 app.use('/api/payment-links', paymentLinkRoutes);
 app.use('/api/bank-transfer-instructions', require('./routes/bankTransferInstructionRoutes'));
 const { srRouter } = require('./routes/fulfillmentDocRoutes');
-const { itemGroupRouter, stockroomAddonRouter } = require('./routes/cpqAndStockroomRoutes');
+const {
+  itemGroupRouter,
+  productConfigurationRouter,
+  pricingRouter,
+  stockroomAddonRouter
+} = require('./routes/cpqAndStockroomRoutes');
 // Mount specific /api/inventory/* commercial paths BEFORE the ledger router.
 app.use('/api/inventory/purchase-orders', require('./routes/purchaseOrderRoutes'));
 app.use('/api/inventory/receipt-notes', require('./routes/receiptNoteRoutes'));
@@ -439,6 +444,8 @@ app.use('/api/catalog', require('./routes/catalogRoutes'));
 app.use('/api/taxes', require('./routes/taxRoutes'));
 app.use('/api/charges', require('./routes/chargeRoutes'));
 app.use('/api/item-groups', itemGroupRouter);
+app.use('/api/product-configurations', productConfigurationRouter);
+app.use('/api/pricing', pricingRouter);
 app.use('/api/trash', trashRoutes);
 app.use('/api/upload', uploadRoutes);
 

@@ -69,7 +69,8 @@ function filterIncludedLines(lines) {
     if (type === 'bundle_component') {
       const parentId = l.parentBundleLineId ? String(l.parentBundleLineId) : '';
       const mode = parentId ? bundleModeByParentId.get(parentId) : undefined;
-      if (mode === 'fixed') return false;
+      // Rollup: components contribute to totals. Fixed/discount: parent package price only.
+      if (mode === 'fixed' || mode === 'discount') return false;
       return true;
     }
 

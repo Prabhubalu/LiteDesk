@@ -26,7 +26,66 @@
 
     <CatalogCategoriesSettings v-if="activeTab === 'categories'" embedded />
     <CatalogPriceBooksSettings v-else-if="activeTab === 'price-books'" key="catalog-price-books" />
+    <div
+      v-else-if="activeTab === 'pricing' && !cpqEntitled"
+      class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20"
+    >
+      <h3 class="text-base font-semibold text-amber-950 dark:text-amber-100">
+        {{ t('settings.addonsCpqRequiredTitle') }}
+      </h3>
+      <p class="mt-2 text-sm text-amber-900 dark:text-amber-200">
+        {{ t('settings.addonsCpqRequiredBody') }}
+      </p>
+      <button
+        type="button"
+        class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        @click="goInstallCpq"
+      >
+        {{ t('settings.addonsCpqRequiredCta') }}
+      </button>
+    </div>
+    <PricingEngineSettings v-else-if="activeTab === 'pricing'" key="catalog-pricing" />
+    <div
+      v-else-if="activeTab === 'item-groups' && !cpqEntitled"
+      class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20"
+    >
+      <h3 class="text-base font-semibold text-amber-950 dark:text-amber-100">
+        {{ t('settings.addonsCpqRequiredTitle') }}
+      </h3>
+      <p class="mt-2 text-sm text-amber-900 dark:text-amber-200">
+        {{ t('settings.addonsCpqRequiredBody') }}
+      </p>
+      <button
+        type="button"
+        class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        @click="goInstallCpq"
+      >
+        {{ t('settings.addonsCpqRequiredCta') }}
+      </button>
+    </div>
     <ItemGroupsSettings v-else-if="activeTab === 'item-groups'" key="catalog-item-groups" />
+    <div
+      v-else-if="activeTab === 'product-configurations' && !cpqEntitled"
+      class="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-800 dark:bg-amber-900/20"
+    >
+      <h3 class="text-base font-semibold text-amber-950 dark:text-amber-100">
+        {{ t('settings.addonsCpqRequiredTitle') }}
+      </h3>
+      <p class="mt-2 text-sm text-amber-900 dark:text-amber-200">
+        {{ t('settings.addonsCpqRequiredBody') }}
+      </p>
+      <button
+        type="button"
+        class="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        @click="goInstallCpq"
+      >
+        {{ t('settings.addonsCpqRequiredCta') }}
+      </button>
+    </div>
+    <ProductConfigurationsSettings
+      v-else-if="activeTab === 'product-configurations'"
+      key="catalog-product-configurations"
+    />
   </SettingsScrollPanel>
 </template>
 
@@ -38,23 +97,36 @@ import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsPageHeader from '@/components/settings/SettingsPageHeader.vue';
 import CatalogCategoriesSettings from '@/components/settings/CatalogCategoriesSettings.vue';
 import CatalogPriceBooksSettings from '@/components/settings/CatalogPriceBooksSettings.vue';
+import PricingEngineSettings from '@/components/settings/PricingEngineSettings.vue';
 import ItemGroupsSettings from '@/components/settings/ItemGroupsSettings.vue';
+import ProductConfigurationsSettings from '@/components/settings/ProductConfigurationsSettings.vue';
+import { useAuthStore } from '@/stores/authRegistry';
+import { isCpqAddonEntitled } from '@/utils/addonEntitlement';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
-const tabs = [
-  { id: 'categories', labelKey: 'settings.catalogTabCategories' },
-  { id: 'price-books', labelKey: 'settings.catalogTabPriceBooks' },
-  { id: 'item-groups', labelKey: 'settings.catalogTabItemGroups' },
-];
+const cpqEntitled = computed(() => isCpqAddonEntitled(authStore.user));
 
-const VALID_TABS = new Set(tabs.map((tab) => tab.id));
+const tabs = computed(() => {
+  const base = [
+    { id: 'categories', labelKey: 'settings.catalogTabCategories' },
+    { id: 'price-books', labelKey: 'settings.catalogTabPriceBooks' },
+    { id: 'pricing', labelKey: 'settings.catalogTabPricing' },
+  ];
+  // Always show CPQ tabs so users can discover install CTA when CPQ is missing.
+  base.push({ id: 'item-groups', labelKey: 'settings.catalogTabItemGroups' });
+  base.push({ id: 'product-configurations', labelKey: 'settings.catalogTabProductConfigs' });
+  return base;
+});
+
+const VALID_TABS = computed(() => new Set(tabs.value.map((tab) => tab.id)));
 
 const activeTab = computed(() => {
   const view = String(route.query.catalogView || '');
-  return VALID_TABS.has(view) ? view : 'categories';
+  return VALID_TABS.value.has(view) ? view : 'categories';
 });
 
 function setActiveTab(id) {
@@ -65,5 +137,9 @@ function setActiveTab(id) {
     query.catalogView = id;
   }
   router.push({ path: '/settings', query });
+}
+
+function goInstallCpq() {
+  router.push({ path: '/settings', query: { tab: 'addons' } });
 }
 </script>

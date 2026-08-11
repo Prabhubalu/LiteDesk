@@ -181,6 +181,47 @@ const TALLY_ADDON = {
   },
 };
 
+const STOCKROOM_ADDON = {
+  addonKey: ADDON_KEYS.STOCKROOM,
+  name: 'Stockroom',
+  description:
+    'Multi-location stockrooms for warehouse operations: primary location bootstrap, balances per stockroom, transfers, and fulfillment routing.',
+  icon: 'building-storefront',
+  category: 'OTHER',
+  enabled: true,
+  order: 70,
+  requiredApps: ['INVENTORY'],
+  optionalApps: [],
+  marketplace: {
+    category: 'Inventory',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'Manage multiple stockrooms and location-level inventory.',
+    docsUrl: '',
+  },
+};
+
+const CPQ_ADDON = {
+  addonKey: ADDON_KEYS.CPQ,
+  name: 'CPQ',
+  description:
+    '
+Configure-price-quote for catalog: item groups, product configurations with rules, variant generation, price books, pricing rules, and promotions.',
+  icon: 'squares-plus',
+  category: 'OTHER',
+  enabled: true,
+  order: 71,
+  requiredApps: ['INVENTORY'],
+  optionalApps: ['SALES'],
+  marketplace: {
+    category: 'Inventory',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'Item groups, product configurations, and quote-ready pricing.',
+    docsUrl: '',
+  },
+};
+
 /** Legacy split packages — disabled in catalog; entitlement still accepted via alias. */
 const LEGACY_AI_ADDONS_DISABLED = [
   {
@@ -291,6 +332,8 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const defResultAi = await upsertAddonDefinition(AI_ADDON);
   const defResultAiCredits = await upsertAddonDefinition(AI_CREDITS_ADDON);
   const defResultTally = await upsertAddonDefinition(TALLY_ADDON);
+  const defResultStockroom = await upsertAddonDefinition(STOCKROOM_ADDON);
+  const defResultCpq = await upsertAddonDefinition(CPQ_ADDON);
   for (const legacy of LEGACY_AI_ADDONS_DISABLED) {
     // eslint-disable-next-line no-await-in-loop
     await upsertAddonDefinition(legacy);
@@ -304,6 +347,8 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const pricingResultAi = await upsertAddonPricing(ADDON_KEYS.AI);
   const pricingResultAiCredits = await upsertAddonPricing(ADDON_KEYS.AI_CREDITS);
   const pricingResultTally = await upsertAddonPricing(ADDON_KEYS.TALLY);
+  const pricingResultStockroom = await upsertAddonPricing(ADDON_KEYS.STOCKROOM);
+  const pricingResultCpq = await upsertAddonPricing(ADDON_KEYS.CPQ);
 
   if (!useExistingConnection) {
     await mongoose.disconnect();
@@ -319,6 +364,8 @@ async function ensureAddonCatalogSeeded(options = {}) {
     defResultAi,
     defResultAiCredits,
     defResultTally,
+    defResultStockroom,
+    defResultCpq,
     pricingResultLiveChat,
     pricingResultEmailCredits,
     pricingResultArticles,
@@ -328,6 +375,8 @@ async function ensureAddonCatalogSeeded(options = {}) {
     pricingResultAi,
     pricingResultAiCredits,
     pricingResultTally,
+    pricingResultStockroom,
+    pricingResultCpq,
   };
 }
 
@@ -342,6 +391,8 @@ async function main() {
   console.log(`AddonDefinition ai: ${result.defResultAi}`);
   console.log(`AddonDefinition ai_credits: ${result.defResultAiCredits}`);
   console.log(`AddonDefinition tally: ${result.defResultTally}`);
+  console.log(`AddonDefinition stockroom: ${result.defResultStockroom}`);
+  console.log(`AddonDefinition cpq: ${result.defResultCpq}`);
   console.log(`AddonPricingDefinition live_chat: ${result.pricingResultLiveChat}`);
   console.log(`AddonPricingDefinition email_credits: ${result.pricingResultEmailCredits}`);
   console.log(`AddonPricingDefinition articles: ${result.pricingResultArticles}`);
@@ -351,6 +402,8 @@ async function main() {
   console.log(`AddonPricingDefinition ai: ${result.pricingResultAi}`);
   console.log(`AddonPricingDefinition ai_credits: ${result.pricingResultAiCredits}`);
   console.log(`AddonPricingDefinition tally: ${result.pricingResultTally}`);
+  console.log(`AddonPricingDefinition stockroom: ${result.pricingResultStockroom}`);
+  console.log(`AddonPricingDefinition cpq: ${result.pricingResultCpq}`);
   console.log('Done.');
 }
 
@@ -365,6 +418,8 @@ module.exports = {
   AI_ADDON,
   AI_CREDITS_ADDON,
   TALLY_ADDON,
+  STOCKROOM_ADDON,
+  CPQ_ADDON,
 };
 
 if (require.main === module) {

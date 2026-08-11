@@ -163,14 +163,11 @@ const menuItems = computed(() => {
     {
       key: 'duplicate',
       label: t('records.prDuplicate'),
-      handler: () =>
-        runAction('duplicate', {
-          successKey: 'records.prDuplicated',
-          onSuccess: (data) => {
-            const nid = data?._id || data?.id;
-            if (nid) router.push(`/inventory/purchase-returns/${nid}`);
-          }
-        })
+      handler: () => {
+        const id = props.record?._id || props.record?.id;
+        if (!id) return;
+        router.push(`/inventory/purchase-returns/new?duplicateFrom=${encodeURIComponent(id)}`);
+      }
     }
   ];
   if (canCancelPurchaseReturn(status.value)) {

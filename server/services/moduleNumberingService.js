@@ -8,6 +8,7 @@ const {
   resolveRegistryEntry,
   getRegistryEntry,
 } = require('../constants/moduleNumberingRegistry');
+const { isAppEnabledForOrg } = require('../utils/appAccessUtils');
 
 const TOKEN_PATTERN = /\{([A-Z]+)\}/g;
 const FORMAT_LITERAL_PATTERN = /^[A-Za-z0-9\/\-_. {}]+$/;
@@ -235,13 +236,41 @@ async function seedDefaultForModule(organizationId, moduleKey, options = {}) {
 }
 
 /**
+ * Standard registry keys eligible for this org (app-gated entries require the app enabled).
+ * @param {import('mongoose').Types.ObjectId|string} organizationId
+ * @returns {Promise<string[]>}
+ */
+async function standardModuleKeysForOrg(organizationId) {
+  const Organization = require('../models/Organization');
+  const org = await Organization.findById(organizationId).select('enabledApps').lean();
+  return STANDARD_MODULE_KEYS.filter((moduleKey) => {
+    const entry = getRegistryEntry(moduleKey);
+    if (!entry?.requireAppKey) return true;
+    return isAppEnabledForOrg(org, entry.requireAppKey);
+  });
+}
+
+/**
+ * Whether a registry moduleKey should appear in Settings for this org.
+ * @param {string} moduleKey
+ * @param {object|null} organization
+ */
+function isModuleNumberingVisibleForOrg(moduleKey, organization) {
+  const entry = getRegistryEntry(moduleKey);
+  if (!entry) return true; // custom / unknown configs stay listable
+  if (!entry.requireAppKey) return true;
+  return isAppEnabledForOrg(organization, entry.requireAppKey);
+}
+
+/**
  * @param {import('mongoose').Types.ObjectId|string} organizationId
  * @param {object} [options]
  */
 async function seedDefaultsForOrg(organizationId, options = {}) {
   let created = 0;
   let skipped = 0;
-  for (const moduleKey of STANDARD_MODULE_KEYS) {
+  const keys = await standardModuleKeysForOrg(organizationId);
+  for (const moduleKey of keys) {
     const before = await ModuleNumberingConfig.findOne({ organizationId, moduleKey }).lean();
     if (before) {
       skipped += 1;
@@ -409,7 +438,8 @@ async function updateConfig(organizationId, moduleKey, patch, options = {}) {
   if (patch.prefix !== undefined) config.prefix = String(patch.prefix || '').trim();
   if (patch.suffix !== undefined) config.suffix = String(patch.suffix || '').trim();
   if (patch.enabled !== undefined) config.enabled = Boolean(patch.enabled);
-  if (patch.allowManualEdit !== undefined) config.allowManualEdit = Boolean(patch.allowManualEdit);
+  // Manual Record IDs are not supported — Record IDs / Item Codes are always system-allocated.
+  config.allowManualEdit = false;
   if (patch.resetRule !== undefined) {
     const rule = String(patch.resetRule || 'never');
     if (!['never', 'daily', 'monthly', 'yearly'].includes(rule)) {
@@ -472,6 +502,12 @@ function resolveRecordModel(moduleKey) {
     templates: () => require('../models/ContentTemplate'),
     articles: () => require('../models/ContentDocument'),
     blog: () => require('../models/ContentDocument'),
+    purchase_orders: () => require('../models/PurchaseOrder').PurchaseOrder,
+    receipt_notes: () => require('../models/ReceiptNote').ReceiptNote,
+    purchase_returns: () => require('../models/PurchaseReturn').PurchaseReturn,
+    delivery_notes: () => require('../models/DeliveryNote').DeliveryNote,
+    delivery_returns: () => require('../models/DeliveryReturn').DeliveryReturn,
+    sales_returns: () => require('./fulfillmentDocsService').SalesReturn,
   };
   const loader = map[baseKey];
   return loader ? loader() : null;
@@ -573,33 +609,62 @@ function resolveInvoiceModuleKey(invoiceType) {
 
 /**
  * List configs for org (seed missing standard entries lazily).
+ * App-gated modules (e.g. Inventory workbench) only appear when the app is enabled.
  */
 async function listConfigs(organizationId) {
   await seedDefaultsForOrg(organizationId);
+  const Organization = require('../models/Organization');
+  const org = await Organization.findById(organizationId).select('enabledApps').lean();
   const configs = await ModuleNumberingConfig.find({ organizationId }).sort({ moduleKey: 1 }).lean();
-  return configs.map((c) => {
-    const entry = resolveRegistryEntry(c.moduleKey);
-    return {
-      ...c,
-      label: entry.label || c.moduleKey,
-      numberFieldKey: c.numberFieldKey || entry.numberFieldKey,
-      numberFieldLabel: entry.numberFieldLabel || entry.numberFieldKey || c.numberFieldKey,
-      currentFormatPreview: (() => {
-        try {
-          return preview({
-            format: c.format,
-            prefix: c.prefix,
-            suffix: c.suffix,
-            sequenceLength: c.sequenceLength,
-            currentSequence: c.currentSequence,
-            startingSequence: c.startingSequence,
-          });
-        } catch {
-          return c.format;
-        }
-      })(),
-    };
-  });
+  return configs
+    .filter((c) => isModuleNumberingVisibleForOrg(c.moduleKey, org))
+    .map((c) => {
+      const entry = resolveRegistryEntry(c.moduleKey);
+      return {
+        ...c,
+        label: entry.label || c.moduleKey,
+        numberFieldKey: c.numberFieldKey || entry.numberFieldKey,
+        numberFieldLabel: entry.numberFieldLabel || entry.numberFieldKey || c.numberFieldKey,
+        currentFormatPreview: (() => {
+          try {
+            return preview({
+              format: c.format,
+              prefix: c.prefix,
+              suffix: c.suffix,
+              sequenceLength: c.sequenceLength,
+              currentSequence: c.currentSequence,
+              startingSequence: c.startingSequence,
+            });
+          } catch {
+            return c.format;
+          }
+        })(),
+      };
+    });
+}
+
+/**
+ * Allocate a document number via Module Numbering config.
+ * Falls back to PREFIX-#### when auto-numbering is disabled.
+ *
+ * @param {import('mongoose').Types.ObjectId|string} organizationId
+ * @param {string} moduleKey
+ * @param {string} prefix - legacy fallback prefix
+ * @param {number} [pad=4]
+ */
+async function allocateDocumentNumber(organizationId, moduleKey, prefix, pad = 4) {
+  const result = await allocate({ organizationId, moduleKey });
+  if (result?.recordId) return result.recordId;
+
+  const key = String(moduleKey || '').trim().toLowerCase();
+  const seq = await ModuleSequence.findOneAndUpdate(
+    { organizationId, moduleKey: key, periodKey: '' },
+    { $inc: { nextValue: 1 } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  const n = Number(seq.nextValue) || 1;
+  const length = Math.max(1, Math.min(15, Number(pad) || 4));
+  return `${prefix}-${String(n).padStart(length, '0')}`;
 }
 
 module.exports = {
@@ -612,9 +677,12 @@ module.exports = {
   extractSequenceFromValue,
   seedDefaultForModule,
   seedDefaultsForOrg,
+  standardModuleKeysForOrg,
+  isModuleNumberingVisibleForOrg,
   getOrCreateConfig,
   allocate,
   allocateOrNull,
+  allocateDocumentNumber,
   preview,
   updateConfig,
   resyncFromExistingRecords,

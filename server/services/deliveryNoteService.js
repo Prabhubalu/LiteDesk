@@ -3,7 +3,6 @@
  * Inventory deducts at configured inventoryPostStatus (default: dispatched).
  */
 
-const ModuleSequence = require('../models/ModuleSequence');
 const { DeliveryNote, DeliveryNoteLine } = require('../models/DeliveryNote');
 const SalesOrder = require('../models/SalesOrder');
 const SalesOrderLine = require('../models/SalesOrderLine');
@@ -63,12 +62,8 @@ async function assertCustomerForDn(organizationId, customerId) {
 }
 
 async function nextDocNumber(organizationId, moduleKey, prefix) {
-  const seq = await ModuleSequence.findOneAndUpdate(
-    { organizationId, moduleKey, periodKey: '' },
-    { $inc: { nextValue: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
-  return `${prefix}-${String(Number(seq.nextValue) || 1).padStart(4, '0')}`;
+  const { allocateDocumentNumber } = require('./moduleNumberingService');
+  return allocateDocumentNumber(organizationId, moduleKey, prefix, 4);
 }
 
 function normalizeSourceType(raw) {

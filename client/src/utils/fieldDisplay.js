@@ -265,6 +265,32 @@ function humanNameFromActivityValue(value) {
   return null;
 }
 
+/**
+ * Join multi-value activity labels (multi-picklist, tags) without JSON brackets.
+ * @param {unknown[]} items
+ * @param {string} emptyLabel
+ * @returns {string}
+ */
+function formatActivityArrayValue(items, emptyLabel) {
+  if (!Array.isArray(items) || items.length === 0) return emptyLabel;
+  const parts = items
+    .map((item) => {
+      if (item === undefined || item === null || item === '') return null;
+      const human = humanNameFromActivityValue(item);
+      if (human) return human;
+      if (typeof item === 'object') {
+        const label =
+          item.name || item.title || item.label || item.firstName || item.first_name || item.username || item.email;
+        return label != null && String(label).trim() ? String(label).trim() : null;
+      }
+      const str = String(item).trim();
+      if (!str || str === '[Reference]') return null;
+      return str;
+    })
+    .filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : emptyLabel;
+}
+
 export function formatActivityChangeValue(value, emptyLabel = 'Empty', dataType) {
   if (value === undefined || value === null || value === '') return emptyLabel;
   if (
@@ -281,18 +307,36 @@ export function formatActivityChangeValue(value, emptyLabel = 'Empty', dataType)
   if (typeof value === 'string' && isIsoDateString(value)) {
     return formatDateForDisplay(value) || value;
   }
-  const human = humanNameFromActivityValue(value);
+
+  // Stored logs may keep multi-picklist as JSON array strings; also handle real arrays.
+  let normalized = value;
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+      try {
+        normalized = JSON.parse(s);
+      } catch {
+        normalized = value;
+      }
+    }
+  }
+  if (Array.isArray(normalized)) {
+    return formatActivityArrayValue(normalized, emptyLabel);
+  }
+
+  const human = humanNameFromActivityValue(normalized);
   if (human) return human;
-  if (typeof value === 'string' && value.trim() === '[Reference]') return emptyLabel;
-  if (typeof value === 'object') {
+  if (typeof normalized === 'string' && normalized.trim() === '[Reference]') return emptyLabel;
+  // Never JSON.stringify arrays (handled above). Objects only as last resort.
+  if (typeof normalized === 'object' && normalized !== null) {
     try {
-      const str = JSON.stringify(value);
+      const str = JSON.stringify(normalized);
       return str.length > 120 ? `${str.slice(0, 120)}…` : str;
     } catch {
       return emptyLabel;
     }
   }
-  return String(value);
+  return String(normalized);
 }
 
 /**

@@ -27,9 +27,36 @@ const ItemBundleComponentSchema = new Schema({
     min: 0.0001,
     default: 1
   },
+  /** true = Flexible optional add-on; false = always included (mandatory) */
   isOptional: {
     type: Boolean,
     default: false
+  },
+  /** For optional components: pre-selected when configuring the bundle */
+  defaultSelected: {
+    type: Boolean,
+    default: false
+  },
+  /** Allow sales users to change component qty at quote/SO time */
+  editableQuantity: {
+    type: Boolean,
+    default: false
+  },
+  minQuantity: {
+    type: Number,
+    min: 0.0001,
+    default: null
+  },
+  maxQuantity: {
+    type: Number,
+    min: 0.0001,
+    default: null
+  },
+  remarks: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+    default: ''
   },
   sortOrder: {
     type: Number,

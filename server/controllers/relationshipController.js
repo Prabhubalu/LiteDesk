@@ -49,7 +49,7 @@ const TARGET_APP_BY_MODULE_KEY = {
   projects: 'projects',
   cases: 'helpdesk',
   documents: 'platform',
-  items: 'sales',
+  items: 'platform',
   quotes: 'platform'
 };
 
@@ -521,7 +521,7 @@ async function ensureItemsRelationshipDefinitions() {
   const defs = [
     {
       relationshipKey: 'item_vendor',
-      source: { appKey: 'sales', moduleKey: 'items' },
+      source: { appKey: 'platform', moduleKey: 'items' },
       target: { appKey: 'sales', moduleKey: 'organizations' },
       cardinality: 'MANY_TO_ONE',
       ownership: 'TARGET',
@@ -537,7 +537,7 @@ async function ensureItemsRelationshipDefinitions() {
     },
     {
       relationshipKey: 'item_deals',
-      source: { appKey: 'sales', moduleKey: 'items' },
+      source: { appKey: 'platform', moduleKey: 'items' },
       target: { appKey: 'sales', moduleKey: 'deals' },
       cardinality: 'MANY_TO_MANY',
       ownership: 'SOURCE',
@@ -553,7 +553,7 @@ async function ensureItemsRelationshipDefinitions() {
     },
     {
       relationshipKey: 'item_people',
-      source: { appKey: 'sales', moduleKey: 'items' },
+      source: { appKey: 'platform', moduleKey: 'items' },
       target: { appKey: 'sales', moduleKey: 'people' },
       cardinality: 'MANY_TO_MANY',
       ownership: 'SOURCE',
@@ -569,7 +569,7 @@ async function ensureItemsRelationshipDefinitions() {
     },
     {
       relationshipKey: 'item_forms',
-      source: { appKey: 'sales', moduleKey: 'items' },
+      source: { appKey: 'platform', moduleKey: 'items' },
       target: { appKey: 'platform', moduleKey: 'forms' },
       cardinality: 'MANY_TO_MANY',
       ownership: 'SOURCE',
@@ -585,16 +585,25 @@ async function ensureItemsRelationshipDefinitions() {
     }
   ];
 
-  // eslint-disable-next-line no-await-in-loop
   for (const def of defs) {
     const key = String(def.relationshipKey || '').toLowerCase();
     if (!key) continue;
     // eslint-disable-next-line no-await-in-loop
-    const exists = await RelationshipDefinition.exists({ relationshipKey: key });
-    if (!exists) {
-      // eslint-disable-next-line no-await-in-loop
-      await RelationshipDefinition.create({ ...def, relationshipKey: key });
-    }
+    await RelationshipDefinition.updateOne(
+      { relationshipKey: key },
+      {
+        $set: {
+          ...def,
+          relationshipKey: key,
+          enabled: true,
+          status: 'ACTIVE'
+        },
+        $setOnInsert: {
+          createdBy: 'system'
+        }
+      },
+      { upsert: true }
+    );
   }
 }
 

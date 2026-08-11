@@ -287,6 +287,7 @@ watch(
     authStore.user?.permissions,
     authStore.user?.allowedApps,
     authStore.user?.appAccess,
+    authStore.user?.entitledAddons,
     authStore.organization?.enabledApps,
   ],
   () => {

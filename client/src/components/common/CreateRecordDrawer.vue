@@ -20,7 +20,15 @@
                 <form @submit.prevent="handleSubmit" class="relative flex h-full flex-col">
                   <!-- Header: fixed at top -->
                   <div class="relative flex shrink-0 items-center gap-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4 sm:px-6">
-                    <h2 :id="drawerTitleId" class="min-w-0 shrink-0 pr-2 text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ computedTitle }}</h2>
+                    <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <h2 :id="drawerTitleId" class="min-w-0 shrink-0 pr-2 text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{{ computedTitle }}</h2>
+                      <p
+                        v-if="duplicateMode && !isEditing"
+                        class="truncate text-xs text-gray-500 dark:text-gray-400"
+                      >
+                        {{ t('records.drawerDuplicateHint') }}
+                      </p>
+                    </div>
                     <div
                       v-if="showFieldSearch"
                       class="pointer-events-none absolute inset-x-5 top-1/2 z-10 flex -translate-y-1/2 justify-center sm:inset-x-6"
@@ -62,6 +70,7 @@
                   <!-- Body: scrollable (user interaction only — not programmatic DynamicForm sync) -->
                   <div class="h-0 flex-1 overflow-y-auto">
                     <div
+                      ref="formFieldsRootRef"
                       class="px-5 sm:px-6 py-5 space-y-5"
                       @input.capture="markFormChanged"
                       @change.capture="markFormChanged"
@@ -234,7 +243,7 @@
                         :disabled="saving"
                         class="inline-flex min-w-[5.5rem] justify-center rounded-lg bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
                       >
-                        {{ saving ? t('states.saving') : (isEditing ? t('actions.update') : t('actions.save')) }}
+                        {{ primaryActionLabel }}
                       </button>
                     </div>
                   </div>
@@ -387,6 +396,14 @@ const props = defineProps({
   title: {
     type: String,
     default: null // Will be computed from moduleKey and record
+  },
+  /**
+   * When true, this is a duplicate-as-create surface (not a blank new record).
+   * Affects header title + primary CTA; initialData should be prefilled from source.
+   */
+  duplicateMode: {
+    type: Boolean,
+    default: false
   },
   initialData: {
     type: Object,
@@ -622,6 +639,11 @@ const showFieldSearch = computed(
   () => fullMode.value || !effectiveQuickCreateMode.value || isCommercialLinesForm.value
 );
 const closeButtonRef = ref(null);
+const formFieldsRootRef = ref(null);
+/** One-shot: focus first create field after DynamicForm mounts for this open */
+let pendingInitialFieldFocus = false;
+/** Ignore focusin/pointer from programmatic open focus so Escape/backdrop still work */
+let suppressInteractionMark = false;
 const commercialFormRecord = ref(null);
 const commercialFormLoading = ref(false);
 const commercialFormEnsurePromise = ref(null);
@@ -769,7 +791,16 @@ const moduleNameMap = {
 const computedTitle = computed(() => {
   if (props.title) return props.title;
   const moduleName = moduleNameMap[props.moduleKey] || props.moduleKey;
-  return isEditing.value ? `Edit ${moduleName}` : `New ${moduleName}`;
+  if (isEditing.value) return t('records.drawerEditTitle', { module: moduleName });
+  if (props.duplicateMode) return t('records.drawerDuplicateTitle', { module: moduleName });
+  return t('records.drawerNewTitle', { module: moduleName });
+});
+
+const primaryActionLabel = computed(() => {
+  if (saving.value) return t('states.saving');
+  if (isEditing.value) return t('actions.update');
+  if (props.duplicateMode) return t('records.drawerDuplicateSave');
+  return t('actions.save');
 });
 
 const coreSystemFieldKeys = [
@@ -916,6 +947,16 @@ const effectiveExcludeFields = computed(() => {
     getItemCatalogScaffoldFieldKeys().forEach((k) => excluded.add(k));
     getItemLegacyCategoryFieldKeys().forEach((k) => excluded.add(k));
     ['status', 'product_image', 'stock_quantity', 'reorder_level', 'serial_numbers'].forEach((k) => excluded.add(k));
+    // System-managed identity (Item Code / item_id) — never on create or edit forms
+    const itemFields = effectiveModuleOverrideForDrawer.value?.fields || [];
+    for (const field of itemFields) {
+      const key = String(field?.key || '');
+      if (!key) continue;
+      if (isSystemField('items', { key })) {
+        excluded.add(key);
+      }
+    }
+    ['item_code', 'item_id'].forEach((k) => excluded.add(k));
     return Array.from(excluded);
   }
   // Receipt Note create: PO + location come from ReceiptNoteCreatePanel only
@@ -1117,6 +1158,7 @@ const userHasEdited = ref(false);
 /** True when form values / lines actually changed (refresh/leave confirm) */
 const hasUnsavedChanges = ref(false);
 function markUserInteraction() {
+  if (suppressInteractionMark) return;
   userHasEdited.value = true;
 }
 function markFormChanged() {
@@ -1504,6 +1546,29 @@ async function loadCommercialFormRecord(recordId) {
 function seedCommercialCreateStub() {
   if (!isCommercialLinesCreate.value) return;
   if (commercialFormRecord.value && !commercialFormRecord.value._id) {
+    // Already seeded (e.g. re-open sync) — still merge commercial lines if stub has none
+    const existingLines = Array.isArray(commercialFormRecord.value.lines)
+      ? commercialFormRecord.value.lines
+      : [];
+    if (
+      existingLines.length === 0 &&
+      Array.isArray(props.initialData?._commercialLines) &&
+      props.initialData._commercialLines.length
+    ) {
+      commercialFormRecord.value = {
+        ...commercialFormRecord.value,
+        lines: props.initialData._commercialLines.map((line, idx) => ({
+          ...line,
+          _localId: line._localId || `seed-line-${idx}`,
+          lineType: line.lineType || 'product'
+        })),
+        sections:
+          Array.isArray(props.initialData?._commercialSections) &&
+          props.initialData._commercialSections.length
+            ? props.initialData._commercialSections
+            : commercialFormRecord.value.sections
+      };
+    }
     syncCommercialCreateHeaderFromForm();
     return;
   }
@@ -1517,35 +1582,86 @@ function seedCommercialCreateStub() {
           ? 'invoice'
           : 'quote'
   );
-  const orgCurrency = resolveOrgCurrencyCode(authStore.organization) || 'USD';
-  const sectionId = `local-sec-${Date.now().toString(36)}`;
+  const orgCurrency =
+    (typeof formData.value?.currency === 'string' && formData.value.currency) ||
+    resolveOrgCurrencyCode(authStore.organization) ||
+    'USD';
   const includeField = adapter.includeInTotalField || 'includeInQuoteTotal';
-  const section = {
-    _id: sectionId,
-    [adapter.sectionUuidField]: sectionId,
-    sectionTitle: 'General',
-    sectionOrder: 0,
-    sectionType: 'standard',
-    [includeField]: true,
-    sectionTotal: 0
-  };
+
+  let sections;
+  if (
+    Array.isArray(props.initialData?._commercialSections) &&
+    props.initialData._commercialSections.length
+  ) {
+    sections = props.initialData._commercialSections.map((sec, idx) => {
+      const sid =
+        sec[adapter.sectionUuidField] ||
+        sec[adapter.sectionIdField] ||
+        sec._id ||
+        `local-sec-${idx}`;
+      return {
+        ...sec,
+        _id: sid,
+        [adapter.sectionUuidField]: sid,
+        [adapter.sectionIdField]: sid,
+        sectionTitle: sec.sectionTitle || (idx === 0 ? 'General' : `Section ${idx + 1}`),
+        sectionOrder: sec.sectionOrder != null ? Number(sec.sectionOrder) : idx,
+        sectionType: sec.sectionType || 'standard',
+        [includeField]: sec[includeField] !== false
+      };
+    });
+  } else {
+    const sectionId = `local-sec-${Date.now().toString(36)}`;
+    sections = [
+      {
+        _id: sectionId,
+        [adapter.sectionUuidField]: sectionId,
+        sectionTitle: 'General',
+        sectionOrder: 0,
+        sectionType: 'standard',
+        [includeField]: true,
+        sectionTotal: 0
+      }
+    ];
+  }
 
   const vendorId = isPurchaseOrderModule.value
     ? resolveFormRelationId(formData.value?.vendorId)
     : null;
 
+  const lines = Array.isArray(props.initialData?._commercialLines)
+    ? props.initialData._commercialLines.map((line, idx) => ({
+        ...line,
+        _localId: line._localId || `seed-line-${idx}`,
+        _id: line._id || line._localId || `seed-line-${idx}`,
+        [adapter.lineIdField]:
+          line[adapter.lineIdField] || line._localId || `seed-line-${idx}`,
+        lineType: line.lineType || 'product'
+      }))
+    : [];
+
+  const lineSum = lines.reduce((sum, l) => {
+    const lt = Number(l.lineTotal);
+    if (Number.isFinite(lt)) return sum + lt;
+    const qty = Number(l.quantity ?? l.quantityOrdered) || 0;
+    const price = Number(l.unitPrice ?? l.unitPriceSnapshot) || 0;
+    return sum + qty * price;
+  }, 0);
+
   commercialFormRecord.value = {
     status: isPurchaseOrderModule.value ? 'draft' : 'Draft',
     currency: orgCurrency,
-    lines: [],
-    sections: [section],
-    subtotal: 0,
-    grandTotal: 0,
+    lines,
+    sections,
+    subtotal: lineSum,
+    grandTotal: lineSum,
     lineDiscountTotal: 0,
     globalDiscountTotal: 0,
     taxTotal: 0,
     chargesTotal: 0,
     adjustmentTotal: 0,
+    overallDiscountType: props.initialData?.overallDiscountType || null,
+    overallDiscountValue: props.initialData?.overallDiscountValue ?? 0,
     ...(vendorId ? { vendorId } : {})
   };
   commercialCreateDraftId.value = null;
@@ -1775,6 +1891,13 @@ async function flushCommercialCreateLines(createdRecord) {
       }
       if (Array.isArray(line.taxIds) && line.taxIds.length) {
         Object.assign(patch, adapter.buildPatchLineBody({ taxIds: line.taxIds.map(String) }));
+      }
+      // Preserve source unit price when duplicating (override catalog resolve on add)
+      if (line.unitPrice != null && Number.isFinite(Number(line.unitPrice))) {
+        Object.assign(
+          patch,
+          adapter.buildPatchLineBody({ unitPrice: Number(line.unitPrice) })
+        );
       }
       if (Object.keys(patch).length) {
         await apiClient.patch(`${apiPath}/${headerId}/lines/${lineServerId}`, patch);
@@ -2088,6 +2211,71 @@ const scrollToFirstErrorField = async () => {
   }
 };
 
+function isVisibleFocusTarget(el) {
+  if (!el || el.disabled) return false;
+  if (el.getAttribute?.('aria-hidden') === 'true') return false;
+  if (el.tabIndex < -1) return false;
+  const style = window.getComputedStyle(el);
+  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
+  const rect = el.getBoundingClientRect();
+  return rect.width > 0 || rect.height > 0;
+}
+
+function withSuppressedInteractionMark(fn) {
+  suppressInteractionMark = true;
+  try {
+    fn();
+  } finally {
+    requestAnimationFrame(() => {
+      suppressInteractionMark = false;
+    });
+  }
+}
+
+const focusFirstFormField = async () => {
+  if (isEditing.value) return;
+  await nextTick();
+  // DynamicFormField controls often mount one tick after @ready
+  await nextTick();
+
+  const root = formFieldsRootRef.value;
+  if (!root || !props.isOpen) return;
+
+  // Prefer first typeable field (Title, Name, …) over combobox/listbox triggers
+  const textCandidates = root.querySelectorAll(
+    'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([disabled]):not([readonly]), textarea:not([disabled]):not([readonly])'
+  );
+  let target = null;
+  for (const el of textCandidates) {
+    if (isVisibleFocusTarget(el)) {
+      target = el;
+      break;
+    }
+  }
+  if (!target) {
+    const fallback = root.querySelector(
+      'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (isVisibleFocusTarget(fallback)) target = fallback;
+  }
+  if (!target || typeof target.focus !== 'function') return;
+
+  withSuppressedInteractionMark(() => {
+    target.focus({ preventScroll: true });
+  });
+};
+
+const scheduleInitialFieldFocus = () => {
+  if (!pendingInitialFieldFocus || isEditing.value) return;
+  pendingInitialFieldFocus = false;
+  // Micro-delay so list layout + picklists finish paint after ready
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      void focusFirstFormField();
+    });
+  });
+};
+
 const normalizeKey = (value) => String(value || '').toLowerCase().replace(/[\s_-]/g, '');
 const normalizeEventTypeToken = (value) =>
   String(value || '')
@@ -2336,6 +2524,7 @@ const onFormReady = (module) => {
       applyInitialDataOverlay();
       nextTick(() => applyOrgCurrencyToCreateForm());
     }
+    scheduleInitialFieldFocus();
     return;
   }
   if (isFirstLoad || isEditing.value) {
@@ -2352,6 +2541,7 @@ const onFormReady = (module) => {
     // Module already loaded from a prior open — still apply fresh calendar seed
     applyInitialDataOverlay();
   }
+  scheduleInitialFieldFocus();
 };
 
 function applyInitialDataOverlay() {
@@ -3834,9 +4024,19 @@ watch(() => props.isOpen, (isOpen, wasOpen) => {
       moduleDefinition.value = null;
     }
     window.addEventListener('beforeunload', handleBeforeUnload);
-    nextTick(() => closeButtonRef.value?.focus?.());
+    // Create: focus first field once DynamicForm is ready (not close button).
+    // Edit: keep focus on close so we do not steal typing context mid-session.
+    pendingInitialFieldFocus = !isEditing.value;
+    if (isEditing.value) {
+      nextTick(() => {
+        withSuppressedInteractionMark(() => {
+          closeButtonRef.value?.focus?.();
+        });
+      });
+    }
     // Form seeds from record in onFormReady / moduleOverride watch after module loads
   } else {
+    pendingInitialFieldFocus = false;
     commercialFormRecord.value = null;
     commercialFormLoading.value = false;
     commercialFormEnsurePromise.value = null;

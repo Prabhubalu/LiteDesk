@@ -341,18 +341,12 @@ const editProcess = (process) => {
   router.push({ name: 'process-designer', params: { id: process._id } });
 };
 
-const duplicateProcess = async (process) => {
-  try {
-    const response = await apiClient.post(`/admin/processes/${process._id}/duplicate`);
-    if (response.success) {
-      await loadProcesses();
-      if (response.data?._id) {
-        router.push({ name: 'process-designer', params: { id: response.data._id } });
-      }
-    }
-  } catch (err) {
-    notifications.error(err.message || t('process.processDuplicateFailed'));
-  }
+const duplicateProcess = (process) => {
+  if (!process?._id) return;
+  router.push({
+    name: 'process-designer-new',
+    query: { duplicateFrom: String(process._id) }
+  });
 };
 
 const activateProcess = async (process) => {

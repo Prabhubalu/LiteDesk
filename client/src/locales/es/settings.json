@@ -20589,5 +20589,901 @@
   "modFieldsEventLifecycleEmpty": {
     "message": "No event type status configurations were returned. Refresh the page or check that the API is running.",
     "description": "Empty configs state"
+  },
+  "profileMyGroups": {
+    "message": "My Groups",
+    "description": "Profile section heading for the current user's group memberships"
+  },
+  "profileMyGroupsDesc": {
+    "message": "Groups you belong to. Membership shapes your team access and assignments.",
+    "description": "Profile My Groups section subtitle"
+  },
+  "profileMyGroupsColIndex": {
+    "message": "#",
+    "description": "My Groups table row index column"
+  },
+  "profileMyGroupsColName": {
+    "message": "Group Name",
+    "description": "My Groups table name column"
+  },
+  "profileMyGroupsColDescription": {
+    "message": "Description",
+    "description": "My Groups table description column"
+  },
+  "profileMyGroupsEmptyTitle": {
+    "message": "No groups yet",
+    "description": "Empty state title when user has no group memberships"
+  },
+  "profileMyGroupsEmptyBody": {
+    "message": "You are not a member of any groups. An admin can add you to teams from Groups settings.",
+    "description": "Empty state body when user has no group memberships"
+  },
+  "profileMyGroupsNoDescription": {
+    "message": "—",
+    "description": "Placeholder when a group has no description"
+  },
+  "profileMyGroupsPrimaryBadge": {
+    "message": "Primary",
+    "description": "Badge on the user's primary group in My Groups"
+  },
+  "addonsRequiresInventory": {
+    "message": "Install the Inventory app first, then come back to install this addon.",
+    "description": "Marketplace addon blocked because Inventory parent app is missing"
+  },
+  "addonsRequiresApps": {
+    "message": "Install {apps} first, then come back to install this addon.",
+    "description": "Marketplace addon blocked by missing parent app entitlements"
+  },
+  "addonsInstallInventoryFirst": {
+    "message": "Install Inventory first",
+    "description": "CTA to open Inventory application settings from addons marketplace"
+  },
+  "addonsInstallAppFirst": {
+    "message": "Install {app} first",
+    "description": "CTA to open a required parent application from addons marketplace"
+  },
+  "addonsStockroomOpen": {
+    "message": "Open Stockrooms",
+    "description": "Open Stockrooms module from installed Stockroom addon card"
+  },
+  "addonsCpqRequiredTitle": {
+    "message": "CPQ add-on required",
+    "description": "Catalog item groups blocked without CPQ title"
+  },
+  "addonsCpqRequiredBody": {
+    "message": "Install the CPQ add-on to configure item groups, variants, and pricing rules.",
+    "description": "Catalog item groups blocked without CPQ body"
+  },
+  "addonsCpqRequiredCta": {
+    "message": "Go to Add-ons",
+    "description": "CTA from catalog item groups to install CPQ"
+  },
+  "itemGroupsEmptyHint": {
+    "message": "Create a group with attributes like Color and Storage, then generate item variants.",
+    "description": "Empty state secondary hint for item groups"
+  },
+  "itemGroupNamePlaceholder": {
+    "message": "e.g. Nothing Phone",
+    "description": "Item group name placeholder"
+  },
+  "itemGroupUntitled": {
+    "message": "Untitled group",
+    "description": "Fallback name in live variant preview"
+  },
+  "itemGroupAttrsCol": {
+    "message": "Attributes",
+    "description": "Item groups table attributes column"
+  },
+  "itemGroupVariantsCol": {
+    "message": "Variants",
+    "description": "Item groups table variant count column"
+  },
+  "itemGroupBuilderDesc": {
+    "message": "Define variant attributes and preview every combination before saving.",
+    "description": "Item group builder dialog subtitle"
+  },
+  "itemGroupAttributes": {
+    "message": "Variant attributes",
+    "description": "Attribute builder section title"
+  },
+  "itemGroupAttributesHint": {
+    "message": "Each combination of values becomes one item.",
+    "description": "Attribute builder section hint"
+  },
+  "itemGroupAttributesEmpty": {
+    "message": "Add at least one attribute with values to build variants.",
+    "description": "Empty attributes state in builder"
+  },
+  "itemGroupAddAttribute": {
+    "message": "Add attribute",
+    "description": "Add attribute button"
+  },
+  "itemGroupAttrNamePlaceholder": {
+    "message": "Attribute name (e.g. Color)",
+    "description": "Attribute name input placeholder"
+  },
+  "itemGroupValuePlaceholder": {
+    "message": "Add a value",
+    "description": "Empty value chips placeholder"
+  },
+  "itemGroupValueAddMore": {
+    "message": "Add value…",
+    "description": "Add more value chips placeholder"
+  },
+  "itemGroupValueChipHint": {
+    "message": "Press Enter or comma to add a value",
+    "description": "Chip input keyboard hint"
+  },
+  "itemGroupRemoveValue": {
+    "message": "Remove value",
+    "description": "Remove value chip aria label"
+  },
+  "itemGroupRemoveAttribute": {
+    "message": "Remove attribute",
+    "description": "Remove attribute row title"
+  },
+  "itemGroupMoveUp": {
+    "message": "Move up",
+    "description": "Move attribute up"
+  },
+  "itemGroupMoveDown": {
+    "message": "Move down",
+    "description": "Move attribute down"
+  },
+  "itemGroupLivePreview": {
+    "message": "Live preview",
+    "description": "Live variant preview panel title"
+  },
+  "itemGroupLivePreviewHint": {
+    "message": "Updates as you edit attributes",
+    "description": "Live preview panel subtitle"
+  },
+  "itemGroupVariantCount": {
+    "message": "{count} variants",
+    "description": "Variant count badge"
+  },
+  "itemGroupPreviewEmpty": {
+    "message": "No variants yet",
+    "description": "Empty live preview state"
+  },
+  "itemGroupPreviewEmptyHint": {
+    "message": "Add an attribute name and at least one value.",
+    "description": "Empty live preview guidance"
+  },
+  "itemGroupVariantWarn": {
+    "message": "{count} combinations — large groups are harder to manage. Consider fewer values.",
+    "description": "Soft warning for high variant count"
+  },
+  "itemGroupVariantCap": {
+    "message": "Too many variants (max {max}). Reduce attributes or values before saving.",
+    "description": "Hard cap message for variant matrix"
+  },
+  "itemGroupVariantName": {
+    "message": "Item name",
+    "description": "Preview table item name column"
+  },
+  "itemGroupVariantAttrs": {
+    "message": "Attributes",
+    "description": "Preview table attributes column"
+  },
+  "itemGroupPreviewMore": {
+    "message": "Showing first {shown} of {total}",
+    "description": "Truncated preview table footer"
+  },
+  "itemGroupNameFormula": {
+    "message": "Name pattern: Group - value - value",
+    "description": "Explains how variant names are built"
+  },
+  "itemGroupSaveNote": {
+    "message": "Save stores the template. Generate creates the items.",
+    "description": "Footer note in item group builder"
+  },
+  "itemGroupSaveAndGenerate": {
+    "message": "Save & generate",
+    "description": "Save item group and generate variants"
+  },
+  "itemGroupSaveInvalid": {
+    "message": "Add a name and at least one complete attribute.",
+    "description": "Validation when save is blocked"
+  },
+  "itemGroupSaved": {
+    "message": "Item group saved.",
+    "description": "Success after saving item group"
+  },
+  "itemGroupPreviewTitle": {
+    "message": "Preview — {name}",
+    "description": "Saved group preview dialog title"
+  },
+  "itemGroupSearch": {
+    "message": "Search groups, attributes, or values…",
+    "description": "Item groups list search placeholder"
+  },
+  "itemGroupSearchEmpty": {
+    "message": "No item groups match your search.",
+    "description": "Empty filtered item groups list"
+  },
+  "itemGroupListSummary": {
+    "message": "{groups} groups · {variants} possible variants",
+    "description": "Item groups page summary counts"
+  },
+  "itemGroupShowingCount": {
+    "message": "Showing {shown} of {total}",
+    "description": "Filtered item group count"
+  },
+  "itemGroupStatusActive": {
+    "message": "Active",
+    "description": "Active item group status label"
+  },
+  "itemGroupStatusInactive": {
+    "message": "Inactive",
+    "description": "Inactive item group status label"
+  },
+  "itemGroupNoAttributes": {
+    "message": "No attributes defined",
+    "description": "Row empty attributes state"
+  },
+  "itemGroupMoreAttrs": {
+    "message": "+{count} more",
+    "description": "More attributes overflow chip"
+  },
+  "itemGroupMatrix": {
+    "message": "Matrix {matrix}",
+    "description": "Attribute value matrix product e.g. 2 × 3"
+  },
+  "itemGroupVariantsShort": {
+    "message": "Variants",
+    "description": "Short label next to variant count badge"
+  },
+  "itemGroupGenerateConfirm": {
+    "message": "Generate items for “{name}”? Up to {count} variants may be created (existing combinations are skipped).",
+    "description": "Confirm before generating variants from group"
+  },
+  "itemGroupGenerateEmpty": {
+    "message": "This group has no attribute combinations to generate.",
+    "description": "Error when generate has zero variants"
+  },
+  "itemGroupListSummaryStats": {
+    "message": "{groups} groups · {generated}/{expected} variants generated",
+    "description": "Item groups page summary with generation progress"
+  },
+  "itemGroupGeneratedRatio": {
+    "message": "{generated} of {expected} generated",
+    "description": "Generated vs expected variant ratio"
+  },
+  "itemGroupGenStateNone": {
+    "message": "Not generated",
+    "description": "No variants created yet"
+  },
+  "itemGroupGenStatePartial": {
+    "message": "Partial",
+    "description": "Some variants generated"
+  },
+  "itemGroupGenStateComplete": {
+    "message": "Generated",
+    "description": "All variants generated"
+  },
+  "itemGroupGenStateEmpty": {
+    "message": "No variants",
+    "description": "Group has no attribute matrix"
+  },
+  "itemGroupOrphansHint": {
+    "message": "{count} linked items do not match the current attributes.",
+    "description": "Stale items after attributes changed"
+  },
+  "itemGroupGenerateMissing": {
+    "message": "Generate {count} missing",
+    "description": "Generate only missing variants"
+  },
+  "itemGroupGenerateMissingHint": {
+    "message": "Create {count} items for combinations not generated yet",
+    "description": "Tooltip for generate missing"
+  },
+  "itemGroupAllGenerated": {
+    "message": "All generated",
+    "description": "Button / label when matrix is fully generated"
+  },
+  "itemGroupAllGeneratedHint": {
+    "message": "Every attribute combination already has an item",
+    "description": "Tooltip when generate is disabled"
+  },
+  "itemGroupGenerateConfirmMissing": {
+    "message": "Create {missing} missing item(s) for “{name}”? ({expected} combinations total; existing ones are skipped.)",
+    "description": "Confirm generate with missing count"
+  },
+  "itemGroupAlreadyComplete": {
+    "message": "All {generated} of {expected} variants already exist.",
+    "description": "Message when generate finds nothing to create"
+  },
+  "itemGroupGenerateResultMixed": {
+    "message": "Created {created} variants ({skipped} already existed).",
+    "description": "Generate result with created and skipped"
+  },
+  "itemGroupVariantStatus": {
+    "message": "Status",
+    "description": "Preview table generation status column"
+  },
+  "itemGroupVariantExists": {
+    "message": "Generated",
+    "description": "Variant already has an item"
+  },
+  "itemGroupVariantPending": {
+    "message": "Pending",
+    "description": "Variant not yet generated"
+  },
+  "itemGroupMissingShort": {
+    "message": "{count} missing",
+    "description": "Compact missing count on list row when partial"
+  },
+  "catalogTabProductConfigs": {
+    "message": "Product configurations",
+    "description": "Catalog hub product configurations tab"
+  },
+  "productConfigsDesc": {
+    "message": "Define selectable options, product rules, compatibility, and dependencies for configurable products.",
+    "description": "Product configurations settings description"
+  },
+  "productConfigAdd": {
+    "message": "Add configuration",
+    "description": "Create product configuration"
+  },
+  "productConfigEdit": {
+    "message": "Edit configuration",
+    "description": "Edit product configuration dialog title"
+  },
+  "productConfigBuilderDesc": {
+    "message": "Build options and business rules, then preview live validation before selling.",
+    "description": "Product configuration builder subtitle"
+  },
+  "productConfigsEmpty": {
+    "message": "No product configurations yet.",
+    "description": "Empty product configurations list"
+  },
+  "productConfigsEmptyHint": {
+    "message": "Create a configuration for an item group, define options like Processor and RAM, then add rules.",
+    "description": "Empty product configurations hint"
+  },
+  "productConfigNeedGroup": {
+    "message": "Create an item group first",
+    "description": "Need item group before configuration"
+  },
+  "productConfigNeedGroupHint": {
+    "message": "Product configurations attach to an item group (product family).",
+    "description": "Need item group hint"
+  },
+  "productConfigName": {
+    "message": "Configuration name",
+    "description": "Product configuration name field"
+  },
+  "productConfigItemGroup": {
+    "message": "Item group",
+    "description": "Product configuration item group field"
+  },
+  "productConfigItemGroupPick": {
+    "message": "Select item group…",
+    "description": "Item group placeholder"
+  },
+  "productConfigDescription": {
+    "message": "Description",
+    "description": "Product configuration description"
+  },
+  "productConfigStatus": {
+    "message": "Status",
+    "description": "Product configuration status"
+  },
+  "productConfigStatusActive": {
+    "message": "Active",
+    "description": "Active status label"
+  },
+  "productConfigStatusInactive": {
+    "message": "Inactive",
+    "description": "Inactive status label"
+  },
+  "productConfigEffectiveFrom": {
+    "message": "Effective from",
+    "description": "Effective from date"
+  },
+  "productConfigEffectiveUntil": {
+    "message": "Effective until",
+    "description": "Effective until date"
+  },
+  "productConfigTabGeneral": {
+    "message": "General",
+    "description": "Builder general tab"
+  },
+  "productConfigTabOptions": {
+    "message": "Options",
+    "description": "Builder options tab"
+  },
+  "productConfigTabRules": {
+    "message": "Rules",
+    "description": "Builder rules tab"
+  },
+  "productConfigTabPreview": {
+    "message": "Preview",
+    "description": "Builder preview tab"
+  },
+  "productConfigOptionsHint": {
+    "message": "Options shown while configuring a product (processor, color, warranty, accessories, …).",
+    "description": "Options section hint"
+  },
+  "productConfigAddOption": {
+    "message": "Add option",
+    "description": "Add configuration option"
+  },
+  "productConfigOptionsEmpty": {
+    "message": "No options yet. Add options that sales can choose from.",
+    "description": "No options empty state"
+  },
+  "productConfigOptionName": {
+    "message": "Option name",
+    "description": "Option name field"
+  },
+  "productConfigOptionType": {
+    "message": "Type",
+    "description": "Option type field"
+  },
+  "productConfigTypeDropdown": {
+    "message": "Dropdown",
+    "description": "Option type dropdown"
+  },
+  "productConfigTypeSingle": {
+    "message": "Single select",
+    "description": "Option type single select"
+  },
+  "productConfigTypeMulti": {
+    "message": "Multi select",
+    "description": "Option type multi select"
+  },
+  "productConfigTypeCheckbox": {
+    "message": "Checkbox",
+    "description": "Option type checkbox"
+  },
+  "productConfigRequired": {
+    "message": "Required",
+    "description": "Option required flag"
+  },
+  "productConfigOptionValues": {
+    "message": "Values",
+    "description": "Option values field"
+  },
+  "productConfigOptionValuesPh": {
+    "message": "Comma-separated values (e.g. Intel i5, Intel i7, Intel i9)",
+    "description": "Option values placeholder"
+  },
+  "productConfigProductRules": {
+    "message": "Product rules",
+    "description": "Product rules section"
+  },
+  "productConfigCompatRules": {
+    "message": "Compatibility rules",
+    "description": "Compatibility rules section"
+  },
+  "productConfigDepRules": {
+    "message": "Dependency rules",
+    "description": "Dependency rules section"
+  },
+  "productConfigAddRule": {
+    "message": "Add rule",
+    "description": "Add rule button"
+  },
+  "productConfigRuleMin": {
+    "message": "Minimum selection",
+    "description": "Min product rule"
+  },
+  "productConfigRuleMax": {
+    "message": "Maximum selection",
+    "description": "Max product rule"
+  },
+  "productConfigRuleMandatory": {
+    "message": "Mandatory",
+    "description": "Mandatory product rule"
+  },
+  "productConfigRuleQty": {
+    "message": "Quantity limits",
+    "description": "Quantity product rule"
+  },
+  "productConfigOptionPick": {
+    "message": "Option…",
+    "description": "Pick option placeholder"
+  },
+  "productConfigMinQty": {
+    "message": "Min qty",
+    "description": "Min quantity placeholder"
+  },
+  "productConfigMaxQty": {
+    "message": "Max qty",
+    "description": "Max quantity placeholder"
+  },
+  "productConfigOptionA": {
+    "message": "Option A",
+    "description": "Compatibility option A"
+  },
+  "productConfigOptionB": {
+    "message": "Option B",
+    "description": "Compatibility option B"
+  },
+  "productConfigModeIncompat": {
+    "message": "Incompatible pairs",
+    "description": "Incompatible mode"
+  },
+  "productConfigModeCompat": {
+    "message": "Compatible pairs only",
+    "description": "Compatible mode"
+  },
+  "productConfigPairsPh": {
+    "message": "Pairs: valueA|valueB, valueA2|valueB2",
+    "description": "Compatibility pairs placeholder"
+  },
+  "productConfigWhenOption": {
+    "message": "When option…",
+    "description": "Dependency when option"
+  },
+  "productConfigWhenValuesPh": {
+    "message": "When values (comma-separated)",
+    "description": "Dependency when values"
+  },
+  "productConfigActionRequire": {
+    "message": "Require",
+    "description": "Dependency require action"
+  },
+  "productConfigActionAdd": {
+    "message": "Auto-add",
+    "description": "Dependency add action"
+  },
+  "productConfigActionRecommend": {
+    "message": "Recommend",
+    "description": "Dependency recommend action"
+  },
+  "productConfigTargetOption": {
+    "message": "Target option…",
+    "description": "Dependency target option"
+  },
+  "productConfigTargetValue": {
+    "message": "Target value",
+    "description": "Dependency target value"
+  },
+  "productConfigPreviewHint": {
+    "message": "Select options as a sales user would. Validation runs in real time.",
+    "description": "Preview tab hint"
+  },
+  "productConfigSelect": {
+    "message": "Select…",
+    "description": "Select option placeholder"
+  },
+  "productConfigValidation": {
+    "message": "Validation",
+    "description": "Validation panel title"
+  },
+  "productConfigValid": {
+    "message": "Configuration is valid and ready for pricing.",
+    "description": "Valid configuration message"
+  },
+  "productConfigValidationIdle": {
+    "message": "Make selections to run validation.",
+    "description": "Idle validation message"
+  },
+  "productConfigAppliedDeps": {
+    "message": "Applied dependencies",
+    "description": "Applied dependencies label"
+  },
+  "productConfigSaved": {
+    "message": "Configuration updated.",
+    "description": "Save success"
+  },
+  "productConfigCreated": {
+    "message": "Configuration created.",
+    "description": "Create success"
+  },
+  "productConfigActivate": {
+    "message": "Activate",
+    "description": "Activate configuration"
+  },
+  "productConfigDeactivate": {
+    "message": "Deactivate",
+    "description": "Deactivate configuration"
+  },
+  "productConfigActivated": {
+    "message": "Configuration activated.",
+    "description": "Activated toast"
+  },
+  "productConfigDeactivated": {
+    "message": "Configuration deactivated.",
+    "description": "Deactivated toast"
+  },
+  "productConfigOptionCount": {
+    "message": "{count} options",
+    "description": "Option count meta"
+  },
+  "productConfigDepRulesHint": {
+    "message": "When the trigger option has selected values, require, auto-add, or recommend another option. Values are chosen from each option’s defined list.",
+    "description": "Dependency rules helper text"
+  },
+  "productConfigWhenValues": {
+    "message": "When values",
+    "description": "Dependency when values multi-select label"
+  },
+  "productConfigAction": {
+    "message": "Action",
+    "description": "Dependency action label"
+  },
+  "productConfigNoOptionValues": {
+    "message": "Add values for this option on the Options tab first.",
+    "description": "Shown when option has no values for rule picks"
+  },
+  "productConfigPickWhenFirst": {
+    "message": "Select a trigger option first.",
+    "description": "Pick when option before values"
+  },
+  "productConfigPickTargetFirst": {
+    "message": "Select a target option first.",
+    "description": "Pick target option before value"
+  },
+  "productConfigCheckboxTrue": {
+    "message": "Checked",
+    "description": "Checkbox option true value label"
+  },
+  "productConfigSectionBasics": {
+    "message": "Basics",
+    "description": "Basics section heading"
+  },
+  "productConfigSectionBasicsHint": {
+    "message": "Name, product family, and when this configuration is sellable.",
+    "description": "Basics section hint"
+  },
+  "productConfigSectionOptions": {
+    "message": "Options",
+    "description": "Options section heading"
+  },
+  "productConfigSectionRules": {
+    "message": "Rules",
+    "description": "Rules section heading"
+  },
+  "productConfigSectionRulesHint": {
+    "message": "Constraints sales must satisfy before this configuration can be quoted.",
+    "description": "Rules section hint"
+  },
+  "productConfigNamePh": {
+    "message": "e.g. Business Laptop Config",
+    "description": "Configuration name placeholder"
+  },
+  "productConfigDescriptionPh": {
+    "message": "Optional notes for catalog admins",
+    "description": "Description placeholder"
+  },
+  "productConfigOptionNamePh": {
+    "message": "Option name (e.g. Processor)",
+    "description": "Option name placeholder"
+  },
+  "productConfigValuePlaceholder": {
+    "message": "Add a value and press Enter",
+    "description": "First value chip placeholder"
+  },
+  "productConfigValueAddMore": {
+    "message": "Add another…",
+    "description": "Additional value chip placeholder"
+  },
+  "productConfigValueChipHint": {
+    "message": "Type a value and press Enter or comma. Backspace removes the last chip.",
+    "description": "Value chip input hint"
+  },
+  "productConfigRemoveValue": {
+    "message": "Remove value",
+    "description": "Remove option value chip"
+  },
+  "productConfigMoveUp": {
+    "message": "Move up",
+    "description": "Reorder option up"
+  },
+  "productConfigMoveDown": {
+    "message": "Move down",
+    "description": "Reorder option down"
+  },
+  "productConfigLivePreview": {
+    "message": "Live configuration",
+    "description": "Right panel title"
+  },
+  "productConfigPreviewEmpty": {
+    "message": "Add options to preview the sales experience.",
+    "description": "Empty live preview"
+  },
+  "productConfigPreviewEmptyHint": {
+    "message": "As you add Processor, RAM, Warranty… the buyer flow appears here.",
+    "description": "Empty live preview hint"
+  },
+  "productConfigPreviewBadgeEmpty": {
+    "message": "No options",
+    "description": "Preview badge empty"
+  },
+  "productConfigPreviewBadgeValid": {
+    "message": "Valid",
+    "description": "Preview badge valid"
+  },
+  "productConfigPreviewBadgeInvalid": {
+    "message": "{count} issue(s)",
+    "description": "Preview badge invalid count"
+  },
+  "productConfigPreviewBadgeIdle": {
+    "message": "Incomplete",
+    "description": "Preview badge idle"
+  },
+  "productConfigProductRulesEmpty": {
+    "message": "No product rules. Optional — e.g. max one processor.",
+    "description": "Empty product rules"
+  },
+  "productConfigCompatRulesEmpty": {
+    "message": "No compatibility rules. Optional — block or allow specific value pairs.",
+    "description": "Empty compatibility rules"
+  },
+  "productConfigDepRulesEmpty": {
+    "message": "No dependency rules. Optional — e.g. 3-year warranty requires Premium support.",
+    "description": "Empty dependency rules"
+  },
+  "productConfigRuleSentence": {
+    "message": "On",
+    "description": "Start of product rule sentence"
+  },
+  "productConfigWhen": {
+    "message": "When",
+    "description": "Dependency when label"
+  },
+  "productConfigThen": {
+    "message": "then",
+    "description": "Dependency then label"
+  },
+  "productConfigAddPair": {
+    "message": "Add pair",
+    "description": "Add compatibility pair"
+  },
+  "productConfigRuleCount": {
+    "message": "{count} rules",
+    "description": "Rules count on list row"
+  },
+  "catalogTabPricing": {
+    "message": "Pricing",
+    "description": "Catalog hub pricing rules and promotions tab"
+  },
+  "catalogPriceBookCustomerTypes": {
+    "message": "Customer types (optional)",
+    "description": "Price book customer types multi-select label"
+  },
+  "catalogPriceBookRegions": {
+    "message": "Regions (comma-separated, optional)",
+    "description": "Price book region codes field"
+  },
+  "catalogPriceBookRegionsPlaceholder": {
+    "message": "IN, SG, AE",
+    "description": "Price book regions placeholder"
+  },
+  "catalogPriceBookPriority": {
+    "message": "Priority (lower wins)",
+    "description": "Price book priority field"
+  },
+  "pricingEngineDesc": {
+    "message": "Rules and promotions apply after the price book base price. Order: base → rules → promotions → taxes.",
+    "description": "Pricing engine settings description"
+  },
+  "pricingTabRules": {
+    "message": "Rules",
+    "description": "Pricing panel rules toggle"
+  },
+  "pricingTabPromotions": {
+    "message": "Promotions",
+    "description": "Pricing panel promotions toggle"
+  },
+  "pricingTabPreview": {
+    "message": "Preview",
+    "description": "Pricing panel preview toggle"
+  },
+  "pricingAddRule": {
+    "message": "Add rule",
+    "description": "Add pricing rule button"
+  },
+  "pricingEditRule": {
+    "message": "Edit rule",
+    "description": "Edit pricing rule dialog title"
+  },
+  "pricingAddPromo": {
+    "message": "Add promotion",
+    "description": "Add promotion button"
+  },
+  "pricingEditPromo": {
+    "message": "Edit promotion",
+    "description": "Edit promotion dialog title"
+  },
+  "pricingRulesEmpty": {
+    "message": "No pricing rules yet. Add volume, customer, contract, or channel rules.",
+    "description": "Empty pricing rules state"
+  },
+  "pricingPromosEmpty": {
+    "message": "No promotions yet. Add product discounts, festival offers, or buy-X-get-Y.",
+    "description": "Empty promotions state"
+  },
+  "pricingPreviewHint": {
+    "message": "Simulate the full stack for a variant before quoting.",
+    "description": "Pricing preview help text"
+  },
+  "pricingPreviewVariantId": {
+    "message": "Variant ID",
+    "description": "Pricing preview variant field"
+  },
+  "pricingPreviewQty": {
+    "message": "Quantity",
+    "description": "Pricing preview quantity field"
+  },
+  "pricingCustomerType": {
+    "message": "Customer type",
+    "description": "Customer type field label"
+  },
+  "pricingRegion": {
+    "message": "Region code",
+    "description": "Region code field label"
+  },
+  "pricingRunPreview": {
+    "message": "Run preview",
+    "description": "Run pricing preview button"
+  },
+  "pricingPreviewList": {
+    "message": "List",
+    "description": "List price label in preview"
+  },
+  "pricingPreviewUnit": {
+    "message": "Final unit",
+    "description": "Final unit price label in preview"
+  },
+  "pricingPreviewNoAdjustments": {
+    "message": "No rules or promotions applied — base price only.",
+    "description": "Preview with no adjustments"
+  },
+  "pricingNamePlaceholder": {
+    "message": "Name",
+    "description": "Pricing rule or promo name placeholder"
+  },
+  "pricingMinQty": {
+    "message": "Min quantity",
+    "description": "Min quantity condition"
+  },
+  "pricingMinOrder": {
+    "message": "Min order subtotal",
+    "description": "Min order subtotal for order discount"
+  },
+  "pricingPriority": {
+    "message": "Priority",
+    "description": "Priority field placeholder"
+  },
+  "pricingCustomerIdsHint": {
+    "message": "Customer IDs for contracts (comma-separated)",
+    "description": "Contract customer IDs hint"
+  },
+  "pricingRegionsHint": {
+    "message": "Region codes (comma-separated)",
+    "description": "Region codes condition hint"
+  },
+  "pricingLoadFailed": {
+    "message": "Could not load pricing data.",
+    "description": "Pricing load error"
+  },
+  "pricingSaved": {
+    "message": "Saved.",
+    "description": "Pricing save success"
+  },
+  "pricingSaveFailed": {
+    "message": "Could not save.",
+    "description": "Pricing save error"
+  },
+  "pricingDeleted": {
+    "message": "Deleted.",
+    "description": "Pricing delete success"
+  },
+  "pricingDeleteFailed": {
+    "message": "Could not delete.",
+    "description": "Pricing delete error"
+  },
+  "pricingPreviewVariantRequired": {
+    "message": "Variant ID is required for preview.",
+    "description": "Preview validation"
+  },
+  "pricingPreviewFailed": {
+    "message": "Preview failed.",
+    "description": "Preview error"
   }
 }

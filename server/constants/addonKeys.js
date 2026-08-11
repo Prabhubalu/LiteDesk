@@ -14,6 +14,10 @@ const ADDON_KEYS = {
   AI_CREDITS: 'ai_credits',
   /** TallyPrime connector (Windows Agent + sync runtime) */
   TALLY: 'tally',
+  /** Multi-stockroom / warehouse locations (requires Inventory app) */
+  STOCKROOM: 'stockroom',
+  /** Configure-price-quote: item groups, variants, pricing (requires Inventory app) */
+  CPQ: 'cpq',
   /** Voice calling, softphone, recordings, and telephony automation */
   TELEPHONY: 'telephony',
   // Legacy capability keys (pre-unified AI). Still valid for entitlement alias checks.

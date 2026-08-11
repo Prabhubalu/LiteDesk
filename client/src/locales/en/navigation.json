@@ -832,6 +832,10 @@
     "message": "Item Groups",
     "description": "Link to catalog item groups settings"
   },
+  "inventoryProductConfigs": {
+    "message": "Product configurations",
+    "description": "Link to product configurations settings"
+  },
   "marketingDashboardBlurb": {
     "message": "Create email campaigns, manage audiences and templates, and measure engagement — delivery is handled by AMDS.",
     "description": "Short description on Marketing app dashboard"

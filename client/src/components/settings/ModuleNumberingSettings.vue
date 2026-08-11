@@ -37,6 +37,7 @@
       :sort-field="listSortField"
       :sort-order="listSortOrder"
       :parent-search-query="listSearchQuery"
+      :external-filters="listColumnFilters"
       :show-create="false"
       :show-import="false"
       :show-export="false"
@@ -49,6 +50,7 @@
       :empty-title="t('settings.moduleNumberingEmptyTitle')"
       :empty-message="t('settings.moduleNumberingEmptyBody')"
       @update:search-query="handleListSearch"
+      @update:filters="handleListFilters"
       @update:sort="handleListSort"
       @update:pagination="handleListPagination"
       @row-click="(row) => openEdit(row.moduleKey)"
@@ -296,21 +298,6 @@
         </div>
       </section>
 
-      <!-- Manual edit -->
-      <section class="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-        <SwitchGroup as="div" class="flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <SwitchLabel class="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
-              {{ t('settings.moduleNumberingManual') }}
-            </SwitchLabel>
-            <SwitchDescription class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {{ t('settings.moduleNumberingManualHint') }}
-            </SwitchDescription>
-          </div>
-          <HeadlessSwitch v-model="form.allowManualEdit" class="mt-0.5" />
-        </SwitchGroup>
-      </section>
-
       <div>
         <button
           type="button"
@@ -343,7 +330,6 @@ import {
   RadioGroupOption,
   SwitchGroup,
   SwitchLabel,
-  SwitchDescription,
 } from '@headlessui/vue';
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
@@ -352,6 +338,15 @@ import HeadlessSwitch from '@/components/ui/HeadlessSwitch.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import apiClient from '@/utils/apiClient';
 import { formatUserDateTime } from '@/utils/localeFormat';
+import { isFilterValueActive } from '@/platform/filters/filterValueUtils';
+import {
+  getThisMonthRange,
+  getThisQuarterRange,
+  getThisWeekRange,
+  getThisYearRange,
+  getTodayRange,
+  parseDateFilterValue,
+} from '@/utils/dateFilterOptions';
 
 const emit = defineEmits(['back']);
 const { t } = useI18n();
@@ -364,6 +359,8 @@ const saving = ref(false);
 const resyncing = ref(false);
 const configs = ref([]);
 const listSearchQuery = ref('');
+/** Column-header filters from ListView (`@update:filters`); applied client-side. */
+const listColumnFilters = ref({});
 const listSortField = ref('label');
 const listSortOrder = ref('asc');
 const listPage = ref(1);
@@ -384,7 +381,6 @@ const form = ref({
   startingSequence: 1,
   currentSequence: 0,
   resetRule: 'never',
-  allowManualEdit: false,
 });
 const builder = ref({
   mode: 'simple', // simple | year | yearMonth | yearMonthDay | custom
@@ -480,7 +476,8 @@ const listColumns = computed(() => [
     showInTable: true,
     visibility: { list: true },
     minWidth: '8rem',
-    dataType: 'text',
+    dataType: 'boolean',
+    filterType: 'boolean',
   },
   {
     key: 'updatedAt',
@@ -504,6 +501,231 @@ const normalizedConfigs = computed(() =>
   }))
 );
 
+function columnSearchHaystack(row, key) {
+  if (key === 'enabled') {
+    return row.enabled
+      ? `${t('settings.moduleNumberingEnabled')} true yes`
+      : `${t('settings.moduleNumberingDisabled')} false no`;
+  }
+  if (key === 'updatedAt') {
+    const raw = row.updatedAt ? String(row.updatedAt) : '';
+    const formatted = formatDate(row.updatedAt);
+    return `${raw} ${formatted === '—' ? '' : formatted}`.trim();
+  }
+  if (key === 'label') {
+    return [row.label, row.moduleKey].filter(Boolean).join(' ');
+  }
+  if (key === 'numberFieldLabel') {
+    return [row.numberFieldLabel, row.numberFieldKey].filter(Boolean).join(' ');
+  }
+  return String(row?.[key] ?? '');
+}
+
+function resolveDateRange(parsed) {
+  if (!parsed) return null;
+  if (parsed.preset === 'today') return getTodayRange();
+  if (parsed.preset === 'thisWeek') return getThisWeekRange();
+  if (parsed.preset === 'thisMonth') return getThisMonthRange();
+  if (parsed.preset === 'thisQuarter') return getThisQuarterRange();
+  if (parsed.preset === 'thisYear') return getThisYearRange();
+  if (parsed.op === 'on' && parsed.date) {
+    const from = new Date(parsed.date);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(from);
+    to.setDate(to.getDate() + 1);
+    to.setMilliseconds(-1);
+    return { from, to };
+  }
+  if (parsed.op === 'before' && parsed.date) {
+    const to = new Date(parsed.date);
+    to.setHours(23, 59, 59, 999);
+    return { from: new Date(0), to };
+  }
+  if (parsed.op === 'after' && parsed.date) {
+    const from = new Date(parsed.date);
+    from.setHours(0, 0, 0, 0);
+    return { from, to: new Date(8640000000000000) };
+  }
+  if (parsed.op === 'between' && parsed.from && parsed.to) {
+    const from = new Date(parsed.from);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(parsed.to);
+    to.setHours(23, 59, 59, 999);
+    return { from, to };
+  }
+  if (parsed.op === 'lastDays' && parsed.days != null) {
+    const to = new Date();
+    to.setHours(23, 59, 59, 999);
+    const from = new Date(to);
+    from.setDate(from.getDate() - Number(parsed.days));
+    from.setHours(0, 0, 0, 0);
+    return { from, to };
+  }
+  return null;
+}
+
+/** Text column filters use `contains` → ListView emits filterQuery AST, not flat keys. */
+function parseFilterQueryAst(raw) {
+  if (!raw) return null;
+  let current = raw;
+  for (let depth = 0; depth < 2; depth += 1) {
+    if (current && typeof current === 'object' && !Array.isArray(current)) {
+      return current;
+    }
+    if (typeof current !== 'string') return null;
+    try {
+      current = JSON.parse(current);
+    } catch {
+      return null;
+    }
+  }
+  return current && typeof current === 'object' && !Array.isArray(current) ? current : null;
+}
+
+function collectFilterQueryRules(node, logic = 'AND', results = []) {
+  if (!node || typeof node !== 'object') return results;
+  if (node.fieldKey) {
+    results.push({
+      fieldKey: String(node.fieldKey),
+      operator: String(node.operator || 'contains'),
+      value: node.value,
+      logic,
+    });
+  }
+  const childLogic = node.logic === 'OR' ? 'OR' : 'AND';
+  for (const child of node.children || []) {
+    collectFilterQueryRules(child, childLogic, results);
+  }
+  return results;
+}
+
+function rowMatchesOperator(row, fieldKey, operator, value) {
+  const hay = columnSearchHaystack(row, fieldKey);
+  const hayLower = hay.toLowerCase();
+  const empty = !String(hay ?? '').trim();
+
+  if (operator === 'is_empty') return empty;
+  if (operator === 'is_not_empty') return !empty;
+
+  if (fieldKey === 'updatedAt' && (typeof value === 'object' || operator === 'is')) {
+    return rowMatchesColumnFilter(row, fieldKey, value);
+  }
+
+  if (operator === 'is_any_of') {
+    const values = Array.isArray(value) ? value : value != null && value !== '' ? [value] : [];
+    if (!values.length) return true;
+    return values.some((entry) => hayLower.includes(String(entry ?? '').trim().toLowerCase())
+      || String(row?.[fieldKey] ?? '').toLowerCase() === String(entry ?? '').trim().toLowerCase());
+  }
+
+  if (operator === 'is_not') {
+    if (value === true || value === 'true') return row.enabled !== true;
+    if (value === false || value === 'false') return row.enabled !== false;
+    const needle = String(value ?? '').trim().toLowerCase();
+    if (!needle) return true;
+    return !hayLower.includes(needle);
+  }
+
+  if (operator === 'not_contains') {
+    const needle = String(value ?? '').trim().toLowerCase();
+    if (!needle) return true;
+    return !hayLower.includes(needle);
+  }
+
+  if (operator === 'is') {
+    if (fieldKey === 'enabled') {
+      if (value === true || value === 'true') return row.enabled === true;
+      if (value === false || value === 'false') return row.enabled === false;
+    }
+    if (fieldKey === 'currentSequence') {
+      return Number(row.currentSequence) === Number(value);
+    }
+    const needle = String(value ?? '').trim().toLowerCase();
+    if (!needle) return true;
+    return hayLower === needle || String(row?.[fieldKey] ?? '').toLowerCase() === needle;
+  }
+
+  // contains (default for text) and other operators: case-insensitive substring
+  return rowMatchesColumnFilter(row, fieldKey, value);
+}
+
+function rowMatchesColumnFilter(row, key, value) {
+  if (!isFilterValueActive(value)) return true;
+
+  if (key === 'updatedAt' && typeof value === 'object' && !Array.isArray(value)) {
+    const parsed = parseDateFilterValue(value);
+    if (!parsed) return true;
+    const ms = row.updatedAt ? new Date(row.updatedAt).getTime() : NaN;
+    const hasValue = Number.isFinite(ms);
+    if (parsed.op === 'empty') return !hasValue;
+    if (parsed.op === 'notEmpty') return hasValue;
+    if (!hasValue) return false;
+    const range = resolveDateRange(parsed);
+    if (!range) return true;
+    return ms >= range.from.getTime() && ms <= range.to.getTime();
+  }
+
+  if (key === 'currentSequence') {
+    const query = String(value ?? '').trim();
+    if (!query) return true;
+    const num = Number(row.currentSequence);
+    if (!Number.isFinite(num)) return false;
+    if (query === String(num)) return true;
+    return String(num).includes(query);
+  }
+
+  if (key === 'enabled') {
+    const query = String(value ?? '').trim().toLowerCase();
+    if (!query) return true;
+    if (query === 'true' || query === '1') return row.enabled === true;
+    if (query === 'false' || query === '0') return row.enabled === false;
+    return columnSearchHaystack(row, key).toLowerCase().includes(query);
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((entry) =>
+      columnSearchHaystack(row, key).toLowerCase().includes(String(entry ?? '').trim().toLowerCase())
+    );
+  }
+
+  const needle = String(value ?? '').trim().toLowerCase();
+  if (!needle) return true;
+  return columnSearchHaystack(row, key).toLowerCase().includes(needle);
+}
+
+function rowMatchesAllColumnFilters(row) {
+  const filters = listColumnFilters.value || {};
+  const ast = parseFilterQueryAst(filters.filterQuery);
+  const astRules = collectFilterQueryRules(ast);
+
+  if (astRules.length) {
+    // Rules in the compiled AST share AND at root when ListView emits contains filters.
+    const byLogic = astRules.reduce((acc, rule) => {
+      const group = rule.logic || 'AND';
+      if (!acc[group]) acc[group] = [];
+      acc[group].push(rule);
+      return acc;
+    }, {});
+    for (const [logic, rules] of Object.entries(byLogic)) {
+      if (logic === 'OR') {
+        if (!rules.some((r) => rowMatchesOperator(row, r.fieldKey, r.operator, r.value))) {
+          return false;
+        }
+      } else if (!rules.every((r) => rowMatchesOperator(row, r.fieldKey, r.operator, r.value))) {
+        return false;
+      }
+    }
+  }
+
+  // Flat payload keys (dates, booleans, numbers, or legacy non-AST filters)
+  return Object.entries(filters).every(([key, value]) => {
+    if (key === 'filterQuery') return true;
+    // Skip keys already enforced via AST
+    if (astRules.some((r) => r.fieldKey === key)) return true;
+    return rowMatchesColumnFilter(row, key, value);
+  });
+}
+
 const filteredSortedConfigs = computed(() => {
   const q = String(listSearchQuery.value || '').trim().toLowerCase();
   let rows = [...normalizedConfigs.value];
@@ -515,6 +737,7 @@ const filteredSortedConfigs = computed(() => {
         row.numberFieldLabel,
         row.numberFieldKey,
         row.format,
+        row.enabled ? t('settings.moduleNumberingEnabled') : t('settings.moduleNumberingDisabled'),
       ]
         .filter(Boolean)
         .join(' ')
@@ -522,6 +745,8 @@ const filteredSortedConfigs = computed(() => {
       return hay.includes(q);
     });
   }
+
+  rows = rows.filter(rowMatchesAllColumnFilters);
 
   const field = listSortField.value || 'label';
   const dir = listSortOrder.value === 'desc' ? -1 : 1;
@@ -549,6 +774,11 @@ const listRows = computed(() => {
 
 function handleListSearch(query) {
   listSearchQuery.value = typeof query === 'string' ? query : String(query || '');
+  listPage.value = 1;
+}
+
+function handleListFilters(payload = {}) {
+  listColumnFilters.value = payload && typeof payload === 'object' ? { ...payload } : {};
   listPage.value = 1;
 }
 
@@ -731,7 +961,6 @@ function serializeForm() {
     sequenceLength: Number(form.value.sequenceLength) || 6,
     startingSequence: Number(form.value.startingSequence) || 1,
     resetRule: String(form.value.resetRule || 'never'),
-    allowManualEdit: form.value.allowManualEdit === true,
   });
 }
 
@@ -787,7 +1016,6 @@ async function openEdit(moduleKey) {
       startingSequence: Number(c.startingSequence) || 1,
       currentSequence: Number(c.currentSequence) || 0,
       resetRule: String(c.resetRule || 'never'),
-      allowManualEdit: c.allowManualEdit === true,
     };
     const detected = detectBuilderFromFormat(
       form.value.format,
@@ -839,7 +1067,6 @@ async function save() {
       sequenceLength: Number(form.value.sequenceLength) || 6,
       startingSequence: Number(form.value.startingSequence) || 1,
       resetRule: String(form.value.resetRule || 'never'),
-      allowManualEdit: form.value.allowManualEdit === true,
       confirmLowerStarting: true,
     };
     const res = await apiClient.put(`/settings/module-numbering/${encoded}`, payload);

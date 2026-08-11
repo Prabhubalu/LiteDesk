@@ -935,6 +935,16 @@
       @saved="handleRecordUpdated"
     />
     <CreateRecordDrawer
+      v-if="showDuplicateCreateModal"
+      :key="`duplicate-create-${moduleKey}-${duplicateSourceId}`"
+      :is-open="showDuplicateCreateModal"
+      :module-key="moduleKey"
+      :duplicate-mode="true"
+      :initial-data="duplicateInitialData"
+      @close="closeDuplicateCreate"
+      @saved="handleDuplicateCreated"
+    />
+    <CreateRecordDrawer
       v-if="showAddRelatedRecordDrawer && addRelatedRecordModuleKey"
       :is-open="showAddRelatedRecordDrawer"
       :module-key="addRelatedRecordModuleKey"
@@ -1175,6 +1185,7 @@ import { createCommentReactionApi } from '@/components/activity/utils/commentRea
 import { useCommentReactionActions } from '@/components/activity/composables/useCommentReactionActions';
 import { useCommentReactionTooltip } from '@/components/activity/composables/useCommentReactionTooltip';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import { buildDuplicateInitialData } from '@/utils/duplicateRecord';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
 import AutomationContext from '@/components/automation/AutomationContext.vue';
@@ -1359,6 +1370,9 @@ const activityRaw = ref([]);
   const expandedTaskEmailThreads = ref(new Set());
   const showDeleteModal = ref(false);
 const showEditModal = ref(false);
+const showDuplicateCreateModal = ref(false);
+const duplicateInitialData = ref({});
+const duplicateSourceId = ref('');
 const showEmailModal = ref(false);
 const emailComposeDraft = ref(null);
 
@@ -5019,11 +5033,6 @@ function copyRecordUrl() {
   }
 }
 
-const DUPLICATE_OMIT_KEYS = new Set([
-  '_id', '__v', 'createdAt', 'updatedAt', 'createdBy', 'modifiedBy',
-  'deletedAt', 'deletedBy', 'deletionReason', 'activityLogs', 'organizationId'
-]);
-
 function handleFormShareLinkUpdated(updatedForm) {
   if (!updatedForm || !record.value) return;
   record.value = { ...record.value, ...updatedForm };
@@ -5171,6 +5180,16 @@ async function handleArchiveForm() {
   }
 }
 
+function closeDuplicateCreate() {
+  showDuplicateCreateModal.value = false;
+  duplicateInitialData.value = {};
+  duplicateSourceId.value = '';
+}
+
+function handleDuplicateCreated() {
+  closeDuplicateCreate();
+}
+
 async function handleDuplicate() {
   if (!record.value) return;
   if (isFormsModule.value) {
@@ -5181,27 +5200,31 @@ async function handleDuplicate() {
     });
     return;
   }
-  try {
-    const r = record.value;
-    const payload = {};
-    for (const key of Object.keys(r)) {
-      if (DUPLICATE_OMIT_KEYS.has(key)) continue;
-      const v = r[key];
-      if (v != null && typeof v === 'object' && v._id != null) {
-        payload[key] = v._id;
-      } else {
-        payload[key] = v;
+  // Open Create form prefilled — no DB write until user saves
+  let source = record.value;
+  const mk = String(props.moduleKey || '').toLowerCase();
+  const commercialNeedsLines = ['quotes', 'invoices', 'sales_orders', 'purchase_orders'].includes(mk);
+  if (commercialNeedsLines && (!Array.isArray(source.lines) || !source.lines.length)) {
+    try {
+      const res = await apiClient.get(`${recordCrudPathBase.value}/${source._id || source.id}`);
+      const data = res?.data ?? res;
+      if (data && typeof data === 'object') {
+        source = {
+          ...source,
+          ...data,
+          lines: data.lines || source.lines,
+          sections: data.sections || source.sections
+        };
       }
+    } catch (e) {
+      console.warn('[Duplicate] Could not refetch source lines:', e);
     }
-    const res = await apiClient.post(recordCrudPathBase.value, payload);
-    const data = res?.data ?? res;
-    const newId = data?._id ?? data?.id;
-    if (newId) {
-      router.push(recordDetailPathForId(newId));
-    }
-  } catch (e) {
-    console.error('Duplicate record error:', e);
   }
+  duplicateSourceId.value = String(source._id || source.id || '');
+  duplicateInitialData.value = buildDuplicateInitialData(source, {
+    moduleKey: props.moduleKey
+  });
+  showDuplicateCreateModal.value = true;
 }
 
 function handleExport() {

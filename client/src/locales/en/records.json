@@ -1895,6 +1895,10 @@
     "message": " changed ",
     "description": "System field change activity between actor and field"
   },
+  "activityMassEditPerformedBy": {
+    "message": "Mass Edit performed by {name}",
+    "description": "Timeline header when a field change came from Mass Edit"
+  },
   "activitySystemChangedTo": {
     "message": "Changed {field} to",
     "description": "Tags/system field change lead-in"
@@ -2903,9 +2907,33 @@
     "message": "Related Records",
     "description": "Deal right pane related tab"
   },
+  "drawerNewTitle": {
+    "message": "New {module}",
+    "description": "Create drawer header for blank create"
+  },
+  "drawerEditTitle": {
+    "message": "Edit {module}",
+    "description": "Create drawer header when editing"
+  },
+  "drawerDuplicateTitle": {
+    "message": "Duplicate {module}",
+    "description": "Create drawer header when duplicating a record"
+  },
+  "drawerDuplicateHint": {
+    "message": "Prefilled from the original — review and save to create a copy",
+    "description": "Subtitle under duplicate drawer title"
+  },
+  "drawerDuplicateSave": {
+    "message": "Create copy",
+    "description": "Primary save CTA on duplicate-as-create drawer"
+  },
   "dealDuplicateNotImplemented": {
     "message": "Duplicate action is not implemented yet for deals.",
     "description": "Deal duplicate stub alert"
+  },
+  "duplicateNameExists": {
+    "message": "An Item with this name already exists.",
+    "description": "Create/duplicate uniqueness error for item name"
   },
   "dealExportNotImplemented": {
     "message": "Export action is not implemented yet for deals.",
@@ -5850,5 +5878,65 @@
   "xferSysFieldCreatedAt": {
     "message": "Created",
     "description": "Transfer created timestamp"
+  },
+  "productConfigGuidedTitle": {
+    "message": "Configure product",
+    "description": "Guided product configuration drawer title"
+  },
+  "productConfigGuidedHint": {
+    "message": "Make selections for this sellable item. Only valid configurations can be added to the document.",
+    "description": "Guided configurator intro"
+  },
+  "productConfigGuidedPickConfig": {
+    "message": "Configuration",
+    "description": "Pick which product configuration when multiple exist"
+  },
+  "productConfigGuidedNone": {
+    "message": "No active configuration for this product family.",
+    "description": "No configs available message"
+  },
+  "productConfigGuidedSelect": {
+    "message": "Select…",
+    "description": "Dropdown empty selection"
+  },
+  "productConfigGuidedChecked": {
+    "message": "Yes",
+    "description": "Checkbox yes label"
+  },
+  "productConfigGuidedValidation": {
+    "message": "Validation",
+    "description": "Validation panel label"
+  },
+  "productConfigGuidedValid": {
+    "message": "Configuration valid — ready to add.",
+    "description": "Valid status message"
+  },
+  "productConfigGuidedIdle": {
+    "message": "Complete required options to continue.",
+    "description": "Idle validation"
+  },
+  "productConfigGuidedDeps": {
+    "message": "Applied dependencies",
+    "description": "Applied deps list"
+  },
+  "productConfigGuidedConfirm": {
+    "message": "Add to document",
+    "description": "Confirm configured line"
+  },
+  "productConfigGuidedSkip": {
+    "message": "Add without configuration",
+    "description": "Skip configurator and add SKU only"
+  },
+  "productConfigGuidedBadgeValid": {
+    "message": "Valid",
+    "description": "Valid badge"
+  },
+  "productConfigGuidedBadgeInvalid": {
+    "message": "{count} issue(s)",
+    "description": "Invalid badge"
+  },
+  "productConfigGuidedBadgeIdle": {
+    "message": "Incomplete",
+    "description": "Idle badge"
   }
 }

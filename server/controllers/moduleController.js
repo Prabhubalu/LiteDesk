@@ -1228,6 +1228,8 @@ function getBaseFieldsForKey(key) {
                     const topLevel = String(name || '').split('.')[0];
                     if (topLevel && isCasesFormExcludedField(topLevel)) return false;
                 }
+                // Items: legacy status (Active/Inactive) is dual-written from lifecycle_state — hide from field config
+                if (key === 'items' && name === 'status') return false;
                 if (key === 'organizations') {
                     const { isTenantPlatformOrganizationFieldPath } = require('../constants/organizationTenantPlatformFields');
                     if (isTenantPlatformOrganizationFieldPath(name)) return false;
@@ -3573,6 +3575,8 @@ exports.listModules = async (req, res) => {
                         if (sys.key === 'cases' && isCasesFormExcludedField(k)) return false;
                         // Remove legacy/alias event field keys that should not exist in UI config
                         if (sys.key === 'events' && deprecatedEventAliasKeys.has(k)) return false;
+                        // Items: legacy Active/Inactive status — canonical UI field is lifecycle_state
+                        if (sys.key === 'items' && k === 'status') return false;
                         return true;
                     });
 

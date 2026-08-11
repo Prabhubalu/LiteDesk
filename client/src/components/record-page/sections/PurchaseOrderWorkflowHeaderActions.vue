@@ -257,20 +257,7 @@ async function createReceiptNote() {
 
 async function duplicatePo() {
   if (!props.record?._id || busy.value || !canAdjust()) return;
-  busy.value = true;
-  try {
-    const res = await apiClient.post(`/inventory/purchase-orders/${props.record._id}/duplicate`, {});
-    if (res?.success && res?.data?._id) {
-      notifications.success(t('records.poDuplicateSuccess', { number: res.data.poNumber || '' }));
-      router.push(`/inventory/purchase-orders/${res.data._id}`);
-      return;
-    }
-    notifications.error(res?.message || t('records.poActionFailed'));
-  } catch (e) {
-    notifications.error(e?.message || t('records.poActionFailed'));
-  } finally {
-    busy.value = false;
-  }
+  router.push(`/inventory/purchase-orders/new?duplicateFrom=${encodeURIComponent(props.record._id)}`);
 }
 
 async function cancelPo() {

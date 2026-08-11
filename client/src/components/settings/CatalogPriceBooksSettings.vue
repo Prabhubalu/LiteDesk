@@ -95,6 +95,24 @@
             {{ opt.symbol || opt.code }} {{ opt.code }} — {{ opt.name }}
           </option>
         </select>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">
+          {{ t('settings.catalogPriceBookCustomerTypes') }}
+          <select v-model="bookForm.customerTypes" multiple class="mt-1 w-full h-24 px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600 text-sm">
+            <option v-for="ct in customerTypeOptions" :key="ct" :value="ct">{{ ct }}</option>
+          </select>
+        </label>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">
+          {{ t('settings.catalogPriceBookRegions') }}
+          <input
+            v-model="bookForm.regionCodesRaw"
+            class="mt-1 w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600 text-sm"
+            :placeholder="t('settings.catalogPriceBookRegionsPlaceholder')"
+          />
+        </label>
+        <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">
+          {{ t('settings.catalogPriceBookPriority') }}
+          <input v-model.number="bookForm.priority" type="number" class="mt-1 w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600 text-sm" />
+        </label>
         <label class="inline-flex items-center gap-2 text-sm">
           <input v-model="bookForm.isDefault" type="checkbox" />
           {{ t('settings.catalogPriceBookSetDefault') }}
@@ -199,7 +217,15 @@ const variantSearchResults = ref([]);
 const variantSearchLoading = ref(false);
 let variantSearchTimer;
 
-const bookForm = reactive({ name: '', currency: resolveOrgCurrencyCode(), isDefault: false });
+const bookForm = reactive({
+  name: '',
+  currency: resolveOrgCurrencyCode(),
+  isDefault: false,
+  customerTypes: [],
+  regionCodesRaw: '',
+  priority: 100,
+});
+const customerTypeOptions = ['RETAIL', 'DEALER', 'DISTRIBUTOR', 'CORPORATE'];
 const entryForm = reactive({ variantId: '', variantLabel: '', unitPrice: 0, minQty: 1 });
 
 function entryDisplayLabel(entry) {
@@ -288,14 +314,24 @@ function openCreateBook() {
   bookForm.name = '';
   bookForm.currency = orgCurrency.value;
   bookForm.isDefault = false;
+  bookForm.customerTypes = [];
+  bookForm.regionCodesRaw = '';
+  bookForm.priority = 100;
   showBookForm.value = true;
 }
 
 async function saveBook() {
+  const regionCodes = String(bookForm.regionCodesRaw || '')
+    .split(/[\s,]+/)
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
   await apiClient.post('/catalog/price-books', {
     name: bookForm.name,
     currency: bookForm.currency,
-    isDefault: bookForm.isDefault
+    isDefault: bookForm.isDefault,
+    customerTypes: bookForm.customerTypes,
+    regionCodes,
+    priority: bookForm.priority,
   });
   showBookForm.value = false;
   await loadBooks();

@@ -94,7 +94,6 @@ import { useAuthStore } from '@/stores/authRegistry';
 import {
   captureAnalyticsModuleVisited,
   captureAnalyticsReportArchived,
-  captureAnalyticsReportDuplicated,
   captureAnalyticsReportExecuted,
 } from '@/config/posthogAnalytics';
 
@@ -105,7 +104,6 @@ const authStore = useAuthStore();
 const {
   catalogModules,
   fetchCatalog,
-  duplicateReport,
   archiveReport,
   executeReport,
   exportReport,
@@ -186,14 +184,7 @@ async function runReport(id) {
 }
 
 async function duplicateRow(id) {
-  const res = await duplicateReport(String(id));
-  if (res?.success) {
-    captureAnalyticsReportDuplicated({ source_report_id: id, report_id: res.data?._id });
-    await refreshList();
-    if (res.data?._id) {
-      editReport(res.data._id);
-    }
-  }
+  router.push({ name: 'analytics-report-create', query: { duplicateFrom: String(id) } });
 }
 
 async function exportRow(id) {

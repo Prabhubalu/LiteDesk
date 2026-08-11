@@ -324,7 +324,16 @@ ItemSchema.pre('save', async function(next) {
         // modifiedBy should be set by controller
     }
     
-    // Auto-generate item_code if not provided (module numbering, then item_id fallback)
+    // Item Code is system-owned: immutable after first assignment; allocated via Module Numbering only.
+    if (!this.isNew && this.isModified('item_code')) {
+        return next(
+            Object.assign(new Error('Item Code is system-generated and cannot be modified'), {
+                statusCode: 400,
+                code: 'ITEM_CODE_IMMUTABLE',
+            })
+        );
+    }
+
     if (!this.item_code) {
         try {
             const { allocate } = require('../services/moduleNumberingService');
@@ -335,14 +344,21 @@ ItemSchema.pre('save', async function(next) {
             if (result?.recordId) {
                 this.item_code = result.recordId;
             } else if (this.item_id) {
+                // Auto-numbering disabled: fall back to stable item_id (same pattern as quotes)
                 this.item_code = this.item_id;
+            } else {
+                return next(
+                    Object.assign(new Error('Failed to allocate Item Code'), {
+                        statusCode: 500,
+                        code: 'ITEM_CODE_ALLOCATE_FAILED',
+                    })
+                );
             }
         } catch (err) {
-            if (this.item_id) this.item_code = this.item_id;
-            else return next(err);
+            return next(err);
         }
     }
-    
+
     next();
 });
 

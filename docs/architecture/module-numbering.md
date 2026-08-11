@@ -26,6 +26,9 @@ Tenant-configurable Record ID generation for all modules.
 - Quote/SO copy paths clear the number field so a new ID is allocated.
 - Custom modules seed a default config + `recordNumber` system field on create.
 - Invoice credit notes use module key `invoices:credit_note` (separate sequence from `INV-`).
+- Inventory workbench document modules (`purchase_orders`, `receipt_notes`, `purchase_returns`, `delivery_notes`, `delivery_returns`, `sales_returns`) are registered with `requireAppKey: INVENTORY` and only seed/list when the Inventory app is enabled. Allocation goes through `allocateDocumentNumber` (same sequence store as legacy `nextDocNumber`).
+- **No Manual Record ID:** `allowManualEdit` is always forced off; IDs are never user-entered.
+- **Items / Item Code:** `items.item_code` is system-owned (Module Numbering only). Stripped from create/update APIs, hidden on create/edit forms, immutable after assignment, and never dual-written from `variant_code` (SKU stays on the default variant).
 
 ## Seed / migrate
 

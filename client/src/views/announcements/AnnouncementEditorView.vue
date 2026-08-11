@@ -1122,12 +1122,28 @@ async function loadAudienceOptions() {
 }
 
 async function loadExisting() {
-  if (!isEdit.value) return;
-  const res = await apiClient.get(`/announcements/${route.params.id}`);
+  if (isEdit.value) {
+    const res = await apiClient.get(`/announcements/${route.params.id}`);
+    const data = res?.data;
+    if (!data) return;
+    applyAnnouncementDoc(data);
+    return;
+  }
+
+  const duplicateFrom = route.query?.duplicateFrom
+    ? String(Array.isArray(route.query.duplicateFrom) ? route.query.duplicateFrom[0] : route.query.duplicateFrom)
+    : '';
+  if (!duplicateFrom) return;
+  const res = await apiClient.get(`/announcements/${duplicateFrom}`);
   const data = res?.data;
   if (!data) return;
-  recordStatus.value = data.status || '';
-  form.title = data.title || '';
+  applyAnnouncementDoc(data, { asDuplicate: true });
+}
+
+function applyAnnouncementDoc(data, { asDuplicate = false } = {}) {
+  recordStatus.value = asDuplicate ? '' : (data.status || '');
+  const title = data.title || '';
+  form.title = asDuplicate && title && !/\(copy\)$/i.test(title) ? `${title} (Copy)` : title;
   form.shortDescription = data.shortDescription || '';
   form.displayType = data.displayType || 'banner';
   form.priority = data.priority || 'medium';
@@ -1142,7 +1158,7 @@ async function loadExisting() {
     : [];
   form.ctas = Array.isArray(data.ctas)
     ? data.ctas.map((cta) => ({
-      id: cta.id || '',
+      id: asDuplicate ? '' : (cta.id || ''),
       label: cta.label || '',
       target: cta.target || '',
       actionType: cta.actionType || 'external_url',
@@ -1151,11 +1167,11 @@ async function loadExisting() {
     : [];
   form.userBehaviour.dismissible = data.userBehaviour?.dismissible !== false;
   form.userBehaviour.requireAcknowledgement = data.userBehaviour?.requireAcknowledgement === true;
-  form.trigger.type = data.trigger?.type || 'immediate';
+  form.trigger.type = asDuplicate ? 'immediate' : (data.trigger?.type || 'immediate');
   form.schedule = {
-    publishImmediately: data.schedule?.publishImmediately !== false,
-    startAt: data.schedule?.startAt || new Date().toISOString(),
-    endAt: data.schedule?.endAt || null,
+    publishImmediately: asDuplicate ? true : data.schedule?.publishImmediately !== false,
+    startAt: asDuplicate ? new Date().toISOString() : (data.schedule?.startAt || new Date().toISOString()),
+    endAt: asDuplicate ? null : (data.schedule?.endAt || null),
     timezone: data.schedule?.timezone || 'UTC',
   };
   startAtLocal.value = toLocalInput(form.schedule.startAt);
@@ -1236,26 +1252,7 @@ function payload() {
 
 async function onDuplicate() {
   if (!isEdit.value) return;
-  saving.value = true;
-  suppressDirty.value = true;
-  try {
-    const res = await apiClient.post(`/announcements/${route.params.id}/duplicate`);
-    const newId = res?.data?.id || res?.data?._id;
-    notifications.success(t('announcements.duplicateSuccess'));
-    if (newId) {
-      allowLeave.value = true;
-      await router.replace(`/announcements/${newId}`);
-      allowLeave.value = false;
-      recordStatus.value = 'draft';
-      await loadExisting();
-      markClean();
-    }
-  } catch (err) {
-    notifications.error(err?.message || t('announcements.saveFailed'));
-    suppressDirty.value = false;
-  } finally {
-    saving.value = false;
-  }
+  await router.push({ path: '/announcements/new', query: { duplicateFrom: String(route.params.id) } });
 }
 
 async function onPause() {

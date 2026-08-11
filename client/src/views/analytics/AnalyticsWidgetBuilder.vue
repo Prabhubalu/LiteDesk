@@ -656,6 +656,27 @@ onMounted(async () => {
       loadThresholdsFromWidget(widget.thresholds);
       await runPreview();
     }
+  } else if (isNew.value && route.query.duplicateFrom) {
+    const res = await fetchWidget(String(route.query.duplicateFrom));
+    if (res?.success && res.data) {
+      const widget = res.data;
+      form.name = /\(copy\)$/i.test(String(widget.name || '').trim())
+        ? String(widget.name || '').trim()
+        : `${String(widget.name || '').trim()} (Copy)`;
+      form.apiName = '';
+      form.reportId = typeof widget.reportId === 'object' ? widget.reportId._id : widget.reportId;
+      form.chartType = widget.chartType;
+      form.kpiLabel = widget.kpiLabel || '';
+      form.templateKey = widget.templateKey || '';
+      form.orientation = widget.orientation || 'vertical';
+      form.stacked = Boolean(widget.stacked);
+      form.smooth = widget.smooth !== false;
+      form.showLegend = widget.showLegend !== false;
+      form.showDataLabels = Boolean(widget.showDataLabels);
+      dimensionField.value = widget.columnMapping?.dimension || dimensionField.value;
+      metricField.value = widget.columnMapping?.metric || widget.kpiValueField || metricField.value;
+      loadThresholdsFromWidget(widget.thresholds);
+    }
   }
 });
 </script>

@@ -51,8 +51,11 @@
     <!-- Create: open generic create drawer scoped to this module route -->
     <CreateRecordDrawer
       v-else-if="routeType === 'create' && moduleKey"
+      :key="`create-${moduleKey}-${createSeedKey}`"
       :is-open="true"
       :module-key="moduleKey"
+      :duplicate-mode="isCreateDuplicate"
+      :initial-data="createInitialData"
       @close="goToList"
       @saved="handleCreateSaved"
     />
@@ -64,7 +67,7 @@
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
-import { computed, onActivated, onDeactivated, ref, watch } from 'vue';
+import { computed, onActivated, onDeactivated, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ModuleList from '@/components/module-list/ModuleList.vue';
 import ModuleRecordPage from '@/pages/ModuleRecordPage.vue';
@@ -73,6 +76,8 @@ import SalesOrderMergeModal from '@/components/sales-orders/SalesOrderMergeModal
 import InvoiceMultiSoWizardModal from '@/components/invoices/InvoiceMultiSoWizardModal.vue';
 import apiClient from '@/utils/apiClient';
 import { useNotifications } from '@/composables/useNotifications';
+import { buildDuplicateInitialData, resolveDuplicateFromQuery } from '@/utils/duplicateRecord';
+import { getModuleRecordCrudPathBase } from '@/utils/moduleRecordApiPath';
 
 const route = useRoute();
 const router = useRouter();
@@ -86,6 +91,9 @@ const mergeBusy = ref(false);
 const multiSoModalOpen = ref(false);
 const multiSoSelectedRows = ref([]);
 const notifications = useNotifications();
+const createInitialData = ref({});
+const createSeedKey = ref(0);
+const isCreateDuplicate = computed(() => Boolean(resolveDuplicateFromQuery(route.query)));
 
 /**
  * keep-alive instances stay subscribed to the global route while deactivated.
@@ -275,6 +283,116 @@ function goToList() {
     router.push(moduleRouteBase.value || `/${moduleKey.value}`);
   }
 }
+
+function mapDuplicateLinesForCreate(moduleKeyRaw, record) {
+  const lines = Array.isArray(record?.lines) ? record.lines : [];
+  if (!lines.length) return null;
+  const mk = String(moduleKeyRaw || '').toLowerCase();
+
+  if (mk === 'purchase_orders') {
+    return lines.map((line, idx) => ({
+      _localId: `dup-line-${idx}-${Date.now().toString(36)}`,
+      lineType: 'product',
+      variantId: line.variantId?._id || line.variantId || null,
+      quantity: line.quantityOrdered ?? line.quantity ?? 1,
+      quantityOrdered: line.quantityOrdered ?? line.quantity ?? 1,
+      unitPrice: line.unitPrice ?? 0,
+      discountType: line.discountType || null,
+      discountValue: line.discountValue ?? 0,
+      vendorItemCode: line.vendorItemCode || '',
+      vendorItemName: line.vendorItemName || '',
+      unitOfMeasure: line.unitOfMeasure || '',
+      description: line.descriptionSnapshot || line.description || '',
+      expectedDeliveryDate: line.expectedDeliveryDate || null
+    }));
+  }
+
+  // Other inventory docs: pass re-shaped line stubs for create payload consumers
+  if (mk === 'delivery_notes') {
+    return lines.map((l) =>
+      l.salesOrderLineId
+        ? {
+            salesOrderLineId: l.salesOrderLineId?._id || l.salesOrderLineId,
+            quantityDelivered: l.quantityDelivered,
+            inventoryLocationId: l.inventoryLocationId?._id || l.inventoryLocationId,
+            unitPrice: l.unitPrice
+          }
+        : {
+            variantId: l.variantId?._id || l.variantId,
+            quantityDelivered: l.quantityDelivered,
+            inventoryLocationId: l.inventoryLocationId?._id || l.inventoryLocationId,
+            unitPrice: l.unitPrice,
+            skuSnapshot: l.skuSnapshot,
+            itemNameSnapshot: l.itemNameSnapshot
+          }
+    );
+  }
+
+  return null;
+}
+
+async function loadCreateDuplicatePrefill() {
+  if (routeType.value !== 'create' || !moduleKey.value) {
+    createInitialData.value = {};
+    return;
+  }
+  const duplicateFrom = resolveDuplicateFromQuery(route.query);
+  if (!duplicateFrom) {
+    createInitialData.value = {};
+    return;
+  }
+  try {
+    const base = getModuleRecordCrudPathBase(moduleKey.value, {
+      appKey: resolvedAppKey.value,
+      routePath: frozenPath.value
+    });
+    const res = await apiClient.get(`${base}/${duplicateFrom}`);
+    const data = res?.data || res;
+    if (!data || typeof data !== 'object') {
+      createInitialData.value = {};
+      return;
+    }
+    // Prefer nested headers when APIs return { purchaseOrder, lines }
+    const header =
+      data.purchaseOrder ||
+      data.deliveryNote ||
+      data.purchaseReturn ||
+      data.deliveryReturn ||
+      data.receiptNote ||
+      data;
+    const lines = data.lines || header.lines || [];
+    const seed = buildDuplicateInitialData(header, { moduleKey: moduleKey.value });
+    // Drop workflow terminal states for the copy
+    if (seed.status) {
+      const s = String(seed.status).toLowerCase();
+      if (s === 'cancelled' || s === 'closed' || s === 'completed' || s === 'fully_received') {
+        delete seed.status;
+      }
+    }
+    const dupLines = mapDuplicateLinesForCreate(moduleKey.value, { lines });
+    if (dupLines?.length) {
+      seed._commercialLines = dupLines;
+      seed.lines = dupLines;
+    }
+    createInitialData.value = seed;
+    createSeedKey.value += 1;
+  } catch (err) {
+    notifications.error(err?.message || t('states.genericFailure'));
+    createInitialData.value = {};
+  }
+}
+
+watch(
+  () => [routeType.value, moduleKey.value, route.query?.duplicateFrom],
+  () => {
+    void loadCreateDuplicatePrefill();
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  void loadCreateDuplicatePrefill();
+});
 
 function closeMergeModal() {
   mergeModalOpen.value = false;

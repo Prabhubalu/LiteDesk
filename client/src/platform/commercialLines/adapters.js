@@ -126,14 +126,27 @@ export const quoteCommercialLinesAdapter = {
   isEditable(record) {
     return !isCommerciallyLockedStatus(String(record?.status || '').trim());
   },
-  buildAddLineBody({ variantId, quantity = 1, sectionRef, priceBookId, overridePricing }) {
-    return {
+  buildAddLineBody({
+    variantId,
+    quantity = 1,
+    sectionRef,
+    priceBookId,
+    overridePricing,
+    productConfigurationId,
+    configurationSelections
+  }) {
+    const body = {
       variantId,
       quantity,
       priceBookId: priceBookId || null,
       quoteSectionId: sectionRef || null,
       overridePricing: overridePricing === true
     };
+    if (productConfigurationId) {
+      body.productConfigurationId = productConfigurationId;
+      body.configurationSelections = configurationSelections || {};
+    }
+    return body;
   },
   buildPatchLineBody(fields) {
     const body = {};
@@ -160,9 +173,19 @@ export const salesOrderCommercialLinesAdapter = {
   isEditable(record) {
     return String(record?.status || '') === 'Draft';
   },
-  buildAddLineBody({ variantId, quantity = 1, sectionRef }) {
+  buildAddLineBody({
+    variantId,
+    quantity = 1,
+    sectionRef,
+    productConfigurationId,
+    configurationSelections
+  }) {
     const body = { variantId, quantity };
     if (sectionRef) body.salesOrderSectionId = sectionRef;
+    if (productConfigurationId) {
+      body.productConfigurationId = productConfigurationId;
+      body.configurationSelections = configurationSelections || {};
+    }
     return body;
   },
   buildPatchLineBody(fields) {

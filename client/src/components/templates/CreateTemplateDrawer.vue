@@ -158,7 +158,11 @@ import BuilderSelect from '@/modules/template/components/BuilderSelect.vue';
 import EmailTemplateStartCards from '@/modules/template/components/html/EmailTemplateStartCards.vue';
 
 const props = defineProps({
-  isOpen: { type: Boolean, default: false }
+  isOpen: { type: Boolean, default: false },
+  initialData: {
+    type: Object,
+    default: () => ({})
+  }
 });
 
 const emit = defineEmits(['close', 'create', 'import-html']);
@@ -214,13 +218,14 @@ watch(
   () => props.isOpen,
   (open) => {
     if (!open) return;
-    form.name = '';
-    form.moduleScope = '';
-    form.outputFormat = 'pdf';
-    form.paperSize = 'A4';
-    form.orientation = 'portrait';
-    form.customPageWidth = DEFAULT_CUSTOM_PAGE_WIDTH_MM;
-    form.customPageHeight = DEFAULT_CUSTOM_PAGE_HEIGHT_MM;
+    const seed = props.initialData || {};
+    form.name = seed.name != null ? String(seed.name) : '';
+    form.moduleScope = seed.moduleScope != null ? String(seed.moduleScope) : '';
+    form.outputFormat = seed.outputFormat === 'email' ? 'email' : 'pdf';
+    form.paperSize = seed.paperSize || 'A4';
+    form.orientation = seed.orientation || 'portrait';
+    form.customPageWidth = seed.customPageWidth || DEFAULT_CUSTOM_PAGE_WIDTH_MM;
+    form.customPageHeight = seed.customPageHeight || DEFAULT_CUSTOM_PAGE_HEIGHT_MM;
     startMode.value = 'blank';
     saving.value = false;
   }

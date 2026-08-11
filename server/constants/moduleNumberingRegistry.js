@@ -12,6 +12,7 @@
  * @property {number} [defaultSequenceLength]
  * @property {string} [label]
  * @property {string} [parentModuleKey] - display grouping for sub-keys
+ * @property {string} [requireAppKey] - only seed/list when this app is enabled for the org
  * @property {boolean} [standard] - false for derived custom defaults only
  */
 
@@ -218,6 +219,62 @@ const MODULE_NUMBERING_REGISTRY = Object.freeze({
     defaultFormat: 'AST-{SEQ}',
     defaultSequenceLength: 6,
     label: 'Assets',
+  },
+
+  // Inventory app workbench documents (requireAppKey: INVENTORY)
+  purchase_orders: {
+    numberFieldKey: 'poNumber',
+    numberFieldLabel: 'PO Number',
+    defaultPrefix: 'PO',
+    defaultFormat: 'PO-{SEQ}',
+    defaultSequenceLength: 4,
+    label: 'Purchase Orders',
+    requireAppKey: 'INVENTORY',
+  },
+  receipt_notes: {
+    numberFieldKey: 'receiptNoteNumber',
+    numberFieldLabel: 'Receipt Note Number',
+    defaultPrefix: 'RN',
+    defaultFormat: 'RN-{SEQ}',
+    defaultSequenceLength: 4,
+    label: 'Receipt Notes',
+    requireAppKey: 'INVENTORY',
+  },
+  purchase_returns: {
+    numberFieldKey: 'purchaseReturnNumber',
+    numberFieldLabel: 'Purchase Return Number',
+    defaultPrefix: 'PR',
+    defaultFormat: 'PR-{SEQ}',
+    defaultSequenceLength: 4,
+    label: 'Purchase Returns',
+    requireAppKey: 'INVENTORY',
+  },
+  delivery_notes: {
+    numberFieldKey: 'deliveryNoteNumber',
+    numberFieldLabel: 'Delivery Note Number',
+    defaultPrefix: 'DN',
+    defaultFormat: 'DN-{SEQ}',
+    defaultSequenceLength: 4,
+    label: 'Delivery Notes',
+    requireAppKey: 'INVENTORY',
+  },
+  delivery_returns: {
+    numberFieldKey: 'deliveryReturnNumber',
+    numberFieldLabel: 'Delivery Return Number',
+    defaultPrefix: 'DR',
+    defaultFormat: 'DR-{SEQ}',
+    defaultSequenceLength: 4,
+    label: 'Delivery Returns',
+    requireAppKey: 'INVENTORY',
+  },
+  sales_returns: {
+    numberFieldKey: 'salesReturnNumber',
+    numberFieldLabel: 'Sales Return Number',
+    defaultPrefix: 'SR',
+    defaultFormat: 'SR-{SEQ}',
+    defaultSequenceLength: 4,
+    label: 'Sales Returns',
+    requireAppKey: 'INVENTORY',
   },
 });
 

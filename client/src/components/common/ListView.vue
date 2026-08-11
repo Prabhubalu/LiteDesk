@@ -1,10 +1,14 @@
 <template>
   <div
     class="mx-auto w-full"
-    :class="fillHeight ? 'flex h-full min-h-0 flex-1 flex-col overflow-hidden' : ''"
+    :class="fillHeight ? 'flex min-h-0 flex-col' : ''"
   >
     <!-- Header -->
-    <div v-if="!hidePageHeader" class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-4">
+    <div
+      v-if="!hidePageHeader"
+      class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-4"
+      :class="fillHeight ? 'shrink-0' : ''"
+    >
       <div class="flex-1 min-w-0">
         <div class="flex min-w-0 items-center gap-3">
           <!-- View Selector Dropdown (People module only) -->
@@ -313,8 +317,10 @@
     <!-- Search and Filters -->
     <div
       v-if="!hideSearchToolbar"
-      class="flex flex-col gap-4 mb-4 relative"
-      :class="fillHeight ? 'shrink-0' : ''"
+      class="relative flex flex-col gap-4"
+      :class="[
+        fillHeight ? 'mb-3 shrink-0' : 'mb-4'
+      ]"
     >
       <!-- Mobile, Tablet & Small Desktop: Search, Filters Button, Columns Button in a single row -->
       <div class="flex items-center gap-2.5 lg:hidden">
@@ -607,16 +613,21 @@
     </div>
 
     <div
-      class="mt-4 px-4 sm:px-6 lg:px-8"
-      :class="fillHeight ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : ''"
-      style="isolation: auto;"
+      ref="tableAreaRef"
+      class="px-4 sm:px-6 lg:px-8"
+      :class="[
+        fillHeight
+          ? 'mt-0 flex min-h-0 flex-1 flex-col overflow-hidden'
+          : 'mt-4'
+      ]"
+      :style="tableAreaMergedStyle"
     >
       <!-- Stable key: must not depend on row data or count — remounting resets scroll and inline filter focus. -->
       <TableView
           v-if="computedColumns.length > 0"
           :key="`table-${tableId}`"
           internal-scroll
-          :max-body-height="fillHeight ? '100%' : undefined"
+          :max-body-height="resolvedTableMaxBodyHeight"
           :data="data"
           :columns="computedColumns"
           :loading="tableLoading"
@@ -1479,7 +1490,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onBeforeMount, onMounted, onUnmounted, onDeactivated, nextTick, useSlots } from 'vue';
+import { ref, reactive, computed, watch, onBeforeMount, onMounted, onUnmounted, onActivated, onDeactivated, nextTick, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   resolveListViewLabel,
@@ -1671,7 +1682,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  /** Fill parent height; stats/toolbar stay fixed and only the table body scrolls */
+  /** Table claims remaining viewport under list chrome; body scrolls all records. */
   fillHeight: {
     type: Boolean,
     default: false
@@ -1857,6 +1868,117 @@ const emit = defineEmits([
   'load-more'
 ]);
 
+/** Table area claims remaining viewport under list chrome (title / stats / search). */
+const tableAreaRef = ref(null);
+const tableAreaHeightPx = ref(null);
+const MIN_TABLE_AREA_HEIGHT_PX = 200;
+let tableAreaFitRaf = 0;
+let tableAreaResizeObserver = null;
+
+/**
+ * Stable bottom edge for residual height. Must NOT use the content child's
+ * getBoundingClientRect().bottom — that shrinks after we set table height and
+ * creates a measure→apply→shrink feedback loop on every reload/reflow.
+ */
+function getStableShellBottom(anchorEl) {
+  if (typeof window === 'undefined') return 0;
+  const vv = window.visualViewport;
+  const visualBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+  const scrollRoot = anchorEl?.closest?.('[data-platform-scroll-root]');
+  if (!(scrollRoot instanceof HTMLElement)) return visualBottom;
+
+  const rootBottom = scrollRoot.getBoundingClientRect().bottom;
+  let padBottom = 0;
+  const shellContent = scrollRoot.firstElementChild;
+  if (shellContent instanceof HTMLElement) {
+    padBottom = parseFloat(window.getComputedStyle(shellContent).paddingBottom) || 0;
+  }
+  return Math.min(visualBottom, rootBottom) - padBottom;
+}
+
+function measureTableAreaHeight() {
+  if (!props.fillHeight) {
+    tableAreaHeightPx.value = null;
+    return;
+  }
+  const el = tableAreaRef.value;
+  if (!(el instanceof HTMLElement) || typeof window === 'undefined') return;
+  const top = el.getBoundingClientRect().top;
+  const bottom = getStableShellBottom(el);
+  if (bottom <= top) return;
+  const next = Math.max(MIN_TABLE_AREA_HEIGHT_PX, Math.floor(bottom - top));
+  if (tableAreaHeightPx.value !== next) {
+    tableAreaHeightPx.value = next;
+  }
+}
+
+function queueTableAreaMeasure() {
+  if (typeof window === 'undefined') return;
+  if (tableAreaFitRaf) return;
+  tableAreaFitRaf = window.requestAnimationFrame(() => {
+    tableAreaFitRaf = 0;
+    measureTableAreaHeight();
+  });
+}
+
+function teardownTableAreaHeight() {
+  tableAreaResizeObserver?.disconnect();
+  tableAreaResizeObserver = null;
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', queueTableAreaMeasure);
+    window.removeEventListener('scroll', queueTableAreaMeasure, true);
+    window.visualViewport?.removeEventListener('resize', queueTableAreaMeasure);
+    window.visualViewport?.removeEventListener('scroll', queueTableAreaMeasure);
+  }
+  if (tableAreaFitRaf && typeof window !== 'undefined') {
+    window.cancelAnimationFrame(tableAreaFitRaf);
+    tableAreaFitRaf = 0;
+  }
+}
+
+function setupTableAreaHeight() {
+  teardownTableAreaHeight();
+  if (!props.fillHeight || typeof window === 'undefined') {
+    tableAreaHeightPx.value = null;
+    return;
+  }
+  measureTableAreaHeight();
+  if (typeof ResizeObserver !== 'undefined') {
+    tableAreaResizeObserver = new ResizeObserver(() => queueTableAreaMeasure());
+    // Observe ancestors above the table so stats/header/banner reflows re-fit.
+    // Stop at platform scroll root (stable panel size) — never use content height.
+    let node = tableAreaRef.value?.parentElement ?? null;
+    let depth = 0;
+    while (node && depth < 10) {
+      tableAreaResizeObserver.observe(node);
+      if (node.hasAttribute('data-platform-scroll-root')) break;
+      node = node.parentElement;
+      depth += 1;
+    }
+  }
+  window.addEventListener('resize', queueTableAreaMeasure, { passive: true });
+  // Page scroll shifts table top; ignore pure internal table body scrolls (same top).
+  window.addEventListener('scroll', queueTableAreaMeasure, { passive: true, capture: true });
+  window.visualViewport?.addEventListener('resize', queueTableAreaMeasure);
+  window.visualViewport?.addEventListener('scroll', queueTableAreaMeasure);
+}
+
+const tableAreaMergedStyle = computed(() => {
+  const style = { isolation: 'auto' };
+  if (props.fillHeight && tableAreaHeightPx.value != null) {
+    style.height = `${tableAreaHeightPx.value}px`;
+    style.maxHeight = `${tableAreaHeightPx.value}px`;
+  }
+  return style;
+});
+
+/** Percentage fill of the measured table slot. */
+const resolvedTableMaxBodyHeight = computed(() => {
+  if (!props.fillHeight) return undefined;
+  if (tableAreaHeightPx.value != null) return '100%';
+  return undefined;
+});
+
 const slots = useSlots();
 /** Slot names frozen on first setup — dynamic v-for over reactive slot keys causes patch races on refresh. */
 const forwardedSlotNames = Object.keys(slots)
@@ -2032,8 +2154,13 @@ watch([showPreviewDrawer, previewRow], () => {
 }, { deep: true });
 
 onDeactivated(() => {
+  teardownTableAreaHeight();
   showColumnSettings.value = false;
   showKanbanSettings.value = false;
+});
+
+onActivated(() => {
+  nextTick(() => setupTableAreaHeight());
 });
 
 // Get record name for delete modal
@@ -2223,7 +2350,16 @@ const saveStatsPreference = () => {
 watch(statsPanelVisible, (val) => {
   saveStatsPreference();
   emit('stats-visibility-changed', val);
+  nextTick(() => queueTableAreaMeasure());
 });
+
+watch(
+  () => [props.fillHeight, props.hidePageHeader, props.showStats, props.statsConfig?.length],
+  () => {
+    nextTick(() => setupTableAreaHeight());
+  },
+  { flush: 'post' }
+);
 
 // Update window width on resize
 const updateWindowWidth = () => {
@@ -2237,6 +2373,7 @@ onMounted(() => {
     statsPanelVisible.value = getDefaultShowStats();
     window.addEventListener('resize', updateWindowWidth);
   }
+  nextTick(() => setupTableAreaHeight());
 });
 
 onUnmounted(() => {
@@ -2244,6 +2381,7 @@ onUnmounted(() => {
     window.removeEventListener('resize', updateWindowWidth);
   }
   unbindCustomizeDrawerPositionListeners();
+  teardownTableAreaHeight();
 });
 
 const QUOTES_LIST_COLUMNS_PREFS_VERSION = 5;

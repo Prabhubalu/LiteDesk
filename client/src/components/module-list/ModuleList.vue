@@ -27,6 +27,7 @@
     <ListView
       v-else
       skip-mount-fetch
+      :fill-height="fillHeight"
       :title="listPageTitle"
       :description="listDefinition.description"
       :module-key="listDefinition.moduleKey"
@@ -228,6 +229,13 @@ const props = defineProps({
     type: String,
     default: 'numbered-hover',
     validator: (v) => !v || v === 'checkbox' || v === 'numbered-hover'
+  },
+  /**
+   * List chrome fixed; table claims remaining viewport and scrolls internally.
+   */
+  fillHeight: {
+    type: Boolean,
+    default: true
   }
 });
 

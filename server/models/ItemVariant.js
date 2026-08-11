@@ -2,7 +2,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const { CATALOG_LIFECYCLE_STATES, CATALOG_LIFECYCLE_DEFAULT } = require('../constants/catalogLifecycle');
 const { CATALOG_BARCODE_TYPES } = require('../constants/catalogBarcode');
-const { CATALOG_BUNDLE_PRICING_MODES, CATALOG_BUNDLE_PRICING_DEFAULT } = require('../constants/catalogBundle');
+const {
+  CATALOG_BUNDLE_PRICING_MODES,
+  CATALOG_BUNDLE_PRICING_DEFAULT,
+  CATALOG_BUNDLE_TYPES,
+  CATALOG_BUNDLE_TYPE_DEFAULT,
+  CATALOG_BUNDLE_DISCOUNT_TYPES
+} = require('../constants/catalogBundle');
 const { INVENTORY_TRACKING_MODES } = require('../constants/inventoryLifecycle');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
@@ -104,6 +110,48 @@ const ItemVariantSchema = new Schema({
     type: String,
     enum: CATALOG_BUNDLE_PRICING_MODES,
     default: CATALOG_BUNDLE_PRICING_DEFAULT
+  },
+  /** fixed = sealed package; flexible = optional components configurable at sale time */
+  bundleType: {
+    type: String,
+    enum: CATALOG_BUNDLE_TYPES,
+    default: CATALOG_BUNDLE_TYPE_DEFAULT
+  },
+  /** Applied when pricingMode === 'discount' */
+  bundleDiscountType: {
+    type: String,
+    enum: [...CATALOG_BUNDLE_DISCOUNT_TYPES, null],
+    default: null
+  },
+  bundleDiscountValue: {
+    type: Number,
+    min: 0,
+    default: null
+  },
+  /** Flexible: min/max count of optional components selected at configure time */
+  minOptionalSelection: {
+    type: Number,
+    min: 0,
+    default: null
+  },
+  maxOptionalSelection: {
+    type: Number,
+    min: 0,
+    default: null
+  },
+  bundleEffectiveFrom: {
+    type: Date,
+    default: null
+  },
+  bundleEffectiveUntil: {
+    type: Date,
+    default: null
+  },
+  /** Monotonic revision — incremented on each component/rule save (lightweight versioning) */
+  bundleRevision: {
+    type: Number,
+    min: 1,
+    default: 1
   },
   /** INV4 — null inherits org defaultTrackingMode */
   inventoryTrackingMode: {

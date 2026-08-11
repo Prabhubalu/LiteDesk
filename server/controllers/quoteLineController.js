@@ -3,7 +3,7 @@ const QuoteLine = require('../models/QuoteLine');
 const QuoteSection = require('../models/QuoteSection');
 const ItemVariant = require('../models/ItemVariant');
 const Item = require('../models/Item');
-const { resolve: resolveCatalogPrice } = require('../services/catalogPriceResolver');
+const { resolveCommercialPrice } = require('../services/pricingEngineService');
 const catalogBundleService = require('../services/catalogBundleService');
 const quoteTotalsService = require('../services/quoteTotalsService');
 const {
@@ -165,16 +165,23 @@ async function addQuoteLine(req, res) {
       .lean();
 
     const pricingAsOfDate = req.body?.asOfDate ?? quote.quoteDate ?? null;
+    const pricingCtx = {
+      ...(req.body?.pricingContext || {}),
+      customerId: req.body?.pricingContext?.customerId || quote.customerId || null,
+      currency: req.body?.pricingContext?.currency || quote.currency || null,
+    };
 
-    const price = await resolveCatalogPrice({
+    const price = await resolveCommercialPrice({
       organizationId,
       variantId,
       priceBookId: req.body?.priceBookId ?? null,
       quantity,
-      asOfDate: pricingAsOfDate
+      asOfDate: pricingAsOfDate,
+      context: pricingCtx,
     });
 
     const unitPrice = Number(price.unitPrice) || 0;
+    const listPrice = Number(price.listPrice != null ? price.listPrice : unitPrice) || 0;
 
     const {
       resolveLineDefaultTaxes,
@@ -216,6 +223,40 @@ async function addQuoteLine(req, res) {
       quoteStatus: quote.status
     });
 
+    let productConfigurationId = null;
+    let productConfigurationVersion = null;
+    let configurationSelections = null;
+    let configurationSnapshot = null;
+    let attributesFromConfig = item?.attributeValues || {};
+
+    if (req.body?.productConfigurationId) {
+      const cpqService = require('../services/cpqService');
+      const validation = await cpqService.validateProductConfigurationById({
+        organizationId,
+        id: req.body.productConfigurationId,
+        selections: req.body.configurationSelections || {},
+        requireActive: true,
+        asOf: pricingAsOfDate ? new Date(pricingAsOfDate) : new Date()
+      });
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          code: 'CONFIGURATION_INVALID',
+          message: validation.errors?.[0]?.message || 'Product configuration is invalid',
+          errors: validation.errors
+        });
+      }
+      const snap = cpqService.buildConfigurationLineSnapshot(validation.configuration, validation);
+      productConfigurationId = validation.configuration._id;
+      productConfigurationVersion = snap.productConfigurationVersion;
+      configurationSelections = snap.selections;
+      configurationSnapshot = snap;
+      attributesFromConfig = {
+        ...(item?.attributeValues || {}),
+        ...snap.selections
+      };
+    }
+
     const line = await QuoteLine.create({
       organizationId,
       quoteId: quote._id,
@@ -226,7 +267,7 @@ async function addQuoteLine(req, res) {
       unitOfMeasure: variant.unit_of_measure || item?.unit_of_measure || null,
 
       unitPriceSnapshot: unitPrice,
-      listPriceSnapshot: unitPrice,
+      listPriceSnapshot: listPrice,
       pricingSourceSnapshot: price.source || null,
       priceBookIdSnapshot: price.priceBookId || null,
       priceBookNameSnapshot: price.priceBookName || null,
@@ -235,6 +276,7 @@ async function addQuoteLine(req, res) {
       pricingEffectiveFromSnapshot: price.effectiveFrom ? new Date(price.effectiveFrom) : null,
       pricingEffectiveToSnapshot: price.effectiveTo ? new Date(price.effectiveTo) : null,
       pricingMinQtySnapshot: Number.isFinite(Number(price.minQty)) ? Number(price.minQty) : null,
+      pricingBreakdownSnapshot: price.pricingBreakdown || null,
 
       taxSnapshot: computed.taxSnapshot,
       lineSubtotal: computed.lineSubtotal,
@@ -247,7 +289,11 @@ async function addQuoteLine(req, res) {
       skuSnapshot: variant.variant_code || variant.barcode || String(variant._id),
       itemNameSnapshot: item?.item_name || null,
       descriptionSnapshot: item?.description || null,
-      attributesSnapshot: item?.attributeValues || {},
+      attributesSnapshot: attributesFromConfig,
+      productConfigurationId,
+      productConfigurationVersion,
+      configurationSelections,
+      configurationSnapshot,
 
       lockedSnapshot: isCommerciallyLockedStatus(quote.status)
     });
@@ -301,7 +347,10 @@ async function addQuoteLine(req, res) {
 
 /**
  * POST /api/quotes/:id/bundles
- * Body: { bundleVariantId, priceBookId?, quantity, asOfDate?, includedOptionalComponentVariantIds?, overridePricing? }
+ * Body: {
+ *   bundleVariantId, priceBookId?, quantity, asOfDate?,
+ *   includedOptionalComponentVariantIds?, componentQuantities?, overridePricing?
+ * }
  */
 async function addQuoteBundle(req, res) {
   try {
@@ -337,13 +386,32 @@ async function addQuoteBundle(req, res) {
     const pricingAsOfDate = req.body?.asOfDate ?? quote.quoteDate ?? null;
     const priceBookId = req.body?.priceBookId ?? null;
 
+    const hasExplicitOptionals = Object.prototype.hasOwnProperty.call(
+      req.body || {},
+      'includedOptionalComponentVariantIds'
+    );
+    const includedOptionalList = hasExplicitOptionals
+      ? (Array.isArray(req.body.includedOptionalComponentVariantIds)
+          ? req.body.includedOptionalComponentVariantIds
+          : []
+        ).map((v) => String(v)).filter(Boolean)
+      : undefined;
+
+    const componentQuantities =
+      req.body?.componentQuantities && typeof req.body.componentQuantities === 'object'
+        ? req.body.componentQuantities
+        : null;
+
     const bundleComponents = await catalogBundleService.getBundleComponents(bundleVariantId, organizationId);
     const preview = await catalogBundleService.expandBundlePreview({
       organizationId,
       bundleVariantId,
       priceBookId,
       quantity: bundleQuantity,
-      asOfDate: pricingAsOfDate
+      asOfDate: pricingAsOfDate,
+      includedOptionalComponentVariantIds: includedOptionalList,
+      componentQuantities,
+      validate: true
     });
 
     const pricingMode =
@@ -351,13 +419,8 @@ async function addQuoteBundle(req, res) {
         .toLowerCase()
         .trim() || 'fixed';
 
-    const includedOptional = new Set(
-      (Array.isArray(req.body?.includedOptionalComponentVariantIds)
-        ? req.body.includedOptionalComponentVariantIds
-        : []
-      )
-        .map((v) => String(v))
-        .filter(Boolean)
+    const includedIds = new Set(
+      (preview.lines || []).filter((l) => l.included).map((l) => String(l.componentVariantId))
     );
 
     const nextOrder = await getNextLineOrder({ organizationId, quoteId: quote._id });
@@ -410,19 +473,11 @@ async function addQuoteBundle(req, res) {
       itemNameSnapshot: preview.bundleItemName || null,
       descriptionSnapshot: null,
       attributesSnapshot: {},
-      bundleSnapshot: {
-        bundleVariantId: String(bundleVariantId),
-        pricingMode,
-        rollupComponentTotal: Number(preview.rollupComponentTotal) || 0,
-        components: Array.isArray(bundleComponents.components)
-          ? bundleComponents.components.map((c) => ({
-              componentVariantId: String(c.componentVariantId),
-              quantity: Number(c.quantity) || 0,
-              isOptional: c.isOptional === true,
-              sortOrder: Number(c.sortOrder) || 0
-            }))
-          : []
-      },
+      bundleSnapshot: catalogBundleService.buildBundleSnapshot({
+        definition: bundleComponents,
+        preview,
+        includedIds
+      }),
 
       optionalLine: false,
       hiddenLine: false,
@@ -434,8 +489,12 @@ async function addQuoteBundle(req, res) {
     const componentRows = Array.isArray(bundleComponents.components) ? bundleComponents.components : [];
     for (const comp of componentRows) {
       const isOptional = comp.isOptional === true;
-      const shouldInclude = !isOptional || includedOptional.has(String(comp.componentVariantId));
-      const componentQty = (Number(comp.quantity) || 0) * bundleQuantity;
+      const shouldInclude = includedIds.has(String(comp.componentVariantId));
+      const unitQty =
+        componentQuantities && componentQuantities[String(comp.componentVariantId)] != null
+          ? Number(componentQuantities[String(comp.componentVariantId)])
+          : Number(comp.quantity) || 0;
+      const componentQty = unitQty * bundleQuantity;
       if (!Number.isFinite(componentQty) || componentQty <= 0) continue;
 
       const compVariant = await ItemVariant.findOne({ _id: comp.componentVariantId, organizationId }).lean();
@@ -446,15 +505,20 @@ async function addQuoteBundle(req, res) {
         .select('item_name description unit_of_measure attributeValues')
         .lean();
 
-      const compPrice = await resolveCatalogPrice({
+      const compPrice = await resolveCommercialPrice({
         organizationId,
         variantId: comp.componentVariantId,
         priceBookId,
         quantity: componentQty,
-        asOfDate: pricingAsOfDate
+        asOfDate: pricingAsOfDate,
+        context: {
+          customerId: quote.customerId || null,
+          currency: quote.currency || null,
+        },
       });
 
       const compUnitPrice = Number(compPrice.unitPrice) || 0;
+      const compListPrice = Number(compPrice.listPrice != null ? compPrice.listPrice : compUnitPrice) || 0;
       const compComputed = quoteTotalsService.computeLineTotals({
         quantity: componentQty,
         unitPriceSnapshot: compUnitPrice,
@@ -476,7 +540,7 @@ async function addQuoteBundle(req, res) {
         unitOfMeasure: compVariant.unit_of_measure || compItem?.unit_of_measure || null,
 
         unitPriceSnapshot: compUnitPrice,
-        listPriceSnapshot: compUnitPrice,
+        listPriceSnapshot: compListPrice,
         pricingSourceSnapshot: compPrice.source || null,
         priceBookIdSnapshot: compPrice.priceBookId || priceBookId || null,
         priceBookNameSnapshot: compPrice.priceBookName || null,
@@ -485,6 +549,7 @@ async function addQuoteBundle(req, res) {
         pricingEffectiveFromSnapshot: compPrice.effectiveFrom ? new Date(compPrice.effectiveFrom) : null,
         pricingEffectiveToSnapshot: compPrice.effectiveTo ? new Date(compPrice.effectiveTo) : null,
         pricingMinQtySnapshot: Number.isFinite(Number(compPrice.minQty)) ? Number(compPrice.minQty) : null,
+        pricingBreakdownSnapshot: compPrice.pricingBreakdown || null,
 
         taxSnapshot: { mode: 'none', source: 'taxCalculationService' },
         lineSubtotal: compComputed.lineSubtotal,
@@ -502,7 +567,9 @@ async function addQuoteBundle(req, res) {
           parentBundleVariantId: String(bundleVariantId),
           parentBundleLineId: String(parent._id),
           isOptional,
-          included: shouldInclude
+          included: shouldInclude,
+          editableQuantity: comp.editableQuantity === true,
+          remarks: comp.remarks || ''
         },
 
         optionalLine: isOptional,
@@ -525,6 +592,8 @@ async function addQuoteBundle(req, res) {
         quoteLineId: parent.quoteLineId,
         bundleVariantId: String(bundleVariantId),
         pricingMode,
+        bundleType: preview.bundleType,
+        revision: preview.revision,
         componentCount: createdComponents.length,
         totals
       }
@@ -594,6 +663,31 @@ async function patchBundleOptionalComponents(req, res) {
         .filter(Boolean)
     );
 
+    const snap = parent.bundleSnapshot && typeof parent.bundleSnapshot === 'object' ? parent.bundleSnapshot : {};
+    const optionalDefs = Array.isArray(snap.components)
+      ? snap.components.filter((c) => c.isOptional === true)
+      : [];
+    const selectedOptionalCount = optionalDefs.filter((c) =>
+      included.has(String(c.componentVariantId))
+    ).length;
+
+    if (snap.minOptionalSelection != null && selectedOptionalCount < Number(snap.minOptionalSelection)) {
+      return res.status(400).json({
+        success: false,
+        code: 'VALIDATION',
+        message: `Select at least ${snap.minOptionalSelection} optional component(s)`,
+        details: { rule: 'min_optional_selection', min: snap.minOptionalSelection, selected: selectedOptionalCount }
+      });
+    }
+    if (snap.maxOptionalSelection != null && selectedOptionalCount > Number(snap.maxOptionalSelection)) {
+      return res.status(400).json({
+        success: false,
+        code: 'VALIDATION',
+        message: `Select at most ${snap.maxOptionalSelection} optional component(s)`,
+        details: { rule: 'max_optional_selection', max: snap.maxOptionalSelection, selected: selectedOptionalCount }
+      });
+    }
+
     const optionalChildren = await QuoteLine.find({
       organizationId,
       quoteId,
@@ -631,6 +725,58 @@ async function patchBundleOptionalComponents(req, res) {
 
       await child.save();
       updated.push(child);
+    }
+
+    // Reprice parent when mode is rollup or discount (sum of visible component lines).
+    const mode = String(snap.pricingMode || '').toLowerCase();
+    if (mode === 'rollup' || mode === 'discount') {
+      const allChildren = await QuoteLine.find({
+        organizationId,
+        quoteId,
+        parentBundleLineId: parent._id,
+        lineType: 'bundle_component'
+      }).lean();
+      const rollup = allChildren
+        .filter((c) => !c.hiddenLine)
+        .reduce((sum, c) => sum + (Number(c.lineSubtotal) || 0) / Math.max(Number(parent.quantity) || 1, 1e-9), 0);
+
+      let unit = rollup;
+      let discountApplied = 0;
+      if (mode === 'discount') {
+        if (snap.discountType === 'percent') {
+          discountApplied = (rollup * (Number(snap.discountValue) || 0)) / 100;
+        } else if (snap.discountType === 'amount') {
+          discountApplied = Math.min(Number(snap.discountValue) || 0, rollup);
+        }
+        unit = Math.max(0, rollup - discountApplied);
+      }
+      parent.unitPriceSnapshot = unit;
+      parent.listPriceSnapshot = unit;
+      parent.bundleSnapshot = {
+        ...snap,
+        rollupComponentTotal: rollup,
+        discountApplied,
+        components: Array.isArray(snap.components)
+          ? snap.components.map((c) => ({
+              ...c,
+              included: !c.isOptional || included.has(String(c.componentVariantId))
+            }))
+          : snap.components
+      };
+      const parentComputed = quoteTotalsService.computeLineTotals(parent);
+      parent.lineSubtotal = parentComputed.lineSubtotal;
+      parent.lineTaxTotal = parentComputed.lineTaxTotal;
+      parent.lineTotal = parentComputed.lineTotal;
+      await parent.save();
+    } else if (Array.isArray(snap.components)) {
+      parent.bundleSnapshot = {
+        ...snap,
+        components: snap.components.map((c) => ({
+          ...c,
+          included: !c.isOptional || included.has(String(c.componentVariantId))
+        }))
+      };
+      await parent.save();
     }
 
     const { totals, sections } = await afterLinesChanged({ organizationId, quoteId });

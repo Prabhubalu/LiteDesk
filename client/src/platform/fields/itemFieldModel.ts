@@ -22,18 +22,18 @@
  *    - All user-facing business fields are core Item fields (owner: 'core', fieldScope: 'CORE')
  * 
  * 2. Core fields include identity and catalog attributes
- *    - Identity: `item_name`, `item_code`
+ *    - Identity: `item_name` (primary); `item_code` is system-generated (Module Numbering)
  *    - Catalog: `item_type`, `category`, `description`, `price`, `inventory`, etc.
  *    - fieldScope: 'CORE' indicates platform-level Item ownership
  * 
  * 4. System fields are infrastructure-scoped
- *    - `createdBy`, `createdAt`, `updatedAt`, `organizationId`, `item_id`, etc.
+ *    - `createdBy`, `createdAt`, `updatedAt`, `organizationId`, `item_id`, `item_code`, etc.
  *    - Managed by the platform, never user-editable
  *    - fieldScope: 'CORE' indicates platform-level ownership
  * 
  * 5. Quick Create eligibility
  *    - Essential fields: item_name (required), item_type, categoryId, selling_price, unit_of_measure, lifecycle_state, assignedTo (required)
- *    - Excluded: inventory fields, tax details, relationships, system fields
+ *    - Excluded: inventory fields, tax details, relationships, system fields (including item_code)
  * 
  * ============================================================================
  */
@@ -69,7 +69,7 @@ export type ItemFieldOwner = BaseFieldOwner;
 
 /**
  * Field intent classification for Items.
- * Items module uses 'primary' for item_name, 'identity' for item_code/sku, 'tracking' for pricing/inventory.
+ * Items module uses 'primary' for item_name, 'identity' for user identity attrs, 'tracking' for pricing/inventory.
  */
 export type ItemFieldIntent = 'primary' | 'identity' | 'state' | 'detail' | 'tracking' | 'system';
 
@@ -96,7 +96,7 @@ export type ItemFilterType = BaseFilterType;
 export interface ItemFieldMetadata extends Omit<BaseFieldMetadata, 'intent'> {
   /**
    * Field intent classification.
-   * Items uses 'primary' for item_name, 'identity' for item_code, 'tracking' for pricing/inventory.
+   * Items uses 'primary' for item_name, 'tracking' for pricing/inventory; item_code is system.
    */
   intent: ItemFieldIntent;
 }
@@ -114,7 +114,7 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
   // SYSTEM FIELDS (Infrastructure, never user-editable)
   // Type A: Infrastructure (never visible): _id, __v, organizationId
   // Type B: Audit (visible, read-only): createdAt, updatedAt, createdBy, modifiedBy
-  // item_id: visible (identity), read-only
+  // item_id / item_code: visible (identity), read-only, system-allocated
   // ===========================================================================
   
   organizationId: {
@@ -139,6 +139,20 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
     filterType: 'text',
     isSystem: true,
     isVisibleInConfig: true,
+  },
+
+  item_code: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isProtected: true,
+    isSystem: true,
+    isVisibleInConfig: true,
+    allowOnCreate: false,
+    filterable: true,
+    filterType: 'text',
+    filterPriority: 2,
   },
   
   createdBy: {
@@ -224,17 +238,6 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
     filterable: true,
     filterType: 'text',
     filterPriority: 1,
-  },
-  
-  item_code: {
-    owner: 'core',
-    intent: 'identity',
-    fieldScope: 'CORE',
-    editable: true,
-    isProtected: false,
-    filterable: true,
-    filterType: 'text',
-    filterPriority: 2,
   },
   
   // ===========================================================================
@@ -336,13 +339,14 @@ export const ITEM_FIELD_METADATA: Record<string, ItemFieldMetadata> = {
     filterType: 'select',
   },
   
+  /** @deprecated Dual-write alias of lifecycle_state — excluded from module field config. */
   status: {
-    owner: 'core',
-    intent: 'state',
+    owner: 'system',
+    intent: 'system',
     fieldScope: 'CORE',
-    editable: true,
-    isProtected: false,
-    filterable: true,
+    editable: false,
+    isProtected: true,
+    filterable: false,
     filterType: 'select',
     filterPriority: 2,
   },

@@ -2613,12 +2613,8 @@ const performImport = async () => {
       activeImportsStore.pinImportToModal(importId);
 
       void activeImportsStore.waitForImport(importId).then((record) => {
+        // Keep partial/failed results so row-level errors are visible (e.g. unresolvable assignees).
         importResults.value = mapImportRecordToResults(record);
-        if (record.status === 'failed') {
-          showBannerError(t('import.cSVImportModalToastErrorImportingDataPleaseTry'));
-          step.value = 2;
-          importResults.value = null;
-        }
       }).finally(() => {
         activeImportId.value = null;
         importing.value = false;

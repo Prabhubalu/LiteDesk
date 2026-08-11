@@ -10,8 +10,12 @@
       <div
         class="table-view-shell"
         :class="[
-          showEmptyOverlay ? 'relative z-[1] flex min-h-[480px] flex-col' : 'relative z-[1]',
-          fillsParentHeight ? 'flex h-full min-h-0 flex-col' : '',
+          showEmptyOverlay
+            ? (fillsParentHeight
+                ? 'relative z-[1] flex h-full min-h-0 flex-col'
+                : 'relative z-[1] flex min-h-[480px] flex-col')
+            : 'relative z-[1]',
+          fillsParentHeight && !showEmptyOverlay ? 'flex h-full min-h-0 flex-col' : '',
           isMobileCardLayout
             ? 'overflow-x-hidden overflow-y-visible rounded-none !border-0 bg-transparent shadow-none'
             : 'overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-900'
@@ -1459,10 +1463,12 @@ onMounted(() => {
   }
   nextTick(() => {
     setupHeaderRowObserver()
+    setupViewportFitHeight()
   })
   setTimeout(() => {
     updateEdgeColumns()
     syncHeaderRowHeights()
+    queueViewportFitUpdate()
     if (scrollContainerRef.value) {
       isScrolledHorizontally.value = scrollContainerRef.value.scrollLeft > 0
     }
@@ -1605,6 +1611,7 @@ onDeactivated(() => {
   saveScrollSession()
   teardownLoadMoreObserver()
   teardownHeaderRowObserver()
+  teardownViewportFitHeight()
   if (typeof window !== 'undefined') {
     window.removeEventListener('resize', updateEdgeColumns)
   }
@@ -1619,6 +1626,8 @@ onActivated(() => {
   nextTick(() => {
     setupHeaderRowObserver()
     setupLoadMoreObserver()
+    setupViewportFitHeight()
+    queueViewportFitUpdate()
     if (useVirtualScroll.value) {
       rowVirtualizer.value.measure?.()
     }
@@ -1876,18 +1885,145 @@ const fillsParentHeight = computed(() => {
   return String(props.maxBodyHeight).trim().endsWith('%')
 })
 
+/**
+ * When no explicit maxBodyHeight is set, fit the scrollport to the remaining
+ * visible panel height under the table top (header / stats / filters / banners).
+ * The 100vh − stickyOffset formula ignored list chrome and clipped last rows.
+ */
+const usesViewportFitHeight = computed(
+  () =>
+    enableInternalScroll.value &&
+    !fillsParentHeight.value &&
+    (props.maxBodyHeight === undefined || props.maxBodyHeight === null)
+)
+
+const MIN_VIEWPORT_FIT_BODY_PX = 160
+const measuredMaxHeightPx = ref<number | null>(null)
+let viewportFitRaf = 0
+let viewportFitResizeObserver: ResizeObserver | null = null
+let viewportFitListenersAttached = false
+
+/**
+ * Stable bottom edge. Never use content child's bottom — height of list content
+ * depends on this measure, which shrinks on every reflow if content-bottom is used.
+ */
+function getViewportFitBottomBoundary(scrollEl: HTMLElement): number {
+  const vv = typeof window !== 'undefined' ? window.visualViewport : null
+  const visualBottom = vv
+    ? vv.offsetTop + vv.height
+    : window.innerHeight
+
+  const root = scrollEl.closest('[data-platform-scroll-root]')
+  if (!(root instanceof HTMLElement)) {
+    return visualBottom
+  }
+
+  const rootBottom = root.getBoundingClientRect().bottom
+  let padBottom = 0
+  const shellContent = root.firstElementChild
+  if (shellContent instanceof HTMLElement) {
+    padBottom = parseFloat(window.getComputedStyle(shellContent).paddingBottom) || 0
+  }
+  return Math.min(visualBottom, rootBottom) - padBottom
+}
+
+function updateViewportFittedMaxHeight() {
+  if (!usesViewportFitHeight.value) {
+    measuredMaxHeightPx.value = null
+    return
+  }
+  const el = scrollContainerRef.value
+  if (!el) return
+
+  const top = el.getBoundingClientRect().top
+  const bottom = getViewportFitBottomBoundary(el)
+  const next = Math.max(
+    MIN_VIEWPORT_FIT_BODY_PX,
+    Math.floor(bottom - top)
+  )
+  if (measuredMaxHeightPx.value !== next) {
+    measuredMaxHeightPx.value = next
+  }
+}
+
+function queueViewportFitUpdate() {
+  if (typeof window === 'undefined') return
+  if (viewportFitRaf) return
+  viewportFitRaf = window.requestAnimationFrame(() => {
+    viewportFitRaf = 0
+    updateViewportFittedMaxHeight()
+  })
+}
+
+function teardownViewportFitHeight() {
+  viewportFitResizeObserver?.disconnect()
+  viewportFitResizeObserver = null
+  if (viewportFitListenersAttached && typeof window !== 'undefined') {
+    window.removeEventListener('resize', queueViewportFitUpdate)
+    window.removeEventListener('scroll', queueViewportFitUpdate, true)
+    window.visualViewport?.removeEventListener('resize', queueViewportFitUpdate)
+    window.visualViewport?.removeEventListener('scroll', queueViewportFitUpdate)
+    viewportFitListenersAttached = false
+  }
+  if (viewportFitRaf && typeof window !== 'undefined') {
+    window.cancelAnimationFrame(viewportFitRaf)
+    viewportFitRaf = 0
+  }
+}
+
+function setupViewportFitHeight() {
+  teardownViewportFitHeight()
+  if (!usesViewportFitHeight.value || typeof window === 'undefined') return
+
+  updateViewportFittedMaxHeight()
+
+  if (typeof ResizeObserver !== 'undefined' && scrollContainerRef.value) {
+    viewportFitResizeObserver = new ResizeObserver(() => queueViewportFitUpdate())
+    // Ancestor size changes (stats collapse, banners, chrome) shift table top.
+    // Do not observe the scroll container itself — maxHeight updates would thrash.
+    let node: HTMLElement | null = scrollContainerRef.value.parentElement
+    let depth = 0
+    while (node && depth < 12) {
+      viewportFitResizeObserver.observe(node)
+      if (node.hasAttribute('data-platform-scroll-root')) break
+      node = node.parentElement
+      depth += 1
+    }
+  }
+
+  window.addEventListener('resize', queueViewportFitUpdate, { passive: true })
+  // Page scroll and nested scroll roots move getBoundingClientRect().top.
+  window.addEventListener('scroll', queueViewportFitUpdate, { passive: true, capture: true })
+  window.visualViewport?.addEventListener('resize', queueViewportFitUpdate)
+  window.visualViewport?.addEventListener('scroll', queueViewportFitUpdate)
+  viewportFitListenersAttached = true
+}
+
+watch(
+  [usesViewportFitHeight, scrollContainerRef, () => props.internalScroll, showEmptyOverlay],
+  () => {
+    nextTick(() => setupViewportFitHeight())
+  },
+  { flush: 'post' }
+)
+
 const maxHeightStyle = computed(() => {
   if (!enableInternalScroll.value) {
     return undefined
   }
 
-  if (props.maxBodyHeight !== undefined) {
+  if (props.maxBodyHeight !== undefined && props.maxBodyHeight !== null) {
     if (typeof props.maxBodyHeight === 'number') {
       return `${props.maxBodyHeight}px`
     }
     return props.maxBodyHeight
   }
 
+  if (measuredMaxHeightPx.value != null) {
+    return `${measuredMaxHeightPx.value}px`
+  }
+
+  // First paint / SSR fallback until measured.
   return `calc(100vh - ${stickyTop.value})`
 })
 
@@ -1896,9 +2032,13 @@ const scrollContainerStyles = computed(() => {
 
   if (enableInternalScroll.value && !showEmptyOverlay.value) {
     if (fillsParentHeight.value) {
-      // Parent flex chain owns height; avoid 100vh calc that overflows nested panels.
+      // Residual flex height from ListView table slot; scroll all records inside.
       styles.height = '100%'
       styles.maxHeight = '100%'
+    } else if (typeof props.maxBodyHeight === 'number') {
+      const h = `${props.maxBodyHeight}px`
+      styles.height = h
+      styles.maxHeight = h
     } else {
       styles.maxHeight = maxHeightStyle.value
     }
@@ -2129,6 +2269,7 @@ onBeforeUnmount(() => {
   saveScrollSession()
   teardownLoadMoreObserver()
   teardownHeaderRowObserver()
+  teardownViewportFitHeight()
   stopColumnResize()
   flushColumnWidths()
   window.removeEventListener('beforeunload', handleBeforeUnload)

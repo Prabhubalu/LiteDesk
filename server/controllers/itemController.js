@@ -70,6 +70,10 @@ exports.createItem = async (req, res) => {
         };
         assignResolvedSource(payload, 'ui');
 
+        // Item Code is system-generated via Module Numbering — never accept client value
+        delete payload.item_code;
+        delete payload.item_id;
+
         // Validate required fields
         if (!payload.item_name) {
             return res.status(400).json({
@@ -81,6 +85,23 @@ exports.createItem = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Assigned To is required'
+            });
+        }
+
+        // Unique item name per org (active records) — duplicate flow forces rename on create
+        const trimmedName = String(payload.item_name).trim();
+        payload.item_name = trimmedName;
+        const existingByName = await Item.findOne({
+            organizationId: req.user.organizationId,
+            item_name: new RegExp(`^${trimmedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+            deletedAt: null
+        }).select('_id').lean();
+        if (existingByName) {
+            return res.status(409).json({
+                success: false,
+                code: 'DUPLICATE_ITEM_NAME',
+                message: 'An Item with this name already exists.',
+                errors: { item_name: 'An Item with this name already exists.' }
             });
         }
 
@@ -113,6 +134,10 @@ exports.createItem = async (req, res) => {
             });
         }
         Object.assign(payload, catalogResult.payload);
+
+        // Re-strip after catalog processing (system-owned fields)
+        delete payload.item_code;
+        delete payload.item_id;
 
         const newItem = await Item.create(payload);
         
@@ -414,6 +439,9 @@ exports.updateItem = async (req, res) => {
         // Prevent changing organizationId
         delete req.body.organizationId;
         delete req.body.source;
+        // Item Code / legacy item_id are system-managed
+        delete req.body.item_code;
+        delete req.body.item_id;
 
         const previous = await Item.findOne({
             _id: req.params.id,
@@ -463,6 +491,8 @@ exports.updateItem = async (req, res) => {
             });
         }
         Object.assign(req.body, catalogResult.payload);
+        delete req.body.item_code;
+        delete req.body.item_id;
 
         // Generic description versioning: store previous description before update.
         if (Object.prototype.hasOwnProperty.call(req.body || {}, 'description')) {

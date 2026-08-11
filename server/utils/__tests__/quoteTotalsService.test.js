@@ -89,6 +89,17 @@ test('computeQuoteTotalsFromLines: rollup bundle counts components only', () => 
   });
 });
 
+test('computeQuoteTotalsFromLines: discount bundle counts parent only', () => {
+  const parentId = 'parent-3';
+  const totals = computeQuoteTotalsFromLines([
+    { _id: parentId, lineType: 'bundle_parent', bundleSnapshot: { pricingMode: 'discount' }, hiddenLine: false, lineSubtotal: 72000, lineTaxTotal: 0, lineTotal: 72000 },
+    { lineType: 'bundle_component', parentBundleLineId: parentId, hiddenLine: false, lineSubtotal: 60000, lineTaxTotal: 0, lineTotal: 60000 },
+    { lineType: 'bundle_component', parentBundleLineId: parentId, hiddenLine: false, lineSubtotal: 15000, lineTaxTotal: 0, lineTotal: 15000 }
+  ]);
+  assert.equal(totals.subtotal, 72000);
+  assert.equal(totals.grandTotal, 72000);
+});
+
 test('computeQuoteTotalsFromLines: global percent discount', () => {
   const totals = computeQuoteTotalsFromLines(
     [{ lineSubtotal: 200, lineTaxTotal: 0, lineTotal: 200, quantity: 1, unitPriceSnapshot: 200 }],

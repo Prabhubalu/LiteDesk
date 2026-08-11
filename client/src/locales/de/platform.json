@@ -1174,5 +1174,117 @@
   "listCreateStockTransfer": {
     "message": "New Transfer",
     "description": "Stock transfers list create button"
+  },
+  "catalogBundleRevision": {
+    "message": "Rev {n}",
+    "description": "Bundle definition revision badge"
+  },
+  "catalogBundleType": {
+    "message": "Bundle type",
+    "description": "Fixed vs flexible bundle label"
+  },
+  "catalogBundleTypeFixed": {
+    "message": "Fixed",
+    "description": "Fixed bundle type option"
+  },
+  "catalogBundleTypeFlexible": {
+    "message": "Flexible",
+    "description": "Flexible bundle type option"
+  },
+  "catalogBundleTypeFixedHint": {
+    "message": "Sealed package—every component is always included. Sales cannot remove items.",
+    "description": "Fixed bundle type helper"
+  },
+  "catalogBundleTypeFlexibleHint": {
+    "message": "Sales can choose optional add-ons within your rules when quoting.",
+    "description": "Flexible bundle type helper"
+  },
+  "catalogBundlePricingDiscount": {
+    "message": "Sum with bundle discount",
+    "description": "Discount bundle pricing option"
+  },
+  "catalogBundlePricingFixedHint": {
+    "message": "Uses this variant’s list / price-book price as the package price.",
+    "description": "Fixed pricing helper"
+  },
+  "catalogBundlePricingRollupHint": {
+    "message": "Price is the sum of selected components (updates with optional picks).",
+    "description": "Rollup pricing helper"
+  },
+  "catalogBundlePricingDiscountHint": {
+    "message": "Sum of selected components, then apply a package discount.",
+    "description": "Discount pricing helper"
+  },
+  "catalogBundleDiscountType": {
+    "message": "Discount type",
+    "description": "Bundle discount type label"
+  },
+  "catalogBundleDiscountPercent": {
+    "message": "Percent",
+    "description": "Percent discount option"
+  },
+  "catalogBundleDiscountAmount": {
+    "message": "Amount",
+    "description": "Amount discount option"
+  },
+  "catalogBundleDiscountValue": {
+    "message": "Discount value",
+    "description": "Bundle discount value label"
+  },
+  "catalogBundleEffectiveFrom": {
+    "message": "Effective from",
+    "description": "Bundle effective from date"
+  },
+  "catalogBundleEffectiveUntil": {
+    "message": "Effective until",
+    "description": "Bundle effective until date"
+  },
+  "catalogBundleMinOptional": {
+    "message": "Min optionals",
+    "description": "Min optional selection rule"
+  },
+  "catalogBundleMaxOptional": {
+    "message": "Max optionals",
+    "description": "Max optional selection rule"
+  },
+  "catalogBundleRole": {
+    "message": "Role",
+    "description": "Mandatory vs optional column"
+  },
+  "catalogBundleMandatory": {
+    "message": "Mandatory",
+    "description": "Mandatory component role"
+  },
+  "catalogBundleDefaultOn": {
+    "message": "Default on",
+    "description": "Default selected for optional component"
+  },
+  "catalogBundleEditableQty": {
+    "message": "Edit qty",
+    "description": "Editable quantity allowed"
+  },
+  "catalogBundleMinQty": {
+    "message": "Min",
+    "description": "Min component qty"
+  },
+  "catalogBundleMaxQty": {
+    "message": "Max",
+    "description": "Max component qty"
+  },
+  "catalogBundleRemarks": {
+    "message": "Notes",
+    "description": "Component remarks"
+  },
+  "catalogBundleRemarksPlaceholder": {
+    "message": "Internal note…",
+    "description": "Component remarks placeholder"
+  },
+  "catalogBundleSaveFailed": {
+    "message": "Could not save bundle",
+    "description": "Bundle save error"
+  },
+  "catalogBundlePreviewFailed": {
+    "message": "Could not preview bundle",
+    "description": "Bundle preview error"
   }
 }

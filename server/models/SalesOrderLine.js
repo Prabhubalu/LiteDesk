@@ -72,6 +72,7 @@ const SalesOrderLineSchema = new Schema(
     priceBookNameSnapshot: { type: String, trim: true, default: null },
     priceBookEntryIdSnapshot: { type: Schema.Types.ObjectId, ref: 'CatalogPriceBookEntry', default: null },
     pricingAsOfDateSnapshot: { type: Date, default: null },
+    pricingBreakdownSnapshot: { type: Schema.Types.Mixed, default: null },
 
     discountType: { type: String, trim: true, default: null },
     discountValue: { type: Number, default: 0 },
@@ -92,6 +93,17 @@ const SalesOrderLineSchema = new Schema(
     descriptionSnapshot: { type: String, default: null },
     attributesSnapshot: { type: Schema.Types.Mixed, default: {} },
     bundleSnapshot: { type: Schema.Types.Mixed, default: null },
+
+    /** CPQ product configuration snapshot (from quote or direct SO line) */
+    productConfigurationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'ProductConfiguration',
+      default: null,
+      index: true
+    },
+    productConfigurationVersion: { type: Number, default: null, min: 1 },
+    configurationSelections: { type: Schema.Types.Mixed, default: null },
+    configurationSnapshot: { type: Schema.Types.Mixed, default: null },
 
     optionalLine: { type: Boolean, default: false },
     hiddenLine: { type: Boolean, default: false },

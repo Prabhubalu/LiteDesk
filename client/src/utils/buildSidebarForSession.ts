@@ -1,4 +1,4 @@
-import type { AppRegistry, SidebarStructure } from '@/types/sidebar.types';
+import type { AppRegistry, SidebarItem, SidebarStructure } from '@/types/sidebar.types';
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import { buildSidebarFromRegistry } from '@/utils/buildSidebarFromRegistry';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
@@ -190,6 +190,33 @@ export async function buildSidebarStructureForSession(
     structure.shell = (structure.shell || []).filter(
       (item) => item?.id !== 'astra',
     );
+  }
+
+  // Hide Stockroom multi-location workbench until Stockroom marketplace addon is installed.
+  const { isStockroomAddonEntitled } = await import('@/utils/addonEntitlement');
+  if (!isStockroomAddonEntitled(user)) {
+    const stockroomKeys = new Set(['stockrooms', 'stock_adjustments', 'stock_transfers']);
+    const dropStockroomNav = (items: SidebarItem[] | undefined): SidebarItem[] =>
+      (items || []).filter((item) => {
+        const moduleKey =
+          item.kind === 'coreModule' || item.kind === 'app'
+            ? String(item.moduleKey || '').toLowerCase()
+            : '';
+        return !stockroomKeys.has(moduleKey);
+      });
+
+    if (structure.appNav?.appId === 'INVENTORY') {
+      structure.appNav = {
+        ...structure.appNav,
+        modules: dropStockroomNav(structure.appNav.modules),
+      };
+    }
+    if (Array.isArray(structure.applications)) {
+      structure.applications = structure.applications.map((app) => {
+        if (app.id !== 'INVENTORY') return app;
+        return { ...app, items: dropStockroomNav(app.items) };
+      });
+    }
   }
 
   return { structure, entitlementScopedRegistry };

@@ -1,7 +1,34 @@
 const CatalogPriceBook = require('../models/CatalogPriceBook');
 const CatalogPriceBookEntry = require('../models/CatalogPriceBookEntry');
+const { normalizeCustomerType } = require('../constants/pricingEngine');
 
 const DEFAULT_BOOK_NAME = 'Standard';
+
+function normalizeCustomerTypes(list) {
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const raw of list) {
+    const ct = normalizeCustomerType(raw);
+    if (ct && !out.includes(ct)) out.push(ct);
+  }
+  return out;
+}
+
+function normalizeRegionCodes(list) {
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const raw of list) {
+    const r = String(raw || '').trim().toUpperCase();
+    if (r && !out.includes(r)) out.push(r);
+  }
+  return out;
+}
+
+function parseOptionalDate(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const d = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
 
 async function listPriceBooks(organizationId, { includeInactive = false } = {}) {
   const query = { organizationId };
@@ -74,6 +101,11 @@ async function createPriceBook({ organizationId, userId, payload }) {
     currency: payload.currency || 'USD',
     isDefault,
     isActive: payload.isActive !== false,
+    customerTypes: normalizeCustomerTypes(payload.customerTypes),
+    regionCodes: normalizeRegionCodes(payload.regionCodes),
+    priority: Number.isFinite(Number(payload.priority)) ? Number(payload.priority) : 100,
+    effectiveFrom: parseOptionalDate(payload.effectiveFrom),
+    effectiveUntil: parseOptionalDate(payload.effectiveUntil),
     createdBy: userId,
     modifiedBy: userId
   });
@@ -95,6 +127,13 @@ async function updatePriceBook({ priceBookId, organizationId, userId, payload })
   if (payload.description !== undefined) book.description = payload.description;
   if (payload.currency !== undefined) book.currency = payload.currency;
   if (payload.isActive !== undefined) book.isActive = payload.isActive;
+  if (payload.customerTypes !== undefined) book.customerTypes = normalizeCustomerTypes(payload.customerTypes);
+  if (payload.regionCodes !== undefined) book.regionCodes = normalizeRegionCodes(payload.regionCodes);
+  if (payload.priority !== undefined) {
+    book.priority = Number.isFinite(Number(payload.priority)) ? Number(payload.priority) : book.priority;
+  }
+  if (payload.effectiveFrom !== undefined) book.effectiveFrom = parseOptionalDate(payload.effectiveFrom);
+  if (payload.effectiveUntil !== undefined) book.effectiveUntil = parseOptionalDate(payload.effectiveUntil);
 
   if (payload.isDefault === true) {
     await CatalogPriceBook.updateMany(

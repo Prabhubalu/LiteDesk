@@ -1595,6 +1595,16 @@
     @close="showEditDrawer = false"
     @saved="handleTaskEditSaved"
   />
+  <CreateRecordDrawer
+    v-if="showDuplicateCreateModal"
+    :key="`duplicate-task-${duplicateSourceId}`"
+    :isOpen="showDuplicateCreateModal"
+    moduleKey="tasks"
+    :duplicate-mode="true"
+    :initial-data="duplicateInitialData"
+    @close="closeDuplicateCreate"
+    @saved="closeDuplicateCreate"
+  />
 
   <!-- Email Compose Drawer -->
   <EmailComposeDrawer
@@ -1705,6 +1715,7 @@ import {
 } from '@/components/record-page/activityEventModel';
 import LinkRecordsDrawer from '@/components/common/LinkRecordsDrawer.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import { buildDuplicateInitialData } from '@/utils/duplicateRecord';
 import RecordDocumentsPanel from '@/components/record-page/RecordDocumentsPanel.vue';
 import { supportsDocumentAttachments } from '@/constants/documentAttachments';
 import TaskRelatedToField from '@/components/tasks/TaskRelatedToField.vue';
@@ -1824,6 +1835,15 @@ const taskRecordPageRootRef = ref(null);
 const taskNavigationIds = ref([]);
 const { loading, error, runWithLoading } = useRecordLoading();
 const showEditDrawer = ref(false);
+const showDuplicateCreateModal = ref(false);
+const duplicateInitialData = ref({});
+const duplicateSourceId = ref('');
+
+function closeDuplicateCreate() {
+  showDuplicateCreateModal.value = false;
+  duplicateInitialData.value = {};
+  duplicateSourceId.value = '';
+}
 const showEmailModal = ref(false);
 const emailComposeDraft = ref(null);
 const taskEvents = ref([]);
@@ -5577,7 +5597,10 @@ const {
   onCopySuccess: () => notifications.success(t('records.taskCopyUrlSuccess')),
   toggleFollow: async (_record, current) => !current,
   duplicate: async (record) => {
-    console.log('Duplicate task:', record._id);
+    if (!record) return;
+    duplicateSourceId.value = String(record._id || record.id || '');
+    duplicateInitialData.value = buildDuplicateInitialData(record, { moduleKey: 'tasks' });
+    showDuplicateCreateModal.value = true;
   },
   exportConfig: (record, helpers) => {
     const assignedTo = record.assignedTo ? getUserDisplayName(record.assignedTo) : '';

@@ -207,6 +207,14 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
       await config.save();
     }
 
+    if (normalized === ADDON_KEYS.STOCKROOM) {
+      const { activateStockroomAddon } = require('./stockroomAddonService');
+      await activateStockroomAddon({
+        organizationId,
+        userId: initiatedByUserId || null,
+      });
+    }
+
     return {
       created: subscriptionCreated,
       subscription: existing,

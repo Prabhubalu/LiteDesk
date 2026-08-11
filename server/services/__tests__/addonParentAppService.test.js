@@ -78,4 +78,42 @@ describe('addonParentAppService', () => {
     assert.equal(ADDON_KEYS.ARTICLES, 'articles');
     assert.equal(ADDON_KEYS.BLOG, 'blog');
   });
+
+  it('blocks stockroom and cpq install when Inventory is not entitled', () => {
+    const organization = {
+      enabledApps: [{ appKey: APP_KEYS.SALES, status: 'ACTIVE' }],
+    };
+
+    for (const requiredApps of [[APP_KEYS.INVENTORY]]) {
+      const result = evaluateRequiredAppsEntitlement({
+        organization,
+        subscription: { apps: [] },
+        requiredApps,
+      });
+      assert.equal(result.ok, false);
+      assert.equal(result.code, 'PARENT_APP_REQUIRED');
+      assert.deepEqual(result.missingApps, [APP_KEYS.INVENTORY]);
+    }
+  });
+
+  it('allows stockroom and cpq install when Inventory is enabled', () => {
+    const organization = {
+      enabledApps: [
+        { appKey: APP_KEYS.SALES, status: 'ACTIVE' },
+        { appKey: APP_KEYS.INVENTORY, status: 'ACTIVE' },
+      ],
+    };
+
+    const result = evaluateRequiredAppsEntitlement({
+      organization,
+      subscription: { apps: [] },
+      requiredApps: [APP_KEYS.INVENTORY],
+    });
+    assert.equal(result.ok, true);
+  });
+
+  it('maps addon keys for stockroom and cpq', () => {
+    assert.equal(ADDON_KEYS.STOCKROOM, 'stockroom');
+    assert.equal(ADDON_KEYS.CPQ, 'cpq');
+  });
 });

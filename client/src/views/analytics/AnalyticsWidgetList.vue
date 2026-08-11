@@ -123,7 +123,6 @@ import { useAuthStore } from '@/stores/authRegistry';
 import {
   captureAnalyticsModuleVisited,
   captureAnalyticsWidgetArchived,
-  captureAnalyticsWidgetDuplicated,
 } from '@/config/posthogAnalytics';
 
 import { confirmAction } from '@/composables/useConfirmAction';
@@ -133,7 +132,6 @@ const authStore = useAuthStore();
 const {
   templates,
   fetchTemplates,
-  duplicateWidget,
   archiveWidget,
 } = useAnalyticsWidgets();
 
@@ -186,15 +184,8 @@ function useTemplate(templateKey) {
   router.push({ name: 'analytics-widget-create', query: { template: templateKey } });
 }
 
-async function duplicateRow(id) {
-  const res = await duplicateWidget(String(id));
-  if (res?.success) {
-    captureAnalyticsWidgetDuplicated({ source_widget_id: id, widget_id: res.data?._id });
-    await refreshList();
-    if (res.data?._id) {
-      editWidget(res.data._id);
-    }
-  }
+function duplicateRow(id) {
+  router.push({ name: 'analytics-widget-create', query: { duplicateFrom: String(id) } });
 }
 
 async function archiveRow(row) {
