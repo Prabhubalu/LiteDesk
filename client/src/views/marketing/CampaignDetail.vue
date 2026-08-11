@@ -717,7 +717,6 @@ const {
   scheduleCampaign,
   testSendCampaign,
   fetchCampaignPrecheck,
-  duplicateCampaign,
   deleteCampaign,
   archiveCampaign,
   cancelCampaign,
@@ -1378,14 +1377,9 @@ async function handleRejectCampaign(payload) {
 }
 
 async function handleDuplicate() {
-  try {
-    const copy = await duplicateCampaign(route.params.id);
-    notifications.success(t('marketing.campaignsDuplicateSuccess'));
-    const id = copy?._id || copy?.id;
-    if (id) router.push({ name: 'marketing-campaign-detail', params: { id } });
-  } catch (err) {
-    notifications.error(err?.message || t('states.genericFailure'));
-  }
+  const id = route.params.id;
+  if (!id) return;
+  router.push({ name: 'marketing-campaign-new', query: { duplicateFrom: String(id) } });
 }
 
 async function handleDelete() {

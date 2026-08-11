@@ -1,15 +1,25 @@
 const mongoose = require('mongoose');
 const ModuleDefinition = require('../models/ModuleDefinition');
 const { validateFieldWrite } = require('../utils/fieldAccessControl');
-const { buildUpdateWithCustomFields } = require('../utils/customFieldsExtractor');
+const {
+  buildUpdateWithCustomFields,
+  flattenCustomFieldsForResponse,
+} = require('../utils/customFieldsExtractor');
 const { resolveMatchingRecordIds } = require('./bulkDeleteMatchingResolver');
 const {
   isBulkUpdateModule,
   filterAllowedBulkUpdates,
 } = require('../utils/bulkUpdateFieldPolicy');
+const {
+  appendFieldChangeLogs,
+  buildFieldChangeLogDetails,
+} = require('../utils/recordActivityLogger');
 
 const DEFAULT_BATCH_SIZE = 500;
 const MAX_FIELDS_PER_REQUEST = 10;
+
+/** Modules whose ModuleRecordPage activity reads embedded activityLogs (not RecordActivity). */
+const NATIVE_ACTIVITY_LOG_MODULES = new Set(['deals', 'tasks']);
 
 const MODEL_BY_KEY = {
   people: () => require('../models/People'),
@@ -70,10 +80,123 @@ function validateUpdatesAgainstModule(updates, moduleFields, user, moduleKey) {
   return violations;
 }
 
+function getActorDisplayName(user) {
+  if (!user) return 'System';
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  return name || user.username || user.email || 'System';
+}
+
+function selectFieldsForActivity(Model, updateKeys) {
+  const paths = Model?.schema?.paths || {};
+  const select = new Set(['_id']);
+  if (paths.customFields) select.add('customFields');
+  for (const key of updateKeys) {
+    if (paths[key] || key === 'customFields') {
+      select.add(key);
+    } else if (paths.customFields) {
+      // custom field — value lives under customFields; already selected
+    } else {
+      select.add(key);
+    }
+  }
+  return [...select].join(' ');
+}
+
+/**
+ * Write Mass Edit field-change activity for each record that actually changed.
+ * Failures are logged and never fail the bulk update itself.
+ */
+async function logMassEditActivities({
+  moduleKey,
+  organizationId,
+  user,
+  moduleFields,
+  previousDocs,
+  updates,
+}) {
+  if (!previousDocs.length) return;
+
+  const mk = String(moduleKey || '').toLowerCase();
+  const updateKeys = Object.keys(updates || {});
+  if (updateKeys.length === 0) return;
+
+  const authorId = user?._id;
+  const actorName = getActorDisplayName(user);
+  const detailsExtras = { source: 'mass_edit' };
+  const now = new Date();
+
+  try {
+    if (NATIVE_ACTIVITY_LOG_MODULES.has(mk)) {
+      const Model = MODEL_BY_KEY[mk]?.();
+      if (!Model) return;
+
+      const ops = [];
+      for (const prev of previousDocs) {
+        const flatPrev = flattenCustomFieldsForResponse(prev);
+        const flatNext = { ...flatPrev, ...updates };
+        const rows = buildFieldChangeLogDetails({
+          previous: flatPrev,
+          updated: flatNext,
+          updateDataKeys: updateKeys,
+          fieldLabels: moduleFields,
+          detailsExtras,
+        });
+        if (rows.length === 0) continue;
+
+        const logEntries = rows.map((row) => ({
+          user: actorName,
+          userId: authorId,
+          action: row.action,
+          details: row.details,
+          timestamp: now,
+        }));
+
+        ops.push({
+          updateOne: {
+            filter: { _id: prev._id, organizationId },
+            update: { $push: { activityLogs: { $each: logEntries } } },
+          },
+        });
+      }
+
+      if (ops.length > 0) {
+        await Model.bulkWrite(ops, { ordered: false });
+      }
+      return;
+    }
+
+    // people, organizations, events, items, cases, quotes → RecordActivity
+    await Promise.all(
+      previousDocs.map(async (prev) => {
+        const flatPrev = flattenCustomFieldsForResponse(prev);
+        const flatNext = { ...flatPrev, ...updates };
+        try {
+          await appendFieldChangeLogs({
+            organizationId,
+            moduleKey: mk,
+            recordId: prev._id,
+            authorId,
+            previous: flatPrev,
+            updated: flatNext,
+            updateDataKeys: updateKeys,
+            fieldLabels: moduleFields,
+            detailsExtras,
+          });
+        } catch (err) {
+          console.error('[bulkUpdateService] mass-edit activity log failed for record', String(prev._id), err?.message || err);
+        }
+      })
+    );
+  } catch (err) {
+    console.error('[bulkUpdateService] mass-edit activity logging failed', err?.message || err);
+  }
+}
+
 async function applyBulkUpdateBatch({
   moduleKey,
   organizationId,
   userId,
+  user,
   ids,
   updates,
   moduleFields,
@@ -97,15 +220,35 @@ async function applyBulkUpdateBatch({
   }
 
   const query = buildBaseRecordQuery(mk, organizationId, uniqueIds);
+  const updateKeys = Object.keys(updates || {});
+  const previousDocs = await Model.find(query)
+    .select(selectFieldsForActivity(Model, updateKeys))
+    .lean();
+
   const $set = buildUpdateWithCustomFields(updates, Model);
   $set.updatedBy = userId;
   $set.updatedAt = new Date();
+  // Prefer model-native modifiedBy when present (deals/items/events).
+  if (Model.schema?.paths?.modifiedBy) {
+    $set.modifiedBy = userId;
+  }
 
   const result = await Model.updateMany(query, { $set });
   const matchedCount = Number(result?.matchedCount ?? 0);
   const modifiedCount = Number(result?.modifiedCount ?? 0);
   const skippedCount = Math.max(0, uniqueIds.length - matchedCount);
   const unchangedCount = Math.max(0, matchedCount - modifiedCount);
+
+  if (previousDocs.length > 0) {
+    await logMassEditActivities({
+      moduleKey: mk,
+      organizationId,
+      user: user || { _id: userId },
+      moduleFields,
+      previousDocs,
+      updates,
+    });
+  }
 
   return {
     updatedCount: modifiedCount,
@@ -226,6 +369,7 @@ async function bulkUpdateRecords(params) {
     moduleKey: mk,
     organizationId,
     userId: user._id,
+    user,
     ids: targetIds,
     updates: allowed,
     moduleFields,

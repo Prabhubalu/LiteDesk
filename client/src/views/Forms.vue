@@ -530,19 +530,15 @@ const openFormBuilder = (form) => {
   router.push(`/forms/builder/${form._id}`);
 };
 
-const duplicateForm = async (form) => {
-  try {
-    const response = await apiClient(`/forms/${form._id}/duplicate`, {
-      method: 'POST'
-    });
-
-    if (response.success) {
-      await fetchForms();
-      openFormBuilder(response.data.data);
-    }
-  } catch (error) {
-    console.error('Error duplicating form:', error);
-  }
+const duplicateForm = (form) => {
+  if (!form?._id) return;
+  const path = `/forms/create?duplicateFrom=${form._id}`;
+  openTab(path, {
+    title: t('forms.hubTabDuplicateForm', { name: form.name || t('forms.hubUntitledForm') }),
+    icon: 'clipboard-document',
+    insertAdjacent: true
+  });
+  router.push(path);
 };
 
 const viewFormDetail = (form) => {

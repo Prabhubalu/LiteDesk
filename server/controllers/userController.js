@@ -2270,6 +2270,23 @@ exports.getProfile = async (req, res) => {
             };
         }
 
+        // Groups the current user belongs to (tenant-scoped membership only).
+        const membershipGroups = await Group.find({
+            organizationId: organization?._id || req.user.organizationId,
+            members: req.user._id,
+            isActive: { $ne: false }
+        })
+            .select('_id name description type color')
+            .sort({ name: 1 })
+            .lean();
+        userWithRole.groups = membershipGroups.map((g) => ({
+            _id: g._id,
+            name: g.name,
+            description: g.description || '',
+            type: g.type || null,
+            color: g.color || null
+        }));
+
         res.json({
             success: true,
             data: userWithRole

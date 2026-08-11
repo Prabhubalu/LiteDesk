@@ -1119,15 +1119,27 @@ function onFilterStateChange(nextState: ReportFilterState | null) {
     reportHydrationDone.value = false;
     await Promise.all([fetchCatalog(), fetchFolders(), fetchHome()]);
 
-    const id = reportId || route.params.id;
-    if (id) {
+    const editId = reportId || route.params.id;
+    const duplicateFromRaw = route.query?.duplicateFrom;
+    const duplicateFromId =
+      !editId && isNew.value && duplicateFromRaw != null && duplicateFromRaw !== ''
+        ? String(Array.isArray(duplicateFromRaw) ? duplicateFromRaw[0] : duplicateFromRaw)
+        : null;
+    const loadId = editId ? String(editId) : duplicateFromId;
+    const isDuplicateCreate = Boolean(duplicateFromId && !editId);
+
+    if (loadId) {
       isHydratingReport.value = true;
-      const res = await fetchReport(String(id));
+      const res = await fetchReport(String(loadId));
       if (res?.success && res.data) {
         const r = res.data;
-        loadedReportStatus.value = String(r.status || 'draft');
-        form.name = r.name;
-        form.apiName = r.apiName;
+        loadedReportStatus.value = isDuplicateCreate ? 'draft' : String(r.status || 'draft');
+        form.name = isDuplicateCreate
+          ? (String(r.name || '').trim() && !/\(copy\)$/i.test(String(r.name).trim())
+              ? `${String(r.name).trim()} (Copy)`
+              : String(r.name || '').trim())
+          : r.name;
+        form.apiName = isDuplicateCreate ? '' : r.apiName;
         form.description = r.description || '';
         relatedModules.value = Array.isArray(r.relatedModules) ? [...r.relatedModules] : [];
         form.primaryModule = r.primaryModule;
@@ -1146,8 +1158,8 @@ function onFilterStateChange(nextState: ReportFilterState | null) {
         };
         form.listedInHome = r.listedInHome !== false;
         form.drillDownEnabled = r.drillDownEnabled !== false;
-        form.addToFavorites = isFavorite('report', String(r._id));
-        if (r.schedulingEnabled) {
+        form.addToFavorites = isDuplicateCreate ? false : isFavorite('report', String(r._id));
+        if (!isDuplicateCreate && r.schedulingEnabled) {
           scheduleForm.enabled = true;
         }
         if (Array.isArray(r.rowGroups) && r.rowGroups.length) {
@@ -1195,7 +1207,9 @@ function onFilterStateChange(nextState: ReportFilterState | null) {
         showRecordCount.value = r.showRecordCount !== false;
         hydrateFiltersFromReport(r);
         pruneInvalidFieldSelections();
-        await hydrateSchedulesForReport(String(r._id));
+        if (!isDuplicateCreate) {
+          await hydrateSchedulesForReport(String(r._id));
+        }
       }
       isHydratingReport.value = false;
     } else {

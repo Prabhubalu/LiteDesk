@@ -4,29 +4,30 @@ const ItemBundleComponent = require('../models/ItemBundleComponent');
 const { getVariantById } = require('./itemVariantService');
 const { resolve: resolveCatalogPrice } = require('./catalogPriceResolver');
 const {
-  isCatalogBundlePricingMode,
-  CATALOG_BUNDLE_PRICING_DEFAULT
+  CATALOG_BUNDLE_PRICING_DEFAULT,
+  CATALOG_BUNDLE_TYPE_DEFAULT,
+  normalizeBundleComponentInput,
+  validateBundleDefinition,
+  parseBundleDate,
+  assertBundleEffective,
+  resolveIncludedComponents,
+  validateBundleConfiguration,
+  resolveComponentQuantity,
+  computeBundleUnitPrice
 } = require('../constants/catalogBundle');
 const { CATALOG_SELLABLE_LIFECYCLE_STATES } = require('../constants/catalogLifecycle');
 
-function normalizeComponentPayload(row) {
-  const componentVariantId = row.componentVariantId;
-  if (!componentVariantId) {
-    const err = new Error('Each component requires componentVariantId');
-    err.code = 'VALIDATION';
-    throw err;
-  }
-  const quantity = Number(row.quantity);
-  if (!Number.isFinite(quantity) || quantity <= 0) {
-    const err = new Error('Component quantity must be greater than zero');
-    err.code = 'VALIDATION';
-    throw err;
-  }
+function pickBundleSettings(variant) {
   return {
-    componentVariantId,
-    quantity,
-    isOptional: row.isOptional === true,
-    sortOrder: Number.isFinite(Number(row.sortOrder)) ? Number(row.sortOrder) : 0
+    bundleType: variant.bundleType || CATALOG_BUNDLE_TYPE_DEFAULT,
+    pricingMode: variant.pricingMode || CATALOG_BUNDLE_PRICING_DEFAULT,
+    discountType: variant.bundleDiscountType ?? null,
+    discountValue: variant.bundleDiscountValue ?? null,
+    minOptionalSelection: variant.minOptionalSelection ?? null,
+    maxOptionalSelection: variant.maxOptionalSelection ?? null,
+    effectiveFrom: variant.bundleEffectiveFrom ?? null,
+    effectiveUntil: variant.bundleEffectiveUntil ?? null,
+    revision: Number(variant.bundleRevision) || 1
   };
 }
 
@@ -38,7 +39,7 @@ async function assertBundleVariant(bundleVariantId, organizationId) {
     throw err;
   }
   const item = await Item.findOne({ _id: variant.itemId, organizationId, deletedAt: null })
-    .select('item_type item_name')
+    .select('item_type item_name description status lifecycle_state item_code')
     .lean();
   if (!item || item.item_type !== 'Bundle') {
     const err = new Error('Variant parent item must be of type Bundle');
@@ -83,18 +84,21 @@ async function enrichComponents(organizationId, rows) {
 }
 
 async function getBundleComponents(bundleVariantId, organizationId) {
-  await assertBundleVariant(bundleVariantId, organizationId);
+  const { variant, item } = await assertBundleVariant(bundleVariantId, organizationId);
 
   const rows = await ItemBundleComponent.find({ organizationId, bundleVariantId })
     .sort({ sortOrder: 1, createdAt: 1 })
     .lean();
 
-  const variant = await getVariantById(bundleVariantId, organizationId);
   const components = await enrichComponents(organizationId, rows);
+  const settings = pickBundleSettings(variant);
 
   return {
     bundleVariantId,
-    pricingMode: variant.pricingMode || CATALOG_BUNDLE_PRICING_DEFAULT,
+    bundleItemName: item.item_name,
+    bundleItemCode: item.item_code,
+    ...settings,
+    pricingMode: settings.pricingMode,
     components
   };
 }
@@ -104,11 +108,18 @@ async function replaceBundleComponents({
   organizationId,
   userId,
   components = [],
-  pricingMode
+  pricingMode,
+  bundleType,
+  minOptionalSelection,
+  maxOptionalSelection,
+  discountType,
+  discountValue,
+  effectiveFrom,
+  effectiveUntil
 }) {
   const { variant } = await assertBundleVariant(bundleVariantId, organizationId);
 
-  const normalized = components.map(normalizeComponentPayload);
+  const normalized = components.map(normalizeBundleComponentInput);
   const seen = new Set();
 
   for (const row of normalized) {
@@ -133,17 +144,63 @@ async function replaceBundleComponents({
     }
   }
 
-  if (pricingMode !== undefined) {
-    if (!isCatalogBundlePricingMode(pricingMode)) {
-      const err = new Error('pricingMode must be fixed or rollup');
-      err.code = 'VALIDATION';
-      throw err;
-    }
-    await ItemVariant.updateOne(
-      { _id: bundleVariantId, organizationId },
-      { $set: { pricingMode, modifiedBy: userId } }
-    );
+  const nextPricingMode =
+    pricingMode !== undefined ? pricingMode : variant.pricingMode || CATALOG_BUNDLE_PRICING_DEFAULT;
+  const nextBundleType =
+    bundleType !== undefined ? bundleType : variant.bundleType || CATALOG_BUNDLE_TYPE_DEFAULT;
+  const nextMin =
+    minOptionalSelection !== undefined ? minOptionalSelection : variant.minOptionalSelection;
+  const nextMax =
+    maxOptionalSelection !== undefined ? maxOptionalSelection : variant.maxOptionalSelection;
+  const nextDiscountType =
+    discountType !== undefined ? discountType : variant.bundleDiscountType;
+  const nextDiscountValue =
+    discountValue !== undefined ? discountValue : variant.bundleDiscountValue;
+
+  const validated = validateBundleDefinition({
+    bundleType: nextBundleType,
+    pricingMode: nextPricingMode,
+    components: normalized,
+    minOptionalSelection: nextMin,
+    maxOptionalSelection: nextMax,
+    discountType: nextDiscountType,
+    discountValue: nextDiscountValue
+  });
+
+  const fromDate =
+    effectiveFrom !== undefined
+      ? parseBundleDate(effectiveFrom)
+      : variant.bundleEffectiveFrom ?? null;
+  const untilDate =
+    effectiveUntil !== undefined
+      ? parseBundleDate(effectiveUntil)
+      : variant.bundleEffectiveUntil ?? null;
+
+  if (fromDate && untilDate && fromDate > untilDate) {
+    const err = new Error('Effective From cannot be after Effective Until');
+    err.code = 'VALIDATION';
+    throw err;
   }
+
+  const nextRevision = (Number(variant.bundleRevision) || 1) + 1;
+
+  await ItemVariant.updateOne(
+    { _id: bundleVariantId, organizationId },
+    {
+      $set: {
+        pricingMode: validated.pricingMode,
+        bundleType: validated.bundleType,
+        minOptionalSelection: validated.minOptionalSelection,
+        maxOptionalSelection: validated.maxOptionalSelection,
+        bundleDiscountType: validated.discountType,
+        bundleDiscountValue: validated.discountValue,
+        bundleEffectiveFrom: fromDate,
+        bundleEffectiveUntil: untilDate,
+        bundleRevision: nextRevision,
+        modifiedBy: userId
+      }
+    }
+  );
 
   await ItemBundleComponent.deleteMany({ organizationId, bundleVariantId });
 
@@ -155,6 +212,11 @@ async function replaceBundleComponents({
         componentVariantId: row.componentVariantId,
         quantity: row.quantity,
         isOptional: row.isOptional,
+        defaultSelected: row.defaultSelected,
+        editableQuantity: row.editableQuantity,
+        minQuantity: row.minQuantity,
+        maxQuantity: row.maxQuantity,
+        remarks: row.remarks || '',
         sortOrder: row.sortOrder ?? index,
         createdBy: userId,
         modifiedBy: userId
@@ -169,7 +231,11 @@ async function searchVariants(organizationId, { q = '', excludeVariantId = null,
   const cap = Math.min(Math.max(Number(limit) || 20, 1), 50);
   const trimmedQ = String(q || '').trim();
 
-  const activeItemIds = await Item.distinct('_id', { organizationId, deletedAt: null });
+  const activeItemIds = await Item.distinct('_id', {
+    organizationId,
+    deletedAt: null,
+    item_type: { $ne: 'Bundle' }
+  });
   if (!activeItemIds.length) return [];
 
   const filter = {
@@ -187,6 +253,7 @@ async function searchVariants(organizationId, { q = '', excludeVariantId = null,
     const nameItems = await Item.find({
       organizationId,
       deletedAt: null,
+      item_type: { $ne: 'Bundle' },
       $or: [{ item_name: regex }, { item_code: regex }]
     })
       .select('_id')
@@ -214,7 +281,7 @@ async function searchVariants(organizationId, { q = '', excludeVariantId = null,
     _id: { $in: itemIds },
     deletedAt: null
   })
-    .select('item_name item_code item_type')
+    .select('item_name item_code item_type itemGroupId')
     .lean();
   const itemById = new Map(items.map((i) => [String(i._id), i]));
 
@@ -222,6 +289,7 @@ async function searchVariants(organizationId, { q = '', excludeVariantId = null,
     .filter((v) => itemById.has(String(v.itemId)))
     .map((v) => {
       const item = itemById.get(String(v.itemId));
+      const itemGroupId = v.itemGroupId || item?.itemGroupId || null;
       return {
         _id: v._id,
         variant_code: v.variant_code,
@@ -229,6 +297,7 @@ async function searchVariants(organizationId, { q = '', excludeVariantId = null,
         item_name: item?.item_name || null,
         item_code: item?.item_code || null,
         item_type: item?.item_type || null,
+        itemGroupId,
         selling_price: v.selling_price ?? 0,
         currency: v.currency || 'USD',
         is_default: v.is_default
@@ -236,38 +305,107 @@ async function searchVariants(organizationId, { q = '', excludeVariantId = null,
     });
 }
 
+/**
+ * Expand + price a bundle configuration.
+ * @param {object} opts
+ * @param {string[]|null} [opts.includedOptionalComponentVariantIds] — omit to use defaultSelected
+ * @param {Record<string, number>|null} [opts.componentQuantities] — overrides for editable qty
+ * @param {boolean} [opts.validate=true]
+ */
 async function expandBundlePreview({
   organizationId,
   bundleVariantId,
   priceBookId = null,
   quantity = 1,
-  asOfDate = null
+  asOfDate = null,
+  includedOptionalComponentVariantIds = undefined,
+  componentQuantities = null,
+  validate = true
 }) {
   const { variant, item } = await assertBundleVariant(bundleVariantId, organizationId);
-  const { components, pricingMode } = await getBundleComponents(bundleVariantId, organizationId);
+  const definition = await getBundleComponents(bundleVariantId, organizationId);
+  const settings = {
+    bundleType: definition.bundleType,
+    pricingMode: definition.pricingMode,
+    discountType: definition.discountType,
+    discountValue: definition.discountValue,
+    minOptionalSelection: definition.minOptionalSelection,
+    maxOptionalSelection: definition.maxOptionalSelection,
+    effectiveFrom: definition.effectiveFrom,
+    effectiveUntil: definition.effectiveUntil,
+    revision: definition.revision
+  };
+
+  if (validate) {
+    assertBundleEffective({
+      effectiveFrom: settings.effectiveFrom,
+      effectiveUntil: settings.effectiveUntil,
+      asOfDate
+    });
+    if (!definition.components.length) {
+      const err = new Error('Bundle has no components');
+      err.code = 'VALIDATION';
+      err.details = { rule: 'empty_bundle' };
+      throw err;
+    }
+  }
+
+  const { includedIds, selectedOptionalCount } = resolveIncludedComponents(
+    definition.components,
+    includedOptionalComponentVariantIds === undefined
+      ? null
+      : includedOptionalComponentVariantIds
+  );
+
+  if (validate) {
+    validateBundleConfiguration({
+      bundleType: settings.bundleType,
+      components: definition.components,
+      includedIds,
+      selectedOptionalCount,
+      minOptionalSelection: settings.minOptionalSelection,
+      maxOptionalSelection: settings.maxOptionalSelection,
+      quantityOverrides: componentQuantities
+    });
+  }
 
   const lines = [];
-  let rollupTotal = 0;
+  const includedLineTotals = [];
 
-  for (const comp of components) {
+  for (const comp of definition.components) {
+    const id = String(comp.componentVariantId);
+    const included = includedIds.has(id);
+    const unitQty =
+      componentQuantities && componentQuantities[id] != null
+        ? Number(componentQuantities[id])
+        : Number(comp.quantity) || 0;
+    const componentQty = unitQty * (Number(quantity) || 1);
+
     const resolved = await resolveCatalogPrice({
       organizationId,
       variantId: comp.componentVariantId,
       priceBookId,
-      quantity: comp.quantity * (Number(quantity) || 1),
+      quantity: componentQty > 0 ? componentQty : unitQty || 1,
       asOfDate
     });
-    const lineTotal = resolved.unitPrice * comp.quantity;
-    rollupTotal += lineTotal;
+    const lineTotal = (Number(resolved.unitPrice) || 0) * unitQty;
+    if (included) includedLineTotals.push(lineTotal);
+
     lines.push({
       componentVariantId: comp.componentVariantId,
       variant_code: comp.variant_code,
       item_name: comp.item_name,
-      quantity: comp.quantity,
-      isOptional: comp.isOptional,
+      quantity: unitQty,
+      isOptional: comp.isOptional === true,
+      defaultSelected: comp.defaultSelected === true,
+      editableQuantity: comp.editableQuantity === true,
+      minQuantity: comp.minQuantity,
+      maxQuantity: comp.maxQuantity,
+      remarks: comp.remarks || '',
+      included,
       unitPrice: resolved.unitPrice,
       currency: resolved.currency,
-      lineTotal,
+      lineTotal: included ? lineTotal : 0,
       priceSource: resolved.source
     });
   }
@@ -280,18 +418,103 @@ async function expandBundlePreview({
     asOfDate
   });
 
-  const mode = pricingMode || variant.pricingMode || CATALOG_BUNDLE_PRICING_DEFAULT;
-  const bundleUnitPrice = mode === 'rollup' ? rollupTotal : bundleResolved.unitPrice;
+  const priced = computeBundleUnitPrice({
+    pricingMode: settings.pricingMode,
+    fixedUnitPrice: bundleResolved.unitPrice,
+    includedLineTotals,
+    discountType: settings.discountType,
+    discountValue: settings.discountValue
+  });
 
   return {
     bundleVariantId,
     bundleItemName: item.item_name,
-    pricingMode: mode,
-    bundleUnitPrice,
-    bundlePriceSource: mode === 'rollup' ? 'rollup' : bundleResolved.source,
-    rollupComponentTotal: rollupTotal,
+    bundleType: settings.bundleType,
+    pricingMode: settings.pricingMode,
+    revision: settings.revision,
+    discountType: settings.discountType,
+    discountValue: settings.discountValue,
+    discountApplied: priced.discountApplied,
+    minOptionalSelection: settings.minOptionalSelection,
+    maxOptionalSelection: settings.maxOptionalSelection,
+    effectiveFrom: settings.effectiveFrom,
+    effectiveUntil: settings.effectiveUntil,
+    selectedOptionalCount,
+    bundleUnitPrice: priced.bundleUnitPrice,
+    bundlePriceSource: priced.priceSource === 'fixed' ? bundleResolved.source : priced.priceSource,
+    rollupComponentTotal: priced.rollupComponentTotal,
     currency: bundleResolved.currency,
-    lines
+    lines,
+    valid: true
+  };
+}
+
+/**
+ * Validate a commercial configuration without full price expand.
+ * Throws VALIDATION / NOT_FOUND errors.
+ */
+async function validateBundleForCommercial({
+  organizationId,
+  bundleVariantId,
+  asOfDate = null,
+  includedOptionalComponentVariantIds = undefined,
+  componentQuantities = null
+}) {
+  const definition = await getBundleComponents(bundleVariantId, organizationId);
+  assertBundleEffective({
+    effectiveFrom: definition.effectiveFrom,
+    effectiveUntil: definition.effectiveUntil,
+    asOfDate
+  });
+
+  const { includedIds, selectedOptionalCount } = resolveIncludedComponents(
+    definition.components,
+    includedOptionalComponentVariantIds === undefined
+      ? null
+      : includedOptionalComponentVariantIds
+  );
+
+  validateBundleConfiguration({
+    bundleType: definition.bundleType,
+    components: definition.components,
+    includedIds,
+    selectedOptionalCount,
+    minOptionalSelection: definition.minOptionalSelection,
+    maxOptionalSelection: definition.maxOptionalSelection,
+    quantityOverrides: componentQuantities
+  });
+
+  return {
+    definition,
+    includedIds,
+    selectedOptionalCount
+  };
+}
+
+function buildBundleSnapshot({ definition, preview, includedIds }) {
+  return {
+    bundleVariantId: String(definition.bundleVariantId),
+    bundleType: definition.bundleType,
+    pricingMode: definition.pricingMode,
+    revision: definition.revision,
+    discountType: definition.discountType,
+    discountValue: definition.discountValue,
+    discountApplied: preview?.discountApplied ?? 0,
+    rollupComponentTotal: Number(preview?.rollupComponentTotal) || 0,
+    minOptionalSelection: definition.minOptionalSelection,
+    maxOptionalSelection: definition.maxOptionalSelection,
+    components: (definition.components || []).map((c) => ({
+      componentVariantId: String(c.componentVariantId),
+      quantity: Number(c.quantity) || 0,
+      isOptional: c.isOptional === true,
+      defaultSelected: c.defaultSelected === true,
+      editableQuantity: c.editableQuantity === true,
+      minQuantity: c.minQuantity,
+      maxQuantity: c.maxQuantity,
+      remarks: c.remarks || '',
+      sortOrder: Number(c.sortOrder) || 0,
+      included: includedIds ? includedIds.has(String(c.componentVariantId)) : !c.isOptional
+    }))
   };
 }
 
@@ -299,5 +522,10 @@ module.exports = {
   getBundleComponents,
   replaceBundleComponents,
   searchVariants,
-  expandBundlePreview
+  expandBundlePreview,
+  validateBundleForCommercial,
+  resolveIncludedComponents,
+  resolveComponentQuantity,
+  buildBundleSnapshot,
+  pickBundleSettings
 };

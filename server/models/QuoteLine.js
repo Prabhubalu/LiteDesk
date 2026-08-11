@@ -81,6 +81,8 @@ const QuoteLineSchema = new Schema(
     pricingEffectiveFromSnapshot: { type: Date, default: null },
     pricingEffectiveToSnapshot: { type: Date, default: null },
     pricingMinQtySnapshot: { type: Number, default: null, min: 0 },
+    /** Engine audit: base → rules → promotions (immutable after line create) */
+    pricingBreakdownSnapshot: { type: Schema.Types.Mixed, default: null },
     discountType: { type: String, trim: true, default: null },
     discountValue: { type: Number, default: 0 },
     discountAmount: { type: Number, default: 0 },
@@ -101,6 +103,17 @@ const QuoteLineSchema = new Schema(
     descriptionSnapshot: { type: String, default: null },
     attributesSnapshot: { type: Schema.Types.Mixed, default: {} },
     bundleSnapshot: { type: Schema.Types.Mixed, default: {} },
+
+    /** CPQ product configuration snapshot (immutable after line create) */
+    productConfigurationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'ProductConfiguration',
+      default: null,
+      index: true
+    },
+    productConfigurationVersion: { type: Number, default: null, min: 1 },
+    configurationSelections: { type: Schema.Types.Mixed, default: null },
+    configurationSnapshot: { type: Schema.Types.Mixed, default: null },
 
     optionalLine: { type: Boolean, default: false, index: true },
     hiddenLine: { type: Boolean, default: false, index: true },

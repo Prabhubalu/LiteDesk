@@ -23,6 +23,25 @@ export const INVENTORY_WORKBENCH_MODULES: InventoryWorkbenchItem[] = [
   { key: 'stock_transfers', route: '/inventory/transfers', labelKey: 'navigation.inventoryTransfers', label: 'Stock Transfers', icon: 'arrows-right-left' },
 ];
 
+/** Modules unlocked only by the Stockroom marketplace addon. */
+export const STOCKROOM_ADDON_MODULE_KEYS = new Set([
+  'stockrooms',
+  'stock_adjustments',
+  'stock_transfers',
+]);
+
+export function isStockroomAddonModuleKey(key: string | null | undefined): boolean {
+  return STOCKROOM_ADDON_MODULE_KEYS.has(String(key || '').toLowerCase());
+}
+
+export function filterWorkbenchModulesForStockroomAddon<T extends { key: string }>(
+  modules: readonly T[],
+  stockroomEntitled: boolean,
+): T[] {
+  if (stockroomEntitled) return [...modules];
+  return modules.filter((m) => !isStockroomAddonModuleKey(m.key));
+}
+
 export const INVENTORY_WORKBENCH_MODULE_KEYS = new Set(
   INVENTORY_WORKBENCH_MODULES.map((m) => m.key)
 );

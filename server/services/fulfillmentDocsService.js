@@ -2,7 +2,6 @@
  * Sales fulfillment commercial docs — Delivery Note / Delivery Return / Sales Return.
  */
 
-const ModuleSequence = require('../models/ModuleSequence');
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
@@ -80,12 +79,8 @@ function validationError(message, code = 'VALIDATION') {
 }
 
 async function nextDocNumber(organizationId, moduleKey, prefix) {
-  const seq = await ModuleSequence.findOneAndUpdate(
-    { organizationId, moduleKey, periodKey: '' },
-    { $inc: { nextValue: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
-  return `${prefix}-${String(Number(seq.nextValue) || 1).padStart(4, '0')}`;
+  const { allocateDocumentNumber } = require('./moduleNumberingService');
+  return allocateDocumentNumber(organizationId, moduleKey, prefix, 4);
 }
 
 async function createDeliveryNote(args) {

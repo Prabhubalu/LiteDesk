@@ -268,18 +268,8 @@ async function onArchive(id) {
 }
 
 async function onDuplicate(id) {
-  try {
-    const res = await apiClient.post(`/announcements/${id}/duplicate`);
-    const newId = res?.data?.id || res?.data?._id;
-    notifications.success(t('announcements.duplicateSuccess'));
-    if (newId) {
-      await router.push(`/announcements/${newId}`);
-      return;
-    }
-    await load();
-  } catch (err) {
-    notifications.error(err?.message || t('announcements.saveFailed'));
-  }
+  if (!id) return;
+  await router.push({ path: '/announcements/new', query: { duplicateFrom: String(id) } });
 }
 
 onMounted(() => {

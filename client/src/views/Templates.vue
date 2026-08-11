@@ -94,7 +94,8 @@
 
     <CreateTemplateDrawer
       :is-open="showCreateDrawer"
-      @close="showCreateDrawer = false"
+      :initial-data="createDrawerInitial"
+      @close="closeCreateDrawer"
       @create="handleCreate"
       @import-html="handleImportHtmlStart"
     />
@@ -143,11 +144,19 @@ const {
 } = useTemplates();
 
 const showCreateDrawer = ref(false);
+const createDrawerInitial = ref({});
+const cloneFromId = ref(null);
 const showImportWizard = ref(false);
 const importMetadata = ref({});
 const duplicatingId = ref(null);
 const searchQuery = ref('');
 const statusFilter = ref('');
+
+function closeCreateDrawer() {
+  showCreateDrawer.value = false;
+  createDrawerInitial.value = {};
+  cloneFromId.value = null;
+}
 
 const canCreate = computed(() => authStore.can('templates', 'create'));
 
@@ -313,14 +322,23 @@ function openTemplateBuilder(created, fallbackName = '') {
 }
 
 async function handleCreate(payload) {
+  const isClone = Boolean(cloneFromId.value);
+  const sourceId = cloneFromId.value;
   try {
-    const created = await createTemplate(payload);
-    showCreateDrawer.value = false;
-    notifications.success(t('templates.createSuccess'));
+    let created;
+    if (isClone && sourceId) {
+      created = await cloneTemplate(sourceId, payload?.name);
+    } else {
+      created = await createTemplate(payload);
+    }
+    closeCreateDrawer();
+    notifications.success(isClone ? t('templates.duplicateSuccess') : t('templates.createSuccess'));
     await refreshPage();
     openTemplateBuilder(created, payload?.name);
   } catch (error) {
-    notifications.error(t('templates.createFailed'));
+    notifications.error(
+      isClone ? (error?.message || t('templates.duplicateFailed')) : t('templates.createFailed')
+    );
   }
 }
 
@@ -349,12 +367,18 @@ async function handleDuplicate(row) {
   if (!id || duplicatingId.value) return;
   duplicatingId.value = id;
   try {
-    const created = await cloneTemplate(id);
-    notifications.success(t('templates.duplicateSuccess'));
-    await refreshPage();
-    openTemplateBuilder(created, created?.name);
-  } catch (error) {
-    notifications.error(error?.message || t('templates.duplicateFailed'));
+    const name = String(row?.name || '').trim();
+    createDrawerInitial.value = {
+      name: name && !/\(copy\)$/i.test(name) ? `${name} (Copy)` : name || '',
+      moduleScope: row?.moduleScope || '',
+      outputFormat: row?.outputFormat === 'email' ? 'email' : 'pdf',
+      paperSize: row?.paperSize || 'A4',
+      orientation: row?.orientation || 'portrait',
+      customPageWidth: row?.customPageWidth,
+      customPageHeight: row?.customPageHeight
+    };
+    cloneFromId.value = id;
+    showCreateDrawer.value = true;
   } finally {
     duplicatingId.value = null;
   }

@@ -26,6 +26,88 @@ function createResultsAccumulator(total = 0) {
   };
 }
 
+function isHexObjectId(value) {
+  return typeof value === 'string' && /^[a-fA-F0-9]{24}$/.test(value);
+}
+
+function normalizeAssigneeNameKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+/**
+ * Build an org-scoped index so CSV assignee cells exported as
+ * "First Last" / email / username / ObjectId can resolve to User ids.
+ */
+async function buildAssigneeLookup(organizationId) {
+  const users = await User.find({ organizationId })
+    .select('_id firstName lastName email username')
+    .lean();
+
+  const byId = new Map();
+  const byEmail = new Map();
+  const byUsername = new Map();
+  const byName = new Map();
+
+  for (const user of users) {
+    const id = user._id;
+    byId.set(String(id), id);
+
+    if (user.email) {
+      byEmail.set(String(user.email).trim().toLowerCase(), id);
+    }
+    if (user.username) {
+      byUsername.set(String(user.username).trim().toLowerCase(), id);
+    }
+
+    const fullName = normalizeAssigneeNameKey(`${user.firstName || ''} ${user.lastName || ''}`);
+    if (fullName) {
+      const list = byName.get(fullName) || [];
+      list.push(id);
+      byName.set(fullName, list);
+    }
+  }
+
+  return { byId, byEmail, byUsername, byName };
+}
+
+/**
+ * @returns {{ id?: import('mongoose').Types.ObjectId, error?: string }}
+ */
+function resolveImportAssignee(rawValue, lookup, fallbackUserId) {
+  if (rawValue === undefined || rawValue === null || String(rawValue).trim() === '') {
+    return { id: fallbackUserId };
+  }
+
+  const value = String(rawValue).trim();
+  if (isHexObjectId(value)) {
+    const id = lookup.byId.get(value);
+    if (id) return { id };
+    return { error: `Assigned user not found: ${value}` };
+  }
+
+  const lower = value.toLowerCase();
+  if (lookup.byEmail.has(lower)) {
+    return { id: lookup.byEmail.get(lower) };
+  }
+  if (lookup.byUsername.has(lower)) {
+    return { id: lookup.byUsername.get(lower) };
+  }
+
+  const nameKey = normalizeAssigneeNameKey(value);
+  const nameMatches = lookup.byName.get(nameKey);
+  if (nameMatches?.length === 1) {
+    return { id: nameMatches[0] };
+  }
+  if (nameMatches?.length > 1) {
+    return { error: `Multiple users match assigned user "${value}"` };
+  }
+
+  return { error: `Assigned user not found: ${value}` };
+}
+
 function pushError(results, rowNumber, errorMessage) {
   if (results.errors.length < IMPORT_MAX_STORED_ERRORS) {
     results.errors.push({ row: rowNumber, error: errorMessage });
@@ -128,9 +210,11 @@ async function processDealsRow(ctx) {
     shouldCheckDuplicates,
     duplicateCheckFields,
     results,
+    assigneeLookup,
   } = ctx;
 
-  const dealData = { organizationId, assignedTo: userId };
+  const dealData = { organizationId };
+  let assignedRaw;
 
   Object.keys(fieldMapping).forEach((csvField) => {
     const dealField = fieldMapping[csvField];
@@ -139,6 +223,8 @@ async function processDealsRow(ctx) {
         dealData[dealField] = parseFloat(String(row[csvField]).replace(/[^0-9.-]+/g, ''));
       } else if (dealField === 'expectedCloseDate') {
         dealData[dealField] = new Date(row[csvField]);
+      } else if (dealField === 'assignedTo') {
+        assignedRaw = row[csvField];
       } else {
         dealData[dealField] = row[csvField];
       }
@@ -152,6 +238,14 @@ async function processDealsRow(ctx) {
     pushError(results, rowNumber, 'Deal name is required');
     return;
   }
+
+  const assigned = resolveImportAssignee(assignedRaw, assigneeLookup, userId);
+  if (assigned.error) {
+    results.failed += 1;
+    pushError(results, rowNumber, assigned.error);
+    return;
+  }
+  dealData.assignedTo = assigned.id;
 
   if (shouldCheckDuplicates) {
     const match = await findImportDuplicate({
@@ -192,18 +286,23 @@ async function processTasksRow(ctx) {
     shouldCheckDuplicates,
     duplicateCheckFields,
     results,
+    assigneeLookup,
   } = ctx;
 
   const taskData = { organizationId, createdBy: userId, assignedBy: userId };
+  let assignedRaw;
 
   for (const [csvField, taskField] of Object.entries(fieldMapping)) {
+    if (!taskField) continue;
     if (row[csvField] === undefined || row[csvField] === '') continue;
     if (taskField === 'dueDate') {
       taskData[taskField] = new Date(row[csvField]);
-    } else if (taskField === 'timeEstimate') {
-      taskData[taskField] = parseInt(row[csvField], 10) || 0;
+    } else if (taskField === 'timeEstimate' || taskField === 'estimatedHours') {
+      taskData.estimatedHours = parseInt(row[csvField], 10) || 0;
     } else if (taskField === 'tags') {
-      taskData[taskField] = String(row[csvField]).split(',').map((tag) => tag.trim());
+      taskData[taskField] = String(row[csvField]).split(',').map((tag) => tag.trim()).filter(Boolean);
+    } else if (taskField === 'assignedTo') {
+      assignedRaw = row[csvField];
     } else {
       taskData[taskField] = row[csvField];
     }
@@ -214,7 +313,15 @@ async function processTasksRow(ctx) {
     pushError(results, rowNumber, 'Title is required');
     return;
   }
-  if (!taskData.assignedTo) taskData.assignedTo = userId;
+
+  const assigned = resolveImportAssignee(assignedRaw, assigneeLookup, userId);
+  if (assigned.error) {
+    results.failed += 1;
+    pushError(results, rowNumber, assigned.error);
+    return;
+  }
+  taskData.assignedTo = assigned.id;
+
   if (!taskData.status) taskData.status = 'todo';
   if (!taskData.priority) taskData.priority = 'medium';
 
@@ -361,4 +468,6 @@ module.exports = {
   getRowProcessor,
   buildCrmOrganizationQuery,
   buildOrganizationImportContext,
+  buildAssigneeLookup,
+  resolveImportAssignee,
 };

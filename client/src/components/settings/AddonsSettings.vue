@@ -154,6 +154,22 @@
                 {{ t('settings.addonsConfigure') }}
               </button>
               <button
+                v-if="addon.addonKey === 'stockroom'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openStockrooms"
+              >
+                {{ t('settings.addonsStockroomOpen') }}
+              </button>
+              <button
+                v-if="addon.addonKey === 'cpq'"
+                type="button"
+                class="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-900/20"
+                @click="openCpqSettings"
+              >
+                {{ t('settings.addonsConfigure') }}
+              </button>
+              <button
                 v-if="addon.enabled"
                 type="button"
                 class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -209,13 +225,28 @@
                 <p v-else-if="addon.pricing?.billingType === 'USAGE'" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   {{ t('settings.addonsUsageBilling') }}
                 </p>
+                <p
+                  v-if="!addon.installEligible && addon.missingApps?.length"
+                  class="mt-2 text-xs text-amber-700 dark:text-amber-300"
+                >
+                  {{ parentAppRequiredMessage(addon) }}
+                </p>
               </div>
             </div>
             <button
+              v-if="!addon.installEligible && addon.missingApps?.length"
+              type="button"
+              class="mt-4 w-full rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200 dark:hover:bg-amber-900/40"
+              @click="goInstallRequiredApp(addon.missingApps[0])"
+            >
+              {{ parentAppCtaLabel(addon.missingApps[0]) }}
+            </button>
+            <button
+              v-else
               type="button"
               class="mt-4 w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               :disabled="installingKey === addon.addonKey"
-              @click="installAddon(addon.addonKey)"
+              @click="installAddon(addon)"
             >
               {{ installingKey === addon.addonKey ? t('states.loading') : t('settings.addonsInstall') }}
             </button>
@@ -382,10 +413,80 @@ const MegaphoneIcon = () => h('svg', {
   }),
 ]);
 
+const CubeIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+  }),
+]);
+
+const SquaresPlusIcon = () => h('svg', {
+  fill: 'none',
+  stroke: 'currentColor',
+  viewBox: '0 0 24 24',
+}, [
+  h('path', {
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-width': '2',
+    d: 'M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z',
+  }),
+]);
+
 function addonIconComponent(addonKey) {
   if (addonKey === 'email_credits') return MailIcon;
   if (addonKey === 'announcements') return MegaphoneIcon;
+  if (addonKey === 'stockroom') return CubeIcon;
+  if (addonKey === 'cpq') return SquaresPlusIcon;
   return ChatIcon;
+}
+
+const APP_NAME_KEYS = {
+  SALES: 'settings.appsNameSales',
+  HELPDESK: 'settings.appsNameHelpdesk',
+  MARKETING: 'settings.appsNameMarketing',
+  INVENTORY: 'settings.appsNameInventory',
+  PROJECTS: 'settings.appsNameProjects',
+  AUDIT: 'settings.appsNameAudit',
+  LMS: 'settings.appsNameLms',
+  PORTAL: 'settings.appsNamePortal',
+};
+
+function appDisplayName(appKey) {
+  const key = String(appKey || '').toUpperCase();
+  const nameKey = APP_NAME_KEYS[key];
+  return nameKey ? t(nameKey) : key;
+}
+
+function parentAppRequiredMessage(addon) {
+  const missing = Array.isArray(addon?.missingApps) ? addon.missingApps : [];
+  if (missing.length === 1 && String(missing[0]).toUpperCase() === 'INVENTORY') {
+    return t('settings.addonsRequiresInventory');
+  }
+  const names = missing.map(appDisplayName).join(', ');
+  return t('settings.addonsRequiresApps', { apps: names });
+}
+
+function parentAppCtaLabel(appKey) {
+  if (String(appKey || '').toUpperCase() === 'INVENTORY') {
+    return t('settings.addonsInstallInventoryFirst');
+  }
+  return t('settings.addonsInstallAppFirst', { app: appDisplayName(appKey) });
+}
+
+function goInstallRequiredApp(appKey) {
+  const key = String(appKey || '').toUpperCase();
+  if (!key) {
+    router.push({ path: '/settings', query: { tab: 'applications' } });
+    return;
+  }
+  router.push({ path: '/settings', query: { tab: 'applications', appKey: key } });
 }
 
 const PricingIcon = () => h('svg', {
@@ -488,6 +589,14 @@ function openBlogSettings() {
   });
 }
 
+function openStockrooms() {
+  router.push({ path: '/inventory/stockrooms' });
+}
+
+function openCpqSettings() {
+  router.push({ path: '/settings', query: { tab: 'catalog', catalogView: 'item-groups' } });
+}
+
 function openLiveChatQueues() {
   router.push({
     path: '/settings',
@@ -555,7 +664,18 @@ async function loadAddons() {
   }
 }
 
-async function installAddon(addonKey) {
+async function installAddon(addonOrKey) {
+  const addon = typeof addonOrKey === 'string' ? null : addonOrKey;
+  const addonKey = typeof addonOrKey === 'string' ? addonOrKey : addonOrKey?.addonKey;
+  if (!addonKey) return;
+
+  const missing = Array.isArray(addon?.missingApps) ? addon.missingApps : [];
+  if (addon && addon.installEligible === false && missing.length) {
+    notifications.error(parentAppRequiredMessage(addon));
+    goInstallRequiredApp(missing[0]);
+    return;
+  }
+
   installingKey.value = addonKey;
   try {
     await apiClient.post(`/settings/addons/${addonKey}/install`);
@@ -569,7 +689,23 @@ async function installAddon(addonKey) {
     notifyAddonsUpdated();
     await loadAddons();
   } catch (err) {
-    notifications.error(err?.message || t('settings.addonsInstallFailed'));
+    const errData = err?.response?.data || {};
+    const missingFromErr = Array.isArray(errData.missingApps) ? errData.missingApps : [];
+    const code = errData.code || err?.code;
+    if (code === 'PARENT_APP_REQUIRED' || missingFromErr.length) {
+      notifications.error(
+        missingFromErr.length === 1 && String(missingFromErr[0]).toUpperCase() === 'INVENTORY'
+          ? t('settings.addonsRequiresInventory')
+          : (err?.message || t('settings.addonsRequiresApps', {
+              apps: missingFromErr.map(appDisplayName).join(', '),
+            })),
+      );
+      if (missingFromErr[0]) {
+        goInstallRequiredApp(missingFromErr[0]);
+      }
+    } else {
+      notifications.error(err?.message || t('settings.addonsInstallFailed'));
+    }
   } finally {
     installingKey.value = '';
   }

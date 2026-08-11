@@ -408,11 +408,23 @@ function applyCampaign(data) {
 }
 
 async function loadCampaign() {
-  if (!isEditMode.value) return;
+  const duplicateFrom = route.query?.duplicateFrom
+    ? String(Array.isArray(route.query.duplicateFrom) ? route.query.duplicateFrom[0] : route.query.duplicateFrom)
+    : '';
+  if (!isEditMode.value && !duplicateFrom) return;
   loading.value = true;
   try {
-    const data = await fetchCampaign(resolvedId.value);
+    const data = await fetchCampaign(isEditMode.value ? resolvedId.value : duplicateFrom);
     applyCampaign(data);
+    if (!isEditMode.value && duplicateFrom) {
+      const base = String(form.name || '').trim();
+      form.name = base && !/\(copy\)$/i.test(base) ? `${base} (Copy)` : base;
+      campaignStatus.value = 'draft';
+      form.abTest = {
+        ...form.abTest,
+        status: 'none'
+      };
+    }
   } catch (err) {
     notifications.error(err?.message || t('marketing.campaignsDetailError'));
     router.push({ name: 'marketing-campaigns' });

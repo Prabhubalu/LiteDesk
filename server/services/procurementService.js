@@ -3,7 +3,6 @@
  * Inventory posts on RN verify (accepted qty) and PR markReturned.
  */
 
-const ModuleSequence = require('../models/ModuleSequence');
 const { PurchaseOrder, PurchaseOrderLine, DELIVERY_METHODS } = require('../models/PurchaseOrder');
 const { ReceiptNote, ReceiptNoteLine } = require('../models/ReceiptNote');
 const { PurchaseReturn, PurchaseReturnLine, PR_RETURN_TYPES } = require('../models/PurchaseReturn');
@@ -180,13 +179,8 @@ async function recalculatePurchaseOrderTotals({ organizationId, purchaseOrderId,
 }
 
 async function nextDocNumber(organizationId, moduleKey, prefix) {
-  const seq = await ModuleSequence.findOneAndUpdate(
-    { organizationId, moduleKey, periodKey: '' },
-    { $inc: { nextValue: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
-  const n = Number(seq.nextValue) || 1;
-  return `${prefix}-${String(n).padStart(4, '0')}`;
+  const { allocateDocumentNumber } = require('./moduleNumberingService');
+  return allocateDocumentNumber(organizationId, moduleKey, prefix, 4);
 }
 
 async function hydrateVariant(organizationId, variantId) {

@@ -345,7 +345,12 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import apiClient from '@/utils/apiClient';
 import { getIconComponent } from '@/utils/navigationIcons';
-import { INVENTORY_WORKBENCH_MODULES } from '@/utils/inventoryWorkbenchNav';
+import {
+  filterWorkbenchModulesForStockroomAddon,
+  INVENTORY_WORKBENCH_MODULES,
+} from '@/utils/inventoryWorkbenchNav';
+import { useAuthStore } from '@/stores/authRegistry';
+import { isStockroomAddonEntitled } from '@/utils/addonEntitlement';
 
 const { t } = useI18n();
 
@@ -356,11 +361,17 @@ function moduleCountLabel(count) {
 }
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const application = ref(null);
 const loading = ref(true);
 const error = ref(null);
-const inventoryOwnedModules = INVENTORY_WORKBENCH_MODULES;
+const inventoryOwnedModules = computed(() =>
+  filterWorkbenchModulesForStockroomAddon(
+    INVENTORY_WORKBENCH_MODULES,
+    isStockroomAddonEntitled(authStore.user),
+  ),
+);
 
 const appKey = computed(() => {
   return route.query.appKey || route.params.appKey;

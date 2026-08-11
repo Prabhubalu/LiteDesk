@@ -1089,6 +1089,17 @@
       @close="showEditModal = false"
       @saved="handleDealUpdated"
     />
+    <CreateRecordDrawer
+      v-if="showDuplicateCreateModal"
+      :key="`duplicate-deal-${duplicateSourceId}`"
+      :isOpen="showDuplicateCreateModal"
+      moduleKey="deals"
+      :duplicate-mode="true"
+      :initial-data="duplicateInitialData"
+      :module-definition-prefetch="dealModuleDefinition"
+      @close="closeDuplicateCreate"
+      @saved="closeDuplicateCreate"
+    />
 
     <CreateRecordDrawer
       :isOpen="showEventModal"
@@ -1321,6 +1332,7 @@ import { useRecordModuleBack } from '@/components/record-page/composables/useRec
 import { useAuthStore } from '@/stores/authRegistry';
 import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
 import apiClient from '@/utils/apiClient';
+import { buildDuplicateInitialData } from '@/utils/duplicateRecord';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import {
   fetchUsersListCached,
@@ -1393,6 +1405,9 @@ const { otherSessions: recordPresenceOthers } = useRecordPresence(
 const loading = ref(true);
 const error = ref(null);
 const showEditModal = ref(false);
+const showDuplicateCreateModal = ref(false);
+const duplicateInitialData = ref({});
+const duplicateSourceId = ref('');
 const showDeleteModal = ref(false);
 const deleting = ref(false);
 const showEventModal = ref(false);
@@ -3385,8 +3400,17 @@ async function copyDealUrl() {
   }
 }
 
+function closeDuplicateCreate() {
+  showDuplicateCreateModal.value = false;
+  duplicateInitialData.value = {};
+  duplicateSourceId.value = '';
+}
+
 const handleDuplicate = () => {
-  notifications.error(t('records.dealDuplicateNotImplemented'));
+  if (!deal.value) return;
+  duplicateSourceId.value = String(deal.value._id || deal.value.id || '');
+  duplicateInitialData.value = buildDuplicateInitialData(deal.value, { moduleKey: 'deals' });
+  showDuplicateCreateModal.value = true;
 };
 
 const handleExport = () => {

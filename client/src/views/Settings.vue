@@ -257,10 +257,42 @@ const { colorMode, toggleColorMode } = useColorMode();
 const { record: recordRecentSettingsTab } = useRecentSettingsTabs();
 
 const SETTINGS_TAB_KEY = 'arivu-settings-active-tab';
+/** Full route (path+query) of the last Settings sub-page — survives workspace/browser tab switches. */
+const SETTINGS_LAST_ROUTE_KEY = 'arivu-settings-last-route';
 const route = useRoute();
 const router = useRouter();
 const activeTab = ref(route.query.tab || null);
 const quickJumpOpen = ref(false);
+
+function clearPersistedSettingsRoute() {
+  try {
+    localStorage.removeItem(SETTINGS_TAB_KEY);
+    localStorage.removeItem(SETTINGS_LAST_ROUTE_KEY);
+  } catch {
+    // private mode / quota
+  }
+}
+
+function persistSettingsRoute() {
+  try {
+    const pathOnly = String(route.path || '').split('?')[0];
+    const isSettingsShell = pathOnly === '/settings' || pathOnly.startsWith('/settings/');
+    if (!isSettingsShell) return;
+
+    const tab = route.query.tab;
+    if (typeof tab === 'string' && tab) {
+      localStorage.setItem(SETTINGS_TAB_KEY, tab);
+      localStorage.setItem(SETTINGS_LAST_ROUTE_KEY, route.fullPath);
+      return;
+    }
+    if (pathOnly.includes('/notifications')) {
+      localStorage.setItem(SETTINGS_TAB_KEY, 'notifications');
+      localStorage.setItem(SETTINGS_LAST_ROUTE_KEY, route.fullPath);
+    }
+  } catch {
+    // private mode / quota
+  }
+}
 
 /** Section labels inserted in the rail after these tab ids (scannable groups). */
 function railSectionLabelAfter(tabId) {
@@ -385,6 +417,8 @@ const onRailHeaderButtonClick = () => {
 };
 
 const goToOverview = () => {
+  // Explicit Settings Home navigation — do not re-open the last sub-page.
+  clearPersistedSettingsRoute();
   activeTab.value = null;
   mobileNavOpen.value = false;
   router.push('/settings');
@@ -962,11 +996,13 @@ watch(activeTab, (val) => {
 
 // Restore last active tab and persist changes
 const restoreInitialTab = () => {
+  const validIds = new Set([...tabs.value.map(t => t.id), ...internalTabs.value.map(t => t.id)]);
+
   // If there's a tab in the URL query, use it
   if (route.query.tab) {
-    const validIds = new Set([...tabs.value.map(t => t.id), ...internalTabs.value.map(t => t.id)]);
     if (validIds.has(route.query.tab)) {
       activeTab.value = route.query.tab;
+      persistSettingsRoute();
       return;
     }
   }
@@ -974,7 +1010,34 @@ const restoreInitialTab = () => {
   // Check if we're on a notifications route (for direct navigation/bookmarks)
   if (route.path.includes('/notifications')) {
     activeTab.value = 'notifications';
+    persistSettingsRoute();
     return;
+  }
+
+  // Bare /settings — restore last sub-page so workspace/browser tab return stays in context.
+  try {
+    const lastRoute = localStorage.getItem(SETTINGS_LAST_ROUTE_KEY);
+    if (lastRoute && lastRoute.startsWith('/settings')) {
+      const lastUrl = new URL(lastRoute, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+      const lastTab = lastUrl.searchParams.get('tab');
+      if (lastTab && validIds.has(lastTab)) {
+        // Prefer full route restore (nested automationView/app/etc). Do not set activeTab
+        // first — the activeTab watcher would rewrite query and drop nested keys.
+        if (lastRoute !== route.fullPath) {
+          router.replace(lastRoute);
+          return;
+        }
+        activeTab.value = lastTab;
+        return;
+      }
+    }
+    const lastTabOnly = localStorage.getItem(SETTINGS_TAB_KEY);
+    if (lastTabOnly && validIds.has(lastTabOnly)) {
+      activeTab.value = lastTabOnly;
+      return;
+    }
+  } catch {
+    // ignore storage errors
   }
   
   // Otherwise, show landing page (no tab selected)
@@ -985,10 +1048,19 @@ restoreInitialTab();
 
 watch(activeTab, (v) => {
   if (v) {
-    localStorage.setItem(SETTINGS_TAB_KEY, v);
     recordRecentSettingsTab(v);
   }
 });
+
+// Persist full Settings deep-link whenever the sub-page route changes.
+watch(
+  () => route.fullPath,
+  () => {
+    if (route.query.tab || route.path.includes('/notifications')) {
+      persistSettingsRoute();
+    }
+  },
+);
 
 function isSettingsTypingTarget(el) {
   if (!el || !(el instanceof HTMLElement)) return false;
@@ -1015,11 +1087,13 @@ onUnmounted(() => {
 
 // If available tabs change due to permission changes, keep the closest valid tab
 watch([tabs, internalTabs], ([tabsList, internalTabsList]) => {
-  if (activeTab.value) {
-    const validIds = new Set([...tabsList.map(t => t.id), ...internalTabsList.map(t => t.id)]);
-    if (!validIds.has(activeTab.value)) {
-      activeTab.value = null; // Show landing page if tab is invalid
-    }
+  if (!activeTab.value) return;
+  // Avoid clearing while access context is still hydrating (empty list).
+  if (tabsList.length === 0 && internalTabsList.length === 0) return;
+  const validIds = new Set([...tabsList.map(t => t.id), ...internalTabsList.map(t => t.id)]);
+  if (!validIds.has(activeTab.value)) {
+    activeTab.value = null; // Show landing page if tab is invalid
+    clearPersistedSettingsRoute();
   }
 });
 </script>

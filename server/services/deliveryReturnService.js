@@ -3,7 +3,6 @@
  * Mirrors purchase-return patterns with sales-side statuses and stock restore.
  */
 
-const ModuleSequence = require('../models/ModuleSequence');
 const { DeliveryReturn, DeliveryReturnLine } = require('../models/DeliveryReturn');
 const SalesOrder = require('../models/SalesOrder');
 const SalesOrderLine = require('../models/SalesOrderLine');
@@ -62,12 +61,8 @@ async function assertCustomerForDr(organizationId, customerId) {
 }
 
 async function nextDocNumber(organizationId, moduleKey, prefix) {
-  const seq = await ModuleSequence.findOneAndUpdate(
-    { organizationId, moduleKey, periodKey: '' },
-    { $inc: { nextValue: 1 } },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
-  return `${prefix}-${String(Number(seq.nextValue) || 1).padStart(4, '0')}`;
+  const { allocateDocumentNumber } = require('./moduleNumberingService');
+  return allocateDocumentNumber(organizationId, moduleKey, prefix, 4);
 }
 
 function getDnModels() {

@@ -385,6 +385,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stockrooms', action: 'view' },
       moduleKey: 'stockrooms',
       appKey: 'INVENTORY',
@@ -397,6 +398,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stockrooms', action: 'view' },
       moduleKey: 'stockrooms',
       appKey: 'INVENTORY',
@@ -409,6 +411,7 @@ const routes = [
     component: () => import('@/pages/ModuleRecordPage.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stockrooms', action: 'view' },
       moduleKey: 'stockrooms',
       appKey: 'INVENTORY',
@@ -421,6 +424,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stock_adjustments', action: 'view' },
       moduleKey: 'stock_adjustments',
       appKey: 'INVENTORY',
@@ -433,6 +437,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stock_adjustments', action: 'view' },
       moduleKey: 'stock_adjustments',
       appKey: 'INVENTORY',
@@ -445,6 +450,7 @@ const routes = [
     component: () => import('@/pages/ModuleRecordPage.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stock_adjustments', action: 'view' },
       moduleKey: 'stock_adjustments',
       appKey: 'INVENTORY',
@@ -457,6 +463,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stock_transfers', action: 'view' },
       moduleKey: 'stock_transfers',
       appKey: 'INVENTORY',
@@ -469,6 +476,7 @@ const routes = [
     component: () => import('@/views/GenericModule.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stock_transfers', action: 'view' },
       moduleKey: 'stock_transfers',
       appKey: 'INVENTORY',
@@ -481,6 +489,7 @@ const routes = [
     component: () => import('@/pages/ModuleRecordPage.vue'),
     meta: {
       requiresAuth: true,
+      requiresAddon: 'stockroom',
       requiresPermission: { module: 'stock_transfers', action: 'view' },
       moduleKey: 'stock_transfers',
       appKey: 'INVENTORY',
@@ -2344,6 +2353,19 @@ router.beforeEach(async (to, from, next) => {
     if (!isAiSuiteEntitled(authStore.user)) {
       logNavDebug('Blocked: Arivu AI suite not entitled')
       next(getDefaultRoute(authStore))
+      return
+    }
+  }
+
+  if (to.meta.requiresAddon) {
+    const { isAddonEntitled } = await import('@/utils/addonEntitlement')
+    const addonKey = String(to.meta.requiresAddon || '').toLowerCase()
+    if (!isAddonEntitled(authStore.user, addonKey)) {
+      logNavDebug('Blocked: required addon not entitled', { addonKey, route: to.path })
+      const target = addonKey === 'stockroom' || addonKey === 'cpq'
+        ? { path: '/settings', query: { tab: 'addons' } }
+        : getDefaultRoute(authStore)
+      next(target)
       return
     }
   }

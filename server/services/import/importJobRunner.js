@@ -6,6 +6,7 @@ const {
   getRowProcessor,
   buildCrmOrganizationQuery,
   buildOrganizationImportContext,
+  buildAssigneeLookup,
 } = require('./importRowProcessors');
 const {
   finalizeImportHistory,
@@ -48,6 +49,10 @@ async function buildProcessorContext(importRecord) {
     const orgContext = await buildOrganizationImportContext(userId);
     orgContext.crmBaseQuery = await buildCrmOrganizationQuery(organizationId);
     base.orgContext = orgContext;
+  }
+
+  if (importRecord.module === 'tasks' || importRecord.module === 'deals') {
+    base.assigneeLookup = await buildAssigneeLookup(organizationId);
   }
 
   return base;

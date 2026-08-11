@@ -22,24 +22,59 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
+import { useAuthStore } from '@/stores/authRegistry';
+import { isCpqAddonEntitled, isStockroomAddonEntitled } from '@/utils/addonEntitlement';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
 
-const links = [
+const ALL_LINKS = [
   { to: '/inventory/purchase-orders', labelKey: 'navigation.inventoryPurchaseOrders' },
   { to: '/inventory/receipt-notes', labelKey: 'navigation.inventoryReceiptNotes' },
   { to: '/inventory/purchase-returns', labelKey: 'navigation.inventoryPurchaseReturns' },
   { to: '/inventory/delivery-notes', labelKey: 'navigation.inventoryDeliveryNotes' },
   { to: '/inventory/delivery-returns', labelKey: 'navigation.inventoryDeliveryReturns' },
   { to: '/inventory/sales-returns', labelKey: 'navigation.inventorySalesReturns' },
-  { to: '/inventory/stockrooms', labelKey: 'navigation.inventoryStockrooms' },
-  { to: '/inventory/adjustments', labelKey: 'navigation.inventoryAdjustments' },
-  { to: '/inventory/transfers', labelKey: 'navigation.inventoryTransfers' },
+  {
+    to: '/inventory/stockrooms',
+    labelKey: 'navigation.inventoryStockrooms',
+    requiresStockroom: true,
+  },
+  {
+    to: '/inventory/adjustments',
+    labelKey: 'navigation.inventoryAdjustments',
+    requiresStockroom: true,
+  },
+  {
+    to: '/inventory/transfers',
+    labelKey: 'navigation.inventoryTransfers',
+    requiresStockroom: true,
+  },
   { to: '/settings?tab=inventory', labelKey: 'navigation.inventorySettings' },
   { to: '/settings?tab=inventory&inventoryView=taxes', labelKey: 'navigation.inventoryTaxes' },
   { to: '/settings?tab=inventory&inventoryView=charges', labelKey: 'navigation.inventoryCharges' },
-  { to: '/settings?tab=catalog&catalogView=item-groups', labelKey: 'navigation.inventoryItemGroups' }
+  {
+    to: '/settings?tab=catalog&catalogView=item-groups',
+    labelKey: 'navigation.inventoryItemGroups',
+    requiresCpq: true,
+  },
+  {
+    to: '/settings?tab=catalog&catalogView=product-configurations',
+    labelKey: 'navigation.inventoryProductConfigs',
+    requiresCpq: true,
+  },
 ];
+
+const links = computed(() => {
+  const stockroom = isStockroomAddonEntitled(authStore.user);
+  const cpq = isCpqAddonEntitled(authStore.user);
+  return ALL_LINKS.filter((link) => {
+    if (link.requiresStockroom && !stockroom) return false;
+    if (link.requiresCpq && !cpq) return false;
+    return true;
+  });
+});
 </script>

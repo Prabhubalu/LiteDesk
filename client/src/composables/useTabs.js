@@ -1769,6 +1769,18 @@ export function useTabs() {
         logTabsDebug('✅ Already on correct tab, no sync needed');
       }
 
+      // Keep full path (query/hash) so Settings sub-pages survive tab switches / reloads.
+      const existingPathBase = String(existingTab.path || '').split('?')[0].split('#')[0];
+      if (
+        pathWithoutQuery === existingPathBase
+        && path
+        && existingTab.path !== path
+        && !liveChatMainTabOwnsRoute(pathWithoutQuery, existingTab)
+        && !announcementsTabOwnsRoute(pathWithoutQuery, existingTab)
+      ) {
+        existingTab.path = path;
+      }
+
       if (!shouldPreserveRecordTabTitle(existingTab, path)) {
         restoreModuleListTabTitle(existingTab, path.split('?')[0]);
       }
@@ -1961,8 +1973,12 @@ export function useTabs() {
       }
       tabWasRestored = true;
     } else if (!shouldSkipTabRoute(currentPath) && currentPath.startsWith('/settings')) {
-      console.log('🔄 [setupRouteWatcher] Deep-link settings route on load, syncing tab:', currentPath);
-      syncTabWithRoute(currentPath);
+      // Preserve ?tab= / nested query so Settings sub-pages restore after reload.
+      const settingsFullPath = typeof window !== 'undefined'
+        ? `${window.location.pathname || ''}${window.location.search || ''}${window.location.hash || ''}`
+        : (routeToWatch?.fullPath || currentPath);
+      console.log('🔄 [setupRouteWatcher] Deep-link settings route on load, syncing tab:', settingsFullPath);
+      syncTabWithRoute(settingsFullPath);
       tabWasRestored = true;
     } else if (!shouldSkipTabRoute(currentPath) && currentPath.startsWith('/live-chat/')) {
       console.log('🔄 [setupRouteWatcher] Deep-link Live Chat route on load, syncing tab:', currentPath);
@@ -2177,11 +2193,25 @@ export function useTabs() {
           routeFullPath: currentRoute.fullPath
         });
         
-        // Skip if paths are the same
+        // Same path, different query/hash (e.g. /settings?tab=a → /settings?tab=b):
+        // still update the active tab path so last-opened Settings sub-page is preserved.
         if (newPath === oldPath) {
-        console.log('⏭️ Route watcher: paths are the same, skipping');
-        return;
-      }
+          if (newFullPath !== oldFullPath) {
+            const currentActiveTab = tabs.value.find(tab => tab.id === activeTabId.value);
+            if (
+              currentActiveTab
+              && String(currentActiveTab.path || '').split('?')[0].split('#')[0] === newPath
+              && !liveChatMainTabOwnsRoute(newPath, currentActiveTab)
+              && !announcementsTabOwnsRoute(newPath, currentActiveTab)
+            ) {
+              currentActiveTab.path = newFullPath || newPath;
+              console.log('🔄 Updated active tab path for same-path query/hash change:', currentActiveTab.path);
+            }
+          } else {
+            console.log('⏭️ Route watcher: paths are the same, skipping');
+          }
+          return;
+        }
       
       // If this is browser navigation (popstate), handle it even if isProgrammaticNavigation is true
       // The popstate handler sets isBrowserNavigation, so check that first
@@ -2311,6 +2341,19 @@ export function useTabs() {
           || liveChatMainTabOwnsRoute(newPathWithoutQuery, currentActiveTab)
           || announcementsTabOwnsRoute(newPathWithoutQuery, currentActiveTab)
         ) {
+          // Persist query/hash changes on the same path base (e.g. /settings?tab=…, nested views).
+          // Without this, switching workspace/browser tabs reopens Settings Home (/settings).
+          if (
+            currentPathWithoutQuery === newPathWithoutQuery
+            && !liveChatMainTabOwnsRoute(newPathWithoutQuery, currentActiveTab)
+            && !announcementsTabOwnsRoute(newPathWithoutQuery, currentActiveTab)
+          ) {
+            const nextFull = newFullPath || newPath;
+            if (nextFull && currentActiveTab.path !== nextFull) {
+              currentActiveTab.path = nextFull;
+              console.log('🔄 Updated active tab path for query/hash change:', nextFull);
+            }
+          }
           // Module list tab should always show the module name
           const isListRoute = newPathWithoutQuery === '/tasks' || newPathWithoutQuery === '/deals' || newPathWithoutQuery === '/events' ||
             newPathWithoutQuery === '/people' || newPathWithoutQuery === '/organizations' || newPathWithoutQuery === '/forms' ||

@@ -47,7 +47,22 @@ function humanNameFromObject(value) {
  */
 function formatValueForLog(value, maxLength = 200) {
   if (value === undefined || value === null) return 'Empty';
-  if (typeof value === 'string') return value.trim() || 'Empty';
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (!s) return 'Empty';
+    // Multi-picklist sometimes arrives already JSON-stringified — join labels, not raw JSON.
+    if (s.startsWith('[') && s.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed)) {
+          return formatValueForLog(parsed, maxLength);
+        }
+      } catch {
+        // keep as plain string
+      }
+    }
+    return s;
+  }
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (typeof value === 'number') return String(value);
   if (value instanceof Date) return value.toISOString();
@@ -314,7 +329,8 @@ async function appendRecordActivityLog({ organizationId, moduleKey, recordId, au
  *   previous: Record<string, any>,
  *   updated: Record<string, any>,
  *   updateDataKeys?: string[],
- *   fieldLabels?: Array<{ key?: string, name?: string, label?: string }>
+ *   fieldLabels?: Array<{ key?: string, name?: string, label?: string }>,
+ *   detailsExtras?: Record<string, any>
  * }} params
  * @returns {Promise<number>} Number of entries created
  */
@@ -326,7 +342,8 @@ async function appendFieldChangeLogs({
   previous,
   updated,
   updateDataKeys,
-  fieldLabels
+  fieldLabels,
+  detailsExtras
 }) {
   const keys = Array.isArray(updateDataKeys) && updateDataKeys.length > 0
     ? updateDataKeys
@@ -529,6 +546,16 @@ async function appendFieldChangeLogs({
         ? 'participation_changed'
         : 'field_changed';
 
+    const details = {
+      field: fieldKey,
+      fieldLabel,
+      from: fromStr,
+      to: toStr
+    };
+    if (detailsExtras && typeof detailsExtras === 'object') {
+      Object.assign(details, detailsExtras);
+    }
+
     entries.push({
       organizationId,
       moduleKey: String(moduleKey).trim().toLowerCase(),
@@ -536,12 +563,7 @@ async function appendFieldChangeLogs({
       type: 'activity',
       action,
       message: '',
-      details: {
-        field: fieldKey,
-        fieldLabel,
-        from: fromStr,
-        to: toStr
-      },
+      details,
       author: authorId
     });
   }
@@ -551,9 +573,64 @@ async function appendFieldChangeLogs({
   return entries.length;
 }
 
+/**
+ * Build plain field-change log rows for embedded activityLogs (deals/tasks)
+ * or when callers need from/to without writing RecordActivity.
+ * Skips system keys and fields where from === to.
+ * @param {{
+ *   previous: Record<string, any>,
+ *   updated: Record<string, any>,
+ *   updateDataKeys?: string[],
+ *   fieldLabels?: Array<{ key?: string, name?: string, label?: string }>,
+ *   detailsExtras?: Record<string, any>
+ * }} params
+ * @returns {Array<{ action: string, details: Record<string, any> }>}
+ */
+function buildFieldChangeLogDetails({
+  previous,
+  updated,
+  updateDataKeys,
+  fieldLabels,
+  detailsExtras
+}) {
+  const keys = Array.isArray(updateDataKeys) && updateDataKeys.length > 0
+    ? updateDataKeys
+    : Object.keys(updated || {}).filter((k) => !SYSTEM_KEYS.has(k));
+  const prev = previous || {};
+  const rows = [];
+
+  for (const fieldKey of keys) {
+    if (SYSTEM_KEYS.has(fieldKey)) continue;
+    const fromStr = formatValueForLog(prev[fieldKey]);
+    const toStr = formatValueForLog(updated[fieldKey]);
+    if (fromStr === toStr) continue;
+
+    const action = fieldKey === 'status' || fieldKey === 'stage' || fieldKey === 'lead_status' || fieldKey === 'contact_status'
+      ? 'status_changed'
+      : fieldKey === 'participations'
+        ? 'participation_changed'
+        : 'field_changed';
+
+    const details = {
+      field: fieldKey,
+      fieldLabel: fieldKey === 'participations' ? 'App participation' : getFieldLabel(fieldKey, fieldLabels),
+      from: fromStr,
+      to: toStr
+    };
+    if (detailsExtras && typeof detailsExtras === 'object') {
+      Object.assign(details, detailsExtras);
+    }
+
+    rows.push({ action, details });
+  }
+
+  return rows;
+}
+
 module.exports = {
   appendRecordActivityLog,
   appendFieldChangeLogs,
+  buildFieldChangeLogDetails,
   formatValueForLog,
   summarizeParticipationsForLog,
   getFieldLabel,

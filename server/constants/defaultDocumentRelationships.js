@@ -25,7 +25,8 @@ const SOURCE_APP_BY_MODULE = {
   people: 'sales',
   organizations: 'sales',
   deals: 'sales',
-  items: 'sales',
+  // Items are platform core modules (see MODULE_APP_KEY_BY_KEY / cleanupIncorrectModuleDefinitions)
+  items: 'platform',
   tasks: 'platform',
   events: 'platform',
   forms: 'platform',
@@ -44,7 +45,8 @@ const MODULE_APP_FALLBACKS = {
   people: ['sales', 'platform'],
   organizations: ['sales', 'platform'],
   deals: ['sales', 'platform'],
-  items: ['sales', 'platform'],
+  // Accept legacy sales.items relationship endpoints during dual-write window
+  items: ['platform', 'sales'],
   cases: ['helpdesk', 'platform'],
   tasks: ['platform'],
   events: ['platform'],

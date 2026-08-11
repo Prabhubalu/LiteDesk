@@ -68,12 +68,10 @@
         </button>
         <button
           type="button"
-          :disabled="duplicating"
-          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
           @click="handleDuplicate"
         >
-          <span v-if="duplicating">{{ t('states.saving') }}</span>
-          <span v-else>{{ t('forms.dupDuplicateEdit') }}</span>
+          {{ t('forms.dupDuplicateEdit') }}
         </button>
       </div>
     </div>
@@ -81,16 +79,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import apiClient from '@/utils/apiClient';
 import { useRouter } from 'vue-router';
 import { useTabs } from '@/composables/useTabs';
-
 import { useNotifications } from '@/composables/useNotifications';
+
 const { t } = useI18n();
 const notifications = useNotifications();
-
 
 const props = defineProps({
   isOpen: {
@@ -111,45 +106,25 @@ const emit = defineEmits(['close', 'duplicated']);
 
 const router = useRouter();
 const { openTab } = useTabs();
-const duplicating = ref(false);
 
 const handleCancel = () => {
   emit('close');
 };
 
-const handleDuplicate = async () => {
+const handleDuplicate = () => {
   if (!props.formId) {
     notifications.warning(t('forms.dupFormIdRequired'));
     return;
   }
 
-  duplicating.value = true;
-  try {
-    const response = await apiClient.post(`/forms/${props.formId}/duplicate`);
-
-    if (response.success && response.data) {
-      const duplicatedForm = response.data;
-      const formId = duplicatedForm._id;
-      openTab(`/forms/builder/${formId}`, {
-        name: `form-builder-${formId}`,
-        title: duplicatedForm.name || t('forms.formBuilderTabTitle'),
-        component: 'FormBuilder',
-        params: { formId },
-        insertAdjacent: true
-      });
-      router.push(`/forms/builder/${formId}`);
-
-      emit('duplicated', duplicatedForm);
-      emit('close');
-    } else {
-      notifications.error(response.message || t('forms.dupFailed'));
-    }
-  } catch (error) {
-    console.error('Error duplicating form:', error);
-    const errorMessage = error.response?.data?.message || error.message || t('forms.dupFailed');
-    notifications.error(errorMessage);
-  } finally {
-    duplicating.value = false;
-  }
+  // Open Create form prefilled — no DB write until user saves
+  const path = `/forms/create?duplicateFrom=${props.formId}`;
+  openTab(path, {
+    title: t('forms.hubTabDuplicateForm', { name: props.formName || t('forms.hubUntitledForm') }),
+    icon: 'clipboard-document',
+    insertAdjacent: true
+  });
+  router.push(path);
+  emit('close');
 };
 </script>

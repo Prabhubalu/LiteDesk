@@ -3,9 +3,12 @@
  * @see docs/CATALOG_ROADMAP.md
  */
 
-/** Fields owned by the sellable ItemVariant (canonical for Quotes/Orders). */
+/**
+ * Fields owned by the sellable ItemVariant (canonical for Quotes/Orders).
+ * Note: `item_code` is the parent Item system number (Module Numbering) — not a variant SKU.
+ * Use `variant_code` for sellable SKU edits.
+ */
 const VARIANT_PAYLOAD_KEYS = new Set([
-  'item_code',
   'variant_code',
   'unit_of_measure',
   'selling_price',
@@ -19,8 +22,8 @@ const VARIANT_PAYLOAD_KEYS = new Set([
   'qr_payload'
 ]);
 
+/** Dual-write sellable pricing fields onto parent Item for flat list/export compat. Never maps SKU → item_code. */
 const VARIANT_TO_ITEM_COMPAT_MAP = {
-  variant_code: 'item_code',
   selling_price: 'selling_price',
   cost_price: 'cost_price',
   currency: 'currency',
@@ -36,11 +39,7 @@ function splitItemPayload(payload = {}) {
 
   for (const [key, value] of Object.entries(payload)) {
     if (VARIANT_PAYLOAD_KEYS.has(key)) {
-      if (key === 'item_code') {
-        variantPayload.variant_code = value;
-      } else {
-        variantPayload[key] = value;
-      }
+      variantPayload[key] = value;
     } else {
       parentPayload[key] = value;
     }

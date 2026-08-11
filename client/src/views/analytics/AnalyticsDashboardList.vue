@@ -122,7 +122,6 @@ import { useAuthStore } from '@/stores/authRegistry';
 import {
   captureAnalyticsModuleVisited,
   captureAnalyticsDashboardArchived,
-  captureAnalyticsDashboardDuplicated,
 } from '@/config/posthogAnalytics';
 
 import { confirmAction } from '@/composables/useConfirmAction';
@@ -133,7 +132,6 @@ const {
   templates,
   fetchTemplates,
   createDashboard,
-  duplicateDashboard,
   archiveDashboard,
 } = useAnalyticsDashboards();
 
@@ -190,15 +188,8 @@ async function useTemplate(template) {
   }
 }
 
-async function duplicateRow(id) {
-  const res = await duplicateDashboard(String(id));
-  if (res?.success) {
-    captureAnalyticsDashboardDuplicated({ source_dashboard_id: id, dashboard_id: res.data?._id });
-    await refreshList();
-    if (res.data?._id) {
-      editDashboard(res.data._id);
-    }
-  }
+function duplicateRow(id) {
+  router.push({ name: 'analytics-dashboard-create', query: { duplicateFrom: String(id) } });
 }
 
 async function archiveRow(row) {

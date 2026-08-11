@@ -440,6 +440,90 @@
         </div>
       </section>
 
+      <!-- My Groups -->
+      <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <header class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-gray-700/60">
+          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('settings.profileMyGroups') }}</h3>
+              <span
+                v-if="myGroups.length"
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-800/60"
+              >
+                {{ myGroups.length }}
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.profileMyGroupsDesc') }}</p>
+          </div>
+        </header>
+
+        <div v-if="myGroups.length === 0" class="px-6 py-10 text-center">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-50 dark:bg-gray-900/40 border border-dashed border-gray-200 dark:border-gray-700">
+            <svg class="h-6 w-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <p class="mt-3 text-sm font-medium text-gray-900 dark:text-white">{{ t('settings.profileMyGroupsEmptyTitle') }}</p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">{{ t('settings.profileMyGroupsEmptyBody') }}</p>
+        </div>
+
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-100 dark:divide-gray-700/60">
+            <thead>
+              <tr class="bg-gray-50/80 dark:bg-gray-900/40">
+                <th scope="col" class="w-14 px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  {{ t('settings.profileMyGroupsColIndex') }}
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  {{ t('settings.profileMyGroupsColName') }}
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  {{ t('settings.profileMyGroupsColDescription') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700/60">
+              <tr
+                v-for="(group, index) in myGroups"
+                :key="group._id || index"
+                class="hover:bg-gray-50/70 dark:hover:bg-gray-900/30 transition-colors"
+              >
+                <td class="px-6 py-3.5 text-sm tabular-nums text-gray-500 dark:text-gray-400">
+                  {{ index + 1 }}
+                </td>
+                <td class="px-6 py-3.5">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span
+                      class="h-2.5 w-2.5 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-gray-800"
+                      :style="{ backgroundColor: group.color || '#10B981' }"
+                      aria-hidden="true"
+                    />
+                    <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {{ group.name }}
+                    </span>
+                    <span
+                      v-if="isPrimaryGroup(group)"
+                      class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800/50"
+                    >
+                      {{ t('settings.profileMyGroupsPrimaryBadge') }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-6 py-3.5 text-sm text-gray-600 dark:text-gray-400 max-w-md">
+                  <span v-if="group.description" class="line-clamp-2">{{ group.description }}</span>
+                  <span v-else class="text-gray-400 dark:text-gray-500">{{ t('settings.profileMyGroupsNoDescription') }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- Currency & Number Preferences -->
       <section class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <header class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-gray-700/60">
@@ -1042,6 +1126,23 @@ const primaryGroupLabel = computed(() => {
   const match = orgGroups.value.find((row) => String(row._id) === String(g));
   return match?.name || t('settings.profileEmptyValue');
 });
+
+const myGroups = computed(() => {
+  const rows = profile.value?.groups;
+  return Array.isArray(rows) ? rows : [];
+});
+
+const primaryGroupIdKey = computed(() => {
+  const g = profile.value?.primaryGroupId;
+  if (!g) return '';
+  if (typeof g === 'object') return String(g._id || '');
+  return String(g);
+});
+
+function isPrimaryGroup(group) {
+  if (!group?._id || !primaryGroupIdKey.value) return false;
+  return String(group._id) === primaryGroupIdKey.value;
+}
 
 function snapshotFromProfile(data) {
   const orgSettings = data?.organizationId?.settings || {};

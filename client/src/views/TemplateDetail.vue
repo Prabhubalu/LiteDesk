@@ -230,6 +230,13 @@
       </div>
     </template>
   </div>
+
+  <CreateTemplateDrawer
+    :is-open="showDuplicateDrawer"
+    :initial-data="duplicateInitial"
+    @close="showDuplicateDrawer = false"
+    @create="handleDuplicateCreate"
+  />
 </template>
 
 <script setup>
@@ -237,6 +244,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import TemplateHtmlPreviewPanel from '@/modules/template/components/TemplateHtmlPreviewPanel.vue';
+import CreateTemplateDrawer from '@/components/templates/CreateTemplateDrawer.vue';
 import { isEmailOutputFormat } from '@/constants/contentPageSettings';
 import { useTemplates } from '@/composables/useTemplates';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -273,6 +281,8 @@ const loading = ref(true);
 const validateBusy = ref(false);
 const deleteBusy = ref(false);
 const cloneBusy = ref(false);
+const showDuplicateDrawer = ref(false);
+const duplicateInitial = ref({});
 const defaultBusy = ref(false);
 const restoreBusy = ref(null);
 const renderBusy = ref(false);
@@ -326,15 +336,31 @@ function openBuilder() {
   });
 }
 
-async function handleDuplicate() {
+function handleDuplicate() {
+  if (!templateId.value || !template.value) return;
+  const name = String(template.value?.name || '').trim();
+  duplicateInitial.value = {
+    name: name && !/\(copy\)$/i.test(name) ? `${name} (Copy)` : name || '',
+    moduleScope: template.value?.moduleScope || '',
+    outputFormat: template.value?.outputFormat === 'email' ? 'email' : 'pdf',
+    paperSize: template.value?.paperSize || 'A4',
+    orientation: template.value?.orientation || 'portrait',
+    customPageWidth: template.value?.customPageWidth,
+    customPageHeight: template.value?.customPageHeight
+  };
+  showDuplicateDrawer.value = true;
+}
+
+async function handleDuplicateCreate(payload) {
   if (!templateId.value || cloneBusy.value) return;
   cloneBusy.value = true;
   try {
-    const created = await cloneTemplate(templateId.value);
+    const created = await cloneTemplate(templateId.value, payload?.name);
+    showDuplicateDrawer.value = false;
     notifications.success(t('templates.duplicateSuccess'));
     const id = created?._id || created?.id;
     if (!id) return;
-    const name = String(created?.name || '').trim() || t('templates.detailTitle');
+    const name = String(created?.name || payload?.name || '').trim() || t('templates.detailTitle');
     openRecordInTab(`/templates/${id}/builder`, {
       title: name,
       icon: 'document-text',

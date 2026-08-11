@@ -404,6 +404,33 @@ onMounted(async () => {
       await registerGridItems();
       await runPreview();
     }
+  } else if (isNew.value && route.query.duplicateFrom) {
+    const res = await fetchDashboard(String(route.query.duplicateFrom));
+    if (res?.success && res.data) {
+      const d = res.data;
+      form.name = /\(copy\)$/i.test(String(d.name || '').trim())
+        ? String(d.name || '').trim()
+        : `${String(d.name || '').trim()} (Copy)`;
+      form.apiName = '';
+      form.category = d.category;
+      form.visibility = d.visibility;
+      form.sharedWith = Array.isArray(d.sharedWith) ? d.sharedWith : [];
+      form.viewerRoleIds = Array.isArray(d.viewerRoleIds) ? d.viewerRoleIds.map(String) : [];
+      form.appKey = d.appKey || null;
+      form.isDefault = false;
+      form.drillDownEnabled = Boolean(d.drillDownEnabled);
+      layout.value = Array.isArray(d.layout)
+        ? d.layout.map((item) => ({
+            ...item,
+            instanceId: crypto.randomUUID()
+          }))
+        : [];
+      await hydrateWidgetMeta();
+      initGrid();
+      await registerGridItems();
+    } else {
+      initGrid();
+    }
   } else {
     initGrid();
   }

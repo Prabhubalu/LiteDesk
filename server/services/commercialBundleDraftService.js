@@ -51,20 +51,29 @@ function parseAddBundleBody(body) {
     err.code = 'VALIDATION';
     throw err;
   }
-  const includedOptional = new Set(
-    (Array.isArray(body?.includedOptionalComponentVariantIds)
-      ? body.includedOptionalComponentVariantIds
-      : []
-    )
-      .map((v) => String(v))
-      .filter(Boolean)
+  const hasExplicitOptionals = Object.prototype.hasOwnProperty.call(
+    body || {},
+    'includedOptionalComponentVariantIds'
   );
+  const includedOptionalList = hasExplicitOptionals
+    ? (Array.isArray(body.includedOptionalComponentVariantIds)
+        ? body.includedOptionalComponentVariantIds
+        : []
+      )
+        .map((v) => String(v))
+        .filter(Boolean)
+    : undefined;
+  const componentQuantities =
+    body?.componentQuantities && typeof body.componentQuantities === 'object'
+      ? body.componentQuantities
+      : null;
   return {
     bundleVariantId,
     quantity,
     priceBookId: body?.priceBookId ?? null,
     asOfDate: body?.asOfDate ?? null,
-    includedOptional
+    includedOptionalList,
+    componentQuantities
   };
 }
 
@@ -111,7 +120,8 @@ async function resolveSectionForInvoiceDraft({ organizationId, invoiceId, sectio
 
 async function addSalesOrderBundle({ organizationId, salesOrderRef, userId, body = {} }) {
   const order = await loadDraftSalesOrderDoc({ organizationId, salesOrderRef });
-  const { bundleVariantId, quantity, priceBookId, includedOptional } = parseAddBundleBody(body);
+  const { bundleVariantId, quantity, priceBookId, includedOptionalList, componentQuantities } =
+    parseAddBundleBody(body);
   const pricingAsOfDate = body?.asOfDate ?? order.orderDate ?? null;
 
   const bundleComponents = await catalogBundleService.getBundleComponents(bundleVariantId, organizationId);
@@ -120,13 +130,20 @@ async function addSalesOrderBundle({ organizationId, salesOrderRef, userId, body
     bundleVariantId,
     priceBookId,
     quantity,
-    asOfDate: pricingAsOfDate
+    asOfDate: pricingAsOfDate,
+    includedOptionalComponentVariantIds: includedOptionalList,
+    componentQuantities,
+    validate: true
   });
 
   const pricingMode =
     String(preview.pricingMode || bundleComponents.pricingMode || '')
       .toLowerCase()
       .trim() || 'fixed';
+
+  const includedIds = new Set(
+    (preview.lines || []).filter((l) => l.included).map((l) => String(l.componentVariantId))
+  );
 
   const nextOrder = await getNextSalesOrderLineOrder({ organizationId, salesOrderId: order._id });
   const targetSection = await resolveSectionForOrder({
@@ -172,19 +189,11 @@ async function addSalesOrderBundle({ organizationId, salesOrderRef, userId, body
     itemNameSnapshot: preview.bundleItemName || null,
     descriptionSnapshot: null,
     attributesSnapshot: {},
-    bundleSnapshot: {
-      bundleVariantId: String(bundleVariantId),
-      pricingMode,
-      rollupComponentTotal: Number(preview.rollupComponentTotal) || 0,
-      components: Array.isArray(bundleComponents.components)
-        ? bundleComponents.components.map((c) => ({
-            componentVariantId: String(c.componentVariantId),
-            quantity: Number(c.quantity) || 0,
-            isOptional: c.isOptional === true,
-            sortOrder: Number(c.sortOrder) || 0
-          }))
-        : []
-    },
+    bundleSnapshot: catalogBundleService.buildBundleSnapshot({
+      definition: bundleComponents,
+      preview,
+      includedIds
+    }),
     optionalLine: false,
     hiddenLine: false,
     lockedSnapshot: false
@@ -195,8 +204,12 @@ async function addSalesOrderBundle({ organizationId, salesOrderRef, userId, body
   const componentRows = Array.isArray(bundleComponents.components) ? bundleComponents.components : [];
   for (const comp of componentRows) {
     const isOptional = comp.isOptional === true;
-    const shouldInclude = !isOptional || includedOptional.has(String(comp.componentVariantId));
-    const componentQty = (Number(comp.quantity) || 0) * quantity;
+    const shouldInclude = includedIds.has(String(comp.componentVariantId));
+    const unitQty =
+      componentQuantities && componentQuantities[String(comp.componentVariantId)] != null
+        ? Number(componentQuantities[String(comp.componentVariantId)])
+        : Number(comp.quantity) || 0;
+    const componentQty = unitQty * quantity;
     if (!Number.isFinite(componentQty) || componentQty <= 0) continue;
 
     const compVariant = await ItemVariant.findOne({ _id: comp.componentVariantId, organizationId }).lean();
@@ -258,7 +271,9 @@ async function addSalesOrderBundle({ organizationId, salesOrderRef, userId, body
         parentBundleVariantId: String(bundleVariantId),
         parentBundleLineId: String(parent._id),
         isOptional,
-        included: shouldInclude
+        included: shouldInclude,
+        editableQuantity: comp.editableQuantity === true,
+        remarks: comp.remarks || ''
       },
       optionalLine: isOptional,
       hiddenLine: shouldInclude ? false : true,
@@ -283,12 +298,93 @@ async function addSalesOrderBundle({ organizationId, salesOrderRef, userId, body
       salesOrderLineId: parent.salesOrderLineId,
       bundleVariantId: String(bundleVariantId),
       pricingMode,
+      bundleType: preview.bundleType,
+      revision: preview.revision,
       componentCount: createdComponents.length,
       totals
     }
   });
 
   return { parent, components: createdComponents, totals, sections };
+}
+
+async function repriceParentBundleFromChildren({ parent, LineModel, findChildren }) {
+  const snap = parent.bundleSnapshot && typeof parent.bundleSnapshot === 'object' ? parent.bundleSnapshot : {};
+  const mode = String(snap.pricingMode || '').toLowerCase();
+  const children = await findChildren();
+  const rollup = children
+    .filter((c) => !c.hiddenLine)
+    .reduce(
+      (sum, c) => sum + (Number(c.lineSubtotal) || 0) / Math.max(Number(parent.quantity) || 1, 1e-9),
+      0
+    );
+
+  let unit = parent.unitPriceSnapshot;
+  let discountApplied = Number(snap.discountApplied) || 0;
+  if (mode === 'rollup' || mode === 'discount') {
+    unit = rollup;
+    discountApplied = 0;
+    if (mode === 'discount') {
+      if (snap.discountType === 'percent') {
+        discountApplied = (rollup * (Number(snap.discountValue) || 0)) / 100;
+      } else if (snap.discountType === 'amount') {
+        discountApplied = Math.min(Number(snap.discountValue) || 0, rollup);
+      }
+      unit = Math.max(0, rollup - discountApplied);
+    }
+    parent.unitPriceSnapshot = unit;
+    parent.listPriceSnapshot = unit;
+  }
+
+  parent.bundleSnapshot = {
+    ...snap,
+    rollupComponentTotal: mode === 'fixed' ? snap.rollupComponentTotal : rollup,
+    discountApplied: mode === 'discount' ? discountApplied : snap.discountApplied || 0,
+    components: Array.isArray(snap.components)
+      ? snap.components.map((c) => {
+          const child = children.find((ch) => String(ch.variantId) === String(c.componentVariantId));
+          return {
+            ...c,
+            included: child ? !child.hiddenLine : !c.isOptional
+          };
+        })
+      : snap.components
+  };
+
+  const computed =
+    LineModel === SalesOrderLine
+      ? salesOrderTotalsService.computeLineTotals(parent)
+      : LineModel === InvoiceLine
+        ? invoiceTotalsService.computeLineTotals(parent)
+        : null;
+  if (computed) {
+    parent.lineSubtotal = computed.lineSubtotal;
+    parent.lineTaxTotal = computed.lineTaxTotal;
+    parent.lineTotal = computed.lineTotal;
+  }
+  await parent.save();
+}
+
+async function assertOptionalSelectionRules(parent, included) {
+  const snap = parent.bundleSnapshot && typeof parent.bundleSnapshot === 'object' ? parent.bundleSnapshot : {};
+  const optionalDefs = Array.isArray(snap.components)
+    ? snap.components.filter((c) => c.isOptional === true)
+    : [];
+  const selectedOptionalCount = optionalDefs.filter((c) =>
+    included.has(String(c.componentVariantId))
+  ).length;
+  if (snap.minOptionalSelection != null && selectedOptionalCount < Number(snap.minOptionalSelection)) {
+    const err = new Error(`Select at least ${snap.minOptionalSelection} optional component(s)`);
+    err.code = 'VALIDATION';
+    err.details = { rule: 'min_optional_selection', min: snap.minOptionalSelection, selected: selectedOptionalCount };
+    throw err;
+  }
+  if (snap.maxOptionalSelection != null && selectedOptionalCount > Number(snap.maxOptionalSelection)) {
+    const err = new Error(`Select at most ${snap.maxOptionalSelection} optional component(s)`);
+    err.code = 'VALIDATION';
+    err.details = { rule: 'max_optional_selection', max: snap.maxOptionalSelection, selected: selectedOptionalCount };
+    throw err;
+  }
 }
 
 async function patchSalesOrderBundleOptionals({
@@ -318,6 +414,8 @@ async function patchSalesOrderBundleOptionals({
       .map((id) => String(id))
       .filter(Boolean)
   );
+
+  await assertOptionalSelectionRules(parent, included);
 
   const optionalChildren = await SalesOrderLine.find({
     organizationId,
@@ -354,6 +452,18 @@ async function patchSalesOrderBundleOptionals({
     await child.save();
   }
 
+  await repriceParentBundleFromChildren({
+    parent,
+    LineModel: SalesOrderLine,
+    findChildren: () =>
+      SalesOrderLine.find({
+        organizationId,
+        salesOrderId: order._id,
+        parentBundleLineId: parent._id,
+        lineType: 'bundle_component'
+      })
+  });
+
   const { totals, sections } = await recomputeSalesOrderAndSectionTotals({
     organizationId,
     salesOrderId: order._id
@@ -376,7 +486,8 @@ async function patchSalesOrderBundleOptionals({
 
 async function addInvoiceBundle({ organizationId, invoiceRef, userId, body = {} }) {
   const invoice = await loadDraftInvoiceDoc({ organizationId, invoiceRef });
-  const { bundleVariantId, quantity, priceBookId, includedOptional } = parseAddBundleBody(body);
+  const { bundleVariantId, quantity, priceBookId, includedOptionalList, componentQuantities } =
+    parseAddBundleBody(body);
   const pricingAsOfDate = body?.asOfDate ?? invoice.invoiceDate ?? null;
 
   const bundleComponents = await catalogBundleService.getBundleComponents(bundleVariantId, organizationId);
@@ -385,13 +496,20 @@ async function addInvoiceBundle({ organizationId, invoiceRef, userId, body = {} 
     bundleVariantId,
     priceBookId,
     quantity,
-    asOfDate: pricingAsOfDate
+    asOfDate: pricingAsOfDate,
+    includedOptionalComponentVariantIds: includedOptionalList,
+    componentQuantities,
+    validate: true
   });
 
   const pricingMode =
     String(preview.pricingMode || bundleComponents.pricingMode || '')
       .toLowerCase()
       .trim() || 'fixed';
+
+  const includedIds = new Set(
+    (preview.lines || []).filter((l) => l.included).map((l) => String(l.componentVariantId))
+  );
 
   const nextOrder = await getNextInvoiceLineOrder({ organizationId, invoiceId: invoice._id });
   const targetSection = await resolveSectionForInvoiceDraft({
@@ -436,19 +554,11 @@ async function addInvoiceBundle({ organizationId, invoiceRef, userId, body = {} 
     itemNameSnapshot: preview.bundleItemName || null,
     descriptionSnapshot: null,
     attributesSnapshot: {},
-    bundleSnapshot: {
-      bundleVariantId: String(bundleVariantId),
-      pricingMode,
-      rollupComponentTotal: Number(preview.rollupComponentTotal) || 0,
-      components: Array.isArray(bundleComponents.components)
-        ? bundleComponents.components.map((c) => ({
-            componentVariantId: String(c.componentVariantId),
-            quantity: Number(c.quantity) || 0,
-            isOptional: c.isOptional === true,
-            sortOrder: Number(c.sortOrder) || 0
-          }))
-        : []
-    },
+    bundleSnapshot: catalogBundleService.buildBundleSnapshot({
+      definition: bundleComponents,
+      preview,
+      includedIds
+    }),
     optionalLine: false,
     hiddenLine: false,
     lockedSnapshot: false
@@ -459,8 +569,12 @@ async function addInvoiceBundle({ organizationId, invoiceRef, userId, body = {} 
   const componentRows = Array.isArray(bundleComponents.components) ? bundleComponents.components : [];
   for (const comp of componentRows) {
     const isOptional = comp.isOptional === true;
-    const shouldInclude = !isOptional || includedOptional.has(String(comp.componentVariantId));
-    const componentQty = (Number(comp.quantity) || 0) * quantity;
+    const shouldInclude = includedIds.has(String(comp.componentVariantId));
+    const unitQty =
+      componentQuantities && componentQuantities[String(comp.componentVariantId)] != null
+        ? Number(componentQuantities[String(comp.componentVariantId)])
+        : Number(comp.quantity) || 0;
+    const componentQty = unitQty * quantity;
     if (!Number.isFinite(componentQty) || componentQty <= 0) continue;
 
     const compVariant = await ItemVariant.findOne({ _id: comp.componentVariantId, organizationId }).lean();
@@ -584,6 +698,8 @@ async function patchInvoiceBundleOptionals({
       .filter(Boolean)
   );
 
+  await assertOptionalSelectionRules(parent, included);
+
   const optionalChildren = await InvoiceLine.find({
     organizationId,
     invoiceId: invoice._id,
@@ -618,6 +734,18 @@ async function patchInvoiceBundleOptionals({
 
     await child.save();
   }
+
+  await repriceParentBundleFromChildren({
+    parent,
+    LineModel: InvoiceLine,
+    findChildren: () =>
+      InvoiceLine.find({
+        organizationId,
+        invoiceId: invoice._id,
+        parentBundleLineId: parent._id,
+        lineType: 'bundle_component'
+      })
+  });
 
   const { totals, sections } = await recomputeInvoiceAndSectionTotals({
     organizationId,

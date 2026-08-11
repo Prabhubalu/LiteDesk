@@ -225,6 +225,9 @@ const form = ref({
   schedule: { preset: 'daily', hour: 9, minute: 0, dayOfWeek: 1, dayOfMonth: 1, timezone: 'UTC' }
 });
 
+/** When set, Continue POSTs a draft with this process's graph (duplicate-as-create). */
+const sourceProcess = ref(null);
+
 const appOptions = computed(() =>
   registryAppOptions.value.length ? registryAppOptions.value : getAppOptions(t)
 );
@@ -285,14 +288,17 @@ const scopeSummary = computed(() =>
   )
 );
 
-const canContinue = computed(() =>
-  !!(
+const canContinue = computed(() => {
+  if (sourceProcess.value) {
+    return !!(form.value.appKey && form.value.entityType && form.value.name.trim());
+  }
+  return !!(
     form.value.appKey &&
     form.value.entityType &&
     form.value.coreTrigger &&
     (!triggerBehaviourApplies(form.value.coreTrigger) || form.value.triggerBehaviour)
-  )
-);
+  );
+});
 
 const submitLabel = computed(() =>
   saving.value ? t('process.setupCreating') : t('process.setupContinue')
@@ -310,6 +316,27 @@ function onModuleChange() {
 }
 
 function buildPayload() {
+  if (sourceProcess.value) {
+    const src = sourceProcess.value;
+    const trigger = { ...(src.trigger || {}) };
+    if (trigger.type === 'webhook') {
+      trigger.webhookKey = null;
+      trigger.secretHash = null;
+    }
+    return {
+      name: form.value.name.trim() || t('process.setupUntitled'),
+      description: src.description || '',
+      appKey: form.value.appKey || src.appKey,
+      entityType: form.value.entityType || src.entityType,
+      triggerBehaviour: src.triggerBehaviour || 'every_time',
+      includeClosedRecords: src.includeClosedRecords === true,
+      trigger,
+      triggerConfigured: true,
+      status: 'draft',
+      nodes: Array.isArray(src.nodes) ? src.nodes : [],
+      edges: Array.isArray(src.edges) ? src.edges : []
+    };
+  }
   return {
     name: form.value.name.trim() || t('process.setupUntitled'),
     description: '',
@@ -365,6 +392,24 @@ onMounted(async () => {
     registryModulesByApp.value = scope.modulesByApp;
   } catch (e) {
     console.error('Failed to load process scope from registry', e);
+  }
+
+  const duplicateFrom = route.query?.duplicateFrom
+    ? String(Array.isArray(route.query.duplicateFrom) ? route.query.duplicateFrom[0] : route.query.duplicateFrom)
+    : '';
+  if (!duplicateFrom) return;
+  try {
+    const res = await apiClient.get(`/admin/processes/${duplicateFrom}`);
+    if (!res?.success || !res.data) return;
+    const src = res.data;
+    sourceProcess.value = src;
+    const baseName = String(src.name || '').trim();
+    form.value.name = baseName && !/\(copy\)$/i.test(baseName) ? `${baseName} (Copy)` : baseName;
+    form.value.appKey = src.appKey || '';
+    form.value.entityType = src.entityType || '';
+    form.value.includeClosedRecords = src.includeClosedRecords === true;
+  } catch (e) {
+    notifications.error(e.message || t('process.designerLoadFailed'));
   }
 });
 

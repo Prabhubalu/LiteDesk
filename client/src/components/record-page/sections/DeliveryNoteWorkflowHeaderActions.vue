@@ -192,14 +192,11 @@ const menuItems = computed(() => {
     {
       key: 'duplicate',
       label: t('records.dnDuplicate'),
-      handler: () =>
-        runAction('duplicate', {
-          successKey: 'records.dnDuplicated',
-          onSuccess: (data) => {
-            const nid = data?._id || data?.id;
-            if (nid) router.push(`/inventory/delivery-notes/${nid}`);
-          }
-        })
+      handler: () => {
+        const id = recordId();
+        if (!id) return;
+        router.push(`/inventory/delivery-notes/new?duplicateFrom=${encodeURIComponent(id)}`);
+      }
     }
   ];
   if (canCancelDeliveryNote(status.value) && !props.record?.inventoryPostedAt) {

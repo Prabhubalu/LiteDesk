@@ -2,7 +2,7 @@ const SalesOrder = require('../models/SalesOrder');
 const SalesOrderLine = require('../models/SalesOrderLine');
 const ItemVariant = require('../models/ItemVariant');
 const Item = require('../models/Item');
-const { resolve: resolveCatalogPrice } = require('../services/catalogPriceResolver');
+const { resolveCommercialPrice } = require('../services/pricingEngineService');
 const salesOrderTotalsService = require('../services/salesOrderTotalsService');
 const {
   recomputeSalesOrderAndSectionTotals,
@@ -86,15 +86,21 @@ async function addSalesOrderLine(req, res) {
       .lean();
 
     const pricingAsOfDate = req.body?.asOfDate ?? order.orderDate ?? null;
-    const price = await resolveCatalogPrice({
+    const price = await resolveCommercialPrice({
       organizationId,
       variantId,
       priceBookId: req.body?.priceBookId ?? null,
       quantity,
-      asOfDate: pricingAsOfDate
+      asOfDate: pricingAsOfDate,
+      context: {
+        ...(req.body?.pricingContext || {}),
+        customerId: req.body?.pricingContext?.customerId || order.customerId || null,
+        currency: req.body?.pricingContext?.currency || order.currency || null,
+      },
     });
 
     const unitPrice = Number(price.unitPrice) || 0;
+    const listPrice = Number(price.listPrice != null ? price.listPrice : unitPrice) || 0;
     const {
       resolveLineDefaultTaxes,
       hydrateTaxIds,
@@ -141,6 +147,40 @@ async function addSalesOrderLine(req, res) {
 
     const lineOrder = await getNextLineOrder({ organizationId, salesOrderId: order._id });
 
+    let productConfigurationId = null;
+    let productConfigurationVersion = null;
+    let configurationSelections = null;
+    let configurationSnapshot = null;
+    let attributesFromConfig = item?.attributeValues || {};
+
+    if (req.body?.productConfigurationId) {
+      const cpqService = require('../services/cpqService');
+      const validation = await cpqService.validateProductConfigurationById({
+        organizationId,
+        id: req.body.productConfigurationId,
+        selections: req.body.configurationSelections || {},
+        requireActive: true,
+        asOf: pricingAsOfDate ? new Date(pricingAsOfDate) : new Date()
+      });
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          code: 'CONFIGURATION_INVALID',
+          message: validation.errors?.[0]?.message || 'Product configuration is invalid',
+          errors: validation.errors
+        });
+      }
+      const snap = cpqService.buildConfigurationLineSnapshot(validation.configuration, validation);
+      productConfigurationId = validation.configuration._id;
+      productConfigurationVersion = snap.productConfigurationVersion;
+      configurationSelections = snap.selections;
+      configurationSnapshot = snap;
+      attributesFromConfig = {
+        ...(item?.attributeValues || {}),
+        ...snap.selections
+      };
+    }
+
     const line = await SalesOrderLine.create({
       organizationId,
       salesOrderId: order._id,
@@ -151,12 +191,13 @@ async function addSalesOrderLine(req, res) {
       quantity,
       unitOfMeasure: variant.unit_of_measure || item?.unit_of_measure || null,
       unitPriceSnapshot: unitPrice,
-      listPriceSnapshot: unitPrice,
+      listPriceSnapshot: listPrice,
       pricingSourceSnapshot: price.source || null,
       priceBookIdSnapshot: price.priceBookId || null,
       priceBookNameSnapshot: price.priceBookName || null,
       priceBookEntryIdSnapshot: price.entryId || null,
       pricingAsOfDateSnapshot: pricingAsOfDate ? new Date(pricingAsOfDate) : null,
+      pricingBreakdownSnapshot: price.pricingBreakdown || null,
       taxSnapshot: computed.taxSnapshot,
       lineSubtotal: computed.lineSubtotal,
       lineTaxTotal: computed.lineTaxTotal,
@@ -166,7 +207,11 @@ async function addSalesOrderLine(req, res) {
       skuSnapshot: variant.variant_code || variant.barcode || String(variant._id),
       itemNameSnapshot: item?.item_name || null,
       descriptionSnapshot: item?.description || null,
-      attributesSnapshot: item?.attributeValues || {},
+      attributesSnapshot: attributesFromConfig,
+      productConfigurationId,
+      productConfigurationVersion,
+      configurationSelections,
+      configurationSnapshot,
       lockedSnapshot: false
     });
 

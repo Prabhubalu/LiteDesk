@@ -5,9 +5,14 @@
       <template v-if="ui.isFieldChangeSystemEvent(event)">
         <div class="flex items-start justify-between gap-2 max-[480px]:flex-wrap max-[480px]:gap-y-1">
           <p class="text-[12px] leading-[1.4] text-gray-500 dark:text-slate-400">
-            <span>{{ ui.getSystemEventActorLabel(event) }}</span>
-            <span>{{ t('records.activitySystemChanged') }}</span>
-            <span class="font-semibold text-gray-900 dark:text-white">{{ ui.getSystemEventFieldLabel(event) }}</span>
+            <template v-if="isMassEdit">
+              <span class="font-semibold text-gray-900 dark:text-white">{{ t('records.activityMassEditPerformedBy', { name: ui.getSystemEventActorLabel(event) }) }}</span>
+            </template>
+            <template v-else>
+              <span>{{ ui.getSystemEventActorLabel(event) }}</span>
+              <span>{{ t('records.activitySystemChanged') }}</span>
+              <span class="font-semibold text-gray-900 dark:text-white">{{ ui.getSystemEventFieldLabel(event) }}</span>
+            </template>
           </p>
           <span
             v-if="event.createdAt"
@@ -143,6 +148,10 @@ const {
 } = useRichDescriptionImagePreview();
 
 const details = computed(() => props.event?.payload?.details || props.event?.details || {});
+const isMassEdit = computed(() => {
+  const source = String(details.value?.source || '').toLowerCase();
+  return source === 'mass_edit' || source === 'mass-edit' || source === 'bulk_update';
+});
 const isTagsFieldChange = computed(() => String(details.value?.field || '').toLowerCase() === 'tags');
 const descriptionImageChanges = computed(() => {
   const changes = props.event?.descriptionImageChanges;

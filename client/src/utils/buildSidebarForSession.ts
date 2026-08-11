@@ -192,5 +192,26 @@ export async function buildSidebarStructureForSession(
     );
   }
 
+  // Hide Stockroom multi-location workbench until Stockroom marketplace addon is installed.
+  const { isStockroomAddonEntitled } = await import('@/utils/addonEntitlement');
+  if (!isStockroomAddonEntitled(user)) {
+    const stockroomKeys = new Set(['stockrooms', 'stock_adjustments', 'stock_transfers']);
+    const dropStockroomNav = <T extends { moduleKey?: string }>(items: T[] | undefined): T[] =>
+      (items || []).filter((item) => !stockroomKeys.has(String(item?.moduleKey || '').toLowerCase()));
+
+    if (structure.appNav?.appId === 'INVENTORY') {
+      structure.appNav = {
+        ...structure.appNav,
+        modules: dropStockroomNav(structure.appNav.modules),
+      };
+    }
+    if (Array.isArray(structure.applications)) {
+      structure.applications = structure.applications.map((app) => {
+        if (app.id !== 'INVENTORY') return app;
+        return { ...app, items: dropStockroomNav(app.items) };
+      });
+    }
+  }
+
   return { structure, entitlementScopedRegistry };
 }

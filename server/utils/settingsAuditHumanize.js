@@ -102,7 +102,7 @@ const FIELD_LABELS = Object.freeze({
   startingSequence: 'Starting sequence',
   currentSequence: 'Current sequence',
   resetRule: 'Reset rule',
-  allowManualEdit: 'Allow manual edit'
+  allowManualEdit: 'Allow manual edit (retired)'
 });
 
 /**

@@ -223,7 +223,7 @@
                 class="group/quote-line quote-line-row text-gray-900 dark:text-gray-100 transition-colors hover:bg-gray-50/80 dark:hover:bg-gray-800/40"
                 :class="isBundleParent ? 'quote-line-row--bundle bg-indigo-50/40 dark:bg-indigo-900/10 hover:bg-indigo-50/70 dark:hover:bg-indigo-900/20' : ''"
               >
-              <td :class="[stickyColClass('name'), 'quote-lines-col-name px-3 py-2.5 align-middle']">
+              <td :class="[stickyColClass('name'), 'quote-lines-col-name px-3 py-2.5 align-top']">
                 <div class="flex items-start gap-1.5 min-w-0">
                   <button
                     v-if="caps.lineReorder && !isLineDragDisabled(line)"
@@ -242,6 +242,13 @@
                       <span v-if="isOptional" class="text-xs text-gray-500 mr-1">[{{ t('records.linesOptional') }}]</span>
                       {{ line.itemNameSnapshot || '—' }}
                     </div>
+                    <p
+                      v-if="configurationSummary(line)"
+                      class="mt-0.5 truncate text-[11px] text-gray-500 dark:text-gray-400"
+                      :title="configurationSummary(line)"
+                    >
+                      {{ configurationSummary(line) }}
+                    </p>
                     <button
                       v-if="linesEditable && caps.bundles && isBundleParent && bundleParentHasOptionals(line)"
                       type="button"
@@ -266,7 +273,7 @@
               <td v-if="showPricingColumns" class="quote-lines-col-scroll px-3 py-2.5 align-middle text-xs text-gray-500 dark:text-gray-400">
                 {{ pricingSourceLabel(line.pricingSourceSnapshot) }}
               </td>
-              <td class="quote-lines-col-qty px-3 py-2.5 align-middle text-right">
+              <td class="quote-lines-col-qty px-3 py-2.5 align-top text-right">
                 <input
                   v-if="linesEditable"
                   :class="lineQtyInputClass"
@@ -280,29 +287,38 @@
                 />
                 <span v-else class="tabular-nums">{{ line.quantity }}</span>
               </td>
-              <td class="quote-lines-col-unit-price px-3 py-2.5 align-middle text-right tabular-nums text-gray-700 dark:text-gray-200">
-                <div class="flex flex-col items-end gap-0.5">
-                  <div
-                    v-if="linesEditable && canEditLineUnitPrice"
-                    class="quote-lines-unit-price-group"
-                  >
-                    <span class="quote-lines-unit-price-symbol" aria-hidden="true">{{ discountCurrencySymbol }}</span>
-                    <input
-                      class="quote-lines-unit-price-value"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      :aria-label="t('records.linesUnitPrice')"
-                      :value="lineUnitPrice(line)"
-                      :disabled="busy"
-                      @change="(e) => patchUnitPrice(line, e?.target?.value)"
-                    />
+              <td
+                class="quote-lines-col-unit-price px-3 py-2.5 align-top text-right tabular-nums text-gray-700 dark:text-gray-200"
+                :class="{
+                  'quote-lines-col-unit-price--with-meta':
+                    isPurchaseOrderLines &&
+                    (hasCatalogPriceDrift(line) || !!catalogLastPurchaseLabel(line))
+                }"
+              >
+                <div class="quote-lines-unit-price-cell">
+                  <div class="quote-lines-unit-price-control">
+                    <div
+                      v-if="linesEditable && canEditLineUnitPrice"
+                      class="quote-lines-unit-price-group"
+                    >
+                      <span class="quote-lines-unit-price-symbol" aria-hidden="true">{{ discountCurrencySymbol }}</span>
+                      <input
+                        class="quote-lines-unit-price-value"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        :aria-label="t('records.linesUnitPrice')"
+                        :value="lineUnitPrice(line)"
+                        :disabled="busy"
+                        @change="(e) => patchUnitPrice(line, e?.target?.value)"
+                      />
+                    </div>
+                    <span v-else>{{ formatMoney(lineUnitPrice(line)) }}</span>
                   </div>
-                  <span v-else>{{ formatMoney(lineUnitPrice(line)) }}</span>
                   <button
                     v-if="isPurchaseOrderLines && hasCatalogPriceDrift(line)"
                     type="button"
-                    class="max-w-[9rem] truncate text-[10px] font-medium leading-tight text-amber-700 hover:underline disabled:opacity-50 dark:text-amber-300"
+                    class="quote-lines-unit-price-meta quote-lines-unit-price-meta--action"
                     :disabled="busy || !linesEditable || !canEditLineUnitPrice"
                     :title="t('records.linesPoUseCatalogPrice')"
                     @click="applyCatalogUnitPrice(line)"
@@ -311,14 +327,14 @@
                   </button>
                   <span
                     v-else-if="isPurchaseOrderLines && catalogLastPurchaseLabel(line)"
-                    class="max-w-[10rem] truncate text-[10px] leading-tight text-gray-400 dark:text-gray-500"
+                    class="quote-lines-unit-price-meta"
                     :title="catalogLastPurchaseLabel(line)"
                   >
                     {{ catalogLastPurchaseLabel(line) }}
                   </span>
                 </div>
               </td>
-              <td v-if="linesEditable && showDiscountColumn" class="quote-lines-col-discount px-3 py-2.5 align-middle text-right overflow-visible">
+              <td v-if="linesEditable && showDiscountColumn" class="quote-lines-col-discount px-3 py-2.5 align-top text-right overflow-visible">
                 <div :class="discountGroupClass">
                   <input
                     :class="discountGroupInputClass"
@@ -366,7 +382,7 @@
                   </div>
                 </div>
               </td>
-              <td v-if="showTaxColumn" class="quote-lines-col-tax px-3 py-2.5 align-middle text-right">
+              <td v-if="showTaxColumn" class="quote-lines-col-tax px-3 py-2.5 align-top text-right">
                 <LineTaxPickerCell
                   v-if="caps.taxEdit"
                   :tax-snapshot="line.taxSnapshot"
@@ -378,10 +394,10 @@
                   {{ formatMoney(line.lineTaxTotal) }}
                 </span>
               </td>
-              <td :class="[stickyColClass('total'), 'quote-lines-col-total px-3 py-2.5 align-middle text-right font-medium tabular-nums']">
+              <td :class="[stickyColClass('total'), 'quote-lines-col-total px-3 py-2.5 align-top text-right font-medium tabular-nums']">
                 {{ formatMoney(line.lineTotal) }}
               </td>
-              <td :class="[stickyColClass('actions'), 'quote-lines-col-actions px-3 py-2.5 align-middle text-right']">
+              <td :class="[stickyColClass('actions'), 'quote-lines-col-actions px-3 py-2.5 align-top text-right']">
                 <div
                   v-if="linesEditable"
                   class="inline-flex items-center justify-end opacity-100 lg:opacity-0 lg:group-hover/quote-line:opacity-100 transition-opacity"
@@ -1390,6 +1406,16 @@
       @close="closeItemCreateDrawer"
       @saved="handleItemCreatedFromDraft"
     />
+
+    <ProductConfigGuidedDrawer
+      :open="Boolean(productConfigSession?.open)"
+      :hit="productConfigSession?.hit || null"
+      :configs="productConfigSession?.configs || []"
+      :loading-configs="Boolean(productConfigSession?.loading)"
+      @confirm="onProductConfigConfirm"
+      @skip="onProductConfigSkip"
+      @cancel="onProductConfigCancel"
+    />
   </section>
 </template>
 
@@ -1424,12 +1450,14 @@ import { useAuthStore } from '@/stores/authRegistry';
 import DeleteConfirmationModal from '@/components/common/DeleteConfirmationModal.vue';
 import Avatar from '@/components/common/Avatar.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
+import ProductConfigGuidedDrawer from '@/components/catalog/ProductConfigGuidedDrawer.vue';
 import QuoteLinesHeaderActions from '@/components/record-page/sections/QuoteLinesHeaderActions.vue';
 import QuoteLinesColumnOptions from '@/components/record-page/sections/QuoteLinesColumnOptions.vue';
 import QuoteSectionFormModal from '@/components/record-page/sections/QuoteSectionFormModal.vue';
 import LineTaxPickerCell from '@/components/record-page/sections/LineTaxPickerCell.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import { formatQuoteMoney } from '@/utils/quoteMoney';
+import { isCpqAddonEntitled } from '@/utils/addonEntitlement';
 import {
   resolveCommercialLinesAdapter,
   commercialLineId,
@@ -1964,8 +1992,11 @@ const isLinesExpanded = computed(() => props.context?.expandedLeftSection === 'l
 const { t } = useI18n();
 const notifications = useNotifications();
 const authStore = useAuthStore();
-
+const cpqEntitled = computed(() => isCpqAddonEntitled(authStore.user));
 const canCreateQuoteItem = computed(() => authStore.can('items', 'create'));
+
+/** Guided CPQ configurator session while adding quote/SO lines */
+const productConfigSession = ref(null);
 const showItemCreateDrawer = ref(false);
 const itemCreateBlockKey = ref(null);
 const itemCreatePrefillText = ref('');
@@ -3451,7 +3482,7 @@ function linesInDisplayGroup(lineId) {
           String(l?.parentBundleLineId || '') === parentMongoId
       )
       .sort((a, b) => (Number(a?.lineOrder) || 0) - (Number(b?.lineOrder) || 0));
-    if (mode === 'fixed') return [line, ...children];
+    if (mode === 'fixed' || mode === 'discount') return [line, ...children];
     return [line];
   }
 
@@ -4160,6 +4191,7 @@ async function addLineFromHit(block, hit, options = {}) {
           ? props.record.lines
           : [];
       const order = baseLines.length + 1;
+      const configSelections = options.configurationSelections || null;
       let line = {
         _localId: lid,
         _id: lid,
@@ -4184,6 +4216,16 @@ async function addLineFromHit(block, hit, options = {}) {
         minOrderQty: isPurchaseOrderLines.value
           ? hit?.min_order_qty ?? hit?.minOrderQty ?? null
           : undefined,
+        productConfigurationId: options.productConfigurationId || null,
+        productConfigurationVersion: options.productConfigurationVersion ?? null,
+        configurationSelections: configSelections,
+        configurationSnapshot: options.productConfigurationId
+          ? {
+              productConfigurationId: options.productConfigurationId,
+              name: options.configurationName || null,
+              selections: configSelections || {}
+            }
+          : null,
         ...priceMeta
       };
       if (isPurchaseOrderLines.value && Number.isFinite(Number(hit?.purchase_price))) {
@@ -4221,7 +4263,9 @@ async function addLineFromHit(block, hit, options = {}) {
         vendorItemName: isPurchaseOrderLines.value ? hit?.vendorItemName : undefined,
         minOrderQty: isPurchaseOrderLines.value
           ? hit?.min_order_qty ?? hit?.minOrderQty
-          : undefined
+          : undefined,
+        productConfigurationId: options.productConfigurationId || undefined,
+        configurationSelections: options.configurationSelections || undefined
       })
     };
     if (linesAdapter.value.kind === 'quote') {
@@ -4253,6 +4297,89 @@ async function addLineFromHit(block, hit, options = {}) {
   }
 }
 
+function unwrapConfigList(res) {
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res?.data?.data)) return res.data.data;
+  if (Array.isArray(res)) return res;
+  return [];
+}
+
+async function loadActiveConfigsForHit(hit) {
+  if (!cpqEntitled.value || isPurchaseOrderLines.value) return [];
+  const kind = linesAdapter.value?.kind;
+  if (kind !== 'quote' && kind !== 'salesOrder') return [];
+  const groupId = hit?.itemGroupId || hit?.item_group_id;
+  if (!groupId) return [];
+  try {
+    const res = await apiClient.get('/product-configurations', {
+      params: { itemGroupId: String(groupId), status: 'ACTIVE' }
+    });
+    return unwrapConfigList(res).filter((c) => !c.status || c.status === 'ACTIVE');
+  } catch {
+    return [];
+  }
+}
+
+function openProductConfigSession({ hit, configs, block, options }) {
+  return new Promise((resolve) => {
+    productConfigSession.value = {
+      open: true,
+      hit,
+      configs,
+      loading: false,
+      block,
+      options: options || {},
+      resolve
+    };
+  });
+}
+
+function finishProductConfigSession(payload) {
+  const session = productConfigSession.value;
+  productConfigSession.value = null;
+  session?.resolve?.(payload);
+}
+
+function onProductConfigConfirm(payload) {
+  finishProductConfigSession({
+    action: 'confirm',
+    productConfigurationId: payload.productConfigurationId,
+    configurationSelections: payload.configurationSelections,
+    configurationName: payload.configuration?.name || null,
+    productConfigurationVersion: payload.configuration?.version ?? null
+  });
+}
+
+function onProductConfigSkip() {
+  finishProductConfigSession({ action: 'skip' });
+}
+
+function onProductConfigCancel() {
+  finishProductConfigSession({ action: 'cancel' });
+}
+
+/**
+ * Add a catalog hit; if CPQ configs exist for the item group, open guided drawer first.
+ */
+async function resolveAndAddLineFromHit(block, hit, options = {}) {
+  const configs = await loadActiveConfigsForHit(hit);
+  if (!configs.length) {
+    return addLineFromHit(block, hit, options);
+  }
+  const outcome = await openProductConfigSession({ hit, configs, block, options });
+  if (!outcome || outcome.action === 'cancel') return null;
+  if (outcome.action === 'skip') {
+    return addLineFromHit(block, hit, options);
+  }
+  return addLineFromHit(block, hit, {
+    ...options,
+    productConfigurationId: outcome.productConfigurationId,
+    configurationSelections: outcome.configurationSelections,
+    configurationName: outcome.configurationName,
+    productConfigurationVersion: outcome.productConfigurationVersion
+  });
+}
+
 async function commitDraftFromHit(block, hit) {
   const key = block?.key;
   const state = draftRow(block);
@@ -4260,7 +4387,7 @@ async function commitDraftFromHit(block, hit) {
   state.committing = true;
   state.searchOpen = false;
   try {
-    const result = await addLineFromHit(block, hit);
+    const result = await resolveAndAddLineFromHit(block, hit);
     if (result) {
       if (result.line) {
         emit('updated', {
@@ -4380,7 +4507,7 @@ async function confirmVariantPickerSelection() {
     let workingLines = Array.isArray(props.record?.lines) ? [...props.record.lines] : [];
     let lastTotals = null;
     for (const { hit, gate } of prepared) {
-      const result = await addLineFromHit(block, hit, {
+      const result = await resolveAndAddLineFromHit(block, hit, {
         gate,
         baseLines: workingLines
       });
@@ -5069,6 +5196,15 @@ function pricingSourceLabel(source) {
   return s;
 }
 
+function configurationSummary(line) {
+  const selections = line?.configurationSelections || line?.configurationSnapshot?.selections;
+  if (!selections || typeof selections !== 'object') return '';
+  const parts = Object.entries(selections)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && !v.length))
+    .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`);
+  return parts.join(' · ');
+}
+
 function priceProvenanceTitle(line) {
   const book = line?.priceBookNameSnapshot || '—';
   const source = pricingSourceLabel(line?.pricingSourceSnapshot);
@@ -5148,21 +5284,55 @@ defineExpose({
 }
 
 .quote-lines-col-unit-price {
-  width: 7.5rem;
+  width: 8.5rem;
+  min-width: 8.5rem;
+  max-width: 8.5rem;
+  box-sizing: border-box;
+  /* Absolute meta sits below the 2rem control; don't clip it. */
+  overflow: visible;
+}
+
+/* Extra bottom padding on the cell (not the control box) so row height fits meta. */
+.quote-lines-col-unit-price--with-meta {
+  padding-bottom: 1.35rem;
+}
+
+/*
+ * In-flow height = 2rem only so align-top lines up QTY / price / discount.
+ * Last/catalog hint is absolute under that control.
+ */
+.quote-lines-unit-price-cell {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 7.5rem;
+  height: 2rem;
+  margin-left: auto;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.quote-lines-unit-price-control {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 2rem;
+  min-width: 0;
 }
 
 .quote-lines-unit-price-group {
   display: inline-flex;
   align-items: stretch;
   width: 100%;
-  max-width: 7rem;
+  max-width: 7.5rem;
   height: 2rem;
+  flex-shrink: 0;
   overflow: hidden;
   border-radius: 0.375rem;
   border: 1px solid rgb(209 213 219);
   background-color: rgb(255 255 255);
   box-sizing: border-box;
-  margin-left: auto;
 }
 
 .quote-lines-unit-price-group:focus-within {
@@ -5229,6 +5399,52 @@ defineExpose({
 .quote-lines-unit-price-value:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* PO catalog / last-purchase — outside the aligned control height. */
+.quote-lines-unit-price-meta {
+  position: absolute;
+  top: calc(100% + 0.15rem);
+  right: 0;
+  display: block;
+  width: 100%;
+  max-width: 7.5rem;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  line-height: 1.25;
+  text-align: right;
+  color: rgb(156 163 175);
+  pointer-events: none;
+}
+
+.dark .quote-lines-unit-price-meta {
+  color: rgb(107 114 128);
+}
+
+.quote-lines-unit-price-meta--action {
+  font-weight: 500;
+  color: rgb(180 83 9);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.quote-lines-unit-price-meta--action:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.quote-lines-unit-price-meta--action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark .quote-lines-unit-price-meta--action {
+  color: rgb(252 211 77);
 }
 
 .quote-lines-col-discount {

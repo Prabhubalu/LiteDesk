@@ -183,14 +183,11 @@ const menuItems = computed(() => {
     {
       key: 'duplicate',
       label: t('records.drDuplicate'),
-      handler: () =>
-        runAction('duplicate', {
-          successKey: 'records.drDuplicated',
-          onSuccess: (data) => {
-            const nid = data?._id || data?.id;
-            if (nid) router.push(`/inventory/delivery-returns/${nid}`);
-          }
-        })
+      handler: () => {
+        const id = props.record?._id || props.record?.id;
+        if (!id) return;
+        router.push(`/inventory/delivery-returns/new?duplicateFrom=${encodeURIComponent(id)}`);
+      }
     }
   ];
   if (canCancelDeliveryReturn(status.value)) {

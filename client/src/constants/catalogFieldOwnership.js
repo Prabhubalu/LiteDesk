@@ -1,6 +1,8 @@
-/** Client mirror — variant fields are edited on ItemVariant in catalog UI. */
+/**
+ * Client mirror — variant fields are edited on ItemVariant in catalog UI.
+ * `item_code` is the parent system Item Code (Module Numbering), not a variant field.
+ */
 export const VARIANT_FIELD_KEYS = [
-  'item_code',
   'variant_code',
   'unit_of_measure',
   'selling_price',
