@@ -827,6 +827,76 @@ const routes = [
     redirect: '/live-chat/sessions'
   },
   {
+    path: '/telephony',
+    redirect: '/telephony/calls'
+  },
+  {
+    path: '/telephony/calls',
+    name: 'telephony-calls',
+    component: () => import('@/views/telephony/TelephonyCallsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/calls/:callId',
+    name: 'telephony-call-detail',
+    component: () => import('@/views/telephony/TelephonyCallDetailView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/phone-numbers',
+    name: 'telephony-phone-numbers',
+    component: () => import('@/views/telephony/TelephonyPhoneNumbersView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/settings',
+    name: 'telephony-settings',
+    component: () => import('@/views/telephony/TelephonyProviderSettingsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/queues',
+    name: 'telephony-queues',
+    component: () => import('@/views/telephony/TelephonyQueuesView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/agents',
+    name: 'telephony-agents',
+    component: () => import('@/views/telephony/TelephonyAgentsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/ivr',
+    name: 'telephony-ivr',
+    component: () => import('@/views/telephony/TelephonyIvrView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/ivr/:flowId',
+    name: 'telephony-ivr-builder',
+    component: () => import('@/views/telephony/TelephonyIvrBuilderView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/campaigns',
+    name: 'telephony-campaigns',
+    component: () => import('@/views/telephony/TelephonyCampaignsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/analytics',
+    name: 'telephony-analytics',
+    component: () => import('@/views/telephony/TelephonyAnalyticsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/telephony/recordings',
+    name: 'telephony-recordings',
+    component: () => import('@/views/telephony/TelephonyRecordingsView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/announcements',
     name: 'announcements',
     component: () => import('@/views/announcements/AnnouncementsListView.vue'),

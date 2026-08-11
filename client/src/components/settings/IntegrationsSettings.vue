@@ -604,6 +604,8 @@
             </div>
         </div>
 
+        <PersonalSmtpSendersCard v-if="activeDetailTab === 'setup'" />
+
         <div v-else-if="activeDetailTab === 'credits'" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
           <EmailPolicyCreditsPanel :can-manage="!communicationPolicyLocked" />
         </div>
@@ -1195,6 +1197,7 @@
 import SettingsScrollPanel from '@/components/settings/SettingsScrollPanel.vue';
 import SettingsSaveBar from '@/components/settings/SettingsSaveBar.vue';
 import EmailPolicyCreditsPanel from '@/components/settings/EmailPolicyCreditsPanel.vue';
+import PersonalSmtpSendersCard from '@/components/settings/PersonalSmtpSendersCard.vue';
 import { computed, ref, onBeforeUnmount, watch, nextTick, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';

@@ -20,6 +20,14 @@ const ADDON_NAVIGATION_REGISTRY = {
     permission: 'announcements.view',
     order: 20,
   },
+  [ADDON_KEYS.TELEPHONY]: {
+    surfaceId: 'telephony',
+    route: '/telephony/calls',
+    label: 'Telephony',
+    icon: 'phone',
+    permission: 'telephony.view',
+    order: 15,
+  },
 };
 
 module.exports = {

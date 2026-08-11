@@ -52,6 +52,8 @@ async function resolveKey(key, context) {
       return resolveCaseNotifyTargets(context);
     case 'LIVE_CHAT_NOTIFY_TARGETS':
       return resolveLiveChatNotifyTargets(context);
+    case 'TELEPHONY_NOTIFY_TARGETS':
+      return resolveTelephonyNotifyTargets(context);
     case 'INBOX_SNOOZE_USER':
       return resolveInboxSnoozeWake(context);
     case 'PLAYBOOK_ALERT_RECIPIENTS':
@@ -397,6 +399,78 @@ async function resolveLiveChatNotifyTargets({ entity, organizationId, eventType 
       { isOwner: true },
       { role: { $in: ['owner', 'admin'] } },
       { 'permissions.liveChat.view': true },
+      ...(roleIds.length ? [{ roleId: { $in: roleIds } }] : []),
+    ],
+    $and: [
+      {
+        $or: [{ status: 'active' }, { status: { $exists: false } }, { status: null }],
+      },
+    ],
+  })
+    .select('_id')
+    .limit(40)
+    .lean();
+
+  if (!agents.length) {
+    return resolveOrgAdmins({ organizationId }).then((admins) =>
+      admins.map((admin) => ({ ...admin, title: copy.title, body: copy.body })),
+    );
+  }
+
+  return agents.map((user) => ({
+    userId: user._id,
+    title: copy.title,
+    body: copy.body,
+  }));
+}
+
+function telephonyNotificationCopy(eventType, entity) {
+  const from = entity?.from || 'Unknown';
+  if (eventType === domainEvents.TELEPHONY_INCOMING_CALL) {
+    return {
+      title: 'Incoming call',
+      body: `Incoming call from ${from}`,
+    };
+  }
+  if (eventType === domainEvents.TELEPHONY_CALL_MISSED) {
+    return {
+      title: 'Missed call',
+      body: `Missed call from ${from}`,
+    };
+  }
+  if (eventType === domainEvents.TELEPHONY_RECORDING_READY) {
+    return {
+      title: 'Recording ready',
+      body: entity?.title || 'Call recording is ready',
+    };
+  }
+  return {
+    title: 'Telephony update',
+    body: entity?.title || 'Telephony event',
+  };
+}
+
+async function resolveTelephonyNotifyTargets({ entity, organizationId, eventType }) {
+  if (!organizationId) return [];
+
+  const copy = telephonyNotificationCopy(eventType, entity);
+
+  const telephonyRoles = await Role.find({
+    organizationId,
+    'permissions.telephony.view': true,
+  })
+    .select('_id')
+    .lean();
+
+  const roleIds = telephonyRoles.map((row) => row._id);
+
+  const agents = await User.find({
+    organizationId,
+    $or: [
+      { isOwner: true },
+      { role: { $in: ['owner', 'admin'] } },
+      { 'permissions.telephony.view': true },
+      { 'permissions.telephony.call': true },
       ...(roleIds.length ? [{ roleId: { $in: roleIds } }] : []),
     ],
     $and: [

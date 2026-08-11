@@ -1,5 +1,5 @@
 <template>
-  <div ref="feedRef" class="mx-auto max-w-3xl flex-1 min-h-0 overflow-y-auto px-4 py-4 sm:px-6 space-y-4">
+  <div ref="feedRef" class="flex-1 min-h-0 overflow-y-auto px-4 py-4 sm:px-6 space-y-4">
     <div v-if="!activities.length" class="flex flex-col items-center justify-center py-16 text-center">
       <ChatBubbleLeftRightIcon class="h-12 w-12 text-gray-300 dark:text-gray-600" />
       <p class="mt-3 text-sm font-medium text-gray-900 dark:text-white">{{ emptyTitle }}</p>
@@ -19,7 +19,7 @@
         </p>
       </div>
 
-      <div v-else-if="isInternalComment(activity)" class="py-1">
+      <div v-else-if="isInternalComment(activity)" class="w-full py-1">
         <CaseInternalCommentTimelineCard :activity="activity" :created-at="activity.createdAt" />
       </div>
 
@@ -52,12 +52,6 @@
             >
               <component :is="channelIcon(activity.channel || caseRecord?.channel)" class="h-3 w-3" />
               {{ t('cases.recordViaChannel', { channel: formatChannel(activity.channel || caseRecord?.channel) }) }}
-            </span>
-            <span
-              v-if="activity.internal"
-              class="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
-            >
-              {{ t('cases.recordInternalComment') }}
             </span>
           </div>
           <div

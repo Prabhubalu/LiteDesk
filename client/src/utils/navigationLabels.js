@@ -11,6 +11,7 @@ export const SURFACE_LABEL_KEYS = {
   astra: 'navigation.astra',
   'astra-studio': 'navigation.astraStudio',
   'live-chat': 'navigation.liveChat',
+  telephony: 'navigation.telephony',
   announcements: 'navigation.announcements',
   approvals: 'navigation.approvals',
   attention: 'navigation.attention',
@@ -181,6 +182,15 @@ export const ROUTE_TITLE_KEYS = {
   '/live-chat/sessions': 'navigation.liveChat',
   '/live-chat/closed': 'liveChat.navClosed',
   '/live-chat/reports': 'liveChat.navReports',
+  '/telephony/calls': 'navigation.telephony',
+  '/telephony/phone-numbers': 'telephony.navPhoneNumbers',
+  '/telephony/queues': 'telephony.navQueues',
+  '/telephony/agents': 'telephony.navAgents',
+  '/telephony/ivr': 'telephony.navIvr',
+  '/telephony/campaigns': 'telephony.navCampaigns',
+  '/telephony/analytics': 'telephony.navAnalytics',
+  '/telephony/recordings': 'telephony.navRecordings',
+  '/telephony/settings': 'telephony.navSettings',
   '/announcements': 'navigation.announcements',
   '/announcements/analytics': 'navigation.announcements',
   '/approvals': 'navigation.approvals',
@@ -430,6 +440,10 @@ export function getTabTitleMetaForPath(path, params = {}) {
 
   if (pathOnly.startsWith('/live-chat/')) {
     return { titleKey: 'navigation.liveChat' };
+  }
+
+  if (pathOnly.startsWith('/telephony/')) {
+    return { titleKey: 'navigation.telephony' };
   }
 
   if (pathOnly === '/analytics' || pathOnly === '/analytics/') {

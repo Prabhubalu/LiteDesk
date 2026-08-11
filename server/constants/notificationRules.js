@@ -293,6 +293,27 @@ module.exports = {
     defaultChannels: ['IN_APP'],
     channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
   },
+  [domainEvents.TELEPHONY_INCOMING_CALL]: {
+    appKey: 'PLATFORM',
+    recipients: ['TELEPHONY_NOTIFY_TARGETS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.TELEPHONY_CALL_MISSED]: {
+    appKey: 'PLATFORM',
+    recipients: ['TELEPHONY_NOTIFY_TARGETS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.TELEPHONY_RECORDING_READY]: {
+    appKey: 'PLATFORM',
+    recipients: ['TELEPHONY_NOTIFY_TARGETS'],
+    priority: 'NORMAL',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: false, whatsapp: false, sms: false }
+  },
   [domainEvents.CASE_ASSIGNED]: {
     appKey: 'HELPDESK',
     recipients: ['CASE_NOTIFY_TARGETS'],

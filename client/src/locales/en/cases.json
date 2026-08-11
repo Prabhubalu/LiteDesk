@@ -715,6 +715,34 @@
     "message": "SLA paused",
     "description": "SLA paused badge"
   },
+  "recordSlaSection": {
+    "message": "SLA",
+    "description": "Case details sidebar SLA section heading"
+  },
+  "recordSlaEmpty": {
+    "message": "No SLA data for this case.",
+    "description": "Empty state when case has no SLA cycle or alerts"
+  },
+  "recordSlaRunning": {
+    "message": "Running",
+    "description": "SLA cycle status when clock is active"
+  },
+  "recordSlaStateBreached": {
+    "message": "Breached",
+    "description": "Short SLA metric state badge"
+  },
+  "recordSlaStateAtRisk": {
+    "message": "At risk",
+    "description": "Short SLA metric state badge when nearing breach"
+  },
+  "recordSlaStateOnTrack": {
+    "message": "On track",
+    "description": "Short SLA metric state badge when within budget"
+  },
+  "recordSlaProgressPercent": {
+    "message": "{percent}% of budget used",
+    "description": "SLA progress bar caption"
+  },
   "recordEventCreated": {
     "message": "Case created",
     "description": "Timeline system event"

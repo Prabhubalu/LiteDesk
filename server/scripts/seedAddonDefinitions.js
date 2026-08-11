@@ -105,6 +105,25 @@ const ANNOUNCEMENTS_ADDON = {
   },
 };
 
+const TELEPHONY_ADDON = {
+  addonKey: ADDON_KEYS.TELEPHONY,
+  name: 'Telephony',
+  description:
+    'Provider-agnostic voice calling with softphone, call logging, recordings, queues, IVR, campaigns, and AI insights.',
+  icon: 'phone',
+  category: 'COMMUNICATION',
+  enabled: true,
+  order: 15,
+  optionalApps: ['SALES', 'HELPDESK', 'PROJECTS', 'PORTAL'],
+  marketplace: {
+    category: 'Communication',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'Make and receive calls from the CRM with Twilio and other providers.',
+    docsUrl: '',
+  },
+};
+
 const AI_ADDON = {
   addonKey: ADDON_KEYS.AI,
   name: 'Arivu AI',
@@ -309,6 +328,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const defResultArticles = await upsertAddonDefinition(ARTICLES_ADDON);
   const defResultBlog = await upsertAddonDefinition(BLOG_ADDON);
   const defResultAnnouncements = await upsertAddonDefinition(ANNOUNCEMENTS_ADDON);
+  const defResultTelephony = await upsertAddonDefinition(TELEPHONY_ADDON);
   const defResultAi = await upsertAddonDefinition(AI_ADDON);
   const defResultAiCredits = await upsertAddonDefinition(AI_CREDITS_ADDON);
   const defResultTally = await upsertAddonDefinition(TALLY_ADDON);
@@ -323,6 +343,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const pricingResultArticles = await upsertAddonPricing(ADDON_KEYS.ARTICLES);
   const pricingResultBlog = await upsertAddonPricing(ADDON_KEYS.BLOG);
   const pricingResultAnnouncements = await upsertAddonPricing(ADDON_KEYS.ANNOUNCEMENTS);
+  const pricingResultTelephony = await upsertAddonPricing(ADDON_KEYS.TELEPHONY);
   const pricingResultAi = await upsertAddonPricing(ADDON_KEYS.AI);
   const pricingResultAiCredits = await upsertAddonPricing(ADDON_KEYS.AI_CREDITS);
   const pricingResultTally = await upsertAddonPricing(ADDON_KEYS.TALLY);
@@ -339,6 +360,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
     defResultArticles,
     defResultBlog,
     defResultAnnouncements,
+    defResultTelephony,
     defResultAi,
     defResultAiCredits,
     defResultTally,
@@ -349,6 +371,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
     pricingResultArticles,
     pricingResultBlog,
     pricingResultAnnouncements,
+    pricingResultTelephony,
     pricingResultAi,
     pricingResultAiCredits,
     pricingResultTally,
@@ -364,6 +387,7 @@ async function main() {
   console.log(`AddonDefinition articles: ${result.defResultArticles}`);
   console.log(`AddonDefinition blog: ${result.defResultBlog}`);
   console.log(`AddonDefinition announcements: ${result.defResultAnnouncements}`);
+  console.log(`AddonDefinition telephony: ${result.defResultTelephony}`);
   console.log(`AddonDefinition ai: ${result.defResultAi}`);
   console.log(`AddonDefinition ai_credits: ${result.defResultAiCredits}`);
   console.log(`AddonDefinition tally: ${result.defResultTally}`);
@@ -374,6 +398,7 @@ async function main() {
   console.log(`AddonPricingDefinition articles: ${result.pricingResultArticles}`);
   console.log(`AddonPricingDefinition blog: ${result.pricingResultBlog}`);
   console.log(`AddonPricingDefinition announcements: ${result.pricingResultAnnouncements}`);
+  console.log(`AddonPricingDefinition telephony: ${result.pricingResultTelephony}`);
   console.log(`AddonPricingDefinition ai: ${result.pricingResultAi}`);
   console.log(`AddonPricingDefinition ai_credits: ${result.pricingResultAiCredits}`);
   console.log(`AddonPricingDefinition tally: ${result.pricingResultTally}`);
@@ -389,6 +414,7 @@ module.exports = {
   ARTICLES_ADDON,
   BLOG_ADDON,
   ANNOUNCEMENTS_ADDON,
+  TELEPHONY_ADDON,
   AI_ADDON,
   AI_CREDITS_ADDON,
   TALLY_ADDON,

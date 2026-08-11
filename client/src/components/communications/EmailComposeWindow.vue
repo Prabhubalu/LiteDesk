@@ -81,23 +81,127 @@
             class="flex min-h-0 flex-1 flex-col"
             @submit.prevent="handleSend"
           >
-            <div class="min-h-0 flex-1 overflow-y-auto arivu-scrollbar">
-              <div
-                v-if="error"
-                class="mx-3 mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
-              >
-                {{ error }}
+            <div
+              v-if="error"
+              class="mx-3 mt-2 shrink-0 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+            >
+              {{ error }}
+            </div>
+
+            <!-- From / To / Subject stay pinned -->
+            <div class="shrink-0">
+              <!-- From -->
+              <div class="border-b border-gray-200 px-3 py-1.5 dark:border-gray-700">
+                <div class="flex items-center gap-2">
+                  <span class="w-14 shrink-0 text-sm text-gray-500 dark:text-gray-400">
+                    {{ t('settings.helpdeskAnalyticsFrom') }}
+                  </span>
+                  <Listbox
+                    v-if="hasFromPicker"
+                    as="div"
+                    class="relative min-w-0 flex-1"
+                    :model-value="selectedFromId"
+                    :disabled="composePreviewLoading"
+                    @update:model-value="selectFromIdentity"
+                  >
+                    <ListboxButton
+                      class="group flex w-full items-center gap-1 rounded py-0.5 text-left text-sm text-gray-900 outline-none hover:bg-gray-50 focus:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400 disabled:opacity-60 dark:text-white dark:hover:bg-gray-800/60"
+                    >
+                      <span class="min-w-0 flex-1 truncate">{{ selectedFromLabel }}</span>
+                      <ChevronUpDownIcon
+                        class="size-4 shrink-0 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                        aria-hidden="true"
+                      />
+                    </ListboxButton>
+                    <Transition
+                      leave-active-class="transition duration-100 ease-in"
+                      leave-from-class="opacity-100"
+                      leave-to-class="opacity-0"
+                    >
+                      <ListboxOptions
+                        class="absolute left-0 right-0 z-30 mt-1 max-h-56 overflow-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black/10 focus:outline-none dark:bg-gray-800 dark:ring-white/10"
+                      >
+                        <ListboxOption
+                          v-for="idty in sendIdentities"
+                          :key="idty.id"
+                          :value="idty.id"
+                          as="template"
+                          v-slot="{ active, selected }"
+                        >
+                          <li
+                            class="relative cursor-pointer select-none py-2 pl-3 pr-9"
+                            :class="active
+                              ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-500/20 dark:text-indigo-100'
+                              : 'text-gray-900 dark:text-gray-100'"
+                          >
+                            <span
+                              class="block truncate"
+                              :class="selected ? 'font-semibold' : 'font-normal'"
+                            >
+                              {{ identityOptionLabel(idty) }}
+                            </span>
+                            <span
+                              v-if="selected"
+                              class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-indigo-600 dark:text-indigo-300"
+                            >
+                              <CheckIcon class="size-4" aria-hidden="true" />
+                            </span>
+                          </li>
+                        </ListboxOption>
+                      </ListboxOptions>
+                    </Transition>
+                  </Listbox>
+                  <span
+                    v-else
+                    class="min-w-0 flex-1 truncate py-0.5 text-sm text-gray-700 dark:text-gray-300"
+                  >
+                    {{ fromDisplayLine || (composePreviewLoading ? '…' : '—') }}
+                  </span>
+                </div>
+                <div
+                  v-if="needsSmtpSetup"
+                  class="mt-1.5 flex flex-wrap items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 dark:border-amber-800 dark:bg-amber-950/40"
+                >
+                  <p class="flex-1 text-[11px] text-amber-900 dark:text-amber-100">
+                    {{ t('inbox.emailComposeNeedsSmtpCta') }}
+                  </p>
+                  <button
+                    type="button"
+                    class="shrink-0 rounded-md bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700"
+                    @click="openSmtpSetupFromCompose"
+                  >
+                    {{ t('inbox.emailComposeConnectEmail') }}
+                  </button>
+                </div>
+                <div
+                  v-else-if="needsOrgDomain"
+                  class="mt-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100"
+                >
+                  {{ t('inbox.emailComposeNeedsOrgCta') }}
+                  <RouterLink
+                    to="/settings?tab=integrations"
+                    class="ml-1 font-semibold text-emerald-700 underline dark:text-emerald-400"
+                  >
+                    {{ t('inbox.emailComposeOpenIntegrations') }}
+                  </RouterLink>
+                </div>
+                <p
+                  v-else-if="!fromDisplayLine && sendingMailboxHint"
+                  class="mt-1 text-[11px] text-amber-700 dark:text-amber-300"
+                >
+                  {{ sendingMailboxHint }}
+                </p>
               </div>
 
-              <!-- To row -->
+              <!-- To -->
               <div
-                class="border-b px-3 py-2 dark:border-gray-700"
+                class="border-b px-3 py-1.5 dark:border-gray-700"
                 :class="recipientFieldHint
                   ? 'border-red-300 bg-red-50/40 dark:border-red-900/50 dark:bg-red-950/20'
                   : 'border-gray-200'"
               >
                 <div class="flex items-center gap-2">
-                  <label class="shrink-0 text-sm text-gray-500 dark:text-gray-400">To</label>
+                  <label class="w-14 shrink-0 text-sm text-gray-500 dark:text-gray-400">To</label>
                   <input
                     v-model="form.to"
                     type="text"
@@ -108,7 +212,7 @@
                     :class="recipientFieldHint
                       ? 'text-red-700 dark:text-red-300'
                       : 'text-gray-900 dark:text-white'"
-                    :placeholder="t('inbox.emailComposeDrawerRecipientExampleComCommaSeparatedFor')"
+                    :placeholder="t('inbox.emailComposeRecipientsPlaceholder')"
                     :aria-invalid="Boolean(recipientFieldHint)"
                     :aria-describedby="recipientFieldHint ? 'compose-to-hint' : undefined"
                     @blur="markRecipientHint"
@@ -142,8 +246,8 @@
                 </p>
               </div>
 
-              <div v-if="showCc" class="flex items-center gap-2 border-b border-gray-200 px-3 py-2 dark:border-gray-700">
-                <label class="shrink-0 text-sm text-gray-500 dark:text-gray-400">Cc</label>
+              <div v-if="showCc" class="flex items-center gap-2 border-b border-gray-200 px-3 py-1.5 dark:border-gray-700">
+                <label class="w-14 shrink-0 text-sm text-gray-500 dark:text-gray-400">Cc</label>
                 <input
                   v-model="form.cc"
                   type="text"
@@ -152,8 +256,8 @@
                 />
               </div>
 
-              <div v-if="showBcc" class="flex items-center gap-2 border-b border-gray-200 px-3 py-2 dark:border-gray-700">
-                <label class="shrink-0 text-sm text-gray-500 dark:text-gray-400">Bcc</label>
+              <div v-if="showBcc" class="flex items-center gap-2 border-b border-gray-200 px-3 py-1.5 dark:border-gray-700">
+                <label class="w-14 shrink-0 text-sm text-gray-500 dark:text-gray-400">Bcc</label>
                 <input
                   v-model="form.bcc"
                   type="text"
@@ -163,7 +267,7 @@
               </div>
 
               <!-- Subject -->
-              <div class="flex items-center gap-2 border-b border-gray-200 px-3 py-2 dark:border-gray-700">
+              <div class="flex items-center gap-2 border-b border-gray-200 px-3 py-1.5 dark:border-gray-700">
                 <input
                   v-model="form.subject"
                   type="text"
@@ -172,73 +276,38 @@
                   :placeholder="t('inbox.emailComposeDrawerSubject')"
                 />
               </div>
+            </div>
 
-              <!-- Body -->
-              <div class="px-1 py-2">
+            <!-- Body fills remaining height; scrolls inside editor -->
+            <div
+              class="relative min-h-0 flex-1 cursor-text"
+              @mousedown="onComposeBodyMouseDown"
+            >
+              <div class="absolute inset-0 flex flex-col px-1 pt-1 pb-0">
                 <TaskDescriptionEditor
+                  ref="bodyEditorRef"
                   v-model="form.body"
                   placeholder="Write your message..."
                   :class="editorClasses"
                 />
-              </div>
-
-              <!-- Attachments -->
-              <ul v-if="attachments.length" class="space-y-1 px-3 pb-2">
-                <li
-                  v-for="(att, idx) in attachments"
-                  :key="idx"
-                  class="flex items-center justify-between gap-2 rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                >
-                  <span class="truncate">{{ att.fileName }}</span>
-                  <button
-                    type="button"
-                    class="shrink-0 text-gray-500 hover:text-red-600"
-                    :title="t('settings.assignRulesRemoveTitle')"
-                    @click="removeAttachment(idx)"
+                <ul v-if="attachments.length" class="mt-1 shrink-0 space-y-1 px-2 pb-1">
+                  <li
+                    v-for="(att, idx) in attachments"
+                    :key="idx"
+                    class="flex items-center justify-between gap-2 rounded bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                   >
-                    <XMarkIcon class="size-3.5" />
-                  </button>
-                </li>
-              </ul>
-
-              <!-- From / Reply-To (collapsed details) -->
-              <details class="mx-3 mb-2 text-xs text-gray-500 dark:text-gray-400">
-                <summary class="cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-300">
-                  {{ t('inbox.emailComposeWindowSendingDetails') }}
-                </summary>
-                <div class="mt-2 space-y-2 rounded-md bg-gray-50 p-2 dark:bg-gray-800/60">
-                  <div>
-                    <label class="font-medium text-gray-600 dark:text-gray-300" :for="'compose-from-' + _uid">
-                      {{ t('settings.helpdeskAnalyticsFrom') }}:
-                    </label>
-                    <select
-                      v-if="hasFromPicker"
-                      :id="'compose-from-' + _uid"
-                      class="mt-1 block w-full rounded border border-gray-200 bg-white px-2 py-1.5 font-mono text-[12px] text-gray-800 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200"
-                      :value="selectedFromId"
-                      @change="selectFromIdentity($event.target.value)"
+                    <span class="truncate">{{ att.fileName }}</span>
+                    <button
+                      type="button"
+                      class="shrink-0 text-gray-500 hover:text-red-600"
+                      :title="t('settings.assignRulesRemoveTitle')"
+                      @click="removeAttachment(idx)"
                     >
-                      <option
-                        v-for="idty in sendIdentities"
-                        :key="idty.id"
-                        :value="idty.id"
-                      >
-                        {{ identityOptionLabel(idty) }}
-                      </option>
-                    </select>
-                    <span v-else class="ml-1 font-mono">{{ fromDisplayLine || (composePreviewLoading ? '…' : '—') }}</span>
-                    <p class="mt-0.5 text-[11px]">{{ fromSourceHint }}</p>
-                  </div>
-                  <div>
-                    <span class="font-medium text-gray-600 dark:text-gray-300">{{ t('settings.integrationsReplyTo') }}:</span>
-                    <span class="ml-1 font-mono">{{ replyToDisplay || (composePreviewLoading ? '…' : '—') }}</span>
-                  </div>
-                  <p v-if="replyToNote" class="text-amber-700 dark:text-amber-300">{{ replyToNote }}</p>
-                  <p v-if="!fromDisplayLine && sendingMailboxHint" class="text-amber-700 dark:text-amber-300">
-                    {{ sendingMailboxHint }}
-                  </p>
-                </div>
-              </details>
+                      <XMarkIcon class="size-3.5" />
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <!-- Footer toolbar -->
@@ -336,10 +405,13 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
 import {
   XMarkIcon,
   MinusIcon,
   ChevronUpIcon,
+  ChevronUpDownIcon,
+  CheckIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
   PaperClipIcon,
@@ -348,6 +420,8 @@ import {
 import TaskDescriptionEditor from '@/components/record-page/TaskDescriptionEditor.vue';
 import EmailScheduleSendPopover from '@/components/communications/EmailScheduleSendPopover.vue';
 import { useEmailComposeForm } from '@/composables/useEmailComposeForm';
+import { useSmtpSetupWizard } from '@/composables/useSmtpSetupWizard';
+import { RouterLink } from 'vue-router';
 
 const props = defineProps({
   isOpen: { type: Boolean, default: false },
@@ -365,10 +439,23 @@ const props = defineProps({
 const emit = defineEmits(['close', 'sent', 'submit']);
 
 const { t } = useI18n();
-const _uid = `w${Math.random().toString(36).slice(2, 9)}`;
+const { openSmtpSetupWizard, smtpWizardOpen } = useSmtpSetupWizard();
 
 const windowState = ref('normal'); // 'normal' | 'minimized' | 'maximized'
 const composeRootRef = ref(null);
+const bodyEditorRef = ref(null);
+
+function onComposeBodyMouseDown(event) {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  if (target.closest('button, input, textarea, select, a, label, [data-tippy-root], .tippy-box')) {
+    return;
+  }
+  // Let ProseMirror place the caret when clicking existing content
+  if (target.closest('.ProseMirror')) return;
+  event.preventDefault();
+  bodyEditorRef.value?.focus?.();
+}
 
 const {
   form,
@@ -384,24 +471,55 @@ const {
   setReminderEnabled,
   onReminderDaysInput,
   fromDisplayLine,
-  fromSourceHint,
+  needsSmtpSetup,
+  needsOrgDomain,
   sendIdentities,
   selectedFromId,
   hasFromPicker,
   identityOptionLabel,
   selectFromIdentity,
-  replyToDisplay,
-  replyToNote,
   composePreviewLoading,
   recipientFieldHint,
   markRecipientHint,
   canSend,
+  loadComposePreview,
   isReply,
   close,
   handleFileSelect,
   removeAttachment,
   handleSend
 } = useEmailComposeForm(props, emit);
+
+const selectedFromLabel = computed(() => {
+  const id = selectedFromId.value;
+  const match = sendIdentities.value.find((i) => i.id === id);
+  if (match) return identityOptionLabel(match);
+  return fromDisplayLine.value || (composePreviewLoading.value ? '…' : '—');
+});
+
+function openSmtpSetupFromCompose() {
+  const selected = sendIdentities.value.find((i) => i.id === selectedFromId.value);
+  // Keep compose out of the way while the wizard is the primary surface
+  if (windowState.value !== 'minimized') {
+    setWindowState('minimized');
+  }
+  openSmtpSetupWizard({
+    mailboxId: selected?.mailboxId || props.sendingMailbox?.id || '',
+    email: selected?.emailAddress || props.sendingMailbox?.emailAddress || '',
+    reason: 'compose',
+    onConnected: () => {
+      setWindowState('normal');
+      void loadComposePreview();
+    }
+  });
+}
+
+watch(smtpWizardOpen, (open, wasOpen) => {
+  // Restore compose when wizard is dismissed without connecting
+  if (wasOpen && !open && props.isOpen && windowState.value === 'minimized') {
+    setWindowState('normal');
+  }
+});
 
 const headerTitle = computed(() => {
   if (isReply.value) return t('inbox.emailComposeWindowReply');
@@ -431,18 +549,19 @@ function onScheduleSend(iso) {
   handleSend({ scheduledAt: iso });
 }
 
-const editorClasses = computed(() => {
-  const base = '[&_.tiptap]:px-2 [&_.ProseMirror]:text-sm';
-  if (windowState.value === 'maximized') {
-    return `${base} [&_.tiptap]:min-h-[min(58vh,640px)]`;
-  }
-  return `${base} [&_.tiptap]:min-h-[200px]`;
-});
+const editorClasses = computed(() => [
+  'compose-body-editor h-full min-h-0 flex-1 !flex !flex-col overflow-hidden',
+  '!rounded-none !border-0 !outline-none focus-within:!outline-none',
+  '[&_.tiptap]:!min-h-full [&_.tiptap]:h-full [&_.tiptap]:flex-1 [&_.tiptap]:overflow-y-auto',
+  '[&_.tiptap]:!px-2 [&_.tiptap]:!py-2 [&_.tiptap]:arivu-scrollbar',
+  '[&_.ProseMirror]:text-sm [&_.ProseMirror]:!min-h-full'
+].join(' '));
 
 const panelClasses = computed(() => {
   if (windowState.value === 'maximized') {
     return [
       'absolute z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+      'flex flex-col overflow-hidden',
       'w-[min(98vw,1600px)] h-[min(96dvh,calc(100dvh-1.5rem))] max-h-[calc(100dvh-1.5rem)] rounded-xl'
     ];
   }
@@ -454,7 +573,8 @@ const panelClasses = computed(() => {
   }
   return [
     'fixed z-10 right-4 bottom-0 sm:right-6',
-    'w-[min(100vw-2rem,500px)] h-[min(70vh,560px)] rounded-t-xl'
+    'flex flex-col overflow-hidden',
+    'w-[min(100vw-2rem,500px)] h-[min(70vh,560px)] max-h-[min(70vh,560px)] rounded-t-xl'
   ];
 });
 
@@ -479,6 +599,19 @@ function requestClose() {
 </script>
 
 <style scoped>
+.compose-body-editor :deep(.tiptap),
+.compose-body-editor :deep(.ProseMirror) {
+  min-height: 100% !important;
+  height: 100%;
+}
+
+.compose-body-editor.task-description-editor {
+  border: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
 .email-compose-window-enter-active > div:last-child,
 .email-compose-window-enter-active .pointer-events-auto.flex {
   transition: transform 0.25s ease-out, opacity 0.2s ease-out;

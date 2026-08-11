@@ -152,6 +152,7 @@ const isAstraRoute = computed(
     || String(route.path || '').startsWith('/astra')
 );
 const isLiveChatRoute = computed(() => String(route.path || '').startsWith('/live-chat/'));
+const isTelephonyRoute = computed(() => String(route.path || '').startsWith('/telephony'));
 const isAnnouncementsRoute = computed(() => String(route.path || '').startsWith('/announcements'));
 /** Only the Settings split-pane shell — not standalone /settings/* admin pages (processes, flows, notifications). */
 const isSettingsRoute = computed(() => route.name === 'settings');
@@ -176,6 +177,7 @@ const useViewportLock = computed(
   () => isInboxRoute.value
     || isAstraRoute.value
     || isLiveChatRoute.value
+    || isTelephonyRoute.value
     || isAnnouncementsRoute.value
     || isSettingsRoute.value
     || isProcessDesignerRoute.value

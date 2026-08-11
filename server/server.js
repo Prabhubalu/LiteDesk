@@ -260,6 +260,8 @@ const paymentLinkRoutes = require('./routes/paymentLinkRoutes');
 const paymentGatewayRoutes = require('./routes/paymentGatewayRoutes');
 const webformRoutes = require('./routes/webformRoutes');
 const liveChatRoutes = require('./routes/liveChatRoutes');
+const telephonyRoutes = require('./routes/telephonyRoutes');
+const telephonyWebhookRoutes = require('./routes/telephonyWebhookRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const marketingCampaignRoutes = require('./routes/marketingCampaignRoutes');
 const marketingAudienceRoutes = require('./routes/marketingAudienceRoutes');
@@ -450,6 +452,8 @@ app.use('/api/upload', uploadRoutes);
 // Inbox Routes (Cross-app attention surface)
 app.use('/api/inbox', inboxRoutes);
 app.use('/api/live-chat', liveChatRoutes);
+app.use('/api/telephony/webhooks', telephonyWebhookRoutes);
+app.use('/api/telephony', telephonyRoutes);
 app.use('/api/announcements', announcementRoutes);
 
 // Platform home snapshot (landing page)

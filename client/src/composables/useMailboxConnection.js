@@ -26,6 +26,10 @@ const personalMailbox = computed(
 
 const groupMailboxes = computed(() => mailboxes.value.filter((m) => m.kind === 'group'));
 
+const smtpSenderMailboxes = computed(() =>
+  mailboxes.value.filter((m) => m.kind === 'smtp_sender')
+);
+
 const hasConnectedGroupMailbox = computed(() =>
   groupMailboxes.value.some((m) => isMailboxConnectedForProvider(m, 'google'))
 );
@@ -188,6 +192,7 @@ export function useMailboxConnection() {
     loaded,
     personalMailbox,
     groupMailboxes,
+    smtpSenderMailboxes,
     hasConnectedInbox,
     hasConnectedPersonalInbox,
     hasUsableInboxAccess,

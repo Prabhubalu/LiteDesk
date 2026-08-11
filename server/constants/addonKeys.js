@@ -18,6 +18,8 @@ const ADDON_KEYS = {
   STOCKROOM: 'stockroom',
   /** Configure-price-quote: item groups, variants, pricing (requires Inventory app) */
   CPQ: 'cpq',
+  /** Voice calling, softphone, recordings, and telephony automation */
+  TELEPHONY: 'telephony',
   // Legacy capability keys (pre-unified AI). Still valid for entitlement alias checks.
   AI_ASSIST: 'ai_assist',
   AI_COMMERCIAL: 'ai_commercial',

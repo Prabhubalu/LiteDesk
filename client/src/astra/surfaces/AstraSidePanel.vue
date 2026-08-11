@@ -1156,7 +1156,7 @@ function onOpenFullCopilot() {
 
 function onOpenAssistantEvent(ev: Event) {
   const path = String(route.path || '');
-  if (path.startsWith('/live-chat') || path.startsWith('/portal')) return;
+  if (path.startsWith('/live-chat') || path.startsWith('/telephony') || path.startsWith('/portal')) return;
   if (!authStore.isAuthenticated || authStore.isExternalUser) return;
   if (showAstraIntro.value) return;
 
@@ -1235,7 +1235,7 @@ onMounted(() => {
   window.addEventListener('arivu:open-assistant', onOpenAssistantEvent);
   if (loadPanelOpen() && authStore.isAuthenticated && !authStore.isExternalUser && hasSeenAstraIntro()) {
     const path = String(route.path || '');
-    if (!path.startsWith('/live-chat') && !path.startsWith('/portal')) {
+    if (!path.startsWith('/live-chat') && !path.startsWith('/telephony') && !path.startsWith('/portal')) {
       panelOpen.value = true;
     }
   }

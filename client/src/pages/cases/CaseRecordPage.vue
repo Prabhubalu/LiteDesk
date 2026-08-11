@@ -139,6 +139,10 @@
             />
           </template>
 
+          <template #tab-sla>
+            <CaseSlaPanel :case-record="caseRecord" />
+          </template>
+
           <template #tab-contact>
             <CaseContactProfilePanel :case-record="caseRecord" :can-edit="canEditPeople" />
           </template>
@@ -181,28 +185,133 @@
       </div>
 
       <template v-if="caseRecord && !embed" #header>
-        <CaseRecordHeader
-            :case-record="caseRecord"
-            :allowed-status-transitions="allowedStatusTransitions"
-            :priorities="priorities"
-            :status-updating="statusUpdating"
-            :is-closed="isClosed"
-            :can-previous="!!neighbors.previousId"
-            :can-next="!!neighbors.nextId"
-            :can-delete="canDelete"
-            :can-edit="canEdit"
-            :can-email="!!contactEmail"
-            :presence-sessions="recordPresenceOthers"
-            @status-change="onStatusSelect"
-            @priority-change="updatePriority"
-            @edit-record="openEditDrawer"
-            @email="openEmailCompose"
-            @delete="showDeleteModal = true"
-            @copy-url="copyUrl"
-            @previous="goToPrevious"
-            @next="goToNext"
-            @typing="onTyping"
-          />
+        <RecordHeader
+          :show-navigation="true"
+          :show-back="true"
+          :can-previous="!!neighbors.previousId"
+          :can-next="!!neighbors.nextId"
+          :previous-label="t('actions.previous')"
+          :next-label="t('actions.next')"
+          @back="goBackToModuleList"
+          @previous="goToPrevious"
+          @next="goToNext"
+        >
+          <template #breadcrumbs>
+            <span class="flex min-w-0 items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <button
+                type="button"
+                class="shrink-0 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                :aria-label="t('records.genericBackTo', { singular: caseModuleLabel })"
+                :title="t('records.genericBackTo', { singular: caseModuleLabel })"
+                @click="goBackToModuleList"
+              >
+                {{ caseModuleLabel }}
+              </button>
+              <span class="h-1 w-1 shrink-0 rounded-full bg-gray-400 dark:bg-gray-500" />
+              <span class="truncate">{{ caseRecord.title || 'N/A' }}</span>
+              <span
+                v-if="caseRecord.caseId"
+                class="hidden shrink-0 font-mono text-xs text-gray-400 sm:inline dark:text-gray-500"
+              >
+                {{ caseRecord.caseId }}
+              </span>
+            </span>
+          </template>
+
+          <template #pageActions>
+            <RecordPresenceAvatars
+              v-if="recordPresenceOthers.length"
+              :sessions="recordPresenceOthers"
+            />
+            <CaseRecordWorkflowChips
+              :case-record="caseRecord"
+              :allowed-status-transitions="allowedStatusTransitions"
+              :priorities="priorities"
+              :status-updating="statusUpdating"
+              :is-closed="isClosed"
+              @status-change="onStatusSelect"
+              @priority-change="updatePriority"
+            />
+            <button
+              v-if="contactEmail"
+              type="button"
+              class="hidden rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 lg:inline-flex"
+              :aria-label="t('cases.recordHeaderEmail')"
+              :title="t('cases.recordHeaderEmail')"
+              @click="openEmailCompose"
+            >
+              <EnvelopeIcon class="h-5 w-5" />
+            </button>
+            <button
+              v-if="canEdit && !isClosed"
+              type="button"
+              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              :aria-label="t('actions.edit')"
+              :title="t('actions.edit')"
+              @click="openEditDrawer"
+            >
+              <PencilSquareIcon class="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              class="hidden rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300 lg:inline-flex"
+              :aria-label="t('records.genericCopyUrl')"
+              :title="t('records.genericCopyUrl')"
+              @click="copyUrl"
+            >
+              <ClipboardDocumentIcon class="h-5 w-5" />
+            </button>
+            <RecordPrintButton
+              v-if="caseRecord?._id"
+              hide-on-mobile
+              module-key="cases"
+              :record-id="String(caseRecord._id)"
+            />
+            <Menu as="div" class="relative">
+              <MenuButton
+                class="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                :aria-label="t('records.genericMoreActions')"
+              >
+                <EllipsisVerticalIcon class="h-5 w-5" />
+              </MenuButton>
+              <transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="transform opacity-0 scale-95"
+                enter-to-class="transform opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="transform opacity-100 scale-100"
+                leave-to-class="transform opacity-0 scale-95"
+              >
+                <MenuItems class="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg bg-white py-1 shadow-xl ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
+                  <MenuItem v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full px-4 py-2 text-left text-sm transition-colors lg:hidden',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="copyUrl"
+                    >
+                      {{ t('records.genericCopyUrl') }}
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="canDelete" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full px-4 py-2 text-left text-sm transition-colors',
+                        active ? 'bg-red-50 dark:bg-red-900/30' : 'text-red-600 dark:text-red-400'
+                      ]"
+                      @click="showDeleteModal = true"
+                    >
+                      {{ t('actions.delete') }}
+                    </button>
+                  </MenuItem>
+                </MenuItems>
+              </transition>
+            </Menu>
+          </template>
+        </RecordHeader>
         <RecordClosedBanner
           v-if="isClosed"
           module-key="cases"
@@ -273,6 +382,10 @@
                 :can-edit="canEdit"
                 @edit-record="openEditDrawer"
               />
+            </template>
+
+            <template #tab-sla>
+              <CaseSlaPanel :case-record="caseRecord" />
             </template>
 
             <template #tab-contact>
@@ -413,25 +526,34 @@
 import { computed, inject, onActivated, onBeforeUnmount, provide, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import {
   DocumentTextIcon,
   LinkIcon,
   UserIcon,
   BookOpenIcon,
+  ClockIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ArrowTopRightOnSquareIcon,
   PencilSquareIcon,
+  EnvelopeIcon,
+  ClipboardDocumentIcon,
+  EllipsisVerticalIcon,
   Squares2X2Icon
 } from '@heroicons/vue/24/outline';
 import RecordPageShell from '@/components/record-page/RecordPageShell.vue';
+import RecordHeader from '@/components/record-page/RecordHeader.vue';
 import RecordRightPane from '@/components/record-page/RecordRightPane.vue';
 import RecordClosedBanner from '@/components/record-page/RecordClosedBanner.vue';
-import CaseRecordHeader from '@/components/cases/CaseRecordHeader.vue';
+import RecordPresenceAvatars from '@/components/record-page/RecordPresenceAvatars.vue';
+import RecordPrintButton from '@/components/record-page/RecordPrintButton.vue';
 import CaseRecordMainWorkspace from '@/components/cases/CaseRecordMainWorkspace.vue';
+import CaseRecordWorkflowChips from '@/components/cases/CaseRecordWorkflowChips.vue';
 import CaseDetailsPanel from '@/components/cases/CaseDetailsPanel.vue';
 import CaseContactProfilePanel from '@/components/cases/CaseContactProfilePanel.vue';
 import CaseKnowledgePanel from '@/components/cases/CaseKnowledgePanel.vue';
+import CaseSlaPanel from '@/components/cases/CaseSlaPanel.vue';
 import RelatedRecordsPanel from '@/components/relationships/RelatedRecordsPanel.vue';
 import CreateRecordDrawer from '@/components/common/CreateRecordDrawer.vue';
 import EmailComposeDrawer from '@/components/communications/EmailComposeDrawer.vue';
@@ -447,6 +569,7 @@ import {
 import { useNotifications } from '@/composables/useNotifications';
 import { useTabs } from '@/composables/useTabs';
 import { useAuthStore } from '@/stores/authRegistry';
+import { useRecordModuleBack } from '@/components/record-page/composables/useRecordModuleBack';
 import { filterActivitiesForTab } from '@/utils/caseTimeline';
 import { buildCaseEmailReplyDraft } from '@/utils/caseEmailReply';
 import apiClient from '@/utils/apiClient';
@@ -467,6 +590,7 @@ const route = useRoute();
 const router = useRouter();
 const notifications = useNotifications();
 const { openTab, replaceActiveTab } = useTabs();
+const { goBackToModuleList } = useRecordModuleBack();
 const authStore = useAuthStore();
 
 const rightPaneRef = ref(null);
@@ -481,6 +605,7 @@ if (props.embed) {
 const recordLayoutProps = computed(() => ({
   forceMobile: props.embed,
   leftExpanded: false,
+  dense: !props.embed,
   class: props.embed
     ? '!relative !inset-auto flex h-full w-full min-h-0 flex-col overflow-hidden'
     : ''
@@ -587,6 +712,7 @@ const mainTabs = computed(() => [
 
 const rightPaneTabs = computed(() => [
   { id: 'details', name: t('cases.recordTabDetails'), icon: DocumentTextIcon },
+  { id: 'sla', name: t('cases.recordSlaSection'), icon: ClockIcon },
   { id: 'contact', name: t('cases.recordTabContact'), icon: UserIcon },
   { id: 'related', name: t('records.relatedTitle'), icon: LinkIcon },
   { id: 'knowledge', name: t('cases.recordRailKnowledge'), icon: BookOpenIcon }

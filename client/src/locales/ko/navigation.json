@@ -986,5 +986,9 @@
   "inventoryProductConfigs": {
     "message": "Product configurations",
     "description": "Link to product configurations settings"
+  },
+  "telephony": {
+    "message": "Telephony",
+    "description": "Telephony addon navigation label"
   }
 }

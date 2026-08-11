@@ -165,7 +165,7 @@
             :key="`${item.type}:${item.id}`"
             type="button"
             :class="[
-              'w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700',
+              'w-full px-3 py-2 text-left text-sm flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700',
               idx === mentionHighlightIndex ? 'bg-gray-100 dark:bg-gray-700' : ''
             ]"
             @mousedown.prevent="selectMention(item)"
@@ -188,11 +188,11 @@
             >
               <UserGroupIcon class="w-3 h-3" />
             </span>
-            <span class="min-w-0 flex-1 truncate">{{ item.type === 'all' ? `@${item.name}` : item.name }}</span>
-            <span v-if="item.type === 'group'" class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+            <span class="min-w-0 flex-1 truncate text-gray-900 dark:text-gray-100">{{ item.type === 'all' ? `@${item.name}` : item.name }}</span>
+            <span v-if="item.type === 'group'" class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
               {{ t('records.commentMentionGroup') }}
             </span>
-            <span v-else-if="item.type === 'all'" class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+            <span v-else-if="item.type === 'all'" class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
               {{ t('records.commentMentionAll') }}
             </span>
           </button>

@@ -31,7 +31,6 @@ const Organization = require('../models/Organization');
 const Deal = require('../models/Deal');
 const Case = require('../models/Case');
 const User = require('../models/User');
-const replyToTokenService = require('../services/replyToTokenService');
 const { MAX_ATTACHMENT_SIZE_BYTES, MAX_TOTAL_ATTACHMENTS_BYTES } = require('../models/Communication');
 const { createInitialSlaCycle } = require('../services/caseLifecycleService');
 const { finalizeCaseSlaOnCreate } = require('../services/sla/slaCaseBridgeService');
@@ -166,6 +165,9 @@ exports.sendEmail = async (req, res) => {
       attachments,
       parentCommunicationId,
       mailboxId: mailboxIdFromBody,
+      fromSource: fromSourceFromBody,
+      fromEmail: fromEmailFromBody,
+      fromName: fromNameFromBody,
       followUpReminderDays,
       scheduledAt: scheduledAtRaw
     } = validation.value;
@@ -343,6 +345,8 @@ exports.sendEmail = async (req, res) => {
     let inReplyTo = null;
     let references = null;
     let mailboxIdOutbound = null;
+    const requestedFromSource = String(fromSourceFromBody || '').trim().toLowerCase();
+    const forceOrgFrom = requestedFromSource === 'tenant_config' || requestedFromSource === 'user';
 
     if (parentCommunicationId) {
       const parent = await Communication.findOne({
@@ -355,18 +359,19 @@ exports.sendEmail = async (req, res) => {
         threadId = parent.threadId || parent._id;
         inReplyTo = parent.messageId || parent.externalMessageId;
         references = parent.references ? `${parent.references} ${parent.messageId || parent.externalMessageId}` : (parent.messageId || parent.externalMessageId);
-        if (parent.mailboxId && !mailboxIdFromBody) {
+        // Do not inherit parent mailbox when sender explicitly chose org/user From
+        if (parent.mailboxId && !mailboxIdFromBody && !forceOrgFrom) {
           mailboxIdOutbound = parent.mailboxId;
         }
       }
     }
 
     const outboundIdentityService = require('../platform/communication/outbound/outboundIdentityService');
-    const preferredMailboxId =
-      mailboxIdFromBody
-      || (mailboxIdOutbound ? String(mailboxIdOutbound) : undefined);
+    const preferredMailboxId = forceOrgFrom
+      ? undefined
+      : (mailboxIdFromBody || (mailboxIdOutbound ? String(mailboxIdOutbound) : undefined));
 
-    if (mailboxIdFromBody && !mongoose.Types.ObjectId.isValid(String(mailboxIdFromBody))) {
+    if (mailboxIdFromBody && !forceOrgFrom && !mongoose.Types.ObjectId.isValid(String(mailboxIdFromBody))) {
       return res.status(400).json({
         success: false,
         message: 'Invalid mailboxId'
@@ -377,10 +382,11 @@ exports.sendEmail = async (req, res) => {
       organizationId: orgId,
       user: req.user,
       mailboxId: preferredMailboxId,
+      fromSource: forceOrgFrom ? requestedFromSource : (mailboxIdFromBody ? 'mailbox' : undefined),
       moduleKey
     });
 
-    if (mailboxIdFromBody) {
+    if (mailboxIdFromBody && !forceOrgFrom) {
       if (!outboundIdentity.mailboxId || String(outboundIdentity.mailboxId) !== String(mailboxIdFromBody)) {
         const mb = await Mailbox.findOne({
           _id: mailboxIdFromBody,
@@ -400,17 +406,58 @@ exports.sendEmail = async (req, res) => {
         }
         return res.status(403).json({
           success: false,
-          message: 'Mailbox is not available for sending. Connect Gmail or Gmail SMTP on this mailbox.',
+          message:
+            'Mailbox is not available for sending. Configure organization email (Resend/SMTP) in Settings, or connect Gmail on this mailbox.',
           code: 'MAILBOX_NOT_SENDABLE'
         });
       }
     }
 
-    if (outboundIdentity.mailboxId) {
-      mailboxIdOutbound = outboundIdentity.mailboxId;
+    if (forceOrgFrom) {
+      mailboxIdOutbound = null;
+      if (outboundIdentity.fromEmail) {
+        fromAddr = outboundIdentity.fromEmail;
+      }
+      if (fromEmailFromBody) {
+        fromAddr = fromEmailFromBody;
+      }
+    } else {
+      if (outboundIdentity.mailboxId) {
+        mailboxIdOutbound = outboundIdentity.mailboxId;
+      }
+      if (outboundIdentity.fromEmail) {
+        fromAddr = outboundIdentity.fromEmail;
+      }
+      if (fromEmailFromBody) {
+        fromAddr = fromEmailFromBody;
+      }
     }
-    if (outboundIdentity.fromEmail) {
-      fromAddr = outboundIdentity.fromEmail;
+
+    let displayName = String(
+      fromNameFromBody
+      || outboundIdentity.fromName
+      || ''
+    ).trim().replace(/"/g, '');
+
+    // Org From: always prefer Integrations fromName when client/identity omitted it
+    if (!displayName && forceOrgFrom) {
+      try {
+        const emailService = require('../services/emailService');
+        const orgCfg = await emailService.getOrganizationEmailConfig(orgId);
+        displayName = String(orgCfg?.fromName || '').trim().replace(/"/g, '');
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const bareFromEmail = String(fromAddr || '')
+      .replace(/^.*<([^>]+)>.*$/, '$1')
+      .trim()
+      .toLowerCase();
+    if (bareFromEmail && displayName) {
+      fromAddr = `"${displayName}" <${bareFromEmail}>`;
+    } else if (bareFromEmail) {
+      fromAddr = bareFromEmail;
     }
 
     const sendableMailbox = mailboxIdOutbound
@@ -1914,33 +1961,10 @@ exports.previewComposeEmail = async (req, res) => {
       moduleKey
     });
 
-    let replyTo = '';
-    let replyToSource = 'crm_short_token';
-    let replyToNote = '';
-    const { isShortCrmReplyTokenEnabled, getCrmReplyDomain } = require('../constants/emailReplyRouting');
-
-    if (isShortCrmReplyTokenEnabled()) {
-      replyTo = `reply+<token-on-send>@${getCrmReplyDomain()}`;
-      replyToNote =
-        'A unique reply address (e.g. reply+t92ab81@…) is assigned when you send. Replies route through the centralized CRM inbox.';
-    } else {
-      try {
-        replyTo = replyToTokenService.buildReplyToAddress({
-          orgId,
-          moduleKey,
-          recordId
-        });
-        replyToSource = 'legacy_token';
-      } catch (tokenErr) {
-        replyToSource = 'tenant_config';
-        const emailService = require('../services/emailService');
-        const orgCfg = await emailService.getOrganizationEmailConfig(orgId);
-        replyTo = String(orgCfg?.replyTo || process.env.EMAIL_REPLY_TO || '').trim();
-        replyToNote =
-          tokenErr?.message
-          || 'Inbound reply routing token unavailable; showing tenant Reply-To from settings.';
-      }
-    }
+    // Reply-To matches From so replies return to the selected sender identity
+    const replyTo = String(identity.fromEmail || '').trim().toLowerCase();
+    const replyToSource = identity.fromSource || 'from';
+    const replyToNote = '';
 
     return res.json({
       success: true,
@@ -1949,6 +1973,7 @@ exports.previewComposeEmail = async (req, res) => {
         fromName: identity.fromName,
         fromSource: identity.fromSource,
         mailboxId: identity.mailboxId,
+        deliveryMode: identity.deliveryMode || null,
         identities: identity.identities,
         defaultOutboundMailboxId: identity.defaultOutboundMailboxId,
         replyTo,

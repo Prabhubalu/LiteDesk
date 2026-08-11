@@ -33,13 +33,13 @@ describe('emailReplyRouting', () => {
     assert.equal(getCrmReplyDomain(), 'reply.arivusystems.com');
   });
 
-  it('short token enabled by default', () => {
+  it('short token disabled by default (inbound parser path)', () => {
     delete process.env.EMAIL_REPLY_USE_SHORT_TOKEN;
-    assert.equal(isShortCrmReplyTokenEnabled(), true);
+    assert.equal(isShortCrmReplyTokenEnabled(), false);
   });
 
-  it('short token can be disabled', () => {
-    process.env.EMAIL_REPLY_USE_SHORT_TOKEN = 'false';
-    assert.equal(isShortCrmReplyTokenEnabled(), false);
+  it('short token can be enabled for rollback', () => {
+    process.env.EMAIL_REPLY_USE_SHORT_TOKEN = 'true';
+    assert.equal(isShortCrmReplyTokenEnabled(), true);
   });
 });

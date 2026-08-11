@@ -1264,7 +1264,7 @@
     "description": "Compose: invalid To/Cc/Bcc addresses block send; {list} is comma-separated addresses"
   },
   "emailComposeNeedValidRecipient": {
-    "message": "Add at least one complete email (name@example.com)",
+    "message": "Add at least one complete email (name{'@'}example.com)",
     "description": "Compose: To field empty of valid addresses"
   },
   "emailComposeSubjectRequired": {
@@ -1308,7 +1308,7 @@
     "description": "Compose From hint when mailbox identity is used"
   },
   "emailComposeFromHintOrg": {
-    "message": "Sending from your organization email. Connect a personal mailbox in Inbox to send as yourself.",
+    "message": "Sending from your organization email.",
     "description": "Compose From hint when org Integrations From is used"
   },
   "emailComposeFromHintUser": {
@@ -1326,5 +1326,301 @@
   "emailComposeFromHintMailboxPlatform": {
     "message": "Sending as your personal mailbox address via organization email delivery. Connect Gmail on this mailbox to send through your provider.",
     "description": "Compose From when personal mailbox address is used with org SMTP"
+  },
+  "emailComposeFromHintMailboxViaOrg": {
+    "message": "Sends as this mailbox address via your email provider. Verify the address/domain in Resend (or connect Gmail to send as a Gmail inbox).",
+    "description": "Compose From hint when mailbox uses platform SMTP"
+  },
+  "emailComposeFromHintNeedsSmtp": {
+    "message": "Connect this personal email with an App Password to send.",
+    "description": "Compose From hint when consumer domain needs mailbox SMTP"
+  },
+  "emailComposeFromHintNeedsOrg": {
+    "message": "Organization email delivery is not configured for this domain yet.",
+    "description": "Compose From hint when org provider/domain is missing"
+  },
+  "emailComposeNeedsSmtpCta": {
+    "message": "Personal mailboxes send via your email provider. Set up outbound email to continue.",
+    "description": "Compose banner when SMTP setup is required"
+  },
+  "emailComposeNeedsOrgCta": {
+    "message": "Ask an admin to configure Email Provider and verify your domain.",
+    "description": "Compose banner when org delivery is required"
+  },
+  "emailComposeConnectEmail": {
+    "message": "Connect email",
+    "description": "CTA to open SMTP setup wizard from compose"
+  },
+  "emailComposeOpenIntegrations": {
+    "message": "Open Integrations",
+    "description": "Link to Settings Integrations from compose"
+  },
+  "smtpWizardSteps": {
+    "message": "Setup steps",
+    "description": "ARIA label for SMTP wizard step indicator"
+  },
+  "smtpWizardStepEmail": {
+    "message": "Email",
+    "description": "SMTP wizard step 1 label"
+  },
+  "smtpWizardStepConnect": {
+    "message": "Connect",
+    "description": "SMTP wizard step 2 label"
+  },
+  "smtpWizardStepTest": {
+    "message": "Test",
+    "description": "SMTP wizard step 3 label"
+  },
+  "smtpWizardStepDone": {
+    "message": "Done",
+    "description": "SMTP wizard step 4 label"
+  },
+  "smtpWizardTitleConnect": {
+    "message": "Connect your email",
+    "description": "SMTP wizard title step 1"
+  },
+  "smtpWizardSubtitleConnect": {
+    "message": "We’ll automatically configure your email provider.",
+    "description": "SMTP wizard subtitle step 1"
+  },
+  "smtpWizardTitleCredentials": {
+    "message": "Sign in to your provider",
+    "description": "SMTP wizard title step 2"
+  },
+  "smtpWizardSubtitleCredentials": {
+    "message": "Use an App Password — not your normal login password.",
+    "description": "SMTP wizard subtitle step 2"
+  },
+  "smtpWizardTitleTest": {
+    "message": "Testing connection",
+    "description": "SMTP wizard title step 3"
+  },
+  "smtpWizardSubtitleTest": {
+    "message": "Checking that we can send as you.",
+    "description": "SMTP wizard subtitle step 3"
+  },
+  "smtpWizardTitleDone": {
+    "message": "Email connected",
+    "description": "SMTP wizard title step 4"
+  },
+  "smtpWizardSubtitleDone": {
+    "message": "Choose how this address appears when you send.",
+    "description": "SMTP wizard subtitle step 4"
+  },
+  "smtpWizardEmailLabel": {
+    "message": "Email address",
+    "description": "SMTP wizard email field label"
+  },
+  "smtpWizardEmailPlaceholder": {
+    "message": "name{'@'}example.com",
+    "description": "SMTP wizard email placeholder"
+  },
+  "smtpWizardDetected": {
+    "message": "We detected {provider}.",
+    "description": "SMTP wizard provider detection banner"
+  },
+  "smtpWizardCustomProvider": {
+    "message": "Custom SMTP",
+    "description": "Label when provider is custom"
+  },
+  "smtpWizardInstrGmail1": {
+    "message": "Enable Two-Step Verification on your Google Account.",
+    "description": "Gmail setup instruction 1"
+  },
+  "smtpWizardInstrGmail2": {
+    "message": "Generate an App Password for Mail.",
+    "description": "Gmail setup instruction 2"
+  },
+  "smtpWizardInstrGmail3": {
+    "message": "Paste the App Password below.",
+    "description": "Gmail setup instruction 3"
+  },
+  "smtpWizardInstrOutlook1": {
+    "message": "Enable two-step verification on your Microsoft account.",
+    "description": "Outlook setup instruction 1"
+  },
+  "smtpWizardInstrOutlook2": {
+    "message": "Create an App Password.",
+    "description": "Outlook setup instruction 2"
+  },
+  "smtpWizardInstrOutlook3": {
+    "message": "Paste the App Password below.",
+    "description": "Outlook setup instruction 3"
+  },
+  "smtpWizardInstrYahoo1": {
+    "message": "Turn on two-step verification for Yahoo.",
+    "description": "Yahoo setup instruction 1"
+  },
+  "smtpWizardInstrYahoo2": {
+    "message": "Generate an App Password.",
+    "description": "Yahoo setup instruction 2"
+  },
+  "smtpWizardInstrYahoo3": {
+    "message": "Paste the App Password below.",
+    "description": "Yahoo setup instruction 3"
+  },
+  "smtpWizardInstrZoho1": {
+    "message": "Enable two-factor authentication in Zoho.",
+    "description": "Zoho setup instruction 1"
+  },
+  "smtpWizardInstrZoho2": {
+    "message": "Generate an application-specific password.",
+    "description": "Zoho setup instruction 2"
+  },
+  "smtpWizardInstrZoho3": {
+    "message": "Paste the password below.",
+    "description": "Zoho setup instruction 3"
+  },
+  "smtpWizardInstrIcloud1": {
+    "message": "Sign in to appleid.apple.com and enable two-factor authentication.",
+    "description": "iCloud setup instruction 1"
+  },
+  "smtpWizardInstrIcloud2": {
+    "message": "Generate an App-Specific Password.",
+    "description": "iCloud setup instruction 2"
+  },
+  "smtpWizardInstrIcloud3": {
+    "message": "Paste the password below.",
+    "description": "iCloud setup instruction 3"
+  },
+  "smtpWizardInstrCustom1": {
+    "message": "Ask your IT admin for SMTP host and port.",
+    "description": "Custom SMTP instruction 1"
+  },
+  "smtpWizardInstrCustom2": {
+    "message": "Enter your mailbox username and password.",
+    "description": "Custom SMTP instruction 2"
+  },
+  "smtpWizardInstrCustom3": {
+    "message": "Use STARTTLS (587) unless your provider requires SSL (465).",
+    "description": "Custom SMTP instruction 3"
+  },
+  "smtpWizardOpenAppPassword": {
+    "message": "Open App Password page",
+    "description": "External link to provider App Password UI"
+  },
+  "smtpWizardOpenSecurity": {
+    "message": "Open security settings",
+    "description": "External link to provider security settings"
+  },
+  "smtpWizardHost": {
+    "message": "SMTP host",
+    "description": "Custom SMTP host field"
+  },
+  "smtpWizardPort": {
+    "message": "Port",
+    "description": "Custom SMTP port field"
+  },
+  "smtpWizardEncryption": {
+    "message": "Encryption",
+    "description": "Custom SMTP encryption field"
+  },
+  "smtpWizardStarttls": {
+    "message": "STARTTLS (recommended)",
+    "description": "STARTTLS option"
+  },
+  "smtpWizardSsl": {
+    "message": "SSL / TLS",
+    "description": "SSL option"
+  },
+  "smtpWizardAppPassword": {
+    "message": "App Password",
+    "description": "App password field label"
+  },
+  "smtpWizardPassword": {
+    "message": "Password",
+    "description": "SMTP password field for custom"
+  },
+  "smtpWizardAppPasswordPlaceholder": {
+    "message": "Paste App Password",
+    "description": "App password placeholder"
+  },
+  "smtpWizardTesting": {
+    "message": "Testing connection…",
+    "description": "SMTP test in progress"
+  },
+  "smtpWizardPhaseResolve": {
+    "message": "Resolving mail server…",
+    "description": "SMTP test phase"
+  },
+  "smtpWizardPhaseConnect": {
+    "message": "Connecting…",
+    "description": "SMTP test phase"
+  },
+  "smtpWizardPhaseTls": {
+    "message": "Securing connection…",
+    "description": "SMTP test phase"
+  },
+  "smtpWizardPhaseAuth": {
+    "message": "Signing in…",
+    "description": "SMTP test phase"
+  },
+  "smtpWizardTestSuccess": {
+    "message": "Email connected successfully",
+    "description": "SMTP test success title"
+  },
+  "smtpWizardTestFailedTitle": {
+    "message": "We couldn’t sign in",
+    "description": "SMTP test failure title"
+  },
+  "smtpWizardHintPassword": {
+    "message": "Check that you used an App Password, not your normal password.",
+    "description": "SMTP failure hint"
+  },
+  "smtpWizardHint2fa": {
+    "message": "Two-step verification may need to be enabled first.",
+    "description": "SMTP failure hint"
+  },
+  "smtpWizardHintAppPassword": {
+    "message": "Generate a fresh App Password and try again.",
+    "description": "SMTP failure hint"
+  },
+  "smtpWizardErrAuth": {
+    "message": "Please verify your App Password and try again.",
+    "description": "Friendly auth error"
+  },
+  "smtpWizardErrTls": {
+    "message": "We couldn’t establish a secure connection. Check encryption settings.",
+    "description": "Friendly TLS error"
+  },
+  "smtpWizardErrHost": {
+    "message": "We couldn’t find that mail server. Check the host name.",
+    "description": "Friendly host error"
+  },
+  "smtpWizardErrNetwork": {
+    "message": "The connection timed out. Check your network and try again.",
+    "description": "Friendly network error"
+  },
+  "smtpWizardErrUnknown": {
+    "message": "Something went wrong while connecting. Please try again.",
+    "description": "Friendly unknown error"
+  },
+  "smtpWizardRetry": {
+    "message": "Retry",
+    "description": "Retry SMTP connection test"
+  },
+  "smtpWizardConfirmBody": {
+    "message": "{email} is ready to send.",
+    "description": "SMTP wizard confirmation copy"
+  },
+  "smtpWizardDisplayName": {
+    "message": "Display name",
+    "description": "SMTP wizard display name field"
+  },
+  "smtpWizardUseAsDefault": {
+    "message": "Use as default sender",
+    "description": "SMTP wizard default sender checkbox"
+  },
+  "smtpWizardFinish": {
+    "message": "Finish",
+    "description": "SMTP wizard finish button"
+  },
+  "smtpWizardSavedToast": {
+    "message": "Email account connected",
+    "description": "Toast after SMTP save"
+  },
+  "smtpWizardSaveFailed": {
+    "message": "Could not save email connection",
+    "description": "Toast when SMTP save fails"
   }
 }

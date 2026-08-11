@@ -77,6 +77,28 @@ module.exports = {
       ENTERPRISE: { flatPriceCents: null, currency: 'USD' },
     },
   },
+  telephony: {
+    billingType: 'PER_AGENT',
+    defaultPlan: 'BASIC',
+    trialDays: 14,
+    plans: {
+      BASIC: {
+        agentLimit: 3,
+        pricePerAgentCents: 3900,
+        currency: 'USD',
+      },
+      PRO: {
+        agentLimit: 25,
+        pricePerAgentCents: 6900,
+        currency: 'USD',
+      },
+      ENTERPRISE: {
+        agentLimit: null,
+        pricePerAgentCents: null,
+        currency: 'USD',
+      },
+    },
+  },
   ai: {
     billingType: 'FLAT',
     defaultPlan: 'BASIC',

@@ -45,6 +45,13 @@
       :target-mailbox="connectModalTargetMailbox"
       @connected="onMailboxConnected"
     />
+    <SmtpSetupWizard
+      v-model="smtpWizardOpen"
+      :mailbox-id="smtpWizardMailboxId"
+      :initial-email="smtpWizardInitialEmail"
+      :reason="smtpWizardReason"
+      @connected="onSmtpWizardConnected"
+    />
 
     <WhatsNewModal
       v-model="whatsNewModalOpen"
@@ -57,6 +64,10 @@
     <ReleaseNotesCenter v-model="centerOpen" />
     <AstraCommandPalette v-if="aiSuiteEntitled" />
     <AstraSidePanel v-if="aiSuiteEntitled" />
+
+    <SoftphoneDock v-if="telephonyEntitled" />
+    <IncomingCallPopup v-if="telephonyEntitled" />
+    <PostCallNotesModal v-if="telephonyEntitled" />
 
     <Teleport
       v-if="announcementBanner"
@@ -94,6 +105,7 @@ import { computed, ref, onMounted, onBeforeUnmount, defineAsyncComponent, watch 
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
 import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
+import { isTelephonyEntitled } from '@/composables/useTelephonyEntitlement';
 import {
   isStandalonePublicRoute,
   isTrialExpiredShelllessRoute,
@@ -101,11 +113,13 @@ import {
   isOnboardingShelllessRoute
 } from '@/utils/standaloneRoutes';
 import { useConnectMailboxPrompt } from '@/composables/useConnectMailboxPrompt';
+import { useSmtpSetupWizard } from '@/composables/useSmtpSetupWizard';
 import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useReleaseNotes } from '@/composables/useReleaseNotes';
 import { useAnnouncements } from '@/composables/useAnnouncements';
 import { useOnboarding } from '@/composables/useOnboarding';
 import ConnectMailboxModal from '@/components/inbox/ConnectMailboxModal.vue';
+import SmtpSetupWizard from '@/components/communications/SmtpSetupWizard.vue';
 
 const WhatsNewModal = defineAsyncComponent(() =>
   import('@/components/release-notes/WhatsNewModal.vue')
@@ -121,6 +135,15 @@ const AstraCommandPalette = defineAsyncComponent(() =>
 );
 const AstraSidePanel = defineAsyncComponent(() =>
   import('@/astra/surfaces/AstraSidePanel.vue')
+);
+const SoftphoneDock = defineAsyncComponent(() =>
+  import('@/components/telephony/SoftphoneDock.vue')
+);
+const IncomingCallPopup = defineAsyncComponent(() =>
+  import('@/components/telephony/IncomingCallPopup.vue')
+);
+const PostCallNotesModal = defineAsyncComponent(() =>
+  import('@/components/telephony/PostCallNotesModal.vue')
 );
 const AnnouncementBannerHost = defineAsyncComponent(() =>
   import('@/components/announcements/AnnouncementBannerHost.vue')
@@ -140,6 +163,13 @@ const {
   connectModalMailboxKind,
   connectModalTargetMailbox
 } = useConnectMailboxPrompt();
+const {
+  smtpWizardOpen,
+  smtpWizardMailboxId,
+  smtpWizardInitialEmail,
+  smtpWizardReason,
+  smtpWizardOnConnected
+} = useSmtpSetupWizard();
 const { refreshMailboxes } = useMailboxConnection();
 const authStore = useAuthStore();
 const route = useRoute();
@@ -153,6 +183,7 @@ const surfacesEnabled = computed(() =>
   && !isOnboardingShelllessRoute(route.path)
 );
 const aiSuiteEntitled = computed(() => isAiSuiteEntitled(authStore.user));
+const telephonyEntitled = computed(() => isTelephonyEntitled(authStore.user));
 const {
   unseenReleases,
   surface,
@@ -177,6 +208,21 @@ const { state: onboardingState } = useOnboarding();
 
 function onMailboxConnected() {
   void refreshMailboxes();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
+  }
+}
+
+function onSmtpWizardConnected(mailbox) {
+  void refreshMailboxes();
+  if (typeof smtpWizardOnConnected.value === 'function') {
+    try {
+      smtpWizardOnConnected.value(mailbox);
+    } catch {
+      /* ignore */
+    }
+  }
+  smtpWizardOnConnected.value = null;
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
   }

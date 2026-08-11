@@ -51,6 +51,7 @@ export const SHARED_NAMESPACES = [
   'deals',
   'cases',
   'liveChat',
+  'telephony',
   'people',
   'organizations',
   'inbox',

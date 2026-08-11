@@ -76,4 +76,17 @@ describe('mailboxAccessService (R1)', () => {
     const ids = await getAccessibleMailboxIds(admin, 'org1', [groupMbWithId, otherPersonal]);
     assert.deepEqual(ids.map(String), ['mb-group']);
   });
+
+  it('allows smtp_sender owner to manage SMTP and excludes from thread access ids', async () => {
+    const smtpMb = { _id: 'mb-smtp', kind: 'smtp_sender', ownerUserId: 'u3', memberUserIds: [] };
+    assert.equal(canUserAccessMailboxThreads(owner, smtpMb), true);
+    assert.equal(canUserAccessMailboxThreads(member, smtpMb), false);
+    assert.equal(canManageGmailInboxSync(owner, smtpMb), true);
+    assert.equal(assertGmailSyncManageAccess(smtpMb, owner), null);
+    assert.match(assertGmailSyncManageAccess(smtpMb, member), /owner/i);
+    const personalMbWithId = { _id: 'mb-personal', kind: 'personal', ownerUserId: 'u3', memberUserIds: [] };
+    const groupMbWithId = { _id: 'mb-group', kind: 'group', ownerUserId: null, memberUserIds: [] };
+    const ids = await getAccessibleMailboxIds(owner, 'org1', [personalMbWithId, smtpMb, groupMbWithId]);
+    assert.deepEqual(ids.map(String).sort(), ['mb-group', 'mb-personal']);
+  });
 });
