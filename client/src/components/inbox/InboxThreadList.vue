@@ -26,14 +26,13 @@
         class="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
         :title="t('inbox.inboxSurfaceSelectAllInView')"
       >
-        <input
-          ref="selectAllCheckboxRef"
-          type="checkbox"
-          class="h-3.5 w-3.5 rounded border-gray-300 text-[#2383E2] focus:ring-[#2383E2] dark:border-gray-600 dark:bg-gray-900"
+        <HeadlessCheckbox
+          size="sm"
           :checked="allVisibleSelected"
-          :aria-label="t('inbox.inboxSurfaceSelectAllInView')"
+          :indeterminate="someVisibleSelected && !allVisibleSelected"
           @change="onSelectAllChange"
-        >
+          @click.stop
+        />
       </label>
       <button
         v-for="chip in filterChips"
@@ -51,37 +50,6 @@
       </button>
     </div>
 
-    <!-- Bulk actions -->
-    <div
-      v-if="selectedCount > 0"
-      class="flex shrink-0 flex-wrap items-center gap-2 border-b border-blue-100 bg-blue-50/80 px-3 py-2 dark:border-blue-900/40 dark:bg-blue-950/30"
-    >
-      <span class="text-xs font-medium text-blue-900 dark:text-blue-100">
-        {{ selectedCount }} {{ t('inbox.inboxSidebarSelected') }}
-      </span>
-      <button
-        type="button"
-        class="rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700"
-        @click="emit('bulk-done', true)"
-      >
-        {{ t('inbox.inboxSurfaceMarkDone') }}
-      </button>
-      <button
-        type="button"
-        class="rounded-md border border-blue-200 bg-white px-2 py-1 text-xs font-medium text-blue-900 hover:bg-blue-50 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
-        @click="emit('bulk-done', false)"
-      >
-        {{ t('inbox.inboxSurfaceReopen') }}
-      </button>
-      <button
-        type="button"
-        class="ml-auto text-xs font-medium text-blue-700 underline dark:text-blue-300"
-        @click="emit('clear-selection')"
-      >
-        {{ t('settings.modFieldsClear') }}
-      </button>
-    </div>
-
     <slot name="banners" />
 
     <!-- List -->
@@ -92,8 +60,13 @@
       <div v-else-if="error" class="px-4 py-8 text-center text-sm text-amber-800 dark:text-amber-200">
         {{ error }}
       </div>
-      <div v-else-if="!groups.length" class="px-4 py-20 text-center">
-        <p class="text-sm font-medium text-[#37352F] dark:text-white">
+      <div v-else-if="!groups.length" class="flex min-h-full flex-col items-center justify-center px-4 py-12 text-center">
+        <img
+          :src="getModuleEmptyIllustrationSrc('inbox')"
+          :alt="t('inbox.inboxGetStartedIllustrationAlt')"
+          class="mx-auto h-44 w-auto max-w-[min(100%,18rem)] opacity-90 sm:h-52"
+        />
+        <p class="mt-6 text-sm font-medium text-[#37352F] dark:text-white">
           {{ t('inbox.inboxSurfaceNoConversationsInThisView') }}
         </p>
       </div>
@@ -126,14 +99,14 @@
                 :class="selectionActive || isRowSelected(row) ? 'opacity-0' : 'opacity-100 group-hover:opacity-0'"
                 aria-hidden="true"
               />
-              <input
-                type="checkbox"
-                class="absolute h-3.5 w-3.5 rounded border-gray-300 text-[#2383E2] transition-opacity focus:ring-[#2383E2] dark:border-gray-600 dark:bg-gray-900"
+              <HeadlessCheckbox
+                size="sm"
+                class="absolute transition-opacity"
                 :class="selectionActive || isRowSelected(row) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
                 :checked="isRowSelected(row)"
-                :aria-label="row.sender"
-                @change="onRowSelectChange(row, ($event.target as HTMLInputElement).checked)"
-              >
+                @change="onRowSelectChange(row, $event.target.checked)"
+                @click.stop
+              />
             </span>
 
             <span
@@ -205,19 +178,73 @@
         </button>
       </div>
     </div>
+
+    <!-- Mass actions bar -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 translate-y-4 scale-95"
+        enter-to-class="opacity-100 translate-y-0 scale-100"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 translate-y-0 scale-100"
+        leave-to-class="opacity-0 translate-y-4 scale-95"
+      >
+        <div
+          v-if="selectedCount > 0"
+          class="fixed bottom-4 left-2 right-2 z-[9999] sm:bottom-6 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[min(800px,100%)] sm:-translate-x-1/2"
+        >
+          <div class="rounded-xl bg-gray-800 shadow-lg dark:bg-gray-800">
+            <div class="flex items-center gap-3 px-4 py-2 sm:px-6 sm:py-2.5">
+              <button
+                type="button"
+                class="inline-flex flex-shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:border-gray-600"
+                :title="t('common.listClearSelection')"
+                @click="emit('clear-selection')"
+              >
+                <span class="font-semibold">{{ selectedCount }}</span>
+                <span class="font-medium">{{ t('inbox.inboxSidebarSelected') }}</span>
+                <XMarkIcon class="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" aria-hidden="true" />
+              </button>
+
+              <div class="flex flex-1 items-center justify-end gap-1 overflow-x-auto sm:gap-2 sm:overflow-visible">
+                <button
+                  type="button"
+                  class="group flex flex-shrink-0 cursor-pointer flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-teal-400 transition-colors hover:bg-gray-700 sm:gap-1 sm:px-3 sm:py-2"
+                  @click="emit('bulk-done', true)"
+                >
+                  <ArchiveBoxIcon class="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                  <span class="text-[10px] font-medium leading-tight sm:text-xs">{{ t('inbox.inboxSurfaceMarkDone') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="group flex flex-shrink-0 cursor-pointer flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-gray-300 transition-colors hover:bg-gray-700 sm:gap-1 sm:px-3 sm:py-2"
+                  @click="emit('bulk-done', false)"
+                >
+                  <ArrowPathIcon class="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                  <span class="text-[10px] font-medium leading-tight sm:text-xs">{{ t('inbox.inboxSurfaceReopen') }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { getModuleEmptyIllustrationSrc } from '@/utils/moduleEmptyIllustrations';
 import {
   ArchiveBoxIcon,
   ArrowPathIcon,
   ChevronDownIcon,
   EnvelopeOpenIcon,
-  TrashIcon
+  TrashIcon,
+  XMarkIcon
 } from '@heroicons/vue/24/outline';
+import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 
 export interface ThreadListRow {
   threadId: string;
@@ -282,27 +309,14 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const selectAllCheckboxRef = ref<HTMLInputElement | null>(null);
 const selectionActive = computed(() => props.selectedCount > 0);
-
-watch(
-  () => [props.allVisibleSelected, props.someVisibleSelected],
-  () => {
-    const el = selectAllCheckboxRef.value;
-    if (el) {
-      el.indeterminate = Boolean(props.someVisibleSelected && !props.allVisibleSelected);
-    }
-  },
-  { immediate: true }
-);
 
 function isRowSelected(row: ThreadListRow) {
   return props.selectedThreadIds.includes(String(row.threadId));
 }
 
-function onSelectAllChange(event: Event) {
-  const checked = (event.target as HTMLInputElement).checked;
-  emit('toggle-select-all', checked);
+function onSelectAllChange(event: { target: { checked: boolean } }) {
+  emit('toggle-select-all', event.target.checked);
 }
 
 function onRowSelectChange(row: ThreadListRow, checked: boolean) {

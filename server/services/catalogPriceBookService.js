@@ -1,6 +1,10 @@
 const CatalogPriceBook = require('../models/CatalogPriceBook');
 const CatalogPriceBookEntry = require('../models/CatalogPriceBookEntry');
 const { normalizeCustomerType } = require('../constants/pricingEngine');
+const {
+  getTenantCurrencyCode,
+  resolveCurrencyOrOrgDefault,
+} = require('../utils/orgCurrency');
 
 const DEFAULT_BOOK_NAME = 'Standard';
 
@@ -67,10 +71,11 @@ async function ensureDefaultPriceBook(organizationId, userId) {
     return anyBook;
   }
 
+  const currency = await getTenantCurrencyCode(organizationId);
   return CatalogPriceBook.create({
     organizationId,
     name: DEFAULT_BOOK_NAME,
-    currency: 'USD',
+    currency,
     isDefault: true,
     isActive: true,
     createdBy: userId,
@@ -94,11 +99,13 @@ async function createPriceBook({ organizationId, userId, payload }) {
     );
   }
 
+  const currency = await resolveCurrencyOrOrgDefault(payload.currency, organizationId);
+
   return CatalogPriceBook.create({
     organizationId,
     name,
     description: payload.description ? String(payload.description).trim() : undefined,
-    currency: payload.currency || 'USD',
+    currency,
     isDefault,
     isActive: payload.isActive !== false,
     customerTypes: normalizeCustomerTypes(payload.customerTypes),
@@ -125,7 +132,13 @@ async function updatePriceBook({ priceBookId, organizationId, userId, payload })
     book.name = name;
   }
   if (payload.description !== undefined) book.description = payload.description;
-  if (payload.currency !== undefined) book.currency = payload.currency;
+  let currencyChanged = false;
+  let nextCurrency = book.currency;
+  if (payload.currency !== undefined) {
+    nextCurrency = await resolveCurrencyOrOrgDefault(payload.currency, organizationId);
+    currencyChanged = String(book.currency || '').toUpperCase() !== String(nextCurrency).toUpperCase();
+    book.currency = nextCurrency;
+  }
   if (payload.isActive !== undefined) book.isActive = payload.isActive;
   if (payload.customerTypes !== undefined) book.customerTypes = normalizeCustomerTypes(payload.customerTypes);
   if (payload.regionCodes !== undefined) book.regionCodes = normalizeRegionCodes(payload.regionCodes);
@@ -149,6 +162,15 @@ async function updatePriceBook({ priceBookId, organizationId, userId, payload })
 
   book.modifiedBy = userId;
   await book.save();
+
+  // A price book is single-currency; keep entry currency snapshots in sync.
+  if (currencyChanged) {
+    await CatalogPriceBookEntry.updateMany(
+      { organizationId, priceBookId: book._id },
+      { $set: { currency: nextCurrency } }
+    );
+  }
+
   return book;
 }
 

@@ -332,12 +332,29 @@
             class="shrink-0"
           />
           <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-2 min-w-0">
-              <EditableTitle
-                :title="recordTitle"
-                :can-edit="canEditRecordTitle"
-                @save="handleTitleSave"
-              />
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+              <button
+                v-if="documentNumberPrefix"
+                type="button"
+                class="shrink-0 inline-flex items-center rounded px-2 py-1 -ml-2 text-2xl font-semibold tabular-nums tracking-tight text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
+                :aria-label="t('records.copyRecordNumber')"
+                :title="t('records.copyRecordNumber')"
+                @click="copyDocumentNumber"
+              >
+                {{ documentNumberPrefix }}
+              </button>
+              <span
+                v-if="documentNumberPrefix"
+                class="shrink-0 text-3xl leading-none font-semibold text-gray-300 dark:text-gray-600 select-none"
+                aria-hidden="true"
+              >·</span>
+              <div class="min-w-0 flex-1">
+                <EditableTitle
+                  :title="recordTitle"
+                  :can-edit="canEditRecordTitle"
+                  @save="handleTitleSave"
+                />
+              </div>
               <template v-if="isFormsModule && formRecordSubtitle">
                 <span class="text-gray-300 dark:text-gray-600" aria-hidden="true">·</span>
                 <span class="text-sm text-gray-600 dark:text-gray-400 truncate">{{ formRecordSubtitle }}</span>
@@ -2086,8 +2103,8 @@ const recordTitle = computed(() => {
   const primaryByModule = {
     events: r.eventName,
     items: r.item_name,
-    quotes: r.quoteNumber || r.quoteTitle,
-    sales_orders: r.salesOrderNumber || r.orderTitle,
+    quotes: r.quoteTitle || r.quoteNumber,
+    sales_orders: r.orderTitle || r.salesOrderNumber,
     purchase_orders: r.subject || r.poNumber,
     receipt_notes: r.receiptNoteNumber,
     stockrooms: r.name || r.locationCode,
@@ -2097,7 +2114,7 @@ const recordTitle = computed(() => {
     delivery_notes: r.subject || r.deliveryNoteNumber,
     delivery_returns: r.subject || r.deliveryReturnNumber,
     sales_returns: r.salesReturnNumber,
-    invoices: r.invoiceNumber || r.invoiceTitle
+    invoices: r.invoiceTitle || r.invoiceNumber
   };
   return (
     primaryByModule[moduleKey] ??
@@ -2107,6 +2124,32 @@ const recordTitle = computed(() => {
     r.email ??
     (r._id || '').slice(-8)
   ) || 'Record';
+});
+
+/** Modules with immutable document number + editable title/subject. */
+const DOCUMENT_NUMBER_TITLE_FIELDS = {
+  quotes: { numberKey: 'quoteNumber', titleKey: 'quoteTitle' },
+  invoices: { numberKey: 'invoiceNumber', titleKey: 'invoiceTitle' },
+  sales_orders: { numberKey: 'salesOrderNumber', titleKey: 'orderTitle' },
+  purchase_orders: { numberKey: 'poNumber', titleKey: 'subject' },
+  purchase_returns: { numberKey: 'purchaseReturnNumber', titleKey: 'subject' },
+  delivery_notes: { numberKey: 'deliveryNoteNumber', titleKey: 'subject' },
+  delivery_returns: { numberKey: 'deliveryReturnNumber', titleKey: 'subject' }
+};
+
+const documentNumberTitleFields = computed(
+  () => DOCUMENT_NUMBER_TITLE_FIELDS[moduleKeyLower.value] || null
+);
+
+/** Immutable document number prefix; hidden when title already is the number. */
+const documentNumberPrefix = computed(() => {
+  const fields = documentNumberTitleFields.value;
+  const r = record.value;
+  if (!fields || !r) return '';
+  const num = String(r[fields.numberKey] || '').trim();
+  if (!num) return '';
+  if (recordTitle.value === num) return '';
+  return num;
 });
 
 /** For People module: user-shaped object for Avatar (photo or initials). */
@@ -4955,6 +4998,64 @@ function handleTitleSave(value) {
     return;
   }
 
+  // Items: primary display field is item_name (not generic name).
+  if (moduleKeyLower === 'items') {
+    const previous = record.value.item_name;
+    record.value.item_name = title;
+    record.value.name = title;
+    apiClient
+      .put(`${recordCrudPathBase.value}/${props.recordId}`, { item_name: title })
+      .then(() => {
+        notifyListRecordUpdated(record.value);
+      })
+      .catch((e) => {
+        console.error('Save item title error:', e);
+        if (record.value) {
+          record.value.item_name = previous;
+          record.value.name = previous;
+        }
+      });
+    return;
+  }
+
+  // Events: primary display field is eventName.
+  if (moduleKeyLower === 'events') {
+    const previous = record.value.eventName;
+    record.value.eventName = title;
+    record.value.name = title;
+    apiClient
+      .put(`${recordCrudPathBase.value}/${props.recordId}`, { eventName: title })
+      .then(() => {
+        notifyListRecordUpdated(record.value);
+      })
+      .catch((e) => {
+        console.error('Save event title error:', e);
+        if (record.value) {
+          record.value.eventName = previous;
+          record.value.name = previous;
+        }
+      });
+    return;
+  }
+
+  // Quotes / invoices / SO / PO / etc.: editable title field; document number stays immutable.
+  const docFields = DOCUMENT_NUMBER_TITLE_FIELDS[moduleKeyLower];
+  if (docFields) {
+    const { titleKey } = docFields;
+    const previous = record.value[titleKey];
+    record.value[titleKey] = title;
+    apiClient
+      .put(`${recordCrudPathBase.value}/${props.recordId}`, { [titleKey]: title })
+      .then(() => {
+        notifyListRecordUpdated(record.value);
+      })
+      .catch((e) => {
+        console.error(`Save ${moduleKeyLower} title error:`, e);
+        if (record.value) record.value[titleKey] = previous;
+      });
+    return;
+  }
+
   // Other modules: only update the generic name/title field.
   apiClient.put(`${recordCrudPathBase.value}/${props.recordId}`, { name: title }).then(() => {
     if (record.value) record.value.name = title;
@@ -4994,6 +5095,28 @@ function copyUrl() {
     } finally {
       document.body.removeChild(textarea);
     }
+  }
+}
+
+function copyDocumentNumber() {
+  const value = documentNumberPrefix.value;
+  if (!value) return;
+  if (typeof navigator.clipboard !== 'undefined' && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(value).catch(() => {});
+    return;
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = value;
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '0';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    document.execCommand('copy');
+  } finally {
+    document.body.removeChild(textarea);
   }
 }
 

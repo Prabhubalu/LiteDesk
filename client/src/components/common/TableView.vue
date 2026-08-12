@@ -12,7 +12,7 @@
         :class="[
           showEmptyOverlay
             ? (fillsParentHeight
-                ? 'relative z-[1] flex h-full min-h-0 flex-col'
+                ? 'relative z-[1] flex h-full min-h-[320px] flex-col'
                 : 'relative z-[1] flex min-h-[480px] flex-col')
             : 'relative z-[1]',
           fillsParentHeight && !showEmptyOverlay ? 'flex h-full min-h-0 flex-col' : '',
@@ -46,27 +46,13 @@
             {
               'invisible': showScrollRestoreOverlay,
               'table-mobile-card': isMobileCardLayout,
-              'rounded-xl': !isMobileCardLayout
+              'rounded-xl': !isMobileCardLayout && !showEmptyOverlay,
+              'rounded-t-xl': !isMobileCardLayout && showEmptyOverlay
             }
           ]"
           :style="{ ...scrollContainerStyles, width: '100%', maxWidth: '100%', isolation: 'auto' }"
           @scroll="handleScroll"
         >
-          <!-- Empty overlay: body band only; stays below sticky header/filter row (higher z-index) -->
-          <div
-            v-if="showEmptyOverlay"
-            class="pointer-events-none absolute inset-x-0 z-[10] flex items-start justify-center overflow-y-auto px-6 pb-12 pt-8"
-            :style="{ top: emptyOverlayTop, bottom: '24px' }"
-          >
-            <div class="pointer-events-auto">
-              <slot name="empty">
-                <div class="flex flex-col items-center justify-center py-8 text-center">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ emptyTitle || t('common.listNoDataAvailable') }}</h3>
-                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ emptyMessage || t('common.listNoRecordsFound') }}</p>
-                </div>
-              </slot>
-            </div>
-          </div>
           <div
             v-if="isResizing && resizeGuideX !== null && resizeGuideBounds"
             class="pointer-events-none fixed z-[999] w-0.5 bg-indigo-500"
@@ -97,18 +83,19 @@
                   v-if="selectable"
                   scope="col"
                   :class="[
-                    'table-head-cell table-selection-cell relative box-border sticky bg-white dark:bg-gray-900',
+                    'table-head-cell table-selection-cell relative box-border sticky cursor-pointer bg-white dark:bg-gray-900',
                     selectionColumnVariant === 'numbered-hover' ? 'px-1' : 'px-7 sm:w-12 sm:px-6',
                     leftEdgeColumnIndex === 0 ? 'rounded-tl-xl' : '',
                     'hover:bg-gray-50 dark:hover:bg-gray-800'
                   ]"
                   :style="selectionHeaderCellStyle"
+                  @click.stop="onSelectionHeaderClick($event)"
                 >
                   <span
                     v-if="selectionColumnVariant === 'numbered-hover'"
                     class="sr-only"
                   >{{ t('common.tableRowSelectSr') }}</span>
-                  <div class="absolute top-1/2 left-4 -mt-2">
+                  <div class="absolute inset-0 flex items-center justify-center">
                     <HeadlessCheckbox
                       :checked="allSelected"
                       :indeterminate="someSelected"
@@ -370,7 +357,7 @@
                   <td
                     v-if="showSelectionColumn"
                     :class="[
-                      'table-body-cell relative box-border sticky z-20 table-selection-cell',
+                      'table-body-cell relative box-border sticky z-20 table-selection-cell cursor-pointer',
                       selectionColumnVariant === 'numbered-hover'
                         ? 'px-1 tv-num-when-hover'
                         : 'px-7 sm:w-12 sm:px-6',
@@ -379,6 +366,7 @@
                       item.selected ? '' : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-800'
                     ]"
                     :style="selectionColumnCellStyle"
+                    @click.stop="onSelectionCellClick(item.row, $event)"
                   >
                     <div v-if="item.selected" class="hidden group-has-checked:block absolute inset-y-0 left-0 w-0.5 bg-indigo-600"></div>
                     <template v-if="selectionColumnVariant === 'numbered-hover'">
@@ -388,7 +376,7 @@
                         aria-hidden="true"
                       >{{ rowNumberOffset + item.rowIndex + 1 }}</span>
                       <div
-                        class="tv-row-checkbox absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                        class="tv-row-checkbox absolute inset-0 flex items-center justify-center"
                         :class="item.selected ? 'tv-row-checkbox--visible' : 'opacity-0'"
                       >
                         <HeadlessCheckbox
@@ -398,7 +386,7 @@
                         />
                       </div>
                     </template>
-                    <div v-else class="absolute top-1/2 left-4 -mt-2">
+                    <div v-else class="absolute inset-0 flex items-center justify-center">
                       <HeadlessCheckbox
                         :checked="item.selected"
                         @change.stop="toggleRowSelection(item.row)"
@@ -632,6 +620,33 @@
             </tbody>
           </table>
         </div>
+
+        <!-- In-flow empty panel below header strip (do not absolute-position inside scrollport) -->
+        <div
+          v-if="showEmptyOverlay"
+          class="flex w-full flex-col items-center justify-center px-6 py-16"
+        >
+          <div class="flex max-w-md flex-col items-center justify-center text-center">
+            <img
+              v-if="emptyIllustrationSrc"
+              :src="emptyIllustrationSrc"
+              :alt="emptyTitle || t('common.listNoDataAvailable')"
+              class="mx-auto h-40 max-h-40 w-auto max-w-[16rem] object-contain"
+            />
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white"
+              :class="emptyIllustrationSrc ? 'mt-6' : ''"
+            >
+              {{ emptyTitle || t('common.listNoDataAvailable') }}
+            </h3>
+            <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">
+              {{ emptyMessage || t('common.listNoRecordsFound') }}
+            </p>
+            <div v-if="$slots['empty-actions']" class="mt-6">
+              <slot name="empty-actions" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -683,7 +698,6 @@ import type { FilterConfig } from '@/platform/filters/filterResolver'
 
 const COLUMN_LABEL_ROW_HEIGHT_PX = 46
 const COLUMN_FILTER_ROW_HEIGHT_PX = 44
-const EMPTY_OVERLAY_HEADER_GAP_PX = 24
 
 type ListPaginationInput = Record<string, unknown>
 
@@ -764,6 +778,8 @@ const props = withDefaults(
     rowActionsGutter?: string
     emptyTitle?: string
     emptyMessage?: string
+    /** Optional illustration for in-table empty state */
+    emptyIllustrationSrc?: string
     loadMoreEnabled?: boolean
     /** When set, hasMore is derived from normalized pagination (page/total vs currentPage/totalPages). */
     pagination?: ListPaginationInput | null
@@ -805,6 +821,7 @@ const props = withDefaults(
     clearSelectionTrigger: 0,
     hasActions: false,
     rowActionsGutter: '7rem',
+    emptyIllustrationSrc: '',
     loadMoreEnabled: false,
     pagination: null,
     hasMore: false,
@@ -970,12 +987,21 @@ const scrollContainerClass = computed(() => {
     maxBody !== null &&
     String(maxBody).trim().endsWith('%')
 
+  if (showEmptyOverlay.value) {
+    return {
+      // Header-only strip; empty panel sibling claims remaining height.
+      'shrink-0': true,
+      'overflow-x-auto': !isMobileCardLayout.value,
+      'overflow-x-hidden': isMobileCardLayout.value,
+      'overflow-y-hidden': true
+    }
+  }
+
   return {
-    'flex-1 min-h-0': showEmptyOverlay.value || fillsParent,
+    'flex-1 min-h-0': fillsParent,
     'overflow-x-auto': !isMobileCardLayout.value,
     'overflow-x-hidden': isMobileCardLayout.value,
-    'overflow-y-auto': props.internalScroll && !showEmptyOverlay.value,
-    'overflow-y-hidden': showEmptyOverlay.value
+    'overflow-y-auto': props.internalScroll
   }
 })
 
@@ -1118,11 +1144,7 @@ const tableMinWidth = computed(() => {
   }
 
   // Table width = exact sum of column widths so only the resized column changes
-  let total = showSelectionColumn.value
-    ? props.selectionColumnVariant === 'numbered-hover'
-      ? 44
-      : 48
-    : 0
+  let total = showSelectionColumn.value ? 48 : 0
   displayColumns.value.forEach(column => {
     total += getColumnWidth(column)
   })
@@ -1232,7 +1254,7 @@ const columnHeaderStyle = (column: ColumnDef) => {
   }
   const width = getColumnWidth(column)
   const isFirstCol = isFirstColumn(column)
-  const checkboxWidth = props.selectionColumnVariant === 'numbered-hover' ? 44 : 48
+  const checkboxWidth = 48
 
   const style: Record<string, string> = {
     width: `${width}px`,
@@ -1275,7 +1297,7 @@ const columnCellStyle = (column: ColumnDef) => {
   }
   const width = getColumnWidth(column)
   const isFirstCol = isFirstColumn(column)
-  const checkboxWidth = props.selectionColumnVariant === 'numbered-hover' ? 44 : 48
+  const checkboxWidth = 48
 
   const style: Record<string, string> = {
     width: `${width}px`,
@@ -1756,13 +1778,6 @@ const columnFilterRowTop = computed(() => {
   return `${base + measuredLabelHeaderHeightPx.value}px`
 })
 
-const emptyOverlayTop = computed(() => {
-  const headerHeight = props.columnFiltersEnabled
-    ? measuredLabelHeaderHeightPx.value + measuredFilterHeaderHeightPx.value
-    : measuredLabelHeaderHeightPx.value
-  return `${headerHeight + EMPTY_OVERLAY_HEADER_GAP_PX}px`
-})
-
 function syncHeaderRowHeights() {
   const labelRow = labelHeaderRowRef.value
   if (labelRow) {
@@ -1843,9 +1858,7 @@ const emitColumnFilterOpened = (column: ColumnDef) => {
 }
 
 /** Keeps the selection column from stretching to full table width when data columns are not mounted yet */
-const selectionColumnWidthPx = computed(() =>
-  props.selectionColumnVariant === 'numbered-hover' ? '44px' : '48px'
-)
+const selectionColumnWidthPx = computed(() => '48px')
 
 const selectionColumnCellStyle = computed(() => {
   const w = selectionColumnWidthPx.value
@@ -2030,20 +2043,21 @@ const maxHeightStyle = computed(() => {
 const scrollContainerStyles = computed(() => {
   const styles: Record<string, string | undefined> = {}
 
-  if (enableInternalScroll.value && !showEmptyOverlay.value) {
-    if (fillsParentHeight.value) {
-      // Residual flex height from ListView table slot; scroll all records inside.
-      styles.height = '100%'
-      styles.maxHeight = '100%'
-    } else if (typeof props.maxBodyHeight === 'number') {
-      const h = `${props.maxBodyHeight}px`
-      styles.height = h
-      styles.maxHeight = h
-    } else {
-      styles.maxHeight = maxHeightStyle.value
-    }
-    styles.overflowY = 'auto'
+  if (!enableInternalScroll.value || showEmptyOverlay.value) {
+    return styles
   }
+
+  if (fillsParentHeight.value) {
+    styles.height = '100%'
+    styles.maxHeight = '100%'
+  } else if (typeof props.maxBodyHeight === 'number') {
+    const h = `${props.maxBodyHeight}px`
+    styles.height = h
+    styles.maxHeight = h
+  } else {
+    styles.maxHeight = maxHeightStyle.value
+  }
+  styles.overflowY = 'auto'
 
   return styles
 })
@@ -2287,9 +2301,22 @@ const resolveValue = (row: RowData, column: ColumnDef) => {
   return formatRawValueForDisplay(raw, col ?? undefined)
 }
 
-const handleRowClick = (row: RowData, event: MouseEvent) => {
-  // Don't trigger row click if clicking on checkbox
+const onSelectionCellClick = (row: RowData, event: MouseEvent) => {
   if ((event.target as HTMLElement)?.closest('[data-headless-checkbox="true"]')) {
+    return
+  }
+  toggleRowSelection(row)
+}
+
+const onSelectionHeaderClick = (event: MouseEvent) => {
+  if ((event.target as HTMLElement)?.closest('[data-headless-checkbox="true"]')) {
+    return
+  }
+  toggleSelectAll()
+}
+
+const handleRowClick = (row: RowData, event: MouseEvent) => {
+  if ((event.target as HTMLElement)?.closest('.table-selection-cell, [data-headless-checkbox="true"]')) {
     return
   }
   if (longPressTriggered) {

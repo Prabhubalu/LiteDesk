@@ -33,6 +33,23 @@ const FILTER_QUERY_ONLY_OPERATORS: FilterOperatorId[] = [
   'is_any_of',
 ];
 
+/**
+ * User identity fields that are not handled by flat list params
+ * (`assignedTo` is the only user field with dedicated flat API support).
+ * These must always ride on filterQuery AST.
+ */
+const FILTER_QUERY_ONLY_FIELD_KEYS = new Set([
+  'createdby',
+  'modifiedby',
+  'updatedby',
+]);
+
+function normalizeFilterFieldKey(fieldKey: string): string {
+  return String(fieldKey || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
 const BY_FILTER_TYPE: Record<string, FilterOperatorId[]> = {
   text: ['contains', 'not_contains', 'is_empty', 'is_not_empty'],
   number: ['is', 'is_not', 'is_empty', 'is_not_empty'],
@@ -84,4 +101,15 @@ export function operatorUsesMultiValue(
 
 export function operatorRequiresFilterQuery(operator: FilterOperatorId): boolean {
   return FILTER_QUERY_ONLY_OPERATORS.includes(operator);
+}
+
+export function fieldRequiresFilterQuery(fieldKey: string): boolean {
+  return FILTER_QUERY_ONLY_FIELD_KEYS.has(normalizeFilterFieldKey(fieldKey));
+}
+
+export function ruleRequiresFilterQuery(
+  fieldKey: string,
+  operator: FilterOperatorId
+): boolean {
+  return operatorRequiresFilterQuery(operator) || fieldRequiresFilterQuery(fieldKey);
 }

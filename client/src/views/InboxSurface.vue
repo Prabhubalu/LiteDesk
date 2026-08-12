@@ -1,20 +1,22 @@
 <template>
   <div class="inbox-surface-root flex min-h-0 w-full min-w-0 max-w-none flex-1 flex-col overflow-hidden">
     <div
-      v-if="showInboxGetStarted"
-      class="arivu-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl border border-gray-200/90 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900/95"
+      v-if="mailboxesLoading"
+      class="flex min-h-0 flex-1 items-center justify-center py-24"
     >
-      <div v-if="mailboxesLoading" class="flex items-center justify-center py-24">
-        <div class="h-9 w-9 animate-spin rounded-full border-2 border-gray-200 border-t-emerald-600 dark:border-gray-700 dark:border-t-emerald-400" />
-      </div>
+      <div class="h-9 w-9 animate-spin rounded-full border-2 border-gray-200 border-t-emerald-600 dark:border-gray-700 dark:border-t-emerald-400" />
+    </div>
+
+    <div
+      v-else-if="showInboxGetStarted"
+      class="arivu-scrollbar relative flex min-h-0 flex-1 flex-col overflow-hidden bg-white dark:bg-gray-950"
+    >
       <InboxGetStarted
-        v-else
         :gmail-oauth-ready="gmailOAuthReady"
         :inbound-parser-mode="!mailboxFlags.gmailIntegrationEnabled"
         :connect-loading="gmailSyncLoading"
         @connect-mailbox="openConnectInboxModal"
         @setup-group="openConnectGroupMailbox"
-        @coming-soon="onGetStartedComingSoon"
       />
     </div>
 
@@ -1695,7 +1697,6 @@ function isWorkspaceThreadRow(row) {
 
 /** Full-page onboarding until user has shared mailbox access or a connected personal mailbox. */
 const showInboxGetStarted = computed(() => {
-  if (mailboxesLoading.value) return false;
   return !isInboxShellUnblocked(mailboxes.value, mailboxFlags.value);
 });
 
@@ -1707,15 +1708,26 @@ function openConnectGroupMailbox() {
   promptConnectMailbox('inbox', { mailboxKind: 'group' });
 }
 
-function onGetStartedComingSoon() {
-  notifications.info(t('inbox.inboxIntegrationComingSoon'));
-}
-
 function openNewCompose() {
   composeRow.value = null;
   composeDraftOverride.value = null;
   composeWindowKey.value = 'new-compose';
   composeDrawerOpen.value = true;
+}
+
+function isInboxTypingTarget(target) {
+  if (!(target instanceof Element)) return false;
+  const el = target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]');
+  return Boolean(el);
+}
+
+function onInboxComposeShortcut(event) {
+  if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+  if (event.key !== 'c' && event.key !== 'C') return;
+  if (isInboxTypingTarget(event.target)) return;
+  if (composeDrawerOpen.value) return;
+  event.preventDefault();
+  openNewCompose();
 }
 
 function requestDockedReply() {
@@ -2632,6 +2644,7 @@ onMounted(async () => {
   syncOpenThreadFromRoute();
   document.addEventListener('visibilitychange', onDocumentVisibilityChange);
   window.addEventListener('litedesk:mailbox-connected', onMailboxConnectedEvent);
+  window.addEventListener('keydown', onInboxComposeShortcut);
   inboxStream.connect();
 });
 
@@ -2647,6 +2660,7 @@ onUnmounted(() => {
   inboxStream.disconnect();
   document.removeEventListener('visibilitychange', onDocumentVisibilityChange);
   window.removeEventListener('litedesk:mailbox-connected', onMailboxConnectedEvent);
+  window.removeEventListener('keydown', onInboxComposeShortcut);
   if (visibilityCountsTimer) clearTimeout(visibilityCountsTimer);
   if (inboxStreamRefreshTimer) clearTimeout(inboxStreamRefreshTimer);
   if (emailSearchDebounceTimer) clearTimeout(emailSearchDebounceTimer);

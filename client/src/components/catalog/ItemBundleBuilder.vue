@@ -1,112 +1,110 @@
 <template>
-  <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-5">
+  <div class="mt-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/40 p-4 sm:p-5 space-y-6">
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
-          <h4 class="text-sm font-semibold text-gray-900 dark:text-white">
+          <h4 class="text-base font-semibold text-gray-900 dark:text-white">
             {{ t('platform.catalogBundleTitle') }}
           </h4>
           <span
             v-if="revision > 1"
-            class="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-300"
           >
             {{ t('platform.catalogBundleRevision', { n: revision }) }}
           </span>
+          <span v-if="saving" class="text-xs text-gray-400">{{ t('states.saving') }}</span>
           <span
-            v-if="saving"
-            class="text-[10px] text-gray-400"
-          >{{ t('states.saving') }}</span>
+            v-else-if="components.length"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200"
+          >
+            {{ t('platform.catalogBundleComponentCount', { count: components.length }) }}
+          </span>
         </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
           {{ t('platform.catalogBundleDesc') }}
         </p>
       </div>
       <button
-        v-if="canEdit"
+        v-if="canEdit && components.length"
         type="button"
-        class="text-xs px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+        class="text-sm px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
         @click="openPicker"
       >
         {{ t('platform.catalogBundleAddComponent') }}
       </button>
     </div>
 
-    <!-- Type -->
-    <div class="grid gap-3 sm:grid-cols-2">
-      <div>
-        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-          {{ t('platform.catalogBundleType') }}
-        </label>
-        <div class="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
-          <button
-            type="button"
-            class="flex-1 text-xs px-3 py-2 transition-colors"
-            :class="bundleType === 'fixed'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
-            :disabled="!canEdit || saving"
-            @click="setBundleType('fixed')"
-          >
-            {{ t('platform.catalogBundleTypeFixed') }}
-          </button>
-          <button
-            type="button"
-            class="flex-1 text-xs px-3 py-2 transition-colors border-l border-gray-200 dark:border-gray-600"
-            :class="bundleType === 'flexible'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
-            :disabled="!canEdit || saving"
-            @click="setBundleType('flexible')"
-          >
-            {{ t('platform.catalogBundleTypeFlexible') }}
-          </button>
-        </div>
-        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-          {{ bundleType === 'fixed'
-            ? t('platform.catalogBundleTypeFixedHint')
-            : t('platform.catalogBundleTypeFlexibleHint') }}
-        </p>
-      </div>
+    <div class="space-y-4">
+      <h5 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        {{ t('platform.catalogBundleGroupRules') }}
+      </h5>
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-          {{ t('platform.catalogBundlePricingMode') }}
-        </label>
-        <select
-          v-model="pricingMode"
-          :disabled="!canEdit || saving"
-          class="w-full text-sm px-2.5 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900"
-          @change="onPricingModeChange"
-        >
-          <option value="fixed">{{ t('platform.catalogBundlePricingFixed') }}</option>
-          <option value="rollup">{{ t('platform.catalogBundlePricingRollup') }}</option>
-          <option value="discount">{{ t('platform.catalogBundlePricingDiscount') }}</option>
-        </select>
-        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-          {{ pricingHint }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Discount + effectiveness + flexible rules -->
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <template v-if="pricingMode === 'discount'">
+      <div class="grid gap-4 sm:grid-cols-2">
         <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            {{ t('platform.catalogBundleType') }}
+          </label>
+          <div class="inline-flex w-full rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+            <button
+              type="button"
+              class="flex-1 text-sm px-3 py-2 transition-colors"
+              :class="bundleType === 'fixed'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
+              :disabled="!canEdit || saving"
+              @click="setBundleType('fixed')"
+            >
+              {{ t('platform.catalogBundleTypeFixed') }}
+            </button>
+            <button
+              type="button"
+              class="flex-1 text-sm px-3 py-2 transition-colors border-l border-gray-200 dark:border-gray-600"
+              :class="bundleType === 'flexible'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'"
+              :disabled="!canEdit || saving"
+              @click="setBundleType('flexible')"
+            >
+              {{ t('platform.catalogBundleTypeFlexible') }}
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+            {{ bundleType === 'fixed'
+              ? t('platform.catalogBundleTypeFixedHint')
+              : t('platform.catalogBundleTypeFlexibleHint') }}
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            {{ t('platform.catalogBundlePricingMode') }}
+          </label>
+          <HeadlessSelect
+            :model-value="pricingMode"
+            :options="pricingModeOptions"
+            :disabled="!canEdit || saving"
+            teleport
+            @update:model-value="setPricingMode"
+          />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5">{{ pricingHint }}</p>
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div v-if="pricingMode === 'discount'">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             {{ t('platform.catalogBundleDiscountType') }}
           </label>
-          <select
-            v-model="discountType"
+          <HeadlessSelect
+            :model-value="discountType"
+            :options="discountTypeOptions"
             :disabled="!canEdit || saving"
-            class="w-full text-sm px-2 py-1.5 rounded-lg border dark:bg-gray-900 dark:border-gray-600"
-            @change="scheduleSaveBundle"
-          >
-            <option value="percent">{{ t('platform.catalogBundleDiscountPercent') }}</option>
-            <option value="amount">{{ t('platform.catalogBundleDiscountAmount') }}</option>
-          </select>
+            teleport
+            @update:model-value="setDiscountType"
+          />
         </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <div v-if="pricingMode === 'discount'">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             {{ t('platform.catalogBundleDiscountValue') }}
           </label>
           <input
@@ -115,40 +113,38 @@
             min="0"
             step="any"
             :disabled="!canEdit || saving"
-            class="w-full text-sm px-2 py-1.5 rounded-lg border dark:bg-gray-900 dark:border-gray-600"
+            class="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
             @change="scheduleSaveBundle"
           >
         </div>
-      </template>
 
-      <div>
-        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ t('platform.catalogBundleEffectiveFrom') }}
-        </label>
-        <input
-          v-model="effectiveFrom"
-          type="date"
-          :disabled="!canEdit || saving"
-          class="w-full text-sm px-2 py-1.5 rounded-lg border dark:bg-gray-900 dark:border-gray-600"
-          @change="scheduleSaveBundle"
-        >
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ t('platform.catalogBundleEffectiveUntil') }}
-        </label>
-        <input
-          v-model="effectiveUntil"
-          type="date"
-          :disabled="!canEdit || saving"
-          class="w-full text-sm px-2 py-1.5 rounded-lg border dark:bg-gray-900 dark:border-gray-600"
-          @change="scheduleSaveBundle"
-        >
-      </div>
-
-      <template v-if="bundleType === 'flexible'">
         <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            {{ t('platform.catalogBundleEffectiveFrom') }}
+          </label>
+          <DatePicker
+            :model-value="effectiveFrom"
+            :disabled="!canEdit || saving"
+            :input-class="dateInputClass"
+            panel-class="z-[60]"
+            @update:model-value="setEffectiveFrom"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            {{ t('platform.catalogBundleEffectiveUntil') }}
+          </label>
+          <DatePicker
+            :model-value="effectiveUntil"
+            :disabled="!canEdit || saving"
+            :input-class="dateInputClass"
+            panel-class="z-[60]"
+            @update:model-value="setEffectiveUntil"
+          />
+        </div>
+
+        <div v-if="bundleType === 'flexible'">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             {{ t('platform.catalogBundleMinOptional') }}
           </label>
           <input
@@ -157,12 +153,12 @@
             min="0"
             step="1"
             :disabled="!canEdit || saving"
-            class="w-full text-sm px-2 py-1.5 rounded-lg border dark:bg-gray-900 dark:border-gray-600"
+            class="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
             @change="scheduleSaveBundle"
           >
         </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <div v-if="bundleType === 'flexible'">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             {{ t('platform.catalogBundleMaxOptional') }}
           </label>
           <input
@@ -171,173 +167,280 @@
             min="0"
             step="1"
             :disabled="!canEdit || saving"
-            class="w-full text-sm px-2 py-1.5 rounded-lg border dark:bg-gray-900 dark:border-gray-600"
+            class="w-full text-sm px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
             @change="scheduleSaveBundle"
           >
         </div>
-      </template>
+      </div>
     </div>
 
-    <div v-if="loading" class="text-sm text-gray-500">{{ t('states.loading') }}</div>
-    <div v-else-if="!components.length" class="text-sm text-gray-500 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 px-4 py-6 text-center">
-      {{ t('platform.catalogBundleEmpty') }}
-    </div>
-    <template v-else>
-      <p v-if="bundleError" class="text-sm text-red-600 dark:text-red-400">{{ bundleError }}</p>
+    <div class="space-y-3 pt-1 border-t border-gray-100 dark:border-gray-700/80">
+      <h5 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        {{ t('platform.catalogBundleGroupComponents') }}
+      </h5>
 
-      <div class="overflow-x-auto -mx-1 px-1">
-        <table class="w-full min-w-[720px] text-sm">
-          <thead>
-            <tr class="text-left text-[11px] uppercase tracking-wide text-gray-500 border-b border-gray-200 dark:border-gray-700">
-              <th class="py-2 pr-2 font-medium">{{ t('platform.catalogBundleComponent') }}</th>
-              <th class="py-2 pr-2 font-medium w-20">{{ t('platform.catalogBundleQty') }}</th>
-              <th v-if="bundleType === 'flexible'" class="py-2 pr-2 font-medium">{{ t('platform.catalogBundleRole') }}</th>
-              <th v-if="bundleType === 'flexible'" class="py-2 pr-2 font-medium text-center">{{ t('platform.catalogBundleDefaultOn') }}</th>
-              <th class="py-2 pr-2 font-medium text-center">{{ t('platform.catalogBundleEditableQty') }}</th>
-              <th class="py-2 pr-2 font-medium w-16">{{ t('platform.catalogBundleMinQty') }}</th>
-              <th class="py-2 pr-2 font-medium w-16">{{ t('platform.catalogBundleMaxQty') }}</th>
-              <th class="py-2 pr-2 font-medium">{{ t('platform.catalogBundleRemarks') }}</th>
-              <th class="py-2 w-8" />
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(row, idx) in components"
-              :key="row.componentVariantId"
-              class="border-b border-gray-100 dark:border-gray-800 align-top"
+      <div v-if="loading" class="text-sm text-gray-500 py-4">{{ t('states.loading') }}</div>
+
+      <div
+        v-else-if="!components.length"
+        class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-900/30 px-4 py-10 text-center"
+      >
+        <p class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ t('platform.catalogBundleEmpty') }}</p>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('platform.catalogBundleEmptyHint') }}</p>
+        <button
+          v-if="canEdit"
+          type="button"
+          class="mt-4 text-sm px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+          @click="openPicker"
+        >
+          {{ t('platform.catalogBundleAddComponent') }}
+        </button>
+      </div>
+
+      <div v-else class="space-y-3">
+        <p v-if="bundleError" class="text-sm text-red-600 dark:text-red-400">{{ bundleError }}</p>
+
+        <ul class="space-y-3">
+          <li
+            v-for="(row, idx) in components"
+            :key="row.componentVariantId"
+            class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-900/40 p-3.5 sm:p-4"
+          >
+            <div class="flex flex-wrap items-start gap-3 sm:gap-4">
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {{ row.item_name || row.variant_code }}
+                </p>
+                <p class="text-xs text-gray-500 font-mono mt-0.5">
+                  <span v-if="row.item_code">{{ row.item_code }} · </span>{{ row.variant_code }}
+                </p>
+              </div>
+
+              <div class="flex items-end gap-3 flex-wrap">
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    {{ t('platform.catalogBundleQty') }}
+                  </label>
+                  <input
+                    v-model.number="row.quantity"
+                    type="number"
+                    min="0.0001"
+                    step="any"
+                    :disabled="!canEdit"
+                    class="w-20 text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 tabular-nums"
+                    @change="scheduleSaveBundle"
+                  >
+                </div>
+
+                <button
+                  v-if="canEdit"
+                  type="button"
+                  class="mb-0.5 text-sm text-red-600 hover:text-red-700 px-2 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                  :aria-label="t('actions.remove')"
+                  @click="removeAt(idx)"
+                >
+                  {{ t('actions.remove') }}
+                </button>
+              </div>
+            </div>
+
+            <div
+              v-if="bundleType === 'flexible'"
+              class="mt-3 pt-3 border-t border-gray-200/80 dark:border-gray-700 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
             >
-              <td class="py-2.5 pr-2">
-                <span class="text-gray-900 dark:text-white font-medium">{{ row.item_name || row.variant_code }}</span>
-                <span v-if="row.variant_code" class="block text-xs text-gray-500 font-mono">{{ row.variant_code }}</span>
-              </td>
-              <td class="py-2.5 pr-2">
-                <input
-                  v-model.number="row.quantity"
-                  type="number"
-                  min="0.0001"
-                  step="any"
+              <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  {{ t('platform.catalogBundleRole') }}
+                </label>
+                <HeadlessSelect
+                  :model-value="row.isOptional ? 'optional' : 'mandatory'"
+                  :options="roleOptions"
                   :disabled="!canEdit"
-                  class="w-16 text-sm px-1.5 py-1 rounded border dark:bg-gray-900 dark:border-gray-600"
-                  @change="scheduleSaveBundle"
-                >
-              </td>
-              <td v-if="bundleType === 'flexible'" class="py-2.5 pr-2">
-                <select
-                  :value="row.isOptional ? 'optional' : 'mandatory'"
-                  :disabled="!canEdit"
-                  class="text-xs px-1.5 py-1 rounded border dark:bg-gray-900 dark:border-gray-600"
-                  @change="row.isOptional = $event.target.value === 'optional'; onOptionalChange(row)"
-                >
-                  <option value="mandatory">{{ t('platform.catalogBundleMandatory') }}</option>
-                  <option value="optional">{{ t('platform.catalogBundleOptional') }}</option>
-                </select>
-              </td>
-              <td v-if="bundleType === 'flexible'" class="py-2.5 pr-2 text-center">
+                  teleport
+                  button-class="!py-1.5 !text-sm"
+                  @update:model-value="(v) => setComponentRole(row, v)"
+                />
+              </div>
+
+              <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 min-h-[38px] mt-5">
                 <input
                   v-model="row.defaultSelected"
                   type="checkbox"
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                   :disabled="!canEdit || !row.isOptional"
                   @change="scheduleSaveBundle"
                 >
-              </td>
-              <td class="py-2.5 pr-2 text-center">
+                <span>{{ t('platform.catalogBundleDefaultOn') }}</span>
+              </label>
+
+              <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 min-h-[38px] mt-5">
                 <input
                   v-model="row.editableQuantity"
                   type="checkbox"
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                   :disabled="!canEdit"
                   @change="scheduleSaveBundle"
                 >
-              </td>
-              <td class="py-2.5 pr-2">
+                <span>{{ t('platform.catalogBundleEditableQty') }}</span>
+              </label>
+
+              <div v-if="row.editableQuantity">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  {{ t('platform.catalogBundleMinQty') }}
+                </label>
                 <input
                   v-model.number="row.minQuantity"
                   type="number"
                   min="0.0001"
                   step="any"
-                  :disabled="!canEdit || !row.editableQuantity"
-                  class="w-14 text-sm px-1 py-1 rounded border dark:bg-gray-900 dark:border-gray-600 disabled:opacity-40"
+                  :disabled="!canEdit"
+                  class="w-full text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
                   @change="scheduleSaveBundle"
                 >
-              </td>
-              <td class="py-2.5 pr-2">
+              </div>
+              <div v-if="row.editableQuantity">
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  {{ t('platform.catalogBundleMaxQty') }}
+                </label>
                 <input
                   v-model.number="row.maxQuantity"
                   type="number"
                   min="0.0001"
                   step="any"
-                  :disabled="!canEdit || !row.editableQuantity"
-                  class="w-14 text-sm px-1 py-1 rounded border dark:bg-gray-900 dark:border-gray-600 disabled:opacity-40"
+                  :disabled="!canEdit"
+                  class="w-full text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
                   @change="scheduleSaveBundle"
                 >
-              </td>
-              <td class="py-2.5 pr-2">
+              </div>
+            </div>
+
+            <div
+              v-if="bundleType === 'fixed' && row.editableQuantity"
+              class="mt-3 pt-3 border-t border-gray-200/80 dark:border-gray-700 grid gap-3 sm:grid-cols-2"
+            >
+              <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  {{ t('platform.catalogBundleMinQty') }}
+                </label>
+                <input
+                  v-model.number="row.minQuantity"
+                  type="number"
+                  min="0.0001"
+                  step="any"
+                  :disabled="!canEdit"
+                  class="w-full text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
+                  @change="scheduleSaveBundle"
+                >
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  {{ t('platform.catalogBundleMaxQty') }}
+                </label>
+                <input
+                  v-model.number="row.maxQuantity"
+                  type="number"
+                  min="0.0001"
+                  step="any"
+                  :disabled="!canEdit"
+                  class="w-full text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
+                  @change="scheduleSaveBundle"
+                >
+              </div>
+            </div>
+
+            <div class="mt-3 grid gap-3" :class="bundleType === 'fixed' ? 'sm:grid-cols-[1fr_auto]' : ''">
+              <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  {{ t('platform.catalogBundleRemarks') }}
+                </label>
                 <input
                   v-model="row.remarks"
                   type="text"
                   maxlength="500"
                   :disabled="!canEdit"
-                  class="w-full min-w-[100px] text-xs px-1.5 py-1 rounded border dark:bg-gray-900 dark:border-gray-600"
+                  class="w-full text-sm px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
                   :placeholder="t('platform.catalogBundleRemarksPlaceholder')"
                   @change="scheduleSaveBundle"
                 >
-              </td>
-              <td class="py-2.5">
-                <button
-                  v-if="canEdit"
-                  type="button"
-                  class="text-xs text-red-600 hover:text-red-700 px-1"
-                  :aria-label="t('actions.remove')"
-                  @click="removeAt(idx)"
+              </div>
+              <label
+                v-if="bundleType === 'fixed'"
+                class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 sm:mt-6"
+              >
+                <input
+                  v-model="row.editableQuantity"
+                  type="checkbox"
+                  class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  :disabled="!canEdit"
+                  @change="scheduleSaveBundle"
                 >
-                  ×
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <span>{{ t('platform.catalogBundleEditableQty') }}</span>
+              </label>
+            </div>
+          </li>
+        </ul>
       </div>
-    </template>
-
-    <div class="flex flex-wrap items-center gap-3">
-      <button
-        type="button"
-        class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-        :disabled="loadingPreview || !components.length"
-        @click="loadPreview"
-      >
-        {{ loadingPreview ? t('states.loading') : t('platform.catalogBundlePreview') }}
-      </button>
     </div>
 
     <div
-      v-if="preview"
-      class="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-sm space-y-2"
+      v-if="components.length"
+      class="pt-4 border-t border-gray-100 dark:border-gray-700/80 space-y-3"
     >
-      <div class="flex flex-wrap items-baseline justify-between gap-2">
-        <p class="font-medium text-gray-900 dark:text-white">
-          {{ t('platform.catalogBundlePreviewTotal') }}:
-          <span class="tabular-nums">{{ formatMoney(preview.bundleUnitPrice) }} {{ preview.currency }}</span>
-        </p>
-        <span class="text-[11px] text-gray-500">
-          {{ preview.bundleType }} · {{ preview.pricingMode }}
-          <template v-if="preview.discountApplied">
-            · −{{ formatMoney(preview.discountApplied) }}
-          </template>
-        </span>
-      </div>
-      <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-        <li
-          v-for="line in preview.lines"
-          :key="line.componentVariantId"
-          :class="{ 'opacity-40 line-through': !line.included }"
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h5 class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          {{ t('platform.catalogBundleGroupPreview') }}
+        </h5>
+        <button
+          type="button"
+          class="text-sm px-3 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50"
+          :disabled="loadingPreview"
+          @click="loadPreview"
         >
-          {{ line.item_name }} × {{ line.quantity }}
-          <template v-if="line.included"> — {{ formatMoney(line.lineTotal) }} {{ line.currency }}</template>
-          <span v-if="line.isOptional" class="ml-1 text-[10px] uppercase tracking-wide text-amber-600 dark:text-amber-400">
-            {{ t('platform.catalogBundleOptional') }}
+          {{ loadingPreview ? t('states.loading') : t('platform.catalogBundlePreview') }}
+        </button>
+      </div>
+
+      <div
+        v-if="preview"
+        class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-4 text-sm space-y-3"
+      >
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <p class="font-semibold text-gray-900 dark:text-white">
+            {{ t('platform.catalogBundlePreviewTotal') }}
+            <span class="ml-1 tabular-nums text-indigo-700 dark:text-indigo-300">
+              {{ formatMoney(preview.bundleUnitPrice) }} {{ preview.currency }}
+            </span>
+          </p>
+          <span class="text-xs text-gray-500">
+            {{ preview.bundleType }} · {{ preview.pricingMode }}
+            <span v-if="preview.discountApplied">
+              · −{{ formatMoney(preview.discountApplied) }}
+            </span>
           </span>
-        </li>
-      </ul>
+        </div>
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+          <li
+            v-for="line in preview.lines"
+            :key="line.componentVariantId"
+            class="py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 dark:text-gray-400"
+            :class="{ 'opacity-40 line-through': !line.included }"
+          >
+            <span>
+              {{ line.item_name }} × {{ line.quantity }}
+              <span
+                v-if="line.isOptional"
+                class="ml-1.5 text-[10px] uppercase tracking-wide text-amber-600 dark:text-amber-400"
+              >{{ t('platform.catalogBundleOptional') }}</span>
+            </span>
+            <span v-if="line.included" class="tabular-nums font-medium text-gray-800 dark:text-gray-200">
+              {{ formatMoney(line.lineTotal) }} {{ line.currency }}
+            </span>
+          </li>
+        </ul>
+      </div>
+      <p v-else class="text-xs text-gray-500 dark:text-gray-400">
+        {{ t('platform.catalogBundlePreviewHint') }}
+      </p>
     </div>
 
     <div v-if="showPicker" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -348,7 +451,7 @@
         <input
           v-model="searchQuery"
           type="search"
-          class="w-full px-3 py-2 rounded-lg border dark:bg-gray-900 dark:border-gray-600 text-sm"
+          class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
           :placeholder="t('platform.catalogBundleSearchPlaceholder')"
           @input="debouncedSearch"
         >
@@ -357,18 +460,22 @@
           <li
             v-for="hit in searchResults"
             :key="hit._id"
-            class="px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+            class="px-3 py-2.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer text-sm"
             @click="addComponent(hit)"
           >
             <span class="font-medium text-gray-900 dark:text-white">{{ hit.item_name }}</span>
-            <span class="text-xs text-gray-500 ml-2 font-mono">{{ hit.variant_code }}</span>
+            <span class="block text-xs text-gray-500 font-mono mt-0.5">{{ hit.variant_code }}</span>
           </li>
-          <li v-if="!searchLoading && !searchResults.length" class="text-sm text-gray-500 px-2">
+          <li v-if="!searchLoading && !searchResults.length" class="text-sm text-gray-500 px-2 py-4 text-center">
             {{ t('platform.catalogBundleNoResults') }}
           </li>
         </ul>
-        <div class="flex justify-end">
-          <button type="button" class="text-sm px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" @click="showPicker = false">
+        <div class="flex justify-end pt-1 border-t border-gray-100 dark:border-gray-700">
+          <button
+            type="button"
+            class="text-sm px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+            @click="showPicker = false"
+          >
             {{ t('actions.close') }}
           </button>
         </div>
@@ -383,6 +490,8 @@ import { useI18n } from 'vue-i18n';
 import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiData } from '@/utils/catalogApi';
 import { confirmAction } from '@/composables/useConfirmAction';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import DatePicker from '@/components/common/DatePicker.vue';
 
 const props = defineProps({
   variantId: { type: String, required: true },
@@ -390,6 +499,25 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+
+const dateInputClass =
+  'block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20 cursor-pointer';
+
+const pricingModeOptions = computed(() => [
+  { value: 'fixed', label: t('platform.catalogBundlePricingFixed') },
+  { value: 'rollup', label: t('platform.catalogBundlePricingRollup') },
+  { value: 'discount', label: t('platform.catalogBundlePricingDiscount') }
+]);
+
+const discountTypeOptions = computed(() => [
+  { value: 'percent', label: t('platform.catalogBundleDiscountPercent') },
+  { value: 'amount', label: t('platform.catalogBundleDiscountAmount') }
+]);
+
+const roleOptions = computed(() => [
+  { value: 'mandatory', label: t('platform.catalogBundleMandatory') },
+  { value: 'optional', label: t('platform.catalogBundleOptional') }
+]);
 
 const loading = ref(false);
 const saving = ref(false);
@@ -557,6 +685,31 @@ function onPricingModeChange() {
     discountType.value = 'percent';
   }
   scheduleSaveBundle();
+}
+
+function setPricingMode(value) {
+  pricingMode.value = value || 'fixed';
+  onPricingModeChange();
+}
+
+function setDiscountType(value) {
+  discountType.value = value || 'percent';
+  scheduleSaveBundle();
+}
+
+function setEffectiveFrom(value) {
+  effectiveFrom.value = value || '';
+  scheduleSaveBundle();
+}
+
+function setEffectiveUntil(value) {
+  effectiveUntil.value = value || '';
+  scheduleSaveBundle();
+}
+
+function setComponentRole(row, value) {
+  row.isOptional = value === 'optional';
+  onOptionalChange(row);
 }
 
 function onOptionalChange(row) {

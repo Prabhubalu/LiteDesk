@@ -641,6 +641,7 @@
           :row-key="rowKey"
           :empty-title="emptyStateTitle"
           :empty-message="emptyStateMessage"
+          :empty-illustration-src="emptyStateIllustrationSrc"
           :table-id="tableId"
           :resizable-columns="resizableColumns"
           :row-height="rowHeight"
@@ -696,27 +697,16 @@
             </slot>
           </template>
           
-          <!-- Empty State Slot -->
-          <template #empty>
-            <div class="flex flex-col items-center justify-center py-8">
-              <img
-                src="/assets/illustrations/empty_state.svg"
-                :alt="t('common.listEmptyIllustrationAlt')"
-                class="mx-auto h-40 w-auto"
-              />
-              <h3 class="mt-6 text-lg font-semibold text-gray-900 dark:text-white">{{ emptyStateTitle }}</h3>
-              <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                {{ emptyStateMessage }}
-              </p>
-              <div v-if="canClearFilters" class="mt-6 flex justify-center">
-                <button
-                  @click="clearFilters"
-                  class="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 cursor-pointer"
-                >
-                  <XMarkIcon class="h-4 w-4" />
-                  <span>{{ t('common.listClearSearchAndFilters') }}</span>
-                </button>
-              </div>
+          <!-- Empty actions only (title/illustration rendered by TableView) -->
+          <template v-if="canClearFilters" #empty-actions>
+            <div class="flex justify-center">
+              <button
+                @click="clearFilters"
+                class="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-300 dark:hover:bg-indigo-900/50 cursor-pointer"
+              >
+                <XMarkIcon class="h-4 w-4" />
+                <span>{{ t('common.listClearSearchAndFilters') }}</span>
+              </button>
             </div>
           </template>
         </TableView>
@@ -1498,6 +1488,7 @@ import {
   resolveListFilterLabel,
 } from '@/utils/moduleListLabels';
 import { APP_NAME_KEYS } from '@/utils/navigationLabels';
+import { getModuleEmptyIllustrationSrc } from '@/utils/moduleEmptyIllustrations';
 
 const { t, te } = useI18n();
 import { useRouter, useRoute } from 'vue-router';
@@ -1982,7 +1973,7 @@ const resolvedTableMaxBodyHeight = computed(() => {
 const slots = useSlots();
 /** Slot names frozen on first setup — dynamic v-for over reactive slot keys causes patch races on refresh. */
 const forwardedSlotNames = Object.keys(slots)
-  .filter((name) => name !== 'actions')
+  .filter((name) => name !== 'actions' && name !== 'empty' && name !== 'empty-actions')
   .sort();
 
 // Use bulk actions composable
@@ -4150,6 +4141,10 @@ const emptyStateMessage = computed(() => {
   }
   return props.emptyMessage || t('common.listEmptyMessage');
 });
+
+const emptyStateIllustrationSrc = computed(() =>
+  getModuleEmptyIllustrationSrc(props.moduleKey, { noMatch: hasActiveFilters.value })
+);
 
 const getFilterAllLabel = (filter) => resolveFilterAllLabel(filter, t);
 

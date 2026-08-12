@@ -1,5 +1,6 @@
 <template>
   <div
+    data-record-title-row
     :class="[
       'sticky z-10 border-b transition-[padding,background-color,border-color,backdrop-filter] duration-200 ease-out',
       embed ? 'top-0 mb-0 py-3' : 'mb-2 top-0 lg:mb-6 lg:-top-6',

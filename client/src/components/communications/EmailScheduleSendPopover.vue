@@ -2,7 +2,7 @@
   <div ref="rootRef" class="relative h-full">
     <button
       type="button"
-      class="inline-flex h-full w-9 items-center justify-center rounded-r-full border-l border-white/25 text-white hover:bg-[#0842a0] disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:hover:bg-indigo-500"
+      class="inline-flex h-full w-9 items-center justify-center rounded-r-full border-l border-white/25 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:hover:bg-indigo-500"
       :disabled="disabled"
       :aria-expanded="open"
       aria-haspopup="dialog"
@@ -96,7 +96,7 @@
           </p>
           <button
             type="button"
-            class="w-full rounded-full bg-[#0b57d0] px-4 py-2 text-sm font-medium text-white hover:bg-[#0842a0] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-600 dark:hover:bg-indigo-500"
+            class="w-full rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-600 dark:hover:bg-indigo-500"
             :disabled="!customDate || !customTime"
             @click="confirmCustom"
           >

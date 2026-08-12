@@ -1,24 +1,35 @@
 <template>
-  <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-    <div class="flex items-center justify-between gap-3 mb-4">
-      <div>
+  <section
+    class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5"
+  >
+    <div class="flex items-center justify-between gap-3" :class="isEmpty ? '' : 'mb-4'">
+      <div class="min-w-0">
         <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('platform.catalogMediaTitle') }}</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{{ t('platform.catalogMediaDesc') }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          {{ isEmpty ? t('platform.catalogMediaEmpty') : t('platform.catalogMediaDesc') }}
+        </p>
       </div>
       <label
-        v-if="canEdit"
-        class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg cursor-pointer transition-colors"
+        v-if="canEdit && !isEmpty"
+        class="inline-flex shrink-0 items-center gap-2 px-3 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg cursor-pointer transition-colors"
       >
-        <input type="file" class="hidden" accept="image/*,application/pdf" @change="onFileSelected" :disabled="uploading" />
+        <input type="file" class="hidden" accept="image/*,application/pdf" @change="onFileSelected" :disabled="uploading">
         <span>{{ uploading ? t('common.formUploading') : t('platform.catalogMediaUpload') }}</span>
       </label>
     </div>
 
-    <div v-if="!sortedMedia.length" class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center">
-      <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('platform.catalogMediaEmpty') }}</p>
-    </div>
+    <label
+      v-if="canEdit && isEmpty"
+      class="mt-4 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-900/40 px-4 py-10 text-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:border-indigo-500 dark:hover:bg-indigo-900/20 transition-colors"
+    >
+      <input type="file" class="hidden" accept="image/*,application/pdf" @change="onFileSelected" :disabled="uploading">
+      <span class="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+        {{ uploading ? t('common.formUploading') : t('platform.catalogMediaUploadCta') }}
+      </span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('platform.catalogMediaUploadHint') }}</span>
+    </label>
 
-    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <div v-if="!isEmpty" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
       <div
         v-for="entry in sortedMedia"
         :key="entry._id"
@@ -30,7 +41,7 @@
             :src="entry.url"
             :alt="entry.altText || ''"
             class="w-full h-full object-cover"
-          />
+          >
           <div v-else class="p-4 text-center text-xs text-gray-600 dark:text-gray-300">
             <span class="font-medium block truncate">{{ entry.fileName || t('platform.catalogMediaDocument') }}</span>
           </div>
@@ -45,7 +56,7 @@
           >
             {{ t('platform.catalogMediaSetPrimary') }}
           </button>
-          <span v-else-if="entry.isPrimary" class="text-xs text-emerald-300 font-medium">{{ t('platform.catalogMediaPrimary') }}</span>
+          <span v-else class="text-xs text-transparent select-none" aria-hidden="true">·</span>
           <button
             v-if="canEdit"
             type="button"
@@ -93,11 +104,11 @@ const sortedMedia = computed(() =>
   [...props.media].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 );
 
+const isEmpty = computed(() => sortedMedia.value.length === 0);
+
 const onFileSelected = (event) => {
-  const file = event.target.files?.[0];
-  if (file) {
-    event.target.value = '';
-    emit('upload', file);
-  }
+  const file = event.target?.files?.[0];
+  if (file) emit('upload', file);
+  if (event.target) event.target.value = '';
 };
 </script>

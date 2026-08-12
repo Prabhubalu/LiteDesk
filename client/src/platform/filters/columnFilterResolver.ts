@@ -47,6 +47,7 @@ const USER_FIELD_KEYS = new Set([
   'assignedto',
   'assignedto',
   'createdby',
+  'modifiedby',
 ]);
 
 const PICKLIST_FIELD_KEYS = new Set([
@@ -88,7 +89,9 @@ const DATE_FIELD_KEYS = new Set([
   'validuntil',
   'issuedate',
   'createdat',
+  'createdtime',
   'updatedat',
+  'modifiedtime',
 ]);
 
 export function inferFilterTypeFromColumn(column: ColumnFilterSource): FilterConfig['filterType'] {

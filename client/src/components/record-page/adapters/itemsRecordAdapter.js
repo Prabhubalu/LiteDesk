@@ -40,6 +40,8 @@ export function createItemsRecordAdapter(opts = {}) {
       const catalogSection = {
         key: 'catalog',
         title: catalogTitle,
+        // Nested catalog cards own their titles; sticky chips are the section map.
+        suppressTitleRow: true,
         component: ItemCatalogRecordSection,
         className: 'pt-2 pb-2',
         actions: []

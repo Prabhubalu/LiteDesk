@@ -113,12 +113,17 @@ async function createEntry({ organizationId, userId, priceBookId, payload }) {
     throw err;
   }
 
+  const { getTenantCurrencyCode } = require('../utils/orgCurrency');
+  const currency = payload.currency
+    || book.currency
+    || await getTenantCurrencyCode(organizationId);
+
   return CatalogPriceBookEntry.create({
     organizationId,
     priceBookId,
     variantId,
     unitPrice,
-    currency: payload.currency || book.currency || 'USD',
+    currency,
     effectiveFrom,
     effectiveTo,
     minQty,

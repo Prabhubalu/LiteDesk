@@ -2915,6 +2915,18 @@
     "message": "External ID",
     "description": "Common tenant custom field label"
   },
+  "sysFieldCreatedOn": {
+    "message": "Created On",
+    "description": "Platform audit filter/column label — created timestamp"
+  },
+  "sysFieldModifiedOn": {
+    "message": "Modified On",
+    "description": "Platform audit filter/column label — last modified timestamp"
+  },
+  "sysFieldCreatedBy": {
+    "message": "Created By",
+    "description": "Platform audit filter/column label — creating user"
+  },
   "phraseLastActivity": {
     "message": "Last Activity",
     "description": "Common tenant custom field label"

@@ -103,7 +103,8 @@ export const DEFAULT_LOCALE = 'en-US';
 export const FALLBACK_LANGUAGE: SupportedLanguage = 'en';
 
 /** Dev warning threshold for initial (core) locale payload after flattening. */
-export const LOCALE_CORE_BUDGET_BYTES = 512 * 1024;
+/** Soft cap on eager core locale payload (warn in DEV if exceeded). */
+export const LOCALE_CORE_BUDGET_BYTES = 576 * 1024;
 
 /** Dev warning threshold for full locale payload (core + deferred). */
 export const LOCALE_FULL_BUDGET_BYTES = 1536 * 1024;

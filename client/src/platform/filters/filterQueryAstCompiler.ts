@@ -1,7 +1,7 @@
 import { inferFallbackFilterConfig } from '@/platform/filters/columnFilterResolver';
 import type { FilterConfig } from '@/platform/filters/filterResolver';
 import type { FilterOperatorId } from '@/platform/filters/filterOperators';
-import { operatorRequiresFilterQuery } from '@/platform/filters/filterOperators';
+import { ruleRequiresFilterQuery } from '@/platform/filters/filterOperators';
 import {
   compileOperatorValueForApi,
   isFilterRuleActive,
@@ -109,7 +109,7 @@ export function compileFilterQueryAst(
     node: CompiledFilterRule | ServerFilterQuery
   ): boolean => {
     if ('fieldKey' in node) {
-      return operatorRequiresFilterQuery(node.operator);
+      return ruleRequiresFilterQuery(node.fieldKey, node.operator);
     }
     return (
       node.logic === 'OR' ||

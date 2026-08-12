@@ -19,6 +19,12 @@ const ASSIGNED_TO_LIST_MODULES = new Set([
 ]);
 
 /**
+ * Audit user fields accepted as flat list params (me / unassigned / userId).
+ * Prefer filterQuery AST from the client; flat support covers saved views / legacy payloads.
+ */
+const FLAT_USER_IDENTITY_FIELDS = ['createdBy', 'modifiedBy'];
+
+/**
  * Collect field prefixes that have date filter query params ({field}Preset / {field}Op / …).
  * @param {Record<string, unknown>} params
  * @returns {Set<string>}
@@ -63,6 +69,44 @@ function applyDateFilterQueryParams(query, params) {
 }
 
 /**
+ * Resolve a single flat user-identity param (userId | "me" | "unassigned" | "null").
+ * @param {object} query
+ * @param {Record<string, unknown>} params
+ * @param {string} fieldKey
+ * @param {{ userId?: unknown }} [context]
+ */
+function applyFlatUserIdentityField(query, params, fieldKey, context = {}) {
+  const next = { ...(query || {}) };
+  const raw = params?.[fieldKey];
+  if (raw === undefined || raw === '') {
+    return next;
+  }
+
+  if (raw === 'unassigned' || raw === 'null') {
+    delete next[fieldKey];
+    next.$and = [
+      ...(next.$and || []),
+      { $or: [{ [fieldKey]: null }, { [fieldKey]: { $exists: false } }] },
+    ];
+    return next;
+  }
+
+  if (raw === 'assigned') {
+    delete next[fieldKey];
+    next.$and = [
+      ...(next.$and || []),
+      { [fieldKey]: { $ne: null, $exists: true } },
+    ];
+    return next;
+  }
+
+  const resolved = raw === 'me' ? context.userId : raw;
+  if (!resolved) return next;
+  next[fieldKey] = resolved;
+  return next;
+}
+
+/**
  * Resolve flat assignedTo list params (userId | "me" | "unassigned" | "null").
  * Also rewrites query.assignedTo === "me" left by module-specific builders.
  * @param {object} query
@@ -83,28 +127,25 @@ function applyFlatAssignedToQueryParam(query, params, moduleKey, context = {}) {
     return next;
   }
 
-  const raw = params?.assignedTo;
-  if (raw === undefined || raw === '') {
-    return next;
-  }
+  return applyFlatUserIdentityField(next, params, 'assignedTo', context);
+}
 
-  if (raw === 'unassigned' || raw === 'null') {
-    delete next.assignedTo;
-    next.$and = [
-      ...(next.$and || []),
-      { $or: [{ assignedTo: null }, { assignedTo: { $exists: false } }] },
-    ];
-    return next;
+/**
+ * Apply flat createdBy / modifiedBy list params across modules.
+ * @param {object} query
+ * @param {Record<string, unknown>} params
+ * @param {{ userId?: unknown }} [context]
+ */
+function applyFlatAuditUserQueryParams(query, params, context = {}) {
+  let next = { ...(query || {}) };
+  for (const fieldKey of FLAT_USER_IDENTITY_FIELDS) {
+    next = applyFlatUserIdentityField(next, params, fieldKey, context);
   }
-
-  const resolved = raw === 'me' ? context.userId : raw;
-  if (!resolved) return next;
-  next.assignedTo = resolved;
   return next;
 }
 
 /**
- * Applies client date-filter params + flat assignedTo + optional filterQuery AST to a Mongo list query.
+ * Applies client date-filter params + flat assignedTo/createdBy + optional filterQuery AST to a Mongo list query.
  * @param {object} query
  * @param {Record<string, unknown>} params
  * @param {string} moduleKey
@@ -113,6 +154,7 @@ function applyFlatAssignedToQueryParam(query, params, moduleKey, context = {}) {
 function applyListFilterQueryParam(query, params, moduleKey, context = {}) {
   let next = applyDateFilterQueryParams(query, params);
   next = applyFlatAssignedToQueryParam(next, params, moduleKey, context);
+  next = applyFlatAuditUserQueryParams(next, params, context);
   if (!params?.filterQuery) return next;
   return applyFilterQueryToMongoQuery(next, params.filterQuery, moduleKey, context);
 }
@@ -121,6 +163,8 @@ module.exports = {
   applyListFilterQueryParam,
   applyDateFilterQueryParams,
   applyFlatAssignedToQueryParam,
+  applyFlatAuditUserQueryParams,
   collectDateFilterPrefixes,
   ASSIGNED_TO_LIST_MODULES,
+  FLAT_USER_IDENTITY_FIELDS,
 };
