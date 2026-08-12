@@ -6,6 +6,10 @@ import {
   isSystemField,
   isFieldVisibleInConfig,
 } from '@/platform/fields/fieldCapabilityEngine';
+import {
+  getFilterableSystemFieldDef,
+  isFilterableSystemFieldKey,
+} from '@/platform/fields/filterableSystemFields';
 import { getFieldMetadataMap, normalizeModuleKeyForRegistry } from '@/platform/fields/FieldRegistry';
 import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
@@ -70,7 +74,7 @@ export function isFieldEligibleForListColumn(moduleKey, field, inventoryEnabled 
 }
 
 /**
- * Module filter picker: all user-facing module fields (not limited to list-visible columns).
+ * Module filter picker: user-facing module fields + allowlisted audit system fields.
  * @param {string} moduleKey
  * @param {{ key?: string, isSystem?: boolean }} field
  */
@@ -78,10 +82,69 @@ export function isFieldEligibleForModuleFilter(moduleKey, field, inventoryEnable
   const key = String(field?.key || '').trim();
   if (!key || key.includes('.')) return false;
   if (shouldHideFieldWhenInventoryDisabled(moduleKey, key, inventoryEnabled)) return false;
-  if (field?.isSystem === true) return false;
-  if (isSystemField(moduleKey, { key })) return false;
+
+  const isSystem = field?.isSystem === true || isSystemField(moduleKey, { key });
+  if (isSystem && !isFilterableSystemFieldKey(key)) return false;
   if (!isFieldVisibleInConfig(moduleKey, { key })) return false;
   return true;
+}
+
+/**
+ * @param {string} key
+ * @param {string} [fieldDataType]
+ * @param {{ filterType?: string, dataType?: string } | null} [systemDef]
+ */
+function resolveFilterFieldTyping(key, fieldDataType, systemDef = null) {
+  const def = systemDef || getFilterableSystemFieldDef(key);
+  if (def) {
+    return {
+      dataType: def.dataType,
+      filterType: def.filterType,
+    };
+  }
+  return {
+    dataType: inferListColumnDataType(key, fieldDataType),
+    filterType: undefined,
+  };
+}
+
+/**
+ * Audit/system fields omitted from module create/edit API but filterable platform-wide.
+ * @param {import('@/types/module-list.types').ListColumn[]} filterFields
+ * @param {string} moduleKey
+ */
+function mergeRegistryFilterableSystemFields(filterFields, moduleKey, inventoryEnabled = true) {
+  const registryKey = normalizeModuleKeyForRegistry(moduleKey);
+  if (!registryKey) return filterFields;
+
+  const metadataMap = getFieldMetadataMap(registryKey);
+  if (!metadataMap) return filterFields;
+
+  const merged = [...filterFields];
+  const existing = new Set(filterFields.map((field) => field.key));
+
+  for (const key of Object.keys(metadataMap)) {
+    if (existing.has(key)) continue;
+    if (!isFilterableSystemFieldKey(key)) continue;
+    if (shouldHideFieldWhenInventoryDisabled(moduleKey, key, inventoryEnabled)) continue;
+    if (!isFieldVisibleInConfig(moduleKey, { key })) continue;
+
+    const meta = metadataMap[key];
+    if (meta?.isVisibleInConfig === false) continue;
+
+    const def = getFilterableSystemFieldDef(key);
+    const typing = resolveFilterFieldTyping(key, undefined, def);
+    merged.push({
+      key,
+      label: getFieldDisplayLabel({ key }, moduleKey) || formatKeyToLabel(key),
+      dataType: typing.dataType,
+      filterType: typing.filterType,
+      order: def?.order ?? merged.length + 1,
+    });
+    existing.add(key);
+  }
+
+  return merged.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 
 /**
@@ -92,19 +155,23 @@ export function isFieldEligibleForModuleFilter(moduleKey, field, inventoryEnable
 export function buildFilterFieldsFromModuleFields(fields, moduleKey, inventoryEnabled = true) {
   if (!Array.isArray(fields) || !moduleKey) return [];
 
-  return fields
+  const filterFields = fields
     .filter((field) => isFieldEligibleForModuleFilter(moduleKey, field, inventoryEnabled))
     .map((field, index) => {
       const key = String(field.key);
+      const typing = resolveFilterFieldTyping(key, field.dataType);
       return {
         key,
         label: getFieldDisplayLabel(field, moduleKey),
-        dataType: inferListColumnDataType(key, field.dataType),
+        dataType: typing.dataType,
+        filterType: typing.filterType,
         options: Array.isArray(field.options) ? field.options : undefined,
         order: Number.isFinite(Number(field.order)) ? Number(field.order) : index + 1,
       };
     })
     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+
+  return mergeRegistryFilterableSystemFields(filterFields, moduleKey, inventoryEnabled);
 }
 
 /**

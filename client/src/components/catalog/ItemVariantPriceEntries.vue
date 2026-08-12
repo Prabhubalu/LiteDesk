@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+  <div class="mt-2 rounded-xl border border-gray-100 dark:border-gray-700/80 bg-gray-50/50 dark:bg-gray-900/20 p-4 sm:p-5">
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
       <div>
         <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('platform.catalogPriceEntriesTitle') }}</h4>
@@ -8,7 +8,7 @@
       <button
         v-if="canEdit && variantId"
         type="button"
-        class="text-xs px-2 py-1 bg-indigo-600 text-white rounded"
+        class="text-sm px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
         @click="openForm"
       >
         {{ t('platform.catalogAddPriceEntry') }}
@@ -18,7 +18,12 @@
     <p v-if="entryError" class="text-sm text-red-600 dark:text-red-400 mb-2">{{ entryError }}</p>
 
     <div v-if="loading" class="text-sm text-gray-500">{{ t('states.loading') }}</div>
-    <div v-else-if="!entries.length" class="text-sm text-gray-500">{{ t('platform.catalogNoPriceEntries') }}</div>
+    <div
+      v-else-if="!entries.length"
+      class="rounded-lg border border-dashed border-gray-200 dark:border-gray-700 px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400"
+    >
+      {{ t('platform.catalogNoPriceEntries') }}
+    </div>
     <div v-else class="overflow-x-auto -mx-1 px-1">
     <table class="w-full min-w-[320px] text-sm">
       <thead>
@@ -56,12 +61,15 @@
     <div v-if="showForm" class="mt-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
       <div>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{{ t('platform.catalogPriceBookColumn') }}</label>
-        <select v-model="form.priceBookId" class="w-full text-sm px-2 py-1.5 rounded border dark:bg-gray-900 dark:border-gray-600">
-          <option value="">{{ t('platform.catalogSelectPriceBook') }}</option>
-          <option v-for="book in priceBooks" :key="book._id" :value="book._id">
-            {{ book.name }}<template v-if="book.isDefault"> ({{ t('platform.catalogPriceBookDefaultBadge') }})</template>
-          </option>
-        </select>
+        <HeadlessSelect
+          v-model="form.priceBookId"
+          :options="priceBookOptions"
+          allow-empty
+          empty-value=""
+          :empty-label="t('platform.catalogSelectPriceBook')"
+          :placeholder="t('platform.catalogSelectPriceBook')"
+          teleport
+        />
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">{{ t('platform.catalogUnitPriceColumn') }}</label>
@@ -109,6 +117,7 @@ import apiClient from '@/utils/apiClient';
 import { unwrapCatalogApiList } from '@/utils/catalogApi';
 import { formatCurrencyValue } from '@/utils/currencyOptions';
 import { useAuthStore } from '@/stores/authRegistry';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 
 import { confirmAction } from '@/composables/useConfirmAction';
 const props = defineProps({
@@ -133,6 +142,15 @@ const showForm = ref(false);
 const entryError = ref('');
 const saving = ref(false);
 const form = reactive({ priceBookId: '', unitPrice: null, minQty: 1 });
+
+const priceBookOptions = computed(() =>
+  priceBooks.value.map((book) => ({
+    value: String(book._id),
+    label: book.isDefault
+      ? `${book.name} (${t('platform.catalogPriceBookDefaultBadge')})`
+      : book.name
+  }))
+);
 
 const bookNameById = computed(() => {
   const map = {};

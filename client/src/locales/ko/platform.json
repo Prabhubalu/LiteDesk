@@ -576,11 +576,11 @@
     "description": "Variant QR payload placeholder"
   },
   "catalogCategoryTitle": {
-    "message": "Category & attributes",
+    "message": "Category & specifications",
     "description": "Item catalog category section title"
   },
   "catalogCategoryDesc": {
-    "message": "Assign a catalog category and fill category-specific attributes.",
+    "message": "Assign a catalog category and fill product specifications for that category.",
     "description": "Item catalog category section description"
   },
   "catalogCategoryLabel": {
@@ -592,15 +592,15 @@
     "description": "Empty catalog category option"
   },
   "catalogAttributesTitle": {
-    "message": "Category attributes",
-    "description": "Item category attributes subsection title"
+    "message": "Specifications",
+    "description": "Item category specifications subsection title"
   },
   "catalogCategorySave": {
-    "message": "Save attributes",
-    "description": "Save item category attributes button"
+    "message": "Save specifications",
+    "description": "Save item category specifications button"
   },
   "catalogCategorySaveFailed": {
-    "message": "Failed to save category or attributes.",
+    "message": "Failed to save category or specifications.",
     "description": "Item category save error"
   },
   "catalogMultiSelectHint": {
@@ -1286,5 +1286,141 @@
   "catalogBundlePreviewFailed": {
     "message": "Could not preview bundle",
     "description": "Bundle preview error"
+  },
+  "catalogSectionNavAria": {
+    "message": "Catalog sections",
+    "description": "Aria label for sticky catalog section navigator on item record"
+  },
+  "catalogSectionEmptyHint": {
+    "message": "Not set yet",
+    "description": "Tooltip for empty-state indicator on catalog section chip"
+  },
+  "catalogSectionChipCategory": {
+    "message": "Category",
+    "description": "Short catalog section nav chip for category & specifications"
+  },
+  "catalogSectionChipMedia": {
+    "message": "Media",
+    "description": "Short catalog section nav chip for media gallery"
+  },
+  "catalogSectionChipSku": {
+    "message": "SKU & pricing",
+    "description": "Short catalog section nav chip for SKU and pricing"
+  },
+  "catalogMediaUploadCta": {
+    "message": "Upload product media",
+    "description": "Empty-state upload CTA for catalog media"
+  },
+  "catalogMediaUploadHint": {
+    "message": "Images or PDF · first image becomes primary",
+    "description": "Empty-state upload hint for catalog media"
+  },
+  "catalogSpecsFilled": {
+    "message": "{filled}/{total} filled",
+    "description": "Specifications completion badge on item category section"
+  },
+  "catalogSpecsNeedCategory": {
+    "message": "Choose a category to unlock specifications",
+    "description": "Empty state when item has no catalog category"
+  },
+  "catalogSpecsNeedCategoryHint": {
+    "message": "Specifications are defined per category in Catalog settings.",
+    "description": "Hint under category required empty state"
+  },
+  "catalogSpecsEmpty": {
+    "message": "No specifications for this category yet",
+    "description": "Empty state when category has no attribute templates"
+  },
+  "catalogSpecsEmptyHint": {
+    "message": "Add specification templates under Settings → Catalog → Categories.",
+    "description": "Hint when category has no specification templates"
+  },
+  "catalogSpecSelectPlaceholder": {
+    "message": "Select…",
+    "description": "Placeholder for select-type specification field"
+  },
+  "catalogSpecsSaved": {
+    "message": "Specifications saved",
+    "description": "Success feedback after saving item specifications"
+  },
+  "catalogVariantGroupIdentity": {
+    "message": "Identity",
+    "description": "SKU panel group heading for code and UOM"
+  },
+  "catalogVariantGroupPricing": {
+    "message": "Pricing",
+    "description": "SKU panel group heading for prices and currency"
+  },
+  "catalogVariantGroupTax": {
+    "message": "Tax",
+    "description": "SKU panel group heading for tax fields"
+  },
+  "catalogVariantGroupIds": {
+    "message": "Identifiers",
+    "description": "SKU panel group heading for barcode and QR"
+  },
+  "catalogBundleEmptyHint": {
+    "message": "Add sellable variants that ship with this offering.",
+    "description": "Hint under empty bundle components state"
+  },
+  "catalogBundleGroupRules": {
+    "message": "Package rules",
+    "description": "Bundle builder section heading for type and pricing"
+  },
+  "catalogBundleGroupComponents": {
+    "message": "Components",
+    "description": "Bundle builder section heading for component list"
+  },
+  "catalogBundleGroupPreview": {
+    "message": "Pricing preview",
+    "description": "Bundle builder section heading for expand preview"
+  },
+  "catalogBundleComponentCount": {
+    "message": "{count} components",
+    "description": "Badge showing number of bundle components"
+  },
+  "catalogBundlePreviewHint": {
+    "message": "Run a preview to see how this package prices for sales.",
+    "description": "Hint when bundle pricing preview has not been run"
+  },
+  "productConfigRuntimeCheckbox": {
+    "message": "Selected",
+    "description": "Product configuration checkbox option label"
+  },
+  "productConfigRuntimeSelect": {
+    "message": "Select…",
+    "description": "Product configuration dropdown placeholder"
+  },
+  "productConfigRuntimeValidation": {
+    "message": "Validation",
+    "description": "Product configuration validation panel title"
+  },
+  "productConfigRuntimeValid": {
+    "message": "Configuration is valid",
+    "description": "Product configuration valid state"
+  },
+  "productConfigRuntimeIdle": {
+    "message": "Complete the options above to validate.",
+    "description": "Product configuration validation idle state"
+  },
+  "productConfigRuntimeDeps": {
+    "message": "Applied dependencies",
+    "description": "Product configuration applied dependency rules"
+  },
+  "productConfigRuntimeBadgeEmpty": {
+    "message": "No options",
+    "description": "Product configuration badge when no options"
+  },
+  "productConfigRuntimeBadgeValid": {
+    "message": "Valid",
+    "description": "Product configuration badge valid"
+  },
+  "productConfigRuntimeBadgeInvalid": {
+    "message": "{count} issue(s)",
+    "description": "Product configuration badge invalid count"
+  },
+  "productConfigRuntimeBadgeIdle": {
+    "message": "Incomplete",
+    "description": "Product configuration badge incomplete"
   }
 }

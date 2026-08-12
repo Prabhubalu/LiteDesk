@@ -18,12 +18,19 @@ function resolvePrimaryMediaUrl(media = []) {
 }
 
 async function syncProductImageFromMedia(itemId, organizationId) {
-  const item = await Item.findOne({ _id: itemId, organizationId, deletedAt: null }).select('media product_image');
+  // Projection-only load: do not .save() — Item pre-save allocates item_code
+  // when fields are omitted and throws "organizationId is required".
+  const item = await Item.findOne({ _id: itemId, organizationId, deletedAt: null })
+    .select('media product_image')
+    .lean();
   if (!item) return null;
   const primaryUrl = resolvePrimaryMediaUrl(item.media || []);
-  if (item.product_image !== primaryUrl) {
-    item.product_image = primaryUrl || '';
-    await item.save();
+  const next = primaryUrl || '';
+  if (item.product_image !== next) {
+    await Item.updateOne(
+      { _id: itemId, organizationId, deletedAt: null },
+      { $set: { product_image: next } }
+    );
   }
   return primaryUrl;
 }

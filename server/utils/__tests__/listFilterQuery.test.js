@@ -60,3 +60,44 @@ test('applyListFilterQueryParam: applies assignedTo even without filterQuery', (
   );
   assert.deepEqual(query, { organizationId: 'org1', assignedTo: userId });
 });
+
+test('applyListFilterQueryParam: applies flat createdBy me', () => {
+  const query = applyListFilterQueryParam(
+    { organizationId: 'org1' },
+    { createdBy: 'me' },
+    'tasks',
+    { userId }
+  );
+  assert.deepEqual(query, { organizationId: 'org1', createdBy: userId });
+});
+
+test('applyListFilterQueryParam: applies flat createdBy unassigned', () => {
+  const query = applyListFilterQueryParam(
+    { organizationId: 'org1' },
+    { createdBy: 'unassigned' },
+    'tasks',
+    { userId }
+  );
+  assert.equal(query.organizationId, 'org1');
+  assert.equal(query.createdBy, undefined);
+  assert.deepEqual(query.$and, [
+    { $or: [{ createdBy: null }, { createdBy: { $exists: false } }] },
+  ]);
+});
+
+test('applyListFilterQueryParam: createdBy via filterQuery AST', () => {
+  const filterQuery = JSON.stringify({
+    logic: 'AND',
+    children: [{ fieldKey: 'createdBy', operator: 'is', value: userId }],
+  });
+  const query = applyListFilterQueryParam(
+    { organizationId: 'org1' },
+    { filterQuery },
+    'tasks',
+    { userId }
+  );
+  assert.deepEqual(query, {
+    organizationId: 'org1',
+    $and: [{ createdBy: userId }],
+  });
+});

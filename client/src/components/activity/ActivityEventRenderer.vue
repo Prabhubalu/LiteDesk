@@ -3,14 +3,11 @@
     :is="component"
     :event="event"
     :ui="ui"
-    :index="index"
-    :search-query="searchQuery"
-    :is-thread-view-active="isThreadViewActive"
+    v-bind="typeSpecificProps"
   />
 </template>
 
 <script setup>
-import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { getActivityEventComponent } from './activityEventRegistry';
 
@@ -22,7 +19,14 @@ const props = defineProps({
   isThreadViewActive: { type: Boolean, default: false }
 });
 
-const { t } = useI18n();
-
 const component = computed(() => getActivityEventComponent(props.event?.type));
+
+/** Only comment rows declare search/thread props; system/email have multi-root templates (attrs warn). */
+const typeSpecificProps = computed(() => {
+  if (String(props.event?.type || '').trim() !== 'comment') return {};
+  return {
+    searchQuery: props.searchQuery,
+    isThreadViewActive: props.isThreadViewActive
+  };
+});
 </script>

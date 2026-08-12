@@ -38,6 +38,15 @@ export const SALES_ORDER_FIELD_METADATA: Record<string, SalesOrderFieldMetadata>
     isSystem: true,
     isVisibleInConfig: true,
   },
+  createdBy: {
+    owner: 'system',
+    intent: 'system',
+    fieldScope: 'CORE',
+    editable: false,
+    isProtected: true,
+    isSystem: true,
+    isVisibleInConfig: true,
+  },
   salesOrderNumber: {
     owner: 'system',
     intent: 'system',

@@ -10,16 +10,15 @@
     :aria-label="t('inbox.inboxSurfaceMailFoldersAndMailboxes')"
   >
     <!-- Mailbox switcher + compose -->
-    <div class="shrink-0 space-y-2 px-2.5 pb-2 pt-2.5">
+    <div class="shrink-0 space-y-1.5 px-2.5 pb-2 pt-2.5">
       <p
         v-if="!mailboxItems.length"
         class="rounded-lg border border-dashed border-[#E0E0DE] bg-white/60 px-3 py-2.5 text-xs leading-relaxed text-[#9B9A97] dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-500"
       >
         {{ t('inbox.inboxSurfaceNoMailboxesYetAddOneBelow') }}
       </p>
-      <div class="flex h-9 items-center gap-1">
+      <div v-if="mailboxItems.length" class="flex h-9 items-center gap-0.5">
         <Listbox
-          v-if="mailboxItems.length"
           v-slot="{ open }"
           as="div"
           :model-value="selectedMailboxId ?? ''"
@@ -30,7 +29,7 @@
           <div class="relative h-full">
             <ListboxButton
               ref="mailboxButtonRef"
-              class="group flex h-full w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-2 text-left transition hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800"
+              class="group flex h-full w-full items-center gap-2 rounded-lg px-1.5 text-left transition hover:bg-black/[0.04] dark:hover:bg-white/5"
               :aria-label="t('inbox.inboxSidebarMailboxSwitcher')"
               @click="syncMailboxMenuPosition"
             >
@@ -43,7 +42,7 @@
               />
               <span class="min-w-0 flex-1">
                 <span class="flex items-center gap-1.5">
-                  <span class="min-w-0 truncate text-[13px] font-semibold leading-tight text-[#37352F] dark:text-gray-100">
+                  <span class="min-w-0 truncate text-[13px] font-medium leading-tight text-[#37352F] dark:text-gray-100">
                     {{ displayMailboxTitle }}
                   </span>
                   <span
@@ -58,7 +57,7 @@
                 </span>
               </span>
               <ChevronUpDownIcon
-                class="h-4 w-4 shrink-0 text-[#9B9A97] transition group-hover:text-[#787774] dark:text-gray-500 dark:group-hover:text-gray-300"
+                class="h-3.5 w-3.5 shrink-0 text-[#C4C4C0] transition group-hover:text-[#9B9A97] dark:text-gray-600 dark:group-hover:text-gray-400"
                 aria-hidden="true"
               />
             </ListboxButton>
@@ -160,19 +159,9 @@
           </div>
         </Listbox>
 
-        <button
-          type="button"
-          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 dark:focus:outline-indigo-500"
-          :title="t('inbox.inboxSidebarCompose')"
-          :aria-label="t('inbox.inboxSurfaceComposeWorkspaceEmail')"
-          @click="emit('compose')"
-        >
-          <PencilSquareIcon class="h-4 w-4" aria-hidden="true" />
-        </button>
-
         <Menu v-if="mailboxMenuActions.length" as="div" class="relative h-9 shrink-0">
           <MenuButton
-            class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+            class="flex h-9 w-8 items-center justify-center rounded-lg text-[#9B9A97] transition hover:bg-black/[0.04] hover:text-[#37352F] dark:text-gray-500 dark:hover:bg-white/5 dark:hover:text-gray-200"
             :aria-label="t('inbox.inboxSidebarMailboxActions')"
           >
             <EllipsisHorizontalIcon class="h-5 w-5" aria-hidden="true" />
@@ -216,6 +205,22 @@
           </Transition>
         </Menu>
       </div>
+
+      <button
+        type="button"
+        class="group flex h-9 w-full items-center gap-2 rounded-lg bg-primary-600 px-3 text-[13px] font-semibold text-white shadow-sm transition hover:bg-primary-500 hover:shadow focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 active:scale-[0.98] dark:bg-primary-500 dark:hover:bg-primary-600 dark:focus:outline-primary-500"
+        :aria-label="t('inbox.inboxSurfaceComposeWorkspaceEmail')"
+        aria-keyshortcuts="c"
+        :title="t('inbox.inboxSidebarComposeShortcutTitle')"
+        @click="emit('compose')"
+      >
+        <PlusIcon class="h-4 w-4 shrink-0 opacity-95" aria-hidden="true" />
+        <span class="min-w-0 flex-1 truncate text-left">{{ t('inbox.inboxSidebarCompose') }}</span>
+        <kbd
+          class="hidden rounded border border-white/25 bg-white/10 px-1.5 py-px font-sans text-[10px] font-medium leading-4 text-white/90 sm:inline"
+          aria-hidden="true"
+        >C</kbd>
+      </button>
     </div>
 
     <!-- Search -->
@@ -377,7 +382,6 @@ import {
   InboxIcon,
   InformationCircleIcon,
   MagnifyingGlassIcon,
-  PencilSquareIcon,
   PlusIcon,
   TrashIcon,
   UserGroupIcon,

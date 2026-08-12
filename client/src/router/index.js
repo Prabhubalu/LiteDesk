@@ -2075,14 +2075,6 @@ const router = createRouter({
   routes
 })
 
-// DEV-ONLY: Event Domain Contract Guard
-if (import.meta.env.DEV) {
-  console.info(
-    '[Event Domain]',
-    'Event domain is contract-locked. See docs/architecture/event-domain-contract.md'
-  );
-}
-
 // Helper function to determine the correct dashboard based on user's app access
 const getDefaultRoute = (authStore) => {
   if (!authStore.isAuthenticated) {

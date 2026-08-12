@@ -1626,5 +1626,129 @@
   "emailComposeRecipientsPlaceholder": {
     "message": "Recipients",
     "description": "Short To-field placeholder in floating compose"
+  },
+  "inboxGetStartedIllustrationAlt": {
+    "message": "Inbox illustration",
+    "description": "Inbox get started empty state illustration alt text"
+  },
+  "inboxGetStartedFeaturesTitle": {
+    "message": "Built for team email",
+    "description": "Inbox get started feature section heading"
+  },
+  "inboxGetStartedPrimaryAction": {
+    "message": "Connect mailbox",
+    "description": "Inbox get started primary CTA"
+  },
+  "inboxGetStartedSecondaryAction": {
+    "message": "Set up shared mailbox",
+    "description": "Inbox get started secondary CTA"
+  },
+  "inboxGetStartedEyebrow": {
+    "message": "Team inbox",
+    "description": "Inbox get started eyebrow label"
+  },
+  "inboxGetStartedPreviewBadge": {
+    "message": "Your inbox will look like this",
+    "description": "Inbox get started preview mock badge"
+  },
+  "inboxGetStartedConnectWithLabel": {
+    "message": "Get started with",
+    "description": "Inbox get started provider section label"
+  },
+  "inboxGetStartedProviderGmail": {
+    "message": "Gmail",
+    "description": "Inbox get started Gmail provider button"
+  },
+  "inboxGetStartedProviderOutlook": {
+    "message": "Microsoft Outlook",
+    "description": "Inbox get started Outlook provider button"
+  },
+  "inboxGetStartedCarouselPrev": {
+    "message": "Previous feature",
+    "description": "Inbox get started carousel previous button"
+  },
+  "inboxGetStartedCarouselNext": {
+    "message": "Next feature",
+    "description": "Inbox get started carousel next button"
+  },
+  "inboxGetStartedSlideAssignTitle": {
+    "message": "Assign every thread",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideAssignDescription": {
+    "message": "Route conversations in shared mailboxes so your team always knows who owns the follow-up.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedSlideMentionsTitle": {
+    "message": "Collaborate in context",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideMentionsDescription": {
+    "message": "Loop in teammates with mentions directly on the thread — no more forwarding chains.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedSlideCannedTitle": {
+    "message": "Reply in seconds",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideCannedDescription": {
+    "message": "Use canned responses for common replies and keep every answer on-brand.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedSlideRecordsTitle": {
+    "message": "Linked to your CRM",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideRecordsDescription": {
+    "message": "Emails auto-link to contacts, deals, and records — full context without switching tabs.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedCarouselDots": {
+    "message": "Inbox features",
+    "description": "Inbox get started carousel dot navigation label"
+  },
+  "inboxGetStartedOrLabel": {
+    "message": "Or",
+    "description": "Inbox get started separator before shared mailbox CTA"
+  },
+  "inboxGetStartedPersonalMailboxLabel": {
+    "message": "Personal mailbox",
+    "description": "Inbox get started personal mailbox section label"
+  },
+  "inboxGetStartedTeamMailboxLabel": {
+    "message": "Team mailbox",
+    "description": "Inbox get started team mailbox section label"
+  },
+  "emailComposeLabelTo": {
+    "message": "To",
+    "description": "Compose recipient row label"
+  },
+  "emailComposeLabelCc": {
+    "message": "Cc",
+    "description": "Compose Cc row label and toggle"
+  },
+  "emailComposeLabelBcc": {
+    "message": "Bcc",
+    "description": "Compose Bcc row label and toggle"
+  },
+  "emailComposeBodyPlaceholder": {
+    "message": "Write your message…",
+    "description": "Placeholder in floating compose body editor"
+  },
+  "emailComposeCcPlaceholder": {
+    "message": "Add Cc",
+    "description": "Short Cc field placeholder"
+  },
+  "emailComposeBccPlaceholder": {
+    "message": "Add Bcc",
+    "description": "Short Bcc field placeholder"
+  },
+  "emailComposeRemoveAttachment": {
+    "message": "Remove attachment",
+    "description": "Aria label to remove a compose attachment chip"
+  },
+  "inboxSidebarComposeShortcutTitle": {
+    "message": "Compose (C)",
+    "description": "Tooltip for inbox sidebar compose including keyboard shortcut"
   }
 }

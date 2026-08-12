@@ -301,6 +301,11 @@ function normalizeFieldKey(fieldKey) {
 const GLOBAL_SYSTEM_FIELD_LABEL_KEYS = {
   contactid: 'cases.sysFieldContactId',
   organizationrefid: 'cases.sysFieldOrganizationRefId',
+  createdat: 'common.sysFieldCreatedOn',
+  createdtime: 'common.sysFieldCreatedOn',
+  updatedat: 'common.sysFieldModifiedOn',
+  modifiedtime: 'common.sysFieldModifiedOn',
+  createdby: 'common.sysFieldCreatedBy',
 };
 
 /**

@@ -2427,6 +2427,14 @@
     "message": "Copy URL",
     "description": "Copy URL button"
   },
+  "copyQuoteNumber": {
+    "message": "Copy quote number",
+    "description": "Click quote number subtitle under record title to copy"
+  },
+  "copyRecordNumber": {
+    "message": "Copy number",
+    "description": "Click document number prefix beside record title to copy"
+  },
   "printDrawerTitle": {
     "message": "Print preview",
     "description": "Record print drawer title"

@@ -149,82 +149,90 @@
             </button>
           </div>
 
-          <div class="grid min-h-0 flex-1 grid-cols-1 divide-y divide-gray-200 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)] xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)] lg:divide-x lg:divide-y-0 dark:divide-gray-700">
+          <div
+            class="grid min-h-0 flex-1 grid-cols-1 overflow-hidden divide-y divide-gray-200 dark:divide-gray-700 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,22rem)] xl:grid-cols-[minmax(0,1fr)_minmax(20rem,26rem)] lg:divide-x lg:divide-y-0"
+          >
             <!-- LEFT: compose (dominant width) -->
             <div class="min-h-0 min-w-0 space-y-5 overflow-y-auto p-5 sm:p-6">
               <!-- Basics -->
               <section class="space-y-3">
-                <div>
-                  <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigSectionBasics') }}</p>
-                  <p class="text-xs text-gray-500">{{ t('settings.productConfigSectionBasicsHint') }}</p>
-                </div>
-                <label class="block text-sm">
-                  <span class="font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigName') }}</span>
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigSectionBasics') }}</p>
+                <label class="flex flex-col gap-1.5 text-sm">
+                  <span :class="fieldLabelClass">
+                    {{ t('settings.productConfigName') }}
+                    <span class="text-red-500" aria-hidden="true">*</span>
+                  </span>
                   <input
                     v-model="form.name"
                     required
                     autofocus
                     :placeholder="t('settings.productConfigNamePh')"
-                    class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    :class="fieldControlClass"
                   />
                 </label>
-                <label class="block text-sm">
-                  <span class="font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigItemGroup') }}</span>
-                  <select
+                <div class="flex flex-col gap-1.5 text-sm">
+                  <span :class="fieldLabelClass">
+                    {{ t('settings.productConfigItemGroup') }}
+                    <span class="text-red-500" aria-hidden="true">*</span>
+                  </span>
+                  <HeadlessSelect
                     v-model="form.itemGroupId"
-                    required
-                    class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="" disabled>{{ t('settings.productConfigItemGroupPick') }}</option>
-                    <option v-for="g in itemGroups" :key="g._id" :value="g._id">{{ g.name }}</option>
-                  </select>
-                </label>
-                <label class="block text-sm">
-                  <span class="font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigDescription') }}</span>
+                    :options="itemGroupSelectOptions"
+                    allow-empty
+                    empty-value=""
+                    :empty-label="t('settings.productConfigItemGroupPick')"
+                    :placeholder="t('settings.productConfigItemGroupPick')"
+                    teleport
+                    :searchable="itemGroupSelectOptions.length > 7"
+                    wrapper-class="w-full"
+                    :button-class="fieldControlClass"
+                    :options-class="modalSelectOptionsClass"
+                  />
+                </div>
+                <label class="flex flex-col gap-1.5 text-sm">
+                  <span :class="fieldLabelClass">{{ t('settings.productConfigDescription') }}</span>
                   <textarea
                     v-model="form.description"
                     rows="2"
                     :placeholder="t('settings.productConfigDescriptionPh')"
-                    class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm leading-5 text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20"
                   />
                 </label>
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <label class="block text-sm">
-                    <span class="font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigStatus') }}</span>
-                    <select
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:items-end">
+                  <div class="flex flex-col gap-1.5 text-sm">
+                    <span :class="fieldLabelClass">{{ t('settings.productConfigStatus') }}</span>
+                    <HeadlessSelect
                       v-model="form.status"
-                      class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    >
-                      <option value="ACTIVE">{{ t('settings.productConfigStatusActive') }}</option>
-                      <option value="INACTIVE">{{ t('settings.productConfigStatusInactive') }}</option>
-                    </select>
-                  </label>
-                  <label class="block text-sm">
-                    <span class="font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigEffectiveFrom') }}</span>
-                    <input
+                      :options="statusSelectOptions"
+                      teleport
+                      wrapper-class="w-full"
+                      :button-class="fieldControlClass"
+                      :options-class="modalSelectOptionsClass"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1.5 text-sm">
+                    <span :class="fieldLabelClass">{{ t('settings.productConfigEffectiveFrom') }}</span>
+                    <DatePicker
                       v-model="form.effectiveFrom"
-                      type="date"
-                      class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      :input-class="dateInputClass"
+                      panel-class="z-[10060]"
                     />
-                  </label>
-                  <label class="block text-sm">
-                    <span class="font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigEffectiveUntil') }}</span>
-                    <input
+                  </div>
+                  <div class="flex flex-col gap-1.5 text-sm">
+                    <span :class="fieldLabelClass">{{ t('settings.productConfigEffectiveUntil') }}</span>
+                    <DatePicker
                       v-model="form.effectiveUntil"
-                      type="date"
-                      class="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      :input-class="dateInputClass"
+                      panel-class="z-[10060]"
                     />
-                  </label>
+                  </div>
                 </div>
               </section>
 
               <!-- Options -->
               <section>
                 <div class="flex items-center justify-between gap-2">
-                  <div>
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigSectionOptions') }}</p>
-                    <p class="text-xs text-gray-500">{{ t('settings.productConfigOptionsHint') }}</p>
-                  </div>
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigSectionOptions') }}</p>
                   <button
                     type="button"
                     class="shrink-0 rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
@@ -236,62 +244,104 @@
 
                 <div
                   v-if="!form.options.length"
-                  class="mt-3 rounded-lg border border-dashed border-gray-300 px-3 py-6 text-center text-xs text-gray-500 dark:border-gray-600"
+                  class="mt-3 rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center dark:border-gray-600"
                 >
-                  {{ t('settings.productConfigOptionsEmpty') }}
+                  <p class="text-sm text-gray-600 dark:text-gray-300">{{ t('settings.productConfigOptionsEmpty') }}</p>
                 </div>
 
-                <ul class="mt-3 space-y-3">
+                <ul v-else class="mt-3 space-y-3">
                   <li
                     v-for="(opt, oi) in form.options"
                     :key="opt.uid"
-                    class="rounded-xl border border-gray-200 bg-gray-50/80 p-4 dark:border-gray-600 dark:bg-gray-900/40"
+                    class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-900/30"
                   >
-                    <div class="flex items-start gap-3">
-                      <div class="min-w-0 flex-1 space-y-3">
+                    <div class="space-y-3 p-4">
+                      <div class="flex items-center gap-3">
+                        <span
+                          class="flex h-[2.625rem] w-6 shrink-0 items-center justify-center rounded-md bg-indigo-50 text-[11px] font-semibold tabular-nums text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200"
+                          :aria-label="t('settings.productConfigOptionIndex', { index: oi + 1 })"
+                        >
+                          {{ oi + 1 }}
+                        </span>
+
                         <input
+                          :ref="(el) => setOptionNameInputRef(opt.uid, el)"
                           v-model="opt.optionName"
                           :placeholder="t('settings.productConfigOptionNamePh')"
-                          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          :aria-label="t('settings.productConfigOptionName')"
+                          class="min-w-[10rem] flex-1"
+                          :class="fieldControlClass"
                           @keydown.enter.prevent
                         />
-                        <div class="flex flex-wrap items-center gap-3">
-                          <label class="flex min-w-[10rem] flex-1 items-center gap-2 text-xs text-gray-600 dark:text-gray-300 sm:max-w-xs">
-                            <span class="shrink-0 font-medium">{{ t('settings.productConfigOptionType') }}</span>
-                            <select
-                              v-model="opt.optionType"
-                              class="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                              <option value="dropdown">{{ t('settings.productConfigTypeDropdown') }}</option>
-                              <option value="single_select">{{ t('settings.productConfigTypeSingle') }}</option>
-                              <option value="multi_select">{{ t('settings.productConfigTypeMulti') }}</option>
-                              <option value="checkbox">{{ t('settings.productConfigTypeCheckbox') }}</option>
-                            </select>
-                          </label>
-                          <label class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                            <input v-model="opt.required" type="checkbox" class="rounded border-gray-300 text-indigo-600" />
-                            {{ t('settings.productConfigRequired') }}
-                          </label>
-                        </div>
 
+                        <HeadlessSelect
+                          v-model="opt.optionType"
+                          :options="optionTypeSelectOptions"
+                          teleport
+                          wrapper-class="w-full min-w-[9rem] sm:w-44 shrink-0"
+                          :button-class="fieldControlClass"
+                          :options-class="modalSelectOptionsClass"
+                        />
+
+                        <label
+                          class="inline-flex h-[2.625rem] shrink-0 cursor-pointer items-center gap-2.5 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300"
+                        >
+                          <HeadlessCheckbox v-model="opt.required" size="sm" />
+                          {{ t('settings.productConfigRequired') }}
+                        </label>
+
+                        <div class="ml-auto flex h-[2.625rem] shrink-0 items-center gap-0.5">
+                          <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                            :disabled="oi === 0"
+                            :title="t('settings.productConfigMoveUp')"
+                            :aria-label="t('settings.productConfigMoveUp')"
+                            @click="moveOption(oi, -1)"
+                          >
+                            <ChevronUpIcon class="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-30 disabled:hover:bg-transparent dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                            :disabled="oi === form.options.length - 1"
+                            :title="t('settings.productConfigMoveDown')"
+                            :aria-label="t('settings.productConfigMoveDown')"
+                            @click="moveOption(oi, 1)"
+                          >
+                            <ChevronDownIcon class="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-800"
+                            :title="t('actions.remove')"
+                            :aria-label="t('actions.remove')"
+                            @click="form.options.splice(oi, 1)"
+                          >
+                            <TrashIcon class="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div v-if="opt.optionType !== 'checkbox'" class="flex flex-col gap-1.5">
+                        <span :class="fieldLabelClass">{{ t('settings.productConfigValuesLabel') }}</span>
                         <div
-                          v-if="opt.optionType !== 'checkbox'"
-                          class="flex min-h-[2.5rem] flex-wrap items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-2.5 py-2 dark:border-gray-600 dark:bg-gray-700"
+                          class="flex min-h-[2.625rem] flex-wrap items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-2 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900 dark:focus-within:border-indigo-400 dark:focus-within:ring-indigo-400/20"
                           @click="focusValueInput(oi)"
                         >
                           <span
                             v-for="(val, vi) in opt.values"
                             :key="`${opt.uid}-${val}-${vi}`"
-                            class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200"
+                            class="inline-flex items-center gap-1 rounded-md bg-indigo-50 py-0.5 pl-2 pr-1 text-xs font-medium text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200"
                           >
                             {{ val }}
                             <button
                               type="button"
-                              class="rounded text-indigo-500 hover:text-indigo-800 dark:hover:text-indigo-100"
+                              class="inline-flex h-5 w-5 items-center justify-center rounded text-indigo-500 hover:bg-indigo-100 hover:text-indigo-800 dark:hover:bg-indigo-900/60 dark:hover:text-indigo-100"
                               :aria-label="t('settings.productConfigRemoveValue')"
                               @click.stop="removeOptionValue(oi, vi)"
                             >
-                              ×
+                              <XMarkIcon class="h-3.5 w-3.5" aria-hidden="true" />
                             </button>
                           </span>
                           <input
@@ -299,42 +349,13 @@
                             v-model="opt.draft"
                             type="text"
                             :placeholder="opt.values.length ? t('settings.productConfigValueAddMore') : t('settings.productConfigValuePlaceholder')"
-                            class="min-w-[8rem] flex-1 border-0 bg-transparent py-0.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
+                            class="min-w-[8rem] flex-1 border-0 bg-transparent py-0.5 text-sm leading-5 text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
+                            :aria-label="t('settings.productConfigValuePlaceholder')"
                             @keydown="onValueKeydown($event, oi)"
                             @blur="commitDraft(oi)"
                           />
                         </div>
-                        <p v-if="opt.optionType !== 'checkbox'" class="text-[11px] text-gray-400">
-                          {{ t('settings.productConfigValueChipHint') }}
-                        </p>
-                      </div>
-                      <div class="flex shrink-0 flex-col gap-1 pt-0.5">
-                        <button
-                          type="button"
-                          class="rounded p-1 text-gray-400 hover:bg-white hover:text-gray-700 disabled:opacity-30 dark:hover:bg-gray-700"
-                          :disabled="oi === 0"
-                          :title="t('settings.productConfigMoveUp')"
-                          @click="moveOption(oi, -1)"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          class="rounded p-1 text-gray-400 hover:bg-white hover:text-gray-700 disabled:opacity-30 dark:hover:bg-gray-700"
-                          :disabled="oi === form.options.length - 1"
-                          :title="t('settings.productConfigMoveDown')"
-                          @click="moveOption(oi, 1)"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
-                          class="rounded p-1 text-gray-400 hover:bg-white hover:text-red-600"
-                          :title="t('actions.remove')"
-                          @click="form.options.splice(oi, 1)"
-                        >
-                          ×
-                        </button>
+                        <p class="text-[11px] text-gray-400">{{ t('settings.productConfigValueChipHint') }}</p>
                       </div>
                     </div>
                   </li>
@@ -342,55 +363,87 @@
               </section>
 
               <!-- Rules -->
-              <section class="space-y-4 border-t border-gray-200 pt-5 dark:border-gray-700">
-                <div>
-                  <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigSectionRules') }}</p>
-                  <p class="text-xs text-gray-500">{{ t('settings.productConfigSectionRulesHint') }}</p>
-                </div>
+              <section
+                v-if="canConfigureRules"
+                class="space-y-5 border-t border-gray-200 pt-5 dark:border-gray-700"
+              >
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigSectionRules') }}</p>
 
                 <!-- Product rules -->
-                <div>
-                  <div class="mb-2 flex items-center justify-between">
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between gap-2">
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('settings.productConfigProductRules') }}</p>
-                    <button type="button" class="text-xs font-medium text-indigo-600 hover:text-indigo-800" @click="addProductRule">
+                    <button type="button" :class="ruleAddButtonClass" @click="addProductRule">
                       {{ t('settings.productConfigAddRule') }}
                     </button>
                   </div>
-                  <div v-if="!form.productRules.length" class="rounded-lg border border-dashed border-gray-200 px-3 py-3 text-xs text-gray-400 dark:border-gray-600">
+                  <div
+                    v-if="!form.productRules.length"
+                    class="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-xs text-gray-400 dark:border-gray-600"
+                  >
                     {{ t('settings.productConfigProductRulesEmpty') }}
                   </div>
-                  <ul class="space-y-2">
+                  <ul v-else class="space-y-2">
                     <li
                       v-for="(rule, idx) in form.productRules"
                       :key="'pr'+idx"
                       class="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-600 dark:bg-gray-900/30"
                     >
-                      <div class="flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                        <span class="text-xs text-gray-400">{{ t('settings.productConfigRuleSentence') }}</span>
-                        <select v-model="rule.optionName" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                          <option value="">{{ t('settings.productConfigOptionPick') }}</option>
-                          <option v-for="o in namedOptions" :key="'pro'+o.optionName" :value="o.optionName">{{ o.optionName }}</option>
-                        </select>
-                        <select v-model="rule.type" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                          <option value="mandatory">{{ t('settings.productConfigRuleMandatory') }}</option>
-                          <option value="min">{{ t('settings.productConfigRuleMin') }}</option>
-                          <option value="max">{{ t('settings.productConfigRuleMax') }}</option>
-                          <option value="quantity">{{ t('settings.productConfigRuleQty') }}</option>
-                        </select>
+                      <div class="flex items-center gap-3">
+                        <span :class="ruleKeywordClass">{{ t('settings.productConfigRuleSentence') }}</span>
+                        <HeadlessSelect
+                          v-model="rule.optionName"
+                          :options="namedOptionSelectOptions()"
+                          allow-empty
+                          :empty-label="t('settings.productConfigOptionPick')"
+                          teleport
+                          wrapper-class="min-w-0 flex-1 sm:max-w-xs"
+                          :button-class="ruleControlClass"
+                          :options-class="modalSelectOptionsClass"
+                        />
+                        <HeadlessSelect
+                          v-model="rule.type"
+                          :options="productRuleTypeOptions"
+                          teleport
+                          wrapper-class="w-full shrink-0 sm:w-40"
+                          :button-class="ruleControlClass"
+                          :options-class="modalSelectOptionsClass"
+                        />
                         <input
                           v-if="rule.type === 'min' || rule.type === 'max'"
                           v-model.number="rule[rule.type]"
                           type="number"
                           min="0"
-                          class="w-16 rounded-lg border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          :class="ruleNumberInputClass"
+                          :aria-label="rule.type === 'min' ? t('settings.productConfigRuleMin') : t('settings.productConfigRuleMax')"
                         />
                         <template v-if="rule.type === 'quantity'">
-                          <input v-model.number="rule.minQty" type="number" min="0" class="w-16 rounded-lg border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white" :placeholder="t('settings.productConfigMinQty')" />
-                          <span class="text-xs text-gray-400">–</span>
-                          <input v-model.number="rule.maxQty" type="number" min="0" class="w-16 rounded-lg border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white" :placeholder="t('settings.productConfigMaxQty')" />
+                          <input
+                            v-model.number="rule.minQty"
+                            type="number"
+                            min="0"
+                            :class="ruleNumberInputClass"
+                            :placeholder="t('settings.productConfigMinQty')"
+                            :aria-label="t('settings.productConfigMinQty')"
+                          />
+                          <span class="shrink-0 text-xs text-gray-400">–</span>
+                          <input
+                            v-model.number="rule.maxQty"
+                            type="number"
+                            min="0"
+                            :class="ruleNumberInputClass"
+                            :placeholder="t('settings.productConfigMaxQty')"
+                            :aria-label="t('settings.productConfigMaxQty')"
+                          />
                         </template>
-                        <button type="button" class="ml-auto text-xs text-red-600 hover:text-red-800" @click="form.productRules.splice(idx, 1)">
-                          {{ t('actions.remove') }}
+                        <button
+                          type="button"
+                          :class="[ruleRemoveButtonClass, 'ml-auto']"
+                          :title="t('actions.remove')"
+                          :aria-label="t('actions.remove')"
+                          @click="form.productRules.splice(idx, 1)"
+                        >
+                          <TrashIcon class="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                     </li>
@@ -398,261 +451,273 @@
                 </div>
 
                 <!-- Compatibility -->
-                <div>
-                  <div class="mb-2 flex items-center justify-between">
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between gap-2">
                     <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('settings.productConfigCompatRules') }}</p>
-                    <button type="button" class="text-xs font-medium text-indigo-600 hover:text-indigo-800" @click="addCompatRule">
+                    <button type="button" :class="ruleAddButtonClass" @click="addCompatRule">
                       {{ t('settings.productConfigAddRule') }}
                     </button>
                   </div>
-                  <div v-if="!form.compatibilityRules.length" class="rounded-lg border border-dashed border-gray-200 px-3 py-3 text-xs text-gray-400 dark:border-gray-600">
+                  <div
+                    v-if="!form.compatibilityRules.length"
+                    class="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-xs text-gray-400 dark:border-gray-600"
+                  >
                     {{ t('settings.productConfigCompatRulesEmpty') }}
                   </div>
-                  <ul class="space-y-2">
+                  <ul v-else class="space-y-2">
                     <li
                       v-for="(rule, idx) in form.compatibilityRules"
                       :key="'cr'+idx"
-                      class="space-y-2 rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-600 dark:bg-gray-900/30"
+                      class="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-600 dark:bg-gray-900/30"
                     >
-                      <div class="flex flex-wrap items-center gap-2 text-sm">
-                        <select v-model="rule.optionA" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="onCompatOptionChange(rule)">
-                          <option value="">{{ t('settings.productConfigOptionA') }}</option>
-                          <option v-for="o in namedOptions" :key="'ca'+o.optionName" :value="o.optionName">{{ o.optionName }}</option>
-                        </select>
-                        <select v-model="rule.mode" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                          <option value="incompatible_with">{{ t('settings.productConfigModeIncompat') }}</option>
-                          <option value="compatible_with">{{ t('settings.productConfigModeCompat') }}</option>
-                        </select>
-                        <select v-model="rule.optionB" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white" @change="onCompatOptionChange(rule)">
-                          <option value="">{{ t('settings.productConfigOptionB') }}</option>
-                          <option v-for="o in namedOptions" :key="'cb'+o.optionName" :value="o.optionName">{{ o.optionName }}</option>
-                        </select>
-                        <button type="button" class="ml-auto text-xs text-red-600" @click="form.compatibilityRules.splice(idx, 1)">{{ t('actions.remove') }}</button>
-                      </div>
-                      <div v-if="rule.optionA && rule.optionB" class="flex flex-wrap items-center gap-2">
-                        <select v-model="rule.draftA" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                          <option value="">{{ rule.optionA }}…</option>
-                          <option v-for="v in valuesForOptionName(rule.optionA)" :key="'dra'+v" :value="v">{{ v }}</option>
-                        </select>
-                        <span class="text-xs text-gray-400">+</span>
-                        <select v-model="rule.draftB" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-xs dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                          <option value="">{{ rule.optionB }}…</option>
-                          <option v-for="v in valuesForOptionName(rule.optionB)" :key="'drb'+v" :value="v">{{ v }}</option>
-                        </select>
+                      <div class="flex items-center gap-3">
+                        <HeadlessSelect
+                          :model-value="rule.optionA"
+                          :options="namedOptionSelectOptions()"
+                          allow-empty
+                          :empty-label="t('settings.productConfigOptionA')"
+                          teleport
+                          wrapper-class="min-w-0 flex-1"
+                          :button-class="ruleControlClass"
+                          :options-class="modalSelectOptionsClass"
+                          @update:model-value="(value) => setCompatOptionA(rule, value)"
+                        />
+                        <HeadlessSelect
+                          v-model="rule.mode"
+                          :options="compatModeOptions"
+                          teleport
+                          wrapper-class="w-full shrink-0 sm:w-44"
+                          :button-class="ruleControlClass"
+                          :options-class="modalSelectOptionsClass"
+                        />
+                        <HeadlessSelect
+                          :model-value="rule.optionB"
+                          :options="namedOptionSelectOptions()"
+                          allow-empty
+                          :empty-label="t('settings.productConfigOptionB')"
+                          teleport
+                          wrapper-class="min-w-0 flex-1"
+                          :button-class="ruleControlClass"
+                          :options-class="modalSelectOptionsClass"
+                          @update:model-value="(value) => setCompatOptionB(rule, value)"
+                        />
                         <button
                           type="button"
-                          class="rounded-md border border-indigo-200 px-2 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 dark:border-indigo-800 dark:text-indigo-300"
-                          :disabled="!rule.draftA || !rule.draftB"
-                          @click="addCompatPair(rule)"
+                          :class="[ruleRemoveButtonClass, 'ml-auto']"
+                          :title="t('actions.remove')"
+                          :aria-label="t('actions.remove')"
+                          @click="form.compatibilityRules.splice(idx, 1)"
                         >
-                          {{ t('settings.productConfigAddPair') }}
+                          <TrashIcon class="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
-                      <div v-if="(rule.pairs || []).length" class="flex flex-wrap gap-1.5">
-                        <span
-                          v-for="(pair, pi) in rule.pairs"
-                          :key="`${pair[0]}|${pair[1]}-${pi}`"
-                          class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200"
-                        >
-                          {{ pair[0] }} · {{ pair[1] }}
-                          <button type="button" class="text-indigo-500 hover:text-indigo-800" @click="rule.pairs.splice(pi, 1)">×</button>
-                        </span>
+
+                      <div
+                        v-if="rule.optionA && rule.optionB"
+                        class="mt-3 space-y-2 border-t border-gray-100 pt-3 dark:border-gray-700"
+                      >
+                        <p class="text-xs font-medium text-gray-500">{{ t('settings.productConfigCompatPairsLabel') }}</p>
+                        <div class="flex flex-wrap items-center gap-2">
+                          <HeadlessSelect
+                            v-model="rule.draftA"
+                            :options="valueSelectOptions(rule.optionA, `${rule.optionA}…`)"
+                            allow-empty
+                            :empty-label="`${rule.optionA}…`"
+                            teleport
+                            wrapper-class="min-w-[8rem] flex-1 sm:max-w-[10rem]"
+                            :button-class="ruleControlClass"
+                            :options-class="modalSelectOptionsClass"
+                          />
+                          <span class="shrink-0 text-xs text-gray-400">+</span>
+                          <HeadlessSelect
+                            v-model="rule.draftB"
+                            :options="valueSelectOptions(rule.optionB, `${rule.optionB}…`)"
+                            allow-empty
+                            :empty-label="`${rule.optionB}…`"
+                            teleport
+                            wrapper-class="min-w-[8rem] flex-1 sm:max-w-[10rem]"
+                            :button-class="ruleControlClass"
+                            :options-class="modalSelectOptionsClass"
+                          />
+                          <button
+                            type="button"
+                            class="shrink-0 rounded-lg border border-indigo-200 px-3 py-2 text-xs font-medium text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 dark:border-indigo-800 dark:text-indigo-300"
+                            :disabled="!rule.draftA || !rule.draftB"
+                            @click="addCompatPair(rule)"
+                          >
+                            {{ t('settings.productConfigAddPair') }}
+                          </button>
+                        </div>
+                        <div v-if="(rule.pairs || []).length" class="flex flex-wrap gap-1.5">
+                          <span
+                            v-for="(pair, pi) in rule.pairs"
+                            :key="`${pair[0]}|${pair[1]}-${pi}`"
+                            class="inline-flex items-center gap-1 rounded-md bg-indigo-50 py-0.5 pl-2 pr-1 text-xs font-medium text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200"
+                          >
+                            {{ pair[0] }} · {{ pair[1] }}
+                            <button
+                              type="button"
+                              class="inline-flex h-5 w-5 items-center justify-center rounded text-indigo-500 hover:bg-indigo-100 hover:text-indigo-800 dark:hover:bg-indigo-900/60 dark:hover:text-indigo-100"
+                              :aria-label="t('actions.remove')"
+                              @click="rule.pairs.splice(pi, 1)"
+                            >
+                              <XMarkIcon class="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          </span>
+                        </div>
                       </div>
                     </li>
                   </ul>
                 </div>
 
                 <!-- Dependencies -->
-                <div>
-                  <div class="mb-2 flex items-center justify-between">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('settings.productConfigDepRules') }}</p>
-                    <button type="button" class="text-xs font-medium text-indigo-600 hover:text-indigo-800" @click="addDepRule">
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('settings.productConfigDepRules') }}</p>
+                      <p class="mt-1 text-xs text-gray-500">{{ t('settings.productConfigDepRulesHint') }}</p>
+                    </div>
+                    <button type="button" :class="ruleAddButtonClass" @click="addDepRule">
                       {{ t('settings.productConfigAddRule') }}
                     </button>
                   </div>
-                  <p class="mb-2 text-xs text-gray-500">{{ t('settings.productConfigDepRulesHint') }}</p>
-                  <div v-if="!form.dependencyRules.length" class="rounded-lg border border-dashed border-gray-200 px-3 py-3 text-xs text-gray-400 dark:border-gray-600">
+                  <div
+                    v-if="!form.dependencyRules.length"
+                    class="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-xs text-gray-400 dark:border-gray-600"
+                  >
                     {{ t('settings.productConfigDepRulesEmpty') }}
                   </div>
-                  <ul class="space-y-2">
+                  <ul v-else class="space-y-2">
                     <li
                       v-for="(rule, idx) in form.dependencyRules"
                       :key="'dr'+idx"
-                      class="space-y-2 rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-600 dark:bg-gray-900/30"
+                      class="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-600 dark:bg-gray-900/30"
                     >
-                      <div class="flex flex-wrap items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                        <span class="text-xs text-gray-400">{{ t('settings.productConfigWhen') }}</span>
-                        <select
-                          v-model="rule.whenOption"
-                          class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                          @change="onDepWhenOptionChange(rule)"
-                        >
-                          <option value="">{{ t('settings.productConfigOptionPick') }}</option>
-                          <option v-for="o in namedOptions" :key="'dw'+o.optionName" :value="o.optionName">{{ o.optionName }}</option>
-                        </select>
-                        <select
-                          v-if="rule.whenOption && !isCheckboxOptionName(rule.whenOption)"
-                          v-model="rule.whenValues"
-                          multiple
-                          class="min-h-[2rem] min-w-[8rem] rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                          <option v-for="v in valuesForOptionName(rule.whenOption)" :key="'wv'+v" :value="v">{{ v }}</option>
-                        </select>
-                        <span class="text-xs text-gray-400">{{ t('settings.productConfigThen') }}</span>
-                        <select v-model="rule.action" class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                          <option value="require">{{ t('settings.productConfigActionRequire') }}</option>
-                          <option value="add">{{ t('settings.productConfigActionAdd') }}</option>
-                          <option value="recommend">{{ t('settings.productConfigActionRecommend') }}</option>
-                        </select>
-                        <select
-                          v-model="rule.targetOption"
-                          class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                          @change="onDepTargetOptionChange(rule)"
-                        >
-                          <option value="">{{ t('settings.productConfigOptionPick') }}</option>
-                          <option
-                            v-for="o in namedOptions"
-                            :key="'dt'+o.optionName"
-                            :value="o.optionName"
-                            :disabled="o.optionName === rule.whenOption"
+                      <div class="flex items-start gap-3">
+                        <div class="min-w-0 flex-1 space-y-3">
+                          <div class="flex items-center gap-3">
+                            <span :class="ruleKeywordClass">{{ t('settings.productConfigWhen') }}</span>
+                            <HeadlessSelect
+                              :model-value="rule.whenOption"
+                              :options="namedOptionSelectOptions()"
+                              allow-empty
+                              :empty-label="t('settings.productConfigOptionPick')"
+                              teleport
+                              wrapper-class="min-w-0 flex-1 sm:max-w-xs"
+                              :button-class="ruleControlClass"
+                              :options-class="modalSelectOptionsClass"
+                              @update:model-value="(value) => setDepWhenOption(rule, value)"
+                            />
+                          </div>
+
+                          <div
+                            v-if="rule.whenOption && !isCheckboxOptionName(rule.whenOption)"
+                            class="flex flex-wrap gap-2 pl-[3.25rem]"
                           >
-                            {{ o.optionName }}
-                          </option>
-                        </select>
-                        <select
-                          v-if="rule.targetOption && valuesForOptionName(rule.targetOption).length"
-                          v-model="rule.targetValue"
-                          class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            <label
+                              v-for="value in valuesForOptionName(rule.whenOption)"
+                              :key="`wv-${value}`"
+                              class="inline-flex h-[2.625rem] cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300"
+                            >
+                              <HeadlessCheckbox
+                                :model-value="Array.isArray(rule.whenValues) && rule.whenValues.includes(value)"
+                                size="sm"
+                                @update:model-value="toggleDepWhenValue(rule, value, $event)"
+                              />
+                              {{ value }}
+                            </label>
+                          </div>
+
+                          <div class="flex items-center gap-3 border-t border-gray-100 pt-3 dark:border-gray-700">
+                            <span :class="ruleKeywordClass">{{ t('settings.productConfigThen') }}</span>
+                            <HeadlessSelect
+                              v-model="rule.action"
+                              :options="depActionOptions"
+                              teleport
+                              wrapper-class="w-full shrink-0 sm:w-36"
+                              :button-class="ruleControlClass"
+                              :options-class="modalSelectOptionsClass"
+                            />
+                            <HeadlessSelect
+                              :model-value="rule.targetOption"
+                              :options="namedOptionSelectOptions(rule.whenOption)"
+                              allow-empty
+                              :empty-label="t('settings.productConfigOptionPick')"
+                              teleport
+                              wrapper-class="min-w-0 flex-1 sm:max-w-xs"
+                              :button-class="ruleControlClass"
+                              :options-class="modalSelectOptionsClass"
+                              @update:model-value="(value) => setDepTargetOption(rule, value)"
+                            />
+                            <HeadlessSelect
+                              v-if="rule.targetOption && valuesForOptionName(rule.targetOption).length"
+                              v-model="rule.targetValue"
+                              :options="valueSelectOptions(rule.targetOption, t('settings.productConfigSelect'))"
+                              allow-empty
+                              :empty-label="t('settings.productConfigSelect')"
+                              teleport
+                              wrapper-class="min-w-0 flex-1 sm:max-w-xs"
+                              :button-class="ruleControlClass"
+                              :options-class="modalSelectOptionsClass"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          :class="ruleRemoveButtonClass"
+                          :title="t('actions.remove')"
+                          :aria-label="t('actions.remove')"
+                          @click="form.dependencyRules.splice(idx, 1)"
                         >
-                          <option value="">{{ t('settings.productConfigSelect') }}</option>
-                          <option v-for="v in valuesForOptionName(rule.targetOption)" :key="'tv'+v" :value="v">{{ v }}</option>
-                        </select>
-                        <button type="button" class="ml-auto text-xs text-red-600" @click="form.dependencyRules.splice(idx, 1)">
-                          {{ t('actions.remove') }}
+                          <TrashIcon class="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                     </li>
                   </ul>
                 </div>
               </section>
+              <section
+                v-else
+                class="border-t border-gray-200 pt-5 dark:border-gray-700"
+              >
+                <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ t('settings.productConfigSectionRules') }}</p>
+                <p class="mt-2 text-xs text-gray-500">{{ t('settings.productConfigRulesLocked') }}</p>
+              </section>
             </div>
 
-            <!-- RIGHT: live sales configurator (always on) -->
+            <!-- RIGHT: live sales configurator -->
             <div class="flex min-h-0 flex-col bg-slate-50/80 dark:bg-gray-900/50">
-              <div class="flex items-center justify-between gap-2 border-b border-gray-200 px-5 py-3 dark:border-gray-700">
-                <div>
-                  <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ t('settings.productConfigLivePreview') }}</p>
-                  <p class="text-xs text-gray-500">{{ t('settings.productConfigPreviewHint') }}</p>
+              <div class="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-3 dark:border-gray-700">
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-semibold leading-5 text-gray-900 dark:text-white">{{ t('settings.productConfigLivePreview') }}</p>
+                  <p class="mt-1 text-xs leading-4 text-gray-500">{{ t('settings.productConfigPreviewHint') }}</p>
                 </div>
                 <span
-                  class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                  class="mt-0.5 inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold leading-none"
                   :class="previewBadgeClass"
                 >
                   {{ previewBadgeLabel }}
                 </span>
               </div>
 
-              <div class="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
+              <div class="min-h-0 flex-1 overflow-y-auto p-5">
                 <div
-                  v-if="!namedOptions.length"
+                  v-if="!hasNamedPreviewOptions"
                   class="flex h-full min-h-[12rem] flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 px-4 text-center dark:border-gray-600"
                 >
                   <p class="text-sm text-gray-600 dark:text-gray-300">{{ t('settings.productConfigPreviewEmpty') }}</p>
                   <p class="mt-1 text-xs text-gray-400">{{ t('settings.productConfigPreviewEmptyHint') }}</p>
                 </div>
-
-                <template v-else>
-                  <div
-                    v-for="opt in namedOptions"
-                    :key="'pv-'+opt.optionName"
-                    class="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
-                  >
-                    <p class="text-xs font-medium text-gray-700 dark:text-gray-200">
-                      {{ opt.optionName }}
-                      <span v-if="opt.required" class="text-red-500">*</span>
-                    </p>
-                    <div v-if="opt.optionType === 'checkbox'" class="mt-2">
-                      <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                        <input
-                          v-model="previewSelections[opt.optionName]"
-                          type="checkbox"
-                          class="rounded border-gray-300 text-indigo-600"
-                          @change="runPreviewValidate"
-                        />
-                        {{ t('settings.productConfigCheckboxTrue') }}
-                      </label>
-                    </div>
-                    <div v-else-if="opt.optionType === 'single_select'" class="mt-2 space-y-1.5">
-                      <label
-                        v-for="v in optionValues(opt)"
-                        :key="v"
-                        class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-900/40"
-                        :class="previewSelections[opt.optionName] === v ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''"
-                      >
-                        <input
-                          v-model="previewSelections[opt.optionName]"
-                          type="radio"
-                          :value="v"
-                          class="border-gray-300 text-indigo-600"
-                          @change="runPreviewValidate"
-                        />
-                        {{ v }}
-                      </label>
-                    </div>
-                    <div v-else-if="opt.optionType === 'multi_select'" class="mt-2 space-y-1.5">
-                      <label
-                        v-for="v in optionValues(opt)"
-                        :key="v"
-                        class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-900/40"
-                      >
-                        <input
-                          :checked="Array.isArray(previewSelections[opt.optionName]) && previewSelections[opt.optionName].includes(v)"
-                          type="checkbox"
-                          class="rounded border-gray-300 text-indigo-600"
-                          @change="toggleMulti(opt.optionName, v, $event)"
-                        />
-                        {{ v }}
-                      </label>
-                    </div>
-                    <select
-                      v-else
-                      v-model="previewSelections[opt.optionName]"
-                      class="mt-2 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                      @change="runPreviewValidate"
-                    >
-                      <option value="">{{ t('settings.productConfigSelect') }}</option>
-                      <option v-for="v in optionValues(opt)" :key="v" :value="v">{{ v }}</option>
-                    </select>
-                  </div>
-
-                  <div class="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ t('settings.productConfigValidation') }}</p>
-                    <div
-                      v-if="previewResult?.valid"
-                      class="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-200"
-                    >
-                      {{ t('settings.productConfigValid') }}
-                    </div>
-                    <ul v-else-if="previewResult?.errors?.length" class="mt-2 space-y-1.5">
-                      <li
-                        v-for="(e, i) in previewResult.errors"
-                        :key="i"
-                        class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800/40 dark:bg-red-900/20 dark:text-red-200"
-                      >
-                        {{ e.message }}
-                      </li>
-                    </ul>
-                    <p v-else class="mt-2 text-xs text-gray-500">{{ t('settings.productConfigValidationIdle') }}</p>
-                    <div v-if="previewResult?.appliedDependencies?.length" class="mt-3">
-                      <p class="text-[11px] font-medium text-gray-500">{{ t('settings.productConfigAppliedDeps') }}</p>
-                      <ul class="mt-1 space-y-0.5 text-xs text-gray-700 dark:text-gray-300">
-                        <li v-for="(d, i) in previewResult.appliedDependencies" :key="i">
-                          {{ d.action }} → {{ d.option }}{{ d.value ? `: ${d.value}` : '' }}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </template>
+                <div v-else class="space-y-4">
+                  <ProductConfigOptionPicker
+                    :options="namedOptions"
+                    :selections="previewSelections"
+                    card-class="bg-white dark:bg-gray-800"
+                    @change="runPreviewValidate"
+                  />
+                  <ProductConfigValidationPanel :result="previewResult" />
+                </div>
               </div>
             </div>
           </div>
@@ -683,10 +748,36 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import { ChevronDownIcon, ChevronUpIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import apiClient from '@/utils/apiClient';
+import DatePicker from '@/components/common/DatePicker.vue';
+import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
+import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
+import ProductConfigOptionPicker from '@/components/catalog/ProductConfigOptionPicker.vue';
+import ProductConfigValidationPanel from '@/components/catalog/ProductConfigValidationPanel.vue';
+import {
+  optionValues,
+  resetSelectionsForOptions,
+  useProductConfigValidationBadge,
+  useProductConfigValidator,
+} from '@/composables/useProductConfigSelections';
 
 const { t } = useI18n();
 const router = useRouter();
+
+const modalSelectOptionsClass = 'z-[10060]';
+const fieldLabelClass = 'text-sm font-medium text-gray-700 dark:text-gray-200';
+const fieldControlClass =
+  'block w-full min-h-[2.625rem] rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm leading-5 text-gray-900 transition-[border-color,box-shadow] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20';
+const dateInputClass = `${fieldControlClass} cursor-pointer`;
+const ruleControlClass = fieldControlClass;
+const ruleNumberInputClass =
+  'min-h-[2.625rem] w-20 shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm leading-5 text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-900 dark:text-white dark:focus:border-indigo-400 dark:focus:ring-indigo-400/20';
+const ruleAddButtonClass =
+  'shrink-0 rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700';
+const ruleRemoveButtonClass =
+  'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-800';
+const ruleKeywordClass = 'w-10 shrink-0 text-xs font-semibold uppercase tracking-wide text-gray-400';
 
 const loading = ref(true);
 const saving = ref(false);
@@ -697,10 +788,19 @@ const message = ref('');
 const showForm = ref(false);
 const editingId = ref(null);
 const previewSelections = reactive({});
-const previewResult = ref(null);
+const {
+  result: previewResult,
+  scheduleValidate,
+  validate,
+  clearValidationTimer,
+} = useProductConfigValidator({
+  selections: previewSelections,
+});
+
 const valueInputRefs = {};
+const optionNameInputRefs = {};
 let optUid = 0;
-let previewTimer = null;
+let pendingFocusOptionUid = null;
 
 const emptyForm = () => ({
   name: '',
@@ -721,31 +821,57 @@ const namedOptions = computed(() =>
   (form.options || []).filter((o) => String(o.optionName || '').trim())
 );
 
+const hasNamedPreviewOptions = computed(() => namedOptions.value.length > 0);
+
+const canConfigureRules = computed(() =>
+  namedOptions.value.some((opt) => opt.optionType === 'checkbox' || optionValues(opt).length > 0)
+);
+
 const canSave = computed(() => {
   return String(form.name || '').trim() && form.itemGroupId;
 });
 
-const previewBadgeClass = computed(() => {
-  if (!namedOptions.value.length) {
-    return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-  }
-  if (previewResult.value?.valid) {
-    return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200';
-  }
-  if (previewResult.value?.errors?.length) {
-    return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200';
-  }
-  return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200';
-});
+const { badgeClass: previewBadgeClass, badgeLabel: previewBadgeLabel } = useProductConfigValidationBadge(
+  previewResult,
+  hasNamedPreviewOptions,
+);
 
-const previewBadgeLabel = computed(() => {
-  if (!namedOptions.value.length) return t('settings.productConfigPreviewBadgeEmpty');
-  if (previewResult.value?.valid) return t('settings.productConfigPreviewBadgeValid');
-  if (previewResult.value?.errors?.length) {
-    return t('settings.productConfigPreviewBadgeInvalid', { count: previewResult.value.errors.length });
-  }
-  return t('settings.productConfigPreviewBadgeIdle');
-});
+const itemGroupSelectOptions = computed(() =>
+  itemGroups.value.map((group) => ({
+    value: String(group._id),
+    label: group.name,
+  }))
+);
+
+const statusSelectOptions = computed(() => [
+  { value: 'ACTIVE', label: t('settings.productConfigStatusActive') },
+  { value: 'INACTIVE', label: t('settings.productConfigStatusInactive') },
+]);
+
+const optionTypeSelectOptions = computed(() => [
+  { value: 'dropdown', label: t('settings.productConfigTypeDropdown') },
+  { value: 'single_select', label: t('settings.productConfigTypeSingle') },
+  { value: 'multi_select', label: t('settings.productConfigTypeMulti') },
+  { value: 'checkbox', label: t('settings.productConfigTypeCheckbox') },
+]);
+
+const productRuleTypeOptions = computed(() => [
+  { value: 'mandatory', label: t('settings.productConfigRuleMandatory') },
+  { value: 'min', label: t('settings.productConfigRuleMin') },
+  { value: 'max', label: t('settings.productConfigRuleMax') },
+  { value: 'quantity', label: t('settings.productConfigRuleQty') },
+]);
+
+const compatModeOptions = computed(() => [
+  { value: 'incompatible_with', label: t('settings.productConfigModeIncompat') },
+  { value: 'compatible_with', label: t('settings.productConfigModeCompat') },
+]);
+
+const depActionOptions = computed(() => [
+  { value: 'require', label: t('settings.productConfigActionRequire') },
+  { value: 'add', label: t('settings.productConfigActionAdd') },
+  { value: 'recommend', label: t('settings.productConfigActionRecommend') },
+]);
 
 function ruleCount(c) {
   return (c.productRules?.length || 0)
@@ -758,10 +884,27 @@ function groupName(id) {
   return g?.name || '—';
 }
 
-function optionValues(opt) {
-  if (!opt) return [];
-  if (Array.isArray(opt.values) && opt.values.length) return opt.values;
-  return [];
+function buildPreviewValidateRequest() {
+  if (!showForm.value || !namedOptions.value.length) return null;
+  return {
+    configuration: buildPayload(),
+    selections: { ...previewSelections },
+    requireActive: false,
+  };
+}
+
+function queuePreviewValidate() {
+  if (!showForm.value) return;
+  scheduleValidate(buildPreviewValidateRequest);
+}
+
+async function runPreviewValidate() {
+  if (!showForm.value) return;
+  if (!namedOptions.value.length) {
+    previewResult.value = null;
+    return;
+  }
+  await validate(buildPreviewValidateRequest);
 }
 
 function findOptionByName(name) {
@@ -771,6 +914,51 @@ function findOptionByName(name) {
 
 function valuesForOptionName(name) {
   return optionValues(findOptionByName(name));
+}
+
+function namedOptionSelectOptions(excludeName = '') {
+  return namedOptions.value
+    .filter((opt) => opt.optionName !== excludeName)
+    .map((opt) => ({ value: opt.optionName, label: opt.optionName }));
+}
+
+function valueSelectOptions(optionName, emptyLabel = '') {
+  const values = valuesForOptionName(optionName);
+  return [
+    ...(emptyLabel ? [{ value: '', label: emptyLabel }] : []),
+    ...values.map((value) => ({ value, label: value })),
+  ];
+}
+
+function setCompatOptionA(rule, value) {
+  rule.optionA = value || '';
+  onCompatOptionChange(rule);
+}
+
+function setCompatOptionB(rule, value) {
+  rule.optionB = value || '';
+  onCompatOptionChange(rule);
+}
+
+function setDepWhenOption(rule, value) {
+  rule.whenOption = value || '';
+  onDepWhenOptionChange(rule);
+}
+
+function setDepTargetOption(rule, value) {
+  rule.targetOption = value || '';
+  onDepTargetOptionChange(rule);
+}
+
+function toggleDepWhenValue(rule, value, checked) {
+  let values = Array.isArray(rule.whenValues) ? [...rule.whenValues] : [];
+  if (checked) {
+    if (!values.includes(value)) values.push(value);
+  } else {
+    values = values.filter((entry) => entry !== value);
+  }
+  rule.whenValues = values;
+  queuePreviewValidate();
 }
 
 function isCheckboxOptionName(name) {
@@ -785,6 +973,27 @@ function setValueInputRef(oi, el) {
   if (el) valueInputRefs[oi] = el;
 }
 
+function setOptionNameInputRef(uid, el) {
+  if (el) {
+    optionNameInputRefs[uid] = el;
+    if (pendingFocusOptionUid === uid) {
+      focusOptionName(uid);
+    }
+  } else {
+    delete optionNameInputRefs[uid];
+  }
+}
+
+function focusOptionName(uid) {
+  nextTick(() => {
+    const el = optionNameInputRefs[uid];
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.focus({ preventScroll: true });
+    pendingFocusOptionUid = null;
+  });
+}
+
 function focusValueInput(oi) {
   nextTick(() => valueInputRefs[oi]?.focus?.());
 }
@@ -796,7 +1005,7 @@ function commitDraft(oi) {
   if (!val) return;
   if (!opt.values.includes(val)) opt.values.push(val);
   opt.draft = '';
-  schedulePreviewValidate();
+  queuePreviewValidate();
 }
 
 function onValueKeydown(e, oi) {
@@ -805,13 +1014,13 @@ function onValueKeydown(e, oi) {
     commitDraft(oi);
   } else if (e.key === 'Backspace' && !String(form.options[oi]?.draft || '') && form.options[oi]?.values?.length) {
     form.options[oi].values.pop();
-    schedulePreviewValidate();
+    queuePreviewValidate();
   }
 }
 
 function removeOptionValue(oi, vi) {
   form.options[oi]?.values.splice(vi, 1);
-  schedulePreviewValidate();
+  queuePreviewValidate();
 }
 
 function moveOption(oi, delta) {
@@ -822,8 +1031,10 @@ function moveOption(oi, delta) {
 }
 
 function addOption() {
+  const uid = `opt-${++optUid}`;
+  pendingFocusOptionUid = uid;
   form.options.push({
-    uid: `opt-${++optUid}`,
+    uid,
     optionName: '',
     optionType: 'dropdown',
     required: false,
@@ -831,6 +1042,11 @@ function addOption() {
     draft: '',
     displayOrder: form.options.length,
     defaultValue: null,
+  });
+  nextTick(() => {
+    if (pendingFocusOptionUid === uid) {
+      focusOptionName(uid);
+    }
   });
 }
 
@@ -864,7 +1080,7 @@ function addCompatPair(rule) {
   }
   rule.draftA = '';
   rule.draftB = '';
-  schedulePreviewValidate();
+  queuePreviewValidate();
 }
 
 function addDepRule() {
@@ -882,34 +1098,16 @@ function onDepWhenOptionChange(rule) {
   if (isCheckboxOptionName(rule.whenOption)) {
     rule.whenValues = ['true'];
   }
-  schedulePreviewValidate();
+  queuePreviewValidate();
 }
 
 function onDepTargetOptionChange(rule) {
   rule.targetValue = '';
-  schedulePreviewValidate();
-}
-
-function toggleMulti(optionName, value, event) {
-  const checked = event?.target?.checked;
-  let arr = Array.isArray(previewSelections[optionName]) ? [...previewSelections[optionName]] : [];
-  if (checked) {
-    if (!arr.includes(value)) arr.push(value);
-  } else {
-    arr = arr.filter((v) => v !== value);
-  }
-  previewSelections[optionName] = arr;
-  runPreviewValidate();
+  queuePreviewValidate();
 }
 
 function resetPreviewSelections() {
-  Object.keys(previewSelections).forEach((k) => delete previewSelections[k]);
-  for (const opt of form.options) {
-    if (!opt.optionName) continue;
-    if (opt.optionType === 'multi_select') previewSelections[opt.optionName] = [];
-    else if (opt.optionType === 'checkbox') previewSelections[opt.optionName] = false;
-    else previewSelections[opt.optionName] = '';
-  }
+  resetSelectionsForOptions(previewSelections, form.options);
 }
 
 function hydrateForm(doc) {
@@ -1000,7 +1198,6 @@ function buildPayload() {
 function openCreate() {
   editingId.value = null;
   Object.assign(form, emptyForm());
-  if (itemGroups.value[0]) form.itemGroupId = String(itemGroups.value[0]._id);
   resetPreviewSelections();
   previewResult.value = null;
   showForm.value = true;
@@ -1015,6 +1212,7 @@ function openEdit(doc) {
 }
 
 function closeForm() {
+  clearValidationTimer();
   showForm.value = false;
 }
 
@@ -1102,40 +1300,6 @@ async function toggleStatus(c) {
   }
 }
 
-function schedulePreviewValidate() {
-  if (!showForm.value) return;
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(() => runPreviewValidate(), 280);
-}
-
-async function runPreviewValidate() {
-  if (!showForm.value) return;
-  if (!namedOptions.value.length) {
-    previewResult.value = null;
-    return;
-  }
-  try {
-    const configuration = buildPayload();
-    const selections = { ...previewSelections };
-    const res = await apiClient.post('/product-configurations/validate', {
-      configuration,
-      selections,
-      requireActive: false,
-    });
-    previewResult.value = unwrapPayload(res) || null;
-    if (previewResult.value?.selections) {
-      for (const [k, v] of Object.entries(previewResult.value.selections)) {
-        previewSelections[k] = v;
-      }
-    }
-  } catch (e) {
-    previewResult.value = {
-      valid: false,
-      errors: [{ message: e?.response?.data?.message || e.message }],
-    };
-  }
-}
-
 watch(
   () => [
     form.name,
@@ -1151,7 +1315,7 @@ watch(
         previewSelections[opt.optionName] = [];
       }
     }
-    schedulePreviewValidate();
+    queuePreviewValidate();
   },
   { deep: true }
 );

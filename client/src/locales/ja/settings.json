@@ -9564,7 +9564,7 @@
     "description": "Automation hub catalog categories option"
   },
   "automationCatalogDesc": {
-    "message": "Manage product category trees and attribute templates that drive item catalog extensibility.",
+    "message": "Manage categories, specification templates, and price books for the product catalog.",
     "description": "Catalog categories option description"
   },
   "catalogCategoriesTitle": {
@@ -9572,7 +9572,7 @@
     "description": "Catalog settings page title"
   },
   "catalogCategoriesDesc": {
-    "message": "Define category hierarchy and attribute templates used by items.",
+    "message": "Define the category hierarchy and the product specifications items inherit from each category.",
     "description": "Catalog settings page description"
   },
   "catalogAddRootCategory": {
@@ -9584,15 +9584,15 @@
     "description": "Catalog category tree section title"
   },
   "catalogAttributeTemplates": {
-    "message": "Attribute templates",
-    "description": "Catalog attribute templates section title"
+    "message": "Specification templates",
+    "description": "Catalog specification templates section title"
   },
   "catalogAddAttribute": {
-    "message": "Add attribute",
-    "description": "Add catalog attribute button"
+    "message": "Add specification",
+    "description": "Add catalog specification button"
   },
   "catalogSelectCategoryHint": {
-    "message": "Select a category to manage its attribute templates.",
+    "message": "Select a category to manage its product specifications.",
     "description": "Catalog settings hint when no category selected"
   },
   "catalogRequired": {
@@ -9616,15 +9616,15 @@
     "description": "Catalog category name placeholder"
   },
   "catalogNewAttributeDefault": {
-    "message": "New attribute",
-    "description": "Default label for new catalog attribute"
+    "message": "New specification",
+    "description": "Default label for new catalog specification"
   },
   "catalogHubTitle": {
     "message": "Catalog",
     "description": "Catalog settings hub title"
   },
   "catalogHubDesc": {
-    "message": "Configure category trees, attribute templates, and named price lists.",
+    "message": "Configure category trees, product specifications, price books, item groups, and quote-time product configurations.",
     "description": "Catalog settings hub description"
   },
   "catalogTabCategories": {
@@ -9716,16 +9716,16 @@
     "description": "Confirm delete catalog category"
   },
   "catalogConfirmDeleteAttribute": {
-    "message": "Delete this attribute from the category?",
-    "description": "Confirm delete category attribute template"
+    "message": "Delete this specification from the category?",
+    "description": "Confirm delete category specification template"
   },
   "catalogConfirmDeletePriceBook": {
     "message": "Delete this price book and all its entries?",
     "description": "Confirm delete price book"
   },
   "catalogAddAttributeFailed": {
-    "message": "Could not add attribute. Please try again.",
-    "description": "Error when creating catalog attribute template"
+    "message": "Could not add specification. Please try again.",
+    "description": "Error when creating catalog specification template"
   },
   "mailroomTabConnectors": {
     "message": "Connectors",
@@ -20919,7 +20919,7 @@
     "description": "Catalog hub product configurations tab"
   },
   "productConfigsDesc": {
-    "message": "Define selectable options, product rules, compatibility, and dependencies for configurable products.",
+    "message": "Quote-time options, rules, compatibility, and dependencies for configurable products. Not the same as category specifications on the item.",
     "description": "Product configurations settings description"
   },
   "productConfigAdd": {
@@ -21487,7 +21487,7 @@
     "description": "Preview error"
   },
   "catalogHubDescCore": {
-    "message": "Configure category trees and attribute templates for sellable products.",
+    "message": "Configure category trees and product specifications for sellable products.",
     "description": "Catalog settings hub description without CPQ add-on"
   },
   "personalSmtpSendersTitle": {
@@ -21589,5 +21589,309 @@
   "personalSmtpSendersRemoveFailed": {
     "message": "Could not remove SMTP sender",
     "description": "Error deleting smtp_sender"
+  },
+  "catalogAddChildCategory": {
+    "message": "Add child category",
+    "description": "Add child catalog category action"
+  },
+  "catalogCategoryCount": {
+    "message": "{count} categories",
+    "description": "Catalog category tree count summary"
+  },
+  "catalogCategoriesEmpty": {
+    "message": "No categories yet",
+    "description": "Empty state title when catalog has no categories"
+  },
+  "catalogCategoriesEmptyHint": {
+    "message": "Create a root category to start organizing products and their specifications.",
+    "description": "Empty state hint when catalog has no categories"
+  },
+  "catalogAttributeLabel": {
+    "message": "Specification label",
+    "description": "Aria label for catalog specification label input"
+  },
+  "catalogSelectCategoryTitle": {
+    "message": "Choose a category",
+    "description": "Empty state title when no category is selected for specs"
+  },
+  "catalogSpecsForCategory": {
+    "message": "For {name}",
+    "description": "Specs panel subtitle showing selected category name"
+  },
+  "catalogNoAttributes": {
+    "message": "No specifications yet",
+    "description": "Empty state when selected category has no attribute templates"
+  },
+  "catalogNoAttributesHint": {
+    "message": "Add fields like wattage, material, or size that items in this category will inherit.",
+    "description": "Empty state hint for category with no attribute templates"
+  },
+  "catalogNewChildCategory": {
+    "message": "New child category",
+    "description": "Dialog title when creating a nested catalog category"
+  },
+  "catalogChildOfCategory": {
+    "message": "Parent: {name}",
+    "description": "Shows parent category name in create-child dialog"
+  },
+  "catalogAttributeLabelRequired": {
+    "message": "Enter a specification label before saving.",
+    "description": "Validation when saving a catalog specification without a label"
+  },
+  "catalogPriceBookCurrency": {
+    "message": "Currency",
+    "description": "Price book currency field label"
+  },
+  "catalogPriceBookCount": {
+    "message": "{count} price books",
+    "description": "Price book list count summary"
+  },
+  "catalogPriceBooksEmpty": {
+    "message": "No price books yet",
+    "description": "Empty state when no price books exist"
+  },
+  "catalogPriceBooksEmptyHint": {
+    "message": "Create a price book to define list prices for your products and variants.",
+    "description": "Empty state hint when no price books exist"
+  },
+  "catalogSelectPriceBookTitle": {
+    "message": "Choose a price book",
+    "description": "Empty state title when no price book is selected"
+  },
+  "catalogEntriesForBook": {
+    "message": "For {name}",
+    "description": "Entries panel subtitle showing selected price book name"
+  },
+  "catalogEntriesForBookWithCount": {
+    "message": "For {name} · {count} entries",
+    "description": "Entries panel subtitle with entry count"
+  },
+  "catalogNoPriceEntriesHint": {
+    "message": "Add variant prices that apply when this book is matched during quoting.",
+    "description": "Empty state hint when price book has no entries"
+  },
+  "catalogEntrySearch": {
+    "message": "Search entries",
+    "description": "Search placeholder for price book entries"
+  },
+  "catalogEntrySearchEmpty": {
+    "message": "No entries match your search.",
+    "description": "No results when filtering price book entries"
+  },
+  "catalogEntryMinQty": {
+    "message": "Min qty {qty}",
+    "description": "Minimum quantity label on price book entry row"
+  },
+  "catalogConfirmDeletePriceEntry": {
+    "message": "Remove this price entry from the book?",
+    "description": "Confirm delete price book entry"
+  },
+  "catalogEditPriceBook": {
+    "message": "Edit price book",
+    "description": "Edit price book dialog title"
+  },
+  "pricingRulesTitle": {
+    "message": "Pricing rules",
+    "description": "Rules panel section title"
+  },
+  "pricingRulesCount": {
+    "message": "{count} rules",
+    "description": "Rules count under section title"
+  },
+  "pricingRulesEmptyHint": {
+    "message": "Add volume, customer, contract, or channel rules that apply after the price book base.",
+    "description": "Empty pricing rules hint"
+  },
+  "pricingPromosTitle": {
+    "message": "Promotions",
+    "description": "Promotions panel section title"
+  },
+  "pricingPromosCount": {
+    "message": "{count} promotions",
+    "description": "Promotions count under section title"
+  },
+  "pricingPromosEmptyHint": {
+    "message": "Add product discounts, festival offers, or buy-X-get-Y deals that stack after rules.",
+    "description": "Empty promotions hint"
+  },
+  "pricingPreviewTitle": {
+    "message": "Price preview",
+    "description": "Preview panel section title"
+  },
+  "pricingPreviewPickVariant": {
+    "message": "Select a variant",
+    "description": "Pricing preview variant picker button"
+  },
+  "pricingRegionPlaceholder": {
+    "message": "e.g. IN, US-CA",
+    "description": "Region code placeholder"
+  },
+  "pricingAnyOption": {
+    "message": "Any",
+    "description": "Empty select option meaning no filter"
+  },
+  "pricingPreviewBreakdown": {
+    "message": "Applied steps",
+    "description": "Preview breakdown heading"
+  },
+  "pricingRuleType": {
+    "message": "Rule type",
+    "description": "Rule type field label"
+  },
+  "pricingPromoType": {
+    "message": "Promotion type",
+    "description": "Promo type field label"
+  },
+  "pricingAdjType": {
+    "message": "Adjustment",
+    "description": "Adjustment type field label"
+  },
+  "pricingAdjValue": {
+    "message": "Value",
+    "description": "Adjustment value field label"
+  },
+  "pricingAdjPercent": {
+    "message": "Percent",
+    "description": "Percent adjustment option"
+  },
+  "pricingAdjAmount": {
+    "message": "Amount off",
+    "description": "Amount adjustment option"
+  },
+  "pricingAdjFixed": {
+    "message": "Fixed price",
+    "description": "Fixed price adjustment option"
+  },
+  "pricingPriorityShort": {
+    "message": "P{priority}",
+    "description": "Compact priority in list row"
+  },
+  "pricingCustomerIdsPlaceholder": {
+    "message": "Comma-separated IDs",
+    "description": "Contract customer IDs placeholder"
+  },
+  "pricingEffectiveFrom": {
+    "message": "Effective from",
+    "description": "Effective from date label"
+  },
+  "pricingEffectiveUntil": {
+    "message": "Effective until",
+    "description": "Effective until date label"
+  },
+  "pricingStatus": {
+    "message": "Status",
+    "description": "Status field label"
+  },
+  "pricingStatusActive": {
+    "message": "Active",
+    "description": "Active status label"
+  },
+  "pricingStatusInactive": {
+    "message": "Inactive",
+    "description": "Inactive status label"
+  },
+  "pricingBuyQty": {
+    "message": "Buy quantity",
+    "description": "Buy X field for buy-get promo"
+  },
+  "pricingGetQty": {
+    "message": "Get quantity",
+    "description": "Get Y field for buy-get promo"
+  },
+  "pricingBuyGetShort": {
+    "message": "Buy {buy} get {get}",
+    "description": "Compact buy-get summary in list"
+  },
+  "pricingRuleTypeQuantity": {
+    "message": "Quantity",
+    "description": "QUANTITY rule type label"
+  },
+  "pricingRuleTypeCustomer": {
+    "message": "Customer",
+    "description": "CUSTOMER rule type label"
+  },
+  "pricingRuleTypeRegion": {
+    "message": "Region",
+    "description": "REGION rule type label"
+  },
+  "pricingRuleTypeDate": {
+    "message": "Date",
+    "description": "DATE rule type label"
+  },
+  "pricingRuleTypeContract": {
+    "message": "Contract",
+    "description": "CONTRACT rule type label"
+  },
+  "pricingRuleTypeChannel": {
+    "message": "Channel",
+    "description": "CHANNEL rule type label"
+  },
+  "pricingPromoTypeProduct": {
+    "message": "Product discount",
+    "description": "PRODUCT_DISCOUNT promo label"
+  },
+  "pricingPromoTypeOrder": {
+    "message": "Order discount",
+    "description": "ORDER_DISCOUNT promo label"
+  },
+  "pricingPromoTypeBuyGet": {
+    "message": "Buy X get Y",
+    "description": "BUY_X_GET_Y promo label"
+  },
+  "pricingPromoTypeVolume": {
+    "message": "Volume discount",
+    "description": "VOLUME_DISCOUNT promo label"
+  },
+  "pricingPromoTypeCustomer": {
+    "message": "Customer discount",
+    "description": "CUSTOMER_DISCOUNT promo label"
+  },
+  "pricingPromoTypeShipping": {
+    "message": "Shipping discount",
+    "description": "SHIPPING_DISCOUNT promo label"
+  },
+  "pricingPromoTypeFestival": {
+    "message": "Festival",
+    "description": "FESTIVAL promo label"
+  },
+  "pricingCustomerRetail": {
+    "message": "Retail",
+    "description": "RETAIL customer type"
+  },
+  "pricingCustomerDealer": {
+    "message": "Dealer",
+    "description": "DEALER customer type"
+  },
+  "pricingCustomerDistributor": {
+    "message": "Distributor",
+    "description": "DISTRIBUTOR customer type"
+  },
+  "pricingCustomerCorporate": {
+    "message": "Corporate",
+    "description": "CORPORATE customer type"
+  },
+  "pricingConfirmDeleteRule": {
+    "message": "Delete pricing rule “{name}”?",
+    "description": "Confirm delete pricing rule"
+  },
+  "pricingConfirmDeletePromo": {
+    "message": "Delete promotion “{name}”?",
+    "description": "Confirm delete promotion"
+  },
+  "productConfigRulesLocked": {
+    "message": "Add at least one option with a value to configure rules.",
+    "description": "Rules section locked until options exist"
+  },
+  "productConfigOptionIndex": {
+    "message": "Option {index}",
+    "description": "Option card sequence badge aria label"
+  },
+  "productConfigValuesLabel": {
+    "message": "Values",
+    "description": "Option values field label"
+  },
+  "productConfigCompatPairsLabel": {
+    "message": "Value pairs",
+    "description": "Compatibility rule value pairs sub-section label"
   }
 }

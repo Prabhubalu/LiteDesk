@@ -1,10 +1,18 @@
 import {
+  AdjustmentsHorizontalIcon,
+  ArrowsRightLeftIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+  BuildingStorefrontIcon,
   ClipboardDocumentListIcon,
   CreditCardIcon,
   CubeIcon,
   DocumentCurrencyDollarIcon,
   DocumentTextIcon,
-  ShoppingCartIcon
+  InboxArrowDownIcon,
+  ReceiptRefundIcon,
+  ShoppingCartIcon,
+  TruckIcon
 } from '@heroicons/vue/24/outline';
 import type { Component } from 'vue';
 
@@ -36,11 +44,14 @@ export const MODULE_ICON_COMPONENTS: Record<string, Component> = {
   quotes: DocumentTextIcon,
   sales_orders: ShoppingCartIcon,
   purchase_orders: DocumentTextIcon,
-  receipt_notes: DocumentTextIcon,
-  purchase_returns: DocumentTextIcon,
-  delivery_notes: DocumentTextIcon,
-  delivery_returns: DocumentTextIcon,
-  sales_returns: DocumentTextIcon,
+  receipt_notes: InboxArrowDownIcon,
+  purchase_returns: ArrowUturnLeftIcon,
+  delivery_notes: TruckIcon,
+  delivery_returns: ArrowUturnRightIcon,
+  sales_returns: ReceiptRefundIcon,
+  stockrooms: BuildingStorefrontIcon,
+  stock_adjustments: AdjustmentsHorizontalIcon,
+  stock_transfers: ArrowsRightLeftIcon,
   invoices: DocumentCurrencyDollarIcon,
   payments: CreditCardIcon,
   inventory: CubeIcon,

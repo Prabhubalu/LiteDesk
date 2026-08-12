@@ -7,6 +7,11 @@
     <!-- Empty State (from definition) -->
     <div v-if="shouldShowEmptyState" class="flex items-center justify-center min-h-[60vh]">
       <div class="text-center max-w-md">
+        <img
+          :src="fullPageEmptyIllustrationSrc"
+          :alt="t('common.listEmptyIllustrationAlt')"
+          class="mx-auto mb-6 h-40 w-auto"
+        />
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           {{ fullPageEmptyTitle }}
         </h2>
@@ -144,6 +149,7 @@ import { captureFirstTimeEmptyStateSeen } from '@/config/posthogOnboarding';
 import { getAppRegistry } from '@/utils/getAppRegistry';
 import { createPermissionSnapshot } from '@/types/permission-snapshot.types';
 import { EmptyStateType } from '@/types/empty-state.types';
+import { getModuleEmptyIllustrationSrc } from '@/utils/moduleEmptyIllustrations';
 import ListView from '@/components/common/ListView.vue';
 import apiClient from '@/utils/apiClient';
 import { fetchModulesListCached, parseModulesListResponse } from '@/utils/tenantSchemaApiCache';
@@ -1079,6 +1085,10 @@ const fullPageEmptyActionLabel = computed(() => {
   if (action.labelKey && te(action.labelKey)) return t(action.labelKey);
   return action.label;
 });
+
+const fullPageEmptyIllustrationSrc = computed(() =>
+  getModuleEmptyIllustrationSrc(props.moduleKey)
+);
 
 const listSearchPlaceholder = computed(() => resolveListSearchPlaceholder(props.moduleKey, t, te));
 

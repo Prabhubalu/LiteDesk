@@ -175,21 +175,97 @@
     "message": "Mailbox folders",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
+  "inboxGetStartedIllustrationAlt": {
+    "message": "Inbox illustration",
+    "description": "Inbox empty state illustration alt text"
+  },
+  "inboxGetStartedConnectWithLabel": {
+    "message": "Get started with",
+    "description": "Inbox get started provider section label"
+  },
+  "inboxGetStartedProviderGmail": {
+    "message": "Gmail",
+    "description": "Inbox get started Gmail provider button"
+  },
+  "inboxGetStartedProviderOutlook": {
+    "message": "Microsoft Outlook",
+    "description": "Inbox get started Outlook provider button"
+  },
+  "inboxGetStartedCarouselDots": {
+    "message": "Inbox features",
+    "description": "Inbox get started carousel dot navigation label"
+  },
+  "inboxGetStartedCarouselPrev": {
+    "message": "Previous feature",
+    "description": "Inbox get started carousel previous button"
+  },
+  "inboxGetStartedCarouselNext": {
+    "message": "Next feature",
+    "description": "Inbox get started carousel next button"
+  },
+  "inboxGetStartedSlideAssignTitle": {
+    "message": "Assign threads in shared mailboxes",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideAssignDescription": {
+    "message": "Give every email in a group mailbox an owner so follow-ups never get lost.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedSlideMentionsTitle": {
+    "message": "Comment on any thread",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideMentionsDescription": {
+    "message": "Discuss emails inside Arivu with mentions — no need to forward or CC the team.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedSlideCannedTitle": {
+    "message": "Canned replies in Inbox",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideCannedDescription": {
+    "message": "Insert saved responses while replying so your team answers consistently and faster.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedSlideRecordsTitle": {
+    "message": "CRM context on every thread",
+    "description": "Inbox get started carousel slide title"
+  },
+  "inboxGetStartedSlideRecordsDescription": {
+    "message": "Threads link to contacts and deals automatically. Mark as done when the conversation is closed.",
+    "description": "Inbox get started carousel slide description"
+  },
+  "inboxGetStartedPrimaryAction": {
+    "message": "Connect mailbox",
+    "description": "Inbox get started primary CTA"
+  },
+  "inboxGetStartedPersonalMailboxLabel": {
+    "message": "Personal mailbox",
+    "description": "Inbox get started personal mailbox section label"
+  },
+  "inboxGetStartedTeamMailboxLabel": {
+    "message": "Team mailbox",
+    "description": "Inbox get started team mailbox section label"
+  },
+  "inboxGetStartedSecondaryAction": {
+    "message": "Set up shared mailbox",
+    "description": "Inbox get started secondary CTA"
+  },
   "inboxGetStartedTipAssign": {
-    "message": "Assign each email in a group mailbox for follow-up.",
-    "description": "Inbox get started orbit tip"
+    "message": "Assign conversations in shared mailboxes",
+    "description": "Inbox get started feature highlight"
   },
   "inboxGetStartedTipMentions": {
-    "message": "Collaborate using <strong>mentions</strong> in comments.",
-    "description": "Inbox get started orbit tip (HTML)"
+    "message": "Collaborate with mentions in comments",
+    "description": "Inbox get started feature highlight"
   },
   "inboxGetStartedTipCanned": {
-    "message": "Automate &amp; save time with canned replies.",
-    "description": "Inbox get started orbit tip (HTML)"
+    "message": "Reply faster with canned responses",
+    "description": "Inbox get started feature highlight"
   },
   "inboxGetStartedTipEmails": {
-    "message": "Emails <strong>auto-link</strong> to contacts and records. <strong>Mark as done</strong> to close conversations.",
-    "description": "Inbox get started orbit tip (HTML)"
+    "message": "Auto-link threads to contacts and records",
+    "description": "Inbox get started feature highlight"
   },
   "inboxGetStartedStepMailboxTitle": {
     "message": "Set up your mailbox",
@@ -200,7 +276,7 @@
     "description": "Get started step subtitle"
   },
   "inboxGetStartedInboundParserSubtitle": {
-    "message": "Set up email forwarding to your unique address, or join a shared mailbox your team already created.",
+    "message": "Forward mail to your unique address, or join a shared mailbox your team already uses.",
     "description": "Inbox get started subtitle when inbound parser mode is enabled"
   },
   "inboxGetStartedStepGroupTitle": {
@@ -208,23 +284,7 @@
     "description": "Get started step title"
   },
   "inboxGetStartedStepGroupSubtitle": {
-    "message": "Organize email with your team.",
-    "description": "Get started step subtitle"
-  },
-  "inboxGetStartedStepSocialTitle": {
-    "message": "Add social accounts",
-    "description": "Get started step title"
-  },
-  "inboxGetStartedStepSocialSubtitle": {
-    "message": "Connect WhatsApp, Instagram, and more.",
-    "description": "Get started step subtitle"
-  },
-  "inboxGetStartedStepChatTitle": {
-    "message": "Live chat",
-    "description": "Get started step title"
-  },
-  "inboxGetStartedStepChatSubtitle": {
-    "message": "Engage with your customers in real time.",
+    "message": "Create a shared address your whole team can work from.",
     "description": "Get started step subtitle"
   },
   "inboxGetStartedStepConnect": {
@@ -248,11 +308,11 @@
     "description": "Auto-migrated from inboxGetStarted"
   },
   "inboxGetStartedConnectYourWorkInboxToSend": {
-    "message": "Connect your work inbox to send, receive, and manage email alongside your CRM records.",
+    "message": "Connect Gmail or Outlook, set up a shared mailbox, and manage every thread alongside your CRM records.",
     "description": "Auto-migrated from inboxGetStarted"
   },
   "inboxGetStartedGetStartedWithLitedesk": {
-    "message": "Get started with Arivu",
+    "message": "Connect your inbox",
     "description": "Auto-migrated from inboxGetStarted"
   },
   "inboxProviderCardSoon": {
@@ -302,6 +362,34 @@
   "emailComposeRecipientsPlaceholder": {
     "message": "Recipients",
     "description": "Short To-field placeholder in floating compose"
+  },
+  "emailComposeLabelTo": {
+    "message": "To",
+    "description": "Compose recipient row label"
+  },
+  "emailComposeLabelCc": {
+    "message": "Cc",
+    "description": "Compose Cc row label and toggle"
+  },
+  "emailComposeLabelBcc": {
+    "message": "Bcc",
+    "description": "Compose Bcc row label and toggle"
+  },
+  "emailComposeBodyPlaceholder": {
+    "message": "Write your message…",
+    "description": "Placeholder in floating compose body editor"
+  },
+  "emailComposeCcPlaceholder": {
+    "message": "Add Cc",
+    "description": "Short Cc field placeholder"
+  },
+  "emailComposeBccPlaceholder": {
+    "message": "Add Bcc",
+    "description": "Short Bcc field placeholder"
+  },
+  "emailComposeRemoveAttachment": {
+    "message": "Remove attachment",
+    "description": "Aria label to remove a compose attachment chip"
   },
   "emailComposeDrawerComposeAndSendAnEmailFrom": {
     "message": "Compose and send an email from this record.",
@@ -1426,6 +1514,10 @@
   "inboxSidebarCompose": {
     "message": "Compose",
     "description": "Primary compose action in inbox sidebar"
+  },
+  "inboxSidebarComposeShortcutTitle": {
+    "message": "Compose (C)",
+    "description": "Tooltip for inbox sidebar compose including keyboard shortcut"
   },
   "inboxSidebarViews": {
     "message": "Views",
