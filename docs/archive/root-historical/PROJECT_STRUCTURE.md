@@ -11,7 +11,7 @@ This document is a guided tour of the repository so a new contributor can quickl
 ## 1. Top-Level Layout
 
 ```text
-LiteDesk/                         ← workspace root (project codename: Arivu)
+Arivu/                         ← workspace root (project codename: Arivu)
 ├── client/                       Vue 3 SPA (frontend)
 ├── server/                       Node.js / Express API (backend)
 ├── helm/                         Helm chart for Kubernetes deployment

@@ -1,5 +1,6 @@
 'use strict';
 
+const { readMetadata } = require('../../../utils/arivuMetadata');
 const Communication = require('../../../models/Communication');
 const { appendCommunicationEvent } = require('../../../services/communicationEventWriter');
 const { runWithOrganizationTenantContext } = require('../../../utils/runWithOrganizationTenant');
@@ -19,16 +20,16 @@ const {
  * @returns {string|null}
  */
 function resolveCommunicationId(event) {
-  const fromMeta = event.metadata?.litedesk_communication_id || null;
-  if (fromMeta) return String(fromMeta).trim();
+  const fromMeta = readMetadata(event.metadata, 'communication_id');
+  if (fromMeta) return fromMeta;
 
-  const moduleKey = String(event.metadata?.litedesk_module || '').trim().toLowerCase();
+  const moduleKey = String(readMetadata(event.metadata, 'module') || '').trim().toLowerCase();
   if (isMarketingModule(moduleKey)) {
     return null;
   }
 
-  const entityId = event.metadata?.litedesk_entity_id || null;
-  return entityId ? String(entityId).trim() : null;
+  const entityId = readMetadata(event.metadata, 'entity_id');
+  return entityId || null;
 }
 
 /**
@@ -76,7 +77,7 @@ async function findCommunicationDoc(organizationId, event, communicationId) {
  * @param {import('../amds-types').AmdsWebhookEvent} event
  */
 async function processEngagementEvent(event) {
-  const organizationId = event.metadata?.litedesk_org_id || event.tenant_id || null;
+  const organizationId = readMetadata(event.metadata, 'org_id') || event.tenant_id || null;
   const communicationId = resolveCommunicationId(event);
   const messageId = String(event.message_id || '').trim();
 
@@ -103,7 +104,7 @@ async function processEngagementEvent(event) {
 
     await Communication.updateOne({ _id: doc._id, organizationId }, { $set: update });
 
-    if (isMarketingModule(event.metadata?.litedesk_module)) {
+    if (isMarketingModule(readMetadata(event.metadata, 'module'))) {
       if (isMarketingTestSendEvent(event, doc)) return;
 
       const campaignId = resolveCampaignIdFromEvent(event);
@@ -137,7 +138,7 @@ async function processCommunicationAmdsEvent(event) {
     return;
   }
 
-  const organizationId = event.metadata?.litedesk_org_id || event.tenant_id || null;
+  const organizationId = readMetadata(event.metadata, 'org_id') || event.tenant_id || null;
   const communicationId = resolveCommunicationId(event);
   const messageId = String(event.message_id || '').trim();
   const status = statusFromEventType(event.event_type);
@@ -245,7 +246,7 @@ async function processCommunicationAmdsEvent(event) {
       }
     });
 
-    if (isMarketingModule(event.metadata?.litedesk_module)) {
+    if (isMarketingModule(readMetadata(event.metadata, 'module'))) {
       if (isMarketingTestSendEvent(event, doc)) return;
 
       const campaignId = resolveCampaignIdFromEvent(event);

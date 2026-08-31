@@ -44,7 +44,7 @@ describe('amdsEmailDelivery', () => {
         organizationId: 'org1',
         communicationId: 'comm1'
       }),
-      'litedesk-people-org1-comm-comm1'
+      'arivu-people-org1-comm-comm1'
     );
   });
 

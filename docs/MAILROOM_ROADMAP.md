@@ -10,7 +10,7 @@
 
 ## 1. Executive summary
 
-The **Mailroom** is LiteDesk’s **conversation-first** ingestion layer: every inbound message (email, portal, chat, API) is received, validated, stored raw, normalized, threaded, deduplicated, and **linked to operational records** (primarily Helpdesk **Cases**) via **tenant-configurable policies**—not hardcoded business rules in application code.
+The **Mailroom** is Arivu’s **conversation-first** ingestion layer: every inbound message (email, portal, chat, API) is received, validated, stored raw, normalized, threaded, deduplicated, and **linked to operational records** (primarily Helpdesk **Cases**) via **tenant-configurable policies**—not hardcoded business rules in application code.
 
 | Layer | Owns |
 |--------|------|
@@ -18,7 +18,7 @@ The **Mailroom** is LiteDesk’s **conversation-first** ingestion layer: every i
 | **Cases module** | SLA, status, assignment, escalations, resolution/reopen execution |
 | **Automation (Process Designer / rules)** | Workflows triggered by Mailroom events |
 
-**Goal for LiteDesk:** One platform that supports **any business model** (B2B helpdesk, internal IT, partner portals, CRM-adjacent comms) by making **policies and connectors** data-driven, while keeping **operational logic** in Cases and Automation.
+**Goal for Arivu:** One platform that supports **any business model** (B2B helpdesk, internal IT, partner portals, CRM-adjacent comms) by making **policies and connectors** data-driven, while keeping **operational logic** in Cases and Automation.
 
 ---
 
@@ -52,7 +52,7 @@ The requirement document includes **example defaults** (e.g. “1 incoming email
 
 ---
 
-## 3. Current state in LiteDesk (baseline)
+## 3. Current state in Arivu (baseline)
 
 ### 3.1 Already exists (reuse / evolve)
 
@@ -452,9 +452,9 @@ Work phases in order. Update the progress tracker as exit criteria are met.
 
 ---
 
-## 9. Technology choices (LiteDesk-aligned)
+## 9. Technology choices (Arivu-aligned)
 
-Spec §27 recommends NestJS/RabbitMQ/Postgres; **LiteDesk already uses:**
+Spec §27 recommends NestJS/RabbitMQ/Postgres; **Arivu already uses:**
 
 | Concern | Choice |
 |---------|--------|

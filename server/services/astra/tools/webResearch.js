@@ -43,7 +43,7 @@ async function fetchText(url, { timeoutMs = 12000, headers = {} } = {}) {
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'LiteDesk-AstraWebResearch/1.0',
+        'User-Agent': 'Arivu-AstraWebResearch/1.0',
         ...headers,
       },
       redirect: 'follow',

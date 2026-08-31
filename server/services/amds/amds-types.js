@@ -2,9 +2,9 @@
 
 /**
  * AMDS API contract types (Phase 0a + Track 3 + Track 4).
- * @see docs/LITEDESK-INTEGRATION.md
- * @see docs/LITEDESK-TRACK-3-DRAFT.md
- * @see docs/LITEDESK-TRACK-4-DRAFT.md
+ * @see docs/ARIVU-INTEGRATION.md
+ * @see docs/ARIVU-TRACK-3-DRAFT.md
+ * @see docs/ARIVU-TRACK-4-DRAFT.md
  */
 
 /**
@@ -352,13 +352,14 @@
  * @property {string} tenant_id
  * @property {string} message_id
  * @property {Object} [metadata]
- * @property {string} [metadata.litedesk_module]
- * @property {string} [metadata.litedesk_entity_id]
- * @property {string} [metadata.litedesk_communication_id]
- * @property {string} [metadata.litedesk_org_id]
- * @property {string} [metadata.litedesk_case_id]
- * @property {string} [metadata.litedesk_reply_id]
- * @property {string} [metadata.litedesk_recipient_id]
+ * @property {string} [metadata.arivu_module]
+ * @property {string} [metadata.arivu_entity_id]
+ * @property {string} [metadata.arivu_communication_id]
+ * @property {string} [metadata.arivu_org_id]
+ * @property {string} [metadata.arivu_case_id]
+ * @property {string} [metadata.arivu_reply_id]
+ * @property {string} [metadata.arivu_recipient_id]
+ * Inbound webhooks may still carry pre-rebrand metadata keys (see server/utils/legacyBrandSlug.js).
  * @property {string} [metadata.campaign_external_id]
  * @property {Object} [delivery]
  * @property {string} [delivery.recipient]

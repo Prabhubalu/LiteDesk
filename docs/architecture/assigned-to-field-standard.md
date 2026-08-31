@@ -8,7 +8,7 @@
 
 ## 1. Purpose
 
-LiteDesk uses a single platform field — **`assignedTo`** — to represent **who owns or is responsible for a record today**.
+Arivu uses a single platform field — **`assignedTo`** — to represent **who owns or is responsible for a record today**.
 
 Previously, modules used inconsistent keys and labels:
 

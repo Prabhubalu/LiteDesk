@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * Per-plan email entitlements (LiteDesk source of truth for AMDS policy sync).
- * @see docs/LITEDESK-TRACK-6-PHASE1-DRAFT.md
+ * Per-plan email entitlements (Arivu source of truth for AMDS policy sync).
+ * @see docs/ARIVU-TRACK-6-PHASE1-DRAFT.md
  */
 
 /** Minimum sender reputation (0–100) required for marketing campaign sends. */

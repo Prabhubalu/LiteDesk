@@ -9,7 +9,7 @@
 
 ## 1. Product promise (Articles)
 
-Publish a **public** article in LiteDesk → fetch JSON from your website → render with **your** layout, CSS, and components. LiteDesk never injects branding on headless consumers.
+Publish a **public** article in Arivu → fetch JSON from your website → render with **your** layout, CSS, and components. Arivu never injects branding on headless consumers.
 
 **Out of scope for Articles v1:** Blog API, hosted help pages, iframe embed, custom domains, GraphQL, read API keys.
 
@@ -21,7 +21,7 @@ Publish a **public** article in LiteDesk → fetch JSON from your website → re
 Author (Helpdesk → Articles)
   → visibility: public
   → Publish
-LiteDesk
+Arivu
   → stores blocks JSON (ContentDocumentVersion)
   → POST webhook (optional)
   → serves GET /api/public/v1/content/:orgSlug/articles/:slug
@@ -62,7 +62,7 @@ Customer site (xyz.com)
 | Task | Location |
 |------|----------|
 | `renderBlocksToHtml`, `renderBlocksToElement`, `blocksToPlainText` | `client/src/modules/contentStudio/headless/renderBlocks.ts` |
-| Semantic HTML only — no default CSS or LiteDesk classes | renderer |
+| Semantic HTML only — no default CSS or Arivu classes | renderer |
 | Optional `components` override map | renderer API |
 | Unit tests for core block types | `headless/__tests__/renderBlocks.test.ts` |
 

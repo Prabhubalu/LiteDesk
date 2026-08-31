@@ -2215,7 +2215,7 @@ const deletePersonalMailbox = async () => {
         notifications.success(t('inbox.mailboxDetailsRemovePersonalSuccess'));
       }
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
+        window.dispatchEvent(new CustomEvent('arivu:mailbox-connected'));
       }
     } else {
       notifications.error(res?.message || t('inbox.mailboxDetailsRemovePersonalError'));
@@ -2249,7 +2249,7 @@ const deleteGroupMailbox = async (mb) => {
       if (warn) notifications.warning(warn);
       else notifications.success(t('inbox.mailboxDetailsRemoveGroupSuccess'));
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
+        window.dispatchEvent(new CustomEvent('arivu:mailbox-connected'));
       }
     } else {
       notifications.error(res?.message || t('inbox.mailboxDetailsRemoveGroupError'));
@@ -2643,7 +2643,7 @@ onMounted(async () => {
   await fetchEmailThreads();
   syncOpenThreadFromRoute();
   document.addEventListener('visibilitychange', onDocumentVisibilityChange);
-  window.addEventListener('litedesk:mailbox-connected', onMailboxConnectedEvent);
+  window.addEventListener('arivu:mailbox-connected', onMailboxConnectedEvent);
   window.addEventListener('keydown', onInboxComposeShortcut);
   inboxStream.connect();
 });
@@ -2659,7 +2659,7 @@ onUnmounted(() => {
   openThreadRow.value = null;
   inboxStream.disconnect();
   document.removeEventListener('visibilitychange', onDocumentVisibilityChange);
-  window.removeEventListener('litedesk:mailbox-connected', onMailboxConnectedEvent);
+  window.removeEventListener('arivu:mailbox-connected', onMailboxConnectedEvent);
   window.removeEventListener('keydown', onInboxComposeShortcut);
   if (visibilityCountsTimer) clearTimeout(visibilityCountsTimer);
   if (inboxStreamRefreshTimer) clearTimeout(inboxStreamRefreshTimer);

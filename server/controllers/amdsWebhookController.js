@@ -1,6 +1,4 @@
-'use strict';
-
-const AmdsWebhookEvent = require('../models/AmdsWebhookEvent');
+const { readMetadata } = require('../utils/arivuMetadata');
 const { isAmdsEnvConfigured, getAmdsWebhookSecret } = require('../config/amds');
 const { processCommunicationAmdsEvent } = require('../services/amds/handlers/communicationEventHandler');
 const { processHelpdeskAmdsEvent } = require('../services/amds/handlers/helpdeskEventHandler');
@@ -64,7 +62,7 @@ async function handleAmdsWebhook(req, res) {
           return;
         }
 
-        const moduleKey = event.metadata?.litedesk_module;
+        const moduleKey = readMetadata(event.metadata, 'module');
         if (isHelpdeskModule(moduleKey)) {
           await processHelpdeskAmdsEvent(event);
           return;

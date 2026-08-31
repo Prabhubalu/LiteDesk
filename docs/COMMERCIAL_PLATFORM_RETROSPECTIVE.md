@@ -19,7 +19,7 @@
 
 ## Executive summary
 
-LiteDesk shipped a **four-layer commercial stack** in dependency order:
+Arivu shipped a **four-layer commercial stack** in dependency order:
 
 ```text
 Catalog (C0–C5)     ItemVariant · price books · bundles · lifecycle

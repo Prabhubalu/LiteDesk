@@ -1457,7 +1457,7 @@
       var lastJourneyPageUrl = ''
 
       window.addEventListener('message', function (e) {
-        if (!e || !e.data || e.data.type !== 'litedesk_chat_page_context') return
+        if (!e || !e.data || e.data.type !== 'arivu_chat_page_context') return
         pageContext.pageUrl = String(e.data.pageUrl || '').trim()
         pageContext.referrerUrl = String(e.data.referrerUrl || '').trim()
         pageContext.language = String(e.data.language || pageContext.language || '').trim()
@@ -1493,13 +1493,13 @@
       }
 
       function storageKey() {
-        return 'litedesk_chat_session:' + instanceKey
+        return 'arivu_chat_session:' + instanceKey
       }
       function visitorStorageKey() {
-        return 'litedesk_chat_visitor:' + instanceKey
+        return 'arivu_chat_visitor:' + instanceKey
       }
       function sessionsStorageKey() {
-        return 'litedesk_chat_sessions:' + instanceKey
+        return 'arivu_chat_sessions:' + instanceKey
       }
 
       function safeJsonParse(raw) {
@@ -1695,7 +1695,7 @@
         try {
           // Keep a stable frame height across inbox/prechat/chat so the widget
           // does not jump when switching views or when layout is mid-reflow.
-          parent.postMessage({ type: 'litedesk_chat_resize', height: 560 }, '*')
+          parent.postMessage({ type: 'arivu_chat_resize', height: 560 }, '*')
         } catch (_) {}
       }
 
@@ -2464,7 +2464,7 @@
         widgetConfig.brandColor = color
         try {
           if (window.parent && window.parent !== window) {
-            window.parent.postMessage({ type: 'litedesk_chat_brand_color', brandColor: color }, '*')
+            window.parent.postMessage({ type: 'arivu_chat_brand_color', brandColor: color }, '*')
           }
         } catch (_) {}
       }
@@ -2587,7 +2587,7 @@
 
       function notifyParentAgentMessage() {
         try {
-          parent.postMessage({ type: 'litedesk_chat_agent_message' }, '*')
+          parent.postMessage({ type: 'arivu_chat_agent_message' }, '*')
         } catch (_) {}
       }
 
@@ -3194,7 +3194,7 @@
       })
       resizeComposerInput()
       document.getElementById('closeBtn').addEventListener('click', function () {
-        parent.postMessage('litedesk_chat_close', '*')
+        parent.postMessage('arivu_chat_close', '*')
       })
 
       ;(async function init() {

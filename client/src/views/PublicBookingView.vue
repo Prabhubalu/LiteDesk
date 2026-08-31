@@ -347,7 +347,7 @@ const pageStyle = computed(() => {
 function notifyEmbedHeight() {
   if (!isEmbed.value || typeof window === 'undefined' || window.parent === window) return;
   const height = Math.ceil(document.documentElement.scrollHeight);
-  window.parent.postMessage({ type: 'litedesk-booking-resize', height }, '*');
+  window.parent.postMessage({ type: 'arivu-booking-resize', height }, '*');
 }
 
 function setupEmbedResize() {

@@ -146,10 +146,10 @@ function onOpenCreditNoteModal(event) {
 }
 
 onMounted(() => {
-  window.addEventListener('litedesk:invoice-open-credit-note', onOpenCreditNoteModal);
+  window.addEventListener('arivu:invoice-open-credit-note', onOpenCreditNoteModal);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('litedesk:invoice-open-credit-note', onOpenCreditNoteModal);
+  window.removeEventListener('arivu:invoice-open-credit-note', onOpenCreditNoteModal);
 });
 </script>

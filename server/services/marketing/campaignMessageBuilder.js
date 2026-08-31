@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const Communication = require('../../models/Communication');
 const { MARKETING_MODULE } = require('../amds/handlers/campaignStatsHandler');
+const { buildIdempotencyKey, writeMetadata } = require('../../utils/arivuMetadata');
 const {
   prepareCampaignHtmlForRecipient,
   applyPreferenceMergeTags
@@ -30,7 +31,7 @@ async function buildPersonalizedCampaignMessages(params) {
 
   for (const recipient of params.subscribedRecipients) {
     const recipientId = String(recipient.recipientId || recipient.email).trim();
-    const idempotencyKey = `litedesk-marketing-${orgIdStr}-${externalCampaignId}-${recipientId}`.slice(0, 256);
+    const idempotencyKey = buildIdempotencyKey('marketing', orgIdStr, externalCampaignId, recipientId);
     const idempotencyKeyHash = crypto.createHash('sha256').update(idempotencyKey).digest('hex');
 
     const mergeScope = recipient.mergeData || {};
@@ -98,11 +99,13 @@ async function buildPersonalizedCampaignMessages(params) {
       subject: personalizedSubject,
       content: messageContent,
       metadata: {
-        litedesk_module: MARKETING_MODULE,
-        litedesk_entity_id: externalCampaignId,
-        litedesk_communication_id: String(communicationId),
-        litedesk_recipient_id: recipientId,
-        litedesk_org_id: orgIdStr,
+        ...writeMetadata({
+          module: MARKETING_MODULE,
+          entity_id: externalCampaignId,
+          communication_id: String(communicationId),
+          recipient_id: recipientId,
+          org_id: orgIdStr
+        }),
         campaign_external_id: externalCampaignId,
         ...(recipient.variantKey ? { ab_variant_key: recipient.variantKey } : {})
       },
@@ -128,9 +131,11 @@ async function submitCampaignMessagesToAmds(params) {
     from: params.from,
     tracking: { opens: params.trackOpens, clicks: params.trackClicks },
     metadata: {
-      litedesk_module: MARKETING_MODULE,
-      litedesk_entity_id: externalCampaignId,
-      litedesk_org_id: orgIdStr
+      ...writeMetadata({
+        module: MARKETING_MODULE,
+        entity_id: externalCampaignId,
+        org_id: orgIdStr
+      })
     },
     messages: params.messages,
     ...(params.pacing ? { pacing: params.pacing } : {})
@@ -213,7 +218,10 @@ function alignCampaignMessageCommunicationIds(messages, communications) {
   for (const message of messages) {
     const communication = communicationByKey.get(message.idempotency_key);
     if (communication?._id) {
-      message.metadata.litedesk_communication_id = String(communication._id);
+      Object.assign(
+        message.metadata,
+        writeMetadata({ communication_id: String(communication._id) })
+      );
     }
   }
 }
@@ -227,7 +235,7 @@ async function applyCampaignCommunicationResults(params) {
 
   for (const communication of params.communications) {
     const recipientId = communication.metadata?.recipientId;
-    const key = `litedesk-marketing-${orgIdStr}-${externalCampaignId}-${recipientId}`;
+    const key = buildIdempotencyKey('marketing', orgIdStr, externalCampaignId, recipientId);
 
     if (params.rejectedKeys.has(key)) {
       await Communication.updateOne(

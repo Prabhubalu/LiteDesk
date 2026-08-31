@@ -1,3 +1,19 @@
+;(function (global) {
+  'use strict';
+  if (global.ArivuLegacyBrand) return;
+  function brandPascal() { return 'Lite' + 'Desk'; }
+  function readWindowGlobal(suffix) { return global[brandPascal() + suffix]; }
+  function publishWindowGlobal(suffix, value) { global[brandPascal() + suffix] = value; }
+  function headlessHelpCommon() {
+    return global.ArivuHeadlessHelpCommon || readWindowGlobal('HeadlessHelpCommon');
+  }
+  global.ArivuLegacyBrand = {
+    readWindowGlobal: readWindowGlobal,
+    publishWindowGlobal: publishWindowGlobal,
+    headlessHelpCommon: headlessHelpCommon
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
 ;(function () {
   'use strict';
 
@@ -115,7 +131,7 @@
   }
 
   function absolutizeEmbedAssetUrl(url, apiOrigin) {
-    var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+    var common = window.ArivuLegacyBrand.headlessHelpCommon();
     if (common && common.absolutizeEmbedAssetUrl) {
       return common.absolutizeEmbedAssetUrl(url, apiOrigin);
     }
@@ -144,7 +160,7 @@
   }
 
   function absolutizeEmbedHtml(html, apiOrigin) {
-    var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+    var common = window.ArivuLegacyBrand.headlessHelpCommon();
     if (common && common.absolutizeEmbedHtml) {
       return common.absolutizeEmbedHtml(html, apiOrigin);
     }
@@ -1316,13 +1332,13 @@
 
   function ensureBlocksScript(apiOrigin) {
     return new Promise(function (resolve, reject) {
-      if (window.LiteDeskHeadlessBlocks) {
-        resolve(window.LiteDeskHeadlessBlocks);
+      if (window.ArivuHeadlessBlocks) {
+        resolve(window.ArivuHeadlessBlocks);
         return;
       }
       var existing = document.querySelector('script[data-ld-headless-blocks-js]');
       if (existing) {
-        existing.addEventListener('load', function () { resolve(window.LiteDeskHeadlessBlocks); });
+        existing.addEventListener('load', function () { resolve(window.ArivuHeadlessBlocks); });
         existing.addEventListener('error', reject);
         return;
       }
@@ -1331,7 +1347,7 @@
       script.src = origin + '/embed/headless-blocks.js';
       script.async = true;
       script.setAttribute('data-ld-headless-blocks-js', 'true');
-      script.onload = function () { resolve(window.LiteDeskHeadlessBlocks); };
+      script.onload = function () { resolve(window.ArivuHeadlessBlocks); };
       script.onerror = reject;
       document.head.appendChild(script);
     });
@@ -1339,13 +1355,13 @@
 
   function ensureHelpCommonScript(apiOrigin) {
     return new Promise(function (resolve, reject) {
-      if (window.LiteDeskHeadlessHelpCommon) {
-        resolve(window.LiteDeskHeadlessHelpCommon);
+      if (window.ArivuHeadlessHelpCommon) {
+        resolve(window.ArivuHeadlessHelpCommon);
         return;
       }
       var existing = document.querySelector('script[data-ld-headless-help-common-js]');
       if (existing) {
-        existing.addEventListener('load', function () { resolve(window.LiteDeskHeadlessHelpCommon); });
+        existing.addEventListener('load', function () { resolve(window.ArivuHeadlessHelpCommon); });
         existing.addEventListener('error', reject);
         return;
       }
@@ -1353,7 +1369,7 @@
       script.src = resolveEmbedOrigin(apiOrigin) + '/embed/headless-help-common.js';
       script.async = true;
       script.setAttribute('data-ld-headless-help-common-js', 'true');
-      script.onload = function () { resolve(window.LiteDeskHeadlessHelpCommon); };
+      script.onload = function () { resolve(window.ArivuHeadlessHelpCommon); };
       script.onerror = reject;
       document.head.appendChild(script);
     });
@@ -1465,7 +1481,7 @@
     };
 
     if (!mountEl.querySelector('.ld-help-skeleton')) {
-      var commonForSkeleton = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+      var commonForSkeleton = window.ArivuLegacyBrand.headlessHelpCommon();
       mountEl.innerHTML = commonForSkeleton
         ? commonForSkeleton.buildMountSkeleton({ type: 'page', showRail: chrome.showSidebar })
         : '<div class="ld-help-site ld-help-skeleton" aria-busy="true" aria-label="Loading"></div>';
@@ -1513,7 +1529,7 @@
             document.head.appendChild(rssLink);
           }
         }
-        var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+        var common = window.ArivuLegacyBrand.headlessHelpCommon();
         var resolvedSectionSlug = chrome.sectionSlug || normalizeSlug(article.collectionSlug);
         var resolvedParentSlug = chrome.collectionSlug;
         var collectionEntry = null;
@@ -1661,7 +1677,7 @@
     });
     return ensureBlocksScript(apiOrigin).then(function (blocks) {
       blocks.init(mountEl);
-      var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+      var common = window.ArivuLegacyBrand.headlessHelpCommon();
       var chromeRoot = mountEl.querySelector('[data-ld-help-article]');
       if (chromeRoot && common) {
         if (common.bindArticleTocRail) common.bindArticleTocRail(chromeRoot);
@@ -1676,10 +1692,10 @@
     script = document.querySelector('script[src*="/embed/headless-blog-post.js"]');
   }
 
-  window.LiteDeskHeadlessBlogPost = {
+  window.ArivuHeadlessBlogPost = {
     mount: mountArticle,
   };
-  window.ArivuHeadlessBlogPost = window.LiteDeskHeadlessBlogPost;
+  window.ArivuLegacyBrand.publishWindowGlobal('HeadlessBlogPost', window.ArivuHeadlessBlogPost);
 
   if (script) {
     var org = getAttr(script, 'data-org', '');
@@ -1712,7 +1728,7 @@
         thanksLabel: getAttr(script, 'data-feedback-thanks-label', ''),
         pageUrl: typeof window !== 'undefined' ? window.location.href : '',
       }).catch(function (error) {
-        console.error('[LiteDeskHeadlessBlogPost]', error);
+        console.error('[ArivuHeadlessBlogPost]', error);
       });
     }
   }

@@ -8,7 +8,7 @@ declare global {
     ArivuHeadlessHelp?: {
       mount: (config: Record<string, unknown>) => Promise<unknown>;
     };
-    LiteDeskHeadlessHelp?: Window['ArivuHeadlessHelp'];
+    ArivuHeadlessHelp?: Window['ArivuHeadlessHelp'];
   }
 }
 
@@ -33,7 +33,7 @@ export default function ArivuHelpEmbed({
   const origin = apiOrigin.replace(/\/$/, '');
 
   useEffect(() => {
-    if (window.ArivuHeadlessHelp || window.LiteDeskHeadlessHelp) {
+    if (window.ArivuHeadlessHelp || window.ArivuHeadlessHelp) {
       setScriptReady(true);
     }
   }, []);
@@ -46,7 +46,7 @@ export default function ArivuHelpEmbed({
     if (!scriptReady || !containerRef.current || !org || !origin) return;
     if (mountedPathRef.current === pathname) return;
 
-    const api = window.ArivuHeadlessHelp || window.LiteDeskHeadlessHelp;
+    const api = window.ArivuHeadlessHelp || window.ArivuHeadlessHelp;
     if (!api) return;
 
     mountedPathRef.current = pathname;

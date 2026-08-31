@@ -1,7 +1,7 @@
 # Marketing Application — Implementation Roadmap
 
-**Source PRD:** `LiteDesk Marketing Application PRD` v1.0 (Draft)  
-**Platform dependency:** AMDS Track 4 complete — see [LITEDESK-TRACK-4-DRAFT.md](./LITEDESK-TRACK-4-DRAFT.md) · [AMDS_INTEGRATION_ROADMAP.md](./AMDS_INTEGRATION_ROADMAP.md)  
+**Source PRD:** `Arivu Marketing Application PRD` v1.0 (Draft)  
+**Platform dependency:** AMDS Track 4 complete — see [ARIVU-TRACK-4-DRAFT.md](./ARIVU-TRACK-4-DRAFT.md) · [AMDS_INTEGRATION_ROADMAP.md](./AMDS_INTEGRATION_ROADMAP.md)  
 **Architecture reference:** [Architecture_Document.md](../Architecture_Document.md) §4–5 (app entitlements, permissions, tenant isolation)
 
 **Product goal:** CRM-native marketing operations — audiences, campaigns, templates, scheduling, and analytics — with **all email delivery delegated to AMDS**.
@@ -12,9 +12,9 @@
 
 ## Separation doctrine (locked)
 
-> **LiteDesk Marketing owns the customer experience.** **AMDS owns outbound email infrastructure.**
+> **Arivu Marketing owns the customer experience.** **AMDS owns outbound email infrastructure.**
 
-| Responsibility | LiteDesk Marketing | AMDS |
+| Responsibility | Arivu Marketing | AMDS |
 |----------------|-------------------|------|
 | Campaign CRUD, audiences, segments | ✅ | — |
 | Email builder, templates, merge fields | ✅ | — |
@@ -23,7 +23,7 @@
 | Open/click pixels, link wrapping | — | ✅ |
 | Delivery webhooks → stats | ✅ consumes | ✅ emits |
 | Domain authentication UI | Settings proxy (Track 3) | ✅ DNS/SPF/DKIM |
-| Subscription / preference center pages | ✅ hosted in LiteDesk | — |
+| Subscription / preference center pages | ✅ hosted in Arivu | — |
 
 Hard rule: **No SMTP, queue, or retry logic in Marketing code paths.** All sends go through `AmdsClient.sendCampaignBatch()` (Track 4) or future AMDS schedule APIs.
 
@@ -115,10 +115,10 @@ Follow the **Helpdesk / Inventory app pattern** — not a Settings-scoped featur
 Users
   │
   ▼
-LiteDesk Frontend  (/marketing/*, /dashboard/marketing)
+Arivu Frontend  (/marketing/*, /dashboard/marketing)
   │
   ▼
-LiteDesk API       (/api/marketing/*  →  req.appKey = MARKETING)
+Arivu API       (/api/marketing/*  →  req.appKey = MARKETING)
   │
   ├── CRM data     (people, organizations, deals, cases, tags, custom fields)
   ├── Marketing DB (Campaign, Audience, Segment, MarketingAsset)
@@ -241,7 +241,7 @@ People participation: extend `participations.MARKETING` people type defaults in 
 
 ### AMDS integration points (by phase)
 
-| Phase | AMDS API / webhook | LiteDesk usage |
+| Phase | AMDS API / webhook | Arivu usage |
 |-------|-------------------|----------------|
 | M1 | `POST /v1/campaigns/:id/messages` | ✅ `sendCampaignBatch` |
 | M1 | Webhooks `message.delivered|bounced|opened|clicked` | ✅ `campaignStatsHandler` |
@@ -251,7 +251,7 @@ People participation: extend `participations.MARKETING` people type defaults in 
 | M7 | — | Unsubscribe links rendered in HTML before AMDS send |
 | M10 | Analytics aggregation | A/B variant comparison |
 
-Confirm AMDS schedule/recurring API availability before M5 implementation; stub with LiteDesk cron + immediate send if AMDS schedule is not ready.
+Confirm AMDS schedule/recurring API availability before M5 implementation; stub with Arivu cron + immediate send if AMDS schedule is not ready.
 
 ### Platform integrations (consumer only)
 
@@ -461,7 +461,7 @@ Confirm AMDS schedule/recurring API availability before M5 implementation; stub 
 ### Server
 
 - [x] Campaign `scheduledAt`, `timezone`, `quietHours`, `businessHours` fields
-- [x] Schedule submit — LiteDesk scheduler → `sendCampaignBatch` at time (`marketingCampaignScheduleScheduler.js`)
+- [x] Schedule submit — Arivu scheduler → `sendCampaignBatch` at time (`marketingCampaignScheduleScheduler.js`)
 - [x] `POST /campaigns/:id/test` — single recipient via `AmdsClient.sendMessage`
 - [x] Merge field validation service — scan HTML for unresolved `{{field}}`
 - [x] Conditional block syntax parser (lite — HubSpot `{% if %}` detection + explain)
@@ -628,7 +628,7 @@ Architecture should not block these; do not implement until v1 ships:
 
 | Risk | Mitigation |
 |------|------------|
-| AMDS schedule/recurring API not ready | M5: LiteDesk cron triggers `sendCampaignBatch` at `scheduledAt` |
+| AMDS schedule/recurring API not ready | M5: Arivu cron triggers `sendCampaignBatch` at `scheduledAt` |
 | GrapesJS bundle size | Lazy-load editor route; code-split |
 | Dynamic segment query cost | Cache counts; refresh on schedule not on every page load; slow-query logging on preview >3s |
 | Large audience sends | M11 roadmap — async queue + chunk workers; Track 4 AMDS API chunks 500/msg only |
@@ -653,13 +653,13 @@ Architecture should not block these; do not implement until v1 ships:
 
 | Document | Purpose |
 |----------|---------|
-| [LITEDESK-TRACK-4-DRAFT.md](./LITEDESK-TRACK-4-DRAFT.md) | Campaign send + analytics (done) |
+| [ARIVU-TRACK-4-DRAFT.md](./ARIVU-TRACK-4-DRAFT.md) | Campaign send + analytics (done) |
 | [MARKETING_CAMPAIGN_SEND_SCALE_ROADMAP.md](./MARKETING_CAMPAIGN_SEND_SCALE_ROADMAP.md) | M11 — 500K async send pipeline |
 | [AMDS_INTEGRATION_ROADMAP.md](./AMDS_INTEGRATION_ROADMAP.md) | Platform email provider integration |
-| [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md) | AMDS API contract |
+| [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md) | AMDS API contract |
 | [WEBFORM_BUILDER_ROADMAP.md](./WEBFORM_BUILDER_ROADMAP.md) | Reference for phased roadmap format |
 | [USER_ONBOARDING_ARCHITECTURE.md](./USER_ONBOARDING_ARCHITECTURE.md) | New app merge checklist |
 
 ---
 
-*Maintained in LiteDesk repo at `docs/MARKETING_APPLICATION_ROADMAP.md`.*
+*Maintained in Arivu repo at `docs/MARKETING_APPLICATION_ROADMAP.md`.*

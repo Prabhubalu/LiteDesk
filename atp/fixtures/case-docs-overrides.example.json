@@ -20,7 +20,7 @@
       "typicalError": "401 Invalid credentials",
       "whatToFix": ["Login must return HTTP 200 with a JWT for the owner persona."],
       "likelyCauses": ["Wrong password", "User disabled", "SUT auth misconfigured"],
-      "howToFix": ["Set ATP_PERSONA_OWNER_EMAIL/PASSWORD in atp/.env", "Confirm user exists in LiteDesk tenant"]
+      "howToFix": ["Set ATP_PERSONA_OWNER_EMAIL/PASSWORD in atp/.env", "Confirm user exists in Arivu tenant"]
     }
   }
 }

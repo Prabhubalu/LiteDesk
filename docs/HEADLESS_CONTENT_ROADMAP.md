@@ -10,15 +10,15 @@
 
 ## 1. Goal
 
-Deliver **Sanity-style headless content**: LiteDesk owns authoring and structured storage; **customer websites own all presentation** (layout, CSS, typography, chrome).
+Deliver **Sanity-style headless content**: Arivu owns authoring and structured storage; **customer websites own all presentation** (layout, CSS, typography, chrome).
 
-**Product promise:** Publish once in Content Studio → fetch JSON from any stack (Next.js, Astro, Vue, WordPress, vanilla HTML) → render with the tenant's existing design system. No iframe, no LiteDesk-branded shell, no injected CSS on headless consumers.
+**Product promise:** Publish once in Content Studio → fetch JSON from any stack (Next.js, Astro, Vue, WordPress, vanilla HTML) → render with the tenant's existing design system. No iframe, no Arivu-branded shell, no injected CSS on headless consumers.
 
 ---
 
 ## 2. Separation doctrine (locked)
 
-| Layer | LiteDesk owns | Customer site owns |
+| Layer | Arivu owns | Customer site owns |
 |-------|---------------|-------------------|
 | Authoring | Tiptap editor, blocks, versions, publish workflow | — |
 | Storage | `ContentDocument` + `ContentDocumentVersion.blocks` | — |
@@ -235,7 +235,7 @@ Implementation: channel-aware shaper in `publicContentService`; renderer split i
 **Exit criteria**
 
 - [ ] Renderer tests cover `headless_json` vs `blog_web` output differences
-- [ ] No LiteDesk CSS classes in headless JSON path
+- [ ] No Arivu CSS classes in headless JSON path
 
 ---
 

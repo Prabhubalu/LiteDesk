@@ -1,6 +1,6 @@
 # Internationalization (i18n) Guidelines
 
-Enterprise localization infrastructure for LiteDesk. All platform chrome uses **vue-i18n** with **ICU MessageFormat** syntax.
+Enterprise localization infrastructure for Arivu. All platform chrome uses **vue-i18n** with **ICU MessageFormat** syntax.
 
 **See also:** [I18N_SUMMARY.md](./I18N_SUMMARY.md) (what we built) · [I18N_DEVELOPER_GUIDE.md](./I18N_DEVELOPER_GUIDE.md) (add/update languages and strings)
 

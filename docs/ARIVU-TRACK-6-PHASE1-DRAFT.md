@@ -1,20 +1,20 @@
-# LiteDesk Track 6 Phase 1 — Tenant Policies & Credits
+# Arivu Track 6 Phase 1 — Tenant Policies & Credits
 
-**Audience:** LiteDesk backend + frontend developers  
+**Audience:** Arivu backend + frontend developers  
 **AMDS dependency:** Track 6 Phase 1 complete — see [TRACK-6-PHASE1-COMPLETE.md](./TRACK-6-PHASE1-COMPLETE.md)  
 **Prerequisite:** Tracks 1–3 integration done; Track 4 recommended for campaign credit UX
 
-This document is a **copy-paste-ready draft** for the LiteDesk repo. Build in parallel with AMDS Phase 1.
+This document is a **copy-paste-ready draft** for the Arivu repo. Build in parallel with AMDS Phase 1.
 
-**Related:** [SENDER-REPUTATION-ROADMAP.md](./SENDER-REPUTATION-ROADMAP.md) · [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md)
+**Related:** [SENDER-REPUTATION-ROADMAP.md](./SENDER-REPUTATION-ROADMAP.md) · [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md)
 
 ---
 
 ## 1. Goal
 
-LiteDesk remains the **source of truth** for tenant email entitlements. AMDS enforces them at send time.
+Arivu remains the **source of truth** for tenant email entitlements. AMDS enforces them at send time.
 
-LiteDesk must:
+Arivu must:
 
 1. Store per-org email configuration (credits, limits, flags)
 2. Sync configuration to AMDS whenever it changes
@@ -57,7 +57,7 @@ const orgEmailPolicySchema = new mongoose.Schema(
     orgId: { type: String, required: true, unique: true, index: true },
     status: { type: String, enum: ['active', 'suspended'], default: 'active' },
 
-    // Entitlements (LiteDesk source of truth)
+    // Entitlements (Arivu source of truth)
     monthlyCredits: { type: Number, default: 0, min: 0 },
     creditsRemaining: { type: Number, default: 0, min: 0 },
 
@@ -330,7 +330,7 @@ if (TENANT_EVENTS.has(event.event_type)) {
 await processCommunicationEvent(event);
 ```
 
-**Important:** AMDS credit webhooks are the **consumption truth** for `creditsRemaining` / `creditsReserved`. LiteDesk billing allocation still originates in MongoDB, but in-flight state should follow AMDS webhooks.
+**Important:** AMDS credit webhooks are the **consumption truth** for `creditsRemaining` / `creditsReserved`. Arivu billing allocation still originates in MongoDB, but in-flight state should follow AMDS webhooks.
 
 ---
 
@@ -368,7 +368,7 @@ if (status === 429) {
 
 ---
 
-## 9. Settings API (LiteDesk)
+## 9. Settings API (Arivu)
 
 ```javascript
 // server/routes/settings/email-policy.js
@@ -393,7 +393,7 @@ if (status === 429) {
 }
 ```
 
-Do **not** expose AMDS API key to frontend — proxy through LiteDesk routes.
+Do **not** expose AMDS API key to frontend — proxy through Arivu routes.
 
 ---
 
@@ -469,7 +469,7 @@ Hook from existing Stripe/subscription webhook handlers.
 ## 12. E2E validation script
 
 ```bash
-# LiteDesk/server/scripts/validate-amds-track6-phase1.js
+# Arivu/server/scripts/validate-amds-track6-phase1.js
 # 1. Create test org policy in MongoDB
 # 2. syncOrgPolicyToAmds(orgId)
 # 3. GET AMDS policy — match credits
@@ -477,7 +477,7 @@ Hook from existing Stripe/subscription webhook handlers.
 # 5. Set credits_remaining=0, sync, send — expect 402
 ```
 
-Run with AMDS `npm run dev` + LiteDesk `npm run dev`.
+Run with AMDS `npm run dev` + Arivu `npm run dev`.
 
 ---
 
@@ -512,7 +512,7 @@ Sync `warmup_enabled` and `reputation_enabled` now so AMDS has flags ready.
 
 ## 15. Testing matrix
 
-| Scenario | LiteDesk | AMDS |
+| Scenario | Arivu | AMDS |
 |----------|----------|------|
 | New org | Policy created + synced | PUT policy 200 |
 | Send email | Communication created | Reserve → deliver → consume |
@@ -523,6 +523,6 @@ Sync `warmup_enabled` and `reputation_enabled` now so AMDS has flags ready.
 
 ---
 
-*Maintained in AMDS repo at `docs/LITEDESK-TRACK-6-PHASE1-DRAFT.md`. Update when AMDS API changes.*
+*Maintained in AMDS repo at `docs/ARIVU-TRACK-6-PHASE1-DRAFT.md`. Update when AMDS API changes.*
 
 **Last updated:** July 2, 2026

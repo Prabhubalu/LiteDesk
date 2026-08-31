@@ -1,17 +1,17 @@
-# AMDS Integration Roadmap — LiteDesk
+# AMDS Integration Roadmap — Arivu
 
 **Version:** 1.1  
 **Date:** June 30, 2026  
 **Status:** Phases A–C + Track 3 complete; Phase D partial; Phase E pending  
-**Audience:** LiteDesk backend + frontend engineers, platform ops  
+**Audience:** Arivu backend + frontend engineers, platform ops  
 
-This roadmap defines **what to build in LiteDesk** to integrate with **AMDS (Arivu Mail Delivery System)** as the **default platform outbound email provider**, while keeping existing providers (Gmail mailbox, AWS SES, OCI Email Delivery, Resend, generic SMTP) available as overrides.
+This roadmap defines **what to build in Arivu** to integrate with **AMDS (Arivu Mail Delivery System)** as the **default platform outbound email provider**, while keeping existing providers (Gmail mailbox, AWS SES, OCI Email Delivery, Resend, generic SMTP) available as overrides.
 
 **Related documents**
 
 | Document | Purpose |
 |----------|---------|
-| [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md) | AMDS API contract, webhook spec, idempotency, env vars (source of truth for AMDS ↔ LiteDesk protocol) |
+| [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md) | AMDS API contract, webhook spec, idempotency, env vars (source of truth for AMDS ↔ Arivu protocol) |
 | [COMMUNICATION_PLATFORM_PHASE_PLAN.md](../server/docs/COMMUNICATION_PLATFORM_PHASE_PLAN.md) | Existing outbound/inbound platform (Phases 0–8) |
 | [CRM_EMAIL_ENTERPRISE_ARCHITECTURE.md](../server/docs/CRM_EMAIL_ENTERPRISE_ARCHITECTURE.md) | Communication model, send paths, provider routing |
 | [R0_EMAIL_INFRA_RUNBOOK.md](../server/docs/R0_EMAIL_INFRA_RUNBOOK.md) | System vs CRM email env matrix |
@@ -24,7 +24,7 @@ This roadmap defines **what to build in LiteDesk** to integrate with **AMDS (Ari
 
 ### Goals
 
-1. Route **platform outbound email** through AMDS HTTP API (`POST /v1/messages`) — LiteDesk never opens SMTP for the AMDS path.
+1. Route **platform outbound email** through AMDS HTTP API (`POST /v1/messages`) — Arivu never opens SMTP for the AMDS path.
 2. Make **AMDS the default** for CRM/agent and system mail when AMDS env is configured.
 3. Receive delivery results via **signed webhooks** and update `Communication` (and future Helpdesk) records.
 4. Preserve **tenant isolation**, idempotency, audit events, and existing communication platform patterns.
@@ -37,8 +37,8 @@ This roadmap defines **what to build in LiteDesk** to integrate with **AMDS (Ari
 | Remove SES / OCI / Resend / SMTP | Tenant overrides and migration safety |
 | Replace Gmail API / Gmail SMTP sends | User-connected mailboxes are not platform delivery |
 | AMDS template rendering | AMDS Phase 2+ |
-| Bounce / complaint / open / click webhooks | Track 3 (bounce) done in LiteDesk; complaint Track 3+ |
-| Domain verification UI in LiteDesk | Track 3 done (Settings → AMDS domains proxy) |
+| Bounce / complaint / open / click webhooks | Track 3 (bounce) done in Arivu; complaint Track 3+ |
+| Domain verification UI in Arivu | Track 3 done (Settings → AMDS domains proxy) |
 | Marketing / bulk campaigns via AMDS | AMDS Phase 3 |
 
 ---
@@ -47,7 +47,7 @@ This roadmap defines **what to build in LiteDesk** to integrate with **AMDS (Ari
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ LiteDesk                                                                 │
+│ Arivu                                                                 │
 │                                                                          │
 │  Agent send (Communication)          System mail (OTP, invite, digest)  │
 │         │                                      │                         │
@@ -76,7 +76,7 @@ This roadmap defines **what to build in LiteDesk** to integrate with **AMDS (Ari
                     └──────────────────────┘
 ```
 
-**Principle (from AMDS spec):** LiteDesk decides *what* to send. AMDS decides *how* it is delivered.
+**Principle (from AMDS spec):** Arivu decides *what* to send. AMDS decides *how* it is delivered.
 
 ---
 
@@ -138,14 +138,14 @@ Gmail sends in `outboundEmailSendService` are evaluated **before** platform prov
 
 | # | Deliverable | File(s) | Acceptance |
 |---|-------------|---------|------------|
-| A1 | TypeScript/JSDoc types for AMDS API | `server/services/amds/amds-types.js` | Matches [LITEDESK-INTEGRATION.md §3.3](./LITEDESK-INTEGRATION.md#33-typescript-types) |
+| A1 | TypeScript/JSDoc types for AMDS API | `server/services/amds/amds-types.js` | Matches [ARIVU-INTEGRATION.md §3.3](./ARIVU-INTEGRATION.md#33-typescript-types) |
 | A2 | HTTP client (`sendMessage`, `getMessageStatus`) | `server/services/amds/amds-client.js` | Bearer auth, 10s timeout, error wrapping |
 | A3 | Config singleton + `isAmdsConfigured()` | `server/config/amds.js` | Lazy init; missing env → not configured (no crash at boot) |
 | A4 | Provider module | `server/services/emailProviders/amdsEmailDelivery.js` | `PROVIDER_KEY`, `sendViaAmds()`, address parsing |
 | A5 | Env vars in `.env.example` | `server/.env.example` | `AMDS_BASE_URL`, `AMDS_API_KEY`, `AMDS_WEBHOOK_SECRET`, `AMDS_WEBHOOK_PATH` |
 | A6 | Unit tests | `server/services/amds/__tests__/`, `server/services/emailProviders/__tests__/amdsEmailDelivery.test.js` | Mock HTTP; idempotency key builder |
 
-**Env (LiteDesk)**
+**Env (Arivu)**
 
 ```bash
 AMDS_BASE_URL=http://localhost:8080
@@ -159,7 +159,7 @@ SYSTEM_EMAIL_PROVIDER=amds
 **Env (AMDS — for local dev)**
 
 ```bash
-LITEDESK_WEBHOOK_URL=http://localhost:3000/api/internal/webhooks/amds
+ARIVU_WEBHOOK_URL=http://localhost:3000/api/internal/webhooks/amds
 WEBHOOK_SIGNING_SECRET=dev_webhook_secret
 AMDS_API_KEY=amds_dev_key
 ```
@@ -178,8 +178,8 @@ AMDS_API_KEY=amds_dev_key
 | B3 | Default provider → `amds` | `server/platform/communication/email/runtimeConfigResolver.js` | Fallback to `resend` if AMDS not configured |
 | B4 | Provider key detection | `server/platform/communication/providers/emailProviderGateway.js` | `getActiveProviderKey()` returns `amds` |
 | B5 | CC/BCC passthrough | `server/services/emailService.js`, gateway | AMDS request includes cc/bcc arrays |
-| B6 | Idempotency key mapping | `server/services/emailProviders/amdsEmailDelivery.js` | `litedesk-{module}-{tenantId}-comm-{communicationId}` |
-| B7 | Retry policy (LiteDesk → AMDS) | `amds-client.js` or provider | 5xx/timeout: 3 retries, 1s/2s/4s backoff |
+| B6 | Idempotency key mapping | `server/services/emailProviders/amdsEmailDelivery.js` | `arivu-{module}-{tenantId}-comm-{communicationId}` |
+| B7 | Retry policy (Arivu → AMDS) | `amds-client.js` or provider | 5xx/timeout: 3 retries, 1s/2s/4s backoff |
 | B8 | Attachment policy | `server/services/emailService.js` | Phase 0a: fall back to SMTP if attachments + non-amds override, else clear error |
 | B9 | Update seeder defaults | `server/services/communicationDefaultsSeeder.js` | Default integration provider `amds` |
 | B10 | Integration registry copy | `server/constants/integrationRegistry.js` | List AMDS as default platform provider |
@@ -211,7 +211,7 @@ AMDS_API_KEY=amds_dev_key
 
 ### Phase C — Webhook + delivery status
 
-**Goal:** AMDS delivery events update LiteDesk records; idempotent processing.  
+**Goal:** AMDS delivery events update Arivu records; idempotent processing.  
 **Status:** ✅ Done  
 
 | # | Deliverable | File(s) | Acceptance |
@@ -235,16 +235,16 @@ AMDS_API_KEY=amds_dev_key
 | `message.failed` | `failed` | `metadata.deliveryError` |
 | `message.bounced` | `bounced` | `metadata.bounceClassification`, `bounceDiagnostic`, `bounceRecipient` |
 
-Match key: `metadata.litedesk_communication_id` / `litedesk_entity_id`, `externalMessageId`, or `providerMessageKey` (`amds:{message_id}`).
+Match key: `metadata.arivu_communication_id` / `arivu_entity_id`, `externalMessageId`, or `providerMessageKey` (`amds:{message_id}`).
 
 Metadata routing (from send):
 
 ```javascript
 metadata: {
-  litedesk_module: relatedTo.moduleKey,   // e.g. workspace, people, cases
-  litedesk_entity_id: communicationId,
-  litedesk_communication_id: communicationId,
-  litedesk_org_id: organizationId
+  arivu_module: relatedTo.moduleKey,   // e.g. workspace, people, cases
+  arivu_entity_id: communicationId,
+  arivu_communication_id: communicationId,
+  arivu_org_id: organizationId
 }
 ```
 
@@ -263,7 +263,7 @@ metadata: {
 | T3 | Bounce webhook handler | `communicationEventHandler.js`, `bounceContactHandler.js`, `bounceNotify.js` | `message.bounced` → Communication + suppression + notification |
 | T4 | Send path 422/403 | `amdsEmailDelivery.js`, `communicationsController.js` | User-facing errors |
 | T5 | Queue worker error codes | `emailQueueService.js`, `buildCommunicationUpdateFromSendResult` | `metadata.sendErrorCode` on async send failure |
-| T6 | Domain settings API + UI | `amdsDomainsController.js`, `IntegrationsSettings.vue` | Register / verify DNS via LiteDesk proxy |
+| T6 | Domain settings API + UI | `amdsDomainsController.js`, `IntegrationsSettings.vue` | Register / verify DNS via Arivu proxy |
 | T7 | Case timeline delivery badges | `CaseEmailTimelineMessage.vue` | Delivered / Bounced / Failed |
 | T8 | Validation script | `server/scripts/validate-amds-track3-bounce.js` | Send → simulate-bounce → `status: bounced` |
 
@@ -273,11 +273,11 @@ metadata: {
 # Terminal 1 — AMDS
 cd AMDS && npm run docker:up && npm run dev
 
-# Terminal 2 — LiteDesk
-cd LiteDesk/server && npm run dev
+# Terminal 2 — Arivu
+cd Arivu/server && npm run dev
 
 # Terminal 3 — bounce E2E
-cd LiteDesk/server && node scripts/validate-amds-track3-bounce.js
+cd Arivu/server && node scripts/validate-amds-track3-bounce.js
 ```
 
 ---
@@ -319,13 +319,13 @@ cd LiteDesk/server && node scripts/validate-amds-track3-bounce.js
 
 | # | Deliverable | Acceptance |
 |---|-------------|------------|
-| E1 | Private network: LiteDesk → AMDS (VCN IP / internal DNS) | No public exposure of AMDS `/v1/*` |
-| E2 | Webhook URL on AMDS side → LiteDesk private endpoint | `LITEDESK_WEBHOOK_URL` matches production |
+| E1 | Private network: Arivu → AMDS (VCN IP / internal DNS) | No public exposure of AMDS `/v1/*` |
+| E2 | Webhook URL on AMDS side → Arivu private endpoint | `ARIVU_WEBHOOK_URL` matches production |
 | E3 | Secret rotation runbook | Quarterly `AMDS_API_KEY` + `AMDS_WEBHOOK_SECRET` |
 | E4 | Feature flag (optional) | `AMDS_ENABLED=true` for gradual rollout |
 | E5 | Staged migration | Week 1: `EMAIL_PROVIDER=amds` staging only; Week 2: production |
 | E6 | Rollback | Set `EMAIL_PROVIDER=resend` or `oci-email-delivery` — no code deploy |
-| E7 | Monitor AMDS queue depth + LiteDesk failed send rate | Dashboard or log alerts |
+| E7 | Monitor AMDS queue depth + Arivu failed send rate | Dashboard or log alerts |
 
 ---
 
@@ -337,9 +337,9 @@ cd LiteDesk/server && node scripts/validate-amds-track3-bounce.js
 
 | # | Deliverable | Notes |
 |---|-------------|-------|
-| F1 | Ticket reply schema AMDS fields | Per [LITEDESK-INTEGRATION.md §5.2](./LITEDESK-INTEGRATION.md#52-mongodb-schema-changes) |
-| F2 | `sendTicketReplyEmail` service | Idempotency: `litedesk-helpdesk-{orgId}-ticket-{ticketId}-reply-{replyId}` |
-| F3 | Helpdesk webhook handler | Route `metadata.litedesk_module === 'helpdesk'` |
+| F1 | Ticket reply schema AMDS fields | Per [ARIVU-INTEGRATION.md §5.2](./ARIVU-INTEGRATION.md#52-mongodb-schema-changes) |
+| F2 | `sendTicketReplyEmail` service | Idempotency: `arivu-helpdesk-{orgId}-ticket-{ticketId}-reply-{replyId}` |
+| F3 | Helpdesk webhook handler | Route `metadata.arivu_module === 'helpdesk'` |
 | F4 | Helpdesk UI delivery states | Same pattern as Phase D |
 
 Reuse Phases A–C infrastructure — no second AMDS client.
@@ -432,17 +432,17 @@ Reuse Phases A–C infrastructure — no second AMDS client.
 Prerequisites:
 
 - AMDS repo: `npm run setup && npm run dev`
-- LiteDesk API: `http://localhost:3000`
+- Arivu API: `http://localhost:3000`
 - Mailpit UI: `http://localhost:8025`
 
 Steps:
 
-1. Set LiteDesk + AMDS env vars (§5 Phase A).
+1. Set Arivu + AMDS env vars (§5 Phase A).
 2. Complete Phases A → C.
 3. Send test email from CRM record or workspace inbox.
 4. Confirm email in Mailpit within ~5 seconds.
 5. Confirm webhook updates `Communication.status` to `delivered`.
-6. Run manual webhook curl from [LITEDESK-INTEGRATION.md §7](./LITEDESK-INTEGRATION.md#7-local-development-checklist).
+6. Run manual webhook curl from [ARIVU-INTEGRATION.md §7](./ARIVU-INTEGRATION.md#7-local-development-checklist).
 
 ---
 
@@ -475,7 +475,7 @@ Steps:
 
 ## 12. Maintenance
 
-- **API contract changes:** update [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md) in AMDS repo first, then sync this roadmap and LiteDesk code.
+- **API contract changes:** update [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md) in AMDS repo first, then sync this roadmap and Arivu code.
 - **New AMDS webhook events** (`message.bounced`, etc.): extend Phase C handler; wire to existing suppression pipeline from Communication Platform Phase 2.
 - **Do not** add parallel outbound frameworks — extend `emailService` + `emailProviderGateway` + AMDS handler only.
 

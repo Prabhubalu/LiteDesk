@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * End-to-end Track 4 campaign + tracking validation (LiteDesk + AMDS must be running).
+ * End-to-end Track 4 campaign + tracking validation (Arivu + AMDS must be running).
  *
  * Prerequisites:
  *   - AMDS: npm run docker:up && npm run dev
- *   - LiteDesk: npm run dev (server on PORT, default 3000)
+ *   - Arivu: npm run dev (server on PORT, default 3000)
  *   - Matching AMDS_API_KEY / AMDS_WEBHOOK_SECRET on both sides
  *   - Verified sending domain (localhost.test with DNS_VERIFY_BYPASS on AMDS for local)
  *
@@ -13,8 +13,8 @@
  *   node scripts/validate-amds-track4-campaign.js [organizationId]
  *   node scripts/validate-amds-track4-campaign.js [organizationId] --http
  *
- * --http  Exercise full M1 REST API (/api/marketing/campaigns) against LiteDesk.
- *         Requires JWT_SECRET and a running LiteDesk server (LITEDESK_API_URL or PORT).
+ * --http  Exercise full M1 REST API (/api/marketing/campaigns) against Arivu.
+ *         Requires JWT_SECRET and a running Arivu server (ARIVU_API_URL or PORT).
  */
 
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
@@ -31,7 +31,7 @@ const { isAmdsEnvConfigured } = require('../config/amds');
 
 const USE_HTTP = process.argv.includes('--http') || process.env.MARKETING_VALIDATE_HTTP === '1';
 const API_BASE = String(
-  process.env.LITEDESK_API_URL ||
+  process.env.ARIVU_API_URL ||
     `http://127.0.0.1:${process.env.PORT || 3000}`
 ).replace(/\/$/, '');
 
@@ -341,7 +341,7 @@ async function main() {
   if (openedComm?.metadata?.openedAt || openedComm?.metadata?.clickedAt) {
     console.log('Webhook engagement metadata observed on Communication');
   } else {
-    console.warn('Engagement webhook not observed — check AMDS LITEDESK_WEBHOOK_URL');
+    console.warn('Engagement webhook not observed — check AMDS ARIVU_WEBHOOK_URL');
   }
 
   const campaignWithStats = await pollCampaign(
@@ -357,7 +357,7 @@ async function main() {
     );
   }
 
-  console.log(USE_HTTP ? 'LiteDesk Track 4 + M1 HTTP validation complete' : 'LiteDesk Track 4 validation complete');
+  console.log(USE_HTTP ? 'Arivu Track 4 + M1 HTTP validation complete' : 'Arivu Track 4 validation complete');
   await mongoose.disconnect();
 }
 

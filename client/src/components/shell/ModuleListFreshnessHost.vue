@@ -47,9 +47,9 @@ function onEventCreated() {
 
 onMounted(() => {
   if (typeof window === 'undefined') return;
-  window.addEventListener('litedesk:import-complete', onImportComplete);
-  window.addEventListener('litedesk:bulk-delete-complete', onBulkMutationComplete);
-  window.addEventListener('litedesk:bulk-update-complete', onBulkMutationComplete);
+  window.addEventListener('arivu:import-complete', onImportComplete);
+  window.addEventListener('arivu:bulk-delete-complete', onBulkMutationComplete);
+  window.addEventListener('arivu:bulk-update-complete', onBulkMutationComplete);
   window.addEventListener('arivu:record-created', onRecordCreated);
   window.addEventListener('arivu:record-updated', onRecordUpdated);
   window.addEventListener('arivu:event-created', onEventCreated);
@@ -57,9 +57,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (typeof window === 'undefined') return;
-  window.removeEventListener('litedesk:import-complete', onImportComplete);
-  window.removeEventListener('litedesk:bulk-delete-complete', onBulkMutationComplete);
-  window.removeEventListener('litedesk:bulk-update-complete', onBulkMutationComplete);
+  window.removeEventListener('arivu:import-complete', onImportComplete);
+  window.removeEventListener('arivu:bulk-delete-complete', onBulkMutationComplete);
+  window.removeEventListener('arivu:bulk-update-complete', onBulkMutationComplete);
   window.removeEventListener('arivu:record-created', onRecordCreated);
   window.removeEventListener('arivu:record-updated', onRecordUpdated);
   window.removeEventListener('arivu:event-created', onEventCreated);

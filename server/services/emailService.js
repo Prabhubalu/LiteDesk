@@ -8,6 +8,7 @@
 const EMAIL_PROVIDER_KEY = 'email-provider';
 const ociEmailDelivery = require('./emailProviders/ociEmailDelivery');
 const amdsEmailDelivery = require('./emailProviders/amdsEmailDelivery');
+const { buildIdempotencyKey, writeMetadata } = require('../utils/arivuMetadata');
 const {
   resolveSystemRuntimeConfig,
   resolveCrmRuntimeConfig
@@ -335,14 +336,16 @@ async function sendEmail(opts) {
             organizationId: String(organizationId),
             communicationId: String(communicationId)
           })
-        : `litedesk-${channel}-${String(organizationId || 'system')}-${Date.now()}`);
+        : buildIdempotencyKey(channel, String(organizationId || 'system'), String(Date.now())));
 
     const amdsMetadata = {
       ...(metadata && typeof metadata === 'object' ? metadata : {}),
-      ...(organizationId ? { litedesk_org_id: String(organizationId) } : {}),
-      ...(communicationId ? { litedesk_entity_id: String(communicationId) } : {}),
-      ...(communicationId ? { litedesk_communication_id: String(communicationId) } : {}),
-      ...(moduleKey ? { litedesk_module: String(moduleKey) } : {})
+      ...writeMetadata({
+        ...(organizationId ? { org_id: String(organizationId) } : {}),
+        ...(communicationId ? { entity_id: String(communicationId) } : {}),
+        ...(communicationId ? { communication_id: String(communicationId) } : {}),
+        ...(moduleKey ? { module: String(moduleKey) } : {})
+      })
     };
 
     return amdsEmailDelivery.sendViaAmds({

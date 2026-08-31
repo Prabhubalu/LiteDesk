@@ -1636,7 +1636,7 @@
     "description": "Blog curl install title"
   },
   "addonsBlogCurlInstallDesc": {
-    "message": "Downloads a starter HTML page with the unified blog embed. Open it from your LiteDesk host, then set your org.",
+    "message": "Downloads a starter HTML page with the unified blog embed. Open it from your Arivu host, then set your org.",
     "description": "Blog curl install description"
   },
   "addonsBlogDemosTitle": {

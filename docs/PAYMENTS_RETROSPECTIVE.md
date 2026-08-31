@@ -19,7 +19,7 @@
 
 ## Executive summary
 
-LiteDesk shipped a **three-layer receivables model** downstream of the frozen commercial stack:
+Arivu shipped a **three-layer receivables model** downstream of the frozen commercial stack:
 
 ```text
 Commercial (FROZEN)     SalesOrderInvoiceAllocation · invoice line snapshots

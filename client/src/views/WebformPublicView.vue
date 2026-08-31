@@ -197,7 +197,7 @@ function initFormData(fields, query = route.query) {
 function notifyEmbedHeight() {
   if (!isEmbed.value || typeof window === 'undefined' || window.parent === window) return;
   const height = Math.ceil(document.documentElement.scrollHeight);
-  window.parent.postMessage({ type: 'litedesk-webform-resize', height }, '*');
+  window.parent.postMessage({ type: 'arivu-webform-resize', height }, '*');
 }
 
 function setupEmbedResize() {

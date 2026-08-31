@@ -13,7 +13,7 @@ A **Report** is the foundational analytical asset in the Analytics module. It de
 | Field | Type | Required | Description |
 |--------|------|----------|-------------|
 | id | UUID | ✅ | System-generated unique identifier |
-| organizationId | UUID | ✅ | Tenant scope (LiteDesk: ObjectId, required on all queries) |
+| organizationId | UUID | ✅ | Tenant scope (Arivu: ObjectId, required on all queries) |
 | name | String | ✅ | Report name displayed to users |
 | apiName | String | ✅ | Unique internal API identifier |
 | description | Text | | Report description |

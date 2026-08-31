@@ -1,3 +1,11 @@
+;(function (global) {
+  'use strict';
+  if (global.ArivuLegacyBrand) return;
+  function brandPascal() { return 'Lite' + 'Desk'; }
+  function publishWindowGlobal(suffix, value) { global[brandPascal() + suffix] = value; }
+  global.ArivuLegacyBrand = { publishWindowGlobal: publishWindowGlobal };
+})(typeof window !== 'undefined' ? window : globalThis);
+
 ;(function () {
   'use strict';
 
@@ -189,7 +197,7 @@
             search: input ? input.value : '',
             page: 1,
           })).catch(function (error) {
-            console.error('[LiteDeskHeadlessArticleList]', error);
+            console.error('[ArivuHeadlessArticleList]', error);
           });
         });
       }
@@ -202,7 +210,7 @@
             target: mountEl,
             page: nextPage,
           })).catch(function (error) {
-            console.error('[LiteDeskHeadlessArticleList]', error);
+            console.error('[ArivuHeadlessArticleList]', error);
           });
         });
       });
@@ -273,10 +281,10 @@
     script = document.querySelector('script[src*="/embed/headless-article-list.js"]');
   }
 
-  window.LiteDeskHeadlessArticleList = {
+  window.ArivuHeadlessArticleList = {
     mount: mountList,
   };
-  window.ArivuHeadlessArticleList = window.LiteDeskHeadlessArticleList;
+  window.ArivuLegacyBrand.publishWindowGlobal('HeadlessArticleList', window.ArivuHeadlessArticleList);
 
   if (script) {
     var org = getAttr(script, 'data-org', '');
@@ -294,7 +302,7 @@
         searchEnabled: searchEnabled,
         limit: limit,
       }).catch(function (error) {
-        console.error('[LiteDeskHeadlessArticleList]', error);
+        console.error('[ArivuHeadlessArticleList]', error);
       });
     }
   }

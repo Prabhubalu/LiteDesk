@@ -1,17 +1,17 @@
-# LiteDesk Track 4 — Implementation Draft
+# Arivu Track 4 — Implementation Draft
 
-**Audience:** LiteDesk backend + frontend developers  
-**Status:** **Implemented** in LiteDesk (July 2026). See §11 checklist.  
+**Audience:** Arivu backend + frontend developers  
+**Status:** **Implemented** in Arivu (July 2026). See §11 checklist.  
 **AMDS dependency:** Track 4 complete — see AMDS repo `docs/TRACK-4-COMPLETE.md`  
 **Prerequisite:** Tracks 1–3 done (`AmdsClient`, webhooks, Communication model, domains, bounces)
 
-This document describes the Track 4 integration spec. **LiteDesk uses JavaScript** (not the TypeScript filenames shown in code samples below). Paths follow [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md).
+This document describes the Track 4 integration spec. **Arivu uses JavaScript** (not the TypeScript filenames shown in code samples below). Paths follow [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md).
 
 ---
 
 ## 1. Files to add or modify
 
-| File (LiteDesk) | Action | Status |
+| File (Arivu) | Action | Status |
 |-----------------|--------|--------|
 | `server/services/amds/amds-types.js` | Extend types — campaigns, analytics, engagement webhooks | Done |
 | `server/services/amds/amds-client.js` | Add `sendCampaignBatch`, `getAnalyticsSummary` | Done |
@@ -140,10 +140,10 @@ export interface AmdsWebhookEvent {
   tenant_id: string;
   message_id: string;
   metadata?: {
-    litedesk_module?: string;
-    litedesk_entity_id?: string;
-    litedesk_communication_id?: string;
-    litedesk_recipient_id?: string;
+    arivu_module?: string;
+    arivu_entity_id?: string;
+    arivu_communication_id?: string;
+    arivu_recipient_id?: string;
     campaign_external_id?: string;
     [key: string]: unknown;
   };
@@ -170,7 +170,7 @@ export interface AmdsWebhookEvent {
 **Notes:**
 
 - AMDS fires `message.opened` / `message.clicked` on **first hit only** per token (subsequent opens/clicks update AMDS analytics but do not re-webhook).
-- `campaign_id` in the batch URL is LiteDesk's campaign ID (Mongo `_id` or slug). AMDS stores it as `external_id` — use the same string in analytics queries.
+- `campaign_id` in the batch URL is Arivu's campaign ID (Mongo `_id` or slug). AMDS stores it as `external_id` — use the same string in analytics queries.
 
 ---
 
@@ -270,7 +270,7 @@ await amdsClient.sendMessageWithRetry({
 
 ## 4. Campaign send service — `send-campaign-batch.js`
 
-LiteDesk renders HTML locally (merge tags, unsubscribe link) **before** calling AMDS. AMDS wraps links and injects the open pixel when `tracking.clicks` / `tracking.opens` are true.
+Arivu renders HTML locally (merge tags, unsubscribe link) **before** calling AMDS. AMDS wraps links and injects the open pixel when `tracking.clicks` / `tracking.opens` are true.
 
 ```javascript
 // server/services/marketing/send-campaign-batch.js
@@ -342,15 +342,15 @@ async function sendCampaignBatch({
     communications.push(communication);
 
     messages.push({
-      idempotency_key: `litedesk-marketing-${orgId}-${campaignId}-${recipient.recipientId}`,
+      idempotency_key: `arivu-marketing-${orgId}-${campaignId}-${recipient.recipientId}`,
       to: [{ email: recipient.email, name: recipient.name }],
       subject,
       content,
       metadata: {
-        litedesk_module: 'marketing',
-        litedesk_entity_id: externalCampaignId,
-        litedesk_communication_id: String(communication._id),
-        litedesk_recipient_id: recipient.recipientId,
+        arivu_module: 'marketing',
+        arivu_entity_id: externalCampaignId,
+        arivu_communication_id: String(communication._id),
+        arivu_recipient_id: recipient.recipientId,
         campaign_external_id: externalCampaignId,
       },
       tags: ['marketing', 'campaign'],
@@ -363,8 +363,8 @@ async function sendCampaignBatch({
       from,
       tracking: { opens: trackOpens, clicks: trackClicks },
       metadata: {
-        litedesk_module: 'marketing',
-        litedesk_entity_id: externalCampaignId,
+        arivu_module: 'marketing',
+        arivu_entity_id: externalCampaignId,
       },
       messages,
     });
@@ -386,7 +386,7 @@ async function sendCampaignBatch({
     );
 
     for (const communication of communications) {
-      const key = `litedesk-marketing-${orgId}-${campaignId}-${communication.metadata.recipientId}`;
+      const key = `arivu-marketing-${orgId}-${campaignId}-${communication.metadata.recipientId}`;
       const amdsResult = resultByKey.get(key);
 
       if (rejectedKeys.has(key)) {
@@ -496,9 +496,9 @@ export async function processCommunicationEvent(event: AmdsWebhookEvent): Promis
         'metadata.openCount': event.engagement?.hit_count ?? 1,
         'metadata.lastAmdsEvent': event.event_type,
       });
-      if (event.metadata?.litedesk_module === 'marketing') {
+      if (event.metadata?.arivu_module === 'marketing') {
         await incrementCampaignEngagement({
-          campaignId: event.metadata.litedesk_entity_id,
+          campaignId: event.metadata.arivu_entity_id,
           type: 'open',
           recipient: event.engagement?.recipient,
         });
@@ -512,9 +512,9 @@ export async function processCommunicationEvent(event: AmdsWebhookEvent): Promis
         'metadata.clickCount': event.engagement?.hit_count ?? 1,
         'metadata.lastAmdsEvent': event.event_type,
       });
-      if (event.metadata?.litedesk_module === 'marketing') {
+      if (event.metadata?.arivu_module === 'marketing') {
         await incrementCampaignEngagement({
-          campaignId: event.metadata.litedesk_entity_id,
+          campaignId: event.metadata.arivu_entity_id,
           type: 'click',
           recipient: event.engagement?.recipient,
           url: event.engagement?.url,
@@ -592,9 +592,9 @@ export async function syncCampaignStatsFromAmds(
 ```typescript
 case 'message.delivered':
   // ... existing communication update ...
-  if (event.metadata?.litedesk_module === 'marketing') {
+  if (event.metadata?.arivu_module === 'marketing') {
     await CampaignModel.updateOne(
-      { _id: event.metadata.litedesk_entity_id },
+      { _id: event.metadata.arivu_entity_id },
       { $inc: { 'stats.delivered': 1 } }
     );
   }
@@ -605,7 +605,7 @@ case 'message.delivered':
 
 ## 6. Analytics proxy route
 
-Vue never calls AMDS directly. LiteDesk proxies analytics for org admins.
+Vue never calls AMDS directly. Arivu proxies analytics for org admins.
 
 ```typescript
 // server/routes/marketing/campaign-analytics.ts
@@ -740,14 +740,14 @@ Original sketch (superseded by implementation):
 ```bash
 cd AMDS
 npm run docker:up && npm run db:migrate
-LITEDESK_WEBHOOK_URL=http://localhost:3000/api/internal/webhooks/amds npm run dev
+ARIVU_WEBHOOK_URL=http://localhost:3000/api/internal/webhooks/amds npm run dev
 npm run validate:track-4   # AMDS-only sanity check
 ```
 
-**Terminal 2 — LiteDesk**
+**Terminal 2 — Arivu**
 
 ```bash
-cd LiteDesk/server && npm run dev
+cd Arivu/server && npm run dev
 ```
 
 **Manual E2E**
@@ -763,7 +763,7 @@ cd LiteDesk/server && npm run dev
 **Automated E2E script** — `server/scripts/validate-amds-track4-campaign.js`:
 
 ```bash
-cd LiteDesk/server
+cd Arivu/server
 node scripts/validate-amds-track4-campaign.js [organizationId]
 node scripts/validate-amds-track4-campaign.js [organizationId] --http   # full REST API path
 ```
@@ -787,12 +787,12 @@ Flow: create campaign → `sendCampaignBatch` (2 recipients) → poll Communicat
 [x] CampaignDetail.vue — stat cards, refresh stats, recipient open/click counts
 [x] useMarketingCampaigns.js — fetchCampaignAnalytics / fetchCampaignRecipients
 [x] validate-amds-track4-campaign.js — Mailpit open/click + webhook assertions
-[ ] Manual Mailpit E2E — run locally when AMDS + LiteDesk stack is up (automated script covers same flow)
+[ ] Manual Mailpit E2E — run locally when AMDS + Arivu stack is up (automated script covers same flow)
 ```
 
 ---
 
-## 12. Explicitly out of scope (LiteDesk)
+## 12. Explicitly out of scope (Arivu)
 
 | Item | Owner |
 |------|--------|
@@ -802,7 +802,7 @@ Flow: create campaign → `sendCampaignBatch` (2 recipients) → poll Communicat
 | `TRACKING_BASE_URL` DNS (`track.customer.com`) | AMDS + OCI deploy (Track 5) |
 | AMDS template rendering (`template_id`) | Future |
 | `message.complained` | Future |
-| A/B test splits, send-time optimization | LiteDesk product (future) |
+| A/B test splits, send-time optimization | Arivu product (future) |
 
 ---
 
@@ -811,17 +811,17 @@ Flow: create campaign → `sendCampaignBatch` (2 recipients) → poll Communicat
 | Topic | Guidance |
 |-------|----------|
 | **Batch size** | Max 500 recipients per AMDS request — chunk in `sendCampaignBatch` |
-| **Idempotency** | Key format `litedesk-marketing-{orgId}-{campaignId}-{recipientId}` — safe to retry failed chunks |
+| **Idempotency** | Key format `arivu-marketing-{orgId}-{campaignId}-{recipientId}` — safe to retry failed chunks |
 | **Rate limits** | AMDS `429` on burst — backoff between chunks for large lists |
 | **Stats source of truth** | Webhooks for real-time UI; `GET /v1/analytics/summary` for reconciliation |
 | **Tracking URLs** | Local: `http://localhost:8080/t/...`; prod: `https://track.yourdomain.com/t/...` (AMDS `TRACKING_BASE_URL`) |
-| **Unsubscribe links** | LiteDesk renders into HTML **before** AMDS send — AMDS click tracking wraps them like any other link |
+| **Unsubscribe links** | Arivu renders into HTML **before** AMDS send — AMDS click tracking wraps them like any other link |
 
 ---
 
 ## 14. AMDS API quick reference
 
-| Method | AMDS path | LiteDesk usage |
+| Method | AMDS path | Arivu usage |
 |--------|-----------|----------------|
 | POST | `/v1/campaigns/:id/messages` | Bulk campaign send |
 | GET | `/v1/analytics/summary` | Campaign dashboard / sync |
@@ -829,10 +829,10 @@ Flow: create campaign → `sendCampaignBatch` (2 recipients) → poll Communicat
 | — | Webhook `message.opened` | Update Communication + Campaign stats |
 | — | Webhook `message.clicked` | Update Communication + Campaign stats |
 
-Full AMDS contract: AMDS repo `docs/TRACK-4-COMPLETE.md` · [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md)
+Full AMDS contract: AMDS repo `docs/TRACK-4-COMPLETE.md` · [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md)
 
 ---
 
-*Canonical copy in AMDS repo at `docs/LITEDESK-TRACK-4-DRAFT.md`. LiteDesk copy updated to reflect shipped implementation.*
+*Canonical copy in AMDS repo at `docs/ARIVU-TRACK-4-DRAFT.md`. Arivu copy updated to reflect shipped implementation.*
 
 **Last updated:** July 2, 2026

@@ -66,7 +66,7 @@ Gateway code **must not** directly mutate invoice rollups, line snapshots, or bi
 | Stripe account | Platform account (Connect) or direct (single-tenant dev) |
 | `stripe` npm package | Installed in `server/` (PAY3.0) |
 | TLS endpoint | Public HTTPS URL for webhooks |
-| LiteDesk env | Server `.env` + per-org settings document |
+| Arivu env | Server `.env` + per-org settings document |
 
 ### 2.2 Environment variables (server)
 
@@ -143,7 +143,7 @@ Stripe copies session metadata to `payment_intent` — webhooks use this to reso
 | URL | `https://<api-host>/api/payment-gateways/webhooks/stripe` |
 | Method | `POST` |
 | Content-Type | `application/json` |
-| Auth | Stripe signature (`Stripe-Signature` header) — no LiteDesk JWT |
+| Auth | Stripe signature (`Stripe-Signature` header) — no Arivu JWT |
 
 Registered **before** `express.json()` in `server.js` with `express.raw({ type: 'application/json' })` — raw body required for signature verification.
 
@@ -359,7 +359,7 @@ Admin UI for event list + replay button ships in PAY3.1. Until then, use API + M
 
 ## 8. Failure recovery procedures
 
-### 8.1 Customer charged, no Payment in LiteDesk
+### 8.1 Customer charged, no Payment in Arivu
 
 **Symptoms:** Stripe shows succeeded charge; no `Payment` row; session may be `pending` or `failed`.
 
@@ -467,7 +467,7 @@ PAY3.0 — no automated archive job. Planned:
 - [ ] Connect accounts onboarded per tenant (if multi-tenant)
 - [ ] Test payment with live test card in staging first
 
-### 10.3 LiteDesk configuration
+### 10.3 Arivu configuration
 
 - [ ] `OrganizationPaymentGatewaySettings` seeded per tenant
 - [ ] `paymentLinksEnabled: true`
@@ -499,7 +499,7 @@ PAY3.0 — no automated archive job. Planned:
 | Remove webhook in Stripe | Stops new captures; existing Payments unaffected |
 | Revoke active PaymentLinks | Prevents new sessions |
 
-**Do not** roll back PAY3.0 code without coordinating open sessions — customers mid-checkout may succeed at Stripe while LiteDesk webhook is down.
+**Do not** roll back PAY3.0 code without coordinating open sessions — customers mid-checkout may succeed at Stripe while Arivu webhook is down.
 
 ---
 

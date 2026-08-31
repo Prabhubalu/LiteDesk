@@ -103,7 +103,7 @@ export async function runBulkUpdate(params) {
     store.finish();
     uninstallBulkDeleteGuard();
     if (completedModuleKey && typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('litedesk:bulk-update-complete', {
+      window.dispatchEvent(new CustomEvent('arivu:bulk-update-complete', {
         detail: { moduleKey: completedModuleKey },
       }));
     }

@@ -174,7 +174,7 @@ await window.ArivuHeadlessHelp.mount({
 });
 ```
 
-(`window.LiteDeskHeadlessHelp` remains as a legacy alias.)
+(`window.ArivuHeadlessHelp` remains as a legacy alias.)
 
 ---
 
@@ -241,7 +241,7 @@ on each embed `<script>` tag so API calls target Arivu, not `xyz.com`.
 **Programmatic mount** (SPA):
 
 ```javascript
-await window.LiteDeskHeadlessHelpHome.mount({
+await window.ArivuHeadlessHelpHome.mount({
   org: '{ORG_KEY}',
   target: '#help-home',
   apiOrigin: '{ARIVU_ORIGIN}',
@@ -322,7 +322,7 @@ Article pages include:
 **Programmatic mount:**
 
 ```javascript
-await window.LiteDeskHeadlessArticle.mount({
+await window.ArivuHeadlessArticle.mount({
   org: '{ORG_KEY}',
   slug: '{ARTICLE}',
   target: '#help-article',

@@ -1,6 +1,6 @@
 # Analytics Platform — Implementation Roadmap
 
-**Source PRS:** LiteDesk Analytics Platform Product Requirements Specification (user-provided, 2026-07-03)
+**Source PRS:** Arivu Analytics Platform Product Requirements Specification (user-provided, 2026-07-03)
 
 **Strategic direction:** Build a **platform-native Analytics Platform** in core — not a SALES-only reporting screen. Three first-class assets: **Reports** (datasets), **Widgets** (visualizations), **Dashboards** (layouts). Apache **ECharts** is the visualization standard for all new analytics UI.
 
@@ -108,7 +108,7 @@ Analytics Home KPIs · Report/Dashboard/Widget summary pages · Global Analytics
 
 ---
 
-## 2. Current state in LiteDesk
+## 2. Current state in Arivu
 
 | Area | Status | Notes |
 |------|--------|-------|
@@ -219,7 +219,7 @@ Server-side query compilation to MongoDB aggregation pipelines:
 
 ### 5.2 Report definition schema (`analytics_reports`)
 
-Source: [`Analytics Fields.md`](./Analytics%20Fields.md). LiteDesk adaptations noted inline.
+Source: [`Analytics Fields.md`](./Analytics%20Fields.md). Arivu adaptations noted inline.
 
 #### Basic information
 
@@ -795,4 +795,4 @@ Assuming 2 full-stack engineers + 0.5 designer:
 
 ---
 
-*Roadmap v1 — derived from LiteDesk Analytics Platform PRS (2026-07-03) and LiteDesk architecture inventory.*
+*Roadmap v1 — derived from Arivu Analytics Platform PRS (2026-07-03) and Arivu architecture inventory.*

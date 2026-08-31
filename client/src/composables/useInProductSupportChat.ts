@@ -35,7 +35,7 @@ export type InAppRecentConversation = {
 
 export type InAppSupportSection = 'home' | 'chat' | 'ai' | 'ai-history';
 
-const PANEL_UI_STORAGE_KEY = 'litedesk_arivu_support_panel_ui_v1';
+const PANEL_UI_STORAGE_KEY = 'arivu_arivu_support_panel_ui_v1';
 
 type PanelUiState = {
   open: boolean;
@@ -89,7 +89,7 @@ function buildVisitorFromAuth(authStore: ReturnType<typeof useAuthStore>) {
 }
 
 function sessionStorageKey(instanceKey: string, userId: string) {
-  return `litedesk_inapp_chat_session:${instanceKey}:${userId}`;
+  return `arivu_inapp_chat_session:${instanceKey}:${userId}`;
 }
 
 function loadSessionCache(instanceKey: string, userId: string): SessionCache | null {
@@ -121,7 +121,7 @@ function clearSessionCache(instanceKey: string, userId: string) {
 }
 
 function recentsStorageKey(userId: string) {
-  return `litedesk_inapp_chat_recents:${userId}`;
+  return `arivu_inapp_chat_recents:${userId}`;
 }
 
 function loadRecents(userId: string): InAppRecentConversation[] {

@@ -66,7 +66,7 @@ async function translateText(text, lang) {
   url.searchParams.set('q', text);
 
   const res = await fetch(url.toString(), {
-    headers: { 'User-Agent': 'LiteDesk-i18n-script/1.0' },
+    headers: { 'User-Agent': 'Arivu-i18n-script/1.0' },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();

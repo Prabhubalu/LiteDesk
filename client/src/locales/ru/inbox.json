@@ -1,5 +1,5 @@
 {
-  "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
+  "connectInboxWizardArivuUsesAReadOnlyGmail": {
     "message": "Arivu uses a read-only Gmail scope to import messages you already have access to.",
     "description": "Auto-migrated from connectInboxWizard"
   },
@@ -39,7 +39,7 @@
     "message": "You can send from the CRM once your mailbox is linked.",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskImportsMailUsingARead": {
+  "connectMailboxModalArivuImportsMailUsingARead": {
     "message": "Arivu imports mail using a read-only Gmail scope (folders you choose).",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -83,7 +83,7 @@
     "message": "personal mailbox",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskCreatesAPrivate": {
+  "connectMailboxModalArivuCreatesAPrivate": {
     "message": "Arivu creates a private",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -167,7 +167,7 @@
     "message": "Loading folders from Gmail…",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
-  "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
+  "gmailMailboxFolderModalChooseWhichGmailLabelsArivuImports": {
     "message": "Choose which Gmail labels Arivu imports. Sync runs on a schedule and when you use Sync now.",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
@@ -247,7 +247,7 @@
     "message": "Connect your work inbox to send, receive, and manage email alongside your CRM records.",
     "description": "Auto-migrated from inboxGetStarted"
   },
-  "inboxGetStartedGetStartedWithLitedesk": {
+  "inboxGetStartedGetStartedWithArivu": {
     "message": "Get started with Arivu",
     "description": "Auto-migrated from inboxGetStarted"
   },
@@ -571,7 +571,7 @@
     "message": "Select your email provider",
     "description": "Auto-migrated from inboxSurface"
   },
-  "inboxSurfaceConnectYourInboxToLitedesk": {
+  "inboxSurfaceConnectYourInboxToArivu": {
     "message": "Connect your inbox to Arivu",
     "description": "Auto-migrated from inboxSurface"
   },

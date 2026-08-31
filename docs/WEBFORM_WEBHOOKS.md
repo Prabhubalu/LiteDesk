@@ -6,7 +6,7 @@ Webforms can POST a JSON payload to your URL when a submission is processed succ
 
 - **Method:** `POST`
 - **Content-Type:** `application/json`
-- **Header:** `X-LiteDesk-Signature` (when a webhook secret is configured)
+- **Header:** `X-Arivu-Signature` (when a webhook secret is configured)
 
 ### Payload shape
 
@@ -32,7 +32,7 @@ Webforms can POST a JSON payload to your URL when a submission is processed succ
 }
 ```
 
-## Verifying `X-LiteDesk-Signature`
+## Verifying `X-Arivu-Signature`
 
 The signature is an **HMAC-SHA256** hex digest of the **raw JSON body** using your webhook secret.
 
@@ -41,7 +41,7 @@ The signature is an **HMAC-SHA256** hex digest of the **raw JSON body** using yo
 ```javascript
 const crypto = require('crypto');
 
-function verifyLiteDeskWebhook(rawBody, signatureHeader, secret) {
+function verifyArivuWebhook(rawBody, signatureHeader, secret) {
   if (!signatureHeader || !secret) return false;
   const expected = crypto
     .createHmac('sha256', secret)
@@ -62,7 +62,7 @@ Use the exact bytes received in the HTTP body (before parsing JSON) when computi
 import hmac
 import hashlib
 
-def verify_litedesk_webhook(raw_body: bytes, signature_header: str, secret: str) -> bool:
+def verify_arivu_webhook(raw_body: bytes, signature_header: str, secret: str) -> bool:
     if not signature_header or not secret:
         return False
     expected = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()

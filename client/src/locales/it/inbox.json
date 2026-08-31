@@ -1,5 +1,5 @@
 {
-  "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
+  "connectInboxWizardArivuUsesAReadOnlyGmail": {
     "message": "Arivu utilizza un ambito Gmail di sola lettura per importare i messaggi a cui hai già accesso.",
     "description": "Auto-migrated from connectInboxWizard"
   },
@@ -39,7 +39,7 @@
     "message": "Puoi inviare dal CRM una volta collegata la tua casella di posta.",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskImportsMailUsingARead": {
+  "connectMailboxModalArivuImportsMailUsingARead": {
     "message": "Arivu importa la posta utilizzando un ambito Gmail di sola lettura (cartelle scelte da te).",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -83,7 +83,7 @@
     "message": "casella di posta personale",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskCreatesAPrivate": {
+  "connectMailboxModalArivuCreatesAPrivate": {
     "message": "Arivu crea un file privato",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -167,7 +167,7 @@
     "message": "Caricamento cartelle da Gmail…",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
-  "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
+  "gmailMailboxFolderModalChooseWhichGmailLabelsArivuImports": {
     "message": "Scegli quali etichette Gmail importa da Arivu. La sincronizzazione viene eseguita in base a una pianificazione e quando utilizzi Sincronizza ora.",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
@@ -247,7 +247,7 @@
     "message": "Collega la tua casella di posta di lavoro per inviare, ricevere e gestire la posta elettronica insieme ai record CRM.",
     "description": "Auto-migrated from inboxGetStarted"
   },
-  "inboxGetStartedGetStartedWithLitedesk": {
+  "inboxGetStartedGetStartedWithArivu": {
     "message": "Inizia con Arivu",
     "description": "Auto-migrated from inboxGetStarted"
   },
@@ -571,7 +571,7 @@
     "message": "Seleziona il tuo provider di posta elettronica",
     "description": "Auto-migrated from inboxSurface"
   },
-  "inboxSurfaceConnectYourInboxToLitedesk": {
+  "inboxSurfaceConnectYourInboxToArivu": {
     "message": "Collega la tua casella di posta a Arivu",
     "description": "Auto-migrated from inboxSurface"
   },

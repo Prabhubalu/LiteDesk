@@ -28,7 +28,7 @@ Replace the rule-card / modal process editor with a **full-page visual flow desi
 
 ### Product positioning
 
-| Generic tools (e.g. n8n) | Arivu / LiteDesk |
+| Generic tools (e.g. n8n) | Arivu / Arivu |
 |--------------------------|------------------|
 | Technical-first | Operations-first |
 | Integration-centric | Business-aware, CRM-native |

@@ -90,7 +90,7 @@ async function fetchUrlText(url) {
   try {
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: { 'User-Agent': 'LiteDesk-AstraKnowledge/1.0' },
+      headers: { 'User-Agent': 'Arivu-AstraKnowledge/1.0' },
       redirect: 'follow',
     });
     if (!res.ok) {

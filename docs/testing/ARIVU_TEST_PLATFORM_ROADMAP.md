@@ -74,7 +74,7 @@ ATP is **not** a replacement for unit tests in `client/src/tests` and `server/ut
 ### Monorepo layout (target)
 
 ```
-LiteDesk/
+Arivu/
 ├── atp/                          # NEW — Arivu Test Platform
 │   ├── control-plane/            # Express API + orchestrator
 │   ├── dashboard/                # Vue 3 SPA (Vite, Tailwind 4)

@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'litedesk.emailHtmlWarningDismissed';
+const STORAGE_KEY = 'arivu.emailHtmlWarningDismissed';
 
 export function isEmailHtmlWarningDismissed(): boolean {
   try {

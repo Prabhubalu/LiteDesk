@@ -143,7 +143,7 @@ async function loadSection() {
     await loadEmbedScripts();
     const apiOrigin = getApiOrigin() || window.location.origin;
     const prefixes = buildDemoPrefixes(orgSlug.value);
-    await window.LiteDeskHeadlessHelpSection.mount({
+    await window.ArivuHeadlessHelpSection.mount({
       org: orgSlug.value,
       section: sectionSlug.value,
       parent: parentSlug.value,

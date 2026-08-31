@@ -1,6 +1,6 @@
-# LiteDesk Track 6 Phase 5 — Infrastructure Alerts & Recovery UX
+# Arivu Track 6 Phase 5 — Infrastructure Alerts & Recovery UX
 
-**Audience:** LiteDesk backend + frontend developers  
+**Audience:** Arivu backend + frontend developers  
 **AMDS dependency:** Track 6 Phase 5 — see [TRACK-6-PHASE5-COMPLETE.md](./TRACK-6-PHASE5-COMPLETE.md)
 
 ---

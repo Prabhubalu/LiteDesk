@@ -3302,7 +3302,7 @@
           ],
           "remediation": [
             "Set ATP_PERSONA_OWNER_EMAIL/PASSWORD in atp/.env",
-            "Confirm user exists in LiteDesk tenant"
+            "Confirm user exists in Arivu tenant"
           ]
         }
       }

@@ -60,7 +60,7 @@ async function getGmailOAuthAppCredentialsForServer(organizationId) {
   if (!organizationId) {
     return {
       error:
-        'Gmail isn’t enabled on this workspace yet. Ask your LiteDesk administrator to set GOOGLE_GMAIL_CLIENT_ID, GOOGLE_GMAIL_CLIENT_SECRET, and GOOGLE_GMAIL_REDIRECT_URI on the API server (typical for SaaS—users then only click Connect Gmail).'
+        'Gmail isn’t enabled on this workspace yet. Ask your Arivu administrator to set GOOGLE_GMAIL_CLIENT_ID, GOOGLE_GMAIL_CLIENT_SECRET, and GOOGLE_GMAIL_REDIRECT_URI on the API server (typical for SaaS—users then only click Connect Gmail).'
     };
   }
   const doc = await CommunicationConfig.findOne({ organizationId }).select('gmailInboxSync').lean();

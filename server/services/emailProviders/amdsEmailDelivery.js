@@ -2,13 +2,14 @@
 
 /**
  * AMDS (Arivu Mail Delivery System) — platform outbound email via HTTP API.
- * LiteDesk never opens SMTP for the AMDS path.
- * @see docs/LITEDESK-INTEGRATION.md
+ * Arivu never opens SMTP for the AMDS path.
+ * @see docs/ARIVU-INTEGRATION.md
  */
 
 const { getAmdsClient, isAmdsEnvConfigured } = require('../../config/amds');
 const { AmdsApiError } = require('../amds/amds-errors');
 const { assertEmailSendingAllowed } = require('../orgEmailPolicyService');
+const { buildIdempotencyKey } = require('../../utils/arivuMetadata');
 
 const PROVIDER_KEY = 'amds';
 
@@ -82,7 +83,7 @@ function buildCommunicationIdempotencyKey(params) {
   const moduleKey = String(params.moduleKey || 'crm').trim();
   const orgId = String(params.organizationId || '').trim();
   const commId = String(params.communicationId || '').trim();
-  return `litedesk-${moduleKey}-${orgId}-comm-${commId}`.slice(0, 256);
+  return buildIdempotencyKey(moduleKey, orgId, 'comm', commId);
 }
 
 /**

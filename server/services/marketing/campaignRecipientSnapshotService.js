@@ -7,6 +7,7 @@ const CampaignRecipient = require('../../models/CampaignRecipient');
 const Communication = require('../../models/Communication');
 const MarketingAudience = require('../../models/MarketingAudience');
 const { runWithOrganizationTenantContext } = require('../../utils/runWithOrganizationTenant');
+const { buildIdempotencyKey } = require('../../utils/arivuMetadata');
 const { normalizeEmail } = require('./marketingEmailUtils');
 const { loadAudience } = require('./marketingAudienceService');
 const { loadSegment } = require('./marketingSegmentQueryService');
@@ -62,7 +63,12 @@ async function bulkInsertRecipientRows(organizationId, campaignId, rows, seenEma
     seenEmails.add(email);
 
     const recipientId = String(row.recipientId || row.personId || email).trim();
-    const idempotencyKey = `litedesk-marketing-${String(organizationId)}-${String(campaignId)}-${recipientId}`.slice(0, 256);
+    const idempotencyKey = buildIdempotencyKey(
+      'marketing',
+      String(organizationId),
+      String(campaignId),
+      recipientId
+    );
     const idempotencyKeyHash = crypto.createHash('sha256').update(idempotencyKey).digest('hex');
 
     docs.push({

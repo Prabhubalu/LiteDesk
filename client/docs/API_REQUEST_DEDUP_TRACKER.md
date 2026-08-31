@@ -1,6 +1,6 @@
 # API Request Dedup Tracker
 
-Living document for duplicate and unnecessary client-side API requests identified in the LiteDesk audit (2026-06-27). Update this file as each item is fixed, deferred, or verified.
+Living document for duplicate and unnecessary client-side API requests identified in the Arivu audit (2026-06-27). Update this file as each item is fixed, deferred, or verified.
 
 ## How to use
 

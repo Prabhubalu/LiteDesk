@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * End-to-end Track 6 Phase 2 reputation validation (LiteDesk + AMDS must be running).
+ * End-to-end Track 6 Phase 2 reputation validation (Arivu + AMDS must be running).
  *
  * Usage:
  *   node scripts/validate-amds-track6-phase2.js [organizationId]

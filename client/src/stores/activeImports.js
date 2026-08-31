@@ -6,7 +6,7 @@ import { buildToastPresentation } from '@/utils/toastPresentation';
 import { dispatchImportListRefresh } from '@/utils/importListModuleMatch';
 import { i18n } from '@/i18n';
 
-const STORAGE_KEY = 'litedesk:activeImports';
+const STORAGE_KEY = 'arivu:activeImports';
 const POLL_INTERVAL_MS = 800;
 
 const t = i18n.global.t.bind(i18n.global);

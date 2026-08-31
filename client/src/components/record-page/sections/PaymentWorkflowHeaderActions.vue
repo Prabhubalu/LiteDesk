@@ -34,7 +34,7 @@ const canRefund = computed(() => {
 
 function openRefundWizard() {
   window.dispatchEvent(
-    new CustomEvent('litedesk:payment-open-refund', {
+    new CustomEvent('arivu:payment-open-refund', {
       detail: { paymentMongoId: props.record?._id, paymentId: props.record?.paymentId }
     })
   );

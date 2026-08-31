@@ -1,4 +1,4 @@
-# LiteDesk Content Studio
+# Arivu Content Studio
 
 > Create Once. Publish Everywhere.
 
@@ -12,11 +12,11 @@ Owner: Product Team
 
 ## Overview
 
-LiteDesk Content Studio is a modern, structured content management and publishing platform designed to help businesses create, manage, collaborate, and publish content across multiple channels from a single source of truth.
+Arivu Content Studio is a modern, structured content management and publishing platform designed to help businesses create, manage, collaborate, and publish content across multiple channels from a single source of truth.
 
 Unlike traditional HTML editors or CMS platforms, Content Studio stores content as structured blocks, allowing the same content to be rendered for websites, blogs, knowledge bases, customer portals, documentation sites, emails, PDFs, mobile applications, and future channels.
 
-Content Studio is designed to become the central content engine for the LiteDesk ecosystem.
+Content Studio is designed to become the central content engine for the Arivu ecosystem.
 
 ---
 
@@ -76,7 +76,7 @@ This workflow creates:
 - Slow publishing
 - Difficult maintenance
 
-LiteDesk should replace this workflow with one unified platform.
+Arivu should replace this workflow with one unified platform.
 
 ---
 
@@ -98,11 +98,11 @@ LiteDesk should replace this workflow with one unified platform.
 ## Business Goals
 
 - Reduce dependency on third-party CMS platforms.
-- Power LiteDesk Marketing.
-- Power LiteDesk Websites.
-- Power LiteDesk Knowledge Base.
-- Power LiteDesk Customer Portal.
-- Power LiteDesk Documentation.
+- Power Arivu Marketing.
+- Power Arivu Websites.
+- Power Arivu Knowledge Base.
+- Power Arivu Customer Portal.
+- Power Arivu Documentation.
 - Power future AI experiences.
 
 ---
@@ -1097,7 +1097,7 @@ Examples:
 Typing:
 
 ```
-How to Install LiteDesk
+How to Install Arivu
 ```
 
 AI suggests:
@@ -1697,7 +1697,7 @@ Notify users when:
 - SEO Issues Found
 - Component Updated
 
-Notifications should integrate with LiteDesk Notification Center.
+Notifications should integrate with Arivu Notification Center.
 
 ---
 
@@ -1717,7 +1717,7 @@ The Publishing Engine should ensure consistent branding, optimized performance, 
 
 # 51. Publishing Philosophy
 
-LiteDesk follows a **Create Once, Publish Everywhere** model.
+Arivu follows a **Create Once, Publish Everywhere** model.
 
 ```
                 Content Studio
@@ -2234,7 +2234,7 @@ Permissions should support role-based and custom policies.
 
 # 69. Notifications
 
-Integrate with LiteDesk Notification Center.
+Integrate with Arivu Notification Center.
 
 Notify users when:
 
@@ -2292,7 +2292,7 @@ Future:
 - Webhooks
 - CDN Edge Delivery
 
-This enables developers to build custom frontends while using LiteDesk as the content backend.
+This enables developers to build custom frontends while using Arivu as the content backend.
 
 ---
 
@@ -2547,7 +2547,7 @@ OpenSearch / Meilisearch
 
 AI
 
-LiteDesk AI Gateway
+Arivu AI Gateway
 
 Authentication
 
@@ -2822,7 +2822,7 @@ AI latency
 
 Queue latency
 
-Metrics should integrate with LiteDesk monitoring.
+Metrics should integrate with Arivu monitoring.
 
 ---
 

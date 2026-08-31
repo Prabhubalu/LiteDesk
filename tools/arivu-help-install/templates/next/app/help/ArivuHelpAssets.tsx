@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 
 declare global {
   interface Window {
-    LiteDeskHeadlessBlocks?: {
+    ArivuHeadlessBlocks?: {
       init: (root?: ParentNode) => void;
     };
     ArivuHeadlessBlocks?: {
@@ -16,7 +16,7 @@ declare global {
 }
 
 function initHeadlessBlocks(root: ParentNode = document) {
-  const api = window.ArivuHeadlessBlocks || window.LiteDeskHeadlessBlocks;
+  const api = window.ArivuHeadlessBlocks || window.ArivuHeadlessBlocks;
   api?.init(root);
 }
 

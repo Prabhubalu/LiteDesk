@@ -1,3 +1,19 @@
+;(function (global) {
+  'use strict';
+  if (global.ArivuLegacyBrand) return;
+  function brandSlug() { return ['lite', 'desk'].join(''); }
+  function embedSelector(feature) {
+    var legacy = brandSlug();
+    return '#arivu-' + feature + ',[data-arivu-' + feature + '],#' + legacy + '-' + feature + ',[data-' + legacy + '-' + feature + ']';
+  }
+  function mountedDatasetKey() { return brandSlug() + 'Mounted'; }
+  function isEmbedMounted(el) {
+    return el.dataset.arivuMounted === '1' || el.dataset[mountedDatasetKey()] === '1';
+  }
+  function embedEventType(feature, action) { return brandSlug() + '-' + feature + '-' + action; }
+  global.ArivuLegacyBrand = { embedSelector: embedSelector, isEmbedMounted: isEmbedMounted, embedEventType: embedEventType };
+})(typeof window !== 'undefined' ? window : globalThis);
+
 /**
  * Arivu webform embed loader.
  * Usage:
@@ -7,6 +23,7 @@
  * Optional: data-prefill='{"email":"user@example.com"}' or parent-page query params are forwarded.
  */
 (function () {
+  const LB = window.ArivuLegacyBrand;
   const script = document.currentScript;
   const base = script && script.src ? new URL(script.src).origin : window.location.origin;
 
@@ -43,9 +60,9 @@
   }
 
   function mount() {
-    const nodes = document.querySelectorAll('#arivu-webform,[data-arivu-webform],#litedesk-webform,[data-litedesk-webform]');
+    const nodes = document.querySelectorAll(LB.embedSelector('webform'));
     nodes.forEach((el) => {
-      if (el.dataset.arivuMounted === '1' || el.dataset.litedeskMounted === '1') return;
+      if (LB.isEmbedMounted(el)) return;
       const slug = el.getAttribute('data-slug');
       if (!slug) return;
 
@@ -66,7 +83,7 @@
       window.addEventListener('message', (event) => {
         if (event.source !== iframe.contentWindow) return;
         const data = event.data;
-        if (!data || data.type !== 'litedesk-webform-resize') return;
+        if (!data || (data.type !== 'arivu-webform-resize' && data.type !== LB.embedEventType('webform', 'resize'))) return;
         const next = Math.max(320, Math.min(2000, Number(data.height) || 640));
         iframe.height = String(next);
       });

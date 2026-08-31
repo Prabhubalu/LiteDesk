@@ -19,7 +19,7 @@
 
 ## 1. Executive summary
 
-PAY3 adds **customer-initiated online payment capture** on top of the existing Payments module. Money enters LiteDesk through **controlled workflows** that create **`Payment`** records and **`PaymentAllocation`** rows — the same cash authority path as manual agent entry (PAY0).
+PAY3 adds **customer-initiated online payment capture** on top of the existing Payments module. Money enters Arivu through **controlled workflows** that create **`Payment`** records and **`PaymentAllocation`** rows — the same cash authority path as manual agent entry (PAY0).
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -232,7 +232,7 @@ One checkout attempt bound to a provider session. Bridges PaymentLink (or Portal
   failureCode,                 // provider error code
   failureMessage,
 
-  // ── LiteDesk linkage (post-capture) ──
+  // ── Arivu linkage (post-capture) ──
   paymentId,                   // UUID — set when Payment recorded
   paymentMongoId,
 
@@ -318,7 +318,7 @@ Append-only log of every provider webhook and polled status check.
 
 ### 4.4 PaymentGatewayReconciliationEntry (Reconciliation Contract)
 
-**Reporting contract only** — matches provider settlement/payout lines to LiteDesk `Payment` records. Does not post to GL or bank ledger.
+**Reporting contract only** — matches provider settlement/payout lines to Arivu `Payment` records. Does not post to GL or bank ledger.
 
 ```javascript
 // server/models/PaymentGatewayReconciliationEntry.js (planned)
@@ -340,7 +340,7 @@ Append-only log of every provider webhook and polled status check.
   currency,
   providerStatus,              // settled | pending | reversed
 
-  // ── LiteDesk side (matched) ──
+  // ── Arivu side (matched) ──
   matchStatus,                 // unmatched | matched | partial | disputed | ignored
   paymentId,                   // linked Payment UUID
   paymentMongoId,
@@ -447,7 +447,7 @@ GET /pay/:publicToken (public, unauthenticated)
 
 ### 5.2 Hosted Checkout
 
-Provider-hosted UI — LiteDesk never handles raw card data (PCI scope reduction).
+Provider-hosted UI — Arivu never handles raw card data (PCI scope reduction).
 
 ```text
 paymentGatewaySessionService.createCheckout({ paymentLinkId, provider })

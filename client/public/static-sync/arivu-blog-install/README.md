@@ -73,7 +73,7 @@ Then `cd blog && npm install && vercel`.
 4. Arivu Blog → publish webhook → `https://yoursite.com/api/arivu-webhook/blog`
 5. Deploy
 
-## Local (from LiteDesk repo)
+## Local (from Arivu repo)
 
 ```bash
 cd client/public/static-sync/arivu-blog-install

@@ -71,7 +71,7 @@ function loadEmbedAssets() {
 }
 
 function loadEmbedListScript() {
-  if (window.LiteDeskHeadlessArticleList) return Promise.resolve();
+  if (window.ArivuHeadlessArticleList) return Promise.resolve();
   if (document.querySelector('script[data-ld-headless-article-list-js]')) {
     return new Promise((resolve) => {
       const existing = document.querySelector('script[data-ld-headless-article-list-js]');
@@ -104,7 +104,7 @@ async function loadList() {
     await loadEmbedListScript();
     const apiOrigin = getApiOrigin() || window.location.origin;
     const prefixes = buildHeadlessExamplePrefixes(orgSlug.value);
-    await window.LiteDeskHeadlessArticleList.mount({
+    await window.ArivuHeadlessArticleList.mount({
       org: orgSlug.value,
       target: '#ld-help-list-example',
       apiOrigin,

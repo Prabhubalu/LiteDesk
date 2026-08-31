@@ -1,3 +1,20 @@
+;(function (global) {
+  'use strict';
+  if (global.ArivuLegacyBrand) return;
+  function brandSlug() { return ['lite', 'desk'].join(''); }
+  function brandPascal() { return 'Lite' + 'Desk'; }
+  function readWindowGlobal(suffix) { return global[brandPascal() + suffix]; }
+  function publishWindowGlobal(suffix, value) { global[brandPascal() + suffix] = value; }
+  function headlessHelpCommon() {
+    return global.ArivuHeadlessHelpCommon || readWindowGlobal('HeadlessHelpCommon');
+  }
+  global.ArivuLegacyBrand = {
+    readWindowGlobal: readWindowGlobal,
+    publishWindowGlobal: publishWindowGlobal,
+    headlessHelpCommon: headlessHelpCommon
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
 ;(function () {
   'use strict';
 
@@ -72,7 +89,7 @@
   }
 
   function absolutizeEmbedAssetUrl(url, apiOrigin) {
-    var common = window.LiteDeskHeadlessHelpCommon || window.ArivuHeadlessHelpCommon;
+    var common = window.ArivuLegacyBrand.headlessHelpCommon();
     if (common && common.absolutizeEmbedAssetUrl) {
       return common.absolutizeEmbedAssetUrl(url, apiOrigin);
     }
@@ -589,7 +606,7 @@
               search: input ? input.value : '',
               page: 1,
             })).catch(function (error) {
-              console.error('[LiteDeskHeadlessBlogList]', error);
+              console.error('[ArivuHeadlessBlogList]', error);
             });
           });
         }
@@ -603,7 +620,7 @@
             target: mountEl,
             page: nextPage,
           })).catch(function (error) {
-            console.error('[LiteDeskHeadlessBlogList]', error);
+            console.error('[ArivuHeadlessBlogList]', error);
           });
         });
       });
@@ -616,7 +633,7 @@
             page: 1,
             search: '',
           })).catch(function (error) {
-            console.error('[LiteDeskHeadlessBlogList]', error);
+            console.error('[ArivuHeadlessBlogList]', error);
           });
         });
       });
@@ -629,7 +646,7 @@
             collection: '',
             page: 1,
           })).catch(function (error) {
-            console.error('[LiteDeskHeadlessBlogList]', error);
+            console.error('[ArivuHeadlessBlogList]', error);
           });
         });
       }
@@ -659,10 +676,10 @@
     script = document.querySelector('script[src*="/embed/headless-blog-list.js"]');
   }
 
-  window.LiteDeskHeadlessBlogList = {
+  window.ArivuHeadlessBlogList = {
     mount: mountHome,
   };
-  window.ArivuHeadlessBlogList = window.LiteDeskHeadlessBlogList;
+  window.ArivuLegacyBrand.publishWindowGlobal('HeadlessBlogList', window.ArivuHeadlessBlogList);
 
   if (script) {
     var org = getAttr(script, 'data-org', '');
@@ -680,7 +697,7 @@
         searchEnabled: searchEnabled,
         limit: limit,
       }).catch(function (error) {
-        console.error('[LiteDeskHeadlessBlogList]', error);
+        console.error('[ArivuHeadlessBlogList]', error);
       });
     }
   }

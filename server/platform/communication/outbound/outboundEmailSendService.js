@@ -24,6 +24,7 @@ const { isGmailIntegrationEnabled } = require('../../../config/emailFeatureFlags
 const emailProviderGateway = require('../providers/emailProviderGateway');
 const amdsEmailDelivery = require('../../../services/emailProviders/amdsEmailDelivery');
 const { buildCaseAmdsMetadata } = require('../../../services/helpdesk/sendCaseReplyEmail');
+const { writeMetadata } = require('../../../utils/arivuMetadata');
 const gmailSendProvider = require('../providers/gmailSendProvider');
 const fileStorage = require('../../../services/fileStorageService');
 const { uploadsDir } = require('../../../middleware/uploadMiddleware');
@@ -303,11 +304,11 @@ async function sendViaSmtp(doc) {
   const textBody = (doc.body || '').replace(/<[^>]+>/g, '');
 
   const moduleKey = doc.relatedTo?.moduleKey;
-  const baseMetadata = {
-    litedesk_entity_id: String(doc._id),
-    litedesk_communication_id: String(doc._id),
-    litedesk_org_id: String(doc.organizationId)
-  };
+  const baseMetadata = writeMetadata({
+    entity_id: String(doc._id),
+    communication_id: String(doc._id),
+    org_id: String(doc.organizationId)
+  });
   const metadata =
     moduleKey === 'cases' && doc.relatedTo?.recordId
       ? buildCaseAmdsMetadata({
@@ -317,7 +318,7 @@ async function sendViaSmtp(doc) {
         })
       : {
           ...baseMetadata,
-          litedesk_module: moduleKey
+          ...writeMetadata({ module: moduleKey })
         };
 
   let fromEmail = String(doc.fromAddress || '').trim();

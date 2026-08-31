@@ -72,7 +72,7 @@ function loadEmbedAssets() {
 }
 
 function loadEmbedHomeScript() {
-  if (window.LiteDeskHeadlessHelpHome) return Promise.resolve();
+  if (window.ArivuHeadlessHelpHome) return Promise.resolve();
   if (document.querySelector('script[data-ld-headless-help-home-js]')) {
     return new Promise((resolve) => {
       const existing = document.querySelector('script[data-ld-headless-help-home-js]');
@@ -105,7 +105,7 @@ async function loadHome() {
     await loadEmbedHomeScript();
     const apiOrigin = getApiOrigin() || window.location.origin;
     const prefixes = buildHeadlessExamplePrefixes(orgSlug.value);
-    await window.LiteDeskHeadlessHelpHome.mount({
+    await window.ArivuHeadlessHelpHome.mount({
       org: orgSlug.value,
       target: '#ld-help-home-example',
       apiOrigin,

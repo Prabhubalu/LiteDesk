@@ -1,4 +1,4 @@
-# Inbound Parser ↔ LiteDesk CRM integration
+# Inbound Parser ↔ Arivu CRM integration
 
 **Status:** Implemented (Gmail OAuth/sync and legacy MIME webhook are **off** by default).
 

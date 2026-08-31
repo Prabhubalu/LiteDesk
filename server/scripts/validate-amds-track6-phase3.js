@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * End-to-end Track 6 Phase 3 throughput + estimate validation (LiteDesk + AMDS must be running).
+ * End-to-end Track 6 Phase 3 throughput + estimate validation (Arivu + AMDS must be running).
  *
  * Usage:
  *   node server/scripts/validate-amds-track6-phase3.js [organizationId] [campaignId]

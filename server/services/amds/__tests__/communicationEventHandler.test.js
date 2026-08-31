@@ -7,30 +7,42 @@ const {
   statusFromEventType
 } = require('../handlers/communicationEventHandler');
 const { isMarketingModule } = require('../handlers/campaignStatsHandler');
+const { metadataKey } = require('../../../utils/legacyBrandSlug');
 
 describe('communicationEventHandler helpers', () => {
-  it('resolveCommunicationId prefers litedesk_communication_id', () => {
+  it('resolveCommunicationId prefers arivu_communication_id', () => {
     assert.equal(
       resolveCommunicationId({
         metadata: {
-          litedesk_communication_id: 'comm-1',
-          litedesk_entity_id: 'comm-2'
+          arivu_communication_id: 'comm-1',
+          arivu_entity_id: 'comm-2'
         }
       }),
       'comm-1'
     );
     assert.equal(
-      resolveCommunicationId({ metadata: { litedesk_entity_id: 'comm-2' } }),
+      resolveCommunicationId({ metadata: { arivu_entity_id: 'comm-2' } }),
       'comm-2'
     );
     assert.equal(
       resolveCommunicationId({
         metadata: {
-          litedesk_module: 'marketing',
-          litedesk_entity_id: 'campaign-1'
+          arivu_module: 'marketing',
+          arivu_entity_id: 'campaign-1'
         }
       }),
       null
+    );
+  });
+
+  it('resolveCommunicationId accepts pre-rebrand communication_id metadata', () => {
+    assert.equal(
+      resolveCommunicationId({
+        metadata: {
+          [metadataKey('communication_id')]: 'legacy-comm-1'
+        }
+      }),
+      'legacy-comm-1'
     );
   });
 

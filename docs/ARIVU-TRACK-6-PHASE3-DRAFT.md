@@ -1,8 +1,8 @@
-# LiteDesk Track 6 Phase 3 — Dynamic Throughput & Campaign ETA
+# Arivu Track 6 Phase 3 — Dynamic Throughput & Campaign ETA
 
-**Audience:** LiteDesk backend + frontend developers  
+**Audience:** Arivu backend + frontend developers  
 **AMDS dependency:** Track 6 Phase 3 — see [TRACK-6-PHASE3-COMPLETE.md](./TRACK-6-PHASE3-COMPLETE.md) (AMDS repo)  
-**Prerequisite:** [LITEDESK-TRACK-6-PHASE1-DRAFT.md](./LITEDESK-TRACK-6-PHASE1-DRAFT.md) (policy sync) + [LITEDESK-TRACK-6-PHASE2-DRAFT.md](./LITEDESK-TRACK-6-PHASE2-DRAFT.md) (reputation display)
+**Prerequisite:** [ARIVU-TRACK-6-PHASE1-DRAFT.md](./ARIVU-TRACK-6-PHASE1-DRAFT.md) (policy sync) + [ARIVU-TRACK-6-PHASE2-DRAFT.md](./ARIVU-TRACK-6-PHASE2-DRAFT.md) (reputation display)
 
 ---
 
@@ -152,7 +152,7 @@ Extend `GET /api/marketing/campaigns/:id/precheck?recipientCount=N`:
 
 When `reputationEnabled` and `senderReputation < 40`, add blocking check with `status: "error"` and `ready: false`.
 
-Campaign external ID for AMDS estimate = LiteDesk campaign `_id` string (same as batch send).
+Campaign external ID for AMDS estimate = Arivu campaign `_id` string (same as batch send).
 
 ---
 
@@ -267,7 +267,7 @@ Run `npm run i18n:sync-keys` after adding en keys.
 # AMDS
 npm run validate:track-6c
 
-# LiteDesk (after implementation)
+# Arivu (after implementation)
 node server/scripts/validate-amds-track6-phase3.js [organizationId]
 ```
 

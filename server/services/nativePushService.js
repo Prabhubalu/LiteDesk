@@ -81,7 +81,7 @@ async function sendToDevice(device, payload) {
       android: {
         priority: 'high',
         notification: {
-          channelId: 'litedesk_default',
+          channelId: 'arivu_default',
           tag: payload.tag || undefined
         }
       },

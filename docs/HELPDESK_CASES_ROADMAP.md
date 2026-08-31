@@ -2,7 +2,7 @@
 
 Source PRD: `enterprise_helpdesk_cases_module.md` (Enterprise Helpdesk – Cases Module PRD v1.0)
 
-This document maps the PRD requirements to what exists in LiteDesk today, identifies gaps, and lays out a phased roadmap to deliver a PRD-aligned Helpdesk **Cases** module with minimal ambiguity.
+This document maps the PRD requirements to what exists in Arivu today, identifies gaps, and lays out a phased roadmap to deliver a PRD-aligned Helpdesk **Cases** module with minimal ambiguity.
 
 **Start here:** Phases **0**, **1A**, and **1B** are complete. **Email ingestion policies** (threading, dedup, case link, routing) live in **Settings → Automation → Mailroom** (Mailroom M0–M3.1). **Next:** [Phase 1C remainder](#phase-1c--email-hardening--productivity-2-3-weeks) (templates/macros) and [Phase 1D — Portals](#phase-1d--customer--partner-portals-3-4-weeks).
 
@@ -57,9 +57,9 @@ This document maps the PRD requirements to what exists in LiteDesk today, identi
 
 ---
 
-## Current state in LiteDesk (what exists today)
+## Current state in Arivu (what exists today)
 
-LiteDesk already contains a dedicated Helpdesk app (`HELPDESK`) with `moduleKey = cases`. Legacy naming still uses “ticket(s)” in a few places, but the canonical object is **Case**.
+Arivu already contains a dedicated Helpdesk app (`HELPDESK`) with `moduleKey = cases`. Legacy naming still uses “ticket(s)” in a few places, but the canonical object is **Case**.
 
 ### Backend (already implemented)
 
