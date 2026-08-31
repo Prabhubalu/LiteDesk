@@ -212,10 +212,9 @@ function createPortalAccessStore(peopleId: string): PeoplePortalAccessContext {
   }
 
   function openEnableModal() {
+    const soleRole = availableRoles.value.length === 1 ? availableRoles.value[0] : null;
     selectedRoleIds.value =
-      availableRoles.value.length === 1
-        ? [String(availableRoles.value[0].roleId || availableRoles.value[0]._id)]
-        : [];
+      soleRole != null ? [String(soleRole.roleId || soleRole._id)] : [];
     showEnableModal.value = true;
   }
 
