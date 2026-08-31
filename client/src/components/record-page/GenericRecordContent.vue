@@ -369,6 +369,12 @@
                 :value="eventLifecycleStatus"
                 :variant-map="eventStatusBadgeVariantMap"
               />
+              <PeopleRecordAccessChips
+                v-if="isPeopleModule && showPeopleAccessTab"
+                :portal-access="peoplePortalAccess"
+                :marketing-access="peopleMarketingAccess"
+                @open-access="openPeopleAccessTab"
+              />
             </div>
             <CaseSlaContextBanner
               v-if="moduleKeyLower === 'cases' && record?.slaContext"
@@ -392,18 +398,6 @@
           :event="record"
           :event-id="eventExecutionRouteId"
           @updated="fetchRecord"
-        />
-
-        <PeopleExternalAccessPanel
-          v-if="isPeopleModule && recordId && !expandedLeftSection"
-          :people-id="recordId"
-          class="mt-4"
-        />
-
-        <PeopleMarketingSubscriptionsPanel
-          v-if="isPeopleModule && recordId && !expandedLeftSection"
-          :people-id="recordId"
-          class="mt-4"
         />
 
         <div
@@ -919,6 +913,27 @@
               </div>
             </div>
           </template>
+          <template v-if="showPeopleAccessTab" #tab-access>
+            <div class="flex h-full flex-col">
+              <div class="record-context-panel__header flex flex-shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ t('records.genericTabAccess') }}</h2>
+              </div>
+              <div class="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+                <PeopleExternalAccessPanel
+                  v-if="recordId && peoplePortalAccess?.visible"
+                  :people-id="recordId"
+                  display="compact"
+                  @manage="openPeopleAccessManage('portal')"
+                />
+                <PeopleMarketingSubscriptionsPanel
+                  v-if="recordId && peopleMarketingAccess?.visible"
+                  :people-id="recordId"
+                  display="compact"
+                  @manage="openPeopleAccessManage('marketing')"
+                />
+              </div>
+            </div>
+          </template>
           <template #tab-integrations>
             <div class="flex flex-col h-full">
               <div class="record-context-panel__header flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
@@ -935,7 +950,12 @@
                   :entity-type="moduleKey"
                   :entity-id="record._id"
                 />
-                <div v-else class="text-sm text-gray-600 dark:text-gray-400 italic">{{ t('records.genericNoIntegrations') }}</div>
+                <p
+                  v-if="!hasRecordIntegrationsContent"
+                  class="text-sm italic text-gray-600 dark:text-gray-400"
+                >
+                  {{ t('records.genericNoIntegrations') }}
+                </p>
               </div>
             </div>
           </template>
@@ -1005,6 +1025,14 @@
       :person-id="String(record._id)"
       @close="showConvertLeadModal = false"
       @converted="handleConvertLeadCompleted"
+    />
+
+    <PeopleAccessManageDrawer
+      v-if="isPeopleModule && peopleRecordId"
+      :open="peopleAccessManageOpen"
+      :section="peopleAccessManageSection"
+      :people-id="peopleRecordId"
+      @close="closePeopleAccessManage"
     />
 
     <EmailComposeDrawer
@@ -1278,7 +1306,8 @@ import {
   EyeIcon,
   ClipboardDocumentListIcon,
   PuzzlePieceIcon,
-  Bars3BottomLeftIcon
+  Bars3BottomLeftIcon,
+  KeyIcon
 } from '@heroicons/vue/24/outline';
 import { getModuleIconComponent } from '@/utils/moduleIcons';
 import Avatar from '@/components/common/Avatar.vue';
@@ -1315,6 +1344,10 @@ import ParticipationEditModal from '@/components/people/ParticipationEditModal.v
 import SalesConvertLeadModal from '@/components/people/SalesConvertLeadModal.vue';
 import PeopleExternalAccessPanel from '@/components/people/PeopleExternalAccessPanel.vue';
 import PeopleMarketingSubscriptionsPanel from '@/components/people/PeopleMarketingSubscriptionsPanel.vue';
+import PeopleRecordAccessChips from '@/components/people/PeopleRecordAccessChips.vue';
+import PeopleAccessManageDrawer from '@/components/people/PeopleAccessManageDrawer.vue';
+import { resolvePeoplePortalAccess } from '@/composables/usePeoplePortalAccess';
+import { resolvePeopleMarketingSubscriptions } from '@/composables/usePeopleMarketingSubscriptions';
 import { getParticipationFields } from '@/platform/fields/peopleFieldModel';
 import { hasPeoplePermission } from '@/platform/permissions/peoplePermissionHelper';
 import { PEOPLE_PERMISSIONS } from '@/platform/permissions/peoplePermissions';
@@ -1678,6 +1711,34 @@ async function updateRecordFields(payload) {
   return response;
 }
 const isPeopleModule = computed(() => moduleKeyLower.value === 'people');
+
+const peopleRecordId = computed(() => {
+  if (!isPeopleModule.value || !record.value?._id) return null;
+  return String(record.value._id);
+});
+const peoplePortalAccess = resolvePeoplePortalAccess(peopleRecordId);
+const peopleMarketingAccess = resolvePeopleMarketingSubscriptions(peopleRecordId);
+const showPeopleAccessTab = computed(
+  () =>
+    Boolean(peoplePortalAccess.value?.isEligible || peopleMarketingAccess.value?.isEligible)
+);
+const peopleAccessManageOpen = ref(false);
+const peopleAccessManageSection = ref('portal');
+
+const hasRecordIntegrationsContent = computed(() => Boolean(record.value?._id));
+
+function openPeopleAccessTab() {
+  rightPaneRef.value?.openTab?.('access');
+}
+
+function openPeopleAccessManage(section) {
+  peopleAccessManageSection.value = section;
+  peopleAccessManageOpen.value = true;
+}
+
+function closePeopleAccessManage() {
+  peopleAccessManageOpen.value = false;
+}
 
 const peopleLiveChatSessionPath = computed(() => {
   if (!isPeopleModule.value || !record.value?._id) return '';
@@ -2431,6 +2492,9 @@ const rightPaneTabs = computed(() => {
   }
   if (showRecordDocumentsTab.value) {
     tabs.push({ id: 'documents', name: t('records.genericTabDocuments'), icon: DocumentDuplicateIcon });
+  }
+  if (showPeopleAccessTab.value) {
+    tabs.push({ id: 'access', name: t('records.genericTabAccess'), icon: KeyIcon });
   }
   tabs.push(
     { id: 'details', name: t('records.detailsTitle'), icon: Bars3BottomLeftIcon },

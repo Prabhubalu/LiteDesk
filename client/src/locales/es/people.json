@@ -898,5 +898,57 @@
   "sysFieldCreatedOn": {
     "message": "Created On",
     "description": "System people field label"
+  },
+  "accessManage": {
+    "message": "Manage",
+    "description": "Open full portal or marketing access management drawer"
+  },
+  "accessNotConfigured": {
+    "message": "Not configured",
+    "description": "Compact portal access empty state on people record Access tab"
+  },
+  "accessNoSubscriptions": {
+    "message": "No subscriptions",
+    "description": "Compact marketing subscriptions empty state on people record Access tab"
+  },
+  "accessNeverLoggedIn": {
+    "message": "Never",
+    "description": "Portal access compact summary when user has not logged in"
+  },
+  "accessPortalCompactSummary": {
+    "message": "{roles} roles · Last login {lastLogin}",
+    "description": "Portal access compact summary when portal is enabled"
+  },
+  "accessChipPortalLoading": {
+    "message": "Loading…",
+    "description": "Portal status chip while loading"
+  },
+  "accessChipPortalEnabled": {
+    "message": "Enabled",
+    "description": "Portal status chip when external access is enabled"
+  },
+  "accessChipPortalNotConfigured": {
+    "message": "Not configured",
+    "description": "Portal status chip when external access is not configured"
+  },
+  "accessChipPortalHint": {
+    "message": "Open portal access",
+    "description": "Portal status chip tooltip on people record title row"
+  },
+  "accessChipMarketingLabel": {
+    "message": "Marketing",
+    "description": "Marketing label prefix on people record status chip"
+  },
+  "accessChipMarketingLoading": {
+    "message": "Loading…",
+    "description": "Marketing status chip while loading"
+  },
+  "accessChipMarketingNone": {
+    "message": "No subscriptions",
+    "description": "Marketing status chip when no subscription history"
+  },
+  "accessChipMarketingHint": {
+    "message": "Open marketing subscriptions",
+    "description": "Marketing status chip tooltip on people record title row"
   }
 }

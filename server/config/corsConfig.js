@@ -20,6 +20,17 @@ function isLocalhostFamilyOrigin(origin) {
   }
 }
 
+/** Capacitor / Ionic WebView origins (native shell). */
+function isCapacitorNativeOrigin(origin) {
+  if (!origin) return false;
+  try {
+    const protocol = new URL(origin).protocol.toLowerCase();
+    return protocol === 'capacitor:' || protocol === 'ionic:';
+  } catch (_error) {
+    return false;
+  }
+}
+
 function getAllowedOrigins() {
   if (process.env.CORS_ORIGINS) {
     return process.env.CORS_ORIGINS.split(',')
@@ -32,6 +43,8 @@ function getAllowedOrigins() {
   return [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5174',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
   ];
@@ -68,6 +81,11 @@ function isAllowedCorsOrigin(origin, { allowLocalhost = false, allowTenantSubdom
     return true;
   }
 
+  // Native Capacitor apps always use capacitor:// / ionic:// — allow in all envs.
+  if (isCapacitorNativeOrigin(origin)) {
+    return true;
+  }
+
   if (allowLocalhost && isLocalhostFamilyOrigin(origin)) {
     return true;
   }
@@ -83,6 +101,7 @@ module.exports = {
   getAllowedOrigins,
   ARIVU_PRODUCTION_ORIGINS,
   isLocalhostFamilyOrigin,
+  isCapacitorNativeOrigin,
   isTenantSubdomainOrigin,
   originMatchesAllowedPattern,
   isAllowedCorsOrigin

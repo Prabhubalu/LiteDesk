@@ -185,7 +185,8 @@ import {
   EyeIcon,
   ClipboardDocumentListIcon,
   DocumentDuplicateIcon,
-  Bars3BottomLeftIcon
+  Bars3BottomLeftIcon,
+  KeyIcon
 } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
@@ -600,6 +601,13 @@ watch(activeTab, (newTab) => {
   }, PANE_WIDTH_TRANSITION_MS);
 });
 
+const openTab = (tabId) => {
+  const exists = effectiveTabs.value.some((tab) => tab.id === tabId);
+  if (!exists) return;
+  activeTab.value = tabId;
+  emit('tab-change', tabId);
+};
+
 // Handle tab click
 const handleTabClick = (tabId) => {
   if (activeTab.value === tabId) {
@@ -620,7 +628,8 @@ const handleTabClick = (tabId) => {
 defineExpose({
   activeTab,
   hasActiveTab: () => !!activeTab.value,
-  isMobile: layoutIsMobile
+  isMobile: layoutIsMobile,
+  openTab
 });
 
 // Get icon for tab
@@ -650,6 +659,7 @@ const getTabIcon = (tabId) => {
     timeline: ClockIcon,
     related: LinkIcon,
     integrations: PuzzlePieceIcon,
+    access: KeyIcon,
     knowledge: BookOpenIcon,
     email: EnvelopeIcon,
     participants: UserGroupIcon

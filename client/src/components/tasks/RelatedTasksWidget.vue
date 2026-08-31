@@ -38,7 +38,7 @@
             <h4 :class="[
               'text-sm font-medium truncate mb-1',
               task.status === 'Completed' 
-                ? 'text-gray-500 dark:text-gray-400 line-through' 
+                ? 'text-gray-500 dark:text-gray-400' 
                 : 'text-gray-900 dark:text-white'
             ]">
               {{ task.title }}

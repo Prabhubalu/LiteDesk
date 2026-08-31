@@ -2627,6 +2627,10 @@
     "message": "Integrations",
     "description": "Integrations section title"
   },
+  "genericTabAccess": {
+    "message": "Access",
+    "description": "People record right pane tab for portal and marketing access"
+  },
   "genericNoIntegrations": {
     "message": "No integrations configured.",
     "description": "Empty integrations"

@@ -51,8 +51,8 @@
               'box-border flex min-h-0 flex-1 flex-col overflow-x-hidden',
               useFillHeightContent ? 'relative' : '',
               useFillHeightContent
-                ? 'min-h-0 overflow-hidden pt-16 md:pt-[7.5rem] lg:pt-0 lg:bg-white lg:dark:bg-neutral-900'
-                : 'mt-16 overflow-y-auto md:mt-30 lg:mt-0 lg:overflow-y-auto lg:bg-white lg:dark:bg-neutral-900'
+                ? 'min-h-0 overflow-hidden pt-[var(--mobile-top-offset)] md:pt-[calc(7.5rem+var(--safe-area-top,0px))] lg:pt-0 lg:bg-white lg:dark:bg-neutral-900'
+                : 'mt-[var(--mobile-top-offset)] overflow-y-auto md:mt-[calc(7.5rem+var(--safe-area-top,0px))] lg:mt-0 lg:overflow-y-auto lg:bg-white lg:dark:bg-neutral-900'
             ]"
             :style="{ '--table-sticky-offset': tableStickyOffset }"
           >

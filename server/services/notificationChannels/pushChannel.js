@@ -1,4 +1,5 @@
 const pushService = require('../pushService');
+const nativePushService = require('../nativePushService');
 const NotificationPreference = require('../../models/NotificationPreference');
 const User = require('../../models/User');
 
@@ -63,28 +64,14 @@ async function send({ notification, user, context }) {
       }
     }
 
-    // Check if push service is initialized
-    if (!pushService.initialized()) {
+    const webReady = pushService.initialized();
+    const nativeReady = nativePushService.initialized();
+    if (!webReady && !nativeReady) {
       debugLog('ServiceNotInitialized', { notificationId: String(notification._id) });
       return { success: false, skipped: true, reason: 'service_not_initialized' };
     }
 
-    // Get active subscriptions for this user and app
-    const subscriptions = await pushService.getActiveSubscriptions(
-      notification.userId,
-      notification.appKey
-    );
-
-    if (!subscriptions || subscriptions.length === 0) {
-      debugLog('NoSubscriptions', {
-        notificationId: String(notification._id),
-        userId: String(notification.userId),
-        appKey: notification.appKey
-      });
-      return { success: false, skipped: true, reason: 'no_subscriptions' };
-    }
-
-    // Build push payload
+    const mobileUrl = getMobileDeepLink(notification.appKey, notification.entity);
     const payload = {
       title: notification.title,
       body: notification.body,
@@ -95,31 +82,66 @@ async function send({ notification, user, context }) {
         eventType: notification.eventType,
         appKey: notification.appKey,
         entity: notification.entity,
-        url: getAppDeepLink(notification.appKey, notification.entity)
+        url: getAppDeepLink(notification.appKey, notification.entity),
+        mobileUrl
       },
-      tag: `${notification.eventType}_${notification.entity?.id || 'none'}` // Prevent duplicate notifications
+      tag: `${notification.eventType}_${notification.entity?.id || 'none'}`
     };
 
-    // Send to all active subscriptions (user may have multiple devices)
-    const results = await Promise.allSettled(
-      subscriptions.map(sub => pushService.sendPushNotification(sub, payload))
+    let webSuccessCount = 0;
+    let webFailedCount = 0;
+    let webSubscriptions = 0;
+
+    if (webReady) {
+      const subscriptions = await pushService.getActiveSubscriptions(
+        notification.userId,
+        notification.appKey
+      );
+      webSubscriptions = subscriptions?.length || 0;
+      if (webSubscriptions > 0) {
+        const results = await Promise.allSettled(
+          subscriptions.map(sub => pushService.sendPushNotification(sub, payload))
+        );
+        webSuccessCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+        webFailedCount = results.length - webSuccessCount;
+      }
+    }
+
+    const nativeResult = await nativePushService.sendToUser(
+      notification.userId,
+      notification.appKey,
+      payload
     );
 
-    const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
-    const failedCount = results.length - successCount;
+    const nativeSuccessCount = nativeResult.successCount || 0;
+    const successCount = webSuccessCount + nativeSuccessCount;
+    const failedCount = webFailedCount + (nativeResult.failedCount || 0);
+    const totalTargets = webSubscriptions + (nativeResult.devices || 0);
+
+    if (totalTargets === 0) {
+      debugLog('NoSubscriptions', {
+        notificationId: String(notification._id),
+        userId: String(notification.userId),
+        appKey: notification.appKey
+      });
+      return { success: false, skipped: true, reason: 'no_subscriptions' };
+    }
 
     debugLog('PushSent', {
       notificationId: String(notification._id),
-      subscriptions: subscriptions.length,
+      webSubscriptions,
+      nativeDevices: nativeResult.devices || 0,
       successCount,
       failedCount
     });
 
     return {
       success: successCount > 0,
-      subscriptions: subscriptions.length,
+      subscriptions: totalTargets,
       successCount,
-      failedCount
+      failedCount,
+      webSuccessCount,
+      nativeSuccessCount
     };
   } catch (err) {
     // Never throw - channel failures must not block execution
@@ -137,6 +159,7 @@ function getAppDeepLink(appKey, entity) {
   if (!entity || !entity.id) {
     switch (appKey) {
       case 'CRM':
+      case 'SALES':
         return `${baseUrl}/dashboard`;
       case 'AUDIT':
         return `${baseUrl}/audit/dashboard`;
@@ -153,8 +176,32 @@ function getAppDeepLink(appKey, entity) {
       return `${baseUrl}/audit/audits/${entity.id}`;
     case 'CorrectiveAction':
       return `${baseUrl}/portal/actions/${entity.id}`;
+    case 'Task':
+      return `${baseUrl}/tasks/${entity.id}`;
+    case 'EmailThread':
+    case 'CommunicationThread':
+      return `${baseUrl}/inbox?thread=${entity.id}`;
     default:
       return getAppDeepLink(appKey, null);
+  }
+}
+
+/**
+ * Capacitor app deep links (custom URL scheme).
+ */
+function getMobileDeepLink(appKey, entity) {
+  if (!entity || !entity.id) {
+    if (appKey === 'AUDIT') return 'arivu://tasks';
+    return 'arivu://inbox';
+  }
+  switch (entity.type) {
+    case 'Task':
+      return `arivu://tasks/${entity.id}`;
+    case 'EmailThread':
+    case 'CommunicationThread':
+      return `arivu://inbox/${entity.id}`;
+    default:
+      return 'arivu://inbox';
   }
 }
 

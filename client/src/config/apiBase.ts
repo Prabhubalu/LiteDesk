@@ -1,6 +1,8 @@
+import { isNativeApp, rewriteOriginForNativeDevice } from '@/platform/capacitor/nativePlatform'
+
 const PRODUCTION_API_ORIGIN = 'https://api.arivusystems.com'
 
-const LOCAL_DEV_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
+const LOCAL_DEV_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '10.0.2.2'])
 
 /**
  * In local dev, VITE_API_ORIGIN often points at the API port (e.g. :5000) while the SPA
@@ -56,15 +58,28 @@ function inferProductionApiOrigin(): string {
  */
 export function getApiOrigin(): string {
   const explicitOrigin = (import.meta.env.VITE_API_ORIGIN as string | undefined)?.replace(/\/$/, '')
-  if (explicitOrigin) return resolveDevSameOriginProxy(explicitOrigin)
+  if (explicitOrigin) {
+    const resolved = resolveDevSameOriginProxy(explicitOrigin)
+    // Browser Vite: empty means same-origin + proxy. Native WebView needs an absolute API host.
+    if (resolved === '' && !isNativeApp()) return ''
+    return rewriteOriginForNativeDevice(resolved || explicitOrigin)
+  }
 
   const inferred = inferProductionApiOrigin()
   if (inferred) return inferred
 
   // Backward compatibility: older envs use VITE_API_URL and may include trailing /api.
   const legacyUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
-  if (!legacyUrl) return ''
-  return resolveDevSameOriginProxy(legacyUrl.replace(/\/api$/, ''))
+  if (!legacyUrl) {
+    // Packaged Capacitor builds must not rely on same-origin /api (no Vite proxy).
+    if (isNativeApp()) {
+      return rewriteOriginForNativeDevice('http://localhost:3000')
+    }
+    return ''
+  }
+  const resolvedLegacy = resolveDevSameOriginProxy(legacyUrl.replace(/\/api$/, ''))
+  if (resolvedLegacy === '' && !isNativeApp()) return ''
+  return rewriteOriginForNativeDevice(resolvedLegacy || legacyUrl.replace(/\/api$/, ''))
 }
 
 export function withApiOrigin(path: string): string {
@@ -98,7 +113,9 @@ function getDevDirectFetchOrigin(): string {
   if (explicitOrigin) {
     try {
       const api = new URL(explicitOrigin)
-      if (LOCAL_DEV_HOSTS.has(api.hostname)) return api.origin
+      if (LOCAL_DEV_HOSTS.has(api.hostname)) {
+        return rewriteOriginForNativeDevice(api.origin)
+      }
     } catch {
       // ignore
     }
@@ -108,13 +125,15 @@ function getDevDirectFetchOrigin(): string {
   if (legacyUrl) {
     try {
       const api = new URL(legacyUrl.replace(/\/api$/, ''))
-      if (LOCAL_DEV_HOSTS.has(api.hostname)) return api.origin
+      if (LOCAL_DEV_HOSTS.has(api.hostname)) {
+        return rewriteOriginForNativeDevice(api.origin)
+      }
     } catch {
       // ignore
     }
   }
 
-  return 'http://localhost:5000'
+  return rewriteOriginForNativeDevice('http://localhost:3000')
 }
 
 export function getApiUrlForFetch(url: string): string {

@@ -107,7 +107,7 @@
             @click.stop="toggleTaskStatus(row)"
             checkbox-class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
           />
-          <span :class="['min-w-0 flex-1 font-semibold truncate', row.status === 'completed' ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white']">
+          <span :class="['min-w-0 flex-1 font-semibold truncate', row.status === 'completed' ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white']">
             {{ row.title }}
           </span>
         </div>
