@@ -497,7 +497,7 @@ const logoSrc = computed(() => {
     </div>
 
     <!-- Mobile top bar -->
-    <div class="fixed top-[var(--platform-banner-offset,0px)] left-0 right-0 z-50 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 py-3 h-16 after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
+    <div class="fixed top-[var(--platform-banner-offset,0px)] left-0 right-0 z-50 flex items-center gap-x-6 bg-white dark:bg-gray-900 px-4 pt-[calc(0.75rem+var(--safe-area-top,0px))] pb-3 h-[var(--mobile-top-offset)] after:pointer-events-none after:absolute after:inset-0 after:border-b after:border-gray-200 dark:after:border-white/10 dark:after:bg-black/10 sm:px-6 lg:hidden">
       <button type="button" class="-m-2.5 p-2.5 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white lg:hidden" @click="sidebarOpen = true">
         <span class="sr-only">{{ t('navigation.openSidebar') }}</span>
         <Bars3Icon class="size-6 text-gray-900 dark:text-gray-400" aria-hidden="true" />

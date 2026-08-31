@@ -8,6 +8,10 @@ const {
   subscribe,
   unsubscribe
 } = require('../controllers/pushController');
+const {
+  registerDevice,
+  unregisterDevice
+} = require('../controllers/mobileDeviceController');
 
 // Public route for VAPID public key (no auth needed for subscription)
 router.get('/public-key', getPublicKey);
@@ -19,6 +23,8 @@ router.use(organizationIsolation);
 
 router.post('/subscribe', subscribe);
 router.post('/unsubscribe', unsubscribe);
+router.post('/device', registerDevice);
+router.post('/device/unregister', unregisterDevice);
 
 module.exports = router;
 

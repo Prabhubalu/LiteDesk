@@ -220,6 +220,59 @@ function buildUserScopeQuery(req, organization) {
     return { organizationId: req.user.organizationId };
 }
 
+const PRESENCE_TYPES = new Set(['active', 'busy', 'away', 'offline']);
+
+function serializePresence(user) {
+    const presence = user?.presence || {};
+    const expiresAt = presence.expiresAt ? new Date(presence.expiresAt) : null;
+    const customExpired = expiresAt && expiresAt.getTime() <= Date.now();
+    const customText = customExpired ? '' : String(presence.custom?.text || '').trim();
+    const customEmoji = customExpired ? '' : String(presence.custom?.emoji || '').trim();
+
+    return {
+        type: PRESENCE_TYPES.has(presence.type) ? presence.type : 'active',
+        custom: customText ? { emoji: customEmoji || '💬', text: customText } : null,
+        expiresAt: customExpired ? null : expiresAt,
+        updatedAt: presence.updatedAt || null
+    };
+}
+
+function validatePresencePayload(body) {
+    const type = String(body?.type || '').trim().toLowerCase();
+    if (!PRESENCE_TYPES.has(type)) {
+        return { ok: false, message: 'Invalid presence type', code: 'INVALID_PRESENCE_TYPE' };
+    }
+
+    let custom = null;
+    if (body?.custom != null) {
+        if (typeof body.custom !== 'object' || Array.isArray(body.custom)) {
+            return { ok: false, message: 'Custom status must be an object or null', code: 'INVALID_CUSTOM_STATUS' };
+        }
+        const text = String(body.custom.text || '').trim();
+        const emoji = String(body.custom.emoji || '').trim();
+        if (!text) {
+            return { ok: false, message: 'Custom status text is required', code: 'INVALID_CUSTOM_STATUS' };
+        }
+        if (text.length > 80 || emoji.length > 16) {
+            return { ok: false, message: 'Custom status is too long', code: 'CUSTOM_STATUS_TOO_LONG' };
+        }
+        custom = { emoji: emoji || '💬', text };
+    }
+
+    let expiresAt = null;
+    if (body?.expiresAt != null && body.expiresAt !== '') {
+        expiresAt = new Date(body.expiresAt);
+        if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+            return { ok: false, message: 'Presence expiry must be in the future', code: 'INVALID_PRESENCE_EXPIRY' };
+        }
+        if (!custom) {
+            return { ok: false, message: 'Presence expiry requires a custom status', code: 'INVALID_PRESENCE_EXPIRY' };
+        }
+    }
+
+    return { ok: true, value: { type, custom, expiresAt } };
+}
+
 function buildMasterUserListQuery(organizationId, scopedQuery) {
     const masterQuery = { organizationId };
     if (scopedQuery.roleId) {
@@ -2210,6 +2263,112 @@ exports.deleteUser = async (req, res) => {
             success: false,
             message: 'Server error deleting user' 
         });
+    }
+};
+
+// --- Cross-device user presence ---
+exports.getMyPresence = async (req, res) => {
+    try {
+        const organization = req.organization || await Organization.findById(req.user.organizationId)
+            .select('database name');
+        const ScopedUser = await getScopedUserModel(organization);
+        const user = await ScopedUser.findOne({
+            ...buildUserScopeQuery(req, organization),
+            _id: req.user._id
+        }).select('_id presence').lean();
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        return res.json({ success: true, data: serializePresence(user) });
+    } catch (error) {
+        console.error('Get presence error:', error);
+        return res.status(500).json({ success: false, message: 'Server error fetching presence' });
+    }
+};
+
+exports.updateMyPresence = async (req, res) => {
+    const validation = validatePresencePayload(req.body);
+    if (!validation.ok) {
+        return res.status(400).json({
+            success: false,
+            message: validation.message,
+            code: validation.code
+        });
+    }
+
+    try {
+        const organization = req.organization || await Organization.findById(req.user.organizationId)
+            .select('database name');
+        const ScopedUser = await getScopedUserModel(organization);
+        const updatedAt = new Date();
+        const user = await ScopedUser.findOneAndUpdate(
+            {
+                ...buildUserScopeQuery(req, organization),
+                _id: req.user._id,
+                status: 'active'
+            },
+            {
+                $set: {
+                    presence: {
+                        ...validation.value,
+                        updatedAt
+                    }
+                }
+            },
+            { new: true, runValidators: true }
+        ).select('_id presence').lean();
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Active user not found' });
+        }
+
+        return res.json({
+            success: true,
+            data: serializePresence(user),
+            message: 'Presence updated successfully'
+        });
+    } catch (error) {
+        console.error('Update presence error:', error);
+        return res.status(500).json({ success: false, message: 'Server error updating presence' });
+    }
+};
+
+exports.getOrganizationPresence = async (req, res) => {
+    const rawIds = Array.isArray(req.query.userIds)
+        ? req.query.userIds
+        : String(req.query.userIds || '').split(',');
+    const userIds = [...new Set(rawIds.map((id) => String(id).trim()).filter(Boolean))];
+
+    if (!userIds.length || userIds.length > 100 || userIds.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
+        return res.status(400).json({
+            success: false,
+            message: 'Provide between 1 and 100 valid userIds',
+            code: 'INVALID_USER_IDS'
+        });
+    }
+
+    try {
+        const organization = req.organization || await Organization.findById(req.user.organizationId)
+            .select('database name');
+        const ScopedUser = await getScopedUserModel(organization);
+        const users = await ScopedUser.find({
+            ...buildUserScopeQuery(req, organization),
+            _id: { $in: userIds },
+            status: 'active'
+        }).select('_id presence').lean();
+
+        return res.json({
+            success: true,
+            data: users.map((user) => ({
+                userId: user._id,
+                ...serializePresence(user)
+            }))
+        });
+    } catch (error) {
+        console.error('Get organization presence error:', error);
+        return res.status(500).json({ success: false, message: 'Server error fetching presence' });
     }
 };
 

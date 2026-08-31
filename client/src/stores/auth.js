@@ -566,6 +566,9 @@ export const useAuthStore = defineStore('auth', {
             this.sessionLimit = null;
             this.setUser(data);
             if (endpoint === 'login' || endpoint === 'login/continue') {
+                void import('@/platform/capacitor/initCapacitorNative')
+                    .then((m) => m.syncCapacitorPushTokenAfterLogin())
+                    .catch(() => undefined);
                 this.lastLoginResult = data;
                 if (data.trial) {
                     this.organization = applyTrialSnapshotToOrganization(this.organization, data.trial);

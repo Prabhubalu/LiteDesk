@@ -16,6 +16,9 @@ const {
     getUserOwnershipSummary,
     transferUserRecords,
     deleteUser,
+    getMyPresence,
+    updateMyPresence,
+    getOrganizationPresence,
     getProfile,
     updateProfile,
     changePassword,
@@ -43,6 +46,11 @@ router.put('/profile/password', changePassword);
 router.post('/profile/resend-verification', resendVerification);
 router.post('/profile/avatar', uploadSingle('avatar'), uploadAvatar);
 router.delete('/profile/avatar', deleteAvatar);
+
+// Presence is self-writable and tenant-readable for requested active users.
+router.get('/presence/me', getMyPresence);
+router.put('/presence/me', updateMyPresence);
+router.get('/presence', getOrganizationPresence);
 
 // --- User Management Routes (Platform-level, app-agnostic) ---
 // User management is platform-level, NOT app-specific

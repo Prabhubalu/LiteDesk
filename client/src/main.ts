@@ -106,7 +106,21 @@ void (async () => {
 
   await router.isReady()
 
+  try {
+    const { initCapacitorNative } = await import('./platform/capacitor/initCapacitorNative')
+    await initCapacitorNative(router)
+  } catch (e) {
+    console.error('[capacitor] init failed', e)
+  }
+
   app.mount('#app')
+
+  try {
+    const { SplashScreen } = await import('@capacitor/splash-screen')
+    await SplashScreen.hide()
+  } catch {
+    // web / optional
+  }
 
   // Sentry + PostHog after first paint: avoids blocking TTI on analytics bundles.
   const startObservability = () => {

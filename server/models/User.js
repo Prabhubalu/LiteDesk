@@ -22,6 +22,20 @@
 const mongoose = require('mongoose');
 const { wrapTenantModel } = require('../utils/tenantModelProxy');
 
+const UserPresenceSchema = new mongoose.Schema({
+    type: {
+        type: String,
+        enum: ['active', 'busy', 'away', 'offline'],
+        default: 'active'
+    },
+    custom: {
+        emoji: { type: String, maxlength: 16, default: null },
+        text: { type: String, maxlength: 80, default: null }
+    },
+    expiresAt: { type: Date, default: null },
+    updatedAt: { type: Date, default: null }
+}, { _id: false });
+
 const UserSchema = new mongoose.Schema({
     // Organization Reference (Multi-tenancy)
     organizationId: { 
@@ -52,6 +66,9 @@ const UserSchema = new mongoose.Schema({
     lastName: String,
     phoneNumber: String,
     avatar: String,
+
+    // Cross-device availability shown on user avatars.
+    presence: { type: UserPresenceSchema, default: () => ({}) },
 
     // Employee / org chart
     reportsTo: {

@@ -613,8 +613,9 @@
     </div>
 
     <div
+      v-show="showListTableBody"
       ref="tableAreaRef"
-      class="px-4 sm:px-6 lg:px-8"
+      class="list-view-table-area px-4 sm:px-6 lg:px-8"
       :class="[
         fillHeight
           ? 'mt-0 flex min-h-0 flex-1 flex-col overflow-hidden'
@@ -2193,6 +2194,13 @@ const customDeleteDialogMessage = computed(() => {
     recordType: 'User',
     recordTypePlural: 'Users'
   });
+});
+
+/** Hide table body when parent uses kanban/calendar (chrome + stats stay visible). */
+const showListTableBody = computed(() => {
+  const mode = props.viewMode;
+  if (mode == null || mode === '') return true;
+  return String(mode).toLowerCase() === 'list';
 });
 
 // Customize button label and click (List vs Kanban)

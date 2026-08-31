@@ -104,6 +104,11 @@ client/dist/
 client/.vite/
 client/.cache/
 
+# Mobile (Capacitor)
+mobile/dist/
+mobile/.env
+mobile/node_modules/
+
 # Backend specific
 // Import staging artifacts (CSV files awaiting/at processing)
 server/uploads/

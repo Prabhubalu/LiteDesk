@@ -88,7 +88,8 @@ Catalog: `AddonDefinition` (master) + `TenantAddonConfiguration` + admin `/api/a
 
 ```
 LiteDesk/
-├── client/                 # Vue SPA
+├── client/                 # Vue SPA (desktop + responsive web)
+├── mobile/                 # Capacitor mobile-native app (Home, Inbox, Tasks, More)
 ├── server/                 # Express API + worker
 ├── docs/                   # Architecture, runbooks, specs
 ├── helm/arivu/             # K8s charts

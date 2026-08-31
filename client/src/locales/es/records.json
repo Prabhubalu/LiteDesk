@@ -5946,5 +5946,9 @@
   "copyRecordNumber": {
     "message": "Copy number",
     "description": "Click document number prefix beside record title to copy"
+  },
+  "genericTabAccess": {
+    "message": "Access",
+    "description": "People record right pane tab for portal and marketing access"
   }
 }

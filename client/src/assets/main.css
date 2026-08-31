@@ -1,5 +1,9 @@
 :root {
   --tabbar-offset: 64px;
+  --safe-area-top: 0px;
+  --safe-area-bottom: 0px;
+  --mobile-top-chrome: 4rem; /* h-16 mobile app bar */
+  --mobile-top-offset: calc(var(--mobile-top-chrome) + var(--safe-area-top));
 }
 
 @import 'tailwindcss';
@@ -774,3 +778,16 @@ img[data-width="100%"] {
   max-width: 100%;
   height: auto;
 }
+
+/* Capacitor native shell — safe areas for fixed chrome (Dynamic Island / home indicator) */
+html.capacitor-native {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html.capacitor-native body {
+  /* Don't pad body — fixed headers use --safe-area-top / --mobile-top-offset */
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
