@@ -1,6 +1,6 @@
 # Arivu Platform — Architecture Reference (LLM Context)
 
-> **Repo:** `LiteDesk` · **Product:** Arivu · **Pattern:** Platform Core + Multi-App CRM/Helpdesk/Audit/Portal + Commercial + Marketing + Analytics  
+> **Repo:** `Arivu` · **Product:** Arivu · **Pattern:** Platform Core + Multi-App CRM/Helpdesk/Audit/Portal + Commercial + Marketing + Analytics  
 > **Purpose:** Single pinned reference for development. Dense facts only; no tutorials.  
 > **Refreshed:** 2026-07-16 from live `server/server.js`, `appKeys.js`, `models/`, `client/` (not from older docs).
 
@@ -87,7 +87,7 @@ Catalog: `AddonDefinition` (master) + `TenantAddonConfiguration` + admin `/api/a
 ### Repository Root
 
 ```
-LiteDesk/
+Arivu/
 ├── client/                 # Vue SPA (desktop + responsive web)
 ├── mobile/                 # Capacitor mobile-native app (Home, Inbox, Tasks, More)
 ├── server/                 # Express API + worker

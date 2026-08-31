@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
-    LiteDeskHeadlessBlocks?: {
+    ArivuHeadlessBlocks?: {
       init: (root?: ParentNode) => void;
     };
     ArivuHeadlessBlocks?: {
@@ -14,7 +14,7 @@ declare global {
 }
 
 function initBlocks(root: ParentNode) {
-  const api = window.ArivuHeadlessBlocks || window.LiteDeskHeadlessBlocks;
+  const api = window.ArivuHeadlessBlocks || window.ArivuHeadlessBlocks;
   api?.init(root);
 }
 

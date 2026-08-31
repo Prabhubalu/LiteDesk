@@ -13,6 +13,7 @@ const {
 } = require('./marketingSubscriptionService');
 const { runWithOrganizationTenantContext } = require('../../utils/runWithOrganizationTenant');
 const { MARKETING_MODULE } = require('../amds/handlers/campaignStatsHandler');
+const { buildIdempotencyKey, writeMetadata } = require('../../utils/arivuMetadata');
 
 /**
  * @param {{ email: string, name?: string }} recipient
@@ -92,9 +93,11 @@ async function sendCampaignTest({ organizationId, campaignId, recipient }) {
 
     // Each test attempt gets a unique key — AMDS dedupes by idempotency_key and Communication
     // has a unique index on idempotencyKeyHash; a fixed key blocks repeat sends to the same address.
-    const idempotencyKey = `litedesk-marketing-test-${orgIdStr}-${String(campaignObjectId)}-${crypto.randomUUID()}`.slice(
-      0,
-      256
+    const idempotencyKey = buildIdempotencyKey(
+      'marketing-test',
+      orgIdStr,
+      String(campaignObjectId),
+      crypto.randomUUID()
     );
 
     const communication = await Communication.create({
@@ -134,11 +137,13 @@ async function sendCampaignTest({ organizationId, campaignId, recipient }) {
         clicks: campaign.trackClicks !== false
       },
       metadata: {
-        litedesk_module: MARKETING_MODULE,
-        litedesk_entity_id: String(campaignObjectId),
-        litedesk_communication_id: String(communication._id),
-        litedesk_recipient_id: recipientId,
-        litedesk_org_id: orgIdStr,
+        ...writeMetadata({
+          module: MARKETING_MODULE,
+          entity_id: String(campaignObjectId),
+          communication_id: String(communication._id),
+          recipient_id: recipientId,
+          org_id: orgIdStr
+        }),
         is_test_send: true
       },
       tags: ['marketing', 'test']

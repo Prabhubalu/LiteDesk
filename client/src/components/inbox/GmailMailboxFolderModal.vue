@@ -15,7 +15,7 @@
         <div class="flex items-start justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800">
           <div>
             <h2 id="gmail-folders-title" class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('inbox.gmailMailboxFolderModalMailboxFolders') }}</h2>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports') }}</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('inbox.gmailMailboxFolderModalChooseWhichGmailLabelsArivuImports') }}</p>
           </div>
           <button
             type="button"

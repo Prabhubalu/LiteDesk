@@ -12,7 +12,7 @@ let lastPushToken: string | null = null
 
 function pathFromDeepLink(url: string): string | null {
   try {
-    for (const scheme of ['arivu', 'litedesk'] as const) {
+    for (const scheme of ['arivu', 'arivu'] as const) {
       const prefix = `${scheme}://`
       if (url.startsWith(prefix)) {
         const rest = url.slice(prefix.length)
@@ -21,7 +21,7 @@ function pathFromDeepLink(url: string): string | null {
       }
     }
     const parsed = new URL(url)
-    if (parsed.protocol === 'arivu:' || parsed.protocol === 'litedesk:') {
+    if (parsed.protocol === 'arivu:' || parsed.protocol === 'arivu:') {
       return `/${parsed.host}${parsed.pathname}`.replace(/\/+/g, '/')
     }
     return parsed.pathname || null

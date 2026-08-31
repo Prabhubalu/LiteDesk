@@ -13,7 +13,7 @@ A **Dashboard** is a workspace composed of **Widgets** arranged in a responsive 
 | Field | Type | Required | Description |
 |--------|------|----------|-------------|
 | id | UUID | ✅ | System-generated unique identifier |
-| organizationId | UUID | ✅ | Tenant scope (LiteDesk: ObjectId) |
+| organizationId | UUID | ✅ | Tenant scope (Arivu: ObjectId) |
 | name | String | ✅ | Dashboard display name |
 | apiName | String | ✅ | Unique internal API identifier per org |
 | description | Text | | Dashboard description |

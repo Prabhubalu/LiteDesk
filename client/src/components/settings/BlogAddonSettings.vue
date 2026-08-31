@@ -822,7 +822,7 @@ const vercelUpdateKitCommand = computed(() => {
 });
 
 const phpSyncDownloadUrl = computed(() => {
-  const origin = embedOrigin.value || 'https://your-litedesk-host';
+  const origin = embedOrigin.value || 'https://your-arivu-host';
   return `${origin}/static-sync/arivu-blog-sync.php`;
 });
 
@@ -832,7 +832,7 @@ const phpCurlDownloadCommand = computed(() => (
 
 const localCliFullSyncCommand = computed(() => {
   const org = embedOrgSlug.value;
-  const origin = embedOrigin.value || 'https://your-litedesk-host';
+  const origin = embedOrigin.value || 'https://your-arivu-host';
   return `node tools/help-sync/bin/arivu-help-sync.js sync --addon blog --full --org ${org} --dest ./public/blog --api-origin ${origin}`;
 });
 
@@ -980,7 +980,7 @@ function onStaticSyncHostTypeChange() {
 
 const staticSyncCliCommands = computed(() => {
   const org = embedOrgSlug.value;
-  const origin = embedOrigin.value || 'https://your-litedesk-host';
+  const origin = embedOrigin.value || 'https://your-arivu-host';
   return [
     {
       key: 'npx-full',

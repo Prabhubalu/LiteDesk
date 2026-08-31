@@ -109,7 +109,7 @@ module.exports = {
 const embedJs = `;(function (root) {
   'use strict';
   var HEROICON_PATHS = ${JSON.stringify(pathMap, null, 2)};
-  root.LiteDeskHeadlessHeroiconPaths = HEROICON_PATHS;
+  root.ArivuHeadlessHeroiconPaths = HEROICON_PATHS;
   root.ArivuHeadlessHeroiconPaths = HEROICON_PATHS;
 })(typeof window !== 'undefined' ? window : globalThis);
 `;

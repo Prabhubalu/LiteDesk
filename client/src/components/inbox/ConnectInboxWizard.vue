@@ -49,7 +49,7 @@
           >
             <p class="font-medium text-gray-900 dark:text-white">{{ t('inbox.connectInboxWizardBeforeYouApproveAccess') }}</p>
             <p class="mt-2">{{ t('inbox.connectInboxWizardGoogleMayShowAWarningFor') }}<span class="font-medium">{{ t('settings.settingsRelDrawerAdvanced') }}</span>{{ t('inbox.connectInboxWizardToProceedIfYouTrustThis') }}</p>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('inbox.connectInboxWizardLitedeskUsesAReadOnlyGmail') }}</p>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">{{ t('inbox.connectInboxWizardArivuUsesAReadOnlyGmail') }}</p>
           </div>
         </div>
 

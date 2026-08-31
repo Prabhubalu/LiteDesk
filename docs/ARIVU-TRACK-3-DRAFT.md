@@ -1,10 +1,10 @@
-# LiteDesk Track 3 — Implementation Draft
+# Arivu Track 3 — Implementation Draft
 
-**Audience:** LiteDesk backend developers  
+**Audience:** Arivu backend developers  
 **AMDS dependency:** Track 3 complete — see [TRACK-3-COMPLETE.md](./TRACK-3-COMPLETE.md)  
 **Prerequisite:** Track 1 integration done (`AmdsClient`, webhooks, Communication model)
 
-This document is a **copy-paste-ready draft** for the LiteDesk repo. Paths follow the layout in [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md).
+This document is a **copy-paste-ready draft** for the Arivu repo. Paths follow the layout in [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md).
 
 ---
 
@@ -160,10 +160,10 @@ export interface AmdsWebhookEvent {
   tenant_id: string;
   message_id: string;
   metadata?: {
-    litedesk_module?: string;
-    litedesk_entity_id?: string;
-    litedesk_reply_id?: string;
-    litedesk_communication_id?: string;
+    arivu_module?: string;
+    arivu_entity_id?: string;
+    arivu_reply_id?: string;
+    arivu_communication_id?: string;
     [key: string]: unknown;
   };
   delivery?: {
@@ -440,7 +440,7 @@ export async function processCommunicationEvent(event: AmdsWebhookEvent): Promis
 }
 
 async function findCommunication(event: AmdsWebhookEvent) {
-  const byId = event.metadata?.litedesk_communication_id;
+  const byId = event.metadata?.arivu_communication_id;
   if (byId) {
     return CommunicationModel.findById(byId);
   }
@@ -461,9 +461,9 @@ async function updateCommunication(
 
 ```javascript
 metadata: {
-  litedesk_module: 'cases',           // or 'crm'
-  litedesk_entity_id: caseId,
-  litedesk_communication_id: communication._id.toString(),
+  arivu_module: 'cases',           // or 'crm'
+  arivu_entity_id: caseId,
+  arivu_communication_id: communication._id.toString(),
 }
 ```
 
@@ -484,7 +484,7 @@ export async function processBounceContact(params: {
 }): Promise<void> {
   const email = params.email.toLowerCase();
 
-  // LiteDesk-side suppress flag
+  // Arivu-side suppress flag
   await ContactModel.updateOne(
     { orgId: params.tenantId, email },
     {
@@ -545,16 +545,16 @@ const { AmdsApiError } = require('../amds/amds-errors');
 async function sendCaseReplyEmail({ orgId, caseId, communication, ... }) {
   try {
     const result = await amdsClient.sendMessageWithRetry({
-      idempotency_key: `litedesk-cases-${orgId}-${communication._id}`,
+      idempotency_key: `arivu-cases-${orgId}-${communication._id}`,
       tenant_id: orgId,
       from: { email: fromEmail, name: fromName },
       to: [{ email: toEmail, name: toName }],
       subject,
       content: { html, text },
       metadata: {
-        litedesk_module: 'cases',
-        litedesk_entity_id: String(caseId),
-        litedesk_communication_id: String(communication._id),
+        arivu_module: 'cases',
+        arivu_entity_id: String(caseId),
+        arivu_communication_id: String(communication._id),
       },
       tags: ['helpdesk', 'transactional'],
       // scheduled_at: scheduledAt,  // optional — ISO string
@@ -596,7 +596,7 @@ Same pattern for CRM `POST /api/communications/email`.
 
 ## 9. Org admin — domain settings routes
 
-LiteDesk proxies AMDS; Vue calls LiteDesk API only.
+Arivu proxies AMDS; Vue calls Arivu API only.
 
 ```typescript
 // server/routes/settings/amds-domains.ts
@@ -713,7 +713,7 @@ export async function notifyAgentBounce(params: {
 npm run docker:up && npm run db:migrate && npm run dev
 ```
 
-**Terminal 2 — LiteDesk** (with webhook URL pointing at LiteDesk)
+**Terminal 2 — Arivu** (with webhook URL pointing at Arivu)
 
 **Test bounce webhook without real SMTP bounce:**
 
@@ -723,7 +723,7 @@ cd AMDS
 npm run simulate:bounce -- <message_id> <org_id> hard
 ```
 
-**Expected in LiteDesk:**
+**Expected in Arivu:**
 
 1. Communication `status` → `bounced`
 2. Contact `emailValid` → false (hard bounce)
@@ -732,7 +732,7 @@ npm run simulate:bounce -- <message_id> <org_id> hard
 
 **Test domain flow:**
 
-1. LiteDesk Settings → register `localhost.test`
+1. Arivu Settings → register `localhost.test`
 2. AMDS with `DNS_VERIFY_BYPASS=true` → verify succeeds
 3. Send case email from `support@localhost.test`
 
@@ -745,7 +745,7 @@ npm run simulate:bounce -- <message_id> <org_id> hard
 [x] amds-errors.js — AmdsApiError
 [x] amds-client.js — retry (in sendMessage), domains, suppressions, 429
 [x] send path — catch 422/403 (sync + queue metadata.sendErrorCode)
-[x] metadata.litedesk_communication_id on every AMDS send
+[x] metadata.arivu_communication_id on every AMDS send
 [x] communicationEventHandler.js — delivered / failed / bounced
 [x] bounceContactHandler.js — hard bounce → EmailSuppression + AMDS API
 [x] bounceNotify.js — agent IN_APP alert
@@ -756,20 +756,20 @@ npm run simulate:bounce -- <message_id> <org_id> hard
 [x] Manual simulate:bounce — `node scripts/validate-amds-track3-bounce.js` (validated 2026-06-30)
 ```
 
-**LiteDesk repo:** `docs/LITEDESK-TRACK-3-DRAFT.md` (this file copied). **Validation:** `LiteDesk/server/scripts/validate-amds-track3-bounce.js`.
+**Arivu repo:** `docs/ARIVU-TRACK-3-DRAFT.md` (this file copied). **Validation:** `Arivu/server/scripts/validate-amds-track3-bounce.js`.
 
 ---
 
-## 14. Explicitly out of scope (LiteDesk)
+## 14. Explicitly out of scope (Arivu)
 
 | Item | Owner |
 |------|--------|
 | DKIM signing, DNS generation | AMDS |
-| AMDS suppression on bounce | AMDS (LiteDesk syncs contact + optional API call) |
+| AMDS suppression on bounce | AMDS (Arivu syncs contact + optional API call) |
 | `message.complained` | Future (Track 3+ AMDS) |
 | Open/click tracking | Track 4 |
 | Campaign batch send | Track 4 |
 
 ---
 
-*Maintained in AMDS repo at `docs/LITEDESK-TRACK-3-DRAFT.md`. Copy into LiteDesk repo or link from LiteDesk integration docs.*
+*Maintained in AMDS repo at `docs/ARIVU-TRACK-3-DRAFT.md`. Copy into Arivu repo or link from Arivu integration docs.*

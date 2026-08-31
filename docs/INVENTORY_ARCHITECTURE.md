@@ -22,7 +22,7 @@
 
 ## 1. Executive summary
 
-The **Inventory** module is LiteDesk's **stock authority layer**: it records physical quantity by variant and location, reserves stock for execution commitments, and deducts on fulfillment — **without deriving balances from Sales Orders or fulfillment qty fields**.
+The **Inventory** module is Arivu's **stock authority layer**: it records physical quantity by variant and location, reserves stock for execution commitments, and deducts on fulfillment — **without deriving balances from Sales Orders or fulfillment qty fields**.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐

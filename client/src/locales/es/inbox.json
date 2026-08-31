@@ -1,5 +1,5 @@
 {
-  "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
+  "connectInboxWizardArivuUsesAReadOnlyGmail": {
     "message": "Arivu utiliza un alcance de Gmail de solo lectura para importar mensajes a los que ya tiene acceso.",
     "description": "Auto-migrated from connectInboxWizard"
   },
@@ -39,7 +39,7 @@
     "message": "Puede enviar desde el CRM una vez que su buzón esté vinculado.",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskImportsMailUsingARead": {
+  "connectMailboxModalArivuImportsMailUsingARead": {
     "message": "Arivu importa correo utilizando un alcance de Gmail de solo lectura (carpetas que usted elija).",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -83,7 +83,7 @@
     "message": "buzón personal",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskCreatesAPrivate": {
+  "connectMailboxModalArivuCreatesAPrivate": {
     "message": "Arivu crea un privado",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -167,7 +167,7 @@
     "message": "Cargando carpetas desde Gmail…",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
-  "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
+  "gmailMailboxFolderModalChooseWhichGmailLabelsArivuImports": {
     "message": "Elija qué etiquetas de Gmail importa Arivu. La sincronización se ejecuta según una programación y cuando usas Sync ahora.",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
@@ -191,7 +191,7 @@
     "message": "Conecte su bandeja de entrada del trabajo para enviar, recibir y administrar correos electrónicos junto con sus registros de CRM.",
     "description": "Auto-migrated from inboxGetStarted"
   },
-  "inboxGetStartedGetStartedWithLitedesk": {
+  "inboxGetStartedGetStartedWithArivu": {
     "message": "Comience con Arivu",
     "description": "Auto-migrated from inboxGetStarted"
   },
@@ -515,7 +515,7 @@
     "message": "Seleccione su proveedor de correo electrónico",
     "description": "Auto-migrated from inboxSurface"
   },
-  "inboxSurfaceConnectYourInboxToLitedesk": {
+  "inboxSurfaceConnectYourInboxToArivu": {
     "message": "Conecte su bandeja de entrada a Arivu",
     "description": "Auto-migrated from inboxSurface"
   },

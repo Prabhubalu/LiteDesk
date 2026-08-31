@@ -156,7 +156,7 @@ function createOpenRouterLlmAdapter() {
     buildExtraHeaders: () => {
       const headers = {};
       const referer = process.env.OPENROUTER_HTTP_REFERER || process.env.APP_URL || process.env.CLIENT_URL;
-      const title = process.env.OPENROUTER_APP_TITLE || 'LiteDesk';
+      const title = process.env.OPENROUTER_APP_TITLE || 'Arivu';
       if (referer) headers['HTTP-Referer'] = referer;
       if (title) headers['X-Title'] = title;
       return headers;

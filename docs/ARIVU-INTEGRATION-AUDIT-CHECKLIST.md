@@ -1,14 +1,14 @@
-# LiteDesk ↔ AMDS Integration Audit Checklist
+# Arivu ↔ AMDS Integration Audit Checklist
 
-**Audience:** LiteDesk developers verifying integration against AMDS  
-**Use:** Run through your LiteDesk repo and mark each item **Done** / **Partial** / **Missing**  
-**Related:** [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md) · Track 4 [LITEDESK-TRACK-4-DRAFT.md](./LITEDESK-TRACK-4-DRAFT.md) · Track 6 phases [LITEDESK-TRACK-6-PHASE1-DRAFT.md](./LITEDESK-TRACK-6-PHASE1-DRAFT.md) through [PHASE5](./LITEDESK-TRACK-6-PHASE5-DRAFT.md)
+**Audience:** Arivu developers verifying integration against AMDS  
+**Use:** Run through your Arivu repo and mark each item **Done** / **Partial** / **Missing**  
+**Related:** [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md) · Track 4 [ARIVU-TRACK-4-DRAFT.md](./ARIVU-TRACK-4-DRAFT.md) · Track 6 phases [ARIVU-TRACK-6-PHASE1-DRAFT.md](./ARIVU-TRACK-6-PHASE1-DRAFT.md) through [PHASE5](./ARIVU-TRACK-6-PHASE5-DRAFT.md)
 
 ---
 
 ## How to use
 
-1. Clone/open the **LiteDesk** repo (not AMDS).
+1. Clone/open the **Arivu** repo (not AMDS).
 2. Walk sections **A → H** in order; skip sections already known to be out of scope.
 3. For each checkbox, grep the codebase, trace a manual send, or hit the verification curl in **Section I**.
 4. Record **Done / Partial / Missing** in your PR or internal tracker.
@@ -58,7 +58,7 @@
 - [ ] `sendCampaignBatch(campaignId, body)` → `POST /v1/campaigns/:id/messages`
 - [ ] Batch respects **1 recipient per message** in batch items
 - [ ] `tracking: { opens, clicks }` passed when enabled
-- [ ] `metadata` includes `litedesk_module`, `litedesk_entity_id`, campaign id
+- [ ] `metadata` includes `arivu_module`, `arivu_entity_id`, campaign id
 - [ ] `getAnalyticsSummary({ tenant_id, campaign_id?, from?, to? })` → `GET /v1/analytics/summary`
 
 ### Send pipeline
@@ -67,13 +67,13 @@
 - [ ] Idempotency key per recipient (stable across retries)
 - [ ] Suppressed contacts skipped before AMDS call (or rejected rows handled)
 - [ ] Accepted/rejected counts stored on Campaign
-- [ ] `campaign_id` in URL = LiteDesk campaign id (AMDS `external_id`)
+- [ ] `campaign_id` in URL = Arivu campaign id (AMDS `external_id`)
 
 ### Engagement webhooks
 
 - [ ] `message.opened` → Campaign/Communication stats updated
 - [ ] `message.clicked` → Campaign/Communication stats updated
-- [ ] Events matched via `metadata.litedesk_entity_id` or `campaign_external_id`
+- [ ] Events matched via `metadata.arivu_entity_id` or `campaign_external_id`
 
 ### Campaign UI
 
@@ -84,14 +84,14 @@
 ### Track 4 E2E
 
 - [ ] Send test campaign → messages reach Mailpit/OCI
-- [ ] Open pixel + click link → webhooks received in LiteDesk
+- [ ] Open pixel + click link → webhooks received in Arivu
 - [ ] Analytics API returns non-zero opens/clicks after engagement
 
 ---
 
 ## C. Track 6 Phase 1 — Policies & credits
 
-### Policy sync (LiteDesk → AMDS)
+### Policy sync (Arivu → AMDS)
 
 - [ ] Model: org email policy (credits, limits, status, flags)
 - [ ] `PUT /v1/tenants/:id/policy` on: org create, limit change, credit purchase, suspend/activate
@@ -99,7 +99,7 @@
 - [ ] `POST .../suspend` / `.../activate` when org email disabled/enabled
 - [ ] Fields synced: `monthly_credits`, `credits_remaining`, `daily_send_limit`, `max_hourly_rate`, `burst_rate_per_min`, `max_campaign_size`, `warmup_enabled`, `reputation_enabled`, `status`
 
-### Credit / limit webhooks (AMDS → LiteDesk)
+### Credit / limit webhooks (AMDS → Arivu)
 
 - [ ] Handler: `credit.reserved`
 - [ ] Handler: `credit.consumed`
@@ -201,7 +201,7 @@
 ### Metadata contract
 
 - [ ] Every send includes consistent `tenant_id`
-- [ ] Campaign sends include `litedesk_entity_id` = campaign id
+- [ ] Campaign sends include `arivu_entity_id` = campaign id
 - [ ] Transactional sends include case/ticket id in metadata where applicable
 
 ### Error typing
@@ -211,15 +211,15 @@
 
 ### Production readiness
 
-- [ ] LiteDesk reachable from AMDS worker for webhooks (firewall / security list)
-- [ ] AMDS `LITEDESK_WEBHOOK_URL` points to LiteDesk handler
+- [ ] Arivu reachable from AMDS worker for webhooks (firewall / security list)
+- [ ] AMDS `ARIVU_WEBHOOK_URL` points to Arivu handler
 - [ ] If `TENANT_POLICIES_REQUIRED=true` on AMDS: policy sync verified before send tests
 
 ---
 
 ## I. Quick verification commands (dev)
 
-Run with LiteDesk + AMDS up (`npm run dev` in AMDS). Replace `ORG_ID` and `CAMPAIGN_ID`.
+Run with Arivu + AMDS up (`npm run dev` in AMDS). Replace `ORG_ID` and `CAMPAIGN_ID`.
 
 ```bash
 # Policy
@@ -247,7 +247,7 @@ curl -s -H "Authorization: Bearer $AMDS_API_KEY" \
   http://localhost:8080/v1/tenants/ORG_ID/reputation/guidance | jq
 ```
 
-### AMDS-side regression (confirms AMDS while auditing LiteDesk)
+### AMDS-side regression (confirms AMDS while auditing Arivu)
 
 From the AMDS repo:
 
@@ -286,7 +286,7 @@ npm run validate:track-6e   # infra/recovery
 ## K. Result template (copy for your audit)
 
 ```markdown
-## LiteDesk AMDS audit — YYYY-MM-DD
+## Arivu AMDS audit — YYYY-MM-DD
 
 | Section | Status | Notes |
 |---------|--------|-------|

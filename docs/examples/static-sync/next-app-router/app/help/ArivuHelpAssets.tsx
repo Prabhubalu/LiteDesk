@@ -5,14 +5,14 @@ import { useEffect } from 'react';
 
 declare global {
   interface Window {
-    LiteDeskHeadlessBlocks?: {
+    ArivuHeadlessBlocks?: {
       init: (root?: ParentNode) => void;
     };
   }
 }
 
 function initHeadlessBlocks() {
-  window.LiteDeskHeadlessBlocks?.init(document);
+  window.ArivuHeadlessBlocks?.init(document);
 }
 
 export default function ArivuHelpAssets({ apiOrigin }: { apiOrigin: string }) {

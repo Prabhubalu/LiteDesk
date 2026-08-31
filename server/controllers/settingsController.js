@@ -3452,7 +3452,7 @@ exports.updateIntegrationConfig = async (req, res) => {
             return res.status(403).json({
                 success: false,
                 message:
-                    'Only the workspace owner (or a LiteDesk platform administrator) can change the Gmail OAuth client configuration here. You can also set GOOGLE_GMAIL_* on the API server instead.',
+                    'Only the workspace owner (or a Arivu platform administrator) can change the Gmail OAuth client configuration here. You can also set GOOGLE_GMAIL_* on the API server instead.',
                 code: 'GMAIL_OAUTH_PLATFORM_ADMIN_ONLY'
             });
         }

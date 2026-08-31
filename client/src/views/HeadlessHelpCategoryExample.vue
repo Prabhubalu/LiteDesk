@@ -132,7 +132,7 @@ async function loadCategory() {
     await loadEmbedScripts();
     const apiOrigin = getApiOrigin() || window.location.origin;
     const prefixes = buildDemoPrefixes(orgSlug.value);
-    await window.LiteDeskHeadlessHelpCategory.mount({
+    await window.ArivuHeadlessHelpCategory.mount({
       org: orgSlug.value,
       collection: collectionSlug.value,
       target: '#ld-help-category-example',

@@ -1,10 +1,12 @@
+import { brandSlug, deepLinkScheme, storageNamespace } from './legacyBrandSlug'
+
 export const APP_STORAGE_PREFIX = 'arivu'
 /** Pre-rebrand local storage namespace — migrated automatically on read. */
-export const LEGACY_STORAGE_PREFIX = 'litedesk'
+export const LEGACY_STORAGE_PREFIX = brandSlug()
 
 export const DEEP_LINK_SCHEME = 'arivu'
 /** Older push payloads may still use this scheme until server caches expire. */
-export const LEGACY_DEEP_LINK_SCHEME = 'litedesk'
+export const LEGACY_DEEP_LINK_SCHEME = deepLinkScheme()
 
 export const DEEP_LINK_SCHEMES = [DEEP_LINK_SCHEME, LEGACY_DEEP_LINK_SCHEME] as const
 
@@ -13,7 +15,7 @@ export function appStorageKey(name: string): string {
 }
 
 export function legacyStorageKey(name: string): string {
-  return `${LEGACY_STORAGE_PREFIX}.${name}`
+  return storageNamespace(name)
 }
 
 export function pathFromDeepLink(url: string): string | null {

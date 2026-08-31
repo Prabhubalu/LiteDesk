@@ -1,8 +1,8 @@
-# LiteDesk Track 6 Phase 2 — Sender Reputation
+# Arivu Track 6 Phase 2 — Sender Reputation
 
-**Audience:** LiteDesk backend + frontend developers  
+**Audience:** Arivu backend + frontend developers  
 **AMDS dependency:** Track 6 Phase 2 complete — see [TRACK-6-PHASE2-COMPLETE.md](./TRACK-6-PHASE2-COMPLETE.md)  
-**Prerequisite:** [LITEDESK-TRACK-6-PHASE1-DRAFT.md](./LITEDESK-TRACK-6-PHASE1-DRAFT.md) (policy sync)
+**Prerequisite:** [ARIVU-TRACK-6-PHASE1-DRAFT.md](./ARIVU-TRACK-6-PHASE1-DRAFT.md) (policy sync)
 
 Build in parallel with AMDS Phase 2. Phase 3 adds effective throughput + ETA UI.
 
@@ -187,7 +187,7 @@ Optional proxy: `GET /api/settings/email-policy/reputation/history` → AMDS his
 npm run dev
 npm run validate:track-6b
 
-# LiteDesk (after implementation)
+# Arivu (after implementation)
 node server/scripts/validate-amds-track6-phase2.js
 ```
 

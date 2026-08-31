@@ -1,6 +1,6 @@
-# LiteDesk Track 6 Phase 4 — Campaign Health & Reputation Guidance
+# Arivu Track 6 Phase 4 — Campaign Health & Reputation Guidance
 
-**Audience:** LiteDesk backend + frontend developers  
+**Audience:** Arivu backend + frontend developers  
 **AMDS dependency:** Track 6 Phase 4 — see [TRACK-6-PHASE4-COMPLETE.md](./TRACK-6-PHASE4-COMPLETE.md)  
 **Prerequisite:** Phase 1 policy sync, Phase 2 reputation display, Phase 3 throughput/ETA
 

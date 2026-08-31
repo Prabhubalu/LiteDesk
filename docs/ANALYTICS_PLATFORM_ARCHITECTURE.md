@@ -205,7 +205,7 @@ Constants: `server/permissions/analyticsPermissions.js`
 
 ### 7.1 Integration with existing RBAC
 
-LiteDesk today registers `reports` as a **platform-admin module** in `rolePermissionCatalogService.js` with actions: `read`, `create`, `update`, `delete`, `export`.
+Arivu today registers `reports` as a **platform-admin module** in `rolePermissionCatalogService.js` with actions: `read`, `create`, `update`, `delete`, `export`.
 
 **A0 decision — transitional mapping:**
 

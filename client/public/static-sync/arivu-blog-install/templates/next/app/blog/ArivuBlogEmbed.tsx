@@ -8,7 +8,7 @@ declare global {
     ArivuHeadlessBlog?: {
       mount: (config: Record<string, unknown>) => Promise<unknown>;
     };
-    LiteDeskHeadlessBlog?: Window['ArivuHeadlessBlog'];
+    ArivuHeadlessBlog?: Window['ArivuHeadlessBlog'];
   }
 }
 
@@ -31,7 +31,7 @@ export default function ArivuBlogEmbed({
   const origin = apiOrigin.replace(/\/$/, '');
 
   useEffect(() => {
-    if (window.ArivuHeadlessBlog || window.LiteDeskHeadlessBlog) {
+    if (window.ArivuHeadlessBlog || window.ArivuHeadlessBlog) {
       setScriptReady(true);
     }
   }, []);
@@ -44,7 +44,7 @@ export default function ArivuBlogEmbed({
     if (!scriptReady || !containerRef.current || !org || !origin) return;
     if (mountedPathRef.current === pathname) return;
 
-    const api = window.ArivuHeadlessBlog || window.LiteDeskHeadlessBlog;
+    const api = window.ArivuHeadlessBlog || window.ArivuHeadlessBlog;
     if (!api) return;
 
     mountedPathRef.current = pathname;

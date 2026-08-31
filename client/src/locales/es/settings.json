@@ -14112,7 +14112,7 @@
     "description": "AMDS domain registration section title"
   },
   "integrationsAmdsDomainsDesc": {
-    "message": "Register and verify DNS for the domain used in From Email. LiteDesk proxies AMDS domain APIs.",
+    "message": "Register and verify DNS for the domain used in From Email. Arivu proxies AMDS domain APIs.",
     "description": "AMDS domain section description"
   },
   "integrationsAmdsDomainLabel": {
@@ -14192,7 +14192,7 @@
     "description": "Email policy panel title"
   },
   "emailPolicyCreditsSubtitle": {
-    "message": "LiteDesk is the source of truth for email entitlements. AMDS enforces these limits at send time.",
+    "message": "Arivu is the source of truth for email entitlements. AMDS enforces these limits at send time.",
     "description": "Email policy panel subtitle"
   },
   "emailPolicyCreditsRemaining": {
@@ -14820,7 +14820,7 @@
     "description": "fetch example label for Articles headless API"
   },
   "addonsArticlesExampleRender": {
-    "message": "Render blocks (LiteDesk SDK)",
+    "message": "Render blocks (Arivu SDK)",
     "description": "renderBlocks example label for Articles headless API"
   },
   "addonsArticlesIntegrationUrlsUnavailable": {
@@ -15600,7 +15600,7 @@
     "description": "Blog curl install title"
   },
   "addonsBlogCurlInstallDesc": {
-    "message": "Downloads a starter HTML page with list + post embeds. Open it from your LiteDesk host, then set your org and post slug.",
+    "message": "Downloads a starter HTML page with list + post embeds. Open it from your Arivu host, then set your org and post slug.",
     "description": "Blog curl install description"
   },
   "addonsBlogDemosTitle": {

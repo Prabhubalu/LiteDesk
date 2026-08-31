@@ -105,7 +105,7 @@
 
 ## Local dual-machine debug (same LAN)
 
-Engineering / pilot prep — point the Windows agent at a **local** LiteDesk API without deploying to production.
+Engineering / pilot prep — point the Windows agent at a **local** Arivu API without deploying to production.
 
 1. Mac: run server on port 5000; note LAN IP (`ipconfig getifaddr en0`).
 2. Windows: set `apiBase` to `http://<MAC_IP>:5000` in `%LOCALAPPDATA%\Arivu\Connector\config.json` (clear prod token; re-pair with local Center code).

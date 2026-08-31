@@ -2,7 +2,7 @@
 
 /**
  * Typed AMDS HTTP error — use instanceof checks on outbound send and proxy routes.
- * @see docs/LITEDESK-TRACK-3-DRAFT.md
+ * @see docs/ARIVU-TRACK-3-DRAFT.md
  */
 
 class AmdsApiError extends Error {

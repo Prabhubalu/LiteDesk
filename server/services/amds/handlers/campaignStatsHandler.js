@@ -1,6 +1,6 @@
 'use strict';
 
-const mongoose = require('mongoose');
+const { readMetadata } = require('../../../utils/arivuMetadata');
 const Campaign = require('../../../models/Campaign');
 const CampaignRecipient = require('../../../models/CampaignRecipient');
 const Communication = require('../../../models/Communication');
@@ -20,7 +20,7 @@ function isMarketingModule(moduleKey) {
 function resolveCampaignIdFromEvent(event) {
   const id =
     event.metadata?.campaign_external_id
-    || event.metadata?.litedesk_entity_id
+    || readMetadata(event.metadata, 'entity_id')
     || null;
   return id ? String(id).trim() : null;
 }

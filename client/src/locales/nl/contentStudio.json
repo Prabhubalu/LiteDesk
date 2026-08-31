@@ -2060,7 +2060,7 @@
     "description": "Error when headless help section demo fails"
   },
   "headlessExampleSiteDemoBanner": {
-    "message": "Demo customer site — help content powered by LiteDesk headless embed",
+    "message": "Demo customer site — help content powered by Arivu headless embed",
     "description": "Banner on headless example pages indicating this is a demo site"
   },
   "headlessExampleSiteBrand": {
@@ -2728,7 +2728,7 @@
     "description": "Headless public key / org field on blog demo setup"
   },
   "headlessExampleSiteDemoBannerBlog": {
-    "message": "Demo customer site — blog content powered by LiteDesk headless embed",
+    "message": "Demo customer site — blog content powered by Arivu headless embed",
     "description": "Banner on headless blog example pages"
   },
   "headlessExampleSiteNavBlog": {

@@ -250,7 +250,7 @@ async function deliverSubmissionWebhook({ webform, submission, crmOutcome }) {
   const body = JSON.stringify(payload);
   const headers = { 'Content-Type': 'application/json' };
   if (webhook.secret) {
-    headers['X-LiteDesk-Signature'] = crypto
+    headers['X-Arivu-Signature'] = crypto
       .createHmac('sha256', String(webhook.secret))
       .update(body)
       .digest('hex');

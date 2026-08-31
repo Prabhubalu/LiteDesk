@@ -70,7 +70,7 @@
 
 ## 3. Persona defaults
 
-Aligned with existing LiteDesk role patterns (`canViewAllData`, platform-admin modules).
+Aligned with existing Arivu role patterns (`canViewAllData`, platform-admin modules).
 
 ### Tenant Admin / Owner
 

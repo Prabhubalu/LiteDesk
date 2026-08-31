@@ -58,7 +58,7 @@ Generated outputs are **delivered to** Documents Module or domain modules; the p
 
 ---
 
-## 2. Current state (LiteDesk / Arivu)
+## 2. Current state (Arivu / Arivu)
 
 ### 2.1 Fragmented document generation
 

@@ -32,7 +32,7 @@
 
 ## 1. Executive summary
 
-This specification extends the LiteDesk **Email Template Builder** (GrapesJS-based `TemplateBuilderPage`, `CreateTemplateDrawer`) to support:
+This specification extends the Arivu **Email Template Builder** (GrapesJS-based `TemplateBuilderPage`, `CreateTemplateDrawer`) to support:
 
 - **HTML import** via a guided wizard (paste or upload)
 - **Merge tag detection and mapping** from popular ESP/CRM platforms
@@ -75,7 +75,7 @@ The **visual editor remains the primary editing experience**. HTML editing is an
 | Merge tokens | `{{field.path}}` syntax via `mergeTokens.ts` |
 | Output format | `outputFormat: 'email'` on ContentTemplate |
 
-GrapesJS default import/export commands (`gjs-open-import-webpage`, `export-template`) are stripped in headless mode — this spec replaces them with LiteDesk-native UX.
+GrapesJS default import/export commands (`gjs-open-import-webpage`, `export-template`) are stripped in headless mode — this spec replaces them with Arivu-native UX.
 
 ---
 
@@ -139,7 +139,7 @@ flowchart TD
 ### Journey A — Marketing manager (non-technical)
 
 **Persona:** Marketing manager migrating from Mailchimp  
-**Goal:** Reuse an existing newsletter in LiteDesk without writing code
+**Goal:** Reuse an existing newsletter in Arivu without writing code
 
 1. Templates → **New template** → selects **Email** format.
 2. Chooses **Import HTML** (card with code icon + “Paste or upload existing email HTML”).
@@ -161,7 +161,7 @@ flowchart TD
 
 1. Creates email template → **Import HTML** → uploads `.html` file.
 2. Reviews analysis report including unsupported CSS list.
-3. Skips merge mapping (will add LiteDesk `{{contact.firstName}}` syntax manually).
+3. Skips merge mapping (will add Arivu `{{contact.firstName}}` syntax manually).
 4. Opens **Advanced → Edit HTML** → accepts irreversibility warning.
 5. Edits in Monaco (dark mode, search/replace).
 6. **Validate** → fixes missing table widths via suggestions panel.
@@ -188,7 +188,7 @@ flowchart TD
 
 ### Journey D — First-time user (empty state)
 
-**Persona:** New LiteDesk user with no templates  
+**Persona:** New Arivu user with no templates  
 **Goal:** Understand creation options
 
 1. Empty templates list shows **Create your first email template** with three cards: Blank, Gallery, Import HTML.
@@ -200,7 +200,7 @@ flowchart TD
 
 ## 4. Screen designs
 
-Design language aligns with LiteDesk: indigo primary (`indigo-600`), neutral surfaces, HeadlessUI dialogs/drawers, dark mode parity, 600px email canvas.
+Design language aligns with Arivu: indigo primary (`indigo-600`), neutral surfaces, HeadlessUI dialogs/drawers, dark mode parity, 600px email canvas.
 
 ### 4.1 Creation entry — Email format selected
 
@@ -279,7 +279,7 @@ When `outputFormat === 'email'`, replace the flat gallery grid with **three equa
 │                                                             │
 │  MERGE TAG MAPPING (4 detected)                             │
 │  ┌──────────────────┬──────────────────────────────────┐   │
-│  │ Detected         │ Map to LiteDesk field            │   │
+│  │ Detected         │ Map to Arivu field            │   │
 │  ├──────────────────┼──────────────────────────────────┤   │
 │  │ {{FirstName}}    │ [Contact ▾] → [First Name ▾]     │   │
 │  │ *|FNAME|*        │ [Contact ▾] → [First Name ▾]     │   │
@@ -359,7 +359,7 @@ Export HTML
 ○ Copy to clipboard
 ○ Download ZIP (HTML + assets/)
 
-☐ Include LiteDesk merge tag syntax in export
+☐ Include Arivu merge tag syntax in export
 
 [Cancel]  [Export]
 ```
@@ -556,7 +556,7 @@ HeadlessUI `Dialog`. Stores dismiss preference in user preferences (`emailHtmlWa
 |----------|-----------------|-----|
 | Templates list (no email templates) | “No email templates yet” | Three start cards |
 | Import paste tab (no content) | “Paste your HTML email here or upload a file” | Illustration + upload zone |
-| Merge mapping (none detected) | “No merge tags detected. Add LiteDesk fields from the Variables panel later.” | Continue enabled |
+| Merge mapping (none detected) | “No merge tags detected. Add Arivu fields from the Variables panel later.” | Continue enabled |
 | Validation (clean) | “No issues found. This template follows email best practices.” | Green check state |
 | Gallery (email format) | Existing gallery items + “Or import your own HTML” link | Opens import wizard |
 
@@ -602,7 +602,7 @@ Use existing `useNotifications()` toast pattern. i18n keys under `templates.html
 
 | Platform | Pattern (conceptual) | Notes |
 |----------|---------------------|-------|
-| LiteDesk / Handlebars | `\{\{\s*[\w.]+?\s*\}\}` | Native syntax |
+| Arivu / Handlebars | `\{\{\s*[\w.]+?\s*\}\}` | Native syntax |
 | Mailchimp | `\*\|[A-Z0-9_]+\|\*` | Common in legacy templates |
 | HubSpot | `\{%[\s\S]*?%\}` | Logic blocks warn — not supported in v1 |
 | Salesforce | `\{\![\s\S]*?\!\}` / `%FIELD%` | Percent-wrapped fields |
@@ -842,7 +842,7 @@ server/routes/
 
 | Layer | Coverage |
 |-------|----------|
-| Unit | Merge tag regex fixtures (Mailchimp, HubSpot, LiteDesk, Salesforce) |
+| Unit | Merge tag regex fixtures (Mailchimp, HubSpot, Arivu, Salesforce) |
 | Unit | Sanitizer removes script, iframe, form, event handlers |
 | Integration | Import HTML → create template → rendered HTML contains mapped merge tags |
 | Snapshot | Known newsletter HTML → expected Grapes definition structure |
@@ -879,7 +879,7 @@ server/routes/
 ### AC-5: Merge tag mapping
 
 - [ ] Detects `{{}}`, `*|*|`, `%FIELD%`, `[[]]` patterns.
-- [ ] Each detected tag mappable to LiteDesk merge field via module scope schema.
+- [ ] Each detected tag mappable to Arivu merge field via module scope schema.
 - [ ] User can skip individual tags.
 - [ ] Mapped tags replaced in HTML before Grapes conversion.
 
@@ -937,7 +937,7 @@ server/routes/
 
 ## 16. Competitive parity reference
 
-| Capability | HubSpot | Mailchimp | BeeFree | LiteDesk (this spec) |
+| Capability | HubSpot | Mailchimp | BeeFree | Arivu (this spec) |
 |------------|---------|-----------|---------|----------------------|
 | Visual builder primary | ✓ | ✓ | ✓ | ✓ GrapesJS |
 | Import HTML | ✓ | ✓ | ✓ | ✓ Wizard |

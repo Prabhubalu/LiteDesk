@@ -1,5 +1,5 @@
 {
-  "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
+  "connectInboxWizardArivuUsesAReadOnlyGmail": {
     "message": "Arivu utilise une portée Gmail en lecture seule pour importer les messages auxquels vous avez déjà accès.",
     "description": "Auto-migrated from connectInboxWizard"
   },
@@ -39,7 +39,7 @@
     "message": "Vous pouvez envoyer depuis le CRM une fois votre boîte mail liée.",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskImportsMailUsingARead": {
+  "connectMailboxModalArivuImportsMailUsingARead": {
     "message": "Arivu importe le courrier en utilisant une étendue Gmail en lecture seule (dossiers que vous choisissez).",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -83,7 +83,7 @@
     "message": "boîte aux lettres personnelle",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskCreatesAPrivate": {
+  "connectMailboxModalArivuCreatesAPrivate": {
     "message": "Arivu crée un compte privé",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -167,7 +167,7 @@
     "message": "Chargement de dossiers depuis Gmail…",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
-  "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
+  "gmailMailboxFolderModalChooseWhichGmailLabelsArivuImports": {
     "message": "Choisissez les étiquettes Gmail que Arivu importe. La synchronisation s'exécute selon un calendrier et lorsque vous utilisez Sync maintenant.",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
@@ -247,7 +247,7 @@
     "message": "Connectez votre boîte de réception professionnelle pour envoyer, recevoir et gérer des e-mails avec vos enregistrements CRM.",
     "description": "Auto-migrated from inboxGetStarted"
   },
-  "inboxGetStartedGetStartedWithLitedesk": {
+  "inboxGetStartedGetStartedWithArivu": {
     "message": "Commencez avec Arivu",
     "description": "Auto-migrated from inboxGetStarted"
   },
@@ -571,7 +571,7 @@
     "message": "Sélectionnez votre fournisseur de messagerie",
     "description": "Auto-migrated from inboxSurface"
   },
-  "inboxSurfaceConnectYourInboxToLitedesk": {
+  "inboxSurfaceConnectYourInboxToArivu": {
     "message": "Connectez votre boîte de réception à Arivu",
     "description": "Auto-migrated from inboxSurface"
   },

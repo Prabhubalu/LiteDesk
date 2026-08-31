@@ -19,7 +19,7 @@
 
 ## 1. Executive summary
 
-The **Payments** module is LiteDesk's **cash authority layer**: it records money received from (or returned to) customers and applies it to open receivables **without mutating commercial snapshots**.
+The **Payments** module is Arivu's **cash authority layer**: it records money received from (or returned to) customers and applies it to open receivables **without mutating commercial snapshots**.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐

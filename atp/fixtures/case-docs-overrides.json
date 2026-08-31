@@ -19,7 +19,7 @@
     "onFailure": {
       "typicalError": "401 Invalid credentials",
       "likelyCauses": ["Wrong password", "User disabled", "SUT auth misconfigured"],
-      "remediation": ["Set ATP_PERSONA_OWNER_EMAIL/PASSWORD in atp/.env", "Confirm user exists in LiteDesk tenant"]
+      "remediation": ["Set ATP_PERSONA_OWNER_EMAIL/PASSWORD in atp/.env", "Confirm user exists in Arivu tenant"]
     }
   }
 }

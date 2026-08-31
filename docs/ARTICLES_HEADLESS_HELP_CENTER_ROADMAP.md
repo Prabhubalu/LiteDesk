@@ -3,7 +3,7 @@
 **Status:** Approved for implementation  
 **Date:** 2026-07-07  
 **Owner:** Platform / Content Studio  
-**Scope:** Customer-site `/help` UX (categories, sections, sidebars) — **not** LiteDesk-hosted pages  
+**Scope:** Customer-site `/help` UX (categories, sections, sidebars) — **not** Arivu-hosted pages  
 **Parent:** [ARTICLES_HEADLESS_ROADMAP.md](./ARTICLES_HEADLESS_ROADMAP.md) (v1 complete) · [HEADLESS_CONTENT_ROADMAP.md](./HEADLESS_CONTENT_ROADMAP.md)
 
 ---
@@ -17,13 +17,13 @@ A tenant publishes **public** articles in Content Studio. Their website (`xyz.co
 - **Article** pages with block content, breadcrumbs, and sidebar widgets
 - **Search** across published public articles
 
-LiteDesk delivers **JSON + neutral embed scripts**. The customer owns layout, CSS, and routing.
+Arivu delivers **JSON + neutral embed scripts**. The customer owns layout, CSS, and routing.
 
 **Reference UX:** [Zoho CRM KB](https://help.zoho.com/portal/en/kb/crm/getting-started/articles/welcome-to-zoho-crm) — hierarchical collections, section tree, popular/recent sidebars, in-article anchors.
 
 **Hard rules (unchanged from headless v1)**
 
-1. No LiteDesk-hosted `/help` pages, custom domains, or iframe shell.
+1. No Arivu-hosted `/help` pages, custom domains, or iframe shell.
 2. Public API returns JSON only — no `bodyHtml`, no `appearance`.
 3. Reuse `ContentCollection`, `ContentDocument`, `publicContentService` — no parallel CMS.
 4. Gates: Articles addon · `headlessApiEnabled` · `status: published` · `visibility: public`.
@@ -32,7 +32,7 @@ LiteDesk delivers **JSON + neutral embed scripts**. The customer owns layout, CS
 
 ## 2. Customer URL model (recommended)
 
-Customer implements routes; LiteDesk embeds/API accept slugs via `data-*` attrs or query params.
+Customer implements routes; Arivu embeds/API accept slugs via `data-*` attrs or query params.
 
 **Nested collections (Zoho-style)**
 
@@ -144,7 +144,7 @@ Article anchors: `.../{articleSlug}#{headingAnchorId}` (already supported in blo
 | CSS: `.ld-help-home`, `.ld-help-home__card`, stats line | `headless-blocks.css` |
 | Attrs: `data-org`, `data-target`, `data-api-origin`, `data-link-prefix="/help/"` | embed script |
 | Global search → redirect or inline filter (v1: form submits to `/help/search?q=` or customer hook) | embed |
-| `window.LiteDeskHeadlessHelpHome.mount()` | embed API |
+| `window.ArivuHeadlessHelpHome.mount()` | embed API |
 | Example page | `HeadlessHelpHomeExample.vue`, route `/examples/headless-help-home` |
 | Settings snippet | `ArticlesAddonSettings.vue` |
 | i18n (en + sync-keys) | `en/settings.json`, `en/contentStudio.json` |
@@ -295,7 +295,7 @@ All under `/api/public/v1/content/:orgSlug` (legacy alias `/api/public/content/.
 
 ## 8. Out of scope
 
-- LiteDesk-hosted help center pages or custom domains
+- Arivu-hosted help center pages or custom domains
 - Portal features on public site (follow/subscribe, Add Request, Add Topic)
 - Full-text search engine / Algolia (use existing Mongo `$regex` / `searchText` until CS-4)
 - Blog collections on `/help` (Blog addon separate track)
@@ -334,7 +334,7 @@ HC-H1 (collections API + collection filter)
 - [ ] Search works from KB home
 - [ ] Settings snippets for all embed types
 - [ ] Server + embed tests green
-- [ ] No hosted LiteDesk pages introduced
+- [ ] No hosted Arivu pages introduced
 
 ---
 

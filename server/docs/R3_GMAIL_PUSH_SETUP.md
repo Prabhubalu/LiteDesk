@@ -6,14 +6,14 @@ Realtime inbox uses **SSE** after sync. Pub/Sub triggers sync when Gmail receive
 
 1. Google Cloud project with **Gmail API** enabled (same app as OAuth).
 2. **Pub/Sub API** enabled.
-3. Pub/Sub topic, e.g. `projects/YOUR_PROJECT/topics/litedesk-gmail-inbox`.
+3. Pub/Sub topic, e.g. `projects/YOUR_PROJECT/topics/arivu-gmail-inbox`.
 
 ## Google Cloud
 
-1. Create topic `litedesk-gmail-inbox`.
+1. Create topic `arivu-gmail-inbox`.
 2. Grant Gmail publish rights on the topic:
    ```bash
-   gcloud pubsub topics add-iam-policy-binding litedesk-gmail-inbox \
+   gcloud pubsub topics add-iam-policy-binding arivu-gmail-inbox \
      --member=serviceAccount:gmail-api-push@system.gserviceaccount.com \
      --role=roles/pubsub.publisher
    ```
@@ -21,11 +21,11 @@ Realtime inbox uses **SSE** after sync. Pub/Sub triggers sync when Gmail receive
    - URL: `https://YOUR_API_HOST/api/webhooks/email/gmail/push`
    - Optional: set custom header `Authorization: Bearer <GMAIL_PUSH_WEBHOOK_SECRET>`.
 
-## LiteDesk `.env`
+## Arivu `.env`
 
 ```bash
 ENABLE_GMAIL_PUSH=true
-GMAIL_PUBSUB_TOPIC=projects/YOUR_PROJECT/topics/litedesk-gmail-inbox
+GMAIL_PUBSUB_TOPIC=projects/YOUR_PROJECT/topics/arivu-gmail-inbox
 # Optional shared secret (match Pub/Sub push auth header)
 GMAIL_PUSH_WEBHOOK_SECRET=your-long-random-secret
 # Optional verification token for subscription setup GET

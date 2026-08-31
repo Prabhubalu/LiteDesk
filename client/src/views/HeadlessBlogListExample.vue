@@ -76,7 +76,7 @@ function loadEmbedAssets() {
 }
 
 function loadEmbedListScript() {
-  if (window.LiteDeskHeadlessBlogList) return Promise.resolve();
+  if (window.ArivuHeadlessBlogList) return Promise.resolve();
   if (document.querySelector('script[data-ld-headless-blog-list-js]')) {
     return new Promise((resolve) => {
       const existing = document.querySelector('script[data-ld-headless-blog-list-js]');
@@ -111,7 +111,7 @@ async function loadList() {
     await loadEmbedListScript();
     await nextTick();
     const apiOrigin = getApiOrigin() || window.location.origin;
-    await window.LiteDeskHeadlessBlogList.mount({
+    await window.ArivuHeadlessBlogList.mount({
       org: orgSlug.value,
       target: '#ld-blog-list-example',
       apiOrigin,

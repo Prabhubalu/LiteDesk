@@ -46,7 +46,7 @@ export function dispatchImportListRefresh(record = {}) {
   }
 
   if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent('litedesk:import-complete', {
+  window.dispatchEvent(new CustomEvent('arivu:import-complete', {
     detail: {
       module: record.module || '',
       status: record.status || '',

@@ -1,6 +1,6 @@
 # Enterprise CRM Email Architecture
 
-This document describes how LiteDesk implements the enterprise-grade CRM email reply handling architecture: shared and personal mailbox sync, multi-tenant data isolation, centralized reply routing, and phased delivery.
+This document describes how Arivu implements the enterprise-grade CRM email reply handling architecture: shared and personal mailbox sync, multi-tenant data isolation, centralized reply routing, and phased delivery.
 
 **Related:** [CRM_EMAIL_BLUEPRINT_ROADMAP.md](./CRM_EMAIL_BLUEPRINT_ROADMAP.md) · [R3_GMAIL_PUSH_SETUP.md](./R3_GMAIL_PUSH_SETUP.md) · [IN_PRODUCT_EMAIL_PLAN.md](../../docs/IN_PRODUCT_EMAIL_PLAN.md)
 
@@ -15,7 +15,7 @@ flowchart LR
     MG[Microsoft Graph - Phase 2]
   end
 
-  subgraph backend [LiteDesk backend - OCI]
+  subgraph backend [Arivu backend - OCI]
     SW[Sync workers - Bull/BullMQ]
     IP[Inbound processor]
     OB[Outbound send service]
@@ -139,7 +139,7 @@ Configure in Google Admin:
 
 1. **Catch-all:** `*@reply.arivusystems.com` → `inbox@reply.arivusystems.com`
 2. **Routing inbox:** `inbox@reply.arivusystems.com` receives all CRM replies.
-3. **Inbound to LiteDesk:** MIME webhook or Gmail sync of the routing inbox → `inboundDispatcher`.
+3. **Inbound to Arivu:** MIME webhook or Gmail sync of the routing inbox → `inboundDispatcher`.
 
 ### Token formats
 
@@ -290,7 +290,7 @@ Realtime: `inboxSSEHub` emits on new/updated communications (Socket.IO optional 
 
 1. Set `EMAIL_REPLY_TOKEN_SECRET`, `CRM_REPLY_DOMAIN=reply.arivusystems.com`
 2. Configure Google Workspace catch-all → `inbox@reply.arivusystems.com`
-3. Point inbound webhook or sync mailbox at LiteDesk inbound endpoint
+3. Point inbound webhook or sync mailbox at Arivu inbound endpoint
 4. Enable Gmail push per [R3_GMAIL_PUSH_SETUP.md](./R3_GMAIL_PUSH_SETUP.md)
 5. Set `EMAIL_INBOUND_REQUIRE_REPLY_TOKEN=true` for production catch-all
 6. Publish SPF/DKIM/DMARC for reply and sending domains

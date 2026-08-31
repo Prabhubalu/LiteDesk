@@ -162,7 +162,7 @@
     closeImageLightbox: closeImageLightbox,
   };
 
-  global.LiteDeskHeadlessBlocks = api;
+  global.ArivuHeadlessBlocks = api;
   global.ArivuHeadlessBlocks = api;
 
   if (typeof document !== 'undefined') {

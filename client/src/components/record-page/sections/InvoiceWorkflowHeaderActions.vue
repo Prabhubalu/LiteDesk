@@ -222,7 +222,7 @@ const workflowActions = computed(() => {
       className: 'border border-amber-300 text-amber-800 dark:text-amber-300',
       handler: () => {
         window.dispatchEvent(
-          new CustomEvent('litedesk:invoice-open-credit-note', {
+          new CustomEvent('arivu:invoice-open-credit-note', {
             detail: { invoiceMongoId: props.record?._id }
           })
         );

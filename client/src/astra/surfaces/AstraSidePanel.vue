@@ -471,6 +471,7 @@ import type { AstraUiBlock } from '@/astra/blocks/types';
 import { resolveAstraNbaIcon } from '@/astra/utils/resolveAstraNbaIcon';
 import { isEmailSendProposal, openEmailComposeFromAstra } from '@/astra/utils/openEmailCompose';
 import { resolvePageAiContext } from '@/utils/resolvePageAiContext';
+import { legacyStorageKey } from '@/utils/legacyBrandSlug';
 import {
   getPersistedRecordTabName,
   isGenericRecordTabTitleKey,
@@ -495,8 +496,14 @@ interface PanelMessage {
   navigateLabel?: string;
 }
 
-const PANEL_UI_STORAGE_KEY = 'litedesk_astra_side_panel_open_v1';
-const PANEL_WIDTH_STORAGE_KEY = 'litedesk_arivu_assistant_panel_width_v1';
+const PANEL_UI_STORAGE_KEY = 'arivu_astra_side_panel_open_v1';
+const LEGACY_PANEL_UI_STORAGE_KEYS = [legacyStorageKey('astra_side_panel_open_v1')];
+const PANEL_WIDTH_STORAGE_KEY = 'arivu_assistant_panel_width_v1';
+const LEGACY_PANEL_WIDTH_STORAGE_KEYS = [
+  legacyStorageKey('arivu_assistant_panel_width_v1'),
+  'arivu_arivu_assistant_panel_width_v1',
+];
+const LEGACY_SUPPORT_PANEL_UI_KEY = legacyStorageKey('arivu_support_panel_ui_v1');
 const PANEL_WIDTH_MIN = 320;
 const PANEL_WIDTH_DEFAULT_RATIO = 0.3;
 const PANEL_WIDTH_MAX_RATIO = 0.3;
@@ -539,14 +546,25 @@ function astraIntroStorageKey() {
     ? String(authStore.organization._id)
     : (authStore.user?.organizationId ? String(authStore.user.organizationId) : '');
   if (!userId || !orgId) return null;
-  return `litedesk_astra_intro_seen_v1:${orgId}:${userId}`;
+  return `arivu_astra_intro_seen_v1:${orgId}:${userId}`;
+}
+
+function legacyAstraIntroStorageKey() {
+  const userId = authStore.user?._id ? String(authStore.user._id) : '';
+  const orgId = authStore.organization?._id
+    ? String(authStore.organization._id)
+    : (authStore.user?.organizationId ? String(authStore.user.organizationId) : '');
+  if (!userId || !orgId) return null;
+  return legacyStorageKey(`astra_intro_seen_v1:${orgId}:${userId}`);
 }
 
 function hasSeenAstraIntro() {
   const key = astraIntroStorageKey();
+  const legacyKey = legacyAstraIntroStorageKey();
   if (!key) return true;
   try {
-    return localStorage.getItem(key) === '1';
+    return localStorage.getItem(key) === '1'
+      || (legacyKey ? localStorage.getItem(legacyKey) === '1' : false);
   } catch {
     return true;
   }
@@ -816,7 +834,9 @@ function clampPanelWidth(px: number) {
 
 function loadStoredPanelWidth() {
   try {
-    const raw = localStorage.getItem(PANEL_WIDTH_STORAGE_KEY);
+    const raw =
+      localStorage.getItem(PANEL_WIDTH_STORAGE_KEY)
+      ?? LEGACY_PANEL_WIDTH_STORAGE_KEYS.map((k) => localStorage.getItem(k)).find(Boolean);
     const n = Number(raw);
     if (Number.isFinite(n) && n >= PANEL_WIDTH_MIN) {
       panelWidthPx.value = clampPanelWidth(n);
@@ -840,7 +860,16 @@ function persistPanelWidth() {
 
 function loadPanelOpen() {
   try {
-    return localStorage.getItem(PANEL_UI_STORAGE_KEY) === '1';
+    if (localStorage.getItem(PANEL_UI_STORAGE_KEY) === '1') return true;
+    for (const key of LEGACY_PANEL_UI_STORAGE_KEYS) {
+      if (localStorage.getItem(key) === '1') return true;
+    }
+    try {
+      const legacy = JSON.parse(localStorage.getItem(LEGACY_SUPPORT_PANEL_UI_KEY) || 'null');
+      return legacy?.open === true;
+    } catch {
+      return false;
+    }
   } catch {
     return false;
   }

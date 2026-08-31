@@ -37,7 +37,7 @@ async function probeExternalUrl(url) {
       method: 'HEAD',
       signal: controller.signal,
       redirect: 'follow',
-      headers: { 'User-Agent': 'LiteDesk-DocumentLinkChecker/1.0' }
+      headers: { 'User-Agent': 'Arivu-DocumentLinkChecker/1.0' }
     });
 
     if (response.status === 405 || response.status === 501) {
@@ -45,7 +45,7 @@ async function probeExternalUrl(url) {
         method: 'GET',
         signal: controller.signal,
         redirect: 'follow',
-        headers: { 'User-Agent': 'LiteDesk-DocumentLinkChecker/1.0' }
+        headers: { 'User-Agent': 'Arivu-DocumentLinkChecker/1.0' }
       });
     }
 

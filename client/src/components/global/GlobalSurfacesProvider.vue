@@ -209,7 +209,7 @@ const { state: onboardingState } = useOnboarding();
 function onMailboxConnected() {
   void refreshMailboxes();
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
+    window.dispatchEvent(new CustomEvent('arivu:mailbox-connected'));
   }
 }
 
@@ -224,7 +224,7 @@ function onSmtpWizardConnected(mailbox) {
   }
   smtpWizardOnConnected.value = null;
   if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('litedesk:mailbox-connected'));
+    window.dispatchEvent(new CustomEvent('arivu:mailbox-connected'));
   }
 }
 

@@ -68,8 +68,8 @@ import HeadlessExampleSiteLayout from '@/components/headlessExample/HeadlessExam
 
 declare global {
   interface Window {
-    LiteDeskHeadlessBlocks?: unknown;
-    LiteDeskHeadlessBlog?: {
+    ArivuHeadlessBlocks?: unknown;
+    ArivuHeadlessBlog?: {
       mount: (options: Record<string, unknown>) => Promise<void>;
     };
   }
@@ -121,7 +121,7 @@ function loadEmbedAssets(): Promise<void> {
   })();
 
   const jsReady = (() => {
-    if (window.LiteDeskHeadlessBlocks || document.querySelector('script[data-ld-headless-blocks-js]')) {
+    if (window.ArivuHeadlessBlocks || document.querySelector('script[data-ld-headless-blocks-js]')) {
       return Promise.resolve();
     }
     return new Promise<void>((resolve, reject) => {
@@ -139,7 +139,7 @@ function loadEmbedAssets(): Promise<void> {
 }
 
 function loadEmbedBlogScript(): Promise<void> {
-  if (window.LiteDeskHeadlessBlog) return Promise.resolve();
+  if (window.ArivuHeadlessBlog) return Promise.resolve();
   if (document.querySelector('script[data-ld-headless-blog-js]')) {
     return new Promise((resolve) => {
       const existing = document.querySelector('script[data-ld-headless-blog-js]');
@@ -176,7 +176,7 @@ async function loadPost() {
     await loadEmbedBlogScript();
     await nextTick();
     const apiOrigin = getApiOrigin() || window.location.origin;
-    await window.LiteDeskHeadlessBlog?.mount({
+    await window.ArivuHeadlessBlog?.mount({
       org: orgSlug.value,
       slug: postSlug.value,
       target: '#ld-blog-example',

@@ -7,7 +7,7 @@
  *
  * Prerequisites:
  *   - AMDS running (default http://localhost:8080)
- *   - LiteDesk API running (default http://localhost:3000)
+ *   - Arivu API running (default http://localhost:3000)
  *   - server/.env with MONGO_URI, AMDS_BASE_URL, AMDS_API_KEY
  *
  * Usage:
@@ -50,8 +50,8 @@ const DEFAULT_CREDITS = Number(process.env.AMDS_RESTORE_CREDITS) || 50_000;
 const RATE_LIMIT_RETRY_WAIT_MS = Number(process.env.AMDS_RATE_LIMIT_RETRY_WAIT_MS) || 65_000;
 const RATE_LIMIT_MAX_RETRIES = Number(process.env.AMDS_RATE_LIMIT_MAX_RETRIES) || 2;
 const AMDS_HEALTH_URL = String(process.env.AMDS_BASE_URL || 'http://localhost:8080').replace(/\/$/, '') + '/health';
-const LITEDESK_WEBHOOK_HEALTH = String(
-  process.env.LITEDESK_API_URL ||
+const ARIVU_WEBHOOK_HEALTH = String(
+  process.env.ARIVU_API_URL ||
     `http://127.0.0.1:${process.env.PORT || 3000}`
 ).replace(/\/$/, '') + '/api/internal/webhooks/amds/health';
 
@@ -113,17 +113,17 @@ async function assertServicesUp() {
   }
 
   try {
-    const wh = await axios.get(LITEDESK_WEBHOOK_HEALTH, { timeout: 5000, validateStatus: () => true });
+    const wh = await axios.get(ARIVU_WEBHOOK_HEALTH, { timeout: 5000, validateStatus: () => true });
     if (wh.status < 200 || wh.status >= 300) {
-      throw new Error(`LiteDesk webhook health returned HTTP ${wh.status}`);
+      throw new Error(`Arivu webhook health returned HTTP ${wh.status}`);
     }
     if (!wh.data?.configured) {
-      throw new Error('LiteDesk AMDS client not configured (check AMDS_BASE_URL / AMDS_API_KEY in server/.env)');
+      throw new Error('Arivu AMDS client not configured (check AMDS_BASE_URL / AMDS_API_KEY in server/.env)');
     }
-    log('health', `LiteDesk webhook OK (${LITEDESK_WEBHOOK_HEALTH})`);
+    log('health', `Arivu webhook OK (${ARIVU_WEBHOOK_HEALTH})`);
   } catch (err) {
     throw new Error(
-      `LiteDesk API is not reachable — start LiteDesk server first (${err.message || err})`
+      `Arivu API is not reachable — start Arivu server first (${err.message || err})`
     );
   }
 }

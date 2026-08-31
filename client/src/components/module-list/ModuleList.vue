@@ -405,15 +405,15 @@ function onBulkUpdateCompleteForList(event) {
 }
 
 onMounted(() => {
-  window.addEventListener('litedesk:import-complete', onImportCompleteForList);
-  window.addEventListener('litedesk:bulk-delete-complete', onBulkDeleteCompleteForList);
-  window.addEventListener('litedesk:bulk-update-complete', onBulkUpdateCompleteForList);
+  window.addEventListener('arivu:import-complete', onImportCompleteForList);
+  window.addEventListener('arivu:bulk-delete-complete', onBulkDeleteCompleteForList);
+  window.addEventListener('arivu:bulk-update-complete', onBulkUpdateCompleteForList);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('litedesk:import-complete', onImportCompleteForList);
-  window.removeEventListener('litedesk:bulk-delete-complete', onBulkDeleteCompleteForList);
-  window.removeEventListener('litedesk:bulk-update-complete', onBulkUpdateCompleteForList);
+  window.removeEventListener('arivu:import-complete', onImportCompleteForList);
+  window.removeEventListener('arivu:bulk-delete-complete', onBulkDeleteCompleteForList);
+  window.removeEventListener('arivu:bulk-update-complete', onBulkUpdateCompleteForList);
 });
 
 onDeactivated(() => {

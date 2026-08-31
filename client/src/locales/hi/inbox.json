@@ -1,5 +1,5 @@
 {
-  "connectInboxWizardLitedeskUsesAReadOnlyGmail": {
+  "connectInboxWizardArivuUsesAReadOnlyGmail": {
     "message": "लाइटडेस्क उन संदेशों को आयात करने के लिए रीड-ओनली जीमेल स्कोप का उपयोग करता है जिन तक आपकी पहुंच पहले से है।",
     "description": "Auto-migrated from connectInboxWizard"
   },
@@ -39,7 +39,7 @@
     "message": "एक बार आपका मेलबॉक्स लिंक हो जाने पर आप सीआरएम से भेज सकते हैं।",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskImportsMailUsingARead": {
+  "connectMailboxModalArivuImportsMailUsingARead": {
     "message": "लाइटडेस्क केवल पढ़ने योग्य जीमेल स्कोप (आपके द्वारा चुने गए फ़ोल्डर) का उपयोग करके मेल आयात करता है।",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -83,7 +83,7 @@
     "message": "व्यक्तिगत मेलबॉक्स",
     "description": "Auto-migrated from connectMailboxModal"
   },
-  "connectMailboxModalLitedeskCreatesAPrivate": {
+  "connectMailboxModalArivuCreatesAPrivate": {
     "message": "लाइटडेस्क एक प्राइवेट बनाता है",
     "description": "Auto-migrated from connectMailboxModal"
   },
@@ -167,7 +167,7 @@
     "message": "जीमेल से फ़ोल्डर्स लोड हो रहे हैं...",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
-  "gmailMailboxFolderModalChooseWhichGmailLabelsLitedeskImports": {
+  "gmailMailboxFolderModalChooseWhichGmailLabelsArivuImports": {
     "message": "चुनें कि कौन सा जीमेल लेबल लाइटडेस्क आयात करता है। सिंक एक शेड्यूल पर चलता है और जब आप अभी सिंक का उपयोग करते हैं।",
     "description": "Auto-migrated from gmailMailboxFolderModal"
   },
@@ -247,7 +247,7 @@
     "message": "अपने सीआरएम रिकॉर्ड के साथ ईमेल भेजने, प्राप्त करने और प्रबंधित करने के लिए अपने कार्य इनबॉक्स को कनेक्ट करें।",
     "description": "Auto-migrated from inboxGetStarted"
   },
-  "inboxGetStartedGetStartedWithLitedesk": {
+  "inboxGetStartedGetStartedWithArivu": {
     "message": "लाइटडेस्क से शुरुआत करें",
     "description": "Auto-migrated from inboxGetStarted"
   },
@@ -571,7 +571,7 @@
     "message": "अपना ईमेल प्रदाता चुनें",
     "description": "Auto-migrated from inboxSurface"
   },
-  "inboxSurfaceConnectYourInboxToLitedesk": {
+  "inboxSurfaceConnectYourInboxToArivu": {
     "message": "अपने इनबॉक्स को लाइटडेस्क से कनेक्ट करें",
     "description": "Auto-migrated from inboxSurface"
   },

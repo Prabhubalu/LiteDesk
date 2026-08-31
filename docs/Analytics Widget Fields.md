@@ -13,7 +13,7 @@ A **Widget** is a reusable visual component that renders data from a **Report**.
 | Field | Type | Required | Description |
 |--------|------|----------|-------------|
 | id | UUID | ✅ | System-generated unique identifier |
-| organizationId | UUID | ✅ | Tenant scope (LiteDesk: ObjectId) |
+| organizationId | UUID | ✅ | Tenant scope (Arivu: ObjectId) |
 | name | String | ✅ | Widget display name |
 | apiName | String | ✅ | Unique internal API identifier per org |
 | description | Text | | Widget description |

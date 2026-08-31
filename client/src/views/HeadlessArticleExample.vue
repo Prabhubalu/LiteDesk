@@ -71,7 +71,7 @@ function loadEmbedAssets() {
     document.head.appendChild(link);
   }
 
-  if (!window.LiteDeskHeadlessBlocks && !document.querySelector('script[data-ld-headless-blocks-js]')) {
+  if (!window.ArivuHeadlessBlocks && !document.querySelector('script[data-ld-headless-blocks-js]')) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = '/embed/headless-blocks.js';
@@ -86,7 +86,7 @@ function loadEmbedAssets() {
 }
 
 function loadEmbedArticleScript() {
-  if (window.LiteDeskHeadlessArticle) return Promise.resolve();
+  if (window.ArivuHeadlessArticle) return Promise.resolve();
   if (document.querySelector('script[data-ld-headless-article-js]')) {
     return new Promise((resolve) => {
       const existing = document.querySelector('script[data-ld-headless-article-js]');
@@ -119,7 +119,7 @@ async function loadArticle() {
     await loadEmbedArticleScript();
     const apiOrigin = getApiOrigin() || window.location.origin;
     const encodedOrg = encodeURIComponent(orgSlug.value);
-    await window.LiteDeskHeadlessArticle.mount({
+    await window.ArivuHeadlessArticle.mount({
       org: orgSlug.value,
       slug: articleSlug.value,
       target: '#ld-article-example',

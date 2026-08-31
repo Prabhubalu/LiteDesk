@@ -10,7 +10,7 @@
     <div class="relative z-[1] flex items-center px-6 py-12 sm:px-10 lg:row-start-1 lg:self-center lg:py-0 lg:pl-14 lg:pr-6 xl:pl-20">
       <div class="mx-auto w-full max-w-md text-center lg:mx-0 lg:max-w-[26rem] lg:text-left">
         <h1 class="text-balance text-[2.25rem] font-bold leading-[1.05] tracking-[-0.025em] text-[#111111] dark:text-white sm:text-[2.875rem] lg:text-[3.25rem] lg:leading-[1.02] lg:tracking-[-0.03em]">
-          {{ t('inbox.inboxGetStartedGetStartedWithLitedesk') }}
+          {{ t('inbox.inboxGetStartedGetStartedWithArivu') }}
         </h1>
         <p class="mx-auto mt-5 max-w-[24rem] text-[1.0625rem] font-normal leading-[1.65] text-[#6B6B6B] dark:text-gray-400 lg:mx-0 lg:mt-6 lg:text-[1.125rem] lg:leading-[1.7]">
           <template v-if="inboundParserMode">

@@ -56,7 +56,7 @@ function introStorageKey() {
     ? String(authStore.organization._id)
     : (authStore.user?.organizationId ? String(authStore.user.organizationId) : '');
   if (!userId || !orgId) return null;
-  return `litedesk_astra_intro_seen_v1:${orgId}:${userId}`;
+  return `arivu_astra_intro_seen_v1:${orgId}:${userId}`;
 }
 
 function syncInvitePulse() {

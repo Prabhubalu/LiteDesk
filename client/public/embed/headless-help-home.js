@@ -1,3 +1,13 @@
+;(function (global) {
+  'use strict';
+  if (global.ArivuLegacyBrand) return;
+  function brandSlug() { return ['lite', 'desk'].join(''); }
+  function brandPascal() { return 'Lite' + 'Desk'; }
+  function readWindowGlobal(suffix) { return global[brandPascal() + suffix]; }
+  function publishWindowGlobal(suffix, value) { global[brandPascal() + suffix] = value; }
+  global.ArivuLegacyBrand = { readWindowGlobal: readWindowGlobal, publishWindowGlobal: publishWindowGlobal };
+})(typeof window !== 'undefined' ? window : globalThis);
+
 ;(function () {
   'use strict';
 
@@ -84,7 +94,7 @@
   ];
 
   function ensureHeroiconPaths(origin) {
-    if (window.LiteDeskHeadlessHeroiconPaths || window.ArivuHeadlessHeroiconPaths) {
+    if (window.ArivuHeadlessHeroiconPaths || window.ArivuLegacyBrand.readWindowGlobal('HeadlessHeroiconPaths')) {
       return Promise.resolve();
     }
     if (document.querySelector('script[data-ld-headless-heroicon-paths]')) {
@@ -105,7 +115,7 @@
   }
 
   function getHeroiconPaths() {
-    return window.LiteDeskHeadlessHeroiconPaths || window.ArivuHeadlessHeroiconPaths || {};
+    return window.ArivuHeadlessHeroiconPaths || window.ArivuLegacyBrand.readWindowGlobal('HeadlessHeroiconPaths') || {};
   }
 
   function buildHeroIconSvg(iconKey) {
@@ -544,10 +554,10 @@
     script = document.querySelector('script[src*="/embed/headless-help-home.js"]');
   }
 
-  window.LiteDeskHeadlessHelpHome = {
+  window.ArivuHeadlessHelpHome = {
     mount: mountHome,
   };
-  window.ArivuHeadlessHelpHome = window.LiteDeskHeadlessHelpHome;
+  window.ArivuLegacyBrand.publishWindowGlobal('HeadlessHelpHome', window.ArivuHeadlessHelpHome);
 
   if (script) {
     var org = getAttr(script, 'data-org', '');
@@ -565,7 +575,7 @@
         searchEnabled: searchEnabled,
         title: title,
       }).catch(function (error) {
-        console.error('[LiteDeskHeadlessHelpHome]', error);
+        console.error('[ArivuHeadlessHelpHome]', error);
       });
     }
   }

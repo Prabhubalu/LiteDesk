@@ -987,6 +987,6 @@
     "M6 18 18 6M6 6l12 12"
   ]
 };
-  root.LiteDeskHeadlessHeroiconPaths = HEROICON_PATHS;
+  root.ArivuHeadlessHeroiconPaths = HEROICON_PATHS;
   root.ArivuHeadlessHeroiconPaths = HEROICON_PATHS;
 })(typeof window !== 'undefined' ? window : globalThis);

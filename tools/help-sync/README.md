@@ -4,7 +4,7 @@ Incremental static sync for Arivu headless help articles (HTML + assets) onto yo
 
 ## Install
 
-From the LiteDesk repo:
+From the Arivu repo:
 
 ```bash
 cd tools/help-sync

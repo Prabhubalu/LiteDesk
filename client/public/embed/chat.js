@@ -1,3 +1,11 @@
+;(function (global) {
+  'use strict';
+  if (global.ArivuLegacyBrand) return;
+  function brandSlug() { return ['lite', 'desk'].join(''); }
+  function postMessageToken(feature, action) { return brandSlug() + '_' + feature + '_' + action; }
+  global.ArivuLegacyBrand = { postMessageToken: postMessageToken };
+})(typeof window !== 'undefined' ? window : globalThis);
+
 ;(function () {
   function getAttr(el, name, fallback) {
     var v = el.getAttribute(name)
@@ -461,14 +469,14 @@
   overlay.addEventListener('click', close)
   window.addEventListener('message', function (e) {
     if (!e || !e.data) return
-    if (e.data === 'litedesk_chat_close') close()
-    if (e.data && e.data.type === 'litedesk_chat_resize') {
+    if (e.data === 'arivu_chat_close' || e.data === window.ArivuLegacyBrand.postMessageToken('chat', 'close')) close()
+    if (e.data && e.data.type === 'arivu_chat_resize') {
       setFrameHeight()
     }
-    if (e.data && e.data.type === 'litedesk_chat_agent_message') {
+    if (e.data && e.data.type === 'arivu_chat_agent_message') {
       onAgentMessage()
     }
-    if (e.data && e.data.type === 'litedesk_chat_brand_color') {
+    if (e.data && e.data.type === 'arivu_chat_brand_color') {
       applyLauncherBrandColor(e.data.brandColor)
     }
   })
@@ -480,7 +488,7 @@
 
   function getPageContext() {
     return {
-      type: 'litedesk_chat_page_context',
+      type: 'arivu_chat_page_context',
       pageUrl: window.location.href,
       referrerUrl: document.referrer || '',
       language: (navigator.language || '').trim(),

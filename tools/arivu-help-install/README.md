@@ -62,7 +62,7 @@ Then `cd help-center && npm install && vercel`.
 3. Arivu Articles → publish webhook → `https://yoursite.com/api/arivu-webhook`
 4. Deploy
 
-## Local (from LiteDesk repo)
+## Local (from Arivu repo)
 
 ```bash
 cd tools/arivu-help-install

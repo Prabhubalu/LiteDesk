@@ -1,9 +1,9 @@
 ;(function () {
   'use strict';
 
-  var common = window.LiteDeskHeadlessHelpCommon;
+  var common = window.ArivuLegacyBrand.headlessHelpCommon();
   if (!common) {
-    console.error('[LiteDeskHeadlessHelpCategory] headless-help-common.js must be loaded first');
+    console.error('[ArivuHeadlessHelpCategory] headless-help-common.js must be loaded first');
     return;
   }
 
@@ -146,10 +146,10 @@
     script = document.querySelector('script[src*="/embed/headless-help-category.js"]');
   }
 
-  window.LiteDeskHeadlessHelpCategory = {
+  window.ArivuHeadlessHelpCategory = {
     mount: mountCategory,
   };
-  window.ArivuHeadlessHelpCategory = window.LiteDeskHeadlessHelpCategory;
+  window.ArivuLegacyBrand.publishWindowGlobal('HeadlessHelpCategory', window.ArivuHeadlessHelpCategory);
 
   if (script) {
     var org = common.getAttr(script, 'data-org', '');
@@ -171,7 +171,7 @@
         homePrefix: homePrefix,
         articlePrefix: articlePrefix,
       }).catch(function (error) {
-        console.error('[LiteDeskHeadlessHelpCategory]', error);
+        console.error('[ArivuHeadlessHelpCategory]', error);
       });
     }
   }

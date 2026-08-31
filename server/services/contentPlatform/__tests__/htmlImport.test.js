@@ -21,7 +21,7 @@ describe('mergeTagDetector', () => {
     assert.ok(raws.includes('[[firstname]]'));
   });
 
-  it('applies merge mappings to LiteDesk tokens', () => {
+  it('applies merge mappings to Arivu tokens', () => {
     const html = '<p>Hi {{FirstName}}</p>';
     const mapped = applyMergeTagMappings(html, {
       '{{FirstName}}': { path: 'People.firstName' }

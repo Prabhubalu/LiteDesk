@@ -1,6 +1,6 @@
-# LiteDesk internationalization — summary
+# Arivu internationalization — summary
 
-This document describes what was implemented for platform-wide localization in LiteDesk: infrastructure, migration approach, runtime behavior, and the surfaces that were brought under translation control.
+This document describes what was implemented for platform-wide localization in Arivu: infrastructure, migration approach, runtime behavior, and the surfaces that were brought under translation control.
 
 For day-to-day development, see [I18N_DEVELOPER_GUIDE.md](./I18N_DEVELOPER_GUIDE.md). For key rules and ICU syntax, see [I18N_GUIDELINES.md](./I18N_GUIDELINES.md). For phase-by-phase migration history, see [I18N_ROLLOUT.md](./I18N_ROLLOUT.md).
 

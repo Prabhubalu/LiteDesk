@@ -134,7 +134,7 @@
     var origin = config.apiOrigin;
     return loadScript(origin, '/embed/headless-blog-list.js', 'data-arivu-headless-blog-list-js')
       .then(function () {
-        var api = resolveMountFn('ArivuHeadlessBlogList', 'LiteDeskHeadlessBlogList');
+        var api = resolveMountFn('ArivuHeadlessBlogList', 'ArivuHeadlessBlogList');
         if (!api || !api.mount) throw new Error('Blog list script failed to load');
         return api.mount({
           org: config.org,
@@ -152,7 +152,7 @@
     var linkPrefix = config.pathPrefix;
     return loadScript(origin, '/embed/headless-blog-post.js', 'data-arivu-headless-blog-post-js')
       .then(function () {
-        var api = resolveMountFn('ArivuHeadlessBlogPost', 'LiteDeskHeadlessBlogPost');
+        var api = resolveMountFn('ArivuHeadlessBlogPost', 'ArivuHeadlessBlogPost');
         if (!api || !api.mount) throw new Error('Blog post script failed to load');
         return api.mount({
           org: config.org,
@@ -272,7 +272,7 @@
   };
 
   window.ArivuHeadlessBlog = api;
-  window.LiteDeskHeadlessBlog = api;
+  window.ArivuHeadlessBlog = api;
 
   if (script && getAttr(script, 'data-org', '')) {
     autoMount(script);

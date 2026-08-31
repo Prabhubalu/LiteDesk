@@ -15,7 +15,7 @@ Operator guide for blueprint **Phase R0**: central reply routing, system vs CRM 
 | Reply routing | `reply.<domain>` | `reply.arivusystems.com` |
 | System outbound | `mail.<domain>` | `mail.arivusystems.com` |
 
-LiteDesk Reply-To tokens use local part **`replies+{payload}.{signature}`** (also accepts blueprint alias **`reply+`** on inbound decode).
+Arivu Reply-To tokens use local part **`replies+{payload}.{signature}`** (also accepts blueprint alias **`reply+`** on inbound decode).
 
 ---
 
@@ -25,7 +25,7 @@ LiteDesk Reply-To tokens use local part **`replies+{payload}.{signature}`** (als
 
 1. Create mailbox **`inbox@reply.<domain>`** (humans never use it for reading mail).
 2. Enable **catch-all** (or routing rules) so any `reply+*@reply.<domain>` and `replies+*@reply.<domain>` delivers to that mailbox.
-3. Forward or relay raw MIME to LiteDesk:
+3. Forward or relay raw MIME to Arivu:
    - **Option A:** Workspace → Apps Script / relay → `POST https://api.<domain>/api/webhooks/email/inbound`
    - **Option B:** SES receiving → SNS → Lambda → webhook (see `docs/PHASE2_INBOUND_SETUP.md`)
    - **Option C:** Third-party inbound parser that POSTs raw MIME

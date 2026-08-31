@@ -1,6 +1,4 @@
-'use strict';
-
-const mongoose = require('mongoose');
+const { readMetadata } = require('../../utils/arivuMetadata');
 const Case = require('../../models/Case');
 const Communication = require('../../models/Communication');
 const { mapCommunicationDeliveryFields } = require('../amds/deliveryFields');
@@ -42,9 +40,9 @@ function deliveryFieldsFromEvent(event) {
  * @param {import('../amds/amds-types').AmdsWebhookEvent} event
  */
 async function updateCaseActivityFromAmdsWebhook(event) {
-  const organizationId = event.metadata?.litedesk_org_id || event.tenant_id || null;
+  const organizationId = readMetadata(event.metadata, 'org_id') || event.tenant_id || null;
   const communicationId = resolveCommunicationId(event);
-  let caseId = event.metadata?.litedesk_case_id || null;
+  let caseId = readMetadata(event.metadata, 'case_id');
 
   if (!organizationId || !communicationId) return;
 

@@ -248,7 +248,7 @@
     if (parsed.depth === 0) {
       return loadScript(origin, '/embed/headless-help-home.js', 'data-arivu-headless-help-home-js')
         .then(function () {
-          var api = resolveMountFn('ArivuHeadlessHelpHome', 'LiteDeskHeadlessHelpHome');
+          var api = resolveMountFn('ArivuHeadlessHelpHome', 'ArivuHeadlessHelpHome');
           if (!api) throw new Error('Help home script failed to load');
           return api.mount({
             org: org,
@@ -267,7 +267,7 @@
           return loadScript(origin, '/embed/headless-help-category.js', 'data-arivu-headless-help-category-js');
         })
         .then(function () {
-          var api = resolveMountFn('ArivuHeadlessHelpCategory', 'LiteDeskHeadlessHelpCategory');
+          var api = resolveMountFn('ArivuHeadlessHelpCategory', 'ArivuHeadlessHelpCategory');
           if (!api) throw new Error('Help category script failed to load');
           return api.mount({
             org: org,
@@ -285,7 +285,7 @@
     function mountArticle(articleSlug, collectionSlug, sectionSlug) {
       return loadScript(origin, '/embed/headless-article.js', 'data-arivu-headless-article-js')
         .then(function () {
-          var api = resolveMountFn('ArivuHeadlessHelpArticle', 'LiteDeskHeadlessArticle');
+          var api = resolveMountFn('ArivuHeadlessHelpArticle', 'ArivuHeadlessArticle');
           if (!api) throw new Error('Help article script failed to load');
           return api.mount({
             org: org,
@@ -318,7 +318,7 @@
           return loadScript(origin, '/embed/headless-help-section.js', 'data-arivu-headless-help-section-js');
         })
         .then(function () {
-          var api = resolveMountFn('ArivuHeadlessHelpSection', 'LiteDeskHeadlessHelpSection');
+          var api = resolveMountFn('ArivuHeadlessHelpSection', 'ArivuHeadlessHelpSection');
           if (!api) throw new Error('Help section script failed to load');
           return api.mount({
             org: org,
@@ -415,7 +415,7 @@
   };
 
   window.ArivuHeadlessHelp = api;
-  window.LiteDeskHeadlessHelp = api;
+  window.ArivuHeadlessHelp = api;
 
   if (script && getAttr(script, 'data-org', '')) {
     autoMount(script);

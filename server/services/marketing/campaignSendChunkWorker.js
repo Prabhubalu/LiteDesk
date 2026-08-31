@@ -8,6 +8,7 @@ const Organization = require('../../models/Organization');
 const { getAmdsClient, isAmdsEnvConfigured } = require('../../config/amds');
 const { AmdsApiError } = require('../amds/amds-errors');
 const { runWithOrganizationTenantContext } = require('../../utils/runWithOrganizationTenant');
+const { buildIdempotencyKey } = require('../../utils/arivuMetadata');
 const { getOrgEmailPolicy, refreshOrgEmailThroughput } = require('../orgEmailPolicyService');
 const { computeCampaignSubmitPacing } = require('./campaignSubmitPacing');
 const { filterSubscribedRecipientsBulk } = require('./marketingSubscriptionService');
@@ -92,7 +93,7 @@ async function upsertCampaignRecipientSendRows(
       communicationByRecipientId.get(recipientId)
       || communicationByEmail.get(email)
       || null;
-    const idempotencyKey = `litedesk-marketing-${orgIdStr}-${campaignIdStr}-${recipientId}`.slice(0, 256);
+    const idempotencyKey = buildIdempotencyKey('marketing', orgIdStr, campaignIdStr, recipientId);
     const idempotencyKeyHash = crypto.createHash('sha256').update(idempotencyKey).digest('hex');
     const personIdRaw = recipient.personId || recipient.mergeData?.personId || null;
     const personId =

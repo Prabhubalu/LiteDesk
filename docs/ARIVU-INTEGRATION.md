@@ -1,18 +1,18 @@
-# LiteDesk ↔ AMDS Integration Guide
+# Arivu ↔ AMDS Integration Guide
 
 **Version:** 1.0  
 **Date:** June 29, 2026  
 **AMDS phase:** 0a (local) / Phase 1 MVP  
-**Audience:** LiteDesk backend developers  
+**Audience:** Arivu backend developers  
 
-This document specifies what to build in the **LiteDesk** repository to integrate with **AMDS (Arivu Mail Delivery System)**. AMDS is a separate service — LiteDesk never opens SMTP connections. All outbound email goes through the AMDS HTTP API; delivery results come back via signed webhooks.
+This document specifies what to build in the **Arivu** repository to integrate with **AMDS (Arivu Mail Delivery System)**. AMDS is a separate service — Arivu never opens SMTP connections. All outbound email goes through the AMDS HTTP API; delivery results come back via signed webhooks.
 
 ---
 
 ## 1. Integration overview
 
 ```
-LiteDesk (Node.js + MongoDB)              AMDS (separate repo)
+Arivu (Node.js + MongoDB)              AMDS (separate repo)
 ┌─────────────────────────────┐           ┌─────────────────────────────┐
 │ Helpdesk: agent sends reply │           │ Gateway  :8080              │
 │         │                   │  POST     │ Worker   → Mailpit/SMTP     │
@@ -29,23 +29,23 @@ LiteDesk (Node.js + MongoDB)              AMDS (separate repo)
 └─────────────────────────────┘           └─────────────────────────────┘
 ```
 
-**Principle:** LiteDesk decides *what* to send. AMDS decides *how* it is delivered.
+**Principle:** Arivu decides *what* to send. AMDS decides *how* it is delivered.
 
-**What LiteDesk stores (MongoDB):** correlation fields only — `amds_message_id`, `delivery_status`, timestamps.  
+**What Arivu stores (MongoDB):** correlation fields only — `amds_message_id`, `delivery_status`, timestamps.  
 **What AMDS stores (PostgreSQL):** full delivery pipeline — queue state, SMTP attempts, events.
 
 ---
 
-## 2. Environment variables (LiteDesk)
+## 2. Environment variables (Arivu)
 
-Add these to LiteDesk `.env`:
+Add these to Arivu `.env`:
 
 ```bash
-# AMDS API (LiteDesk → AMDS)
+# AMDS API (Arivu → AMDS)
 AMDS_BASE_URL=http://localhost:8080
 AMDS_API_KEY=amds_dev_key
 
-# Webhook verification (AMDS → LiteDesk)
+# Webhook verification (AMDS → Arivu)
 AMDS_WEBHOOK_SECRET=dev_webhook_secret
 AMDS_WEBHOOK_PATH=/api/internal/webhooks/amds
 ```
@@ -55,17 +55,17 @@ AMDS_WEBHOOK_PATH=/api/internal/webhooks/amds
 | `AMDS_BASE_URL` | `http://localhost:8080` | `https://amds.internal:8080` (private VCN IP or internal DNS) |
 | `AMDS_API_KEY` | `amds_dev_key` | Must match `AMDS_API_KEY` on AMDS side |
 | `AMDS_WEBHOOK_SECRET` | `dev_webhook_secret` | Must match `WEBHOOK_SIGNING_SECRET` on AMDS side |
-| `AMDS_WEBHOOK_PATH` | `/api/internal/webhooks/amds` | Must match `LITEDESK_WEBHOOK_URL` path on AMDS |
+| `AMDS_WEBHOOK_PATH` | `/api/internal/webhooks/amds` | Must match `ARIVU_WEBHOOK_URL` path on AMDS |
 
 **AMDS side (for reference):** AMDS `.env` must set:
 
 ```bash
-LITEDESK_WEBHOOK_URL=http://localhost:3000/api/internal/webhooks/amds
+ARIVU_WEBHOOK_URL=http://localhost:3000/api/internal/webhooks/amds
 WEBHOOK_SIGNING_SECRET=dev_webhook_secret   # same as AMDS_WEBHOOK_SECRET
-AMDS_API_KEY=amds_dev_key                   # same as LiteDesk AMDS_API_KEY
+AMDS_API_KEY=amds_dev_key                   # same as Arivu AMDS_API_KEY
 ```
 
-On production, use the LiteDesk private IP or internal DNS in `LITEDESK_WEBHOOK_URL`.
+On production, use the Arivu private IP or internal DNS in `ARIVU_WEBHOOK_URL`.
 
 ---
 
@@ -73,7 +73,7 @@ On production, use the LiteDesk private IP or internal DNS in `LITEDESK_WEBHOOK_
 
 ### 3.1 Purpose
 
-HTTP client wrapper for AMDS REST API. All AMDS communication from LiteDesk goes through this class — no direct SMTP, no scattered `fetch` calls.
+HTTP client wrapper for AMDS REST API. All AMDS communication from Arivu goes through this class — no direct SMTP, no scattered `fetch` calls.
 
 ### 3.2 Suggested file layout
 
@@ -102,7 +102,7 @@ export interface AmdsAddress {
 
 export interface SendMessageRequest {
   idempotency_key: string;       // max 256 chars, required
-  tenant_id: string;             // LiteDesk org ID, max 128 chars
+  tenant_id: string;             // Arivu org ID, max 128 chars
   from: AmdsAddress;
   to: AmdsAddress[];             // 1–50 recipients
   cc?: AmdsAddress[];
@@ -238,7 +238,7 @@ export const amdsClient = new AmdsClient(
 
 ```json
 {
-  "idempotency_key": "litedesk-helpdesk-org_abc-ticket-88421-reply-3",
+  "idempotency_key": "arivu-helpdesk-org_abc-ticket-88421-reply-3",
   "tenant_id": "org_abc123",
   "from": { "email": "support@customer.com", "name": "Acme Support" },
   "to": [{ "email": "user@example.com", "name": "Jane Doe" }],
@@ -248,9 +248,9 @@ export const amdsClient = new AmdsClient(
     "text": "We resolved your issue..."
   },
   "metadata": {
-    "litedesk_module": "helpdesk",
-    "litedesk_entity_id": "ticket_88421",
-    "litedesk_reply_id": "reply_3"
+    "arivu_module": "helpdesk",
+    "arivu_entity_id": "ticket_88421",
+    "arivu_reply_id": "reply_3"
   },
   "tags": ["helpdesk", "transactional"]
 }
@@ -294,8 +294,8 @@ export const amdsClient = new AmdsClient(
   "error_message": null,
   "attempt_count": 1,
   "metadata": {
-    "litedesk_module": "helpdesk",
-    "litedesk_entity_id": "ticket_88421"
+    "arivu_module": "helpdesk",
+    "arivu_entity_id": "ticket_88421"
   },
   "created_at": "2026-06-29T10:00:00.000Z",
   "updated_at": "2026-06-29T10:00:05.000Z",
@@ -310,7 +310,7 @@ Generate a deterministic key so retries and double-clicks do not send duplicate 
 **Recommended pattern:**
 
 ```
-litedesk-{module}-{tenant_id}-{entity_id}-{action}-{sequence}
+arivu-{module}-{tenant_id}-{entity_id}-{action}-{sequence}
 ```
 
 **Helpdesk reply example:**
@@ -321,15 +321,15 @@ function buildIdempotencyKey(params: {
   ticketId: string;
   replyId: string;
 }): string {
-  return `litedesk-helpdesk-${params.tenantId}-ticket-${params.ticketId}-reply-${params.replyId}`;
+  return `arivu-helpdesk-${params.tenantId}-ticket-${params.ticketId}-reply-${params.replyId}`;
 }
 ```
 
 Use the **reply document `_id`** (or a client-generated UUID stored on the reply before send) as `replyId`. Never use a timestamp alone — that breaks idempotency on retry.
 
-### 3.8 Retry policy (LiteDesk → AMDS)
+### 3.8 Retry policy (Arivu → AMDS)
 
-| AMDS response | LiteDesk action |
+| AMDS response | Arivu action |
 |---------------|-----------------|
 | `202` / `200` | Success — store `message_id` |
 | `400` | Do not retry — fix payload, surface error to agent |
@@ -344,7 +344,7 @@ Because AMDS deduplicates by `idempotency_key`, retries are safe.
 
 ### 4.1 Purpose
 
-Receive delivery events from AMDS and update LiteDesk MongoDB records. Must verify HMAC signature and be idempotent on `event_id`.
+Receive delivery events from AMDS and update Arivu MongoDB records. Must verify HMAC signature and be idempotent on `event_id`.
 
 ### 4.2 Route
 
@@ -444,7 +444,7 @@ const event = JSON.parse(req.body.toString('utf8'));
 
 ### 4.4 Webhook event types (Phase 0a)
 
-| `event_type` | When | LiteDesk action |
+| `event_type` | When | Arivu action |
 |--------------|------|-----------------|
 | `message.delivered` | SMTP accepted (250 OK) | Set `status: 'delivered'` |
 | `message.failed` | SMTP or worker error | Set `status: 'failed'`, notify agent |
@@ -464,9 +464,9 @@ export interface AmdsWebhookEvent {
   tenant_id: string;
   message_id: string;
   metadata?: {
-    litedesk_module?: string;
-    litedesk_entity_id?: string;
-    litedesk_reply_id?: string;
+    arivu_module?: string;
+    arivu_entity_id?: string;
+    arivu_reply_id?: string;
     [key: string]: unknown;
   };
   delivery?: {
@@ -488,9 +488,9 @@ export interface AmdsWebhookEvent {
   "tenant_id": "org_abc123",
   "message_id": "550e8400-e29b-41d4-a716-446655440000",
   "metadata": {
-    "litedesk_module": "helpdesk",
-    "litedesk_entity_id": "ticket_88421",
-    "litedesk_reply_id": "reply_3"
+    "arivu_module": "helpdesk",
+    "arivu_entity_id": "ticket_88421",
+    "arivu_reply_id": "reply_3"
   },
   "delivery": {
     "recipient": "user@example.com",
@@ -510,8 +510,8 @@ export interface AmdsWebhookEvent {
   "tenant_id": "org_abc123",
   "message_id": "550e8400-e29b-41d4-a716-446655440000",
   "metadata": {
-    "litedesk_module": "helpdesk",
-    "litedesk_entity_id": "ticket_88421"
+    "arivu_module": "helpdesk",
+    "arivu_entity_id": "ticket_88421"
   },
   "delivery": {
     "recipient": "user@example.com",
@@ -566,7 +566,7 @@ export async function amdsWebhookHandler(req: Request, res: Response): Promise<v
   }
 
   // 2. Route by module
-  if (event.metadata?.litedesk_module === 'helpdesk') {
+  if (event.metadata?.arivu_module === 'helpdesk') {
     await helpdeskAmdsEventHandler.process(event);
   }
 
@@ -581,8 +581,8 @@ export async function amdsWebhookHandler(req: Request, res: Response): Promise<v
 // server/services/amds/handlers/helpdesk-event-handler.ts
 
 export async function processHelpdeskEvent(event: AmdsWebhookEvent): Promise<void> {
-  const ticketId = event.metadata?.litedesk_entity_id;
-  const replyId = event.metadata?.litedesk_reply_id;
+  const ticketId = event.metadata?.arivu_entity_id;
+  const replyId = event.metadata?.arivu_reply_id;
   if (!ticketId) return;
 
   const status = event.event_type === 'message.delivered' ? 'delivered' : 'failed';
@@ -612,9 +612,9 @@ export async function processHelpdeskEvent(event: AmdsWebhookEvent): Promise<voi
 
 1. Agent composes a ticket reply in Helpdesk UI.
 2. Agent clicks **Send** (email channel).
-3. LiteDesk API creates/stores the reply document.
-4. LiteDesk calls `amdsClient.sendMessage()` with ticket context in `metadata`.
-5. LiteDesk stores returned `message_id` on the reply (`amds_message_id`).
+3. Arivu API creates/stores the reply document.
+4. Arivu calls `amdsClient.sendMessage()` with ticket context in `metadata`.
+5. Arivu stores returned `message_id` on the reply (`amds_message_id`).
 6. UI shows reply as **Sending…** (`delivery_status: 'queued'`).
 7. AMDS worker delivers email → posts webhook.
 8. Webhook handler updates reply to **Delivered** or **Failed**.
@@ -676,7 +676,7 @@ export async function sendTicketReplyEmail(params: {
   recipientEmail: string;
   recipientName?: string;
 }): Promise<{ messageId: string }> {
-  const idempotencyKey = `litedesk-helpdesk-${params.orgId}-ticket-${params.ticketId}-reply-${params.replyId}`;
+  const idempotencyKey = `arivu-helpdesk-${params.orgId}-ticket-${params.ticketId}-reply-${params.replyId}`;
 
   const response = await amdsClient.sendMessage({
     idempotency_key: idempotencyKey,
@@ -686,9 +686,9 @@ export async function sendTicketReplyEmail(params: {
     subject: params.subject,
     content: { html: params.bodyHtml, text: params.bodyText },
     metadata: {
-      litedesk_module: 'helpdesk',
-      litedesk_entity_id: params.ticketId,
-      litedesk_reply_id: params.replyId,
+      arivu_module: 'helpdesk',
+      arivu_entity_id: params.ticketId,
+      arivu_reply_id: params.replyId,
     },
     tags: ['helpdesk', 'transactional'],
   });
@@ -769,7 +769,7 @@ async function createTicketReply(req, res) {
 }
 ```
 
-### 5.5 Vue 3 frontend (read-only from LiteDesk API)
+### 5.5 Vue 3 frontend (read-only from Arivu API)
 
 Vue **must not** call AMDS directly. Expose delivery fields on the ticket/reply API response:
 
@@ -792,14 +792,14 @@ interface TicketReply {
 | `delivered` | Checkmark — "Delivered" |
 | `failed` | Error icon — show `delivery_error`, offer retry |
 
-**Polling fallback:** If status stays `queued` > 30s, poll LiteDesk API which can call `amdsClient.getMessageStatus(message_id)` server-side.
+**Polling fallback:** If status stays `queued` > 30s, poll Arivu API which can call `amdsClient.getMessageStatus(message_id)` server-side.
 
 ---
 
 ## 6. End-to-end sequence
 
 ```
-Agent          LiteDesk API       MongoDB        AMDS Gateway     AMDS Worker      Mailpit
+Agent          Arivu API       MongoDB        AMDS Gateway     AMDS Worker      Mailpit
   │                 │                │                │                │              │
   │ POST reply      │                │                │                │              │
   ├────────────────►│                │                │                │              │
@@ -828,10 +828,10 @@ Agent          LiteDesk API       MongoDB        AMDS Gateway     AMDS Worker   
 ### Prerequisites
 
 - AMDS repo running: `npm run setup && npm run dev`
-- LiteDesk API on `http://localhost:3000`
+- Arivu API on `http://localhost:3000`
 - Mailpit UI: `http://localhost:8025`
 
-### LiteDesk tasks
+### Arivu tasks
 
 - [ ] Add env vars (`AMDS_BASE_URL`, `AMDS_API_KEY`, `AMDS_WEBHOOK_SECRET`)
 - [ ] Implement `AmdsClient` + singleton
@@ -849,7 +849,7 @@ Agent          LiteDesk API       MongoDB        AMDS Gateway     AMDS Worker   
 - [ ] Duplicate send (same idempotency key) → same `message_id`, no duplicate email
 - [ ] Invalid signature on webhook → `401`
 - [ ] Replay same webhook `event_id` → `200` with `duplicate: true`, no double update
-- [ ] Stop LiteDesk briefly, send email, restart → poll `GET /v1/messages/:id` recovers status
+- [ ] Stop Arivu briefly, send email, restart → poll `GET /v1/messages/:id` recovers status
 
 ### Manual webhook test (without waiting for AMDS)
 
@@ -865,7 +865,7 @@ const body = JSON.stringify({
   timestamp: new Date().toISOString(),
   tenant_id: 'org_local',
   message_id: '<paste amds_message_id here>',
-  metadata: { litedesk_module: 'helpdesk', litedesk_entity_id: '<ticketId>', litedesk_reply_id: '<replyId>' },
+  metadata: { arivu_module: 'helpdesk', arivu_entity_id: '<ticketId>', arivu_reply_id: '<replyId>' },
   delivery: { recipient: 'user@example.com', smtp_response: '250 OK', attempt: 1 }
 });
 const sig = crypto.createHmac('sha256', secret).update(ts + '.' + body).digest('hex');
@@ -887,10 +887,10 @@ curl -X POST http://localhost:3000/api/internal/webhooks/amds \
 
 | Topic | Guidance |
 |-------|----------|
-| **Network** | LiteDesk → AMDS over private VCN IP; block `/v1/*` from public internet |
+| **Network** | Arivu → AMDS over private VCN IP; block `/v1/*` from public internet |
 | **TLS** | Use HTTPS even on private network (self-signed OK in Phase 0–1) |
 | **Secrets** | Rotate `AMDS_API_KEY` and `AMDS_WEBHOOK_SECRET` quarterly |
-| **Webhook URL** | Set AMDS `LITEDESK_WEBHOOK_URL` to LiteDesk private endpoint |
+| **Webhook URL** | Set AMDS `ARIVU_WEBHOOK_URL` to Arivu private endpoint |
 | **From address** | Use org's verified support email once domain verification lands (Phase 2) |
 | **Monitoring** | Log AMDS errors; alert on high `delivery_status: failed` rate |
 
@@ -900,20 +900,20 @@ curl -X POST http://localhost:3000/api/internal/webhooks/amds \
 
 Do not implement these until AMDS exposes the corresponding APIs/events:
 
-| Feature | AMDS phase | LiteDesk status |
+| Feature | AMDS phase | Arivu status |
 |---------|------------|-----------------|
-| `message.bounced` webhook | Track 3 | ✅ Done — see [LITEDESK-TRACK-3-DRAFT.md](./LITEDESK-TRACK-3-DRAFT.md) |
+| `message.bounced` webhook | Track 3 | ✅ Done — see [ARIVU-TRACK-3-DRAFT.md](./ARIVU-TRACK-3-DRAFT.md) |
 | `message.complained` webhook | Track 3+ | Not started |
-| Domain verification (SPF/DKIM/DMARC) | Track 3 | ✅ LiteDesk proxy UI + AMDS API |
-| Campaign / marketing bulk send | Track 4 | ✅ Done — see [LITEDESK-TRACK-4-DRAFT.md](./LITEDESK-TRACK-4-DRAFT.md) |
+| Domain verification (SPF/DKIM/DMARC) | Track 3 | ✅ Arivu proxy UI + AMDS API |
+| Campaign / marketing bulk send | Track 4 | ✅ Done — see [ARIVU-TRACK-4-DRAFT.md](./ARIVU-TRACK-4-DRAFT.md) |
 | Open/click tracking events | Track 4 | ✅ Done — `message.opened` / `message.clicked` webhooks |
 | Template rendering via AMDS (`template_id`) | Track 2+ | Not started |
 
-For Phase 0a–1, LiteDesk always sends pre-rendered `content.html` + `content.text`.
+For Phase 0a–1, Arivu always sends pre-rendered `content.html` + `content.text`.
 
 ---
 
-## 10. File checklist (copy to LiteDesk repo)
+## 10. File checklist (copy to Arivu repo)
 
 | File | Purpose |
 |------|---------|
@@ -928,4 +928,4 @@ For Phase 0a–1, LiteDesk always sends pre-rendered `content.html` + `content.t
 
 ---
 
-*Maintained in the AMDS repo at `docs/LITEDESK-INTEGRATION.md`. Update when AMDS API or webhook contract changes.*
+*Maintained in the AMDS repo at `docs/ARIVU-INTEGRATION.md`. Update when AMDS API or webhook contract changes.*

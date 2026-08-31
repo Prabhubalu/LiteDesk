@@ -96,7 +96,7 @@ export async function runBulkDelete(params) {
     store.finish();
     uninstallBulkDeleteGuard();
     if (completedModuleKey && typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('litedesk:bulk-delete-complete', {
+      window.dispatchEvent(new CustomEvent('arivu:bulk-delete-complete', {
         detail: { moduleKey: completedModuleKey },
       }));
     }

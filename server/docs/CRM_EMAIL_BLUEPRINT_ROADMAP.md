@@ -1,6 +1,6 @@
 # CRM Email Blueprint — Completion Roadmap
 
-This roadmap closes the gap between the **Final CRM Email Architecture Development Blueprint** (18-page ArivuSystems spec) and **LiteDesk** as implemented today.
+This roadmap closes the gap between the **Final CRM Email Architecture Development Blueprint** (18-page ArivuSystems spec) and **Arivu** as implemented today.
 
 **Related docs**
 
@@ -17,7 +17,7 @@ This roadmap closes the gap between the **Final CRM Email Architecture Developme
 
 ## 1. North star (from blueprint)
 
-| Concern | Blueprint target | LiteDesk today |
+| Concern | Blueprint target | Arivu today |
 |---------|------------------|----------------|
 | **Receive (team)** | Google Workspace → Gmail API → sync worker → MongoDB → Inbox UI | ✅ Group Gmail OAuth + sync (R1) |
 | **Receive (personal)** | Gmail / Graph OAuth → sync worker | 🟡 Gmail personal ✅; Outlook/IMAP ⬜ |

@@ -13,18 +13,19 @@
  */
 
 const amdsEmailDelivery = require('../emailProviders/amdsEmailDelivery');
+const { writeMetadata } = require('../../utils/arivuMetadata');
 
 /**
  * @param {{ organizationId: string, caseId: string, communicationId: string }} params
  */
 function buildCaseAmdsMetadata(params) {
-  return {
-    litedesk_module: 'helpdesk',
-    litedesk_entity_id: String(params.communicationId),
-    litedesk_communication_id: String(params.communicationId),
-    litedesk_case_id: String(params.caseId),
-    litedesk_org_id: String(params.organizationId)
-  };
+  return writeMetadata({
+    module: 'helpdesk',
+    entity_id: String(params.communicationId),
+    communication_id: String(params.communicationId),
+    case_id: String(params.caseId),
+    org_id: String(params.organizationId)
+  });
 }
 
 /**

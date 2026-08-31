@@ -1,12 +1,12 @@
 # Marketing Campaign Send Scale — Implementation Roadmap
 
-**Audience:** LiteDesk backend + frontend developers  
+**Audience:** Arivu backend + frontend developers  
 **Status:** **Not started** — M11 (post v1 marketing)  
 **Prerequisite:** M1–M10 complete · Track 4 campaign send · AMDS policy/credits (Track 6)  
 **Architecture reference:** [Architecture_Document.md](../Architecture_Document.md) · tenant isolation · auditability  
 **Parent roadmap:** [MARKETING_APPLICATION_ROADMAP.md](./MARKETING_APPLICATION_ROADMAP.md)
 
-**Product goal:** Campaign sends up to **500,000 recipients** complete without blocking the UI, without OOM, and with predictable delivery — while preserving tenant isolation, idempotency, and the LiteDesk ↔ AMDS separation doctrine.
+**Product goal:** Campaign sends up to **500,000 recipients** complete without blocking the UI, without OOM, and with predictable delivery — while preserving tenant isolation, idempotency, and the Arivu ↔ AMDS separation doctrine.
 
 **Last updated:** 2026-07-02
 
@@ -32,7 +32,7 @@ Track 4 (`sendCampaignBatch.js`) works for small sends but does not scale:
 
 ## 2. Separation doctrine (unchanged)
 
-| Responsibility | LiteDesk | AMDS |
+| Responsibility | Arivu | AMDS |
 |----------------|----------|------|
 | Recipient resolution (segments, audiences) | ✅ | — |
 | CRM merge tag hydration + HTML render | ✅ (this roadmap) | Future: `template_id` |
@@ -45,7 +45,7 @@ Track 4 (`sendCampaignBatch.js`) works for small sends but does not scale:
 
 Hard rule: **No SMTP in marketing paths.** All delivery still goes through `AmdsClient.sendCampaignBatch()`.
 
-Future AMDS `template_id` rendering (see [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md) §9) is **Phase F** — optional acceleration, not required for 500K.
+Future AMDS `template_id` rendering (see [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md) §9) is **Phase F** — optional acceleration, not required for 500K.
 
 ---
 
@@ -162,7 +162,7 @@ Raise enterprise ceiling when M11-F ships:
 | PRO | 25,000 | 50,000 |
 | ENTERPRISE | 100,000 | 500,000 |
 
-Credits and AMDS policy sync must match — see [LITEDESK-TRACK-6-PHASE1-DRAFT.md](./LITEDESK-TRACK-6-PHASE1-DRAFT.md).
+Credits and AMDS policy sync must match — see [ARIVU-TRACK-6-PHASE1-DRAFT.md](./ARIVU-TRACK-6-PHASE1-DRAFT.md).
 
 ---
 
@@ -268,7 +268,7 @@ Credits and AMDS policy sync must match — see [LITEDESK-TRACK-6-PHASE1-DRAFT.m
 
 - [x] `scheduleCampaignSend` → call snapshot service immediately (not at fire time)
 - [x] Orchestrator stores `lastChunkIndex`; retry skips completed chunks
-- [x] Idempotency keys unchanged: `litedesk-marketing-{orgId}-{campaignId}-{recipientId}`
+- [x] Idempotency keys unchanged: `arivu-marketing-{orgId}-{campaignId}-{recipientId}`
 - [x] A/B test phases use same chunk pipeline (`marketingAbTestService.js`)
 
 **Tests**
@@ -305,7 +305,7 @@ When available:
 
 - Upload campaign body once as AMDS template
 - Chunk worker sends merge payload only (no full HTML per message)
-- LiteDesk orchestrator unchanged; swap render step for AMDS render
+- Arivu orchestrator unchanged; swap render step for AMDS render
 
 ---
 
@@ -409,7 +409,7 @@ When available:
 | AMDS 429 rate limit | Existing retry + backoff; pace chunk submit to `effectiveHourlyRate` |
 | Mongo bulk insert pressure | Batch 1000; off-peak load test |
 | Conditional blocks complexity | Phase C: lite evaluator; defer edge cases to M11-G |
-| Credit drift LiteDesk vs AMDS | Reserve at start; reconcile on webhook + admin sync |
+| Credit drift Arivu vs AMDS | Reserve at start; reconcile on webhook + admin sync |
 
 ---
 
@@ -458,11 +458,11 @@ When available:
 | Document | Purpose |
 |----------|---------|
 | [MARKETING_APPLICATION_ROADMAP.md](./MARKETING_APPLICATION_ROADMAP.md) | Parent marketing phases M0–M10 |
-| [LITEDESK-TRACK-4-DRAFT.md](./LITEDESK-TRACK-4-DRAFT.md) | Current send implementation |
+| [ARIVU-TRACK-4-DRAFT.md](./ARIVU-TRACK-4-DRAFT.md) | Current send implementation |
 | [MARKETING_DYNAMIC_AUDIENCE_SPEC.md](./MARKETING_DYNAMIC_AUDIENCE_SPEC.md) | Segment resolution |
-| [LITEDESK-TRACK-6-PHASE1-DRAFT.md](./LITEDESK-TRACK-6-PHASE1-DRAFT.md) | Credits + plan limits |
-| [LITEDESK-INTEGRATION.md](./LITEDESK-INTEGRATION.md) | AMDS API contract |
+| [ARIVU-TRACK-6-PHASE1-DRAFT.md](./ARIVU-TRACK-6-PHASE1-DRAFT.md) | Credits + plan limits |
+| [ARIVU-INTEGRATION.md](./ARIVU-INTEGRATION.md) | AMDS API contract |
 
 ---
 
-*Maintained in LiteDesk repo at `docs/MARKETING_CAMPAIGN_SEND_SCALE_ROADMAP.md`.*
+*Maintained in Arivu repo at `docs/MARKETING_CAMPAIGN_SEND_SCALE_ROADMAP.md`.*

@@ -30,7 +30,7 @@ export function buildWebformIframeSnippet(slug, { height = 640, origin } = {}) {
 
 export function buildWebformScriptSnippet(slug, { height = 640, origin } = {}) {
   const base = (origin || (typeof window !== 'undefined' ? window.location.origin : '')).replace(/\/$/, '');
-  return `<div id="litedesk-webform" data-slug="${slug}" data-height="${height}"></div>\n<script src="${base}/embed/webform.js" async></script>`;
+  return `<div id="arivu-webform" data-slug="${slug}" data-height="${height}"></div>\n<script src="${base}/embed/webform.js" async></script>`;
 }
 
 export function buildCrmRecordPath(moduleKey, recordId) {

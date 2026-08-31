@@ -87,7 +87,7 @@ The Quotes module is a **reusable transactional commerce platform module** for a
 
 ---
 
-## 3. Current state in LiteDesk
+## 3. Current state in Arivu
 
 | Area | Status | Notes |
 |------|--------|-------|

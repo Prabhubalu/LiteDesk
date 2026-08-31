@@ -232,7 +232,7 @@ async function getPreferenceCenterPayload(token) {
 
     return {
       email: claims.email,
-      organizationName: organization?.name || 'LiteDesk',
+      organizationName: organization?.name || 'Arivu',
       globalStatus: preference.globalStatus,
       categories: preference.categories,
       availableCategories: MARKETING_CATEGORIES,

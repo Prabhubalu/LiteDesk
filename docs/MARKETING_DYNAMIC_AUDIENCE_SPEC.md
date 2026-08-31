@@ -12,7 +12,7 @@
 
 ## 1. Executive summary
 
-LiteDesk Marketing provides a **relationship-aware, metadata-driven audience engine** that lets marketers build precise, reusable dynamic audiences without SQL, Mongo queries, or developer involvement.
+Arivu Marketing provides a **relationship-aware, metadata-driven audience engine** that lets marketers build precise, reusable dynamic audiences without SQL, Mongo queries, or developer involvement.
 
 The engine:
 
@@ -701,7 +701,7 @@ Campaign.audienceId
   → AmdsClient.sendCampaignBatch({ recipients })
 ```
 
-**AMDS never receives or evaluates `filterQuery`.** LiteDesk sends the final recipient array only.
+**AMDS never receives or evaluates `filterQuery`.** Arivu sends the final recipient array only.
 
 ---
 

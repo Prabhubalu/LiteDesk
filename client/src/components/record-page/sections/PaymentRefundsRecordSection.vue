@@ -120,10 +120,10 @@ function onOpenRefund(event) {
 watch(() => props.record?._id, loadRefunds, { immediate: true });
 
 onMounted(() => {
-  window.addEventListener('litedesk:payment-open-refund', onOpenRefund);
+  window.addEventListener('arivu:payment-open-refund', onOpenRefund);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('litedesk:payment-open-refund', onOpenRefund);
+  window.removeEventListener('arivu:payment-open-refund', onOpenRefund);
 });
 </script>

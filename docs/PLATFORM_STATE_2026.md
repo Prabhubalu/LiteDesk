@@ -23,7 +23,7 @@
 
 ## Executive summary
 
-LiteDesk has shipped a **full quote-to-cash path** on a shared platform module model:
+Arivu has shipped a **full quote-to-cash path** on a shared platform module model:
 
 ```text
 Catalog (C0–C5) ✅

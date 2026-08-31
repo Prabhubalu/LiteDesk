@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * End-to-end Track 3 bounce validation (LiteDesk + AMDS must be running).
+ * End-to-end Track 3 bounce validation (Arivu + AMDS must be running).
  *
  * Prerequisites:
  *   - AMDS: npm run docker:up && npm run dev
- *   - LiteDesk: npm run dev (server on PORT, default 3000)
+ *   - Arivu: npm run dev (server on PORT, default 3000)
  *   - Matching AMDS_API_KEY / AMDS_WEBHOOK_SECRET on both sides
  *
  * Usage:
@@ -19,6 +19,7 @@ const Communication = require('../models/Communication');
 const EmailSuppression = require('../models/EmailSuppression');
 const Organization = require('../models/Organization');
 const { sendViaAmds } = require('../services/emailProviders/amdsEmailDelivery');
+const { writeMetadata } = require('../utils/arivuMetadata');
 const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
 const { isAmdsEnvConfigured } = require('../config/amds');
 
@@ -143,13 +144,13 @@ async function main() {
     subject: `[Track3 validation] bounce ${communicationId}`,
     text: 'AMDS Track 3 bounce validation message',
     organizationId: orgIdStr,
-    idempotencyKey: `litedesk-people-${orgIdStr}-comm-${communicationId}`,
-    metadata: {
-      litedesk_module: 'people',
-      litedesk_entity_id: String(communicationId),
-      litedesk_communication_id: String(communicationId),
-      litedesk_org_id: orgIdStr
-    },
+    idempotencyKey: `arivu-people-${orgIdStr}-comm-${communicationId}`,
+    metadata: writeMetadata({
+      module: 'people',
+      entity_id: String(communicationId),
+      communication_id: String(communicationId),
+      org_id: orgIdStr
+    }),
     tags: ['crm', 'track3-validation']
   });
 
@@ -194,7 +195,7 @@ async function main() {
   );
 
   if (!bounced) {
-    throw new Error('Communication status did not become bounced — is LiteDesk server running?');
+    throw new Error('Communication status did not become bounced — is Arivu server running?');
   }
 
   console.log('Communication status=bounced');

@@ -137,15 +137,15 @@ Override with `ARIVU_CONFIG_PATH` / `ARIVU_API_BASE` / `ARIVU_AGENT_TOKEN`.
 
 ## Local dual-machine debug (same LAN)
 
-Use this to test against a **local** LiteDesk API on another machine (e.g. Mac) without pushing to main or using production.
+Use this to test against a **local** Arivu API on another machine (e.g. Mac) without pushing to main or using production.
 
 ```text
-[ Windows: Agent + TallyPrime ]  --HTTP-->  http://<MAC_LAN_IP>:5000  [ Mac: LiteDesk server ]
+[ Windows: Agent + TallyPrime ]  --HTTP-->  http://<MAC_LAN_IP>:5000  [ Mac: Arivu server ]
 ```
 
 ### Mac
 
-1. Start LiteDesk server (default port **5000**) + client.
+1. Start Arivu server (default port **5000**) + client.
 2. Note LAN IP: `ipconfig getifaddr en0` (example `192.168.1.42`).
 3. Confirm Windows can reach `http://192.168.1.42:5000` (allow Node/port 5000 in Mac firewall if needed).
 4. Open **local** Integration Center → create a Tally pairing code.

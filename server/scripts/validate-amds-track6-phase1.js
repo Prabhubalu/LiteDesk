@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * End-to-end Track 6 Phase 1 tenant policy validation (LiteDesk + AMDS must be running).
+ * End-to-end Track 6 Phase 1 tenant policy validation (Arivu + AMDS must be running).
  *
  * Usage:
  *   node scripts/validate-amds-track6-phase1.js [organizationId]
@@ -16,6 +16,7 @@ const { getAmdsClient, isAmdsEnvConfigured } = require('../config/amds');
 const { ensureOrgEmailPolicy } = require('../services/orgEmailPolicyService');
 const { syncOrgPolicyToAmds, toAmdsPolicy } = require('../services/amds/amds-policy-sync');
 const { sendViaAmds } = require('../services/emailProviders/amdsEmailDelivery');
+const { writeMetadata } = require('../utils/arivuMetadata');
 
 function log(step, message) {
   console.log(`[track6-phase1] ${step}: ${message}`);
@@ -77,7 +78,7 @@ async function main() {
     subject: `[Track6] policy test ${Date.now()}`,
     text: 'Track 6 Phase 1 validation send',
     idempotencyKey: `track6-phase1-${Date.now()}`,
-    metadata: { litedesk_module: 'crm', validation: 'track6-phase1' }
+    metadata: { ...writeMetadata({ module: 'crm' }), validation: 'track6-phase1' }
   });
 
   if (sendResult.success) {
@@ -99,7 +100,7 @@ async function main() {
     subject: `[Track6] zero-credit test ${Date.now()}`,
     text: 'Should fail with 402',
     idempotencyKey: `track6-phase1-zero-${Date.now()}`,
-    metadata: { litedesk_module: 'crm', validation: 'track6-phase1-zero' }
+    metadata: { ...writeMetadata({ module: 'crm' }), validation: 'track6-phase1-zero' }
   });
 
   if (blocked.success) {

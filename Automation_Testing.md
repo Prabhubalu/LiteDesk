@@ -1,6 +1,6 @@
 # Arivu Platform — Automation Testing Reference
 
-> **Repo:** `LiteDesk` · **Product:** Arivu  
+> **Repo:** `Arivu` · **Product:** Arivu  
 > **Purpose:** Exhaustive test-case catalog for API automation, E2E business flows, and UI automation.  
 > **Companions:** `Architecture_Document.md` (schemas, tenancy, middleware) · **`atp/`** (Arivu Test Platform — runner, dashboard, human-readable case docs)  
 > **Last updated:** June 2026
