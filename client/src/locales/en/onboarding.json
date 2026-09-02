@@ -336,27 +336,27 @@
     "description": "First visit CTA for Analytics Reports"
   },
   "coachmarkSidebarTitle": {
-    "message": "Your apps live here",
+    "message": "Navigate from the sidebar",
     "description": "Sidebar coachmark title"
   },
   "coachmarkSidebarDescription": {
-    "message": "Switch between Sales, Helpdesk, and other apps you have access to.",
+    "message": "Home, Inbox, and your apps live on this rail. Select an app to open its modules, or hover for a quick preview.",
     "description": "Sidebar coachmark description"
   },
   "coachmarkCommandPaletteTitle": {
-    "message": "Find anything fast",
+    "message": "Search from anywhere",
     "description": "Command palette coachmark title"
   },
   "coachmarkCommandPaletteDescription": {
-    "message": "Search records and run actions from here. Tip: press ⌘K (Ctrl+K on Windows).",
+    "message": "Find people, deals, cases, and more — or jump straight to a module. Press ⌘K (Ctrl+K on Windows) anytime.",
     "description": "Command palette coachmark description"
   },
   "coachmarkTabsTitle": {
-    "message": "Records open in tabs",
+    "message": "Work in tabs",
     "description": "Tab bar coachmark title"
   },
   "coachmarkTabsDescription": {
-    "message": "Open multiple records at once and switch between them without losing your place.",
+    "message": "Each record opens in its own tab. Keep several open and switch between them without losing your place.",
     "description": "Tab bar coachmark description"
   },
   "coachmarkDismiss": {
@@ -418,5 +418,49 @@
   "inviteFailed": {
     "message": "Unable to send the invitation. Try again or skip for now.",
     "description": "Inline invite error"
+  },
+  "emptyStateSalesDefault": {
+    "message": "Add your first contact or deal to start building your pipeline.",
+    "description": "Empty state copy for default sales vertical"
+  },
+  "emptyStateRetail": {
+    "message": "Add customers and products, then create a sale with catalog line items.",
+    "description": "Empty state copy for retail vertical"
+  },
+  "emptyStateRealEstate": {
+    "message": "Add buyers and property deals to track your site visits and negotiations.",
+    "description": "Empty state copy for real estate vertical"
+  },
+  "emptyStateServices": {
+    "message": "Add members and schedule appointments to run your service business.",
+    "description": "Empty state copy for services vertical"
+  },
+  "emptyStateEducation": {
+    "message": "Import inquiries or add students to start your admissions funnel.",
+    "description": "Empty state copy for education vertical"
+  },
+  "emptyStateHealthcare": {
+    "message": "Add patients and book appointments to manage your clinic schedule.",
+    "description": "Empty state copy for healthcare vertical"
+  },
+  "emptyStateSaas": {
+    "message": "Add accounts and opportunities to track your B2B pipeline.",
+    "description": "Empty state copy for SaaS vertical"
+  },
+  "emptyStateAudit": {
+    "message": "Create an inspection form and assign your first field audit.",
+    "description": "Empty state copy for audit vertical"
+  },
+  "emptyStateAutomotive": {
+    "message": "Add buyers and vehicle inventory, then track test drives and quotes.",
+    "description": "Empty state copy for automotive vertical"
+  },
+  "emptyStateEvents": {
+    "message": "Create a client event and link vendors to build your run-sheet.",
+    "description": "Empty state copy for events vertical"
+  },
+  "emptyStateFieldService": {
+    "message": "Add service sites and schedule visits for your field team.",
+    "description": "Empty state copy for field service vertical"
   }
 }

@@ -50,6 +50,9 @@ export function useOnboarding() {
   const isMember = computed(() => state.value.persona === 'member');
   const needsOnboardingRedirect = computed(() => state.value.redirectTo === '/onboarding');
   const isComplete = computed(() => Boolean(state.value.completedAt));
+  const verticalEmptyStateCopyKey = computed(
+    () => state.value.verticalTemplate?.emptyStateCopyKey || null
+  );
 
   const fetchOnboarding = async (options = {}) => {
     const force = options.force === true;
@@ -175,6 +178,7 @@ export function useOnboarding() {
     acceptSampleData,
     declineSampleData,
     hasModuleVisit,
-    applyAuthSummary
+    applyAuthSummary,
+    verticalEmptyStateCopyKey,
   };
 }

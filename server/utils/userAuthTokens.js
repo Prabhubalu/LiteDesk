@@ -4,6 +4,8 @@ const crypto = require('crypto');
 
 const INVITE_TTL_MS = 72 * 60 * 60 * 1000;
 const VERIFICATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const DEMO_VERIFICATION_TTL_MS = 72 * 60 * 60 * 1000;
+const DEMO_SETUP_TTL_MS = 24 * 60 * 60 * 1000;
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
 function generateRawToken() {
@@ -43,6 +45,22 @@ function buildVerifyEmailUrl(rawToken) {
   return buildClientUrl(`/verify-email?token=${encodeURIComponent(rawToken)}`);
 }
 
+function buildTrialSetupVerifyUrl(rawToken) {
+  return buildClientUrl(`/trial/setup?verify=${encodeURIComponent(rawToken)}`);
+}
+
+function buildTrialSetupContinueUrl(rawSetupToken) {
+  return buildClientUrl(`/trial/setup?setup=${encodeURIComponent(rawSetupToken)}`);
+}
+
+function getDemoVerificationExpiry() {
+  return new Date(Date.now() + DEMO_VERIFICATION_TTL_MS);
+}
+
+function getDemoSetupExpiry() {
+  return new Date(Date.now() + DEMO_SETUP_TTL_MS);
+}
+
 function buildResetPasswordUrl(rawToken) {
   return buildClientUrl(`/reset-password?token=${encodeURIComponent(rawToken)}`);
 }
@@ -55,15 +73,21 @@ function isTokenExpired(expiresAt) {
 module.exports = {
   INVITE_TTL_MS,
   VERIFICATION_TTL_MS,
+  DEMO_VERIFICATION_TTL_MS,
+  DEMO_SETUP_TTL_MS,
   PASSWORD_RESET_TTL_MS,
   generateRawToken,
   hashToken,
   getInviteExpiry,
   getVerificationExpiry,
+  getDemoVerificationExpiry,
+  getDemoSetupExpiry,
   getPasswordResetExpiry,
   buildInviteUrl,
   buildPortalLoginUrl,
   buildVerifyEmailUrl,
+  buildTrialSetupVerifyUrl,
+  buildTrialSetupContinueUrl,
   buildResetPasswordUrl,
   buildClientUrl,
   isTokenExpired

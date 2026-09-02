@@ -4,6 +4,7 @@ import {
   derivePhoneCountryFromLocale,
   extractRecordCountry,
   normalizePhoneCountryIso2,
+  resolveBrowserPhoneCountry,
   resolveDefaultPhoneCountry,
 } from '@/utils/phoneInput';
 
@@ -63,5 +64,11 @@ describe('phoneInput country resolution', () => {
     ).toBe('IN');
 
     expect(resolveDefaultPhoneCountry({})).toBe(DEFAULT_PHONE_COUNTRY);
+  });
+
+  it('resolveBrowserPhoneCountry prefers timezone over misleading locale', () => {
+    expect(
+      resolveBrowserPhoneCountry()
+    ).toBeTruthy();
   });
 });

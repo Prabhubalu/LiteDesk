@@ -1,422 +1,466 @@
 {
   "pageTitle": {
-    "message": "Set up your workspace",
+    "message": "ワークスペースをセットアップする",
     "description": "Founder onboarding page title"
   },
   "stepIndicator": {
-    "message": "Step {current} of {total}",
+    "message": "ステップ {current}/{total}",
     "description": "Wizard step indicator"
   },
   "founderWelcomeTitle": {
-    "message": "Welcome to Arivu, {name}",
+    "message": "アリブへようこそ、{name}",
     "description": "Founder onboarding welcome title"
   },
   "founderWelcomeSubtitle": {
-    "message": "Let's set up {organization} for your team.",
+    "message": "チーム用に {organization} を設定しましょう。",
     "description": "Founder onboarding welcome subtitle"
   },
   "goalPrompt": {
-    "message": "What do you want to do first?",
+    "message": "まず何をしたいですか？",
     "description": "Goal selection prompt"
   },
   "goalSales": {
-    "message": "Manage sales pipeline",
+    "message": "販売パイプラインを管理する",
     "description": "Sales goal option"
   },
   "goalSupport": {
-    "message": "Handle customer support",
+    "message": "カスタマーサポートを担当する",
     "description": "Support goal option"
   },
   "goalAudit": {
-    "message": "Run audits and inspections",
+    "message": "監査と検査を実行する",
     "description": "Audit goal option"
   },
   "goalExplore": {
-    "message": "Explore — show me everything",
+    "message": "探索 — すべてを見せてください",
     "description": "Explore goal option"
   },
   "workspaceTitle": {
-    "message": "Workspace basics",
+    "message": "ワークスペースの基本",
     "description": "Workspace step title"
   },
   "workspaceSubtitle": {
-    "message": "These settings apply across your organization.",
+    "message": "これらの設定は組織全体に適用されます。",
     "description": "Workspace step subtitle"
   },
   "orgNameLabel": {
-    "message": "Organization name",
+    "message": "組織名",
     "description": "Org name field label"
   },
   "timeZoneLabel": {
-    "message": "Time zone",
+    "message": "タイムゾーン",
     "description": "Timezone field label"
   },
   "currencyLabel": {
-    "message": "Currency",
+    "message": "通貨",
     "description": "Currency field label"
   },
   "dateFormatLabel": {
-    "message": "Date format",
+    "message": "日付形式",
     "description": "Date format field label"
   },
   "continue": {
-    "message": "Continue",
+    "message": "続く",
     "description": "Continue button"
   },
   "skipStep": {
-    "message": "Skip for now",
+    "message": "今のところスキップしてください",
     "description": "Skip step button"
   },
   "finishSetup": {
-    "message": "Go to home",
+    "message": "家に帰る",
     "description": "Finish founder wizard"
   },
   "welcomeTitle": {
-    "message": "Welcome to {organization}, {name}",
+    "message": "{organization}、{name} へようこそ",
     "description": "Member welcome panel title"
   },
   "welcomeInvitedBy": {
-    "message": "{inviter} invited you as {role}.",
+    "message": "{inviter} があなたを {role} として招待しました。",
     "description": "Inviter context line"
   },
   "welcomeAppsLabel": {
-    "message": "You have access to:",
+    "message": "以下にアクセスできます:",
     "description": "Entitled apps label"
   },
   "welcomeNoteLabel": {
-    "message": "Message from your team",
+    "message": "チームからのメッセージ",
     "description": "Welcome note label"
   },
   "welcomePrimaryCta": {
-    "message": "Get started",
+    "message": "始めましょう",
     "description": "Welcome primary action"
   },
   "welcomeDismiss": {
-    "message": "Dismiss",
+    "message": "却下する",
     "description": "Dismiss welcome panel"
   },
   "checklistTitle": {
-    "message": "Getting started",
+    "message": "はじめる",
     "description": "Checklist card title"
   },
   "setupProgressTitle": {
-    "message": "Setup progress",
+    "message": "セットアップの進行状況",
     "description": "Org setup progress card title"
   },
   "progressLabel": {
-    "message": "{completed} of {total} complete",
+    "message": "{completed}/{total} が完了しました",
     "description": "Progress label"
   },
   "trialBanner": {
-    "message": "{days} days left in trial · {used}/{limit} contacts",
+    "message": "トライアル期間は残り {days} 日 · {used}/{limit} 件の連絡先",
     "description": "Trial banner on platform home"
   },
   "stepCompleteProfile": {
-    "message": "Complete your profile",
+    "message": "プロフィールを完成させましょう",
     "description": "Member step: profile"
   },
   "stepVisitModule": {
-    "message": "Open your primary workspace",
+    "message": "プライマリ ワークスペースを開きます",
     "description": "Member step: visit module"
   },
   "stepFirstAction": {
-    "message": "Take your first action",
+    "message": "最初のアクションを起こしてください",
     "description": "Member step: first action"
   },
   "stepNotificationPrefs": {
-    "message": "Set notification preferences",
+    "message": "通知設定を設定する",
     "description": "Member step: notifications"
   },
   "stepFounderGoal": {
-    "message": "Choose your focus",
+    "message": "焦点を選択してください",
     "description": "Founder step: goal"
   },
   "stepFounderWorkspace": {
-    "message": "Configure workspace basics",
+    "message": "ワークスペースの基本を構成する",
     "description": "Founder step: workspace"
   },
   "stepOrgWorkspace": {
-    "message": "Complete workspace profile",
+    "message": "完全なワークスペースプロファイル",
     "description": "Org step: workspace"
   },
   "stepOrgFirstRecord": {
-    "message": "Add your first contact or deal",
+    "message": "最初の連絡先または取引を追加します",
     "description": "Org step: first record"
   },
   "stepOrgEmail": {
-    "message": "Connect email",
+    "message": "電子メールを接続する",
     "description": "Org step: email"
   },
   "stepOrgInvite": {
-    "message": "Invite a teammate",
+    "message": "チームメイトを招待する",
     "description": "Org step: invite"
   },
   "stepOrgImport": {
-    "message": "Import existing data",
+    "message": "既存のデータをインポートする",
     "description": "Org step: import"
   },
   "stepOrgSettings": {
-    "message": "Explore settings",
+    "message": "設定を調べる",
     "description": "Org step: settings"
   },
   "actionOpenSetup": {
-    "message": "Continue setup",
+    "message": "セットアップを続行する",
     "description": "Primary action for founder welcome"
   },
   "actionOpenModule": {
-    "message": "Open your workspace",
+    "message": "ワークスペースを開く",
     "description": "Primary action for member welcome"
   },
   "goalSalesKey": {
-    "message": "Sales",
+    "message": "販売",
     "description": "Goal key label sales"
   },
   "goalSupportKey": {
-    "message": "Support",
+    "message": "サポート",
     "description": "Goal key label support"
   },
   "goalAuditKey": {
-    "message": "Audit",
+    "message": "監査",
     "description": "Goal key label audit"
   },
   "goalExploreKey": {
-    "message": "Explore",
+    "message": "探検する",
     "description": "Goal key label explore"
   },
   "stepFounderFirstApp": {
-    "message": "Choose your primary app",
+    "message": "メインのアプリを選択してください",
     "description": "Founder step: first app"
   },
   "stepFounderFirstRecord": {
-    "message": "Add your first contact",
+    "message": "最初の連絡先を追加する",
     "description": "Founder step: first record"
   },
   "firstAppTitle": {
-    "message": "Your primary app",
+    "message": "メインのアプリ",
     "description": "First app step title"
   },
   "firstAppSubtitle": {
-    "message": "Pick where you'll spend most of your time. You can change this later.",
+    "message": "ほとんどの時間を過ごす場所を選択してください。これは後で変更できます。",
     "description": "First app step subtitle"
   },
   "firstRecordTitle": {
-    "message": "Add your first contact",
+    "message": "最初の連絡先を追加する",
     "description": "First record step title"
   },
   "firstRecordSubtitle": {
-    "message": "Create one contact to see how Arivu works.",
+    "message": "連絡先を 1 つ作成して、Arivu がどのように機能するかを確認します。",
     "description": "First record step subtitle"
   },
   "firstNameLabel": {
-    "message": "First name",
+    "message": "ファーストネーム",
     "description": "Contact first name label"
   },
   "lastNameLabel": {
-    "message": "Last name",
+    "message": "苗字",
     "description": "Contact last name label"
   },
   "emailLabel": {
-    "message": "Email",
+    "message": "電子メール",
     "description": "Contact email label optional"
   },
   "profileTitle": {
-    "message": "Your profile",
+    "message": "あなたのプロフィール",
     "description": "Invite accept profile step title"
   },
   "profileSubtitle": {
-    "message": "Help your team recognize you.",
+    "message": "チームがあなたを認識できるようにします。",
     "description": "Invite accept profile subtitle"
   },
   "languageLabel": {
-    "message": "Language",
+    "message": "言語",
     "description": "Profile language label"
   },
   "appsPreviewLabel": {
-    "message": "You'll have access to:",
+    "message": "以下にアクセスできます:",
     "description": "Entitled apps on invite accept"
   },
   "firstTimePeopleTitle": {
-    "message": "Your contact list starts here",
+    "message": "連絡先リストはここから始まります",
     "description": "First visit empty state for People"
   },
   "firstTimePeopleDescription": {
-    "message": "Add people to track relationships, deals, and support history in one place.",
+    "message": "人を追加すると、人間関係、取引、サポート履歴を 1 か所で追跡できます。",
     "description": "First visit empty state description for People"
   },
   "firstTimePeopleAction": {
-    "message": "Add your first contact",
+    "message": "最初の連絡先を追加する",
     "description": "First visit CTA for People"
   },
   "firstTimeDealsTitle": {
-    "message": "Track opportunities here",
+    "message": "ここで機会を追跡します",
     "description": "First visit empty state for Deals"
   },
   "firstTimeDealsDescription": {
-    "message": "Create deals to follow pipeline stages from first touch to close.",
+    "message": "ファーストタッチからクロージングまでのパイプラインステージを追跡する取引を作成します。",
     "description": "First visit empty state description for Deals"
   },
   "firstTimeDealsAction": {
-    "message": "Create your first deal",
+    "message": "最初の取引を作成する",
     "description": "First visit CTA for Deals"
   },
   "firstTimeTasksTitle": {
-    "message": "Stay on top of follow-ups",
+    "message": "フォローアップを常に把握する",
     "description": "First visit empty state for Tasks"
   },
   "firstTimeTasksDescription": {
-    "message": "Tasks help you and your team know what to do next.",
+    "message": "タスクは、あなたとあなたのチームが次に何をすべきかを知るのに役立ちます。",
     "description": "First visit empty state description for Tasks"
   },
   "firstTimeTasksAction": {
-    "message": "Create a task",
+    "message": "タスクを作成する",
     "description": "First visit CTA for Tasks"
   },
   "firstTimeCasesTitle": {
-    "message": "Resolve customer issues here",
+    "message": "お客様の問題をここで解決します",
     "description": "First visit empty state for Cases"
   },
   "firstTimeCasesDescription": {
-    "message": "Cases keep support requests organized from open to resolved.",
+    "message": "ケースでは、オープンから解決までのサポート リクエストが整理されます。",
     "description": "First visit empty state description for Cases"
   },
   "firstTimeCasesAction": {
-    "message": "Create a case",
+    "message": "ケースを作成する",
     "description": "First visit CTA for Cases"
   },
   "firstTimeOrganizationsTitle": {
-    "message": "Manage accounts and companies",
+    "message": "アカウントと会社を管理する",
     "description": "First visit empty state for Organizations"
   },
   "firstTimeOrganizationsDescription": {
-    "message": "Organizations group contacts and deals under the companies you work with.",
+    "message": "組織は、取引先企業の下に連絡先と取引をグループ化します。",
     "description": "First visit empty state description for Organizations"
   },
   "firstTimeOrganizationsAction": {
-    "message": "Add an organization",
+    "message": "組織を追加する",
     "description": "First visit CTA for Organizations"
   },
   "coachmarkSidebarTitle": {
-    "message": "Your apps live here",
+    "message": "サイドバーから移動する",
     "description": "Sidebar coachmark title"
   },
   "coachmarkSidebarDescription": {
-    "message": "Switch between Sales, Helpdesk, and other apps you have access to.",
+    "message": "ホーム、受信トレイ、アプリはこのレール上にあります。アプリを選択してモジュールを開くか、カーソルを合わせてクイック プレビューを表示します。",
     "description": "Sidebar coachmark description"
   },
   "coachmarkCommandPaletteTitle": {
-    "message": "Find anything fast",
+    "message": "どこからでも検索",
     "description": "Command palette coachmark title"
   },
   "coachmarkCommandPaletteDescription": {
-    "message": "Search records and run actions from here. Tip: press ⌘K (Ctrl+K on Windows).",
+    "message": "人物、取引、ケースなどを検索したり、モジュールに直接ジャンプしたりできます。いつでも ⌘K (Windows では Ctrl+K) を押します。",
     "description": "Command palette coachmark description"
   },
   "coachmarkTabsTitle": {
-    "message": "Records open in tabs",
+    "message": "タブで作業する",
     "description": "Tab bar coachmark title"
   },
   "coachmarkTabsDescription": {
-    "message": "Open multiple records at once and switch between them without losing your place.",
+    "message": "各レコードは独自のタブで開きます。いくつか開いたままにして、場所を見失うことなくそれらを切り替えてください。",
     "description": "Tab bar coachmark description"
   },
   "coachmarkDismiss": {
-    "message": "Got it",
+    "message": "わかった",
     "description": "Dismiss coachmark button"
   },
   "sampleDataTitle": {
-    "message": "Start with sample data?",
+    "message": "サンプルデータから始めますか?",
     "description": "Sample data offer title"
   },
   "sampleDataDescription": {
-    "message": "We can add a few example contacts and a deal ({template}) so you can explore before importing your own data.",
+    "message": "いくつかの連絡先の例と取引 ({template}) を追加して、独自のデータをインポートする前に探索できるようにすることができます。",
     "description": "Sample data offer description"
   },
   "sampleDataNote": {
-    "message": "Sample records are clearly labeled. You can delete them anytime.",
+    "message": "サンプルレコードには明確にラベルが付けられています。いつでも削除できます。",
     "description": "Sample data disclaimer"
   },
   "sampleDataAccept": {
-    "message": "Add sample data",
+    "message": "サンプルデータの追加",
     "description": "Accept sample data button"
   },
   "sampleDataDecline": {
-    "message": "No thanks",
+    "message": "結構です",
     "description": "Decline sample data button"
   },
   "sampleDataTemplate_sales_default": {
-    "message": "Sales starter pack",
+    "message": "販売スターターパック",
     "description": "Default sales sample template label"
   },
   "sampleDataTemplate_support_default": {
-    "message": "Support starter pack",
+    "message": "サポートスターターパック",
     "description": "Default support sample template label"
   },
   "sampleDataTemplate_audit_default": {
-    "message": "Audit starter pack",
+    "message": "監査スターター パック",
     "description": "Default audit sample template label"
   },
   "welcomeSuggestedTaskLabel": {
-    "message": "Suggested first task",
+    "message": "提案された最初のタスク",
     "description": "Welcome panel suggested task label"
   },
   "stepFounderInviteTeammate": {
-    "message": "Invite a teammate",
+    "message": "チームメイトを招待する",
     "description": "Founder wizard invite step"
   },
   "inviteTeammateTitle": {
-    "message": "Invite a teammate",
+    "message": "チームメイトを招待する",
     "description": "Founder wizard invite step title"
   },
   "inviteTeammateSubtitle": {
-    "message": "Collaboration works better together. Send an invitation now or skip and do this later.",
+    "message": "コラボレーションは一緒に行うとより効果的に機能します。今すぐ招待状を送信するか、スキップして後で送信してください。",
     "description": "Founder wizard invite step subtitle"
   },
   "inviteRequiredFields": {
-    "message": "First name and email are required to send an invitation.",
+    "message": "招待状を送信するには、名前とメールアドレスが必要です。",
     "description": "Inline invite validation"
   },
   "inviteFailed": {
-    "message": "Unable to send the invitation. Try again or skip for now.",
+    "message": "招待状を送信できません。もう一度試すか、とりあえずスキップしてください。",
     "description": "Inline invite error"
   },
   "firstTimeDocumentsTitle": {
-    "message": "Store and share your files in one place",
+    "message": "ファイルを 1 か所に保存して共有する",
     "description": "First visit empty state for Documents"
   },
   "firstTimeDocumentsDescription": {
-    "message": "Upload contracts, SOPs, and knowledge articles. Link documents to people, deals, and cases.",
+    "message": "契約書、SOP、ナレッジ記事をアップロードします。ドキュメントを人、取引、ケースにリンクします。",
     "description": "First visit empty state description for Documents"
   },
   "firstTimeDocumentsAction": {
-    "message": "Upload a document",
+    "message": "ドキュメントをアップロードする",
     "description": "First visit CTA for Documents"
   },
   "trialBannerUnlimited": {
-    "message": "{days} days left in trial · {used} contacts",
+    "message": "トライアル期間は残り {days} 日 · 連絡先は {used} 件です",
     "description": "Trial banner when contact limit is unlimited"
   },
   "firstTimeReportsTitle": {
-    "message": "Turn your CRM data into insights",
+    "message": "CRM データを洞察に変える",
     "description": "First visit empty state for Analytics Reports"
   },
   "firstTimeReportsDescription": {
-    "message": "Build reports on deals, people, cases, and more — then publish and export results.",
+    "message": "取引、人物、ケースなどに関するレポートを作成し、結果を公開してエクスポートします。",
     "description": "First visit empty state description for Analytics Reports"
   },
   "firstTimeReportsAction": {
-    "message": "Create your first report",
+    "message": "最初のレポートを作成する",
     "description": "First visit CTA for Analytics Reports"
   },
   "localeLabel": {
-    "message": "Locale",
+    "message": "ロケール",
     "description": "Locale field label for workspace onboarding"
   },
   "regionalDetectedTitle": {
-    "message": "Detected region: {market}",
+    "message": "検出された領域: {market}",
     "description": "Onboarding regional bundle title"
   },
   "regionalDetectedBody": {
-    "message": "We pre-filled locale ({locale}) and currency ({currency}) from your time zone. You can change these before continuing.",
+    "message": "タイムゾーンからロケール ({locale}) と通貨 ({currency}) が事前に入力されています。続行する前にこれらを変更できます。",
     "description": "Onboarding regional bundle hint"
+  },
+  "emptyStateSalesDefault": {
+    "message": "最初の連絡先または取引を追加して、パイプラインの構築を開始します。",
+    "description": "Empty state copy for default sales vertical"
+  },
+  "emptyStateRetail": {
+    "message": "顧客と製品を追加し、カタログ品目でセールを作成します。",
+    "description": "Empty state copy for retail vertical"
+  },
+  "emptyStateRealEstate": {
+    "message": "買い手と不動産取引を追加して、サイト訪問と交渉を追跡します。",
+    "description": "Empty state copy for real estate vertical"
+  },
+  "emptyStateServices": {
+    "message": "メンバーを追加し、サービス ビジネスを運営するための予約をスケジュールします。",
+    "description": "Empty state copy for services vertical"
+  },
+  "emptyStateEducation": {
+    "message": "問い合わせをインポートするか学生を追加して、入学目標到達プロセスを開始します。",
+    "description": "Empty state copy for education vertical"
+  },
+  "emptyStateHealthcare": {
+    "message": "患者を追加し、予約を入れてクリニックのスケジュールを管理します。",
+    "description": "Empty state copy for healthcare vertical"
+  },
+  "emptyStateSaas": {
+    "message": "B2B パイプラインを追跡するアカウントと機会を追加します。",
+    "description": "Empty state copy for SaaS vertical"
+  },
+  "emptyStateAudit": {
+    "message": "検査フォームを作成し、最初の現場監査を割り当てます。",
+    "description": "Empty state copy for audit vertical"
+  },
+  "emptyStateAutomotive": {
+    "message": "購入者と車両在庫を追加し、試乗と見積もりを追跡します。",
+    "description": "Empty state copy for automotive vertical"
+  },
+  "emptyStateEvents": {
+    "message": "クライアント イベントを作成し、ベンダーをリンクして実行シートを作成します。",
+    "description": "Empty state copy for events vertical"
+  },
+  "emptyStateFieldService": {
+    "message": "サービス サイトを追加し、フィールド チームの訪問をスケジュールします。",
+    "description": "Empty state copy for field service vertical"
   }
 }

@@ -46,6 +46,7 @@ import {
   hasPortalModuleAccess,
   resolvePortalModulePermission
 } from '@/utils/portalModulePermissions';
+import { getTenantModuleLabelsByRoute } from '@/utils/registryModuleLabels';
 
 const LAST_ACTIVE_APP_ID_KEY = 'arivu-sidebar-last-active-app-id';
 
@@ -221,7 +222,14 @@ function buildApplications(
   return applications.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }
 
-function sidebarLabel(labelKey: string | undefined, fallback: string): { label: string; labelKey?: string } {
+function sidebarLabel(
+  labelKey: string | undefined,
+  fallback: string,
+  tenantLabel?: boolean
+): { label: string; labelKey?: string; tenantLabel?: boolean } {
+  if (tenantLabel) {
+    return { label: fallback, tenantLabel: true };
+  }
   return labelKey ? { label: fallback, labelKey } : { label: fallback };
 }
 
@@ -313,12 +321,13 @@ function buildCoreModulesFromRegistry(appRegistry: AppRegistry, snapshot: Permis
     .map((module) => {
       const moduleKey = module.moduleKey?.toLowerCase() || '';
 
-      const fallbackLabel = module.label || moduleKey;
-      const labelKey = getModuleLabelKey(moduleKey);
+      const fallbackLabel = module.pluralLabel || module.label || moduleKey;
+      const tenantLabel = module.tenantLabel === true;
+      const labelKey = tenantLabel ? undefined : getModuleLabelKey(moduleKey);
       return {
         kind: 'coreModule',
         id: moduleKey,
-        ...sidebarLabel(labelKey, fallbackLabel),
+        ...sidebarLabel(labelKey, fallbackLabel, tenantLabel),
         route: module.route || `/${moduleKey}`,
         icon: module.icon && module.icon !== 'module' ? module.icon : moduleKey,
         moduleKey,
@@ -385,12 +394,14 @@ async function fetchCoreModulesFromSettings(snapshot: PermissionSnapshot): Promi
         // The API returns icon as 'module', so we'll use moduleKey for icon lookup
         const icon = module.icon && module.icon !== 'module' ? module.icon : moduleKey;
 
-        const fallbackLabel = module.name || module.label || moduleKey;
-        const labelKey = getModuleLabelKey(moduleKey);
+        const fallbackLabel = module.name || module.pluralLabel || module.label || moduleKey;
+        const tenant = getTenantModuleLabelsByRoute(moduleKey);
+        const tenantLabel = tenant?.tenantLabel === true;
+        const labelKey = tenantLabel ? undefined : getModuleLabelKey(moduleKey);
         return {
           kind: 'coreModule',
           id: moduleKey,
-          ...sidebarLabel(labelKey, fallbackLabel),
+          ...sidebarLabel(labelKey, tenant?.plural || fallbackLabel, tenantLabel),
           route,
           icon,
           moduleKey,
@@ -532,10 +543,15 @@ function buildAppNav(appRegistry: AppRegistry, activeAppId: string, snapshot: Pe
     .map(
       (m) => {
         const moduleKeyLower = String(m.moduleKey || '').toLowerCase();
+        const tenantLabel = m.tenantLabel === true;
         return {
           kind: 'app',
           id: `${activeAppId}:${m.moduleKey}`,
-          ...sidebarLabel(getModuleLabelKey(m.moduleKey) || undefined, m.label),
+          ...sidebarLabel(
+            tenantLabel ? undefined : getModuleLabelKey(m.moduleKey) || undefined,
+            m.pluralLabel || m.label,
+            tenantLabel
+          ),
           route: m.route,
           icon:
             String(activeAppId || '').toUpperCase() === 'HELPDESK' &&

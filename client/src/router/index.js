@@ -120,9 +120,16 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/demo',
-    name: 'demo',
-    component: () => import('@/views/Demo.vue')
+    path: '/trial/setup',
+    name: 'trial-setup',
+    component: () => import('@/views/TrialSetupPage.vue'),
+    meta: { requiresAuth: false, hideShell: true }
+  },
+  {
+    path: '/start-trial',
+    name: 'start-trial',
+    component: () => import('@/views/Demo.vue'),
+    meta: { requiresAuth: false, hideShell: true }
   },
   {
     path: '/tools/email-smoke-test',

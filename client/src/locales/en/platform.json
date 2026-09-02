@@ -356,8 +356,8 @@
     "description": "Auto-migrated from landingPage"
   },
   "landingPageRequestDemo": {
-    "message": "Request Demo",
-    "description": "Auto-migrated from landingPage"
+    "message": "Start free trial",
+    "description": "Landing page primary CTA to start trial"
   },
   "landingPageStopWrestlingWithBloatedCrmPlug": {
     "message": "Stop wrestling with bloated CRM. Plug in, define your process, and automate customer engagement in less than a day.",

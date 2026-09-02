@@ -305,14 +305,14 @@ const countryButtonClass = computed(() => {
       ...shared,
       'outline-none',
       props.editorHeightClass,
-      props.invalid ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600',
+      'border-gray-200 dark:border-gray-600',
     ];
   }
 
   return [
     ...shared,
     'h-full focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:focus:border-indigo-400',
-    props.invalid ? 'border-red-500 dark:border-red-500' : 'border-gray-200 dark:border-gray-600',
+    'border-gray-200 dark:border-gray-600',
   ];
 });
 

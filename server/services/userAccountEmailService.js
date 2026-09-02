@@ -3,7 +3,7 @@
 const emailProviderGateway = require('../platform/communication/providers/emailProviderGateway');
 const emailService = require('./emailService');
 const { escapeHtml, buildEmailShell } = require('../utils/appointmentEmailUtils');
-const { buildInviteUrl, buildVerifyEmailUrl, buildResetPasswordUrl } = require('../utils/userAuthTokens');
+const { buildInviteUrl, buildVerifyEmailUrl, buildTrialSetupVerifyUrl, buildTrialSetupContinueUrl, buildResetPasswordUrl } = require('../utils/userAuthTokens');
 
 /**
  * Send account lifecycle mail (invite, verification).
@@ -356,6 +356,140 @@ async function sendVerificationEmail({
   });
 }
 
+function buildDemoTrialVerificationEmailContent({ contactName, companyName, verifyUrl, email }) {
+  const name = String(contactName || '').trim().split(' ')[0] || 'there';
+  const company = String(companyName || '').trim() || 'your company';
+  const recipientEmail = String(email || '').trim().toLowerCase();
+  const subject = 'Verify your email to set up your Arivu workspace';
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:15px;color:#3f3f46;line-height:1.6;">
+      Hi ${escapeHtml(name)}, thanks for your interest in Arivu for
+      <strong>${escapeHtml(company)}</strong>.
+    </p>
+    <p style="margin:0 0 16px;font-size:14px;color:#52525b;line-height:1.6;">
+      Verify your email to choose your industry, preview your workspace, and get started in minutes.
+    </p>
+    ${recipientEmail ? `<p style="margin:0 0 16px;font-size:14px;color:#52525b;line-height:1.6;">
+      We sent this link to <strong>${escapeHtml(recipientEmail)}</strong>.
+    </p>` : ''}
+    <p style="margin:0 0 24px;">
+      <a href="${escapeHtml(verifyUrl)}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">
+        Verify email and continue
+      </a>
+    </p>
+    <p style="margin:0 0 16px;font-size:12px;color:#71717a;line-height:1.6;word-break:break-all;">
+      Or copy and paste this link into your browser:<br />
+      <a href="${escapeHtml(verifyUrl)}" style="color:#4f46e5;text-decoration:underline;">${escapeHtml(verifyUrl)}</a>
+    </p>
+    <p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">
+      This link expires in 72 hours. If you did not request access, you can ignore this email.
+    </p>`;
+
+  const textLines = [
+    `Hi ${name},`,
+    '',
+    `Thanks for your interest in Arivu for ${company}.`,
+    '',
+    'Verify your email to choose your industry, preview your workspace, and get started.',
+  ];
+  if (recipientEmail) {
+    textLines.push('', `We sent this link to ${recipientEmail}.`);
+  }
+  textLines.push('', `Continue setup: ${verifyUrl}`, '', 'This link expires in 72 hours.');
+  const text = textLines.join('\n');
+
+  return {
+    subject,
+    text,
+    html: buildEmailShell({
+      title: 'Verify your email',
+      bodyHtml,
+      accentColor: '#4f46e5'
+    })
+  };
+}
+
+async function sendDemoTrialVerificationEmail({ to, contactName, companyName, verifyToken }) {
+  const verifyUrl = buildTrialSetupVerifyUrl(verifyToken);
+  const content = buildDemoTrialVerificationEmailContent({
+    contactName,
+    companyName,
+    verifyUrl,
+    email: to,
+  });
+
+  return sendAccountEmail({
+    organizationId: null,
+    to,
+    subject: content.subject,
+    text: content.text,
+    html: content.html,
+    replyTo: process.env.SYSTEM_EMAIL_REPLY_TO || process.env.EMAIL_REPLY_TO
+  });
+}
+
+function buildDemoTrialContinueEmailContent({ contactName, companyName, continueUrl }) {
+  const name = String(contactName || '').trim().split(' ')[0] || 'there';
+  const company = String(companyName || '').trim() || 'your company';
+  const subject = 'Continue setting up your Arivu workspace';
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:15px;color:#3f3f46;line-height:1.6;">
+      Hi ${escapeHtml(name)}, your email is verified for
+      <strong>${escapeHtml(company)}</strong>.
+    </p>
+    <p style="margin:0 0 16px;font-size:14px;color:#52525b;line-height:1.6;">
+      Continue setup to choose your industry and launch your workspace.
+    </p>
+    <p style="margin:0 0 24px;">
+      <a href="${escapeHtml(continueUrl)}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:8px;">
+        Continue setup
+      </a>
+    </p>
+    <p style="margin:0;font-size:13px;color:#71717a;line-height:1.5;">
+      This link expires in 24 hours.
+    </p>`;
+
+  const text = [
+    `Hi ${name},`,
+    '',
+    `Your email is verified for ${company}.`,
+    '',
+    'Continue setup to choose your industry and launch your workspace.',
+    '',
+    `Continue setup: ${continueUrl}`,
+  ].join('\n');
+
+  return {
+    subject,
+    text,
+    html: buildEmailShell({
+      title: 'Continue workspace setup',
+      bodyHtml,
+      accentColor: '#4f46e5'
+    })
+  };
+}
+
+async function sendDemoTrialContinueEmail({ to, contactName, companyName, setupToken }) {
+  const continueUrl = buildTrialSetupContinueUrl(setupToken);
+  const content = buildDemoTrialContinueEmailContent({
+    contactName,
+    companyName,
+    continueUrl
+  });
+
+  return sendAccountEmail({
+    organizationId: null,
+    to,
+    subject: content.subject,
+    text: content.text,
+    html: content.html,
+    replyTo: process.env.SYSTEM_EMAIL_REPLY_TO || process.env.EMAIL_REPLY_TO
+  });
+}
+
 function buildPortalInviteEmailContent({
   invitee,
   organizationName,
@@ -444,6 +578,8 @@ module.exports = {
   sendDemoWorkspaceReadyEmail,
   sendPortalInviteEmail,
   sendVerificationEmail,
+  sendDemoTrialVerificationEmail,
+  sendDemoTrialContinueEmail,
   sendPasswordResetEmail,
   buildInviteEmailContent,
   buildDemoWorkspaceReadyEmailContent,

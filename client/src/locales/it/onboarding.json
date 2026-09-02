@@ -1,410 +1,410 @@
 {
   "pageTitle": {
-    "message": "Set up your workspace",
+    "message": "Configura il tuo spazio di lavoro",
     "description": "Founder onboarding page title"
   },
   "stepIndicator": {
-    "message": "Step {current} of {total}",
+    "message": "Fase {current} di {total}",
     "description": "Wizard step indicator"
   },
   "founderWelcomeTitle": {
-    "message": "Welcome to Arivu, {name}",
+    "message": "Benvenuto ad Arivu, {name}",
     "description": "Founder onboarding welcome title"
   },
   "founderWelcomeSubtitle": {
-    "message": "Let's set up {organization} for your team.",
+    "message": "Impostiamo {organization} per il tuo team.",
     "description": "Founder onboarding welcome subtitle"
   },
   "goalPrompt": {
-    "message": "What do you want to do first?",
+    "message": "Cosa vuoi fare prima?",
     "description": "Goal selection prompt"
   },
   "goalSales": {
-    "message": "Manage sales pipeline",
+    "message": "Gestire la pipeline di vendita",
     "description": "Sales goal option"
   },
   "goalSupport": {
-    "message": "Handle customer support",
+    "message": "Gestire l'assistenza clienti",
     "description": "Support goal option"
   },
   "goalAudit": {
-    "message": "Run audits and inspections",
+    "message": "Eseguire audit e ispezioni",
     "description": "Audit goal option"
   },
   "goalExplore": {
-    "message": "Explore — show me everything",
+    "message": "Esplora: mostrami tutto",
     "description": "Explore goal option"
   },
   "workspaceTitle": {
-    "message": "Workspace basics",
+    "message": "Nozioni di base sull'area di lavoro",
     "description": "Workspace step title"
   },
   "workspaceSubtitle": {
-    "message": "These settings apply across your organization.",
+    "message": "Queste impostazioni si applicano a tutta l'organizzazione.",
     "description": "Workspace step subtitle"
   },
   "orgNameLabel": {
-    "message": "Organization name",
+    "message": "Nome dell'organizzazione",
     "description": "Org name field label"
   },
   "timeZoneLabel": {
-    "message": "Time zone",
+    "message": "Fuso orario",
     "description": "Timezone field label"
   },
   "currencyLabel": {
-    "message": "Currency",
+    "message": "Valuta",
     "description": "Currency field label"
   },
   "dateFormatLabel": {
-    "message": "Date format",
+    "message": "Formato data",
     "description": "Date format field label"
   },
   "continue": {
-    "message": "Continue",
+    "message": "Continuare",
     "description": "Continue button"
   },
   "skipStep": {
-    "message": "Skip for now",
+    "message": "Salta per ora",
     "description": "Skip step button"
   },
   "finishSetup": {
-    "message": "Go to home",
+    "message": "Vai a casa",
     "description": "Finish founder wizard"
   },
   "welcomeTitle": {
-    "message": "Welcome to {organization}, {name}",
+    "message": "Benvenuto a {organization}, {name}",
     "description": "Member welcome panel title"
   },
   "welcomeInvitedBy": {
-    "message": "{inviter} invited you as {role}.",
+    "message": "{inviter} ti ha invitato come {role}.",
     "description": "Inviter context line"
   },
   "welcomeAppsLabel": {
-    "message": "You have access to:",
+    "message": "Hai accesso a:",
     "description": "Entitled apps label"
   },
   "welcomeNoteLabel": {
-    "message": "Message from your team",
+    "message": "Messaggio dalla tua squadra",
     "description": "Welcome note label"
   },
   "welcomePrimaryCta": {
-    "message": "Get started",
+    "message": "Inizia",
     "description": "Welcome primary action"
   },
   "welcomeDismiss": {
-    "message": "Dismiss",
+    "message": "Congedare",
     "description": "Dismiss welcome panel"
   },
   "checklistTitle": {
-    "message": "Getting started",
+    "message": "Iniziare",
     "description": "Checklist card title"
   },
   "setupProgressTitle": {
-    "message": "Setup progress",
+    "message": "Avanzamento della configurazione",
     "description": "Org setup progress card title"
   },
   "progressLabel": {
-    "message": "{completed} of {total} complete",
+    "message": "{completed} di {total} completata",
     "description": "Progress label"
   },
   "trialBanner": {
-    "message": "{days} days left in trial · {used}/{limit} contacts",
+    "message": "{days} giorni rimasti nel processo · {used}/{limit} contatti",
     "description": "Trial banner on platform home"
   },
   "stepCompleteProfile": {
-    "message": "Complete your profile",
+    "message": "Completa il tuo profilo",
     "description": "Member step: profile"
   },
   "stepVisitModule": {
-    "message": "Open your primary workspace",
+    "message": "Apri il tuo spazio di lavoro principale",
     "description": "Member step: visit module"
   },
   "stepFirstAction": {
-    "message": "Take your first action",
+    "message": "Esegui la tua prima azione",
     "description": "Member step: first action"
   },
   "stepNotificationPrefs": {
-    "message": "Set notification preferences",
+    "message": "Imposta le preferenze di notifica",
     "description": "Member step: notifications"
   },
   "stepFounderGoal": {
-    "message": "Choose your focus",
+    "message": "Scegli il tuo obiettivo",
     "description": "Founder step: goal"
   },
   "stepFounderWorkspace": {
-    "message": "Configure workspace basics",
+    "message": "Configurare le nozioni di base dell'area di lavoro",
     "description": "Founder step: workspace"
   },
   "stepOrgWorkspace": {
-    "message": "Complete workspace profile",
+    "message": "Profilo completo dell'area di lavoro",
     "description": "Org step: workspace"
   },
   "stepOrgFirstRecord": {
-    "message": "Add your first contact or deal",
+    "message": "Aggiungi il tuo primo contatto o offerta",
     "description": "Org step: first record"
   },
   "stepOrgEmail": {
-    "message": "Connect email",
+    "message": "Connetti l'e-mail",
     "description": "Org step: email"
   },
   "stepOrgInvite": {
-    "message": "Invite a teammate",
+    "message": "Invita un compagno di squadra",
     "description": "Org step: invite"
   },
   "stepOrgImport": {
-    "message": "Import existing data",
+    "message": "Importa dati esistenti",
     "description": "Org step: import"
   },
   "stepOrgSettings": {
-    "message": "Explore settings",
+    "message": "Esplora le impostazioni",
     "description": "Org step: settings"
   },
   "actionOpenSetup": {
-    "message": "Continue setup",
+    "message": "Continua la configurazione",
     "description": "Primary action for founder welcome"
   },
   "actionOpenModule": {
-    "message": "Open your workspace",
+    "message": "Apri il tuo spazio di lavoro",
     "description": "Primary action for member welcome"
   },
   "goalSalesKey": {
-    "message": "Sales",
+    "message": "Saldi",
     "description": "Goal key label sales"
   },
   "goalSupportKey": {
-    "message": "Support",
+    "message": "Supporto",
     "description": "Goal key label support"
   },
   "goalAuditKey": {
-    "message": "Audit",
+    "message": "Controllo",
     "description": "Goal key label audit"
   },
   "goalExploreKey": {
-    "message": "Explore",
+    "message": "Esplorare",
     "description": "Goal key label explore"
   },
   "stepFounderFirstApp": {
-    "message": "Choose your primary app",
+    "message": "Scegli la tua app principale",
     "description": "Founder step: first app"
   },
   "stepFounderFirstRecord": {
-    "message": "Add your first contact",
+    "message": "Aggiungi il tuo primo contatto",
     "description": "Founder step: first record"
   },
   "firstAppTitle": {
-    "message": "Your primary app",
+    "message": "La tua app principale",
     "description": "First app step title"
   },
   "firstAppSubtitle": {
-    "message": "Pick where you'll spend most of your time. You can change this later.",
+    "message": "Scegli dove trascorrerai la maggior parte del tuo tempo. Puoi modificarlo in seguito.",
     "description": "First app step subtitle"
   },
   "firstRecordTitle": {
-    "message": "Add your first contact",
+    "message": "Aggiungi il tuo primo contatto",
     "description": "First record step title"
   },
   "firstRecordSubtitle": {
-    "message": "Create one contact to see how Arivu works.",
+    "message": "Crea un contatto per vedere come funziona Arivu.",
     "description": "First record step subtitle"
   },
   "firstNameLabel": {
-    "message": "First name",
+    "message": "Nome di battesimo",
     "description": "Contact first name label"
   },
   "lastNameLabel": {
-    "message": "Last name",
+    "message": "Cognome",
     "description": "Contact last name label"
   },
   "emailLabel": {
-    "message": "Email",
+    "message": "E-mail",
     "description": "Contact email label optional"
   },
   "profileTitle": {
-    "message": "Your profile",
+    "message": "Il tuo profilo",
     "description": "Invite accept profile step title"
   },
   "profileSubtitle": {
-    "message": "Help your team recognize you.",
+    "message": "Aiuta la tua squadra a riconoscerti.",
     "description": "Invite accept profile subtitle"
   },
   "languageLabel": {
-    "message": "Language",
+    "message": "Lingua",
     "description": "Profile language label"
   },
   "appsPreviewLabel": {
-    "message": "You'll have access to:",
+    "message": "Avrai accesso a:",
     "description": "Entitled apps on invite accept"
   },
   "firstTimePeopleTitle": {
-    "message": "Your contact list starts here",
+    "message": "L'elenco dei tuoi contatti inizia qui",
     "description": "First visit empty state for People"
   },
   "firstTimePeopleDescription": {
-    "message": "Add people to track relationships, deals, and support history in one place.",
+    "message": "Aggiungi persone per tenere traccia di relazioni, affari e cronologia del supporto in un unico posto.",
     "description": "First visit empty state description for People"
   },
   "firstTimePeopleAction": {
-    "message": "Add your first contact",
+    "message": "Aggiungi il tuo primo contatto",
     "description": "First visit CTA for People"
   },
   "firstTimeDealsTitle": {
-    "message": "Track opportunities here",
+    "message": "Tieni traccia delle opportunità qui",
     "description": "First visit empty state for Deals"
   },
   "firstTimeDealsDescription": {
-    "message": "Create deals to follow pipeline stages from first touch to close.",
+    "message": "Crea trattative per seguire le fasi della pipeline dal primo contatto alla chiusura.",
     "description": "First visit empty state description for Deals"
   },
   "firstTimeDealsAction": {
-    "message": "Create your first deal",
+    "message": "Crea il tuo primo affare",
     "description": "First visit CTA for Deals"
   },
   "firstTimeTasksTitle": {
-    "message": "Stay on top of follow-ups",
+    "message": "Rimani aggiornato sui follow-up",
     "description": "First visit empty state for Tasks"
   },
   "firstTimeTasksDescription": {
-    "message": "Tasks help you and your team know what to do next.",
+    "message": "Le attività aiutano te e il tuo team a sapere cosa fare dopo.",
     "description": "First visit empty state description for Tasks"
   },
   "firstTimeTasksAction": {
-    "message": "Create a task",
+    "message": "Crea un'attività",
     "description": "First visit CTA for Tasks"
   },
   "firstTimeCasesTitle": {
-    "message": "Resolve customer issues here",
+    "message": "Risolvi i problemi dei clienti qui",
     "description": "First visit empty state for Cases"
   },
   "firstTimeCasesDescription": {
-    "message": "Cases keep support requests organized from open to resolved.",
+    "message": "I casi mantengono le richieste di supporto organizzate da aperte a risolte.",
     "description": "First visit empty state description for Cases"
   },
   "firstTimeCasesAction": {
-    "message": "Create a case",
+    "message": "Crea un caso",
     "description": "First visit CTA for Cases"
   },
   "firstTimeOrganizationsTitle": {
-    "message": "Manage accounts and companies",
+    "message": "Gestire conti e aziende",
     "description": "First visit empty state for Organizations"
   },
   "firstTimeOrganizationsDescription": {
-    "message": "Organizations group contacts and deals under the companies you work with.",
+    "message": "Le organizzazioni raggruppano contatti e accordi sotto le aziende con cui lavori.",
     "description": "First visit empty state description for Organizations"
   },
   "firstTimeOrganizationsAction": {
-    "message": "Add an organization",
+    "message": "Aggiungi un'organizzazione",
     "description": "First visit CTA for Organizations"
   },
   "coachmarkSidebarTitle": {
-    "message": "Your apps live here",
+    "message": "Naviga dalla barra laterale",
     "description": "Sidebar coachmark title"
   },
   "coachmarkSidebarDescription": {
-    "message": "Switch between Sales, Helpdesk, and other apps you have access to.",
+    "message": "Home, Inbox e le tue app vivono su questo binario. Seleziona un'app per aprire i suoi moduli o passa il mouse per una rapida anteprima.",
     "description": "Sidebar coachmark description"
   },
   "coachmarkCommandPaletteTitle": {
-    "message": "Find anything fast",
+    "message": "Cerca da qualsiasi luogo",
     "description": "Command palette coachmark title"
   },
   "coachmarkCommandPaletteDescription": {
-    "message": "Search records and run actions from here. Tip: press ⌘K (Ctrl+K on Windows).",
+    "message": "Trova persone, offerte, casi e altro ancora oppure passa direttamente a un modulo. Premi ⌘K (Ctrl+K su Windows) in qualsiasi momento.",
     "description": "Command palette coachmark description"
   },
   "coachmarkTabsTitle": {
-    "message": "Records open in tabs",
+    "message": "Lavora a schede",
     "description": "Tab bar coachmark title"
   },
   "coachmarkTabsDescription": {
-    "message": "Open multiple records at once and switch between them without losing your place.",
+    "message": "Ogni record si apre nella propria scheda. Mantienine diversi aperti e passa dall'uno all'altro senza perdere la posizione.",
     "description": "Tab bar coachmark description"
   },
   "coachmarkDismiss": {
-    "message": "Got it",
+    "message": "Fatto",
     "description": "Dismiss coachmark button"
   },
   "sampleDataTitle": {
-    "message": "Start with sample data?",
+    "message": "Iniziare con dati di esempio?",
     "description": "Sample data offer title"
   },
   "sampleDataDescription": {
-    "message": "We can add a few example contacts and a deal ({template}) so you can explore before importing your own data.",
+    "message": "Possiamo aggiungere alcuni contatti di esempio e un'offerta ({template}) in modo che tu possa esplorarli prima di importare i tuoi dati.",
     "description": "Sample data offer description"
   },
   "sampleDataNote": {
-    "message": "Sample records are clearly labeled. You can delete them anytime.",
+    "message": "I record dei campioni sono chiaramente etichettati. Puoi eliminarli in qualsiasi momento.",
     "description": "Sample data disclaimer"
   },
   "sampleDataAccept": {
-    "message": "Add sample data",
+    "message": "Aggiungi dati di esempio",
     "description": "Accept sample data button"
   },
   "sampleDataDecline": {
-    "message": "No thanks",
+    "message": "No grazie",
     "description": "Decline sample data button"
   },
   "sampleDataTemplate_sales_default": {
-    "message": "Sales starter pack",
+    "message": "Pacchetto iniziale di vendita",
     "description": "Default sales sample template label"
   },
   "sampleDataTemplate_support_default": {
-    "message": "Support starter pack",
+    "message": "Pacchetto iniziale di supporto",
     "description": "Default support sample template label"
   },
   "sampleDataTemplate_audit_default": {
-    "message": "Audit starter pack",
+    "message": "Pacchetto iniziale di audit",
     "description": "Default audit sample template label"
   },
   "welcomeSuggestedTaskLabel": {
-    "message": "Suggested first task",
+    "message": "Primo compito suggerito",
     "description": "Welcome panel suggested task label"
   },
   "stepFounderInviteTeammate": {
-    "message": "Invite a teammate",
+    "message": "Invita un compagno di squadra",
     "description": "Founder wizard invite step"
   },
   "inviteTeammateTitle": {
-    "message": "Invite a teammate",
+    "message": "Invita un compagno di squadra",
     "description": "Founder wizard invite step title"
   },
   "inviteTeammateSubtitle": {
-    "message": "Collaboration works better together. Send an invitation now or skip and do this later.",
+    "message": "La collaborazione funziona meglio insieme. Invia un invito adesso oppure salta e fallo più tardi.",
     "description": "Founder wizard invite step subtitle"
   },
   "inviteRequiredFields": {
-    "message": "First name and email are required to send an invitation.",
+    "message": "Per inviare un invito sono necessari il nome e l'e-mail.",
     "description": "Inline invite validation"
   },
   "inviteFailed": {
-    "message": "Unable to send the invitation. Try again or skip for now.",
+    "message": "Impossibile inviare l'invito. Riprova o salta per ora.",
     "description": "Inline invite error"
   },
   "firstTimeDocumentsTitle": {
-    "message": "Store and share your files in one place",
+    "message": "Archivia e condividi i tuoi file in un unico posto",
     "description": "First visit empty state for Documents"
   },
   "firstTimeDocumentsDescription": {
-    "message": "Upload contracts, SOPs, and knowledge articles. Link documents to people, deals, and cases.",
+    "message": "Carica contratti, SOP e articoli informativi. Collega documenti a persone, trattative e casi.",
     "description": "First visit empty state description for Documents"
   },
   "firstTimeDocumentsAction": {
-    "message": "Upload a document",
+    "message": "Carica un documento",
     "description": "First visit CTA for Documents"
   },
   "trialBannerUnlimited": {
-    "message": "{days} days left in trial · {used} contacts",
+    "message": "{days} giorni rimasti nel processo · {used} contatti",
     "description": "Trial banner when contact limit is unlimited"
   },
   "firstTimeReportsTitle": {
-    "message": "Turn your CRM data into insights",
+    "message": "Trasforma i tuoi dati CRM in insight",
     "description": "First visit empty state for Analytics Reports"
   },
   "firstTimeReportsDescription": {
-    "message": "Build reports on deals, people, cases, and more — then publish and export results.",
+    "message": "Crea report su affari, persone, casi e altro ancora, quindi pubblica ed esporta i risultati.",
     "description": "First visit empty state description for Analytics Reports"
   },
   "firstTimeReportsAction": {
-    "message": "Create your first report",
+    "message": "Crea il tuo primo rapporto",
     "description": "First visit CTA for Analytics Reports"
   },
   "localeLabel": {
@@ -412,11 +412,55 @@
     "description": "Locale field label for workspace onboarding"
   },
   "regionalDetectedTitle": {
-    "message": "Detected region: {market}",
+    "message": "Regione rilevata: {market}",
     "description": "Onboarding regional bundle title"
   },
   "regionalDetectedBody": {
-    "message": "We pre-filled locale ({locale}) and currency ({currency}) from your time zone. You can change these before continuing.",
+    "message": "Abbiamo precompilato la lingua ({locale}) e la valuta ({currency}) in base al tuo fuso orario. Puoi modificarli prima di continuare.",
     "description": "Onboarding regional bundle hint"
+  },
+  "emptyStateSalesDefault": {
+    "message": "Aggiungi il tuo primo contatto o offerta per iniziare a costruire la tua pipeline.",
+    "description": "Empty state copy for default sales vertical"
+  },
+  "emptyStateRetail": {
+    "message": "Aggiungi clienti e prodotti, quindi crea una vendita con elementi pubblicitari del catalogo.",
+    "description": "Empty state copy for retail vertical"
+  },
+  "emptyStateRealEstate": {
+    "message": "Aggiungi acquirenti e offerte immobiliari per tenere traccia delle visite e delle trattative sul tuo sito.",
+    "description": "Empty state copy for real estate vertical"
+  },
+  "emptyStateServices": {
+    "message": "Aggiungi membri e pianifica appuntamenti per gestire la tua attività di servizi.",
+    "description": "Empty state copy for services vertical"
+  },
+  "emptyStateEducation": {
+    "message": "Importa richieste o aggiungi studenti per avviare il tuo canale di ammissione.",
+    "description": "Empty state copy for education vertical"
+  },
+  "emptyStateHealthcare": {
+    "message": "Aggiungi pazienti e prenota appuntamenti per gestire il programma della tua clinica.",
+    "description": "Empty state copy for healthcare vertical"
+  },
+  "emptyStateSaas": {
+    "message": "Aggiungi account e opportunità per monitorare la tua pipeline B2B.",
+    "description": "Empty state copy for SaaS vertical"
+  },
+  "emptyStateAudit": {
+    "message": "Crea un modulo di ispezione e assegna il tuo primo audit sul campo.",
+    "description": "Empty state copy for audit vertical"
+  },
+  "emptyStateAutomotive": {
+    "message": "Aggiungi acquirenti e inventario dei veicoli, quindi monitora test drive e preventivi.",
+    "description": "Empty state copy for automotive vertical"
+  },
+  "emptyStateEvents": {
+    "message": "Crea un evento cliente e collega i fornitori per creare il tuo foglio di esecuzione.",
+    "description": "Empty state copy for events vertical"
+  },
+  "emptyStateFieldService": {
+    "message": "Aggiungi siti di servizio e pianifica le visite per la tua squadra sul campo.",
+    "description": "Empty state copy for field service vertical"
   }
 }

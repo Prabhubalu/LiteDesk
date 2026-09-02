@@ -24,6 +24,8 @@ export function resolveDefaultPhoneCountry(opts: {
   orgCurrency?: string | null;
 }): string;
 
+export function resolveBrowserPhoneCountry(): string;
+
 export function getPhoneCountry(iso2?: string): PhoneCountry | undefined;
 export function sanitizePhoneDigits(value: unknown, maxLen?: number): string;
 export function parsePhoneValue(

@@ -18,6 +18,7 @@
 import { defineStore } from 'pinia';
 import { useAuthStore } from './authRegistry';
 import { fetchAppRegistryFromNetwork } from '@/utils/appRegistryNetwork';
+import { indexRegistryModuleLabels, clearRegistryModuleLabels } from '@/utils/registryModuleLabels';
 import apiClient from '@/utils/apiClient';
 
 export const useAppShellStore = defineStore('appShell', {
@@ -177,6 +178,7 @@ export const useAppShellStore = defineStore('appShell', {
 
       this._appRegistryPromise = (async () => {
         const registry = await fetchAppRegistryFromNetwork();
+        indexRegistryModuleLabels(registry);
         this.cachedAppRegistry = registry;
         this.appRegistrySessionKey = sessionKey;
 
@@ -206,6 +208,7 @@ export const useAppShellStore = defineStore('appShell', {
     },
 
     invalidateAppRegistryCache() {
+      clearRegistryModuleLabels();
       this.cachedAppRegistry = null;
       this.appRegistrySessionKey = null;
       this._appRegistryPromise = null;

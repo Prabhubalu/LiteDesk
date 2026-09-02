@@ -51,7 +51,7 @@ const brandLogoSrc = computed(() =>
             <p class="mt-10 text-center text-smd/6 text-gray-500">
               {{ t('auth.noAccount') }}
               {{ ' ' }}
-              <router-link to="/demo" class="font-semibold text-indigo-600 hover:text-indigo-500">
+              <router-link to="/start-trial" class="font-semibold text-indigo-600 hover:text-indigo-500">
                 {{ t('auth.requestDemo') }}
               </router-link>
             </p>

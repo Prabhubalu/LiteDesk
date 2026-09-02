@@ -281,6 +281,14 @@ exports.registerUser = async (req, res) => {
         } = require('../utils/rbacFeatureFlags');
         const useRbacV2Seed = shouldSeedRbacV2ForNewOrganization();
         const rbacSettings = getNewOrganizationRbacSettings();
+        const { resolveVerticalTemplate } = require('../services/onboardingVerticalTemplates');
+        const {
+            buildEnabledAppsArray,
+            resolveEnabledModulesFromTemplate,
+            applyVerticalPresets,
+            resolveEnabledAppsForTemplate,
+        } = require('../services/verticalPresetService');
+        const registrationTemplate = resolveVerticalTemplate({ industry: vertical });
 
         const organization = await Organization.create({
             name: organizationName || `${username}'s Organization`,
@@ -298,12 +306,8 @@ exports.registerUser = async (req, res) => {
                 maxDeals: 50,
                 maxStorageGB: 1
             },
-            enabledModules: ['contacts', 'deals', 'tasks', 'events'],
-            enabledApps: [{
-                appKey: 'SALES',
-                status: 'ACTIVE',
-                enabledAt: new Date()
-            }],
+            enabledModules: resolveEnabledModulesFromTemplate(registrationTemplate.key),
+            enabledApps: buildEnabledAppsArray(registrationTemplate.key),
             settings: {
                 ...rbacSettings
             }
@@ -360,9 +364,15 @@ exports.registerUser = async (req, res) => {
         }
         console.log('\n');
 
-        // NOTE: Sales module initialization (People, Pipeline Entity) has been moved to salesAppInitializer
-        // This keeps registration app-agnostic. Sales initialization should be called separately
-        // when Sales app is enabled for the organization.
+        try {
+            const presetResult = await applyVerticalPresets(organization._id, registrationTemplate.key);
+            if (presetResult.applied) {
+                console.log(`✅ Vertical presets applied: ${registrationTemplate.key}`);
+            }
+        } catch (presetError) {
+            console.warn('⚠️  Failed to apply vertical presets:', presetError.message);
+        }
+        console.log('\n');
 
         // 2. Hash Password
         console.log('🔍 Step 4: Hashing password...');
@@ -373,6 +383,7 @@ exports.registerUser = async (req, res) => {
         // 3. Create Owner User
         console.log('🔍 Step 5: Creating owner user...');
         console.log('   Linking to Organization ID:', organization._id);
+        const registrationAppKeys = resolveEnabledAppsForTemplate(registrationTemplate.key);
         const user = await User.create({
             organizationId: organization._id,
             username,
@@ -384,13 +395,13 @@ exports.registerUser = async (req, res) => {
             isOwner: true,
             status: 'active',
             userType: 'INTERNAL',
-            appAccess: [{
-                appKey: APP_KEYS.SALES,
+            appAccess: registrationAppKeys.map((appKey) => ({
+                appKey,
                 roleKey: 'ADMIN',
                 status: 'ACTIVE',
                 addedAt: new Date()
-            }],
-            allowedApps: [APP_KEYS.SALES]
+            })),
+            allowedApps: registrationAppKeys
         });
         console.log('✅ ✅ ✅ USER CREATED SUCCESSFULLY! ✅ ✅ ✅');
         console.log('   ID:', user._id);

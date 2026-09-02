@@ -114,6 +114,11 @@ function mapRawModulesToRegistryModules(app: { appKey: string }, modulesData: an
     return {
       moduleKey: module.moduleKey,
       label: normalizedLabel,
+      singularLabel: module.singularLabel,
+      pluralLabel: module.pluralLabel,
+      listLabel: module.listLabel,
+      createLabel: module.createLabel,
+      tenantLabel: module.tenantLabel === true,
       route,
       permission: resolveModulePermission(app.appKey, module.moduleKey),
       icon: module.icon,
@@ -530,6 +535,11 @@ function addPlatformModulesToRegistry(registry: AppRegistry, entityModules: any[
   const platformModulesRaw = entityModules.map((module: any) => ({
     moduleKey: module.moduleKey,
     label: module.label,
+    singularLabel: module.singularLabel,
+    pluralLabel: module.pluralLabel,
+    listLabel: module.listLabel,
+    createLabel: module.createLabel,
+    tenantLabel: module.tenantLabel === true,
     route: module.routeBase || `/${module.moduleKey}`,
     permission: `${module.moduleKey}.view`,
     icon: module.icon,

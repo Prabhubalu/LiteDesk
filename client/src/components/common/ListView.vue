@@ -2434,9 +2434,23 @@ const loadSavedColumnSettings = () => {
         }
         // Cases: guard against old saved settings that included internal/system keys
         if (props.moduleKey === 'cases') {
-          return sanitized.filter((c) => c && c.key && !String(c.key).includes('.'));
+          return sanitized
+            .filter((c) => c && c.key && !String(c.key).includes('.'))
+            .map((savedCol) => {
+              const propCol = props.columns.find((col) => col.key === savedCol.key);
+              return {
+                ...savedCol,
+                label: propCol?.label || savedCol.label,
+              };
+            });
         }
-        return sanitized;
+        return sanitized.map((savedCol) => {
+          const propCol = props.columns.find((col) => col.key === savedCol.key);
+          return {
+            ...savedCol,
+            label: propCol?.label || savedCol.label,
+          };
+        });
       }
     }
   } catch (error) {
@@ -3093,7 +3107,7 @@ const initializeColumns = async () => {
       if (originalCol || backendField) {
         orderedColumns.push({
           key: saved.key,
-          label: saved.label || originalCol?.label || backendField?.label || saved.key,
+          label: originalCol?.label || saved.label || backendField?.label || saved.key,
           visible: saved.visible !== undefined ? saved.visible : false,
           sortable: originalCol?.sortable !== false,
           dataType: saved.dataType || originalCol?.dataType || backendField?.dataType || 'Text',

@@ -5,6 +5,7 @@
 import { MODULE_LABEL_KEYS } from '@/utils/navigationLabels';
 import { resolveFieldLabel } from '@/utils/fieldLabelResolver';
 import { formatKeyToLabel } from '@/utils/fieldDisplay';
+import { getTenantModuleLabelsByRoute, applyTenantModuleTermsToLabel } from '@/utils/registryModuleLabels';
 
 /** @type {Record<string, string>} */
 const MODULE_I18N_NS = {
@@ -246,6 +247,9 @@ const MODULE_SEARCH_KEYS = {
  * @param {(key: string) => boolean} te
  */
 export function resolveModuleDisplayLabel(moduleKey, t, te) {
+  const tenant = getTenantModuleLabelsByRoute(moduleKey);
+  if (tenant?.tenantLabel) return tenant.plural;
+
   const navKey = MODULE_LABEL_KEYS[moduleKey];
   if (navKey && te(navKey)) return t(navKey);
   const fallback = moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1);
@@ -260,25 +264,38 @@ export function resolveModuleDisplayLabel(moduleKey, t, te) {
  * @param {(key: string) => boolean} te
  */
 export function resolveListViewLabel(moduleKey, viewId, fallback, t, te) {
+  const tenant = getTenantModuleLabelsByRoute(moduleKey);
+  if (tenant?.tenantLabel) {
+    if (viewId === 'all') return tenant.listLabel;
+    if (viewId === 'my-deals' || viewId === 'assigned-to-me') {
+      return `My ${tenant.plural}`;
+    }
+    if (viewId === 'my-quotes') return `My ${tenant.plural}`;
+    if (viewId === 'my-orders') return `My ${tenant.plural}`;
+    if (viewId === 'my-events') return `My ${tenant.plural}`;
+  }
+
   const explicit = SYSTEM_VIEW_KEYS[moduleKey]?.[viewId];
-  if (explicit && te(explicit)) return t(explicit);
+  if (explicit && te(explicit)) {
+    return applyTenantModuleTermsToLabel(moduleKey, t(explicit));
+  }
 
   const ns = MODULE_I18N_NS[moduleKey];
   if (viewId === 'all' && ns) {
     const key = `${ns}.listViewAll`;
-    if (te(key)) return t(key);
+    if (te(key)) return applyTenantModuleTermsToLabel(moduleKey, t(key));
     return t('common.listViewAllModule', { module: resolveModuleDisplayLabel(moduleKey, t, te) });
   }
   if (viewId === 'assigned-to-me' && ns) {
     const key = `${ns}.listViewMy`;
-    if (te(key)) return t(key);
+    if (te(key)) return applyTenantModuleTermsToLabel(moduleKey, t(key));
     return t('common.listViewMyModule', { module: resolveModuleDisplayLabel(moduleKey, t, te) });
   }
 
   const shared = SHARED_STAT_KEYS[viewId];
   if (shared && te(shared)) return t(shared);
 
-  return fallback;
+  return applyTenantModuleTermsToLabel(moduleKey, fallback);
 }
 
 /**
@@ -290,10 +307,12 @@ export function resolveListViewLabel(moduleKey, viewId, fallback, t, te) {
  */
 export function resolveListStatLabel(moduleKey, statKey, fallback, t, te) {
   const modKey = MODULE_STAT_KEYS[moduleKey]?.[statKey];
-  if (modKey && te(modKey)) return t(modKey);
+  if (modKey && te(modKey)) {
+    return applyTenantModuleTermsToLabel(moduleKey, t(modKey));
+  }
   const shared = SHARED_STAT_KEYS[statKey];
   if (shared && te(shared)) return t(shared);
-  return fallback;
+  return applyTenantModuleTermsToLabel(moduleKey, fallback);
 }
 
 /**
@@ -302,6 +321,11 @@ export function resolveListStatLabel(moduleKey, statKey, fallback, t, te) {
  * @param {(key: string) => boolean} te
  */
 export function resolveListSearchPlaceholder(moduleKey, t, te) {
+  const tenant = getTenantModuleLabelsByRoute(moduleKey);
+  if (tenant?.tenantLabel) {
+    return `Search ${tenant.plural.toLowerCase()}...`;
+  }
+
   const explicit = MODULE_SEARCH_KEYS[moduleKey];
   if (explicit && te(explicit)) return t(explicit);
 
@@ -322,12 +346,15 @@ export function resolveListSearchPlaceholder(moduleKey, t, te) {
  * @param {(key: string) => boolean} te
  */
 export function resolveListCreateLabel(moduleKey, fallback, t, te) {
+  const tenant = getTenantModuleLabelsByRoute(moduleKey);
+  if (tenant?.tenantLabel) return tenant.createLabel;
+
   const key = CREATE_LABEL_KEYS[moduleKey];
-  if (key && te(key)) return t(key);
+  if (key && te(key)) return applyTenantModuleTermsToLabel(moduleKey, t(key));
   if (te('common.listCreateModule')) {
     return t('common.listCreateModule', { module: resolveModuleDisplayLabel(moduleKey, t, te) });
   }
-  return fallback;
+  return applyTenantModuleTermsToLabel(moduleKey, fallback);
 }
 
 /**
@@ -340,12 +367,12 @@ export function resolveListCreateLabel(moduleKey, fallback, t, te) {
 export function resolveListColumnLabel(moduleKey, columnKey, fallback, t, te) {
   const resolved = resolveFieldLabel(moduleKey, { key: columnKey, label: fallback }, t, te);
   const key = String(columnKey || '').trim();
-  const label = String(resolved || fallback || '').trim();
-  if (!label || label === key) return formatKeyToLabel(key);
+  let label = String(resolved || fallback || '').trim();
+  if (!label || label === key) label = formatKeyToLabel(key);
   const keyNorm = key.replace(/[\s_-]+/g, '').toLowerCase();
   const labelNorm = label.replace(/[\s_-]+/g, '').toLowerCase();
-  if (keyNorm && labelNorm === keyNorm && !/\s/.test(label)) return formatKeyToLabel(key);
-  return label;
+  if (keyNorm && labelNorm === keyNorm && !/\s/.test(label)) label = formatKeyToLabel(key);
+  return applyTenantModuleTermsToLabel(moduleKey, label);
 }
 
 /**

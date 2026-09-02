@@ -2,43 +2,57 @@
 
 const People = require('../models/People');
 const Deal = require('../models/Deal');
+const Organization = require('../models/Organization');
 const {
   resolveVerticalTemplate,
-  getSampleContactsForTemplate
+  getSampleContactsForTemplate,
+  getSampleDealNameForTemplate,
 } = require('./onboardingVerticalTemplates');
 
-async function seedSampleDataForOrganization(organization, user) {
+async function seedSampleDataForOrganization(organization, user, options = {}) {
+  const { force = false } = options;
+
   if (!organization?._id || !user?._id) {
     const err = new Error('Organization and user required');
     err.code = 'VALIDATION_ERROR';
     throw err;
   }
 
-  if (organization.onboarding?.sampleDataAccepted) {
+  const orgDoc = organization.save
+    ? organization
+    : await Organization.findById(organization._id);
+
+  if (!orgDoc) {
+    const err = new Error('Organization not found');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  if (!force && orgDoc.onboarding?.sampleDataAccepted) {
     return { skipped: true, reason: 'already_accepted' };
   }
 
   const existing = await People.countDocuments({
-    organizationId: organization._id,
-    deletedAt: null
+    organizationId: orgDoc._id,
+    deletedAt: null,
   });
-  if (existing > 0) {
+  if (!force && existing > 0) {
     return { skipped: true, reason: 'has_data' };
   }
 
-  const template = resolveVerticalTemplate(organization);
+  const template = resolveVerticalTemplate(orgDoc);
   const contacts = getSampleContactsForTemplate(template.key);
   const createdPeople = [];
 
   for (const row of contacts) {
     const person = await People.create({
-      organizationId: organization._id,
+      organizationId: orgDoc._id,
       createdBy: user._id,
       assignedTo: user._id,
       first_name: row.first_name,
       last_name: row.last_name,
       email: row.email,
-      source: row.source || 'Sample'
+      source: row.source || 'Sample',
     });
     createdPeople.push(person);
   }
@@ -49,33 +63,34 @@ async function seedSampleDataForOrganization(organization, user) {
       const closeDate = new Date();
       closeDate.setDate(closeDate.getDate() + 30);
       deal = await Deal.create({
-        organizationId: organization._id,
-        name: 'Sample opportunity',
+        organizationId: orgDoc._id,
+        name: getSampleDealNameForTemplate(template.key),
         assignedTo: user._id,
         contactId: createdPeople[0]._id,
         stage: 'Prospecting',
         amount: 5000,
-        currency: organization.settings?.currency || 'USD',
-        expectedCloseDate: closeDate
+        currency: orgDoc.settings?.currency || 'USD',
+        expectedCloseDate: closeDate,
       });
     } catch (dealErr) {
       console.warn('[onboardingSampleData] Deal seed skipped:', dealErr.message);
     }
   }
 
-  if (!organization.onboarding) {
-    organization.onboarding = { steps: [] };
+  if (!orgDoc.onboarding) {
+    orgDoc.onboarding = { steps: [] };
   }
-  organization.onboarding.sampleDataAccepted = true;
-  await organization.save();
+  orgDoc.onboarding.sampleDataAccepted = true;
+  await orgDoc.save();
 
   return {
     skipped: false,
     peopleCreated: createdPeople.length,
-    dealCreated: Boolean(deal)
+    dealCreated: Boolean(deal),
+    templateKey: template.key,
   };
 }
 
 module.exports = {
-  seedSampleDataForOrganization
+  seedSampleDataForOrganization,
 };

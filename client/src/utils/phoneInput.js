@@ -136,6 +136,35 @@ export function resolveDefaultPhoneCountry({
   return DEFAULT_PHONE_COUNTRY;
 }
 
+/**
+ * Public/anonymous forms (signup, trial): prefer IANA timezone over browser locale,
+ * since locale is often a generic en-GB while the user is physically elsewhere.
+ */
+export function resolveBrowserPhoneCountry() {
+  let locale = 'en-US';
+  let timeZone = null;
+
+  try {
+    const resolved = Intl.DateTimeFormat().resolvedOptions();
+    locale = resolved.locale
+      || (typeof navigator !== 'undefined' ? navigator.language : '')
+      || 'en-US';
+    timeZone = resolved.timeZone || null;
+  } catch {
+    locale = 'en-US';
+  }
+
+  const fromTimezone = derivePhoneCountryFromTimezone(timeZone);
+  if (fromTimezone) {
+    return fromTimezone;
+  }
+
+  return resolveDefaultPhoneCountry({
+    orgLocale: locale,
+    orgTimeZone: timeZone,
+  });
+}
+
 export function getPhoneCountry(iso2 = DEFAULT_PHONE_COUNTRY) {
   return PHONE_COUNTRIES.find((country) => country.iso2 === iso2) || PHONE_COUNTRIES[0];
 }
@@ -225,7 +254,6 @@ export function preventNonDigitPhoneKeys(event) {
   if (!event || event.defaultPrevented) return;
   if (event.ctrlKey || event.metaKey || event.altKey) return;
   const k = event.key;
-  if (k.length === 1 && !/\d/.test(k)) {
-    event.preventDefault();
-  }
+  if (!k || k.length !== 1 || /\d/.test(k)) return;
+  event.preventDefault();
 }
