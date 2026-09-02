@@ -1827,6 +1827,30 @@
     "message": "Convert to Organization",
     "description": "Auto-migrated from demoRequests"
   },
+  "demoRequestsConvertVerticalLabel": {
+    "message": "Business vertical",
+    "description": "Vertical override label on demo convert modal"
+  },
+  "demoRequestsConvertPreviewTitle": {
+    "message": "Provisioning preview",
+    "description": "Title for vertical preset preview on convert modal"
+  },
+  "demoRequestsConvertPreviewTemplate": {
+    "message": "Template: {key}",
+    "description": "Template key in convert preview"
+  },
+  "demoRequestsConvertPreviewApps": {
+    "message": "Apps: {apps}",
+    "description": "Enabled apps in convert preview"
+  },
+  "demoRequestsConvertPreviewModules": {
+    "message": "Module labels",
+    "description": "Module label section in convert preview"
+  },
+  "demoRequestsConvertPreviewLoading": {
+    "message": "Loading provisioning preview…",
+    "description": "Loading state for convert preview"
+  },
   "demoRequestsConverted": {
     "message": "Converted",
     "description": "Auto-migrated from demoRequests"

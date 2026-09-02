@@ -27,6 +27,7 @@ export function isAuthLifecyclePublicRoute(path) {
   return (
     p === '/accept-invite'
     || p === '/verify-email'
+    || p === '/trial/setup'
     || p === '/forgot-password'
     || p === '/reset-password'
     || p === '/login'
@@ -38,7 +39,8 @@ export function isTrialExpiredShelllessRoute(path) {
 }
 
 export function isOnboardingShelllessRoute(path) {
-  return resolveRoutePathname(path) === '/onboarding';
+  return resolveRoutePathname(path) === '/onboarding'
+    || resolveRoutePathname(path) === '/trial/setup';
 }
 
 export function isStandaloneShelllessPath(path) {

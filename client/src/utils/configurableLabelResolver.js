@@ -4,6 +4,7 @@
  */
 
 import { getModuleLabelKey } from '@/utils/navigationLabels';
+import { getTenantModulePluralLabel } from '@/utils/registryModuleLabels';
 
 /** @type {Record<string, string>} normalized stage name → deals.* key */
 const STAGE_LABEL_KEYS = {
@@ -170,11 +171,15 @@ export function resolveTenantFieldLabel(moduleKey, fieldKey, apiLabel, t, te) {
 
 /**
  * Localized module name for tabs (deals → Geschäfte).
+ * Tenant registry labels take precedence over i18n when vertical presets apply.
  * @param {string} moduleKey route segment e.g. deals
  * @param {(key: string) => string} t
  * @param {(key: string) => boolean} [te]
  */
 export function resolveModuleDisplayName(moduleKey, t, te = () => false) {
+  const tenantLabel = getTenantModulePluralLabel(moduleKey);
+  if (tenantLabel) return tenantLabel;
+
   const key = getModuleLabelKey(moduleKey);
   if (key && te(key)) return t(key);
   const mod = String(moduleKey || '').trim();

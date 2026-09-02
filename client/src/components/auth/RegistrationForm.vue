@@ -5,6 +5,7 @@ const { t } = useI18n();
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authRegistry';
+import { VERTICAL_OPTIONS } from '@/constants/verticalOptions';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -17,19 +18,8 @@ const passwordConfirm = ref('');
 const organizationName = ref('');
 const vertical = ref(''); // Required for template selection
 
-// Available Verticals (as defined in requirements)
-const verticalOptions = [
-    'Retail (Fashion, Electronics, Footwear, etc.)',
-    'Real Estate',
-    'Service-Based (Gyms, Salons)',
-    'Education Institutes',
-    'Healthcare Clinics',
-    'IT & SaaS Agencies',
-    'Auditing Firms / Inspection Services',
-    'Automotive Dealers',
-    'Event Management Firms',
-    'Pest Control / Facility Maintenance',
-];
+// Available Verticals — must match server/constants/verticalCatalog.js
+const verticalOptions = VERTICAL_OPTIONS;
 
 const handleRegistration = async () => {
     // Basic Client-side Validation

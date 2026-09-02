@@ -3,6 +3,7 @@
  */
 
 import { resolveTenantFieldLabel } from '@/utils/configurableLabelResolver';
+import { applyTenantModuleTermsToLabel } from '@/utils/registryModuleLabels';
 
 /** @type {Record<string, Record<string, string>>} */
 const SYSTEM_FIELD_LABEL_KEYS = {
@@ -328,7 +329,7 @@ export function resolveFieldLabel(moduleKey, field, t, te) {
       : undefined);
   const i18nKey = catalogKey || GLOBAL_SYSTEM_FIELD_LABEL_KEYS[fk];
   if (i18nKey && te(i18nKey)) {
-    return t(i18nKey);
+    return applyTenantModuleTermsToLabel(mod, t(i18nKey));
   }
 
   const apiLabel = String(field?.label || '').trim();

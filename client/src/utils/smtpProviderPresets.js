@@ -101,5 +101,5 @@ export function resolveSmtpPreset(provider, overrides = {}) {
 
 export function isValidEmailFormat(email) {
   const s = String(email || '').trim();
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }

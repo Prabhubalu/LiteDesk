@@ -49,6 +49,8 @@ export type AppSummary = {
 type SidebarLabelFields = {
   label: string;
   labelKey?: string;
+  /** When true, render `label` from tenant registry instead of i18n `labelKey`. */
+  tenantLabel?: boolean;
 };
 
 export type SidebarItem =
@@ -157,6 +159,21 @@ export interface AppRegistryModule {
   
   /** Display label */
   label: string;
+
+  /** Singular display label (tenant override or platform default). */
+  singularLabel?: string;
+
+  /** Plural display label (tenant override or platform default). */
+  pluralLabel?: string;
+
+  /** List view title, e.g. "All Opportunities". */
+  listLabel?: string;
+
+  /** Primary create action label, e.g. "New Opportunity". */
+  createLabel?: string;
+
+  /** When true, UI should prefer registry labels over i18n defaults. */
+  tenantLabel?: boolean;
   
   /** Route path for navigation */
   route: string;

@@ -33,6 +33,9 @@ const ADDON_GATED_MODULE_KEYS = {
   blog: ADDON_KEYS.BLOG,
 };
 
+/** Core entities store tenant label overrides under SALES, but render via /ui/entities (platform). */
+const PLATFORM_TENANT_CONFIG_APP_KEYS = ['SALES', 'PLATFORM'];
+
 class UICompositionService {
   filterAppsByUserType(apps, user) {
     if (!Array.isArray(apps) || apps.length === 0) {
@@ -225,16 +228,29 @@ class UICompositionService {
       }
 
       // Get tenant module configurations
-      const tenantConfigs = await TenantModuleConfiguration.find({
+      const tenantConfigQuery = {
         organizationId,
-        appKey: appKey.toUpperCase(),
-        enabled: true
-      });
+        enabled: true,
+      };
+      if (appKeyLower === 'platform') {
+        tenantConfigQuery.appKey = { $in: PLATFORM_TENANT_CONFIG_APP_KEYS };
+      } else {
+        tenantConfigQuery.appKey = appKey.toUpperCase();
+      }
+      const tenantConfigs = await TenantModuleConfiguration.find(tenantConfigQuery);
 
       // Create a map of tenant configs by moduleKey
       const tenantConfigMap = {};
-      tenantConfigs.forEach(config => {
-        tenantConfigMap[config.moduleKey] = config;
+      tenantConfigs.forEach((config) => {
+        const key = config.moduleKey;
+        const existing = tenantConfigMap[key];
+        if (!existing) {
+          tenantConfigMap[key] = config;
+          return;
+        }
+        if (config.labelOverride && !existing.labelOverride) {
+          tenantConfigMap[key] = config;
+        }
       });
 
       // Display Name from Module details: org overrides use organizationId + key (no appKey), so query by key/moduleKey
@@ -344,19 +360,32 @@ class UICompositionService {
             ? '/helpdesk/cases'
             : computedRouteBase;
         const normalizedDisplayName = isHelpdeskCaseSurface ? 'Cases' : displayName;
-        const normalizedPluralLabel = isHelpdeskCaseSurface ? 'Cases' : moduleDef.pluralLabel;
+        const normalizedPluralLabel = isHelpdeskCaseSurface
+          ? 'Cases'
+          : (tenantConfig?.labelOverride || orgDisplayNameByKey[moduleDef.moduleKey] || moduleDef.pluralLabel || normalizedDisplayName);
+        const singularName =
+          (typeof moduleDef.label === 'string' && moduleDef.label.trim()) ||
+          normalizedDisplayName;
+        const hasTenantLabelOverride = Boolean(
+          tenantConfig?.labelOverride || orgDisplayNameByKey[moduleDef.moduleKey]
+        );
         const normalizedCreateLabel = isHelpdeskCaseSurface
           ? 'Create Case'
-          : (moduleDef.ui?.createLabel || `Create ${normalizedDisplayName}`);
+          : (hasTenantLabelOverride
+              ? `New ${singularName}`
+              : (moduleDef.ui?.createLabel || `New ${singularName}`));
         const normalizedListLabel = isHelpdeskCaseSurface
           ? 'All Cases'
-          : (moduleDef.ui?.listLabel || `All ${normalizedPluralLabel || normalizedDisplayName}`);
+          : (hasTenantLabelOverride
+              ? `All ${normalizedPluralLabel || normalizedDisplayName}`
+              : (moduleDef.ui?.listLabel || `All ${normalizedPluralLabel || normalizedDisplayName}`));
 
         // Apply tenant overrides on top of platform metadata
         const uiModule = {
           moduleKey: moduleDef.moduleKey,
           appKey: moduleDef.appKey.toUpperCase(),
           label: normalizedDisplayName,
+          singularLabel: singularName,
           pluralLabel: normalizedPluralLabel,
           routeBase: normalizedRouteBase,
           icon: moduleDef.ui?.icon,
@@ -368,6 +397,7 @@ class UICompositionService {
                        0,
           createLabel: normalizedCreateLabel,
           listLabel: normalizedListLabel,
+          tenantLabel: hasTenantLabelOverride,
           // Navigation intent flags (for four-section sidebar)
           navigationCore: moduleDef.ui?.navigationCore || false,
           navigationEntity: moduleDef.ui?.navigationEntity || false,

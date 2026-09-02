@@ -89,7 +89,7 @@ const { colorMode, toggleColorMode } = useColorMode();
             <h1 class="text-balance text-5xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-7xl">{{ t('platform.landingPageDesignYourPerfectSalesFlow') }}</h1>
             <p class="mt-8 text-lg font-medium text-pretty text-gray-500 dark:text-gray-400 sm:text-xl-8">{{ t('platform.landingPageStopWrestlingWithBloatedCrmPlug') }}</p>
               <div class="mt-10 flex items-center justify-center gap-x-6">
-                <router-link to="/demo" class="rounded-lg bg-indigo-600 dark:bg-indigo-500 px-8 py-3 text-lg font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{{ t('platform.landingPageRequestDemo') }}</router-link>
+                <router-link to="/start-trial" class="rounded-lg bg-indigo-600 dark:bg-indigo-500 px-8 py-3 text-lg font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">{{ t('platform.landingPageRequestDemo') }}</router-link>
                 <router-link to="/login" class="text-md font-semibold text-gray-900 dark:text-white">{{ t('platform.landingPageAdminLogin') }}<span aria-hidden="true">→</span></router-link>
               </div>
           </div>

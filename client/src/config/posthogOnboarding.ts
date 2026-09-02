@@ -91,6 +91,15 @@ export function captureSampleDataAccepted(ctx: OnboardingAnalyticsContext, extra
   capture('sample_data_accepted', { ...onboardingEventProps(ctx), ...extra })
 }
 
+export function captureDemoRequestConverted(extra: Record<string, unknown> = {}) {
+  capture('demo_request_converted', {
+    template_key: extra.templateKey || extra.template_key,
+    industry: extra.industry,
+    primary_app_key: extra.primaryAppKey || extra.primary_app_key,
+    ...extra,
+  })
+}
+
 export function captureCoachmarkSeen(coachmarkKey: string, ctx: OnboardingAnalyticsContext = {}) {
   capture('coachmark_seen', {
     ...onboardingEventProps(ctx),

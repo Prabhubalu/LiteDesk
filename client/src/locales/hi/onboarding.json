@@ -1,422 +1,466 @@
 {
   "pageTitle": {
-    "message": "Set up your workspace",
+    "message": "अपना कार्यक्षेत्र स्थापित करें",
     "description": "Founder onboarding page title"
   },
   "stepIndicator": {
-    "message": "Step {current} of {total}",
+    "message": "{total} का चरण {current}",
     "description": "Wizard step indicator"
   },
   "founderWelcomeTitle": {
-    "message": "Welcome to Arivu, {name}",
+    "message": "अरिवु में आपका स्वागत है, {name}",
     "description": "Founder onboarding welcome title"
   },
   "founderWelcomeSubtitle": {
-    "message": "Let's set up {organization} for your team.",
+    "message": "आइए आपकी टीम के लिए {organization} स्थापित करें।",
     "description": "Founder onboarding welcome subtitle"
   },
   "goalPrompt": {
-    "message": "What do you want to do first?",
+    "message": "आप पहले क्या करना चाहते हैं?",
     "description": "Goal selection prompt"
   },
   "goalSales": {
-    "message": "Manage sales pipeline",
+    "message": "बिक्री पाइपलाइन प्रबंधित करें",
     "description": "Sales goal option"
   },
   "goalSupport": {
-    "message": "Handle customer support",
+    "message": "ग्राहक सहायता संभालें",
     "description": "Support goal option"
   },
   "goalAudit": {
-    "message": "Run audits and inspections",
+    "message": "ऑडिट और निरीक्षण चलाएँ",
     "description": "Audit goal option"
   },
   "goalExplore": {
-    "message": "Explore — show me everything",
+    "message": "अन्वेषण करें - मुझे सब कुछ दिखाएँ",
     "description": "Explore goal option"
   },
   "workspaceTitle": {
-    "message": "Workspace basics",
+    "message": "कार्यस्थल की मूल बातें",
     "description": "Workspace step title"
   },
   "workspaceSubtitle": {
-    "message": "These settings apply across your organization.",
+    "message": "ये सेटिंग आपके संगठन पर लागू होती हैं.",
     "description": "Workspace step subtitle"
   },
   "orgNameLabel": {
-    "message": "Organization name",
+    "message": "संगठन का नाम",
     "description": "Org name field label"
   },
   "timeZoneLabel": {
-    "message": "Time zone",
+    "message": "समय क्षेत्र",
     "description": "Timezone field label"
   },
   "currencyLabel": {
-    "message": "Currency",
+    "message": "मुद्रा",
     "description": "Currency field label"
   },
   "dateFormatLabel": {
-    "message": "Date format",
+    "message": "तारिख का प्रारूप",
     "description": "Date format field label"
   },
   "continue": {
-    "message": "Continue",
+    "message": "जारी रखना",
     "description": "Continue button"
   },
   "skipStep": {
-    "message": "Skip for now",
+    "message": "अभी के लिए छोड़ दे",
     "description": "Skip step button"
   },
   "finishSetup": {
-    "message": "Go to home",
+    "message": "घर जाओ",
     "description": "Finish founder wizard"
   },
   "welcomeTitle": {
-    "message": "Welcome to {organization}, {name}",
+    "message": "{organization}, {name} में आपका स्वागत है",
     "description": "Member welcome panel title"
   },
   "welcomeInvitedBy": {
-    "message": "{inviter} invited you as {role}.",
+    "message": "{inviter} ने आपको {role} के रूप में आमंत्रित किया है।",
     "description": "Inviter context line"
   },
   "welcomeAppsLabel": {
-    "message": "You have access to:",
+    "message": "आपके पास इन तक पहुंच है:",
     "description": "Entitled apps label"
   },
   "welcomeNoteLabel": {
-    "message": "Message from your team",
+    "message": "आपकी टीम की ओर से संदेश",
     "description": "Welcome note label"
   },
   "welcomePrimaryCta": {
-    "message": "Get started",
+    "message": "शुरू हो जाओ",
     "description": "Welcome primary action"
   },
   "welcomeDismiss": {
-    "message": "Dismiss",
+    "message": "नकार देना",
     "description": "Dismiss welcome panel"
   },
   "checklistTitle": {
-    "message": "Getting started",
+    "message": "शुरू करना",
     "description": "Checklist card title"
   },
   "setupProgressTitle": {
-    "message": "Setup progress",
+    "message": "सेटअप प्रगति",
     "description": "Org setup progress card title"
   },
   "progressLabel": {
-    "message": "{completed} of {total} complete",
+    "message": "{total} में से {completed} पूर्ण",
     "description": "Progress label"
   },
   "trialBanner": {
-    "message": "{days} days left in trial · {used}/{limit} contacts",
+    "message": "परीक्षण में {days} दिन शेष · {used}/{limit} संपर्क",
     "description": "Trial banner on platform home"
   },
   "stepCompleteProfile": {
-    "message": "Complete your profile",
+    "message": "अपनी प्रोफ़ाइल पूरी करें",
     "description": "Member step: profile"
   },
   "stepVisitModule": {
-    "message": "Open your primary workspace",
+    "message": "अपना प्राथमिक कार्यक्षेत्र खोलें",
     "description": "Member step: visit module"
   },
   "stepFirstAction": {
-    "message": "Take your first action",
+    "message": "अपनी पहली कार्रवाई करें",
     "description": "Member step: first action"
   },
   "stepNotificationPrefs": {
-    "message": "Set notification preferences",
+    "message": "अधिसूचना प्राथमिकताएँ सेट करें",
     "description": "Member step: notifications"
   },
   "stepFounderGoal": {
-    "message": "Choose your focus",
+    "message": "अपना फोकस चुनें",
     "description": "Founder step: goal"
   },
   "stepFounderWorkspace": {
-    "message": "Configure workspace basics",
+    "message": "कार्यस्थान की मूल बातें कॉन्फ़िगर करें",
     "description": "Founder step: workspace"
   },
   "stepOrgWorkspace": {
-    "message": "Complete workspace profile",
+    "message": "संपूर्ण कार्यस्थान प्रोफ़ाइल",
     "description": "Org step: workspace"
   },
   "stepOrgFirstRecord": {
-    "message": "Add your first contact or deal",
+    "message": "अपना पहला संपर्क या सौदा जोड़ें",
     "description": "Org step: first record"
   },
   "stepOrgEmail": {
-    "message": "Connect email",
+    "message": "ईमेल कनेक्ट करें",
     "description": "Org step: email"
   },
   "stepOrgInvite": {
-    "message": "Invite a teammate",
+    "message": "किसी साथी को आमंत्रित करें",
     "description": "Org step: invite"
   },
   "stepOrgImport": {
-    "message": "Import existing data",
+    "message": "मौजूदा डेटा आयात करें",
     "description": "Org step: import"
   },
   "stepOrgSettings": {
-    "message": "Explore settings",
+    "message": "सेटिंग्स का अन्वेषण करें",
     "description": "Org step: settings"
   },
   "actionOpenSetup": {
-    "message": "Continue setup",
+    "message": "सेटअप जारी रखें",
     "description": "Primary action for founder welcome"
   },
   "actionOpenModule": {
-    "message": "Open your workspace",
+    "message": "अपना कार्यक्षेत्र खोलें",
     "description": "Primary action for member welcome"
   },
   "goalSalesKey": {
-    "message": "Sales",
+    "message": "बिक्री",
     "description": "Goal key label sales"
   },
   "goalSupportKey": {
-    "message": "Support",
+    "message": "सहायता",
     "description": "Goal key label support"
   },
   "goalAuditKey": {
-    "message": "Audit",
+    "message": "अंकेक्षण",
     "description": "Goal key label audit"
   },
   "goalExploreKey": {
-    "message": "Explore",
+    "message": "अन्वेषण करना",
     "description": "Goal key label explore"
   },
   "stepFounderFirstApp": {
-    "message": "Choose your primary app",
+    "message": "अपना प्राथमिक ऐप चुनें",
     "description": "Founder step: first app"
   },
   "stepFounderFirstRecord": {
-    "message": "Add your first contact",
+    "message": "अपना पहला संपर्क जोड़ें",
     "description": "Founder step: first record"
   },
   "firstAppTitle": {
-    "message": "Your primary app",
+    "message": "आपका प्राथमिक ऐप",
     "description": "First app step title"
   },
   "firstAppSubtitle": {
-    "message": "Pick where you'll spend most of your time. You can change this later.",
+    "message": "चुनें कि आप अपना अधिकांश समय कहाँ व्यतीत करेंगे। आप इसे बाद में बदल सकते हैं.",
     "description": "First app step subtitle"
   },
   "firstRecordTitle": {
-    "message": "Add your first contact",
+    "message": "अपना पहला संपर्क जोड़ें",
     "description": "First record step title"
   },
   "firstRecordSubtitle": {
-    "message": "Create one contact to see how Arivu works.",
+    "message": "अरिवु कैसे काम करता है यह देखने के लिए एक संपर्क बनाएं।",
     "description": "First record step subtitle"
   },
   "firstNameLabel": {
-    "message": "First name",
+    "message": "पहला नाम",
     "description": "Contact first name label"
   },
   "lastNameLabel": {
-    "message": "Last name",
+    "message": "उपनाम",
     "description": "Contact last name label"
   },
   "emailLabel": {
-    "message": "Email",
+    "message": "ईमेल",
     "description": "Contact email label optional"
   },
   "profileTitle": {
-    "message": "Your profile",
+    "message": "आपकी प्रोफ़ाइल",
     "description": "Invite accept profile step title"
   },
   "profileSubtitle": {
-    "message": "Help your team recognize you.",
+    "message": "अपनी टीम को आपको पहचानने में मदद करें.",
     "description": "Invite accept profile subtitle"
   },
   "languageLabel": {
-    "message": "Language",
+    "message": "भाषा",
     "description": "Profile language label"
   },
   "appsPreviewLabel": {
-    "message": "You'll have access to:",
+    "message": "आपको इन तक पहुंच प्राप्त होगी:",
     "description": "Entitled apps on invite accept"
   },
   "firstTimePeopleTitle": {
-    "message": "Your contact list starts here",
+    "message": "आपकी संपर्क सूची यहां से प्रारंभ होती है",
     "description": "First visit empty state for People"
   },
   "firstTimePeopleDescription": {
-    "message": "Add people to track relationships, deals, and support history in one place.",
+    "message": "रिश्तों, सौदों और समर्थन इतिहास को एक ही स्थान पर ट्रैक करने के लिए लोगों को जोड़ें।",
     "description": "First visit empty state description for People"
   },
   "firstTimePeopleAction": {
-    "message": "Add your first contact",
+    "message": "अपना पहला संपर्क जोड़ें",
     "description": "First visit CTA for People"
   },
   "firstTimeDealsTitle": {
-    "message": "Track opportunities here",
+    "message": "यहां अवसरों को ट्रैक करें",
     "description": "First visit empty state for Deals"
   },
   "firstTimeDealsDescription": {
-    "message": "Create deals to follow pipeline stages from first touch to close.",
+    "message": "पहले स्पर्श से समापन तक पाइपलाइन चरणों का पालन करने के लिए सौदे बनाएं।",
     "description": "First visit empty state description for Deals"
   },
   "firstTimeDealsAction": {
-    "message": "Create your first deal",
+    "message": "अपना पहला सौदा बनाएं",
     "description": "First visit CTA for Deals"
   },
   "firstTimeTasksTitle": {
-    "message": "Stay on top of follow-ups",
+    "message": "फ़ॉलो-अप में शीर्ष पर रहें",
     "description": "First visit empty state for Tasks"
   },
   "firstTimeTasksDescription": {
-    "message": "Tasks help you and your team know what to do next.",
+    "message": "कार्य आपको और आपकी टीम को यह जानने में मदद करते हैं कि आगे क्या करना है।",
     "description": "First visit empty state description for Tasks"
   },
   "firstTimeTasksAction": {
-    "message": "Create a task",
+    "message": "एक कार्य बनाएँ",
     "description": "First visit CTA for Tasks"
   },
   "firstTimeCasesTitle": {
-    "message": "Resolve customer issues here",
+    "message": "यहां ग्राहकों की समस्याओं का समाधान करें",
     "description": "First visit empty state for Cases"
   },
   "firstTimeCasesDescription": {
-    "message": "Cases keep support requests organized from open to resolved.",
+    "message": "मामले समर्थन अनुरोधों को खुले से लेकर समाधान तक व्यवस्थित रखते हैं।",
     "description": "First visit empty state description for Cases"
   },
   "firstTimeCasesAction": {
-    "message": "Create a case",
+    "message": "एक मामला बनाएं",
     "description": "First visit CTA for Cases"
   },
   "firstTimeOrganizationsTitle": {
-    "message": "Manage accounts and companies",
+    "message": "खातों और कंपनियों का प्रबंधन करें",
     "description": "First visit empty state for Organizations"
   },
   "firstTimeOrganizationsDescription": {
-    "message": "Organizations group contacts and deals under the companies you work with.",
+    "message": "संगठन संपर्कों और सौदों को उन कंपनियों के अंतर्गत समूहित करते हैं जिनके साथ आप काम करते हैं।",
     "description": "First visit empty state description for Organizations"
   },
   "firstTimeOrganizationsAction": {
-    "message": "Add an organization",
+    "message": "एक संगठन जोड़ें",
     "description": "First visit CTA for Organizations"
   },
   "coachmarkSidebarTitle": {
-    "message": "Your apps live here",
+    "message": "साइडबार से नेविगेट करें",
     "description": "Sidebar coachmark title"
   },
   "coachmarkSidebarDescription": {
-    "message": "Switch between Sales, Helpdesk, and other apps you have access to.",
+    "message": "होम, इनबॉक्स और आपके ऐप्स इस रेल पर रहते हैं। इसके मॉड्यूल खोलने के लिए किसी ऐप का चयन करें, या त्वरित पूर्वावलोकन के लिए होवर करें।",
     "description": "Sidebar coachmark description"
   },
   "coachmarkCommandPaletteTitle": {
-    "message": "Find anything fast",
+    "message": "कहीं से भी खोजें",
     "description": "Command palette coachmark title"
   },
   "coachmarkCommandPaletteDescription": {
-    "message": "Search records and run actions from here. Tip: press ⌘K (Ctrl+K on Windows).",
+    "message": "लोगों, सौदों, मामलों और बहुत कुछ को ढूंढें - या सीधे मॉड्यूल पर जाएं। किसी भी समय ⌘K (विंडोज़ पर Ctrl+K) दबाएँ।",
     "description": "Command palette coachmark description"
   },
   "coachmarkTabsTitle": {
-    "message": "Records open in tabs",
+    "message": "टैब में काम करें",
     "description": "Tab bar coachmark title"
   },
   "coachmarkTabsDescription": {
-    "message": "Open multiple records at once and switch between them without losing your place.",
+    "message": "प्रत्येक रिकॉर्ड अपने टैब में खुलता है. कई को खुला रखें और अपना स्थान खोए बिना उनके बीच स्विच करें।",
     "description": "Tab bar coachmark description"
   },
   "coachmarkDismiss": {
-    "message": "Got it",
+    "message": "समझ गया",
     "description": "Dismiss coachmark button"
   },
   "sampleDataTitle": {
-    "message": "Start with sample data?",
+    "message": "नमूना डेटा से प्रारंभ करें?",
     "description": "Sample data offer title"
   },
   "sampleDataDescription": {
-    "message": "We can add a few example contacts and a deal ({template}) so you can explore before importing your own data.",
+    "message": "हम कुछ उदाहरण संपर्क और एक डील ({template}) जोड़ सकते हैं ताकि आप अपना डेटा आयात करने से पहले पता लगा सकें।",
     "description": "Sample data offer description"
   },
   "sampleDataNote": {
-    "message": "Sample records are clearly labeled. You can delete them anytime.",
+    "message": "नमूना रिकॉर्ड स्पष्ट रूप से लेबल किए गए हैं। आप इन्हें कभी भी हटा सकते हैं.",
     "description": "Sample data disclaimer"
   },
   "sampleDataAccept": {
-    "message": "Add sample data",
+    "message": "नमूना डेटा जोड़ें",
     "description": "Accept sample data button"
   },
   "sampleDataDecline": {
-    "message": "No thanks",
+    "message": "जी नहीं, धन्यवाद",
     "description": "Decline sample data button"
   },
   "sampleDataTemplate_sales_default": {
-    "message": "Sales starter pack",
+    "message": "बिक्री स्टार्टर पैक",
     "description": "Default sales sample template label"
   },
   "sampleDataTemplate_support_default": {
-    "message": "Support starter pack",
+    "message": "स्टार्टर पैक का समर्थन करें",
     "description": "Default support sample template label"
   },
   "sampleDataTemplate_audit_default": {
-    "message": "Audit starter pack",
+    "message": "ऑडिट स्टार्टर पैक",
     "description": "Default audit sample template label"
   },
   "welcomeSuggestedTaskLabel": {
-    "message": "Suggested first task",
+    "message": "पहला कार्य सुझाया",
     "description": "Welcome panel suggested task label"
   },
   "stepFounderInviteTeammate": {
-    "message": "Invite a teammate",
+    "message": "किसी साथी को आमंत्रित करें",
     "description": "Founder wizard invite step"
   },
   "inviteTeammateTitle": {
-    "message": "Invite a teammate",
+    "message": "किसी साथी को आमंत्रित करें",
     "description": "Founder wizard invite step title"
   },
   "inviteTeammateSubtitle": {
-    "message": "Collaboration works better together. Send an invitation now or skip and do this later.",
+    "message": "सहयोग एक साथ बेहतर काम करता है। अभी निमंत्रण भेजें या छोड़ें और बाद में ऐसा करें।",
     "description": "Founder wizard invite step subtitle"
   },
   "inviteRequiredFields": {
-    "message": "First name and email are required to send an invitation.",
+    "message": "निमंत्रण भेजने के लिए प्रथम नाम और ईमेल आवश्यक है।",
     "description": "Inline invite validation"
   },
   "inviteFailed": {
-    "message": "Unable to send the invitation. Try again or skip for now.",
+    "message": "आमंत्रण भेजने में असमर्थ. पुनः प्रयास करें या अभी के लिए छोड़ें।",
     "description": "Inline invite error"
   },
   "firstTimeDocumentsTitle": {
-    "message": "Store and share your files in one place",
+    "message": "अपनी फ़ाइलें एक ही स्थान पर संग्रहीत और साझा करें",
     "description": "First visit empty state for Documents"
   },
   "firstTimeDocumentsDescription": {
-    "message": "Upload contracts, SOPs, and knowledge articles. Link documents to people, deals, and cases.",
+    "message": "अनुबंध, एसओपी और ज्ञान आलेख अपलोड करें। दस्तावेज़ों को लोगों, सौदों और मामलों से लिंक करें।",
     "description": "First visit empty state description for Documents"
   },
   "firstTimeDocumentsAction": {
-    "message": "Upload a document",
+    "message": "एक दस्तावेज़ अपलोड करें",
     "description": "First visit CTA for Documents"
   },
   "trialBannerUnlimited": {
-    "message": "{days} days left in trial · {used} contacts",
+    "message": "परीक्षण में {days} दिन शेष · {used} संपर्क",
     "description": "Trial banner when contact limit is unlimited"
   },
   "firstTimeReportsTitle": {
-    "message": "Turn your CRM data into insights",
+    "message": "अपने सीआरएम डेटा को अंतर्दृष्टि में बदलें",
     "description": "First visit empty state for Analytics Reports"
   },
   "firstTimeReportsDescription": {
-    "message": "Build reports on deals, people, cases, and more — then publish and export results.",
+    "message": "सौदों, लोगों, मामलों और बहुत कुछ पर रिपोर्ट बनाएं - फिर परिणाम प्रकाशित करें और निर्यात करें।",
     "description": "First visit empty state description for Analytics Reports"
   },
   "firstTimeReportsAction": {
-    "message": "Create your first report",
+    "message": "अपनी पहली रिपोर्ट बनाएं",
     "description": "First visit CTA for Analytics Reports"
   },
   "localeLabel": {
-    "message": "Locale",
+    "message": "स्थान",
     "description": "Locale field label for workspace onboarding"
   },
   "regionalDetectedTitle": {
-    "message": "Detected region: {market}",
+    "message": "पता लगाया गया क्षेत्र: {market}",
     "description": "Onboarding regional bundle title"
   },
   "regionalDetectedBody": {
-    "message": "We pre-filled locale ({locale}) and currency ({currency}) from your time zone. You can change these before continuing.",
+    "message": "हमने आपके समय क्षेत्र से स्थान ({locale}) और मुद्रा ({currency}) पहले से भर दिया है। जारी रखने से पहले आप इन्हें बदल सकते हैं.",
     "description": "Onboarding regional bundle hint"
+  },
+  "emptyStateSalesDefault": {
+    "message": "अपनी पाइपलाइन का निर्माण शुरू करने के लिए अपना पहला संपर्क या सौदा जोड़ें।",
+    "description": "Empty state copy for default sales vertical"
+  },
+  "emptyStateRetail": {
+    "message": "ग्राहक और उत्पाद जोड़ें, फिर कैटलॉग लाइन आइटम के साथ एक बिक्री बनाएं।",
+    "description": "Empty state copy for retail vertical"
+  },
+  "emptyStateRealEstate": {
+    "message": "अपनी साइट विज़िट और बातचीत को ट्रैक करने के लिए खरीदार और संपत्ति सौदे जोड़ें।",
+    "description": "Empty state copy for real estate vertical"
+  },
+  "emptyStateServices": {
+    "message": "अपना सेवा व्यवसाय चलाने के लिए सदस्य जोड़ें और नियुक्तियाँ निर्धारित करें।",
+    "description": "Empty state copy for services vertical"
+  },
+  "emptyStateEducation": {
+    "message": "अपना प्रवेश फ़नल शुरू करने के लिए पूछताछ आयात करें या छात्रों को जोड़ें।",
+    "description": "Empty state copy for education vertical"
+  },
+  "emptyStateHealthcare": {
+    "message": "अपने क्लिनिक शेड्यूल को प्रबंधित करने के लिए मरीज़ जोड़ें और अपॉइंटमेंट बुक करें।",
+    "description": "Empty state copy for healthcare vertical"
+  },
+  "emptyStateSaas": {
+    "message": "अपनी B2B पाइपलाइन को ट्रैक करने के लिए खाते और अवसर जोड़ें।",
+    "description": "Empty state copy for SaaS vertical"
+  },
+  "emptyStateAudit": {
+    "message": "एक निरीक्षण प्रपत्र बनाएं और अपना पहला फ़ील्ड ऑडिट निर्दिष्ट करें।",
+    "description": "Empty state copy for audit vertical"
+  },
+  "emptyStateAutomotive": {
+    "message": "खरीदार और वाहन सूची जोड़ें, फिर परीक्षण ड्राइव और उद्धरण ट्रैक करें।",
+    "description": "Empty state copy for automotive vertical"
+  },
+  "emptyStateEvents": {
+    "message": "अपनी रन-शीट बनाने के लिए एक क्लाइंट इवेंट बनाएं और विक्रेताओं को लिंक करें।",
+    "description": "Empty state copy for events vertical"
+  },
+  "emptyStateFieldService": {
+    "message": "सेवा साइटें जोड़ें और अपनी फ़ील्ड टीम के लिए विज़िट शेड्यूल करें।",
+    "description": "Empty state copy for field service vertical"
   }
 }

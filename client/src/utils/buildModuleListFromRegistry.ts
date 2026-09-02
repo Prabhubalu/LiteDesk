@@ -26,7 +26,7 @@ import type {
 import { PermissionOutcome } from '@/types/permission-visibility.types';
 import type { EmptyStateDefinition } from '@/types/empty-state.types';
 import { EmptyStateType } from '@/types/empty-state.types';
-import type { AppRegistry } from '@/types/sidebar.types';
+import type { AppRegistry, AppRegistryModule } from '@/types/sidebar.types';
 import type { PermissionSnapshot } from '@/types/permission-snapshot.types';
 import { hasPermission as checkPermission } from '@/types/permission-snapshot.types';
 import { memoizeBuilder } from '@/utils/builderCache';
@@ -113,7 +113,11 @@ function resolveListPermissionModule(moduleKey: string): string {
 /**
  * Get fallback actions for common modules when list config is missing
  */
-function getFallbackActions(moduleKey: string, appKey?: string): Array<{
+function getFallbackActions(
+  moduleKey: string,
+  appKey?: string,
+  createLabelOverride?: string
+): Array<{
   key: string;
   label: string;
   type: ActionType;
@@ -124,7 +128,8 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
   order?: number;
 }> {
   const permissionModule = resolveListPermissionModule(moduleKey);
-  const createLabel = moduleKey === 'people' ? 'New Person' : 
+  const createLabel = createLabelOverride ||
+                     (moduleKey === 'people' ? 'New Person' : 
                      moduleKey === 'deals' ? 'New Deal' :
                      moduleKey === 'tasks' ? 'New Task' :
                      moduleKey === 'purchase_orders' ? 'New PO' :
@@ -134,7 +139,7 @@ function getFallbackActions(moduleKey: string, appKey?: string): Array<{
                      moduleKey === 'stockrooms' ? 'New Stockroom' :
                      moduleKey === 'stock_adjustments' ? 'New Adjustment' :
                      moduleKey === 'stock_transfers' ? 'New Transfer' :
-                     `New ${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`;
+                     `New ${moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1)}`);
   
   const actions: Array<{
     key: string;
@@ -518,6 +523,60 @@ function getModuleDisplayName(moduleKey: string): string {
   return nameMap[moduleKey.toLowerCase()] || moduleKey.charAt(0).toUpperCase() + moduleKey.slice(1);
 }
 
+type ListModuleLabels = {
+  displayName: string;
+  plural: string;
+  listLabel: string;
+  createLabel: string;
+  tenantLabel: boolean;
+};
+
+function resolveListModuleLabels(
+  registryModule: AppRegistryModule | undefined,
+  moduleKey: string
+): ListModuleLabels {
+  if (registryModule?.tenantLabel) {
+    const plural = registryModule.pluralLabel || registryModule.label || getModuleDisplayName(moduleKey);
+    const singular = registryModule.singularLabel || registryModule.label || plural;
+    return {
+      displayName: plural,
+      plural,
+      listLabel: registryModule.listLabel || `All ${plural}`,
+      createLabel: registryModule.createLabel || `New ${singular}`,
+      tenantLabel: true,
+    };
+  }
+
+  const displayName = registryModule?.pluralLabel || registryModule?.label || getModuleDisplayName(moduleKey);
+  return {
+    displayName,
+    plural: displayName,
+    listLabel: registryModule?.listLabel || `All ${displayName}`,
+    createLabel: registryModule?.createLabel || `New ${displayName}`,
+    tenantLabel: false,
+  };
+}
+
+function resolveFirstCreateActionLabel(
+  moduleKey: string,
+  labels: ListModuleLabels
+): string {
+  if (labels.tenantLabel) {
+    return labels.createLabel.replace(/^New /i, 'Create your first ');
+  }
+
+  if (moduleKey === 'people') return 'Add your first person';
+  if (moduleKey === 'deals') return 'Create your first deal';
+  if (moduleKey === 'tasks') return 'Create a task';
+  if (moduleKey === 'tickets') return 'Create a ticket';
+  if (moduleKey === 'organizations') return 'Add an organization';
+  if (moduleKey === 'items') return 'Add an item';
+  if (moduleKey === 'forms') return 'Create a form';
+  if (moduleKey === 'campaigns') return 'Create your first campaign';
+  if (moduleKey === 'reports') return 'Create your first report';
+  return `Create ${labels.plural.toLowerCase()}`;
+}
+
 /**
  * Determine empty state for module list
  */
@@ -528,9 +587,10 @@ function determineListEmptyState(
   hasPrimaryActions: boolean,
   snapshot: PermissionSnapshot,
   modulePermission?: string,
-  options?: { isFirstModuleVisit?: boolean }
+  options?: { isFirstModuleVisit?: boolean },
+  labels?: ListModuleLabels
 ): EmptyStateDefinition {
-  const displayName = getModuleDisplayName(moduleKey);
+  const displayName = labels?.displayName || getModuleDisplayName(moduleKey);
   
   // NO_ACCESS: User can see module but has no access
   if (modulePermission && !hasPermission(modulePermission, snapshot)) {
@@ -614,7 +674,9 @@ function determineListEmptyState(
   
   // NO_DATA: Module configured but no data
   // Distinguish between first-run (reassuring) and operational (action-oriented)
-  const createActionLabel = moduleKey === 'people' ? 'Add your first person' :
+  const createActionLabel = labels?.tenantLabel
+    ? resolveFirstCreateActionLabel(moduleKey, labels)
+    : moduleKey === 'people' ? 'Add your first person' :
                            moduleKey === 'deals' ? 'Create your first deal' :
                            moduleKey === 'tasks' ? 'Create a task' :
                            moduleKey === 'tickets' ? 'Create a ticket' :
@@ -684,6 +746,7 @@ export function buildModuleListFromRegistry(
     appKey,
     moduleKey,
     () => {
+      const labels = resolveListModuleLabels(resolvedModule as AppRegistryModule, moduleKey);
       // Get list configuration from module
       // Type assertion needed because AppRegistry module type doesn't include list
       const moduleWithList = resolvedModule as AppRegistryModuleEntry;
@@ -692,28 +755,8 @@ export function buildModuleListFromRegistry(
       if (!listConfig) {
         // Modules in moduleListRegistry use ModuleDefinition fields + Customize View (see ModuleList).
         if (hasModuleListConfig(moduleKey)) {
-          const fallbackActions = getFallbackActions(moduleKey, appKey);
-          const displayName = getModuleDisplayName(moduleKey);
-          const createActionLabel =
-            moduleKey === 'people'
-              ? 'Add your first person'
-              : moduleKey === 'deals'
-                ? 'Create your first deal'
-                : moduleKey === 'tasks'
-                  ? 'Create a task'
-                  : moduleKey === 'tickets'
-                    ? 'Create a ticket'
-                    : moduleKey === 'organizations'
-                      ? 'Add an organization'
-                      : moduleKey === 'items'
-                        ? 'Add an item'
-                        : moduleKey === 'forms'
-                          ? 'Create a form'
-                          : moduleKey === 'campaigns'
-                            ? 'Create your first campaign'
-                          : moduleKey === 'reports'
-                            ? 'Create your first report'
-                          : `Create ${displayName.toLowerCase()}`;
+          const fallbackActions = getFallbackActions(moduleKey, appKey, labels.createLabel);
+          const createActionLabel = resolveFirstCreateActionLabel(moduleKey, labels);
 
           const emptyState: EmptyStateDefinition = moduleKey === 'campaigns'
             ? {
@@ -801,8 +844,8 @@ export function buildModuleListFromRegistry(
                 }
             : {
                 type: EmptyStateType.NO_DATA,
-                title: `No ${displayName.toLowerCase()} yet`,
-                description: `${displayName} will appear here as you add them. Get started by creating your first one.`,
+                title: `No ${labels.plural.toLowerCase()} yet`,
+                description: `${labels.plural} will appear here as you add them. Get started by creating your first one.`,
                 primaryAction: fallbackActions.find((a) => a.type === 'create')
                   ? {
                       label: createActionLabel,
@@ -815,7 +858,7 @@ export function buildModuleListFromRegistry(
             version: 1,
             moduleKey,
             appKey,
-            title: resolvedModule.label,
+            title: labels.plural,
             layout: 'TABLE',
             columns: [],
             primaryActions: buildPrimaryActions(fallbackActions, snapshot, moduleKey, appKey),
@@ -828,30 +871,21 @@ export function buildModuleListFromRegistry(
 
         // Legacy modules without registry config: minimal fallback columns
         const fallbackColumns = getFallbackColumns(moduleKey);
-        const fallbackActions = getFallbackActions(moduleKey, appKey);
-        
-        const displayName = getModuleDisplayName(moduleKey);
-        const createActionLabel = moduleKey === 'people' ? 'Add your first person' :
-                                 moduleKey === 'deals' ? 'Create your first deal' :
-                                 moduleKey === 'tasks' ? 'Create a task' :
-                                 moduleKey === 'tickets' ? 'Create a ticket' :
-                                 moduleKey === 'organizations' ? 'Add an organization' :
-                                 moduleKey === 'items' ? 'Add an item' :
-                                 moduleKey === 'forms' ? 'Create a form' :
-                                 `Create ${displayName.toLowerCase()}`;
+        const fallbackActions = getFallbackActions(moduleKey, appKey, labels.createLabel);
+        const createActionLabel = resolveFirstCreateActionLabel(moduleKey, labels);
         
         return {
           version: 1,
           moduleKey,
           appKey,
-          title: resolvedModule.label,
+          title: labels.plural,
           layout: 'TABLE',
           columns: buildColumns(fallbackColumns, snapshot, moduleKey),
           primaryActions: buildPrimaryActions(fallbackActions, snapshot, moduleKey, appKey),
           emptyState: {
             type: EmptyStateType.NO_DATA,
-            title: `No ${displayName.toLowerCase()} yet`,
-            description: `${displayName} will appear here as you add them. Get started by creating your first one.`,
+            title: `No ${labels.plural.toLowerCase()} yet`,
+            description: `${labels.plural} will appear here as you add them. Get started by creating your first one.`,
             primaryAction: fallbackActions.find(a => a.type === 'create') ? {
               label: createActionLabel,
               route: getCreateRoute(moduleKey, appKey),
@@ -875,14 +909,15 @@ export function buildModuleListFromRegistry(
         primaryActions.length > 0,
         snapshot,
         resolvedModule.permission,
-        options
+        options,
+        labels
       );
       
       const listDefinition: ModuleListDefinition = {
         version: 1,
         moduleKey,
         appKey,
-        title: resolvedModule.label,
+        title: labels.plural,
         description: undefined, // Can be added to registry if needed
         layout: listConfig.layout || 'TABLE',
         columns,

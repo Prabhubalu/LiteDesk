@@ -1,9 +1,12 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useColorMode } from '@/composables/useColorMode';
 import DemoRequestForm from '@/components/DemoRequestForm.vue';
 
+const { t } = useI18n();
 const { colorMode } = useColorMode();
+const verificationPending = ref(false);
 
 const isDarkUi = computed(
   () =>
@@ -36,15 +39,21 @@ const brandLogoSrc = computed(() =>
               class="mx-auto h-10 w-auto"
             />
 
-            <h2 class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Get a demo</h2>
-            <p class="text-center text-gray-600 dark:text-gray-400 mt-1 text-center">We’re here to answer all your questions!</p>
-            <!-- See how Nurtura can transform your business. Schedule a personalized demo with our team. -->
+            <h2
+              v-if="!verificationPending"
+              class="mt-6 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white"
+            >
+              {{ t('auth.startTrialPageTitle') }}
+            </h2>
           </div>
 
-          <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md">
-            <DemoRequestForm />
+          <div
+            class="sm:mx-auto sm:w-full sm:max-w-sm md:max-w-md"
+            :class="verificationPending ? 'mt-8' : 'mt-10'"
+          >
+            <DemoRequestForm @verification-pending-change="verificationPending = $event" />
 
-            <p class="mt-10 text-center text-md/6 text-gray-500">
+            <p v-if="!verificationPending" class="mt-10 text-center text-md/6 text-gray-500">
               Already have an account?
               {{ ' ' }}
               <router-link to="/login" class="font-semibold text-indigo-600 hover:text-indigo-500">Log in</router-link>

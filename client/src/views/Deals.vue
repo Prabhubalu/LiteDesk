@@ -156,7 +156,7 @@
           </div>
           <ModuleActions
             module="deals"
-            :create-label="t('deals.dealsNewDeal')"
+            :create-label="dealsCreateLabel"
             @create="openCreateModal"
             @import="showImportModal = true"
             @export="exportDeals"
@@ -479,7 +479,7 @@
 import { useI18n } from 'vue-i18n';
 
 import { useNotifications } from '@/composables/useNotifications';
-const { t } = useI18n();
+const { t, te } = useI18n();
 const notifications = useNotifications();
 
 import { ref, computed, onMounted, onUnmounted, onActivated, watch, nextTick } from 'vue';
@@ -503,7 +503,7 @@ import { useLocale } from '@/composables/useLocale';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { ViewColumnsIcon, ListBulletIcon, UserIcon, CalendarDaysIcon, InboxIcon, RectangleStackIcon, PlusIcon, BuildingOfficeIcon, ChartBarIcon, BanknotesIcon, HashtagIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 import { CheckIcon, FlagIcon as FlagIconSolid } from '@heroicons/vue/24/solid';
-import { formatUserDate } from '@/utils/localeFormat';
+import { resolveListCreateLabel } from '@/utils/moduleListLabels';
 
 const router = useRouter();
 const route = useRoute();
@@ -528,6 +528,9 @@ const getInitialView = () => {
 const currentView = ref(getInitialView());
 const layoutViewLabel = computed(() =>
   currentView.value === 'list' ? t('forms.rbLayoutList') : t('settings.assignRulesCondFieldPipeline')
+);
+const dealsCreateLabel = computed(() =>
+  resolveListCreateLabel('deals', t('deals.dealsNewDeal'), t, te)
 );
 
 // Kanban data state

@@ -310,6 +310,33 @@
           </p>
 
           <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.demoRequestsConvertVerticalLabel') }}</label>
+            <select
+              v-model="convertIndustryOverride"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              @change="fetchConvertPreview"
+            >
+              <option v-for="option in verticalOptions" :key="option" :value="option">
+                {{ option }}
+              </option>
+            </select>
+          </div>
+
+          <div v-if="convertPreviewLoading" class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+            {{ t('common.demoRequestsConvertPreviewLoading') }}
+          </div>
+          <div v-else-if="convertPreview" class="mb-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4 text-sm">
+            <p class="font-medium text-gray-900 dark:text-white mb-2">{{ t('common.demoRequestsConvertPreviewTitle') }}</p>
+            <p class="text-gray-700 dark:text-gray-300">{{ t('common.demoRequestsConvertPreviewTemplate', { key: convertPreview.templateKey }) }}</p>
+            <p class="text-gray-700 dark:text-gray-300 mt-1">{{ t('common.demoRequestsConvertPreviewApps', { apps: [...convertPreview.enabledApps, ...(convertPreview.optionalApps || [])].join(', ') }) }}</p>
+            <ul v-if="convertPreviewModuleLabels.length" class="mt-2 space-y-1 text-gray-600 dark:text-gray-400">
+              <li v-for="row in convertPreviewModuleLabels" :key="row.moduleKey">
+                {{ row.moduleKey }} → {{ row.label }}
+              </li>
+            </ul>
+          </div>
+
+          <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ t('common.demoRequestsSubscriptionTier') }}</label>
             <select v-model="convertTier" class="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
               <option value="trial">{{ t('common.demoRequestsTrial15Days') }}</option>
@@ -346,6 +373,8 @@ const notifications = useNotifications();
 import { ref, onMounted, computed } from 'vue';
 import apiClient from '../utils/apiClient';
 import { formatUserDate } from '@/utils/localeFormat';
+import { VERTICAL_OPTIONS } from '@/constants/verticalOptions';
+import { captureDemoRequestConverted } from '@/config/posthogOnboarding';
 
 const demoRequests = ref([]);
 const stats = ref(null);
@@ -365,8 +394,21 @@ const updatingStatus = ref(false);
 
 const convertModalRequest = ref(null);
 const convertTier = ref('trial');
+const convertIndustryOverride = ref('');
+const convertPreview = ref(null);
+const convertPreviewLoading = ref(false);
 const converting = ref(false);
+const verticalOptions = VERTICAL_OPTIONS;
 const resendingId = ref(null);
+
+const convertPreviewModuleLabels = computed(() => {
+  const labels = convertPreview.value?.moduleLabels;
+  if (!labels || typeof labels !== 'object') return [];
+  return Object.entries(labels).map(([moduleKey, value]) => ({
+    moduleKey,
+    label: value?.plural || value?.singular || moduleKey,
+  }));
+});
 
 const fetchDemoRequests = async () => {
   loading.value = true;
@@ -442,9 +484,35 @@ const updateStatus = async () => {
   }
 };
 
-const openConvertModal = (request) => {
+const openConvertModal = async (request) => {
   convertModalRequest.value = request;
   convertTier.value = 'trial';
+  convertIndustryOverride.value = request.industry || '';
+  convertPreview.value = null;
+  await fetchConvertPreview();
+};
+
+const fetchConvertPreview = async () => {
+  if (!convertModalRequest.value?._id) return;
+  convertPreviewLoading.value = true;
+  try {
+    const params = new URLSearchParams();
+    if (convertIndustryOverride.value) {
+      params.set('industryOverride', convertIndustryOverride.value);
+    }
+    const query = params.toString();
+    const data = await apiClient(
+      `/demo/requests/${convertModalRequest.value._id}/preview${query ? `?${query}` : ''}`
+    );
+    if (data.success) {
+      convertPreview.value = data.data;
+    }
+  } catch (err) {
+    console.error('Error loading convert preview:', err);
+    convertPreview.value = null;
+  } finally {
+    convertPreviewLoading.value = false;
+  }
 };
 
 const closeConvertModal = () => {
@@ -462,13 +530,22 @@ const convertRequest = async () => {
       {
         method: 'POST',
         body: JSON.stringify({
-          subscriptionTier: convertTier.value
+          subscriptionTier: convertTier.value,
+          industryOverride: convertIndustryOverride.value || undefined,
         })
       }
     );
     
     if (data.success) {
       const payload = data.data || {};
+      if (payload.verticalTemplate) {
+        captureDemoRequestConverted({
+          templateKey: payload.verticalTemplate.key,
+          industry: payload.verticalTemplate.industry,
+          primaryAppKey: payload.verticalTemplate.primaryAppKey,
+          demoRequestId: convertModalRequest.value._id,
+        });
+      }
       if (payload.activationEmailSent) {
         notifications.error(t('common.demoRequestsToastConvertedActivationSent'));
       } else if (payload.activationUrl) {

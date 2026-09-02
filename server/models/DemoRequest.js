@@ -6,14 +6,14 @@ const DemoRequestSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    industry: { 
-        type: String, 
-        required: true 
+    industry: {
+        type: String,
+        default: ''
     },
     companySize: {
         type: String,
-        enum: ['1-10', '11-50', '51-200', '201-500', '500+'],
-        required: true
+        enum: ['', '1-10', '11-50', '51-200', '201-500', '500+'],
+        default: '',
     },
     
     // Contact Information
@@ -38,9 +38,23 @@ const DemoRequestSchema = new mongoose.Schema({
     // Lead Tracking
     status: {
         type: String,
-        enum: ['pending', 'contacted', 'demo_scheduled', 'demo_completed', 'converted', 'rejected'],
-        default: 'pending'
+        enum: [
+            'pending_verification',
+            'email_verified',
+            'pending',
+            'contacted',
+            'demo_scheduled',
+            'demo_completed',
+            'converted',
+            'rejected'
+        ],
+        default: 'pending_verification'
     },
+    emailVerifiedAt: Date,
+    emailVerificationTokenHash: String,
+    emailVerificationExpiresAt: Date,
+    setupTokenHash: String,
+    setupTokenExpiresAt: Date,
     source: {
         type: String,
         default: 'website'

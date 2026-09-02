@@ -3,6 +3,7 @@
  */
 
 import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
+import { getTenantModulePluralLabel } from '@/utils/registryModuleLabels';
 
 /** @type {Record<string, string>} */
 export const SURFACE_LABEL_KEYS = {
@@ -290,11 +291,14 @@ export function getAppNameKey(appKey) {
 }
 
 /**
- * @param {{ labelKey?: string, label?: string }} item
+ * @param {{ labelKey?: string, label?: string, tenantLabel?: boolean }} item
  * @param {(key: string) => string} t
  * @param {(key: string) => boolean} [te]
  */
 export function resolveSidebarItemLabel(item, t) {
+  if (item?.tenantLabel && item?.label) {
+    return item.label;
+  }
   if (item?.labelKey) {
     return t(item.labelKey);
   }
@@ -764,6 +768,13 @@ export function resolveTabTitle(tab, t, te = () => false) {
   if (isPortalDocumentDetailTabPath(tab?.path)) {
     const portalDocName = String(tab?.recordTitle || tab?.params?.name || '').trim();
     if (portalDocName) return portalDocName;
+  }
+
+  const pathOnly = String(tab?.path || '').split('?')[0].split('#')[0];
+  const pathSegments = pathOnly.split('/').filter(Boolean);
+  if (pathSegments.length === 1) {
+    const tenantModuleLabel = getTenantModulePluralLabel(pathSegments[0]);
+    if (tenantModuleLabel) return tenantModuleLabel;
   }
 
   if (tab?.titleKey === 'navigation.tabRecordNamed' && tab.titleParams?.name) {
