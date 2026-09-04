@@ -552,6 +552,10 @@ import apiClient from '@/utils/apiClient';
 import { getApiUrlForFetch } from '@/config/apiBase';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useNotifications } from '@/composables/useNotifications';
+import {
+  invalidateCompanyLogoCache,
+  resolveAssetDownloadUrl
+} from '@/modules/template/composables/useCompanyLogoAsset';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
 import { PHONE_COUNTRIES, getPhoneCountry, resolveDefaultPhoneCountry } from '@/utils/phoneInput';
 import {
@@ -767,11 +771,11 @@ const companyInitials = computed(() => {
 const resolvedLogoUrl = computed(() => {
   const url = form.value.logoUrl || '';
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) {
-    return url;
-  }
-  // For server-relative URLs (e.g. /api/uploads/...), normalize via apiBase.
-  return getApiUrlForFetch(url);
+  return resolveAssetDownloadUrl(url) || (
+    url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')
+      ? url
+      : getApiUrlForFetch(url)
+  );
 });
 
 const hasChanges = computed(() => {
@@ -802,6 +806,19 @@ const fetchOrganizationSettings = async () => {
       };
       // Capture the server-saved state as the baseline used for "unsaved changes" detection.
       originalForm.value = JSON.parse(JSON.stringify(form.value));
+
+      if (authStore.organization) {
+        authStore.organization = {
+          ...authStore.organization,
+          name: form.value.name || authStore.organization.name,
+          settings: {
+            ...(authStore.organization.settings || {}),
+            logoUrl: form.value.logoUrl || null,
+            primaryColor: form.value.primaryColor
+          }
+        };
+        localStorage.setItem('organization', JSON.stringify(authStore.organization));
+      }
 
       // Smart default: if the org has never explicitly chosen a timezone (still on
       // the UTC fallback) and the browser reports a different zone, pre-fill the
@@ -880,6 +897,7 @@ const handleSubmit = async () => {
       if (authStore.organization) {
         authStore.organization = {
           ...authStore.organization,
+          ...(payload.name !== undefined ? { name: form.value.name } : {}),
           settings: {
             ...(authStore.organization.settings || {}),
             timeZone: form.value.timeZone,
@@ -887,6 +905,8 @@ const handleSubmit = async () => {
             locale: form.value.locale,
             language: form.value.language,
             defaultPhoneCountry: form.value.defaultPhoneCountry || '',
+            ...(payload.logoUrl !== undefined ? { logoUrl: form.value.logoUrl || null } : {}),
+            ...(payload.primaryColor !== undefined ? { primaryColor: form.value.primaryColor } : {})
           },
         };
         localStorage.setItem('organization', JSON.stringify(authStore.organization));
@@ -974,6 +994,17 @@ const uploadLogo = async (file) => {
       // appearing as a pending change just because of the logo.
       originalForm.value.logoUrl = newUrl;
       logoBroken.value = false;
+      if (authStore.organization) {
+        authStore.organization = {
+          ...authStore.organization,
+          settings: {
+            ...(authStore.organization.settings || {}),
+            logoUrl: newUrl
+          }
+        };
+        localStorage.setItem('organization', JSON.stringify(authStore.organization));
+      }
+      invalidateCompanyLogoCache();
       notifySuccess(t('settings.orgLogoUploaded'));
     }
   } catch (err) {
@@ -1000,6 +1031,17 @@ const removeLogo = async () => {
       if (result?.success) {
         form.value.logoUrl = '';
         originalForm.value.logoUrl = '';
+        if (authStore.organization) {
+          authStore.organization = {
+            ...authStore.organization,
+            settings: {
+              ...(authStore.organization.settings || {}),
+              logoUrl: null
+            }
+          };
+          localStorage.setItem('organization', JSON.stringify(authStore.organization));
+        }
+        invalidateCompanyLogoCache();
         notifySuccess(t('settings.orgLogoRemoved'));
       } else {
         notifyError(result?.message || t('settings.orgLogoRemoveFailed'));

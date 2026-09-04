@@ -284,6 +284,15 @@ const ModuleDefinitionSchema = new mongoose.Schema({
     default: { version: 1, rows: [] },
     select: false // Excluded by default, use +quickCreateLayout to include
   },
+  /**
+   * Field Configuration layout (settings UI only).
+   * Orthogonal to ownership axes (core/participation/system | platform/app/org).
+   * sections[] + field.sectionId place fields in admin-managed blocks.
+   */
+  fieldLayout: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
   pipelineSettings: [{
     type: mongoose.Schema.Types.Mixed
   }]

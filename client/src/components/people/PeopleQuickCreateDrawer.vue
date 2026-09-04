@@ -109,210 +109,86 @@
                         </div>
                         <template v-else-if="peopleModuleOverride">
                           <div class="flex flex-col gap-8">
-                            <!-- 1. Quick create fields -->
-                            <section
-                              v-if="showQuickCreateFieldsSection"
-                              class="space-y-4"
+                            <!-- Single form instance: toggling quick/full must not remount (preserves values). -->
+                            <DynamicForm
+                              moduleKey="people"
+                              :formData="formData"
+                              :errors="errors"
+                              :quickCreateMode="!fullMode && strictQuickCreateForForm"
+                              :showAllFields="fullMode"
+                              :fieldsOverride="fullMode ? null : coreQuickCreateFieldsOverride"
+                              :excludeFields="coreFormExcludeFields"
+                              :moduleOverride="peopleModuleOverride"
+                              :singleColumn="!fullMode"
+                              :useQuickCreateOrder="!fullMode"
+                              :fieldSearch="fullMode ? fieldSearch : ''"
+                              :createSurfaceComposites="fullMode ? peopleFullModeComposites : []"
+                              context="platform"
+                              @update:formData="updateFormData"
+                              @ready="onFormReady"
                             >
-                              <PeopleDrawerSectionHeading
-                                v-if="fullMode"
-                                :label="t('common.formQuickCreateFields')"
-                              />
-                              <DynamicForm
-                                moduleKey="people"
-                                :formData="formData"
-                                :errors="errors"
-                                :quickCreateMode="!fullMode && strictQuickCreateForForm"
-                                :showAllFields="false"
-                                :fieldsOverride="coreQuickCreateFieldsOverride"
-                                :excludeFields="coreFormExcludeFields"
-                                :moduleOverride="peopleModuleOverride"
-                                :singleColumn="coreFormSingleColumn"
-                                :useQuickCreateOrder="true"
-                                :fieldSearch="fullMode ? fieldSearch : ''"
-                                context="platform"
-                                @update:formData="updateFormData"
-                                @ready="onFormReady"
-                              />
-                            </section>
-
-                            <!-- 2. App participation -->
-                            <section
-                              v-if="hasAppParticipationSection && !fieldSearch.trim()"
-                              :class="participationSectionClass"
-                            >
-                              <PeopleDrawerSectionHeading
-                                v-if="fullMode"
-                                :label="t('records.genericAppParticipation')"
-                              />
-                              <template v-else>
-                                <div class="space-y-1">
-                                  <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {{ t('records.genericAppParticipation') }}
-                                  </h3>
-                                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                              <!-- DynamicForm is JS; static #slot names are typed as {}. -->
+                              <template #[appParticipationSlot]>
+                                <section
+                                  v-if="hasAppParticipationSection && !fieldSearch.trim()"
+                                  class="flex flex-col gap-4"
+                                >
+                                  <PeopleDrawerSectionHeading :label="t('records.genericAppParticipation')" />
+                                  <p class="text-sm text-gray-500 dark:text-gray-400 -mt-1">
                                     {{ t('people.peopleQuickCreateDrawerSelectAppsHint') }}
                                   </p>
-                                </div>
+                                  <PeopleCreateParticipationBody
+                                    :optional-app-participation="optionalAppParticipation"
+                                    :context-app-key-is-null="contextAppKeyPropIsNull"
+                                    :available-participation-apps="availableParticipationApps"
+                                    :selected-optional-app-keys="selectedOptionalAppKeys"
+                                    :effective-app-key="effectiveAppKey"
+                                    :single-column="false"
+                                    :people-module-override="peopleModuleOverride"
+                                    :is-app-selected="isAppSelected"
+                                    :get-participation-app-meta="getParticipationAppMeta"
+                                    :get-app-label="getAppLabel"
+                                    :get-app-form="getAppForm"
+                                    :get-app-errors="getAppErrors"
+                                    :single-app-form="singleAppForm"
+                                    @toggle-app="toggleAppSelection"
+                                    @set-app-form="({ appKey, value }) => setAppForm(appKey, value)"
+                                    @update:single-app-form="(v) => (singleAppForm = v)"
+                                  />
+                                </section>
                               </template>
-                              <p
-                                v-if="fullMode"
-                                class="text-sm text-gray-500 dark:text-gray-400 -mt-1"
-                              >
-                                {{ t('people.peopleQuickCreateDrawerSelectAppsHint') }}
-                              </p>
+                            </DynamicForm>
 
-                              <!-- All Apps tab -->
-                              <div v-if="optionalAppParticipation && contextAppKeyPropIsNull">
-                                <div v-if="availableParticipationApps.length === 0" class="text-sm text-gray-500 dark:text-gray-400">
-                                  {{ t('people.peopleQuickCreateDrawerNoParticipationApps') }}
-                                </div>
-                                <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  <button
-                                    v-for="appKey in availableParticipationApps"
-                                    :key="appKey"
-                                    type="button"
-                                    class="relative flex items-center gap-3 rounded-lg border p-3.5 text-left transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-                                    :class="isAppSelected(appKey)
-                                      ? 'border-indigo-500 bg-indigo-50/60 ring-1 ring-indigo-500/20 dark:border-indigo-500 dark:bg-indigo-950/25'
-                                      : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-gray-600'"
-                                    :aria-pressed="isAppSelected(appKey)"
-                                    @click="toggleAppSelection(appKey)"
-                                  >
-                                      <div
-                                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                                        :class="getParticipationAppMeta(appKey).iconBg"
-                                      >
-                                        <component
-                                          :is="getParticipationAppMeta(appKey).icon"
-                                          class="h-5 w-5"
-                                          :class="getParticipationAppMeta(appKey).iconColor"
-                                          aria-hidden="true"
-                                        />
-                                      </div>
-                                      <div class="min-w-0 flex-1">
-                                        <div class="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                          {{ getAppLabel(appKey) }}
-                                        </div>
-                                        <div
-                                          v-if="isAppSelected(appKey) && getAppForm(appKey).participationType"
-                                          class="truncate text-xs text-indigo-600 dark:text-indigo-400"
-                                        >
-                                          {{ getAppForm(appKey).participationType }}
-                                        </div>
-                                        <div
-                                          v-else-if="!isAppSelected(appKey)"
-                                          class="text-xs text-gray-500 dark:text-gray-400"
-                                        >
-                                          {{ t('people.peopleQuickCreateDrawerTapToAdd') }}
-                                        </div>
-                                      </div>
-                                      <CheckCircleIcon
-                                        v-if="isAppSelected(appKey)"
-                                        class="absolute right-2 top-2 h-5 w-5 text-indigo-600 dark:text-indigo-400"
-                                        aria-hidden="true"
-                                      />
-                                    </button>
-                                </div>
-
-                                <div v-if="selectedOptionalAppKeys.length > 0" class="mt-5 space-y-4">
-                                  <div
-                                    v-for="appKey in selectedOptionalAppKeys"
-                                    :key="`config-${appKey}`"
-                                    class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/40"
-                                  >
-                                    <div class="flex items-center gap-2.5 border-b border-gray-100 px-4 py-3 dark:border-gray-700">
-                                      <div
-                                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
-                                        :class="getParticipationAppMeta(appKey).iconBg"
-                                      >
-                                        <component
-                                          :is="getParticipationAppMeta(appKey).icon"
-                                          class="h-4 w-4"
-                                          :class="getParticipationAppMeta(appKey).iconColor"
-                                          aria-hidden="true"
-                                        />
-                                      </div>
-                                      <span class="text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ getAppLabel(appKey) }}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        class="ml-auto text-xs font-medium text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-                                        @click="toggleAppSelection(appKey)"
-                                      >
-                                        {{ t('actions.remove') }}
-                                      </button>
-                                    </div>
-                                    <div class="p-4">
-                                      <AppSection
-                                        :app-key="appKey"
-                                        :model-value="getAppForm(appKey)"
-                                        embedded
-                                        collapsible-dependent-fields
-                                        hide-section-title
-                                        :single-column="participationFormSingleColumn"
-                                        :module-override="peopleModuleOverride"
-                                        :errors="getAppErrors(appKey)"
-                                        @update:model-value="(value) => setAppForm(appKey, value)"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <!-- Single app context (Sales / Helpdesk tab) -->
-                              <div v-else-if="effectiveAppKey" class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/40">
-                                <div class="flex items-center gap-2.5 border-b border-gray-100 px-4 py-3 dark:border-gray-700">
-                                    <div
-                                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
-                                      :class="getParticipationAppMeta(effectiveAppKey).iconBg"
-                                    >
-                                      <component
-                                        :is="getParticipationAppMeta(effectiveAppKey).icon"
-                                        class="h-4 w-4"
-                                        :class="getParticipationAppMeta(effectiveAppKey).iconColor"
-                                        aria-hidden="true"
-                                      />
-                                    </div>
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">
-                                      {{ getAppLabel(effectiveAppKey) }}
-                                    </span>
-                                  </div>
-                                  <div class="p-4">
-                                    <AppSection
-                                      :app-key="effectiveAppKey"
-                                      v-model="singleAppForm"
-                                      embedded
-                                      collapsible-dependent-fields
-                                      hide-section-title
-                                      :single-column="participationFormSingleColumn"
-                                      :module-override="peopleModuleOverride"
-                                      :errors="getAppErrors(effectiveAppKey)"
-                                    />
-                                  </div>
-                                </div>
-                            </section>
-
-                            <!-- 3. Full mode: remaining core fields -->
+                            <!-- Quick mode: participation below QC fields (outside layout surface) -->
                             <section
-                              v-if="fullMode && hasFullOtherCoreFields"
-                              class="space-y-4"
+                              v-if="!fullMode && hasAppParticipationSection"
+                              :class="participationSectionClass"
                             >
-                              <PeopleDrawerSectionHeading :label="t('common.listCoreFields')" />
-                              <DynamicForm
-                                moduleKey="people"
-                                :formData="formData"
-                                :errors="errors"
-                                :quickCreateMode="false"
-                                :showAllFields="false"
-                                :fieldsOverride="fullOtherCoreFields"
-                                :excludeFields="coreFormExcludeFields"
-                                :moduleOverride="peopleModuleOverride"
-                                :singleColumn="coreFormSingleColumn"
-                                :fieldSearch="fieldSearch"
-                                context="platform"
-                                @update:formData="updateFormData"
+                              <div class="space-y-1">
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+                                  {{ t('records.genericAppParticipation') }}
+                                </h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                  {{ t('people.peopleQuickCreateDrawerSelectAppsHint') }}
+                                </p>
+                              </div>
+                              <PeopleCreateParticipationBody
+                                :optional-app-participation="optionalAppParticipation"
+                                :context-app-key-is-null="contextAppKeyPropIsNull"
+                                :available-participation-apps="availableParticipationApps"
+                                :selected-optional-app-keys="selectedOptionalAppKeys"
+                                :effective-app-key="effectiveAppKey"
+                                :single-column="true"
+                                :people-module-override="peopleModuleOverride"
+                                :is-app-selected="isAppSelected"
+                                :get-participation-app-meta="getParticipationAppMeta"
+                                :get-app-label="getAppLabel"
+                                :get-app-form="getAppForm"
+                                :get-app-errors="getAppErrors"
+                                :single-app-form="singleAppForm"
+                                @toggle-app="toggleAppSelection"
+                                @set-app-form="({ appKey, value }) => setAppForm(appKey, value)"
+                                @update:single-app-form="(v) => (singleAppForm = v)"
                               />
                             </section>
                           </div>
@@ -365,6 +241,7 @@ declare const process: {
 import { ref, computed, watch, toRef, nextTick, onUnmounted, defineComponent, h, type PropType, type Component } from 'vue';
 import { XMarkIcon, BriefcaseIcon, LifebuoyIcon, CheckCircleIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import DynamicForm from '@/components/common/DynamicForm.vue';
+import PeopleCreateParticipationBody from '@/components/people/PeopleCreateParticipationBody.vue';
 import WorkspaceScopedDrawerShell from '@/components/common/WorkspaceScopedDrawerShell.vue';
 import { FORM_FIELD_SEARCH_CONTROL_CLASS } from '@/utils/formFieldControlClasses';
 import { getFieldDisplayLabel } from '@/utils/fieldDisplay';
@@ -373,6 +250,8 @@ import apiClient from '@/utils/apiClient';
 import { useTabs } from '@/composables/useTabs';
 import { useCreationContext } from '@/utils/creationContext';
 import { getPeopleQuickCreateFields, getAppFields, getParticipationFields } from '@/platform/fields/peopleFieldModel';
+import { ensureModuleCreateLayout } from '@/platform/fields/createSurface';
+import type { CreateSurfaceCompositeId } from '@/platform/fields/createSurface';
 import { getGlobalSystemFieldKeys } from '@/platform/fields/fieldCapabilityEngine';
 import { getAppLabel } from '@/utils/getRoleDisplay';
 import { getParticipation } from '@/utils/getParticipation';
@@ -449,6 +328,9 @@ const props = defineProps({
 const { t } = useI18n();
 
 const emit = defineEmits(['close', 'saved']);
+
+/** Dynamic slot name — DynamicForm is JS so static #app_participation is typed as never. */
+const appParticipationSlot: CreateSurfaceCompositeId = 'app_participation';
 
 const { openTab } = useTabs();
 const authStore = useAuthStore();
@@ -657,6 +539,12 @@ const hasAppParticipationSection = computed(() =>
   (props.optionalAppParticipation && contextAppKeyPropIsNull.value) || !!effectiveAppKey.value
 );
 
+const peopleFullModeComposites = computed((): string[] =>
+  hasAppParticipationSection.value && !fieldSearch.value.trim()
+    ? ['app_participation']
+    : []
+);
+
 const showQuickCreateFieldsSection = computed(() => {
   if (!fullMode.value) return true;
   return visibleQuickCreateFieldKeys.value.length > 0;
@@ -757,6 +645,9 @@ watch(() => props.isOpen, async (open) => {
       if (!mod.quickCreateLayout) mod.quickCreateLayout = { version: 1, rows: [] };
       mod.fields = normalizeModuleFieldsFromMetadata('people', mod.fields || []);
       mod.fields = mergePeopleVirtualFieldDefinitions(mod.fields);
+      const layoutApplied = ensureModuleCreateLayout('people', mod.fields, mod.fieldLayout || null);
+      mod.fieldLayout = layoutApplied.layout;
+      mod.fields = layoutApplied.fields;
       peopleModuleOverride.value = mod;
     }
   } catch (e) {
@@ -1052,6 +943,14 @@ const updateFormData = (data: Record<string, any>) => {
 const onFormReady = (module: any) => {
   moduleDefinition.value = module;
   if (isEditMode.value && editRecordSeeded.value) return;
+
+  // Preserve drafts when toggling quick ↔ full (form may remount / re-emit ready).
+  const hasDraftValues = Object.values(formData.value || {}).some((value) => {
+    if (value == null || value === '') return false;
+    if (Array.isArray(value) && value.length === 0) return false;
+    return true;
+  });
+  if (hasDraftValues) return;
 
   const allFieldKeys = fullMode.value
     ? getActiveCoreFieldKeys()

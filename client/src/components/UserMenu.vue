@@ -8,6 +8,9 @@ import { useTabs } from '@/composables/useTabs';
 import { hasAnySettingsAccess } from '@/utils/settingsTabAccess';
 import { useUserStatus } from '@/composables/useUserStatus';
 import { useReleaseNotes } from '@/composables/useReleaseNotes';
+import {
+  resolveAssetDownloadUrl
+} from '@/modules/template/composables/useCompanyLogoAsset';
 import AvatarInitials from '@/components/ui/AvatarInitials.vue';
 import {
   UserCircleIcon,
@@ -62,6 +65,30 @@ const displayName = computed(() => authStore.user?.username || t('navigation.use
 const email = computed(() => authStore.user?.email || '');
 const role = computed(() => authStore.user?.role || '');
 const workspaceName = computed(() => authStore.organization?.name || '');
+const workspaceLogoBroken = ref(false);
+const workspaceLogoReady = ref(false);
+
+const workspaceLogoUrl = computed(() => {
+  const raw = String(authStore.organization?.settings?.logoUrl || '').trim();
+  if (!raw) return '';
+  return resolveAssetDownloadUrl(raw) || raw;
+});
+
+watch(workspaceLogoUrl, () => {
+  workspaceLogoBroken.value = false;
+  workspaceLogoReady.value = false;
+});
+
+function onWorkspaceLogoLoad() {
+  workspaceLogoReady.value = true;
+  workspaceLogoBroken.value = false;
+}
+
+function onWorkspaceLogoError() {
+  // Ignore abort/reload errors after a successful paint — that was the flash-then-hide.
+  if (workspaceLogoReady.value) return;
+  workspaceLogoBroken.value = true;
+}
 
 const canViewControlPanel = computed(() => authStore.isPlatformAdmin);
 
@@ -579,6 +606,24 @@ function chooseStatus(typeId) {
           <ArrowRightOnRectangleIcon class="h-5 w-5" />
           {{ t('navigation.signOut') }}
         </button>
+        <div
+          v-if="workspaceLogoUrl && !workspaceLogoBroken"
+          class="flex items-center border-t border-gray-100 px-5 py-3 dark:border-gray-800"
+          aria-hidden="true"
+        >
+          <div
+            class="inline-flex h-9 max-w-[10rem] items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 dark:border-gray-600"
+            :class="workspaceLogoReady ? 'opacity-100' : 'opacity-0'"
+          >
+            <img
+              :src="workspaceLogoUrl"
+              :alt="t('settings.orgLogoAlt')"
+              class="h-7 w-auto max-w-full object-contain"
+              @load="onWorkspaceLogoLoad"
+              @error="onWorkspaceLogoError"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </transition>

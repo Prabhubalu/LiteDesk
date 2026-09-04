@@ -2943,6 +2943,10 @@
     "message": "Created On",
     "description": "Platform audit filter/column label — created timestamp"
   },
+  "sysFieldDeal": {
+    "message": "Deal",
+    "description": "Lookup field label for dealId on quotes, invoices, and sales orders"
+  },
   "sysFieldModifiedOn": {
     "message": "Modified On",
     "description": "Platform audit filter/column label — last modified timestamp"

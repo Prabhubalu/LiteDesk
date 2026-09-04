@@ -2998,5 +2998,9 @@
   "demoRequestsConvertPreviewLoading": {
     "message": "Loading provisioning preview…",
     "description": "Loading state for convert preview"
+  },
+  "sysFieldDeal": {
+    "message": "Deal",
+    "description": "Lookup field label for dealId on quotes, invoices, and sales orders"
   }
 }

@@ -99,78 +99,64 @@
 
                           <template v-else>
                             <div class="flex flex-col gap-8">
-                              <!-- 1. Core quick-create fields (identity; excludes types + type-scoped fields) -->
-                              <section
-                                v-if="showCoreQuickCreateSection"
-                                class="space-y-4"
+                              <!-- Single form instance so quick ↔ full keeps entered values -->
+                              <DynamicForm
+                                module-key="organizations"
+                                context="platform"
+                                :form-data="formData"
+                                :errors="errors"
+                                :show-all-fields="mode === 'full'"
+                                :quick-create-mode="mode === 'quick'"
+                                :single-column="mode === 'quick'"
+                                :fields-override="mode === 'full' ? null : coreQuickCreateFieldsOverride"
+                                :exclude-fields="mode === 'full' ? fullModeLayoutExcludeFields : coreFormExcludeFields"
+                                :module-override="moduleDefinition"
+                                :use-quick-create-order="mode === 'quick'"
+                                :create-surface-composites="mode === 'full' ? orgFullModeComposites : []"
+                                @update:form-data="updateFormData"
+                                @ready="onFormReady"
                               >
-                                <h3
-                                  v-if="mode === 'full'"
-                                  class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white"
-                                >
-                                  {{ t('common.formQuickCreateFields') }}
-                                </h3>
-                                <DynamicForm
-                                  module-key="organizations"
-                                  context="platform"
-                                  :form-data="formData"
-                                  :errors="errors"
-                                  :exclude-fields="coreFormExcludeFields"
-                                  :show-all-fields="false"
-                                  :quick-create-mode="mode === 'quick'"
-                                  :single-column="mode === 'quick'"
-                                  :fields-override="mode === 'full'
-                                    ? (fullQuickCreateFields.length ? fullQuickCreateFields : null)
-                                    : coreQuickCreateFieldsOverride"
-                                  :module-override="moduleDefinition"
-                                  @update:form-data="updateFormData"
-                                  @ready="onFormReady"
-                                />
-                              </section>
+                                <template #app_participation>
+                                  <OrganizationParticipationSection
+                                    v-if="mode === 'full'"
+                                    :form-data="formData"
+                                    :errors="errors"
+                                    :module-override="moduleDefinition"
+                                    :single-column="false"
+                                    :full-mode="true"
+                                    @update:form-data="updateFormData"
+                                  />
+                                </template>
+                                <template #vendor_catalog>
+                                  <VendorCatalogSection
+                                    v-if="mode === 'full' && showVendorCatalog"
+                                    ref="vendorCatalogSectionRef"
+                                    v-model="vendorCatalogLines"
+                                    :disabled="saving || (loading && isEditMode)"
+                                    :vendor-id="organizationId || null"
+                                  />
+                                </template>
+                              </DynamicForm>
 
-                              <!-- 2. App participation (types per enabled app) -->
                               <OrganizationParticipationSection
+                                v-if="mode === 'quick'"
                                 :section-class="typesSectionClass"
                                 :form-data="formData"
                                 :errors="errors"
                                 :module-override="moduleDefinition"
-                                :single-column="mode === 'quick'"
-                                :full-mode="mode === 'full'"
+                                :single-column="true"
+                                :full-mode="false"
                                 @update:form-data="updateFormData"
                               />
 
-                              <!-- 2b. Vendor Catalog (Inventory → Vendor) -->
                               <VendorCatalogSection
-                                v-if="showVendorCatalog"
+                                v-if="mode === 'quick' && showVendorCatalog"
                                 ref="vendorCatalogSectionRef"
                                 v-model="vendorCatalogLines"
                                 :disabled="saving || (loading && isEditMode)"
                                 :vendor-id="organizationId || null"
                                 :class="vendorCatalogSectionClass"
                               />
-
-                              <!-- 3. Full mode: remaining core fields (People parity — omit when empty) -->
-                              <section
-                                v-if="mode === 'full' && fullOtherFields.length"
-                                class="space-y-4"
-                              >
-                                <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-900 dark:text-white">
-                                  {{ t('common.listCoreFields') }}
-                                </h3>
-                                <DynamicForm
-                                  module-key="organizations"
-                                  context="platform"
-                                  :form-data="formData"
-                                  :errors="errors"
-                                  :show-all-fields="false"
-                                  :quick-create-mode="false"
-                                  :single-column="false"
-                                  :fields-override="fullOtherFields"
-                                  :exclude-fields="fullModeExcludeFields"
-                                  :module-override="moduleDefinition"
-                                  @update:form-data="updateFormData"
-                                />
-                              </section>
                             </div>
                           </template>
                       </div>
@@ -226,6 +212,7 @@ import OrganizationParticipationSection from '@/components/organizations/Organiz
 import VendorCatalogSection from '@/components/organizations/VendorCatalogSection.vue';
 import apiClient from '@/utils/apiClient';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
+import { ensureModuleCreateLayout } from '@/platform/fields/createSurface';
 import { useTabs } from '@/composables/useTabs';
 import {
   isTenantPlatformOrganizationFieldKey,
@@ -418,6 +405,21 @@ const fullModeExcludeFields = computed(() => {
   return Array.from(deduped);
 });
 
+/** Full create surface: also hide types / type-scoped (rendered in app_participation). */
+const fullModeLayoutExcludeFields = computed(() => {
+  const moduleFields = Array.isArray(moduleDefinition.value?.fields) ? moduleDefinition.value.fields : [];
+  const typeScoped = moduleFields
+    .map((field) => field?.key)
+    .filter((key) => key && (String(key).toLowerCase() === 'types' || isOrganizationTypeScopedFieldKey(key)));
+  return [...new Set([...fullModeExcludeFields.value, ...typeScoped, 'types'])];
+});
+
+const orgFullModeComposites = computed(() => {
+  const ids = ['app_participation'];
+  if (showVendorCatalog.value) ids.push('vendor_catalog');
+  return ids;
+});
+
 const fullQuickCreateFields = computed(() =>
   QUICK_CREATE_FIELDS.value.filter((fieldKey) => {
     const keyLower = String(fieldKey).toLowerCase();
@@ -494,7 +496,15 @@ const fetchOrganizationModuleDefinition = async () => {
     try {
       const response = await apiClient.get('/modules/organizations/quick-create');
       if (response?.success && response?.data) {
-        moduleDefinition.value = response.data;
+        const mod = response.data;
+        const layoutApplied = ensureModuleCreateLayout(
+          'organizations',
+          Array.isArray(mod.fields) ? mod.fields : [],
+          mod.fieldLayout || null
+        );
+        mod.fieldLayout = layoutApplied.layout;
+        mod.fields = layoutApplied.fields;
+        moduleDefinition.value = mod;
         return;
       }
     } catch (error) {
@@ -506,7 +516,15 @@ const fetchOrganizationModuleDefinition = async () => {
         context: 'platform',
       });
       if (organizationsModule) {
-        moduleDefinition.value = organizationsModule;
+        const mod = organizationsModule;
+        const layoutApplied = ensureModuleCreateLayout(
+          'organizations',
+          Array.isArray(mod.fields) ? mod.fields : [],
+          mod.fieldLayout || null
+        );
+        mod.fieldLayout = layoutApplied.layout;
+        mod.fields = layoutApplied.fields;
+        moduleDefinition.value = mod;
       }
     } catch (error) {
       console.error('[OrganizationQuickCreate] Failed to fetch organizations module definition:', error);

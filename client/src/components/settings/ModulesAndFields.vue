@@ -229,16 +229,26 @@
         <aside class="w-96 flex-none bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-h-0">
           <div class="p-3 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-2 flex-shrink-0">
             <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate flex-1 min-w-0">{{ selectedModule?.name }}</div>
-            <button 
-              v-if="selectedModule && !props.hideFieldCreation" 
-              @click="openAddField" 
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 text-xs font-medium transition-colors flex-shrink-0 whitespace-nowrap"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>{{ t('settings.modFieldsAddCustomField') }}</span>
-            </button>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button
+                v-if="selectedModule"
+                type="button"
+                @click="showManageSections = true"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 text-xs font-medium transition-colors whitespace-nowrap"
+              >
+                {{ t('settings.modFieldsManageSections') }}
+              </button>
+              <button 
+                v-if="selectedModule && !props.hideFieldCreation" 
+                @click="openAddField" 
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 text-xs font-medium transition-colors whitespace-nowrap"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>{{ t('settings.modFieldsAddCustomField') }}</span>
+              </button>
+            </div>
           </div>
           <div class="p-2 border-b border-gray-200 dark:border-white/10 flex items-center justify-between flex-shrink-0">
             <div class="text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsFieldsLabel') }}</div>
@@ -255,661 +265,26 @@
           </label>
         </div>
         <div class="modules-fields-list p-2" style="flex: 1 1 0%; min-height: 0; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch;">
-          <!-- People module: Grouped by metadata -->
-          <template v-if="isPeopleModule">
-            <!-- Core Identity Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreIdentity') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="(fieldKey, idx) in groupedFields.coreIdentity"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- App Participation Groups -->
-            <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ participationGroupTitle(appKey) }}
-              </div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in fields"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ appKey }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- System Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in groupedFields.system"
-                  :key="fieldKey"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
-                      ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </template>
-
-          <!-- Organizations module: Grouped by ownership (similar to People) -->
-          <template v-else-if="isOrganizationsModule">
-            <!-- Core Business Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreBusiness') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="(fieldKey, idx) in groupedFields.coreIdentity"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- App Participation Groups -->
-            <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ participationGroupTitle(appKey) }}
-              </div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in fields"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ appKey }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- System Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in groupedFields.system"
-                  :key="fieldKey"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
-                      ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </template>
-
-          <!-- Tasks module: Grouped by ownership (similar to Organizations) -->
-          <template v-else-if="isTasksModule">
-            <!-- Core Task Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreTask') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="(fieldKey, idx) in groupedFields.coreIdentity"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div
-                    :data-selected-idx="getFieldIndex(fieldKey) === selectedFieldIdx ? selectedFieldIdx : undefined"
-                    :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- App Participation Groups -->
-            <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ participationGroupTitle(appKey) }}
-              </div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in fields"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ appKey }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- System Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in groupedFields.system"
-                  :key="fieldKey"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
-                      ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </template>
-
-          <!-- Deals / Cases / Inventory workbench: Core Module Fields vs System Fields -->
-          <template v-else-if="isDealsModule || isCasesModule || isInventoryWorkbenchModule">
-            <!-- Core Module Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{
-                isInventoryWorkbenchModule
-                  ? t('settings.modFieldsGroupCoreModule')
-                  : isCasesModule
-                    ? t('settings.modFieldsGroupCoreCase')
-                    : t('settings.modFieldsGroupCoreDeal')
-              }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="(fieldKey, idx) in groupedFields.coreIdentity"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div
-                    :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- App Participation Groups (if any in future) -->
-            <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ participationGroupTitle(appKey) }}
-              </div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in fields"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ appKey }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- System Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in groupedFields.system"
-                  :key="fieldKey"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
-                      ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </template>
-
-          <!-- Events module: Grouped by ownership (similar to Tasks) -->
-          <!-- 
-            ARCHITECTURE NOTE: Events Settings configure structure only, never execution.
-            - No GEO coordinates (belongs in execution)
-            - No check-in/check-out fields (belongs in execution)
-            - No route sequencing (belongs in execution)
-            - No audit history (belongs in execution)
-            - No metadata (belongs in execution)
-            See: docs/architecture/event-settings.md Section 5
-          -->
-          <template v-else-if="isFormsModule">
-            <!-- Core Fields (Forms module) -->
-            <!-- 
-              ARCHITECTURE NOTE: Forms use the same Fields Configuration model as other core modules.
-              "Metadata" is not a separate field type — these are record fields.
-              Form content structure is managed exclusively by the Form Builder.
-              
-              Core fields must always appear in the field list.
-              They may be fixed or read-only, but must never be hidden.
-              This preserves discoverability and prevents "magic fields".
-              See: client/src/platform/forms/formSettingsMap.ts
-            -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreForm') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="field in getFieldsForTab('metadataFields').filter(f => !f.isSystem)"
-                  :key="field.key"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(field.key) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        field.isFixed ? 'opacity-90' : ''
-                      ]"
-                      @click.stop="selectFieldByKey(field.key)"
-                      :style="{ cursor: 'pointer' }"
-                    >
-                    <div class="flex-1 text-left truncate flex items-center gap-2">
-                      <!-- Lock icon for fixed fields -->
-                      <div v-if="field.isFixed" class="mr-1 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleFixedField')">🔒</div>
-                      <span>{{ field.label }}</span>
-                      <!-- Core badge -->
-                      <span
-                        class="px-1.5 py-0.5 text-xs font-medium rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                      >
-                        {{ t('settings.modFieldsBadgeCoreField') }}
-                      </span>
-                      <!-- Fixed badge -->
-                      <span
-                        v-if="field.isFixed"
-                        class="px-1.5 py-0.5 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                      >
-                        {{ t('settings.modFieldsBadgeFixed') }}
-                      </span>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- System Fields (Forms module) -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="field in getFieldsForTab('metadataFields').filter(f => f.isSystem)"
-                  :key="field.key"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(field.key) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        'opacity-90'
-                      ]"
-                      @click.stop="selectFieldByKey(field.key)"
-                      :style="{ cursor: 'pointer' }"
-                    >
-                    <div class="flex-1 text-left truncate flex items-center gap-2">
-                      <!-- Lock icon for system fields -->
-                      <div class="mr-1 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
-                      <span>{{ field.label }}</span>
-                      <!-- System badge -->
-                      <span
-                        class="px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                      >
-                        {{ t('settings.modFieldsBadgeSystem') }}
-                      </span>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </template>
-
-          <template v-else-if="isEventsModule">
-            <!-- Core Event Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupCoreEvent') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="(fieldKey, idx) in groupedFields.coreIdentity"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- App Participation Groups -->
-            <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ participationGroupTitle(appKey) }}
-              </div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in fields"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ appKey }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- System Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in groupedFields.system"
-                  :key="fieldKey"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
-                      ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </template>
-
-          <!-- Items / Quotes / Sales Orders: grouped by field model ownership -->
-          <template v-else-if="isItemsModule || isQuotesModule || isSalesOrdersModule || isInvoicesModule || isPaymentsModule || isDocumentsModule">
-            <!-- Core catalog fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ isDocumentsModule ? t('settings.modFieldsGroupCoreDocument') : isQuotesModule ? t('settings.modFieldsGroupCoreQuote') : isSalesOrdersModule ? t('settings.modFieldsGroupCoreSalesOrder') : isInvoicesModule ? t('settings.modFieldsGroupCoreInvoice') : isPaymentsModule ? t('settings.modFieldsGroupCorePayment') : t('settings.modFieldsGroupCoreItem') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="(fieldKey, idx) in groupedFields.coreIdentity"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span v-if="isCustomField(fieldKey)" class="px-1.5 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded">{{ t('settings.modFieldsBadgeCustomField') }}</span>
-                      <span v-else class="px-1.5 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">{{ t('settings.modFieldsBadgeCoreField') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- App Participation Groups -->
-            <div v-for="(fields, appKey) in groupedFields.participation" :key="appKey" class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">
-                {{ participationGroupTitle(appKey) }}
-              </div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in fields"
-                  :key="fieldKey"
-                  class="group"
-                  :draggable="true"
-                  @dragstart="onDragStart(getFieldIndex(fieldKey))"
-                  @dragover.prevent="onDragOver(getFieldIndex(fieldKey))"
-                  @drop.prevent="onDrop(getFieldIndex(fieldKey))"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                        dragOverIdx === getFieldIndex(fieldKey) ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''
-                      ]">
-                    <div class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">{{ appKey }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <!-- System Fields -->
-            <div class="mb-4">
-              <div class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2 px-2">{{ t('settings.modFieldsGroupSystemFields') }}</div>
-              <ul class="space-y-1">
-                <li
-                  v-for="fieldKey in groupedFields.system"
-                  :key="fieldKey"
-                  class="group"
-                >
-                  <div :class="[
-                        'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2 opacity-75',
-                        getFieldIndex(fieldKey) === selectedFieldIdx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
-                      ]">
-                    <div class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="t('settings.modFieldsTitleSystemField')">🔒</div>
-                    <button class="flex-1 text-left truncate flex items-center gap-2" @click.stop="selectFieldByKey(fieldKey)">
-                      <span>{{ getFieldLabel(fieldKey) }}</span>
-                      <span class="px-1.5 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">{{ t('settings.modFieldsBadgeSystem') }}</span>
-                    </button>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ getFieldDataType(fieldKey) }}</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </template>
-
-          <!-- Other modules: Original flat list -->
-          <ul v-else class="space-y-1">
-            <li
-              v-for="(f, idx) in filteredFields"
-              :key="f.key || idx"
-              class="group"
-              :draggable="!isSystemField(f) && !isFixedPositionField(f, selectedModule?.key)"
-              @dragstart="onDragStart(idx)"
-              @dragover.prevent="onDragOver(idx)"
-              @drop.prevent="onDrop(idx)"
-            >
-              <div :class="[
-                    'w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between gap-2',
-                    selectedFieldIdx === idx ? 'bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5',
-                    dragOverIdx === idx ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : '',
-                    isSystemField(f) ? 'opacity-75' : ''
-                  ]">
-                <div v-if="!isSystemField(f) && !isFixedPositionField(f, selectedModule?.key)" class="cursor-grab select-none mr-2 text-gray-400 dark:text-gray-500">⋮⋮</div>
-                <div v-else class="mr-2 text-xs text-purple-600 dark:text-purple-400" :title="isSystemField(f) ? t('settings.modFieldsTitleSystemField') : t('settings.modFieldsTitleFixedField')">🔒</div>
-                <button class="flex-1 text-left truncate" @click="selectField(idx)">{{ formatFieldLabelForDisplay(f.label, f.key) || t('settings.modFieldsUntitledField') }}</button>
-                <span class="text-xs text-gray-500 dark:text-gray-400">{{ f.dataType }}</span>
-              </div>
-            </li>
-          </ul>
+          <FieldConfigSectionList
+            v-if="fieldLayout"
+            :fields="editFields"
+            :layout="fieldLayout"
+            :search="fieldSearch"
+            :selected-field-key="editFields[selectedFieldIdx]?.key || ''"
+            :resolve-badge="resolveFieldListBadge"
+            :resolve-label="getFieldLabel"
+            :resolve-data-type="getFieldDataType"
+            :is-system-field-key="isSystemFieldKeyForList"
+            :can-drag-field-key="canDragFieldInLayout"
+            :include-field="includeFieldInLayoutList"
+            :allow-add-field="!props.hideFieldCreation"
+            @select="selectFieldByKey"
+            @reorder="onLayoutReorder"
+            @add-field="openAddField"
+          />
+          <div v-else class="px-2 py-6 text-xs text-gray-500 dark:text-gray-400 text-center">
+            {{ t('settings.modFieldsFieldsLabel') }}
+          </div>
         </div>
       </aside>
 
@@ -4615,13 +3990,23 @@
       @saved="handleModuleSaved"
     />
 
+    <ManageFieldSectionsDrawer
+      :is-open="showManageSections"
+      :layout="fieldLayout || { version: 1, sections: [] }"
+      :fields="editFields"
+      @close="showManageSections = false"
+      @save="onManageSectionsSave"
+    />
+
     <AddCustomFieldDrawer
       :is-open="showAddFieldDrawer"
       :module-name="selectedModule?.name || ''"
       :next-order="editFields.length"
       :show-app-participation-scope="showCustomFieldParticipationScope && customFieldAppScopeOptions.length > 0"
       :app-scope-options="customFieldAppScopeOptions"
-      @close="showAddFieldDrawer = false"
+      :section-options="addFieldSectionOptions"
+      :initial-section-id="addFieldTargetSectionId"
+      @close="closeAddFieldDrawer"
       @save="handleAddFieldFromDrawer"
     />
 
@@ -4731,6 +4116,15 @@ import {
   getOrganizationTypeScopedFieldPool
 } from '@/platform/fields/organizationFieldModel';
 import AddCustomFieldDrawer from './AddCustomFieldDrawer.vue';
+import FieldConfigSectionList from './FieldConfigSectionList.vue';
+import ManageFieldSectionsDrawer from './ManageFieldSectionsDrawer.vue';
+import {
+  applyFieldLayoutToModuleState,
+  moveFieldAcrossLayout,
+  moveFieldToSection,
+  getDefaultSectionIdForModule,
+  resolveSectionDisplayLabel
+} from '@/platform/fields/fieldLayout';
 import RelationshipFormDrawer from './RelationshipFormDrawer.vue';
 import HeadlessCheckbox from '@/components/ui/HeadlessCheckbox.vue';
 import HeadlessSelect from '@/components/ui/HeadlessSelect.vue';
@@ -4968,6 +4362,8 @@ const showFormModal = ref(false);
 const editingModule = ref(null);
 const editFields = ref([]);
 const selectedFieldIdx = ref(0);
+const fieldLayout = ref(null);
+const showManageSections = ref(false);
 
 /**
  * Normalize fields for Field Configuration UI.
@@ -7427,6 +6823,89 @@ function isCustomField(fieldKey) {
   return field?.owner === 'org';
 }
 
+function resolveFieldListBadge(fieldKey) {
+  const field = editFields.value.find(f => f.key === fieldKey);
+  if (!field) return null;
+  const moduleKey = String(selectedModule.value?.key || '').toLowerCase();
+
+  if (field.owner === 'org') {
+    return { type: 'custom', label: t('settings.modFieldsBadgeCustomField') };
+  }
+
+  if (isSystemField(field) || isGlobalSystemFieldKey(fieldKey)) {
+    return { type: 'system', label: t('settings.modFieldsBadgeSystem') };
+  }
+
+  if (isModuleRegistered(moduleKey)) {
+    const meta = getFieldMetadataFromRegistry(moduleKey, fieldKey);
+    if (meta?.owner === 'system') {
+      return { type: 'system', label: t('settings.modFieldsBadgeSystem') };
+    }
+    if (meta?.owner === 'participation' && meta.fieldScope) {
+      return { type: 'participation', label: String(meta.fieldScope) };
+    }
+    if (meta?.owner === 'core') {
+      return { type: 'core', label: t('settings.modFieldsBadgeCoreField') };
+    }
+  }
+
+  if (isCoreField(field, moduleKey)) {
+    return { type: 'core', label: t('settings.modFieldsBadgeCoreField') };
+  }
+
+  return { type: 'core', label: t('settings.modFieldsBadgeCoreField') };
+}
+
+function isSystemFieldKeyForList(fieldKey) {
+  const field = editFields.value.find(f => f.key === fieldKey);
+  if (!field) return false;
+  return isSystemField(field) || isGlobalSystemFieldKey(fieldKey);
+}
+
+function canDragFieldInLayout(fieldKey) {
+  const field = editFields.value.find(f => f.key === fieldKey);
+  if (!field) return false;
+  if (isFixedPositionField(field, selectedModule.value?.key)) return false;
+  // System fields remain non-editable but may be repositioned in layout.
+  return true;
+}
+
+function includeFieldInLayoutList(field) {
+  if (!field?.key) return false;
+  if (isOrganizationsModule.value && !showTenantFields.value) {
+    const keyLower = String(field.key).toLowerCase();
+    const tenantFieldPatterns = ['subscription.', 'limits.', 'settings.', 'slug', 'isactive', 'enabledmodules'];
+    if (tenantFieldPatterns.some(pattern => keyLower.startsWith(pattern) || keyLower === pattern)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function onLayoutReorder(payload) {
+  if (!fieldLayout.value) return;
+  const moduleKey = selectedModule.value?.key || '';
+  if (payload?.type === 'section' && payload.fromKey && payload.sectionId) {
+    editFields.value = moveFieldToSection(editFields.value, fieldLayout.value, payload.fromKey, payload.sectionId);
+    return;
+  }
+  if (payload?.fromKey && payload?.toKey) {
+    editFields.value = moveFieldAcrossLayout(editFields.value, fieldLayout.value, payload.fromKey, payload.toKey);
+  }
+}
+
+function onManageSectionsSave(nextLayout) {
+  if (!nextLayout) return;
+  fieldLayout.value = nextLayout;
+  const applied = applyFieldLayoutToModuleState(
+    selectedModule.value?.key || '',
+    editFields.value,
+    nextLayout
+  );
+  fieldLayout.value = applied.layout;
+  editFields.value = applied.fields;
+}
+
 // Helper: Get field index by key (case-insensitive, ignores hyphens)
 function getFieldIndex(fieldKey) {
   if (!fieldKey) return -1;
@@ -7504,6 +6983,7 @@ function formatFieldLabelForDisplay(label, fieldKey = '') {
   const friendlyByKey = {
     contactid: 'Contact',
     organizationrefid: 'Organization',
+    dealid: 'Deal',
   };
   if (friendlyByKey[normalizedKey]) return friendlyByKey[normalizedKey];
 
@@ -8404,7 +7884,15 @@ const fetchModules = async (apiGetOptions = {}) => {
           });
         }
         
-        editFields.value = normalizedFields;
+        {
+          const layoutAppliedInit = applyFieldLayoutToModuleState(
+            initialMod.key,
+            normalizedFields,
+            initialMod.fieldLayout
+          );
+          fieldLayout.value = layoutAppliedInit.layout;
+          editFields.value = layoutAppliedInit.fields;
+        }
         
         // For People module: enforce default "Required in Form" flags when no saved Quick Create config exists
         if (initialMod.key?.toLowerCase() === 'people') {
@@ -8891,7 +8379,15 @@ const fetchModules = async (apiGetOptions = {}) => {
               });
             }
             
-            editFields.value = normalizedFields;
+            {
+              const layoutAppliedStored = applyFieldLayoutToModuleState(
+                storedMod.key,
+                normalizedFields,
+                storedMod.fieldLayout
+              );
+              fieldLayout.value = layoutAppliedStored.layout;
+              editFields.value = layoutAppliedStored.fields;
+            }
             // try stored field
             const storedFieldKey = localStorage.getItem('arivu-modfields-field') || '';
             const sidx = storedFieldKey ? editFields.value.findIndex(f => f.key === storedFieldKey) : 0;
@@ -9059,7 +8555,9 @@ const selectModule = (mod, preferFieldKey = null) => {
               });
             }
   
-  editFields.value = normalizedFields;
+  const layoutApplied = applyFieldLayoutToModuleState(mod.key, normalizedFields, mod.fieldLayout);
+  fieldLayout.value = layoutApplied.layout;
+  editFields.value = layoutApplied.fields;
   if (preferFieldKey) {
     const idx = getFieldIndex(preferFieldKey);
     selectedFieldIdx.value = idx >= 0 ? idx : 0;
@@ -9365,13 +8863,36 @@ const deleteModule = async (mod) => {
 
 const showAddFieldDrawer = ref(false);
 const showDeleteFieldConfirm = ref(false);
+const addFieldTargetSectionId = ref('');
 
-const openAddField = () => {
+const addFieldSectionOptions = computed(() => {
+  if (!fieldLayout.value?.sections?.length) return [];
+  return [...fieldLayout.value.sections]
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((section) => ({
+      value: section.id,
+      label: resolveSectionDisplayLabel(section, t)
+    }));
+});
+
+const openAddField = (sectionId = '') => {
+  addFieldTargetSectionId.value =
+    typeof sectionId === 'string' ? sectionId.trim() : '';
   showAddFieldDrawer.value = true;
+};
+
+const closeAddFieldDrawer = () => {
+  showAddFieldDrawer.value = false;
+  addFieldTargetSectionId.value = '';
 };
 
 const handleAddFieldFromDrawer = async (field) => {
   const rawCtx = field.context != null && String(field.context).trim() !== '' ? String(field.context).trim().toLowerCase() : 'global';
+  const validSectionIds = new Set((fieldLayout.value?.sections || []).map((s) => s.id));
+  const requestedSectionId = String(field.sectionId || addFieldTargetSectionId.value || '').trim();
+  const sectionId = validSectionIds.has(requestedSectionId)
+    ? requestedSectionId
+    : getDefaultSectionIdForModule(selectedModule.value?.key || '');
   const newField = {
     ...field,
     options: field.options || [],
@@ -9379,17 +8900,27 @@ const handleAddFieldFromDrawer = async (field) => {
     index: field.index ?? false,
     order: editFields.value.length,
     owner: 'org',
-    context: rawCtx === 'global' ? 'global' : rawCtx
+    context: rawCtx === 'global' ? 'global' : rawCtx,
+    sectionId
   };
   if (newField.dataType === 'Email' && (!newField.validations || !newField.validations.length)) {
     newField.validations = getDefaultEmailValidations();
   }
   const newFieldKey = newField.key?.trim() || field.key?.trim();
   editFields.value.push(newField);
-  selectedFieldIdx.value = editFields.value.length - 1;
+  if (fieldLayout.value) {
+    const applied = applyFieldLayoutToModuleState(
+      selectedModule.value?.key || '',
+      editFields.value,
+      fieldLayout.value
+    );
+    fieldLayout.value = applied.layout;
+    editFields.value = applied.fields;
+  }
+  selectedFieldIdx.value = Math.max(0, editFields.value.findIndex((f) => f.key === newFieldKey));
   syncOptionsBuffer();
   fieldKeyManuallyEdited.value.delete(selectedFieldIdx.value);
-  showAddFieldDrawer.value = false;
+  closeAddFieldDrawer();
   if (selectedModule.value) {
     await saveModule();
     nextTick(() => selectFieldByKey(newFieldKey));
@@ -9612,8 +9143,16 @@ const saveModule = async () => {
       })));
     }
     
+    const layoutForSave = applyFieldLayoutToModuleState(
+      mod.key,
+      fieldsToSave,
+      fieldLayout.value
+    );
+    fieldLayout.value = layoutForSave.layout;
+    editFields.value = layoutForSave.fields;
     const payload = {
-      fields: fieldsToSave,
+      fields: layoutForSave.fields,
+      fieldLayout: layoutForSave.layout,
       relationships: relationships.value,
       quickCreate: normalizedQuickCreate,
       quickCreateLayout: quickLayout.value,
@@ -11447,35 +10986,20 @@ async function onDrop(idx) {
   dragStartIdx.value = null;
   dragOverIdx.value = null;
   if (from === null || to === null || from === to) return;
-  
-  // People module: Validate that fields are in the same group
-  if (isPeopleModule.value) {
-    const fromField = editFields.value[from];
-    const toField = editFields.value[to];
-    
-    if (fromField?.key && toField?.key) {
-      try {
-        const fromMetadata = getFieldMetadata(fromField.key);
-        const toMetadata = getFieldMetadata(toField.key);
-        
-        // Prevent cross-group moves
-        if (fromMetadata.owner !== toMetadata.owner) {
-          console.error('[People Field Model] Cannot move field across groups. From:', fromMetadata.owner, 'To:', toMetadata.owner);
-          return;
-        }
-        
-        // Prevent moving between different fieldScopes
-        if (fromMetadata.owner === 'participation' && fromMetadata.fieldScope !== toMetadata.fieldScope) {
-          console.error('[People Field Model] Cannot move field across app scopes. From:', fromMetadata.fieldScope, 'To:', toMetadata.fieldScope);
-          return;
-        }
-      } catch (err) {
-        console.error('[People Field Model] Failed to validate field move:', err);
-        return;
-      }
-    }
+
+  // Layout-aware reorder: preserve section membership via sectionId when present.
+  const fromField = editFields.value[from];
+  const toField = editFields.value[to];
+  if (fieldLayout.value && fromField?.key && toField?.key) {
+    editFields.value = moveFieldAcrossLayout(
+      editFields.value,
+      fieldLayout.value,
+      fromField.key,
+      toField.key
+    );
+    return;
   }
-  
+
   moveField(from, to - from);
   // Order change is dirty until the user clicks Save (no auto-save).
 }
@@ -11505,6 +11029,7 @@ function getSnapshot() {
   const normalizedFields = deduplicatedFields.map((f, i) => ({ ...f, order: i }));
   const payload = {
     fields: normalizedFields,
+    fieldLayout: fieldLayout.value,
     relationships: relationships.value,
     quickCreate: Array.from(quickCreateSelected.value),
     quickCreateLayout: quickLayout.value,

@@ -1542,6 +1542,7 @@ function getBaseFieldsForKey(key) {
                 if (name === 'assignedTo') fieldLabel = 'Assigned To';
                 if (name === 'contactId') fieldLabel = 'Contact';
                 if (name === 'organizationRefId') fieldLabel = 'Organization';
+                if (name === 'dealId') fieldLabel = 'Deal';
                 if (name === 'vendorId') fieldLabel = 'Vendor';
                 if (name === 'vendorContactId') fieldLabel = 'Vendor Contact';
                 if (name === 'buyerId') fieldLabel = 'Purchase Owner';
@@ -3399,26 +3400,68 @@ exports.listModules = async (req, res) => {
             }
         }
 
-        // Other tenant system modules: quickCreate is persisted via raw Mongo in updateSystemModule / updateModule.
-        // Mongoose .lean() + select('+quickCreate') can still omit quickCreate on some documents; when undefined,
-        // merge falls back to [] and listModules applies canonical defaults — Settings "saves" but reload shows defaults.
-        // Overlay from native driver (same reliability as People raw merge above). Batch by $in (avoid N+1 findOne).
-        const orgQuickCreateRawKeys = ['tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders', 'invoices', 'payments', 'documents', 'cases', 'forms'];
+        // Other tenant system modules: fields/quickCreate/fieldLayout are persisted via raw Mongo in
+        // updateSystemModule. Dual mongoose+mongo upserts can leave stale lean docs without custom
+        // fields — overlay from native driver (prefer the org doc with the richest fields array).
+        const orgDocTimestamp = (value) => {
+            if (!value) return 0;
+            const ts = new Date(value).getTime();
+            return Number.isFinite(ts) ? ts : 0;
+        };
+        const orgQuickCreateRawKeys = [
+            'people', 'tasks', 'organizations', 'events', 'items', 'deals', 'quotes', 'sales_orders',
+            'invoices', 'payments', 'documents', 'cases', 'forms'
+        ];
         const orgKeysToOverlay = orgQuickCreateRawKeys.filter((k) => !requestedKeys || requestedKeys.has(k));
         if (orgKeysToOverlay.length > 0) {
+            const orgIdVariants = [
+                orgObjectId,
+                String(req.user.organizationId),
+                ...(mongoose.Types.ObjectId.isValid(req.user.organizationId)
+                    ? [req.user.organizationId]
+                    : [])
+            ];
             const orgRawDocs = await collection.find({
-                organizationId: orgObjectId,
-                key: { $in: orgKeysToOverlay },
+                organizationId: { $in: orgIdVariants },
+                $or: [
+                    { key: { $in: orgKeysToOverlay } },
+                    { moduleKey: { $in: orgKeysToOverlay } }
+                ]
             }).toArray();
-            const orgRawByKey = new Map(
-                orgRawDocs.map((doc) => [String(doc.key || '').toLowerCase(), doc])
-            );
+            const orgRawByKey = new Map();
+            for (const doc of orgRawDocs) {
+                const moduleKey = String(doc.key || doc.moduleKey || '').toLowerCase();
+                if (!moduleKey) continue;
+                const existing = orgRawByKey.get(moduleKey);
+                if (!existing) {
+                    orgRawByKey.set(moduleKey, doc);
+                    continue;
+                }
+                const existingLen = Array.isArray(existing.fields) ? existing.fields.length : 0;
+                const incomingLen = Array.isArray(doc.fields) ? doc.fields.length : 0;
+                if (incomingLen > existingLen) {
+                    orgRawByKey.set(moduleKey, doc);
+                    continue;
+                }
+                if (incomingLen < existingLen) continue;
+                const existingTs = orgDocTimestamp(existing.updatedAt) || orgDocTimestamp(existing.createdAt);
+                const incomingTs = orgDocTimestamp(doc.updatedAt) || orgDocTimestamp(doc.createdAt);
+                if (incomingTs >= existingTs) orgRawByKey.set(moduleKey, doc);
+            }
             for (const module of custom) {
                 if (!module.organizationId) continue;
                 const moduleKey = String(module.key || module.moduleKey || '').toLowerCase();
                 const raw = orgRawByKey.get(moduleKey);
-                if (!raw || !Array.isArray(raw.quickCreate)) continue;
-                module.quickCreate = raw.quickCreate;
+                if (!raw) continue;
+                if (Array.isArray(raw.fields) && raw.fields.length > 0) {
+                    module.fields = raw.fields;
+                }
+                if (raw.fieldLayout && typeof raw.fieldLayout === 'object') {
+                    module.fieldLayout = raw.fieldLayout;
+                }
+                if (Array.isArray(raw.quickCreate)) {
+                    module.quickCreate = raw.quickCreate;
+                }
                 if (raw.quickCreateLayout && typeof raw.quickCreateLayout === 'object') {
                     module.quickCreateLayout = raw.quickCreateLayout;
                 }
@@ -3497,6 +3540,12 @@ exports.listModules = async (req, res) => {
             const incomingHasModuleKey = hasCanonicalOrgModuleKey(incoming, moduleKey);
             if (incomingHasModuleKey !== currentHasModuleKey) {
                 return incomingHasModuleKey ? incoming : current;
+            }
+            // Prefer the override that actually carries field config (avoids dual-doc stale shells).
+            const currentFieldsLen = Array.isArray(current.fields) ? current.fields.length : 0;
+            const incomingFieldsLen = Array.isArray(incoming.fields) ? incoming.fields.length : 0;
+            if (incomingFieldsLen !== currentFieldsLen) {
+                return incomingFieldsLen > currentFieldsLen ? incoming : current;
             }
             const currentUpdatedAt = toTimestamp(current.updatedAt) || toTimestamp(current.createdAt);
             const incomingUpdatedAt = toTimestamp(incoming.updatedAt) || toTimestamp(incoming.createdAt);
@@ -5289,6 +5338,7 @@ exports.listModules = async (req, res) => {
                     fields: finalFields,
                     quickCreate: finalQuickCreate,
                     quickCreateLayout: finalQuickCreateLayout,
+                    fieldLayout: override.fieldLayout || sys.fieldLayout || null,
                     relationships: resolvedRelationships,
                     // Phase 17: Preserve notification metadata (use override if exists, else default)
                     notifications: override.notifications || sys.notifications || getDefaultNotificationMetadata(sys.key),
@@ -6280,13 +6330,14 @@ exports.updateModule = async (req, res) => {
             name: mod.name,
             enabled: mod.enabled,
             fields: mod.fields,
+            fieldLayout: mod.fieldLayout,
             relationships: mod.relationships,
             quickCreate: mod.quickCreate,
             quickCreateLayout: mod.quickCreateLayout,
             pipelineSettings: mod.pipelineSettings
         });
 
-        const { name, enabled, fields, relationships, quickCreate, quickCreateLayout, pipelineSettings } = req.body;
+        const { name, enabled, fields, relationships, quickCreate, quickCreateLayout, pipelineSettings, fieldLayout } = req.body;
         const deprecatedEventAliasKeys = new Set(['relatedorg', 'relatedorgid', 'relatedorganization']);
         
         console.log('🔵 updateModule called:', {
@@ -6334,7 +6385,30 @@ exports.updateModule = async (req, res) => {
             }
             // Tasks: expose only single "relatedTo" field; strip relatedToType/relatedToId from persisted config
             if (mod.key === 'tasks') sanitizedFields = normalizeTasksModuleFields(sanitizedFields);
-            mod.fields = sanitizedFields;
+            const { applyFieldLayoutOnSave, validateFieldLayoutPayload } = require('../utils/fieldLayout');
+            const layoutValidation = validateFieldLayoutPayload(
+                mod.key,
+                fieldLayout !== undefined ? fieldLayout : mod.fieldLayout
+            );
+            if (!layoutValidation.ok) {
+                return res.status(400).json({ success: false, message: layoutValidation.error, code: 'INVALID_FIELD_LAYOUT' });
+            }
+            const layoutApplied = applyFieldLayoutOnSave(mod.key, sanitizedFields, layoutValidation.fieldLayout);
+            mod.fields = layoutApplied.fields;
+            mod.fieldLayout = layoutApplied.fieldLayout;
+        } else if (fieldLayout !== undefined) {
+            const { applyFieldLayoutOnSave, validateFieldLayoutPayload } = require('../utils/fieldLayout');
+            const layoutValidation = validateFieldLayoutPayload(mod.key, fieldLayout);
+            if (!layoutValidation.ok) {
+                return res.status(400).json({ success: false, message: layoutValidation.error, code: 'INVALID_FIELD_LAYOUT' });
+            }
+            const layoutApplied = applyFieldLayoutOnSave(
+                mod.key,
+                Array.isArray(mod.fields) ? mod.fields : [],
+                layoutValidation.fieldLayout
+            );
+            mod.fields = layoutApplied.fields;
+            mod.fieldLayout = layoutApplied.fieldLayout;
         }
         
         // Always update relationships if provided (even if empty array).
@@ -6536,6 +6610,7 @@ exports.updateModule = async (req, res) => {
         responseData.quickCreate = saved?.quickCreate || [];
         responseData.quickCreateLayout = saved?.quickCreateLayout || { version: 1, rows: [] };
         responseData.pipelineSettings = saved?.pipelineSettings || [];
+        responseData.fieldLayout = saved?.fieldLayout || mod.fieldLayout || null;
         if (mod.key === 'deals') {
             responseData.pipelineSettings = normalizePipelineSettings(responseData.pipelineSettings);
         }
@@ -6570,6 +6645,7 @@ exports.updateModule = async (req, res) => {
             name: responseData.name,
             enabled: responseData.enabled,
             fields: responseData.fields,
+            fieldLayout: responseData.fieldLayout,
             relationships: responseData.relationships,
             quickCreate: responseData.quickCreate,
             quickCreateLayout: responseData.quickCreateLayout,
@@ -6689,7 +6765,8 @@ exports.getPeopleQuickCreate = async (req, res) => {
             name: 'People',
             fields: readableFields,
             quickCreate,
-            quickCreateLayout
+            quickCreateLayout,
+            fieldLayout: raw?.fieldLayout || null
         };
         res.json({ success: true, data: out });
     } catch (err) {
@@ -6704,12 +6781,19 @@ exports.updateSystemModule = async (req, res) => {
         const keyLower = String(key || '').toLowerCase();
         const mongoose = require('mongoose');
         const orgObjectId = new mongoose.Types.ObjectId(req.user.organizationId);
+        const orgIdVariants = [
+            orgObjectId,
+            String(req.user.organizationId),
+            ...(mongoose.Types.ObjectId.isValid(req.user.organizationId)
+                ? [req.user.organizationId]
+                : [])
+        ];
         const orgFilterMongoose = {
-            organizationId: req.user.organizationId,
+            organizationId: { $in: orgIdVariants },
             $or: [{ key: keyLower }, { moduleKey: keyLower }]
         };
         const orgFilterRaw = {
-            organizationId: orgObjectId,
+            organizationId: { $in: orgIdVariants },
             $or: [{ key: keyLower }, { moduleKey: keyLower }]
         };
         const systemKeys = new Set([
@@ -6718,7 +6802,7 @@ exports.updateSystemModule = async (req, res) => {
         ]);
         if (!systemKeys.has(keyLower)) return res.status(400).json({ success: false, message: 'Invalid system module key' });
         const { attachSettingsAuditDiff, buildModuleSettingsAuditPair, cloneForAudit } = require('../utils/settingsAuditSnapshot');
-        const { fields, enabled, name, relationships, quickCreate, quickCreateLayout, pipelineSettings } = req.body;
+        const { fields, enabled, name, relationships, quickCreate, quickCreateLayout, pipelineSettings, fieldLayout } = req.body;
         const deprecatedEventAliasKeys = new Set(['relatedorg', 'relatedorgid', 'relatedorganization']);
         
         console.log('🔵 updateSystemModule called:', {
@@ -6744,6 +6828,7 @@ exports.updateSystemModule = async (req, res) => {
             name: existingMod?.name || null,
             enabled: existingMod?.enabled,
             fields: existingMod?.fields,
+            fieldLayout: existingMod?.fieldLayout,
             relationships: existingMod?.relationships,
             quickCreate: existingMod?.quickCreate,
             quickCreateLayout: existingMod?.quickCreateLayout,
@@ -6806,7 +6891,25 @@ exports.updateSystemModule = async (req, res) => {
                 await syncOrganizationParticipationTypesFromModuleFields(fieldsOut, req.user.organizationId);
                 fieldsOut = await enrichOrganizationsModuleFields(fieldsOut, req.user.organizationId);
             }
+            const { applyFieldLayoutOnSave, validateFieldLayoutPayload } = require('../utils/fieldLayout');
+            const layoutValidation = validateFieldLayoutPayload(keyLower, fieldLayout !== undefined ? fieldLayout : existingMod?.fieldLayout);
+            if (!layoutValidation.ok) {
+                return res.status(400).json({ success: false, message: layoutValidation.error, code: 'INVALID_FIELD_LAYOUT' });
+            }
+            const layoutApplied = applyFieldLayoutOnSave(keyLower, fieldsOut, layoutValidation.fieldLayout);
+            fieldsOut = layoutApplied.fields;
+            updateObj.fieldLayout = layoutApplied.fieldLayout;
             updateObj.fields = fieldsOut;
+        } else if (fieldLayout !== undefined) {
+            const { applyFieldLayoutOnSave, validateFieldLayoutPayload } = require('../utils/fieldLayout');
+            const layoutValidation = validateFieldLayoutPayload(keyLower, fieldLayout);
+            if (!layoutValidation.ok) {
+                return res.status(400).json({ success: false, message: layoutValidation.error, code: 'INVALID_FIELD_LAYOUT' });
+            }
+            const existingFields = Array.isArray(existingMod?.fields) ? existingMod.fields : [];
+            const layoutApplied = applyFieldLayoutOnSave(keyLower, existingFields, layoutValidation.fieldLayout);
+            updateObj.fieldLayout = layoutApplied.fieldLayout;
+            updateObj.fields = layoutApplied.fields;
         }
         // Resolve and validate relationships (same as updateModule) so saved config works in Link Record drawer
         if (relationships !== undefined) {
@@ -6978,28 +7081,82 @@ exports.updateSystemModule = async (req, res) => {
         const otherFields = {};
         
         Object.keys(cleanUpdateObj).forEach(objKey => {
-            if (objKey === 'quickCreate' || objKey === 'quickCreateLayout' || objKey === 'fields' || objKey === 'relationships' || objKey === 'pipelineSettings') {
+            // fields + fieldLayout must write together (same Mongo upsert) so tenant
+            // overrides never split across two docs / two drivers.
+            if (
+                objKey === 'quickCreate' ||
+                objKey === 'quickCreateLayout' ||
+                objKey === 'fields' ||
+                objKey === 'fieldLayout' ||
+                objKey === 'relationships' ||
+                objKey === 'pipelineSettings'
+            ) {
                 criticalFields[objKey] = cleanUpdateObj[objKey];
             } else {
                 otherFields[objKey] = cleanUpdateObj[objKey];
             }
         });
         
-        // Update non-critical fields with Mongoose first
-        // Use upsert: true to create document if it doesn't exist
-        // NOTE: For tenant-specific overrides (with organizationId), we don't set appKey/moduleKey
-        // to avoid conflicts with the platform-level unique index { appKey: 1, moduleKey: 1 }
+        // Prefer a single raw-Mongo write when fields/quickCreate/etc. are present so
+        // name/enabled and fields never land on different tenant override documents.
         let updateResult = { matchedCount: 0, modifiedCount: 0 };
-        if (Object.keys(otherFields).length > 0) {
-            // Ensure required fields are set for upsert (tenant-specific override)
-            // Don't set appKey/moduleKey for tenant overrides to avoid unique index conflicts
+        if (Object.keys(criticalFields).length > 0) {
+            console.log('🔧 Using direct MongoDB update for critical fields:', Object.keys(criticalFields));
+            const directUpdateResult = await collection.updateOne(
+                orgFilterRaw,
+                {
+                    $set: {
+                        ...otherFields,
+                        ...criticalFields,
+                        organizationId: orgObjectId,
+                        key: keyLower,
+                        moduleKey: keyLower,
+                        type: 'system',
+                        label: key.charAt(0).toUpperCase() + key.slice(1),
+                        pluralLabel: key.charAt(0).toUpperCase() + key.slice(1) + 's',
+                        entityType: 'CORE',
+                        updatedAt: new Date()
+                    },
+                    $setOnInsert: {
+                        createdAt: new Date()
+                    }
+                },
+                { upsert: true }
+            );
+            updateResult = directUpdateResult;
+
+            console.log('📊 Direct MongoDB update result:', {
+                matchedCount: directUpdateResult.matchedCount,
+                modifiedCount: directUpdateResult.modifiedCount,
+                upsertedCount: directUpdateResult.upsertedCount || 0,
+                upsertedId: directUpdateResult.upsertedId,
+                acknowledged: directUpdateResult.acknowledged,
+                fields: Object.keys(criticalFields),
+                relationshipsCount: criticalFields.relationships?.length || 0,
+                quickCreate: criticalFields.quickCreate?.length || 0,
+                fieldsCount: criticalFields.fields?.length || 0,
+                pipelineSettingsCount: criticalFields.pipelineSettings?.length || 0
+            });
+
+            if (directUpdateResult.matchedCount === 0 && directUpdateResult.upsertedCount === 0) {
+                console.error('🚨 WARNING: Document not found and not created!', {
+                    organizationId: req.user.organizationId.toString(),
+                    key: keyLower,
+                    updateResult: directUpdateResult
+                });
+            } else if (directUpdateResult.upsertedCount > 0) {
+                console.log('✅ Document created via upsert:', {
+                    upsertedId: directUpdateResult.upsertedId,
+                    organizationId: req.user.organizationId.toString(),
+                    key: keyLower
+                });
+            }
+        } else if (Object.keys(otherFields).length > 0) {
             const upsertFields = {
                 ...otherFields,
-                organizationId: req.user.organizationId,
+                organizationId: orgObjectId,
                 key: keyLower,
                 moduleKey: keyLower,
-                // Don't set moduleKey or appKey - these are for platform-level docs only
-                // Tenant overrides use organizationId + key as the unique identifier
                 label: key.charAt(0).toUpperCase() + key.slice(1),
                 pluralLabel: key.charAt(0).toUpperCase() + key.slice(1) + 's',
                 entityType: 'CORE',
@@ -7015,61 +7172,6 @@ exports.updateSystemModule = async (req, res) => {
                 modifiedCount: updateResult.modifiedCount,
                 fields: Object.keys(otherFields)
             });
-        }
-        
-        // ALWAYS use direct MongoDB driver for critical fields (quickCreate, fields, quickCreateLayout)
-        if (Object.keys(criticalFields).length > 0) {
-            console.log('🔧 Using direct MongoDB update for critical fields:', Object.keys(criticalFields));
-            
-            // Use upsert: true to create document if it doesn't exist
-            // This ensures quickCreate can be saved even if the ModuleDefinition document hasn't been created yet
-            // NOTE: For tenant-specific overrides (with organizationId), we don't set appKey/moduleKey
-            // to avoid conflicts with the platform-level unique index { appKey: 1, moduleKey: 1 }
-            const directUpdateResult = await collection.updateOne(
-                orgFilterRaw,
-                { 
-                    $set: {
-                        ...criticalFields,
-                        organizationId: orgObjectId,
-                        key: keyLower,
-                        moduleKey: keyLower,
-                        type: 'system',
-                        // Don't set moduleKey or appKey - these are for platform-level docs only
-                        // Tenant overrides use organizationId + key as the unique identifier
-                        label: key.charAt(0).toUpperCase() + key.slice(1),
-                        pluralLabel: key.charAt(0).toUpperCase() + key.slice(1) + 's',
-                        entityType: 'CORE'
-                    }
-                },
-                { upsert: true }
-            );
-            
-            console.log('📊 Direct MongoDB update result:', {
-                matchedCount: directUpdateResult.matchedCount,
-                modifiedCount: directUpdateResult.modifiedCount,
-                upsertedCount: directUpdateResult.upsertedCount || 0,
-                upsertedId: directUpdateResult.upsertedId,
-                acknowledged: directUpdateResult.acknowledged,
-                fields: Object.keys(criticalFields),
-                relationshipsCount: criticalFields.relationships?.length || 0,
-                quickCreate: criticalFields.quickCreate?.length || 0,
-                fieldsCount: criticalFields.fields?.length || 0,
-                pipelineSettingsCount: criticalFields.pipelineSettings?.length || 0
-            });
-            
-            if (directUpdateResult.matchedCount === 0 && directUpdateResult.upsertedCount === 0) {
-                console.error('🚨 WARNING: Document not found and not created!', {
-                    organizationId: req.user.organizationId.toString(),
-                    key: keyLower,
-                    updateResult: directUpdateResult
-                });
-            } else if (directUpdateResult.upsertedCount > 0) {
-                console.log('✅ Document created via upsert:', {
-                    upsertedId: directUpdateResult.upsertedId,
-                    organizationId: req.user.organizationId.toString(),
-                    key: keyLower
-                });
-            }
         }
         
         // Now fetch the document to verify what was saved
@@ -7391,6 +7493,7 @@ exports.updateSystemModule = async (req, res) => {
             type: responseData.type || doc.type || 'system',
             enabled: responseData.enabled !== undefined ? responseData.enabled : doc.enabled,
             fields: responseData.fields || doc.fields || [],
+            fieldLayout: (sourceDoc && sourceDoc.fieldLayout) || updateObj.fieldLayout || responseData.fieldLayout || null,
             relationships: finalRelationships,
             quickCreate: finalQuickCreate,
             quickCreateLayout: finalQuickCreateLayout,
@@ -7406,6 +7509,7 @@ exports.updateSystemModule = async (req, res) => {
             name: finalResponse.name,
             enabled: finalResponse.enabled,
             fields: finalResponse.fields,
+            fieldLayout: finalResponse.fieldLayout,
             relationships: finalResponse.relationships,
             quickCreate: finalResponse.quickCreate,
             quickCreateLayout: finalResponse.quickCreateLayout,

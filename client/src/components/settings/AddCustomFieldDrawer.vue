@@ -80,6 +80,15 @@
                             :options="fieldTypeOptions"
                           />
                         </div>
+                        <div v-if="sectionSelectOptions.length" class="space-y-1">
+                          <label for="add-field-section" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsAddToSection') }}</label>
+                          <HeadlessSelect
+                            id="add-field-section"
+                            v-model="draft.sectionId"
+                            :options="sectionSelectOptions"
+                          />
+                          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ t('settings.modFieldsAddToSectionHint') }}</p>
+                        </div>
                         <div v-if="draft.dataType === 'Currency'" class="space-y-1">
                           <label for="add-field-currency" class="block text-sm/6 font-medium text-gray-900 dark:text-white">{{ t('settings.modFieldsCurrencyFormat') }}</label>
                           <HeadlessSelect
@@ -312,6 +321,10 @@ const props = defineProps({
   showAppParticipationScope: { type: Boolean, default: false },
   /** { value: lowercase app token e.g. 'sales', label: 'Sales' } */
   appScopeOptions: { type: Array, default: () => [] },
+  /** Layout sections: { value: sectionId, label: display name } */
+  sectionOptions: { type: Array, default: () => [] },
+  /** Preselect section when opening from a section header */
+  initialSectionId: { type: String, default: '' },
 });
 
 const emit = defineEmits(['close', 'save']);
@@ -333,9 +346,21 @@ const appScopeSelectOptions = computed(() =>
   (props.appScopeOptions || []).map((o) => ({ value: o.value, label: o.label || o.value }))
 );
 
+const sectionSelectOptions = computed(() =>
+  (props.sectionOptions || [])
+    .filter((o) => o?.value)
+    .map((o) => ({ value: String(o.value), label: o.label || o.value }))
+);
+
 const createEmptyDraft = () => {
   const opts = appScopeSelectOptions.value;
   const firstApp = opts[0]?.value || 'sales';
+  const sectionOpts = sectionSelectOptions.value;
+  const preferredSection = String(props.initialSectionId || '').trim();
+  const sectionId =
+    (preferredSection && sectionOpts.some((o) => o.value === preferredSection)
+      ? preferredSection
+      : sectionOpts[0]?.value) || '';
   return {
     key: '',
     label: '',
@@ -350,6 +375,7 @@ const createEmptyDraft = () => {
     participationScope: 'core',
     appContextToken: firstApp,
     currencyCode: resolveOrgCurrencyCode(authStore.organization),
+    sectionId,
   };
 };
 
@@ -410,6 +436,19 @@ watch(() => props.isOpen, (open) => {
   }
 });
 
+watch(
+  sectionSelectOptions,
+  (opts) => {
+    if (!props.isOpen || !opts.length) return;
+    if (!opts.some((o) => o.value === draft.value.sectionId)) {
+      const preferred = String(props.initialSectionId || '').trim();
+      draft.value.sectionId =
+        (preferred && opts.some((o) => o.value === preferred) ? preferred : opts[0].value) || '';
+    }
+  },
+  { deep: true }
+);
+
 watch(() => draft.value.dataType, (dataType, previousType) => {
   if (PICKLIST_FIELD_TYPES.includes(previousType) && !PICKLIST_FIELD_TYPES.includes(dataType)) {
     draft.value.options = [];
@@ -461,12 +500,17 @@ const handleSave = () => {
         })
         .filter(Boolean)
     : [];
+  const sectionId =
+    draft.value.sectionId && sectionSelectOptions.value.some((o) => o.value === draft.value.sectionId)
+      ? draft.value.sectionId
+      : sectionSelectOptions.value[0]?.value || undefined;
   const nextField = {
     ...rest,
     key,
     label: draft.value.label.trim(),
     owner: 'org',
     options,
+    ...(sectionId ? { sectionId } : {}),
     context:
       showScope && participationScope === 'app' && appToken
         ? appToken
