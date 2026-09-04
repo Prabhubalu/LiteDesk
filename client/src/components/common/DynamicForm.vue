@@ -59,143 +59,89 @@
     
     <!-- Simple Mode (List-based) -->
     <template v-else>
-      <!-- Full mode: quick-create fields first, then grouped remaining fields -->
-      <template v-if="useSectionedFullForm">
-        <div v-if="quickCreateFields.length" class="space-y-3">
-          <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
-            {{ t('common.formQuickCreateFields') }}
-          </h3>
-          <div :class="['grid gap-4', props.singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2']">
-            <div
-              v-for="field in quickCreateFields"
-              :key="field.key"
-              :class="[
-                (field.dataType === 'Text-Area' || field.dataType === 'Rich Text' || field.dataType === 'Image' || (props.moduleKey === 'tasks' && field.key === 'description')) && !props.singleColumn ? 'md:col-span-2' : '',
-                props.moduleKey === 'tasks' && field.key === 'description' ? 'w-full' : ''
-              ]"
-              :data-field-key="field.key"
+      <!-- Full mode: Field Configuration sections + composite slots -->
+      <template v-if="useFieldLayoutFullForm">
+        <div class="flex flex-col gap-8">
+          <template v-for="(block, blockIdx) in createSurfaceBlocks" :key="block.type === 'fields' ? `fields-${block.sectionId}` : `composite-${block.id}`">
+            <section
+              v-if="block.type === 'fields'"
+              class="space-y-3"
             >
-              <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
-                <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
-                  {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
-                  <span v-if="field.required" class="text-red-500">*</span>
-                </label>
-                <TaskDescriptionEditor
-                  :model-value="localFormData[field.key] || ''"
-                  :placeholder="t('common.taskDescriptionPlaceholder')"
-                  class="w-full"
-                  @update:model-value="(v) => updateField(field.key, v)"
-                />
-                <p v-if="errors[field.key]" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors[field.key] }}</p>
-              </template>
-              <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
-                <TaskRelatedToField
-                  :model-value="normalizedRelatedTo(localFormData[field.key])"
-                  :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
-                  :required="!!field.required"
-                  :error="errors[field.key]"
-                  @update:model-value="(v) => updateField(field.key, v)"
-                />
-              </template>
-              <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
-                <TaskSubtasksField
-                  :model-value="localFormData.subtasks || []"
-                  :label="t('common.taskSubtasksLabel')"
-                  :error="errors.subtasks"
-                  @update:model-value="(v) => updateField('subtasks', v)"
-                />
-              </template>
-              <DynamicFormField
-                v-else
-                :field="field"
-                :value="localFormData[field.key]"
-                @update:value="updateField(field.key, $event)"
-                :currency-code="getCurrencyCodeForField(field)"
-                :currency-code-editable="Boolean(resolveCurrencyCompanionFieldKey(field))"
-                @update:currency-code="updateCurrencyCodeForField(field, $event)"
-                :errors="errors"
-                :dependency-state="getFieldState(field)"
-                :locked="props.lockedFields.includes(field.key)"
-                :module-key="props.moduleKey"
-                :form-context="localFormData"
-                @update:form-context="applyFormContextPatch"
-                :salutation-value="localFormData.salutation ?? ''"
-                :salutation-options="peopleSalutationOptions"
-                @update:salutation-value="onSalutationFieldUpdate"
-              />
+              <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
+                {{ block.label }}
+              </h3>
+              <div :class="['grid gap-4', props.singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2']">
+                <div
+                  v-for="field in block.fields"
+                  :key="field.key"
+                  :class="fieldGridCellClass(field)"
+                  :data-field-key="field.key"
+                >
+                  <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
+                    <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
+                      {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
+                      <span v-if="field.required" class="text-red-500">*</span>
+                    </label>
+                    <TaskDescriptionEditor
+                      :model-value="localFormData[field.key] || ''"
+                      :placeholder="t('common.taskDescriptionPlaceholder')"
+                      class="w-full"
+                      @update:model-value="(v) => updateField(field.key, v)"
+                    />
+                    <p v-if="errors[field.key]" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors[field.key] }}</p>
+                  </template>
+                  <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
+                    <TaskRelatedToField
+                      :model-value="normalizedRelatedTo(localFormData[field.key])"
+                      :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
+                      :required="!!field.required"
+                      :error="errors[field.key]"
+                      @update:model-value="(v) => updateField(field.key, v)"
+                    />
+                  </template>
+                  <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
+                    <TaskSubtasksField
+                      :model-value="localFormData.subtasks || []"
+                      :label="t('common.taskSubtasksLabel')"
+                      :error="errors.subtasks"
+                      @update:model-value="(v) => updateField('subtasks', v)"
+                    />
+                  </template>
+                  <DynamicFormField
+                    v-else
+                    :field="field"
+                    :value="localFormData[field.key]"
+                    @update:value="updateField(field.key, $event)"
+                    :currency-code="getCurrencyCodeForField(field)"
+                    :currency-code-editable="Boolean(resolveCurrencyCompanionFieldKey(field))"
+                    @update:currency-code="updateCurrencyCodeForField(field, $event)"
+                    :errors="errors"
+                    :dependency-state="getFieldState(field)"
+                    :locked="props.lockedFields.includes(field.key)"
+                    :module-key="props.moduleKey"
+                    :form-context="localFormData"
+                    @update:form-context="applyFormContextPatch"
+                    :salutation-value="localFormData.salutation ?? ''"
+                    :salutation-options="peopleSalutationOptions"
+                    @update:salutation-value="onSalutationFieldUpdate"
+                  />
+                </div>
+              </div>
+            </section>
+            <div v-else-if="block.type === 'composite'">
+              <slot v-if="block.id === 'lines'" name="lines">
+                <slot name="after-quick-create" />
+              </slot>
+              <slot v-else-if="block.id === 'app_participation'" name="app_participation" />
+              <slot v-else-if="block.id === 'deal_relationships'" name="deal_relationships" />
+              <slot v-else-if="block.id === 'vendor_catalog'" name="vendor_catalog" />
             </div>
+          </template>
+          <!-- Inventory / specialty panels that are not field-layout composites -->
+          <div v-if="showLegacyAfterQuickCreateSlot">
+            <slot name="after-quick-create" />
           </div>
         </div>
-        <slot name="after-quick-create" />
-        <section
-          v-for="section in groupedRemainingSections"
-          :key="section.key"
-          class="space-y-3"
-        >
-          <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
-            {{ section.label }}
-          </h3>
-          <div :class="['grid gap-4', props.singleColumn ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2']">
-            <div
-              v-for="field in section.fields"
-              :key="field.key"
-              :class="[
-                (field.dataType === 'Text-Area' || field.dataType === 'Rich Text' || field.dataType === 'Image' || (props.moduleKey === 'tasks' && field.key === 'description')) && !props.singleColumn ? 'md:col-span-2' : '',
-                props.moduleKey === 'tasks' && field.key === 'description' ? 'w-full' : ''
-              ]"
-              :data-field-key="field.key"
-            >
-              <template v-if="props.moduleKey === 'tasks' && field.key === 'description'">
-                <label :for="`field-${field.key}`" class="block text-sm font-normal text-gray-700 dark:text-gray-300 mb-1.5">
-                  {{ getFieldDisplayLabel(field) || t('common.taskDescriptionFallback') }}
-                  <span v-if="field.required" class="text-red-500">*</span>
-                </label>
-                <TaskDescriptionEditor
-                  :model-value="localFormData[field.key] || ''"
-                  :placeholder="t('common.taskDescriptionPlaceholder')"
-                  class="w-full"
-                  @update:model-value="(v) => updateField(field.key, v)"
-                />
-                <p v-if="errors[field.key]" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors[field.key] }}</p>
-              </template>
-              <template v-else-if="props.moduleKey === 'tasks' && field.key === 'relatedTo'">
-                <TaskRelatedToField
-                  :model-value="normalizedRelatedTo(localFormData[field.key])"
-                  :label="getFieldDisplayLabel(field) || t('common.taskRelatedToFallback')"
-                  :required="!!field.required"
-                  :error="errors[field.key]"
-                  @update:model-value="(v) => updateField(field.key, v)"
-                />
-              </template>
-              <template v-else-if="props.moduleKey === 'tasks' && field.key === 'subtasks'">
-                <TaskSubtasksField
-                  :model-value="localFormData.subtasks || []"
-                  :label="t('common.taskSubtasksLabel')"
-                  :error="errors.subtasks"
-                  @update:model-value="(v) => updateField('subtasks', v)"
-                />
-              </template>
-              <DynamicFormField
-                v-else
-                :field="field"
-                :value="localFormData[field.key]"
-                @update:value="updateField(field.key, $event)"
-                :currency-code="getCurrencyCodeForField(field)"
-                :currency-code-editable="Boolean(resolveCurrencyCompanionFieldKey(field))"
-                @update:currency-code="updateCurrencyCodeForField(field, $event)"
-                :errors="errors"
-                :dependency-state="getFieldState(field)"
-                :locked="props.lockedFields.includes(field.key)"
-                :module-key="props.moduleKey"
-                :form-context="localFormData"
-                @update:form-context="applyFormContextPatch"
-                :salutation-value="localFormData.salutation ?? ''"
-                :salutation-options="peopleSalutationOptions"
-                @update:salutation-value="onSalutationFieldUpdate"
-              />
-            </div>
-          </div>
-        </section>
       </template>
       <!-- Quick create first layout: quick fields at top, divider, remaining in 2-col (like edit drawer) -->
       <template v-else-if="useQuickCreateFirstLayout">
@@ -394,7 +340,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, onMounted, defineAsyncComponent, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -440,6 +386,10 @@ import {
 } from '@/platform/fields/fieldCapabilityEngine';
 import { isAuditEventType } from '@/utils/eventUtils';
 import { getQuoteFieldMetadata } from '@/platform/fields/quoteFieldModel';
+import {
+  buildCreateSurfaceBlocks,
+  getModuleCompositeAnchors
+} from '@/platform/fields/createSurface';
 import {
   shouldShowOrganizationFieldForTypes,
   ORGANIZATION_INTENT_STATUS_FIELD_KEYS,
@@ -509,6 +459,11 @@ const props = defineProps({
   quickCreateFirstWhenExpanded: {
     type: Boolean,
     default: false // When true and showAllFields, render quick create fields at top, then divider, then remaining (like edit drawer)
+  },
+  /** When set, only these create-surface composites are inserted (else inferred from slots). */
+  createSurfaceComposites: {
+    type: Array,
+    default: null
   },
   /** When set, only fields whose label or key match (case-insensitive) are shown */
   fieldSearch: {
@@ -1142,70 +1097,35 @@ const remainingFields = computed(() => {
   return displayOrderedFields.value.filter(f => f?.key && !set.has(f.key.toLowerCase()));
 });
 
+const slots = useSlots();
+
+function hasCreateSurfaceSlot(id) {
+  if (id === 'lines') return !!(slots.lines || slots['after-quick-create']);
+  return !!slots[id];
+}
+
+const useFieldLayoutFullForm = computed(() => {
+  if (!props.showAllFields) return false;
+  // Partial override lists keep legacy flat rendering (People/Org compose their own surface).
+  if (Array.isArray(props.fieldsOverride) && props.fieldsOverride.length > 0) return false;
+  return true;
+});
+
 const useQuickCreateFirstLayout = computed(() =>
-  props.quickCreateFirstWhenExpanded && props.showAllFields && quickCreateKeysForLayout.value.size > 0
+  !useFieldLayoutFullForm.value &&
+  props.quickCreateFirstWhenExpanded &&
+  props.showAllFields &&
+  quickCreateKeysForLayout.value.size > 0
 );
 
-const useSectionedFullForm = computed(() =>
-  props.showAllFields && props.quickCreateFirstWhenExpanded
-);
+function fieldGridCellClass(field) {
+  return [
+    (field.dataType === 'Text-Area' || field.dataType === 'RichText' || field.dataType === 'Image' || (props.moduleKey === 'tasks' && field.key === 'description')) && !props.singleColumn ? 'md:col-span-2' : '',
+    props.moduleKey === 'tasks' && field.key === 'description' ? 'w-full' : ''
+  ];
+}
 
-const appScopeLabelMap = {
-  SALES: 'Sales Fields',
-  AUDIT: 'Audit Fields',
-  HELPDESK: 'Helpdesk Fields',
-  PORTAL: 'Portal Fields',
-  LMS: 'LMS Fields',
-  CONTROL_PLANE: 'Control Plane Fields',
-  MARKETING: 'Marketing Fields',
-  PROJECTS: 'Projects Fields'
-};
-
-const formatParticipationSectionLabel = (scopeKey) => {
-  const normalized = String(scopeKey || '').trim().toUpperCase();
-  if (!normalized) return 'Participation Fields';
-  if (appScopeLabelMap[normalized]) return appScopeLabelMap[normalized];
-  const titleCase = normalized
-    .toLowerCase()
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (ch) => ch.toUpperCase());
-  return `${titleCase} Fields`;
-};
-
-const resolveFieldSectionKey = (field) => {
-  let effectiveField = field;
-  if (props.moduleKey?.toLowerCase() === 'events' && String(field?.key || '').includes('.')) {
-    const parentKey = String(field.key).split('.')[0];
-    const parentField = (moduleDefinition.value?.fields || []).find(
-      (f) => String(f?.key || '').toLowerCase() === String(parentKey).toLowerCase()
-    );
-    if (parentField) effectiveField = { ...parentField, key: field.key };
-  }
-
-  const owner = String(effectiveField?.owner || '').trim().toLowerCase();
-  const context = String(effectiveField?.context || '').trim();
-  const fieldScope = String(effectiveField?.fieldScope || '').trim().toUpperCase();
-
-  if (owner === 'org') {
-    const normalizedContext = context.toUpperCase();
-    if (normalizedContext && normalizedContext !== 'GLOBAL' && normalizedContext !== 'CORE') {
-      return normalizedContext;
-    }
-    return 'CORE';
-  }
-
-  if (owner === 'participation') {
-    return fieldScope || context.toUpperCase() || 'PARTICIPATION';
-  }
-
-  if (fieldScope && fieldScope !== 'CORE' && fieldScope !== 'GLOBAL') {
-    return fieldScope;
-  }
-
-  return 'CORE';
-};
-
-const filterQuoteFullFormRemainingFields = (fields) => {
+const filterQuoteFullFormFields = (fields) => {
   return fields.filter((field) => {
     const meta = getQuoteFieldMetadata(field.key);
     if (meta) {
@@ -1216,50 +1136,44 @@ const filterQuoteFullFormRemainingFields = (fields) => {
   });
 };
 
-const fullFormSections = computed(() => {
-  if (!useSectionedFullForm.value) return [];
+const createSurfaceBlocks = computed(() => {
+  if (!useFieldLayoutFullForm.value) return [];
   const moduleKeyLower = String(props.moduleKey || '').toLowerCase();
-  let sourceFields = remainingFields.value;
+  let sourceFields = displayOrderedFields.value;
   if (moduleKeyLower === 'quotes') {
-    sourceFields = filterQuoteFullFormRemainingFields(sourceFields);
-  }
-  const coreFields = [];
-  const participationMap = new Map();
-
-  for (const field of sourceFields) {
-    const sectionKey = resolveFieldSectionKey(field);
-    if (sectionKey === 'CORE') {
-      coreFields.push(field);
-      continue;
-    }
-    if (!participationMap.has(sectionKey)) {
-      participationMap.set(sectionKey, []);
-    }
-    participationMap.get(sectionKey).push(field);
+    sourceFields = filterQuoteFullFormFields(sourceFields);
   }
 
-  const sections = [];
-  if (coreFields.length > 0) {
-    sections.push({
-      key: 'CORE',
-      label: 'Core Fields',
-      fields: coreFields
-    });
-  }
+  const includeComposites = Array.isArray(props.createSurfaceComposites)
+    ? props.createSurfaceComposites.filter((id) => hasCreateSurfaceSlot(id))
+    : getModuleCompositeAnchors(moduleKeyLower)
+      .map((a) => a.id)
+      .filter((id) => hasCreateSurfaceSlot(id));
 
-  for (const [scopeKey, fields] of participationMap.entries()) {
-    if (!fields.length) continue;
-    sections.push({
-      key: scopeKey,
-      label: formatParticipationSectionLabel(scopeKey),
-      fields
-    });
-  }
+  const excludeParticipation =
+    (moduleKeyLower === 'people' || moduleKeyLower === 'organizations') &&
+    includeComposites.includes('app_participation');
 
-  return sections;
+  return buildCreateSurfaceBlocks({
+    moduleKey: moduleKeyLower,
+    fields: sourceFields,
+    fieldLayout: moduleDefinition.value?.fieldLayout || null,
+    t,
+    includeComposites,
+    excludeParticipationOwner: excludeParticipation,
+    includeField: (field) => shouldShowField(field)
+  });
 });
 
-const groupedRemainingSections = computed(() => fullFormSections.value);
+const showLegacyAfterQuickCreateSlot = computed(() => {
+  if (!useFieldLayoutFullForm.value) return false;
+  if (!slots['after-quick-create']) return false;
+  // Commercial / deal lines already consume after-quick-create via #lines fallback.
+  return !createSurfaceBlocks.value.some(
+    (block) => block.type === 'composite' && block.id === 'lines'
+  );
+});
+
 
 const getSpanClass = (span) => {
   const spanMap = {
@@ -1573,7 +1487,7 @@ watch(
 
 // Watch for external formData changes
 watch(() => props.formData, (newData) => {
-  const merged = { ...newData };
+  const merged = newData && typeof newData === 'object' ? { ...newData } : {};
   if (props.moduleKey?.toLowerCase() === 'people') {
     syncPeopleVirtualFieldKeys(merged);
   }

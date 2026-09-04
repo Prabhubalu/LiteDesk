@@ -114,8 +114,8 @@
                             @update:formData="updateFormData"
                             @ready="onFormReady"
                           >
-                            <template v-if="isCommercialLinesForm" #after-quick-create>
-                              <div class="space-y-3 pt-2">
+                            <template v-if="isCommercialLinesForm" #lines>
+                              <div class="space-y-3">
                                 <h3 class="text-sm font-semibold tracking-wide text-gray-900 dark:text-white uppercase">
                                   {{ t(commercialLinesConfig.linesTitleKey) }}
                                 </h3>
@@ -158,64 +158,58 @@
                                 </p>
                               </div>
                             </template>
-                            <template v-else-if="isPurchaseReturnModule && !isEditing" #after-quick-create>
+                            <template v-if="moduleKey === 'deals'" #deal_relationships>
+                              <DealRelationshipEditor
+                                v-if="!effectiveQuickCreateMode || fullMode"
+                                ref="relationshipEditorRef"
+                                v-model="dealRelationships"
+                                :people="dealPeopleList"
+                                :organizations="dealOrgList"
+                                :read-only="false"
+                              />
+                            </template>
+                            <template v-if="moduleKey === 'deals'" #lines>
+                              <DealLinesSection
+                                v-if="!effectiveQuickCreateMode || fullMode"
+                                ref="dealLinesSectionRef"
+                                :record="isEditing ? record : null"
+                                :draft-mode="!isEditing"
+                                :show-title="true"
+                                :editable="true"
+                                :currency="dealLinesCurrency"
+                                :initial-amount-mode="formData.amountMode || 'MANUAL'"
+                                @draft-change="handleDealLinesDraftChange"
+                                @updated="handleDealLinesUpdated"
+                              />
+                            </template>
+                            <template v-if="isPurchaseReturnModule && !isEditing" #after-quick-create>
                               <PurchaseReturnCreateSourcesPanel
                                 ref="purchaseReturnSourcesRef"
                                 :vendor-id="formData.vendorId"
                               />
                             </template>
-                            <template v-else-if="isDeliveryReturnModule && !isEditing" #after-quick-create>
+                            <template v-if="isDeliveryReturnModule && !isEditing" #after-quick-create>
                               <DeliveryReturnCreateSourcesPanel
                                 ref="deliveryReturnSourcesRef"
                                 :customer-id="formData.customerId"
                               />
                             </template>
-                            <template v-else-if="isDeliveryNoteModule && !isEditing" #after-quick-create>
+                            <template v-if="isDeliveryNoteModule && !isEditing" #after-quick-create>
                               <DeliveryNoteCreateSourcesPanel
                                 ref="deliveryNoteSourcesRef"
                                 :customer-id="formData.customerId"
                               />
                             </template>
-                            <template v-else-if="isReceiptNoteModule && !isEditing" #after-quick-create>
+                            <template v-if="isReceiptNoteModule && !isEditing" #after-quick-create>
                               <ReceiptNoteCreatePanel ref="receiptNoteCreateRef" />
                             </template>
-                            <template v-else-if="isStockAdjustmentModule && !isEditing" #after-quick-create>
+                            <template v-if="isStockAdjustmentModule && !isEditing" #after-quick-create>
                               <StockAdjustmentCreatePanel ref="stockAdjustmentCreateRef" />
                             </template>
-                            <template v-else-if="isStockTransferModule && !isEditing" #after-quick-create>
+                            <template v-if="isStockTransferModule && !isEditing" #after-quick-create>
                               <StockTransferCreatePanel ref="stockTransferCreateRef" />
                             </template>
                           </DynamicForm>
-                          <!-- Deal relationship editor (People + Organizations) -->
-                          <div
-                            v-if="moduleKey === 'deals' && (!effectiveQuickCreateMode || fullMode)"
-                            class="pt-6 border-t border-gray-200 dark:border-gray-700"
-                          >
-                            <DealRelationshipEditor
-                              ref="relationshipEditorRef"
-                              v-model="dealRelationships"
-                              :people="dealPeopleList"
-                              :organizations="dealOrgList"
-                              :read-only="false"
-                            />
-                          </div>
-                          <!-- Deal lines (commercial intent) — create draft or edit via API -->
-                          <div
-                            v-if="moduleKey === 'deals' && (!effectiveQuickCreateMode || fullMode)"
-                            class="pt-6 border-t border-gray-200 dark:border-gray-700"
-                          >
-                            <DealLinesSection
-                              ref="dealLinesSectionRef"
-                              :record="isEditing ? record : null"
-                              :draft-mode="!isEditing"
-                              :show-title="true"
-                              :editable="true"
-                              :currency="dealLinesCurrency"
-                              :initial-amount-mode="formData.amountMode || 'MANUAL'"
-                              @draft-change="handleDealLinesDraftChange"
-                              @updated="handleDealLinesUpdated"
-                            />
-                          </div>
                     </div>
                   </div>
 
@@ -364,6 +358,7 @@ import {
   getItemLegacyCategoryFieldKeys
 } from '@/platform/fields/itemFieldModel';
 import { normalizeModuleFieldsFromMetadata } from '@/platform/fields/fieldMerge';
+import { ensureModuleCreateLayout } from '@/platform/fields/createSurface';
 import {
   applyQuoteDiscountsToRecord,
   applyQuoteLineDeleteToRecord,
@@ -1140,6 +1135,13 @@ async function fetchModuleForDrawer() {
         mod.quickCreate = quickCreate;
         mod.quickCreateLayout = { version: 1, rows: [] };
       }
+      const layoutApplied = ensureModuleCreateLayout(
+        mod.key || props.moduleKey,
+        Array.isArray(mod.fields) ? mod.fields : [],
+        mod.fieldLayout || null
+      );
+      mod.fieldLayout = layoutApplied.layout;
+      mod.fields = layoutApplied.fields;
       moduleOverrideFromSettings.value = mod;
     }
   } catch (e) {

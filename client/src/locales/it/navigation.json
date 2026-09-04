@@ -990,5 +990,9 @@
   "telephony": {
     "message": "Telephony",
     "description": "Telephony addon navigation label"
+  },
+  "userWorkspace": {
+    "message": "Workspace",
+    "description": "Label above company name in avatar menu"
   }
 }

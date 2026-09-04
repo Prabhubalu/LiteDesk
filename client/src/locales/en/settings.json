@@ -13164,6 +13164,82 @@
     "message": "Add Custom Field",
     "description": "Add field button"
   },
+  "modFieldsAddToSection": {
+    "message": "Section",
+    "description": "Section select when adding custom field"
+  },
+  "modFieldsAddToSectionHint": {
+    "message": "Place this field in a layout section. You can move it later.",
+    "description": "Hint under section select on add field"
+  },
+  "modFieldsAddFieldToSection": {
+    "message": "Add field to this section",
+    "description": "Per-section add field button title"
+  },
+  "modFieldsManageSections": {
+    "message": "Manage sections",
+    "description": "Open field section manager"
+  },
+  "modFieldsManageSectionsHint": {
+    "message": "Organize fields into layout sections. Core, app, and system badges stay on each field — sections are layout only.",
+    "description": "Manage sections drawer hint"
+  },
+  "modFieldsAddSection": {
+    "message": "Add",
+    "description": "Add section button"
+  },
+  "modFieldsNewSectionPh": {
+    "message": "New section name",
+    "description": "New section input placeholder"
+  },
+  "modFieldsSectionNamePh": {
+    "message": "Section name",
+    "description": "Section rename placeholder"
+  },
+  "modFieldsSectionProtected": {
+    "message": "Standard section",
+    "description": "Protected section badge"
+  },
+  "modFieldsSectionFieldCount": {
+    "message": "{count} fields",
+    "description": "Section field count"
+  },
+  "modFieldsSectionCannotDeleteProtected": {
+    "message": "Standard sections cannot be deleted",
+    "description": "Delete blocked tooltip"
+  },
+  "modFieldsSectionCannotDeleteNotEmpty": {
+    "message": "Move all fields out before deleting",
+    "description": "Delete blocked when section has fields"
+  },
+  "modFieldsSectionBasic": {
+    "message": "Basic Information",
+    "description": "Default field layout section"
+  },
+  "modFieldsSectionContact": {
+    "message": "Contact details",
+    "description": "Default field layout section"
+  },
+  "modFieldsSectionAssignment": {
+    "message": "Assignment",
+    "description": "Default field layout section"
+  },
+  "modFieldsSectionAdditional": {
+    "message": "Additional fields",
+    "description": "Default field layout section"
+  },
+  "modFieldsSectionGeneral": {
+    "message": "General",
+    "description": "Default field layout section"
+  },
+  "modFieldsSectionScheduling": {
+    "message": "Scheduling",
+    "description": "Default field layout section"
+  },
+  "modFieldsSectionPipeline": {
+    "message": "Pipeline",
+    "description": "Default field layout section"
+  },
   "modFieldsFieldsLabel": {
     "message": "Fields",
     "description": "Fields sidebar label"

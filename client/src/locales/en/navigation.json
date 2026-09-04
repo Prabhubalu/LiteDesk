@@ -55,6 +55,10 @@
     "message": "User menu",
     "description": "User avatar menu aria-label"
   },
+  "userWorkspace": {
+    "message": "Workspace",
+    "description": "Label above company name in avatar menu"
+  },
   "toggleMenu": {
     "message": "Toggle menu",
     "description": "Mobile navigation menu toggle"
