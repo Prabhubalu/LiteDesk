@@ -293,6 +293,20 @@ module.exports = {
     defaultChannels: ['IN_APP'],
     channels: { inApp: true, email: false, push: true, whatsapp: false, sms: false }
   },
+  [domainEvents.INTERNAL_CHAT_MENTIONED]: {
+    appKey: 'PLATFORM',
+    recipients: ['INTERNAL_CHAT_MENTION_TARGETS'],
+    priority: 'HIGH',
+    defaultChannels: ['IN_APP', 'PUSH'],
+    channels: { inApp: true, email: true, push: true, whatsapp: false, sms: false }
+  },
+  [domainEvents.INTERNAL_CHAT_MESSAGE_POSTED]: {
+    appKey: 'PLATFORM',
+    recipients: ['INTERNAL_CHAT_SPACE_MEMBERS'],
+    priority: 'NORMAL',
+    defaultChannels: ['IN_APP'],
+    channels: { inApp: true, email: false, push: false, whatsapp: false, sms: false }
+  },
   [domainEvents.TELEPHONY_INCOMING_CALL]: {
     appKey: 'PLATFORM',
     recipients: ['TELEPHONY_NOTIFY_TARGETS'],

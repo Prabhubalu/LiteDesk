@@ -33,6 +33,8 @@ const SKIP_DEDUPLICATION_EVENT_TYPES = new Set([
   domainEvents.CASE_EMAIL_RECEIVED,
   domainEvents.LIVE_CHAT_MESSAGE_RECEIVED,
   domainEvents.CASE_PORTAL_AGENT_REPLY,
+  domainEvents.INTERNAL_CHAT_MENTIONED,
+  domainEvents.INTERNAL_CHAT_MESSAGE_POSTED,
 ]);
 
 function getDeduplicationKey(eventType, entity, userId) {

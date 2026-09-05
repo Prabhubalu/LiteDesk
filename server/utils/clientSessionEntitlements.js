@@ -12,12 +12,16 @@ async function buildClientSessionEntitlements(user, organizationId) {
   const stockroom = await isAddonEntitledForOrg(organizationId, ADDON_KEYS.STOCKROOM);
   const cpq = await isAddonEntitledForOrg(organizationId, ADDON_KEYS.CPQ);
   const telephony = await isAddonEntitledForOrg(organizationId, ADDON_KEYS.TELEPHONY);
+  const isExternal = String(user?.userType || 'INTERNAL').toUpperCase() === 'EXTERNAL';
+  const internalChat = !isExternal
+    && await isAddonEntitledForOrg(organizationId, ADDON_KEYS.INTERNAL_CHAT);
   return {
     live_chat: liveChat,
     ai,
     stockroom,
     cpq,
     telephony,
+    internal_chat: internalChat,
   };
 }
 

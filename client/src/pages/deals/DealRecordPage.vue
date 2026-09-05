@@ -159,6 +159,19 @@
                       {{ t('actions.duplicate') }}
                     </button>
                   </MenuItem>
+                  <MenuItem v-if="canDiscussInChat" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="handleDiscussInChat"
+                    >
+                      <ChatBubbleOvalLeftEllipsisIcon class="w-4 h-4" />
+                      <span>{{ t('internalChat.discussAction') }}</span>
+                    </button>
+                  </MenuItem>
                   <MenuItem v-slot="{ active }">
                     <button
                       @click="handleExport"
@@ -921,6 +934,19 @@
                       {{ t('actions.duplicate') }}
                     </button>
                   </MenuItem>
+                  <MenuItem v-if="canDiscussInChat" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="handleDiscussInChat"
+                    >
+                      <ChatBubbleOvalLeftEllipsisIcon class="w-4 h-4" />
+                      <span>{{ t('internalChat.discussAction') }}</span>
+                    </button>
+                  </MenuItem>
                   <MenuItem v-slot="{ active }">
                     <button
                       @click="handleExport"
@@ -1316,6 +1342,7 @@ import {
   BanknotesIcon,
   PlusIcon,
   ClipboardDocumentIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
   StarIcon,
   EllipsisVerticalIcon,
   ClockIcon,
@@ -1332,6 +1359,8 @@ import { useRecordModuleBack } from '@/components/record-page/composables/useRec
 import { useAuthStore } from '@/stores/authRegistry';
 import { isAiSuiteEntitled } from '@/utils/aiSuiteEntitlement';
 import apiClient from '@/utils/apiClient';
+import { isAddonEntitled } from '@/utils/addonEntitlement';
+import { openRecordDiscussChat } from '@/utils/internalChatApi';
 import { buildDuplicateInitialData } from '@/utils/duplicateRecord';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import {
@@ -3416,6 +3445,25 @@ const handleDuplicate = () => {
 const handleExport = () => {
   notifications.error(t('records.dealExportNotImplemented'));
 };
+
+const canDiscussInChat = computed(() => (
+  isAddonEntitled(authStore.user, 'internal_chat')
+  && Boolean(deal.value?._id || effectiveDealId.value)
+));
+
+async function handleDiscussInChat() {
+  try {
+    await openRecordDiscussChat({
+      moduleKey: 'deals',
+      recordId: deal.value?._id || effectiveDealId.value,
+      openTab,
+      router,
+      tabTitle: t('navigation.internalChat'),
+    });
+  } catch (err) {
+    notifications.error(err?.response?.data?.message || t('internalChat.discussFailed'));
+  }
+}
 
 const confirmDeleteDeal = async () => {
   if (!deal.value?._id || deleting.value) return;

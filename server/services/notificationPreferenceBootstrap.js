@@ -116,6 +116,19 @@ function buildDefaultMap(appKey) {
       defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
     });
 
+    const internalChatEvents = [
+      domainEvents.INTERNAL_CHAT_MENTIONED,
+      domainEvents.INTERNAL_CHAT_MESSAGE_POSTED,
+    ];
+    internalChatEvents.forEach((evt) => {
+      // Mentions: in-app + push + email; channel messages: in-app only by default
+      if (evt === domainEvents.INTERNAL_CHAT_MENTIONED) {
+        defaults[evt] = createEventPref(true, true, true, true, false, false, false, false);
+      } else {
+        defaults[evt] = createEventPref(true, false, false, false, false, false, false, false);
+      }
+    });
+
     const telephonyEvents = [
       domainEvents.TELEPHONY_INCOMING_CALL,
       domainEvents.TELEPHONY_CALL_MISSED,

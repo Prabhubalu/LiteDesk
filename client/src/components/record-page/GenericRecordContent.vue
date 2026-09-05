@@ -181,6 +181,19 @@
                       <span>{{ t('actions.duplicate') }}</span>
                     </button>
                   </MenuItem>
+                  <MenuItem v-if="canDiscussInChat" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="handleDiscussInChat"
+                    >
+                      <ChatBubbleOvalLeftEllipsisIcon class="w-4 h-4" />
+                      <span>{{ t('internalChat.discussAction') }}</span>
+                    </button>
+                  </MenuItem>
                   <MenuItem v-slot="{ active }">
                     <button
                       type="button"
@@ -730,6 +743,19 @@
                     >
                       <DocumentDuplicateIcon class="w-4 h-4" />
                       <span>{{ t('actions.duplicate') }}</span>
+                    </button>
+                  </MenuItem>
+                  <MenuItem v-if="canDiscussInChat" v-slot="{ active }">
+                    <button
+                      type="button"
+                      :class="[
+                        'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                        active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                      ]"
+                      @click="handleDiscussInChat"
+                    >
+                      <ChatBubbleOvalLeftEllipsisIcon class="w-4 h-4" />
+                      <span>{{ t('internalChat.discussAction') }}</span>
                     </button>
                   </MenuItem>
                   <MenuItem v-slot="{ active }">
@@ -1307,7 +1333,8 @@ import {
   ClipboardDocumentListIcon,
   PuzzlePieceIcon,
   Bars3BottomLeftIcon,
-  KeyIcon
+  KeyIcon,
+  ChatBubbleOvalLeftEllipsisIcon
 } from '@heroicons/vue/24/outline';
 import { getModuleIconComponent } from '@/utils/moduleIcons';
 import Avatar from '@/components/common/Avatar.vue';
@@ -1356,6 +1383,8 @@ import 'emoji-picker-element';
 
 import { confirmAction } from '@/composables/useConfirmAction';
 import { formatUserDate, formatUserDateTime } from '@/utils/localeFormat';
+import { isAddonEntitled } from '@/utils/addonEntitlement';
+import { openRecordDiscussChat } from '@/utils/internalChatApi';
 const { t, te } = useI18n();
 
 const formatAppLabel = (appKey) => getAppLabel(appKey) || appKey || 'App';
@@ -5412,6 +5441,29 @@ async function handleDuplicate() {
     moduleKey: props.moduleKey
   });
   showDuplicateCreateModal.value = true;
+}
+
+const canDiscussInChat = computed(() => {
+  return !authStore.isExternalUser
+    && isAddonEntitled(authStore.user, 'internal_chat')
+    && Boolean(record.value?._id || props.recordId);
+});
+
+async function handleDiscussInChat() {
+  const recordId = String(record.value?._id || props.recordId || '');
+  const moduleKey = String(props.moduleKey || '').toLowerCase();
+  if (!recordId || !moduleKey) return;
+  try {
+    await openRecordDiscussChat({
+      moduleKey,
+      recordId,
+      openTab,
+      router,
+      tabTitle: t('navigation.internalChat'),
+    });
+  } catch (err) {
+    notifications.error(err?.response?.data?.message || t('internalChat.discussFailed'));
+  }
 }
 
 function handleExport() {

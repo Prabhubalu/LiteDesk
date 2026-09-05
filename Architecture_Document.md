@@ -77,7 +77,7 @@
 
 ### Addon Keys (`server/constants/addonKeys.js`)
 
-Installable tenant capabilities (not apps): `live_chat` | `email_credits` | `articles` | `blog`  
+Installable tenant capabilities (not apps): `live_chat` | `email_credits` | `articles` | `blog` | `announcements` | `telephony` | `internal_chat` | `ai` | `ai_credits` | `tally` | `stockroom` | `cpq` (+ legacy AI aliases)
 Catalog: `AddonDefinition` (master) + `TenantAddonConfiguration` + admin `/api/admin/addon-pricing`.
 
 ---
@@ -173,6 +173,7 @@ Arivu/
 | `/api/communications`, `/api/mailboxes`, `/api/inbox` | Email threads + workspace inbox |
 | `/api/mailroom`, `/api/public/mailroom` | Inbound processing |
 | `/api/live-chat`, `/embed/chat`, `/api/embed/chat` | Live chat addon + embed |
+| `/api/internal-chat` | Internal team chat addon (SSE + spaces) |
 | `/api/modules` | Generic module records + unified record API |
 | `/api/ui` | Sidebar, routes, registry, projections |
 | `/api/config-registry` | Tenant field/pipeline config |
@@ -384,6 +385,17 @@ Queues: `analyticsQueueService`, `analyticsScheduleQueueService`. Embed + public
 Routes: `/api/live-chat`, `/embed/chat`.
 Widget branding: tenant `settings.widget.brandColor` (hex) via `/settings/addons/live_chat/widget`; public embed `/embed/chat/config` exposes it for launcher + iframe chrome.
 
+### Internal Chat (addon `internal_chat`)
+
+Authenticated **internal/staff** team collaboration only (not visitor widget; not portal/external users). Models: `InternalChatSpace` (channel | dm | group_dm | record), `InternalChatMembership`, `InternalChatMessage`.
+Nav + `entitledAddons.internal_chat` + API `canViewInternalChat` reject `userType=EXTERNAL`. DMs/group DMs/mentions resolve only internal teammates.
+Record spaces: lazy-create on Discuss; unique `(organizationId, moduleKey, recordId)` for `type=record`; access inherits record view ACL (enforced in P1+).
+Routes: `/api/internal-chat` (bootstrap, spaces, channels, DMs, discuss, messages, read, SSE stream). Realtime: `internalChatSSEHub` + client `useInternalChatStream` (SSE only).
+**Channels:** public (`isPrivate=false`) appear in every staff member’s space list with `canJoin`; `POST /spaces/:spaceId/join` creates membership. Private channels are invite-only (`POST /spaces/:spaceId/members`); not listed to non-members. Channel create accepts optional `memberIds`.
+P1: create channel/DM, post/list messages, threads (`threadRootId`), mentions (`mentionUserIds` + `<@userId>`), read cursors, record Discuss + module `view` ACL.
+P2: message search (`GET /search`), file attachments (multer + `persistMulterUpload`), emoji reactions, typing SSE, space presence viewers.
+P3: `INTERNAL_CHAT_MENTIONED` / `INTERNAL_CHAT_MESSAGE_POSTED` notifications + prefs; automation domain event `internal_chat_message.created`; retention settings + daily soft-delete scheduler; transcript export; pins; group DMs; message soft-delete.
+
 ---
 
 ### Cross-Cutting Platform Models
@@ -529,7 +541,11 @@ Used by `ModuleRecordPage` for registry modules.
 | Notifications | **SSE** | `useNotificationStream` | `notificationSSEHub` / `notificationSSEDeliver` |
 | Inbox | **SSE** | `useInboxStream` | `inboxSSEHub` |
 | Data changes | **SSE** | data-change consumers | `dataChangeSSEHub` |
+| Telephony | **SSE** | softphone stream | `telephonySSEHub` |
+| Internal chat | **SSE** | `useInternalChatStream` | `internalChatSSEHub` |
 | Push (offline) | Web Push | service worker | `pushService` |
+
+**Internal chat retention:** `internalChatRetentionSchedulerService` (daily) soft-deletes messages older than tenant `TenantAddonConfiguration.settings.retentionDays` (0 = keep forever).
 
 **Polling fallback:** notification refresh on focus/route change.
 
@@ -580,7 +596,7 @@ Schedulers (cron): document OCR/semantic, expiry, SLA monitors, onboarding nudge
 | User allowed | `user.allowedApps[]` |
 | Middleware | `requireAppEntitlement` after `resolveAppContext` |
 | App gates | `requireSalesApp`, `requireHelpdeskApp`, `requireAuditApp`, `requirePortalApp`, … |
-| Addons | `TenantAddonConfiguration` + `ADDON_KEYS` (live_chat, email_credits, articles, blog) |
+| Addons | `TenantAddonConfiguration` + `ADDON_KEYS` (live_chat, email_credits, articles, blog, announcements, telephony, internal_chat, ai, …) |
 | Client | `buildAppAccessProfile`, `appAccessGuards.ts`, `auth.hasAppAccess(appKey)` |
 
 **URL → appKey (examples):** `/api/helpdesk` → HELPDESK; `/api/audit` → AUDIT; `/api/marketing` → MARKETING; `/api/inventory` → INVENTORY; default `/api` → SALES.
@@ -766,7 +782,7 @@ Emit via `server/constants/domainEvents.js` / `domainEventHelpers`; `notificatio
 | Express `app.use` mounts | ~135 (includes static/middleware) |
 | Pinia stores | 7 |
 | App keys | 9 |
-| Addon keys | 4 |
+| Addon keys | 16 (incl. legacy AI aliases) |
 
 ---
 

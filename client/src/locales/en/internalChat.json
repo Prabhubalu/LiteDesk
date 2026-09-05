@@ -1,0 +1,318 @@
+{
+  "pageHeading": {
+    "message": "Chat",
+    "description": "Internal Chat addon page heading"
+  },
+  "pageSubtitle": {
+    "message": "Team channels, DMs, and conversations on CRM records.",
+    "description": "Internal Chat addon page subtitle"
+  },
+  "emptyHeading": {
+    "message": "Start collaborating",
+    "description": "Empty state heading when user has no chat spaces yet"
+  },
+  "emptyBody": {
+    "message": "Create a channel or DM, or open any record and choose Discuss to start a conversation tagged to that record.",
+    "description": "Empty state body for Internal Chat shell"
+  },
+  "streamConnected": {
+    "message": "Live",
+    "description": "Badge when SSE stream is connected"
+  },
+  "streamDisconnected": {
+    "message": "Offline",
+    "description": "Badge when SSE stream is disconnected"
+  },
+  "loadFailed": {
+    "message": "Could not load chat.",
+    "description": "Error when spaces or messages fail to load"
+  },
+  "sendFailed": {
+    "message": "Could not send message.",
+    "description": "Error when message send fails"
+  },
+  "createFailed": {
+    "message": "Could not create space.",
+    "description": "Error when channel or DM creation fails"
+  },
+  "spacesSidebar": {
+    "message": "Spaces",
+    "description": "Sidebar heading for chat space list"
+  },
+  "noSpacesYet": {
+    "message": "No spaces yet",
+    "description": "Sidebar empty list copy"
+  },
+  "newChannel": {
+    "message": "New channel",
+    "description": "Button to create a channel"
+  },
+  "newDm": {
+    "message": "New DM",
+    "description": "Button to start a direct message"
+  },
+  "channelName": {
+    "message": "Channel name",
+    "description": "Label for channel name input"
+  },
+  "channelTopic": {
+    "message": "Topic (optional)",
+    "description": "Label for channel topic input"
+  },
+  "channelPrivate": {
+    "message": "Private channel",
+    "description": "Checkbox for private channel"
+  },
+  "channelPrivateHint": {
+    "message": "Only invited people can find and join this channel.",
+    "description": "Hint when private channel checkbox is checked"
+  },
+  "channelPublicHint": {
+    "message": "Anyone on the team can browse and join this channel.",
+    "description": "Hint when private channel checkbox is unchecked"
+  },
+  "channelInviteLabel": {
+    "message": "Invite teammates",
+    "description": "Label for member picker when creating a channel"
+  },
+  "channelInvitePrivateHint": {
+    "message": "Invite people now — others won’t see this channel until invited.",
+    "description": "Hint under invite picker for private channels"
+  },
+  "channelInvitePublicHint": {
+    "message": "Optional — others can still join later from the channel list.",
+    "description": "Hint under invite picker for public channels"
+  },
+  "join": {
+    "message": "Join",
+    "description": "Label on public channels the user has not joined yet"
+  },
+  "joinFailed": {
+    "message": "Could not join channel.",
+    "description": "Error when joining a public channel fails"
+  },
+  "inviteMembers": {
+    "message": "Invite people",
+    "description": "Header action to invite members to a channel"
+  },
+  "inviteModalSubtitle": {
+    "message": "Add teammates to this channel.",
+    "description": "Subtitle under Invite people modal title"
+  },
+  "inviteSend": {
+    "message": "Invite",
+    "description": "Primary CTA in invite members modal"
+  },
+  "inviteFailed": {
+    "message": "Could not invite members.",
+    "description": "Error when inviting channel members fails"
+  },
+  "channelModalSubtitle": {
+    "message": "Create a shared space for your team.",
+    "description": "Subtitle under New channel modal title"
+  },
+  "noUsers": {
+    "message": "No teammates available",
+    "description": "Empty state in DM user picker"
+  },
+  "noMessages": {
+    "message": "No messages yet. Say hello.",
+    "description": "Empty message list copy"
+  },
+  "composerLabel": {
+    "message": "Message",
+    "description": "Accessible label for message composer"
+  },
+  "composerPlaceholder": {
+    "message": "Write a message…",
+    "description": "Placeholder for message composer"
+  },
+  "send": {
+    "message": "Send",
+    "description": "Send message button"
+  },
+  "replyInThread": {
+    "message": "Reply in thread",
+    "description": "Open thread reply action"
+  },
+  "threadOpen": {
+    "message": "Thread reply",
+    "description": "Banner when viewing a thread"
+  },
+  "closeThread": {
+    "message": "Back to channel",
+    "description": "Close thread and return to main messages"
+  },
+  "dmFallback": {
+    "message": "Direct message",
+    "description": "Fallback name for DM spaces without a resolved peer name"
+  },
+  "groupDmFallback": {
+    "message": "Group message",
+    "description": "Fallback name for group DM spaces without a title"
+  },
+  "unknownAuthor": {
+    "message": "Someone",
+    "description": "Fallback when message author is missing"
+  },
+  "recordSpaceHint": {
+    "message": "Linked to {module} record",
+    "description": "Subtitle for record-linked chat spaces"
+  },
+  "discussAction": {
+    "message": "Discuss",
+    "description": "Record page action to open or create record chat"
+  },
+  "discussFailed": {
+    "message": "Could not open discussion.",
+    "description": "Toast when discuss record fails"
+  },
+  "searchPlaceholder": {
+    "message": "Search messages…",
+    "description": "Search input placeholder in chat header"
+  },
+  "searchResults": {
+    "message": "Search results",
+    "description": "Heading above search result list"
+  },
+  "searchMatchCount": {
+    "message": "{count} matches",
+    "description": "Count of message search matches in the current conversation"
+  },
+  "clearSearch": {
+    "message": "Clear",
+    "description": "Clear search results button"
+  },
+  "searchFailed": {
+    "message": "Search failed.",
+    "description": "Error when message search fails"
+  },
+  "reactFailed": {
+    "message": "Could not update reaction.",
+    "description": "Error when toggling a reaction fails"
+  },
+  "uploadFailed": {
+    "message": "Could not upload file.",
+    "description": "Error when attachment upload fails"
+  },
+  "attach": {
+    "message": "Attach",
+    "description": "Attach file button in composer"
+  },
+  "typingOne": {
+    "message": "{name} is typing…",
+    "description": "Typing indicator for one user"
+  },
+  "typingMany": {
+    "message": "Several people are typing…",
+    "description": "Typing indicator for multiple users"
+  },
+  "presenceOne": {
+    "message": "{name} is viewing",
+    "description": "Presence when one other user is in the space"
+  },
+  "presenceMany": {
+    "message": "{count} people viewing",
+    "description": "Presence when multiple users are in the space"
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Open internal chat addon settings"
+  },
+  "retentionDays": {
+    "message": "Message retention (days)",
+    "description": "Label for retention days setting; 0 means keep forever"
+  },
+  "retentionHint": {
+    "message": "Set to 0 to keep messages forever. Older messages are soft-deleted daily.",
+    "description": "Help text for retention setting"
+  },
+  "settingsFailed": {
+    "message": "Could not save settings.",
+    "description": "Error when saving chat settings"
+  },
+  "exportTranscript": {
+    "message": "Export transcript",
+    "description": "Download JSON transcript of the current space"
+  },
+  "exportFailed": {
+    "message": "Could not export transcript.",
+    "description": "Error when export fails"
+  },
+  "pin": {
+    "message": "Pin",
+    "description": "Pin message in space"
+  },
+  "unpin": {
+    "message": "Unpin",
+    "description": "Unpin message in space"
+  },
+  "pinFailed": {
+    "message": "Could not update pin.",
+    "description": "Error when pin/unpin fails"
+  },
+  "deleteFailed": {
+    "message": "Could not delete message.",
+    "description": "Error when message delete fails"
+  },
+  "dmModeSingle": {
+    "message": "1:1",
+    "description": "DM modal mode for single recipient"
+  },
+  "dmModeGroup": {
+    "message": "Group",
+    "description": "DM modal mode for group DM"
+  },
+  "dmModalSubtitle": {
+    "message": "Message a teammate privately.",
+    "description": "Subtitle under New DM modal title"
+  },
+  "dmSearchPlaceholder": {
+    "message": "Search people…",
+    "description": "Search placeholder inside New DM modal"
+  },
+  "dmStart": {
+    "message": "Start chat",
+    "description": "Primary CTA in New DM modal"
+  },
+  "dmPickHint": {
+    "message": "Select a teammate to continue",
+    "description": "Footer hint when nothing selected in New DM"
+  },
+  "dmReady": {
+    "message": "Ready to start",
+    "description": "Footer hint when a 1:1 recipient is selected"
+  },
+  "selectedCount": {
+    "message": "{count} selected",
+    "description": "Footer count for group DM selection"
+  },
+  "noUsersMatch": {
+    "message": "No teammates match your search",
+    "description": "Empty state when DM search has no results"
+  },
+  "directsSection": {
+    "message": "Direct messages",
+    "description": "Sidebar section heading for DMs"
+  },
+  "channelsSection": {
+    "message": "Channels",
+    "description": "Sidebar section heading for channels"
+  },
+  "recordsSection": {
+    "message": "Records",
+    "description": "Sidebar section heading for record-linked spaces"
+  },
+  "spaceFilterPlaceholder": {
+    "message": "Filter conversations…",
+    "description": "Placeholder for sidebar space filter input"
+  },
+  "composerPlaceholderNamed": {
+    "message": "Message {name}",
+    "description": "Composer placeholder when a space is selected"
+  },
+  "yesterday": {
+    "message": "Yesterday",
+    "description": "Relative date label for messages from yesterday"
+  }
+}

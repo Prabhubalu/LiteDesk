@@ -53,6 +53,11 @@ export function isOnPublicShellRoute() {
   return isStandalonePublicRoute(window.location.pathname);
 }
 
+export function isPortalAuthLifecycleRoute(path) {
+  const p = resolveRoutePathname(path);
+  return p === '/portal/select' || p === '/portal/set-password';
+}
+
 /** Routes the tab bar must not track (public, auth, landing, trial expired). */
 export function shouldSkipTabRoute(path) {
   const p = resolveRoutePathname(path);
@@ -60,6 +65,7 @@ export function shouldSkipTabRoute(path) {
     p === '/'
     || isStandalonePublicRoute(path)
     || isAuthLifecyclePublicRoute(path)
+    || isPortalAuthLifecycleRoute(path)
     || isTrialExpiredShelllessRoute(path)
     || isOnboardingShelllessRoute(path)
   );

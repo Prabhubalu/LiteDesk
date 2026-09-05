@@ -99,7 +99,9 @@ function emit(event) {
         deal: 'deals',
         quote: 'quotes',
         live_chat_session: 'live_chat_sessions',
-        announcement: 'announcements'
+        announcement: 'announcements',
+        internal_chat_message: 'internal_chat_messages',
+        internal_chat_space: 'internal_chat_spaces',
       };
       const et = String(payload.entityType || '').toLowerCase();
       publishDataChange({

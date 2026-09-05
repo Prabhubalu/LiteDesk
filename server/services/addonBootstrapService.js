@@ -35,6 +35,10 @@ const { ensureDefaultQueue: ensureTelephonyDefaultQueue } = require('./telephony
 const {
   seedTelephonyProcessRecipesForOrganization,
 } = require('./telephonyProcessRecipeSeedService');
+const {
+  patchInternalChatPermissionsOnOrganizationRoles,
+  backfillInternalChatUserPermissions,
+} = require('./internalChatPermissionBackfillService');
 
 const ENTERPRISE_PLAN_KEY = 'ENTERPRISE';
 
@@ -195,6 +199,13 @@ async function ensureSubscriptionForAddon({ organizationId, addonKey, initiatedB
         await seedTelephonyProcessRecipesForOrganization(organizationId, {
           initiatedByUserId: initiatedByUserId || null,
         });
+      });
+    }
+
+    if (normalized === ADDON_KEYS.INTERNAL_CHAT) {
+      await runWithOrganizationTenantContext(organizationId, async () => {
+        await patchInternalChatPermissionsOnOrganizationRoles(organizationId);
+        await backfillInternalChatUserPermissions(organizationId);
       });
     }
 

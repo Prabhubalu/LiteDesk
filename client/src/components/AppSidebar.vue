@@ -253,6 +253,7 @@ import { Cog6ToothIcon, EllipsisHorizontalIcon, Squares2X2Icon } from '@heroicon
 import { useRoute } from 'vue-router';
 import { useSidebarState } from '@/composables/useSidebarState';
 import { usePortalBranding, PORTAL_DEFAULT_PRIMARY_COLOR } from '@/composables/usePortalBranding';
+import { isPortalAuthLifecycleRoute } from '@/utils/standaloneRoutes';
 import type { AppFlyoutDefinition, SidebarItem, SidebarStructure } from '@/types/sidebar.types';
 import { useTabs } from '@/composables/useTabs';
 import AppFlyout from '@/components/AppFlyout.vue';
@@ -313,7 +314,11 @@ const props = defineProps<{
 
 const route = useRoute();
 const { branding, loadBranding } = usePortalBranding();
-const isPortalRoute = computed(() => route.path.startsWith('/portal/'));
+const isPortalRoute = computed(() => {
+  const path = String(route.path || '');
+  if (isPortalAuthLifecycleRoute(path)) return false;
+  return path.startsWith('/portal/');
+});
 const { openTab } = useTabs();
 const { lastActiveAppId, dockedAppId: persistedDockedAppId } = useSidebarState();
 

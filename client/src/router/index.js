@@ -57,13 +57,13 @@ const routes = [
     path: '/portal/select',
     name: 'portal-select',
     component: () => import('@/views/auth/PortalSelection.vue'),
-    meta: { requiresAuth: true, allowWithoutActivePortal: true }
+    meta: { requiresAuth: true, allowWithoutActivePortal: true, hideShell: true }
   },
   {
     path: '/portal/set-password',
     name: 'portal-set-password',
     component: () => import('@/views/auth/PortalSetPassword.vue'),
-    meta: { requiresAuth: true, allowWithoutActivePortal: true }
+    meta: { requiresAuth: true, allowWithoutActivePortal: true, hideShell: true }
   },
   {
     path: '/trial-expired',
@@ -908,6 +908,16 @@ const routes = [
     name: 'announcements',
     component: () => import('@/views/announcements/AnnouncementsListView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/internal-chat',
+    name: 'internal-chat',
+    component: () => import('@/views/internal-chat/InternalChatView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAddon: 'internal_chat',
+      internalUsersOnly: true,
+    }
   },
   {
     path: '/announcements/analytics',
@@ -2437,6 +2447,12 @@ router.beforeEach(async (to, from, next) => {
       next(target)
       return
     }
+  }
+
+  if (to.meta.internalUsersOnly && authStore.isExternalUser) {
+    logNavDebug('Blocked: internal users only', { route: to.path })
+    next(getDefaultRoute(authStore))
+    return
   }
   
   // Check if route requires admin (Phase 15)

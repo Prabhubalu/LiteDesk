@@ -105,6 +105,16 @@
             >
               <ClipboardDocumentIcon class="h-5 w-5" />
             </button>
+            <button
+              v-if="canDiscussInChat"
+              type="button"
+              class="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              :aria-label="t('internalChat.discussAction')"
+              :title="t('internalChat.discussAction')"
+              @click="handleDiscussInChat"
+            >
+              <ChatBubbleOvalLeftEllipsisIcon class="h-5 w-5" />
+            </button>
             <RecordPrintButton
               v-if="response?._id"
               module-key="responses"
@@ -486,9 +496,11 @@
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ClipboardDocumentIcon } from '@heroicons/vue/24/outline';
+import { ClipboardDocumentIcon, ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/vue/24/outline';
 import { useAuthStore } from '@/stores/authRegistry';
 import { useTabs } from '@/composables/useTabs';
+import { isAddonEntitled } from '@/utils/addonEntitlement';
+import { openRecordDiscussChat } from '@/utils/internalChatApi';
 import apiClient from '@/utils/apiClient';
 import BadgeCell from '@/components/common/table/BadgeCell.vue';
 import CorrectiveActionPanel from '@/components/forms/CorrectiveActionPanel.vue';
@@ -593,7 +605,7 @@ function executionStatusVariant(value) {
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const { activeTabId, updateTabTitle } = useTabs();
+const { activeTabId, updateTabTitle, openTab } = useTabs();
 
 const resolvedFormId = ref(null);
 const neighbors = ref({ previousId: null, nextId: null });
@@ -877,6 +889,25 @@ async function loadData() {
 function copyUrl() {
   if (typeof window === 'undefined') return;
   void navigator.clipboard.writeText(window.location.href);
+}
+
+const canDiscussInChat = computed(() => (
+  isAddonEntitled(authStore.user, 'internal_chat')
+  && Boolean(response.value?._id || effectiveResponseId.value)
+));
+
+async function handleDiscussInChat() {
+  try {
+    await openRecordDiscussChat({
+      moduleKey: 'responses',
+      recordId: response.value?._id || effectiveResponseId.value,
+      openTab,
+      router,
+      tabTitle: t('navigation.internalChat'),
+    });
+  } catch (err) {
+    notifications.error(err?.response?.data?.message || t('internalChat.discussFailed'));
+  }
 }
 
 const formatUserName = (user) => {

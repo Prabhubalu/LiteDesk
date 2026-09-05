@@ -18,6 +18,7 @@ function normalizeEntityType(entityType) {
     CONTACT: 'PEOPLE',
     PERSON: 'PEOPLE',
     LIVECHATSESSION: 'LIVE_CHAT_SESSION',
+    INTERNALCHATMESSAGE: 'INTERNAL_CHAT_MESSAGE',
   };
   return aliases[upper] || upper;
 }
@@ -98,6 +99,14 @@ const NOTIFICATION_ROUTE_MAP = {
       name: 'live-chat-session',
       params: { sessionId: entityId }
     }),
+    INTERNAL_CHAT_MESSAGE: (_entityId, entity) => {
+      const spaceId = entity?.spaceId ? String(entity.spaceId) : '';
+      return {
+        path: spaceId
+          ? `/internal-chat?spaceId=${encodeURIComponent(spaceId)}`
+          : '/internal-chat',
+      };
+    },
   },
 };
 
@@ -147,7 +156,7 @@ export function getNotificationRoute(appKey, entity) {
   }
 
   try {
-    return routeBuilder(String(entity.id));
+    return routeBuilder(String(entity.id), entity);
   } catch (err) {
     console.error(`[notificationRouteMap] Error building route:`, err);
     return null;

@@ -124,6 +124,25 @@ const TELEPHONY_ADDON = {
   },
 };
 
+const INTERNAL_CHAT_ADDON = {
+  addonKey: ADDON_KEYS.INTERNAL_CHAT,
+  name: 'Internal Chat',
+  description:
+    'Real-time team collaboration: channels, DMs, threads, mentions, and conversations tagged to CRM records.',
+  icon: 'chat-bubble-oval-left-ellipsis',
+  category: 'COMMUNICATION',
+  enabled: true,
+  order: 12,
+  optionalApps: ['SALES', 'HELPDESK', 'PROJECTS', 'MARKETING', 'AUDIT', 'PORTAL'],
+  marketplace: {
+    category: 'Communication',
+    comingSoon: false,
+    beta: true,
+    shortDescription: 'Slack-class internal chat with record-linked conversations.',
+    docsUrl: '',
+  },
+};
+
 const AI_ADDON = {
   addonKey: ADDON_KEYS.AI,
   name: 'Arivu AI',
@@ -328,6 +347,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const defResultBlog = await upsertAddonDefinition(BLOG_ADDON);
   const defResultAnnouncements = await upsertAddonDefinition(ANNOUNCEMENTS_ADDON);
   const defResultTelephony = await upsertAddonDefinition(TELEPHONY_ADDON);
+  const defResultInternalChat = await upsertAddonDefinition(INTERNAL_CHAT_ADDON);
   const defResultAi = await upsertAddonDefinition(AI_ADDON);
   const defResultAiCredits = await upsertAddonDefinition(AI_CREDITS_ADDON);
   const defResultTally = await upsertAddonDefinition(TALLY_ADDON);
@@ -343,6 +363,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
   const pricingResultBlog = await upsertAddonPricing(ADDON_KEYS.BLOG);
   const pricingResultAnnouncements = await upsertAddonPricing(ADDON_KEYS.ANNOUNCEMENTS);
   const pricingResultTelephony = await upsertAddonPricing(ADDON_KEYS.TELEPHONY);
+  const pricingResultInternalChat = await upsertAddonPricing(ADDON_KEYS.INTERNAL_CHAT);
   const pricingResultAi = await upsertAddonPricing(ADDON_KEYS.AI);
   const pricingResultAiCredits = await upsertAddonPricing(ADDON_KEYS.AI_CREDITS);
   const pricingResultTally = await upsertAddonPricing(ADDON_KEYS.TALLY);
@@ -360,6 +381,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
     defResultBlog,
     defResultAnnouncements,
     defResultTelephony,
+    defResultInternalChat,
     defResultAi,
     defResultAiCredits,
     defResultTally,
@@ -371,6 +393,7 @@ async function ensureAddonCatalogSeeded(options = {}) {
     pricingResultBlog,
     pricingResultAnnouncements,
     pricingResultTelephony,
+    pricingResultInternalChat,
     pricingResultAi,
     pricingResultAiCredits,
     pricingResultTally,

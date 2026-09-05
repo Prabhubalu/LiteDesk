@@ -72,6 +72,8 @@ const ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER =
   process.env.ENABLE_RELEASE_NOTE_PUBLISH_SCHEDULER !== 'false';
 const ENABLE_ANNOUNCEMENT_LIFECYCLE_SCHEDULER =
   process.env.ENABLE_ANNOUNCEMENT_LIFECYCLE_SCHEDULER !== 'false';
+const ENABLE_INTERNAL_CHAT_RETENTION_SCHEDULER =
+  process.env.ENABLE_INTERNAL_CHAT_RETENTION_SCHEDULER !== 'false';
 const ENABLE_SYSTEM_ANNOUNCEMENT_SCHEDULER =
   process.env.ENABLE_SYSTEM_ANNOUNCEMENT_SCHEDULER !== 'false';
 const ENABLE_MARKETING_SEGMENT_REFRESH_SCHEDULER =
@@ -113,6 +115,7 @@ let trialNudgeJob = null;
 let addonTrialExpiryJob = null;
 let releaseNotePublishJob = null;
 let announcementLifecycleJob = null;
+let internalChatRetentionJob = null;
 let systemAnnouncementJob = null;
 let marketingSegmentRefreshJob = null;
 let marketingCampaignScheduleJob = null;
@@ -806,6 +809,25 @@ function startScheduledJobs() {
     console.log('[scheduledJobs] Announcement lifecycle disabled (ENABLE_ANNOUNCEMENT_LIFECYCLE_SCHEDULER=false)');
   }
 
+  if (ENABLE_INTERNAL_CHAT_RETENTION_SCHEDULER) {
+    const { tickInternalChatRetention } = require('./internalChatRetentionSchedulerService');
+    internalChatRetentionJob = cron.schedule('30 3 * * *', async () => {
+      try {
+        const result = await tickInternalChatRetention();
+        if (result.deleted) {
+          console.log(
+            `[scheduledJobs] Internal chat retention: tenants=${result.tenantsProcessed} deleted=${result.deleted}`,
+          );
+        }
+      } catch (err) {
+        console.error('[scheduledJobs] Internal chat retention tick failed:', err.message);
+      }
+    }, { scheduled: true, timezone: process.env.DIGEST_TIMEZONE || 'UTC' });
+    console.log('[scheduledJobs]   - Internal chat retention: daily 03:30');
+  } else {
+    console.log('[scheduledJobs] Internal chat retention disabled (ENABLE_INTERNAL_CHAT_RETENTION_SCHEDULER=false)');
+  }
+
   if (ENABLE_SYSTEM_ANNOUNCEMENT_SCHEDULER) {
     const { tickSystemAnnouncementReminders } = require('./systemAnnouncementService');
     systemAnnouncementJob = cron.schedule('15 9 * * *', async () => {
@@ -985,6 +1007,11 @@ function stopScheduledJobs() {
     announcementLifecycleJob.stop();
     announcementLifecycleJob = null;
     console.log('[scheduledJobs] Announcement lifecycle job stopped');
+  }
+  if (internalChatRetentionJob) {
+    internalChatRetentionJob.stop();
+    internalChatRetentionJob = null;
+    console.log('[scheduledJobs] Internal chat retention job stopped');
   }
   if (systemAnnouncementJob) {
     systemAnnouncementJob.stop();

@@ -1,5 +1,5 @@
 const { ADDON_NAVIGATION_REGISTRY } = require('../constants/addonNavigationRegistry');
-const { normalizeAddonKey } = require('../constants/addonKeys');
+const { normalizeAddonKey, ADDON_KEYS } = require('../constants/addonKeys');
 const { isAddonEntitledForOrg } = require('../utils/addonAccessUtils');
 
 function userHasPermission(user, permissionKey) {
@@ -44,6 +44,11 @@ function userCanAccessAddonNav(user, permissionKey) {
     if (flatKey && rootPerms[flatKey] === true) return true;
   }
 
+  if (rootKey === 'internalChat') {
+    const flatKey = String(permissionKey).split('.')[1];
+    if (flatKey && rootPerms[flatKey] === true) return true;
+  }
+
   return false;
 }
 
@@ -52,9 +57,14 @@ function userCanAccessAddonNav(user, permissionKey) {
  */
 async function getAddonNavigationItems(organizationId, user) {
   const items = [];
+  const isExternal = String(user?.userType || 'INTERNAL').toUpperCase() === 'EXTERNAL';
 
   for (const [addonKey, def] of Object.entries(ADDON_NAVIGATION_REGISTRY)) {
     const normalized = normalizeAddonKey(addonKey);
+    // Internal Chat is staff-only — never expose to portal/external users.
+    if (normalized === ADDON_KEYS.INTERNAL_CHAT && isExternal) {
+      continue;
+    }
     const entitled = await isAddonEntitledForOrg(organizationId, normalized);
     if (!entitled) continue;
 

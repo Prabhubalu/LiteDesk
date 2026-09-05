@@ -20,6 +20,8 @@ const ADDON_KEYS = {
   CPQ: 'cpq',
   /** Voice calling, softphone, recordings, and telephony automation */
   TELEPHONY: 'telephony',
+  /** Internal team collaboration chat (channels, DMs, record-linked spaces) */
+  INTERNAL_CHAT: 'internal_chat',
   // Legacy capability keys (pre-unified AI). Still valid for entitlement alias checks.
   AI_ASSIST: 'ai_assist',
   AI_COMMERCIAL: 'ai_commercial',
