@@ -14,7 +14,9 @@ export function getNotificationPath(appKey, entity) {
     return null;
   }
   try {
-    return appRouter.resolve(route).path;
+    const resolved = appRouter.resolve(route);
+    // Prefer fullPath so query deep-links (e.g. internal chat ?spaceId=&messageId=) survive.
+    return resolved.fullPath || resolved.path || null;
   } catch {
     return null;
   }

@@ -34,6 +34,11 @@ export async function inviteChatMembers(spaceId, memberIds) {
   return res?.data || null;
 }
 
+export async function renameChatChannel(spaceId, { name, topic } = {}) {
+  const res = await apiClient.patch(`/internal-chat/spaces/${spaceId}`, { name, topic });
+  return res?.data?.space || null;
+}
+
 export async function createChatDm(userId) {
   const res = await apiClient.post('/internal-chat/spaces/dms', { userId });
   return res?.data?.space || null;
@@ -79,21 +84,25 @@ export async function openRecordDiscussChat({
   return spaceId;
 }
 
-export async function fetchChatMessages(spaceId, { threadRootId, before, limit } = {}) {
+export async function fetchChatMessages(spaceId, { threadRootId, before, aroundMessageId, limit } = {}) {
   const params = {};
   if (threadRootId) params.threadRootId = threadRootId;
   if (before) params.before = before;
+  if (aroundMessageId) params.aroundMessageId = aroundMessageId;
   if (limit) params.limit = limit;
   const res = await apiClient.get(`/internal-chat/spaces/${spaceId}/messages`, { params });
   return {
     space: res?.data?.space || null,
     messages: Array.isArray(res?.data?.messages) ? res.data.messages : [],
+    readState: res?.data?.readState || { mode: 'private', memberCount: 0, members: [] },
+    focus: res?.data?.focus || null,
   };
 }
 
 export async function sendChatMessage(spaceId, {
   body,
   threadRootId,
+  quoteMessageId,
   mentionUserIds,
   recordRefs,
   attachments,
@@ -101,6 +110,7 @@ export async function sendChatMessage(spaceId, {
   const res = await apiClient.post(`/internal-chat/spaces/${spaceId}/messages`, {
     body,
     threadRootId,
+    quoteMessageId,
     mentionUserIds,
     recordRefs,
     attachments,
@@ -145,6 +155,14 @@ export async function pinChatMessage(spaceId, messageId, pin = true) {
   return res?.data || null;
 }
 
+export async function editChatMessage(spaceId, messageId, { body, mentionUserIds } = {}) {
+  const res = await apiClient.patch(`/internal-chat/spaces/${spaceId}/messages/${messageId}`, {
+    body,
+    mentionUserIds,
+  });
+  return res?.data?.message || null;
+}
+
 export async function deleteChatMessage(spaceId, messageId) {
   await apiClient.delete(`/internal-chat/spaces/${spaceId}/messages/${messageId}`);
 }
@@ -156,7 +174,7 @@ export async function exportChatSpace(spaceId) {
 
 export async function fetchChatSettings() {
   const res = await apiClient.get('/internal-chat/settings');
-  return res?.data || { retentionDays: 0, notifyChannelMessages: false };
+  return res?.data || { retentionDays: 0, notifyChannelMessages: false, seenReceiptsMode: 'private' };
 }
 
 export async function updateChatSettings(patch) {

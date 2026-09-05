@@ -8,7 +8,11 @@ import {
   alertForLiveChatNotification,
   dispatchLiveChatWorkspaceEvent,
 } from '@/utils/liveChatNotificationAlerts';
-import { alertForInternalChatNotification } from '@/utils/internalChatNotificationAlerts';
+import {
+  alertForInternalChatNotification,
+  dispatchInternalChatWorkspaceEvent,
+  INTERNAL_CHAT_ALERT_EVENTS,
+} from '@/utils/internalChatNotificationAlerts';
 import {
   caseIdFromHelpdeskNotification,
   helpdeskAlertKindFromNotification,
@@ -752,6 +756,15 @@ export const useNotificationStore = defineStore('notifications', () => {
     alertForHelpdeskNotification(notification, { appKey });
     alertForLiveChatNotification(notification, { appKey });
     alertForInternalChatNotification(notification, { appKey });
+
+    if (INTERNAL_CHAT_ALERT_EVENTS.has(String(notification.eventType || ''))) {
+      dispatchInternalChatWorkspaceEvent({
+        eventType: notification.eventType,
+        spaceId: notification.entity?.spaceId || null,
+        messageId: notification.entity?.id || null,
+        notification,
+      });
+    }
 
     const helpdeskAlertKind = helpdeskAlertKindFromNotification(notification);
     const caseId = caseIdFromHelpdeskNotification(notification);

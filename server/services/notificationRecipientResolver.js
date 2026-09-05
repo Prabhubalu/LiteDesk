@@ -423,7 +423,11 @@ async function resolveInternalChatMentionTargets({ entity, organizationId, event
   }).select('_id');
 
   const author = String(entity.authorName || 'Someone').trim();
-  const preview = String(entity.preview || '').trim();
+  const { humanizeInternalChatMentions } = require('../utils/internalChatMentions');
+  const preview = await humanizeInternalChatMentions(
+    organizationId,
+    String(entity.preview || '').trim()
+  );
   const spaceName = String(entity.spaceName || entity.title || 'chat').trim();
   const title = eventType === domainEvents.INTERNAL_CHAT_MENTIONED
     ? 'Mentioned in Chat'
@@ -450,7 +454,11 @@ async function resolveInternalChatSpaceMembers({ entity, organizationId, eventTy
   }).select('_id');
 
   const author = String(entity.authorName || 'Someone').trim();
-  const preview = String(entity.preview || '').trim();
+  const { humanizeInternalChatMentions } = require('../utils/internalChatMentions');
+  const preview = await humanizeInternalChatMentions(
+    organizationId,
+    String(entity.preview || '').trim()
+  );
   const spaceName = String(entity.spaceName || entity.title || 'chat').trim();
   const title = 'New chat message';
   const body = preview

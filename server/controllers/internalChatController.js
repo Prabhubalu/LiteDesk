@@ -113,6 +113,22 @@ exports.inviteMembers = async (req, res) => {
   }
 };
 
+exports.updateChannel = async (req, res) => {
+  try {
+    if (!requireView(req, res)) return;
+    const space = await chat.updateChannel({
+      organizationId: req.user.organizationId,
+      user: req.user,
+      spaceId: req.params.spaceId,
+      name: req.body?.name,
+      topic: req.body?.topic,
+    });
+    return res.json({ success: true, data: { space } });
+  } catch (err) {
+    return handleServiceError(res, err, 'Failed to update channel');
+  }
+};
+
 exports.createDm = async (req, res) => {
   try {
     if (!requireView(req, res)) return;
@@ -165,6 +181,7 @@ exports.listMessages = async (req, res) => {
       spaceId: req.params.spaceId,
       threadRootId: req.query.threadRootId || null,
       before: req.query.before || null,
+      aroundMessageId: req.query.aroundMessageId || req.query.messageId || null,
       limit: req.query.limit,
     });
     return res.json({ success: true, data: result });
@@ -182,6 +199,7 @@ exports.postMessage = async (req, res) => {
       spaceId: req.params.spaceId,
       body: req.body?.body,
       threadRootId: req.body?.threadRootId || null,
+      quoteMessageId: req.body?.quoteMessageId || null,
       mentionUserIds: Array.isArray(req.body?.mentionUserIds) ? req.body.mentionUserIds : [],
       recordRefs: Array.isArray(req.body?.recordRefs) ? req.body.recordRefs : [],
       attachments: Array.isArray(req.body?.attachments) ? req.body.attachments : [],
@@ -327,6 +345,23 @@ exports.deleteMessage = async (req, res) => {
   }
 };
 
+exports.editMessage = async (req, res) => {
+  try {
+    if (!requireView(req, res)) return;
+    const message = await chat.editMessage({
+      organizationId: req.user.organizationId,
+      user: req.user,
+      spaceId: req.params.spaceId,
+      messageId: req.params.messageId,
+      body: req.body?.body,
+      mentionUserIds: Array.isArray(req.body?.mentionUserIds) ? req.body.mentionUserIds : [],
+    });
+    return res.json({ success: true, data: { message } });
+  } catch (err) {
+    return handleServiceError(res, err, 'Failed to edit message');
+  }
+};
+
 exports.exportSpace = async (req, res) => {
   try {
     if (!requireView(req, res)) return;
@@ -379,11 +414,13 @@ exports.updateSettings = async (req, res) => {
 exports.streamEvents = async (req, res) => {
   try {
     if (!requireView(req, res)) return;
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
     if (typeof res.flushHeaders === 'function') res.flushHeaders();
     res.write('event: connected\ndata: {}\n\n');
+    if (typeof res.flush === 'function') res.flush();
     internalChatSSEHub.subscribe(res, req.user._id, req.user.organizationId);
   } catch (err) {
     console.error('[internalChatController] streamEvents', err);

@@ -140,19 +140,25 @@ const iconClass = computed(() => {
     return 'text-gray-500 dark:text-gray-400';
   }
   const kind = tab.alertKind || tab.alertSegments[tab.alertSegments.length - 1]?.kind;
-  if (kind === 'chat') return 'text-emerald-600 dark:text-emerald-400';
+  if (kind === 'chat' || kind === 'session' || kind === 'internal' || kind === 'mention') {
+    return 'text-emerald-600 dark:text-emerald-400';
+  }
   if (kind === 'case') return 'text-blue-600 dark:text-blue-400';
   return 'text-amber-600 dark:text-amber-400';
 });
 
 function alertLineClass(kind) {
-  if (kind === 'chat') return 'text-emerald-700 dark:text-emerald-300';
+  if (kind === 'chat' || kind === 'session' || kind === 'internal' || kind === 'mention') {
+    return 'text-emerald-700 dark:text-emerald-300';
+  }
   if (kind === 'case') return 'text-blue-700 dark:text-blue-300';
   return 'text-amber-700 dark:text-amber-300';
 }
 
 function alertDotClass(kind) {
-  if (kind === 'chat') return 'bg-emerald-500';
+  if (kind === 'chat' || kind === 'session' || kind === 'internal' || kind === 'mention') {
+    return 'bg-emerald-500';
+  }
   if (kind === 'case') return 'bg-blue-500';
   return 'bg-amber-500';
 }

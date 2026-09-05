@@ -85,7 +85,17 @@ if (!SECURITY_DISABLED) {
 if (isProduction) {
   try {
     const compression = require('compression');
-    app.use(compression({ threshold: 1024 }));
+    app.use(compression({
+      threshold: 1024,
+      filter: (req, res) => {
+        // SSE must not be gzip-buffered or events arrive in bursts after toast.
+        const url = String(req.originalUrl || req.url || '');
+        if (url.includes('/stream')) return false;
+        const type = String(res.getHeader('Content-Type') || '');
+        if (type.includes('text/event-stream')) return false;
+        return compression.filter(req, res);
+      },
+    }));
   } catch (e) {
     console.warn('⚠️  compression not installed, skipping');
   }

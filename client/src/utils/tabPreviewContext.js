@@ -90,7 +90,30 @@ export function getTabPreviewContext(tab, t, te = () => false) {
   const alertLines = [];
   if (Array.isArray(tab?.alertSegments)) {
     for (const seg of tab.alertSegments) {
-      const kind = seg.kind === 'chat' ? 'chat' : seg.kind === 'case' ? 'case' : 'email';
+      const count = Math.max(1, Number(seg.count) || 1);
+      if (seg.kind === 'internal') {
+        alertLines.push({
+          kind: 'chat',
+          label: count > 1
+            ? t('internalChat.tabUnread', { count })
+            : t('internalChat.tabUnreadOne'),
+        });
+        continue;
+      }
+      if (seg.kind === 'mention') {
+        alertLines.push({
+          kind: 'chat',
+          label: count > 1
+            ? t('internalChat.tabMentions', { count })
+            : t('internalChat.tabMention'),
+        });
+        continue;
+      }
+      const kind = seg.kind === 'chat' || seg.kind === 'session'
+        ? 'chat'
+        : seg.kind === 'case'
+          ? 'case'
+          : 'email';
       alertLines.push({
         kind,
         label: formatHelpdeskTabAlertLabel(kind, seg.count, t),

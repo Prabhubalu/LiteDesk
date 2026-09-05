@@ -118,6 +118,10 @@ import { useMailboxConnection } from '@/composables/useMailboxConnection';
 import { useReleaseNotes } from '@/composables/useReleaseNotes';
 import { useAnnouncements } from '@/composables/useAnnouncements';
 import { useOnboarding } from '@/composables/useOnboarding';
+import {
+  startInternalChatStream,
+  stopInternalChatStream,
+} from '@/composables/useInternalChatStream';
 import ConnectMailboxModal from '@/components/inbox/ConnectMailboxModal.vue';
 import SmtpSetupWizard from '@/components/communications/SmtpSetupWizard.vue';
 
@@ -184,6 +188,9 @@ const surfacesEnabled = computed(() =>
 );
 const aiSuiteEntitled = computed(() => isAiSuiteEntitled(authStore.user));
 const telephonyEntitled = computed(() => isTelephonyEntitled(authStore.user));
+const internalChatEntitled = computed(
+  () => authStore.user?.entitledAddons?.internal_chat === true
+);
 const {
   unseenReleases,
   surface,
@@ -371,6 +378,20 @@ watch(
   }
 );
 
+watch(
+  [surfacesEnabled, internalChatEntitled],
+  ([surfaces, entitled]) => {
+    if (surfaces && entitled) {
+      startInternalChatStream({
+        getToken: () => authStore.user?.token,
+      });
+    } else {
+      stopInternalChatStream();
+    }
+  },
+  { immediate: true }
+);
+
 // Setup event listeners on mount
 onMounted(() => {
   // Keyboard shortcuts
@@ -387,6 +408,7 @@ onMounted(() => {
 
 // Cleanup event listeners on unmount
 onBeforeUnmount(() => {
+  stopInternalChatStream();
   window.removeEventListener('keydown', handleKeydown);
   window.removeEventListener('focus', handleWindowFocus);
   document.removeEventListener('visibilitychange', handleVisibilityChange);

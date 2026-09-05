@@ -5,7 +5,9 @@
  * Best-effort, in-memory — clients may poll as fallback.
  *
  * Event types: message.created | message.updated | message.deleted |
- * membership.updated | space.updated | typing | presence | unread.bump
+ * membership.updated | space.updated | typing | presence | unread.bump |
+ * read.updated
+ * (message.updated carries reactions and/or body+editedAt for edits)
  */
 
 const { INTERNAL_CHAT_SSE_EVENT } = require('../constants/internalChatConstants');
@@ -160,11 +162,20 @@ class InternalChatSSEHub {
     }
 
     this.connections.delete(connectionId);
+
+    // End the response so the browser EventSource errors and reconnects
+    // instead of sitting on a zombie socket the hub no longer writes to.
+    try {
+      if (!conn.res.writableEnded) conn.res.end();
+    } catch {
+      /* ignore */
+    }
   }
 
   _write(conn, payload) {
     const message = `event: ${INTERNAL_CHAT_SSE_EVENT}\ndata: ${JSON.stringify(payload)}\n\n`;
     conn.res.write(message);
+    if (typeof conn.res.flush === 'function') conn.res.flush();
     conn.lastHeartbeat = Date.now();
   }
 
@@ -218,6 +229,7 @@ class InternalChatSSEHub {
     for (const [connectionId, conn] of this.connections.entries()) {
       try {
         conn.res.write(ping);
+        if (typeof conn.res.flush === 'function') conn.res.flush();
         conn.lastHeartbeat = Date.now();
       } catch {
         dead.push(connectionId);

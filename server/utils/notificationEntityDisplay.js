@@ -13,7 +13,10 @@ const ENTITY_DISPLAY_KEYS = [
   'sessionKey',
   'status',
   'priority',
-  'moduleKey'
+  'moduleKey',
+  'spaceId',
+  'spaceName',
+  'threadRootId',
 ];
 
 const MAX_LEN = {
@@ -27,7 +30,10 @@ const MAX_LEN = {
   sessionKey: 32,
   status: 64,
   priority: 32,
-  moduleKey: 64
+  moduleKey: 64,
+  spaceId: 64,
+  spaceName: 120,
+  threadRootId: 64,
 };
 
 function trimField(key, value) {
