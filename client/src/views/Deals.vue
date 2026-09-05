@@ -307,7 +307,7 @@
         </select>
       </div>
       <KanbanBoard
-        :items="kanbanDeals"
+        :items="kanbanBoardItems"
         :stages="stages"
         stage-key="stage"
         item-id-key="_id"
@@ -765,8 +765,9 @@ const fetchKanbanDeals = async () => {
     params.page = 1;
     params.sortBy = 'stage';
     params.sortOrder = 'asc';
-    if (selectedPipelineKey.value) {
-      params.pipeline = selectedPipelineKey.value;
+    const validPipeline = pipelines.value.find((p) => p.key === selectedPipelineKey.value);
+    if (validPipeline && pipelines.value.length > 1) {
+      params.pipeline = validPipeline.key;
     }
 
     const response = await apiClient.get('/deals', { params });
@@ -874,9 +875,38 @@ watch(currentView, (newView, oldView) => {
   });
 }, { immediate: true });
 
+function normalizeStageToken(value) {
+  return String(value || '').trim();
+}
+
+function resolveDealColumnStage(dealStage) {
+  const raw = normalizeStageToken(dealStage);
+  if (!raw) return raw;
+  if (stages.value.includes(raw)) return raw;
+  const selectedPipeline = pipelines.value.find((p) => p.key === selectedPipelineKey.value)
+    || pipelines.value.find((p) => p.isDefault)
+    || pipelines.value[0];
+  const defs = selectedPipeline?.stages || [];
+  const lower = raw.toLowerCase();
+  const match = defs.find((s) => {
+    const name = normalizeStageToken(s.name);
+    const key = normalizeStageToken(s.key);
+    return name === raw || key === raw || name.toLowerCase() === lower || key.toLowerCase() === lower;
+  });
+  return match ? normalizeStageToken(match.name) : raw;
+}
+
+const kanbanBoardItems = computed(() =>
+  (kanbanDeals.value || []).map((deal) => {
+    const columnStage = resolveDealColumnStage(deal?.stage);
+    if (columnStage === deal?.stage) return deal;
+    return { ...deal, stage: columnStage };
+  })
+);
+
 // Kanban helpers
 const getDealsInStage = (stage) => {
-  return kanbanDeals.value.filter(deal => deal.stage === stage);
+  return kanbanBoardItems.value.filter((deal) => deal.stage === stage);
 };
 
 const getStageValue = (stage) => {
@@ -898,15 +928,15 @@ const fetchStageOptions = async () => {
       stages: Array.isArray(p.stages) ? p.stages : []
     }));
 
-    // Resolve selected pipeline: stored key, or default pipeline, or first
+    // Resolve selected pipeline: stored key if it still exists, else default/first
     const defaultPipeline = pipelines.value.find((p) => p.isDefault) || pipelines.value[0];
-    if (pipelines.value.length && !selectedPipelineKey.value) {
-      selectedPipelineKey.value = defaultPipeline?.key || pipelines.value[0].key;
+    const selectedPipeline = pipelines.value.find((p) => p.key === selectedPipelineKey.value) || defaultPipeline || pipelines.value[0];
+    if (selectedPipeline?.key && selectedPipelineKey.value !== selectedPipeline.key) {
+      selectedPipelineKey.value = selectedPipeline.key;
       try {
         localStorage.setItem(KANBAN_PIPELINE_KEY, selectedPipelineKey.value);
       } catch (_) {}
     }
-    const selectedPipeline = pipelines.value.find((p) => p.key === selectedPipelineKey.value) || defaultPipeline || pipelines.value[0];
     const pipelineStages = selectedPipeline?.stages || [];
     if (pipelineStages.length) {
       stages.value = pipelineStages.map((s) => (s.name || '').trim()).filter(Boolean);
@@ -936,6 +966,9 @@ const fetchStageOptions = async () => {
     pipelines.value = [];
   } finally {
     stagesHydrated.value = true;
+    if (currentView.value === 'kanban') {
+      fetchKanbanDeals();
+    }
   }
 };
 
