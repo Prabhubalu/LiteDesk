@@ -1,8 +1,8 @@
 <template>
   <div class="flex-shrink-0">
     <img
-      v-if="recordObj?.avatar"
-      :src="recordObj.avatar"
+      v-if="resolvedAvatar"
+      :src="resolvedAvatar"
       :alt="getDisplayName(recordObj)"
       class="object-cover rounded-lg"
       :class="sizeClass"
@@ -22,6 +22,7 @@
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { UserIcon } from '@heroicons/vue/24/outline';
+import { getApiUrlForFetch } from '@/config/apiBase';
 
 const props = defineProps({
   user: {
@@ -48,6 +49,20 @@ const { t } = useI18n();
 
 // Determine which record object to use (user prop or record prop)
 const recordObj = computed(() => props.user || props.record);
+
+const resolvedAvatar = computed(() => {
+  const url = String(recordObj.value?.avatar || '').trim();
+  if (!url) return '';
+  if (
+    url.startsWith('http://')
+    || url.startsWith('https://')
+    || url.startsWith('data:')
+    || url.startsWith('blob:')
+  ) {
+    return url;
+  }
+  return getApiUrlForFetch(url);
+});
 
 // Size mapping
 const sizeClass = computed(() => {

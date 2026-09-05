@@ -452,6 +452,7 @@ app.use('/api/upload', uploadRoutes);
 // Inbox Routes (Cross-app attention surface)
 app.use('/api/inbox', inboxRoutes);
 app.use('/api/live-chat', liveChatRoutes);
+app.use('/api/internal-chat', require('./routes/internalChatRoutes'));
 app.use('/api/telephony/webhooks', telephonyWebhookRoutes);
 app.use('/api/telephony', telephonyRoutes);
 app.use('/api/announcements', announcementRoutes);

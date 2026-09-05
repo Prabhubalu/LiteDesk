@@ -99,6 +99,28 @@ module.exports = {
       },
     },
   },
+  internal_chat: {
+    billingType: 'PER_AGENT',
+    defaultPlan: 'BASIC',
+    trialDays: 14,
+    plans: {
+      BASIC: {
+        agentLimit: 10,
+        pricePerAgentCents: 2900,
+        currency: 'USD',
+      },
+      PRO: {
+        agentLimit: 50,
+        pricePerAgentCents: 4900,
+        currency: 'USD',
+      },
+      ENTERPRISE: {
+        agentLimit: null,
+        pricePerAgentCents: null,
+        currency: 'USD',
+      },
+    },
+  },
   ai: {
     billingType: 'FLAT',
     defaultPlan: 'BASIC',

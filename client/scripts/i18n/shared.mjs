@@ -46,6 +46,7 @@ export const SHARED_NAMESPACES = [
   'releaseNotes',
   'announcements',
   'astra',
+  'internalChat',
 ];
 
 export const SUPPORTED_LANGUAGES = [

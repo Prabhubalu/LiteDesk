@@ -171,7 +171,11 @@ function eventTypeToLabel(eventType) {
     PORTAL_ACCOUNT_CREATED: 'Portal account created',
     USER_ADDED_TO_APP: 'Added to workspace',
     SYSTEM_TRIAL_EXPIRING: 'Trial expiring',
-    SYSTEM_SUBSCRIPTION_SUSPENDED: 'Subscription suspended'
+    SYSTEM_SUBSCRIPTION_SUSPENDED: 'Subscription suspended',
+    LIVE_CHAT_MESSAGE_RECEIVED: 'Live chat message',
+    LIVE_CHAT_SESSION_STARTED: 'Live chat started',
+    INTERNAL_CHAT_MENTIONED: 'Mentioned in team chat',
+    INTERNAL_CHAT_MESSAGE_POSTED: 'Team chat message',
   };
 
   if (map[eventType]) return map[eventType];
@@ -202,7 +206,11 @@ function eventTypeToDescription(eventType, appKey) {
     PORTAL_ACCOUNT_CREATED: 'When a new portal account is created.',
     USER_ADDED_TO_APP: 'When you are added to a workspace or module.',
     SYSTEM_TRIAL_EXPIRING: 'When your trial period is about to expire.',
-    SYSTEM_SUBSCRIPTION_SUSPENDED: 'When your subscription has been suspended.'
+    SYSTEM_SUBSCRIPTION_SUSPENDED: 'When your subscription has been suspended.',
+    LIVE_CHAT_MESSAGE_RECEIVED: 'When a visitor sends a live chat message.',
+    LIVE_CHAT_SESSION_STARTED: 'When a visitor starts a live chat session.',
+    INTERNAL_CHAT_MENTIONED: 'When a teammate mentions you in Internal Chat.',
+    INTERNAL_CHAT_MESSAGE_POSTED: 'When a teammate messages you in a DM or (if enabled) a channel.',
   };
 
   if (map[eventType]) return map[eventType];

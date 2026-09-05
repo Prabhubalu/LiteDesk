@@ -262,7 +262,7 @@ function buildShell(snapshot: PermissionSnapshot, addonNav: AddonNavItem[] = [])
   });
 
   for (const addon of addonNav) {
-    const surfaceId = addon.surfaceId as 'live-chat' | 'announcements' | 'telephony';
+    const surfaceId = addon.surfaceId as 'live-chat' | 'announcements' | 'telephony' | 'internal-chat';
     shell.push({
       kind: 'surface',
       id: surfaceId,

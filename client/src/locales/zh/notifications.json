@@ -430,5 +430,13 @@
   "manageEventType": {
     "message": "Manage this notification type",
     "description": "Deep link to preference for a specific notification event type"
+  },
+  "toastCategoryInternalChat": {
+    "message": "Team chat",
+    "description": "Toast category for Internal Chat messages"
+  },
+  "toastCategoryInternalChatMention": {
+    "message": "Mentioned in chat",
+    "description": "Toast category when mentioned in Internal Chat"
   }
 }

@@ -11,6 +11,7 @@ const authStore = useAuthStore();
 const selectedRoleId = ref(null);
 const rememberDefault = ref(false);
 const localError = ref('');
+const loadingPortals = ref(false);
 
 const portals = computed(() => authStore.user?.portals || []);
 const organizationName = computed(() => authStore.organization?.name || '');
@@ -28,12 +29,13 @@ onMounted(async () => {
     await router.replace(authStore.resolvePostLoginRoute());
     return;
   }
-  if (!portals.value.length) {
-    try {
-      await authStore.refreshPortals();
-    } catch (err) {
-      localError.value = err.message || t('auth.portalSelectionLoadFailed');
-    }
+  loadingPortals.value = true;
+  try {
+    await authStore.refreshPortals();
+  } catch (err) {
+    localError.value = err.message || t('auth.portalSelectionLoadFailed');
+  } finally {
+    loadingPortals.value = false;
   }
   const defaultId = authStore.user?.defaultExternalRoleId;
   if (defaultId && portals.value.some((p) => String(p.roleId) === String(defaultId))) {
@@ -85,7 +87,24 @@ const submit = async () => {
           {{ localError || authStore.error }}
         </div>
 
-        <form class="space-y-4" @submit.prevent="submit">
+        <p
+          v-if="loadingPortals"
+          class="text-center text-sm text-gray-600 dark:text-gray-400"
+        >
+          {{ t('auth.portalSelectionLoading') }}
+        </p>
+        <p
+          v-else-if="!portals.length && !localError && !authStore.error"
+          class="text-center text-sm text-gray-600 dark:text-gray-400"
+        >
+          {{ t('auth.portalSelectionEmpty') }}
+        </p>
+
+        <form
+          v-if="portals.length"
+          class="space-y-4"
+          @submit.prevent="submit"
+        >
           <button
             v-for="portal in portals"
             :key="String(portal.roleId)"

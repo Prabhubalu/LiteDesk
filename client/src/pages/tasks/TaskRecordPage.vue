@@ -157,6 +157,19 @@
                     <span>{{ t('actions.duplicate') }}</span>
                   </button>
                 </MenuItem>
+                <MenuItem v-if="canDiscussInChat" v-slot="{ active }">
+                  <button
+                    type="button"
+                    :class="[
+                      'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                      active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                    ]"
+                    @click="handleDiscussInChat"
+                  >
+                    <ChatBubbleOvalLeftEllipsisIcon class="w-4 h-4" />
+                    <span>{{ t('internalChat.discussAction') }}</span>
+                  </button>
+                </MenuItem>
                 <MenuItem v-slot="{ active }">
                   <button
                     @click="handleExport"
@@ -904,6 +917,19 @@
                     ]"
                   >
                     <span>{{ t('actions.duplicate') }}</span>
+                  </button>
+                </MenuItem>
+                <MenuItem v-if="canDiscussInChat" v-slot="{ active }">
+                  <button
+                    type="button"
+                    :class="[
+                      'w-full text-left px-4 py-2 text-sm transition-colors duration-150 flex items-center gap-2',
+                      active ? 'bg-gray-100 dark:bg-gray-700' : 'text-gray-700 dark:text-gray-200'
+                    ]"
+                    @click="handleDiscussInChat"
+                  >
+                    <ChatBubbleOvalLeftEllipsisIcon class="w-4 h-4" />
+                    <span>{{ t('internalChat.discussAction') }}</span>
                   </button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
@@ -1728,6 +1754,7 @@ import { useRichDescriptionImagePreview } from '@/composables/useRichDescription
 import RichDescriptionImageLightbox from '@/components/common/RichDescriptionImageLightbox.vue';
 import {
   ChatBubbleLeftRightIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
   ClockIcon,
   LinkIcon,
   PuzzlePieceIcon,
@@ -1774,6 +1801,8 @@ import DateCell from '@/components/common/table/DateCell.vue';
 import { getKeyFields, formatActivityChangeValue } from '@/utils/fieldDisplay';
 import { formatCurrencyValue, resolveCurrencyCodeForField, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
 import apiClient from '@/utils/apiClient';
+import { isAddonEntitled } from '@/utils/addonEntitlement';
+import { openRecordDiscussChat } from '@/utils/internalChatApi';
 import { fetchModuleDefinitionCached } from '@/utils/tenantSchemaApiCache';
 import DatePicker from '@/components/common/DatePicker.vue';
 import { useAuthStore } from '@/stores/authRegistry';
@@ -5631,6 +5660,25 @@ const {
     router.push('/tasks');
   }
 });
+
+const canDiscussInChat = computed(() => (
+  isAddonEntitled(authStore.user, 'internal_chat')
+  && Boolean(task.value?._id)
+));
+
+async function handleDiscussInChat() {
+  try {
+    await openRecordDiscussChat({
+      moduleKey: 'tasks',
+      recordId: task.value?._id,
+      openTab,
+      router,
+      tabTitle: t('navigation.internalChat'),
+    });
+  } catch (err) {
+    notifications.error(err?.response?.data?.message || t('internalChat.discussFailed'));
+  }
+}
 
 const { goBackToModuleList } = useRecordModuleBack();
 

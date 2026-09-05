@@ -52,6 +52,10 @@ async function resolveKey(key, context) {
       return resolveCaseNotifyTargets(context);
     case 'LIVE_CHAT_NOTIFY_TARGETS':
       return resolveLiveChatNotifyTargets(context);
+    case 'INTERNAL_CHAT_MENTION_TARGETS':
+      return resolveInternalChatMentionTargets(context);
+    case 'INTERNAL_CHAT_SPACE_MEMBERS':
+      return resolveInternalChatSpaceMembers(context);
     case 'TELEPHONY_NOTIFY_TARGETS':
       return resolveTelephonyNotifyTargets(context);
     case 'INBOX_SNOOZE_USER':
@@ -404,6 +408,56 @@ function liveChatNotificationCopy(eventType, entity = {}) {
     title: 'Live chat notification',
     body: `Update on ${label}.`,
   };
+}
+
+async function resolveInternalChatMentionTargets({ entity, organizationId, eventType }) {
+  const recipientUserIds = Array.isArray(entity?.alertRecipientUserIds)
+    ? entity.alertRecipientUserIds
+    : [];
+  if (!recipientUserIds.length || !organizationId) return [];
+
+  const users = await User.find({
+    _id: { $in: recipientUserIds },
+    organizationId,
+    $or: [{ status: 'active' }, { status: { $exists: false } }, { status: null }],
+  }).select('_id');
+
+  const author = String(entity.authorName || 'Someone').trim();
+  const preview = String(entity.preview || '').trim();
+  const spaceName = String(entity.spaceName || entity.title || 'chat').trim();
+  const title = eventType === domainEvents.INTERNAL_CHAT_MENTIONED
+    ? 'Mentioned in Chat'
+    : 'Chat update';
+  const body = preview
+    ? `${author} mentioned you in ${spaceName}: ${preview}`
+    : `${author} mentioned you in ${spaceName}.`;
+
+  return users.map((user) => ({ userId: user._id, title, body }));
+}
+
+async function resolveInternalChatSpaceMembers({ entity, organizationId, eventType, triggeredBy }) {
+  const memberIds = Array.isArray(entity?.memberUserIds) ? entity.memberUserIds : [];
+  if (!memberIds.length || !organizationId) return [];
+
+  const actorId = triggeredBy ? String(triggeredBy) : '';
+  const filtered = memberIds.filter((id) => String(id) !== actorId);
+  if (!filtered.length) return [];
+
+  const users = await User.find({
+    _id: { $in: filtered },
+    organizationId,
+    $or: [{ status: 'active' }, { status: { $exists: false } }, { status: null }],
+  }).select('_id');
+
+  const author = String(entity.authorName || 'Someone').trim();
+  const preview = String(entity.preview || '').trim();
+  const spaceName = String(entity.spaceName || entity.title || 'chat').trim();
+  const title = 'New chat message';
+  const body = preview
+    ? `${author} in ${spaceName}: ${preview}`
+    : `${author} posted in ${spaceName}.`;
+
+  return users.map((user) => ({ userId: user._id, title, body }));
 }
 
 async function resolveLiveChatNotifyTargets({ entity, organizationId, eventType }) {

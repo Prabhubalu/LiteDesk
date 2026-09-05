@@ -28,6 +28,14 @@ const ADDON_NAVIGATION_REGISTRY = {
     permission: 'telephony.view',
     order: 15,
   },
+  [ADDON_KEYS.INTERNAL_CHAT]: {
+    surfaceId: 'internal-chat',
+    route: '/internal-chat',
+    label: 'Chat',
+    icon: 'chat-bubble-oval-left-ellipsis',
+    permission: 'internalChat.view',
+    order: 12,
+  },
 };
 
 module.exports = {

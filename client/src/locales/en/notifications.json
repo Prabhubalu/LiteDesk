@@ -23,6 +23,14 @@
     "message": "Live chat message",
     "description": "Toast category for inbound chat"
   },
+  "toastCategoryInternalChat": {
+    "message": "Team chat",
+    "description": "Toast category for Internal Chat messages"
+  },
+  "toastCategoryInternalChatMention": {
+    "message": "Mentioned in chat",
+    "description": "Toast category when mentioned in Internal Chat"
+  },
   "toastCategoryEmail": {
     "message": "Customer email",
     "description": "Toast category for inbound email"

@@ -994,5 +994,9 @@
   "userWorkspace": {
     "message": "Workspace",
     "description": "Label above company name in avatar menu"
+  },
+  "internalChat": {
+    "message": "Chat",
+    "description": "Internal Chat addon navigation label"
   }
 }

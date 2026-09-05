@@ -31,6 +31,7 @@ import {
   ShoppingCartIcon,
   CubeIcon,
   ChatBubbleLeftRightIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
   MegaphoneIcon,
   FunnelIcon,
   PhotoIcon,
@@ -246,6 +247,7 @@ const iconMap = {
   'home': HomeIcon,
   'inbox': InboxIcon,
   'chat-bubble-left-right': ChatBubbleLeftRightIcon,
+  'chat-bubble-oval-left-ellipsis': ChatBubbleOvalLeftEllipsisIcon,
   'users': UsersIcon,
   'building': BuildingOfficeIcon,
   'briefcase': BriefcaseIcon,
@@ -672,6 +674,13 @@ const loadTabsFromStorage = () => {
             tab.icon = getIconComponent('chat-bubble-left-right');
           }
         }
+
+        if (tabPathBase === '/internal-chat' || tabPathBase.startsWith('/internal-chat/')) {
+          const id = getIconId(tab.icon);
+          if (id !== 'chat-bubble-oval-left-ellipsis') {
+            tab.icon = getIconComponent('chat-bubble-oval-left-ellipsis');
+          }
+        }
         
         // Migrate only legacy shared /dashboard tabs.
         // Keep app-scoped routes like /dashboard/helpdesk untouched.
@@ -1002,7 +1011,8 @@ const getIconForPath = (path) => {
     '/sales-orders': MODULE_ICON_IDS.sales_orders,
     '/invoices': MODULE_ICON_IDS.invoices,
     '/payments': MODULE_ICON_IDS.payments,
-    '/astra': 'astra'
+    '/astra': 'astra',
+    '/internal-chat': 'chat-bubble-oval-left-ellipsis',
   };
 
   // Audit app route-specific mappings (must run before base-path fallback).
@@ -1022,6 +1032,9 @@ const getIconForPath = (path) => {
   if (isLiveChatClosedSessionsRoute(pathOnly)) return 'clipboard-document-list';
   if (isLiveChatVisitorsRoute(pathOnly)) return 'clipboard-document-list';
   if (isLiveChatReportsRoute(pathOnly)) return 'document-chart-bar';
+  if (pathOnly === '/internal-chat' || pathOnly.startsWith('/internal-chat/')) {
+    return 'chat-bubble-oval-left-ellipsis';
+  }
   if (pathOnly === '/dashboard/helpdesk' || pathOnly.startsWith('/dashboard/helpdesk')) return 'lifebuoy';
   if (pathOnly === '/dashboard/audit' || pathOnly.startsWith('/dashboard/audit')) return 'shield-check';
   if (pathOnly === '/dashboard/sales' || pathOnly.startsWith('/dashboard/sales')) return 'document-chart-bar';

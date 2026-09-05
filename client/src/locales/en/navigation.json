@@ -43,6 +43,10 @@
     "message": "Announcements",
     "description": "Announcements & Alerts addon navigation label"
   },
+  "internalChat": {
+    "message": "Chat",
+    "description": "Internal Chat addon navigation label"
+  },
   "signOut": {
     "message": "Sign out",
     "description": "Sign out of the application"

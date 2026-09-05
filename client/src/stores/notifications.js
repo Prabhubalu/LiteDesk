@@ -8,6 +8,7 @@ import {
   alertForLiveChatNotification,
   dispatchLiveChatWorkspaceEvent,
 } from '@/utils/liveChatNotificationAlerts';
+import { alertForInternalChatNotification } from '@/utils/internalChatNotificationAlerts';
 import {
   caseIdFromHelpdeskNotification,
   helpdeskAlertKindFromNotification,
@@ -67,6 +68,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     if (eventType.startsWith('CASE_PORTAL_')) return 'PORTAL';
     if (eventType.startsWith('CASE_')) return 'HELPDESK';
     if (eventType.startsWith('LIVE_CHAT_')) return 'PLATFORM';
+    if (eventType.startsWith('INTERNAL_CHAT_')) return 'PLATFORM';
     return currentAppKey();
   }
 
@@ -749,6 +751,7 @@ export const useNotificationStore = defineStore('notifications', () => {
 
     alertForHelpdeskNotification(notification, { appKey });
     alertForLiveChatNotification(notification, { appKey });
+    alertForInternalChatNotification(notification, { appKey });
 
     const helpdeskAlertKind = helpdeskAlertKindFromNotification(notification);
     const caseId = caseIdFromHelpdeskNotification(notification);

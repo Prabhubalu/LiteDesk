@@ -249,6 +249,56 @@ export function buildLiveChatToastPresentation(notification, t) {
   };
 }
 
+const INTERNAL_CHAT_EVENT_TYPES = new Set([
+  'INTERNAL_CHAT_MENTIONED',
+  'INTERNAL_CHAT_MESSAGE_POSTED',
+]);
+
+/**
+ * @param {object} notification
+ * @param {(key: string, params?: object) => string} t
+ * @returns {ToastPresentation|null}
+ */
+export function buildInternalChatToastPresentation(notification, t) {
+  if (!notification) return null;
+
+  const eventType = String(notification.eventType || '');
+  if (!INTERNAL_CHAT_EVENT_TYPES.has(eventType)) return null;
+
+  const entity = notification.entity || {};
+  const title = String(notification.title || '').trim();
+  const body = String(notification.body || '').trim();
+  const spaceName = String(entity.spaceName || entity.title || '').trim();
+  const authorName = String(entity.authorName || '').trim();
+  const preview = String(entity.preview || '').trim();
+
+  const isMention = eventType === 'INTERNAL_CHAT_MENTIONED';
+  const category = isMention
+    ? t('notifications.toastCategoryInternalChatMention')
+    : t('notifications.toastCategoryInternalChat');
+  const primary = authorName || t('notifications.toastUnknownSender');
+  const secondary = preview || body || null;
+  const meta = spaceName || title || null;
+  const ariaLabel = [category, primary, secondary, meta].filter(Boolean).join('. ');
+
+  return {
+    id: `${Date.now()}-${Math.random()}`,
+    variant: 'helpdesk',
+    duration: isMention ? 7000 : 5500,
+    appKey: notification.appKey || 'PLATFORM',
+    entity: notification.entity,
+    notificationId: notification.id ? String(notification.id) : undefined,
+    eventType,
+    iconKey: isMention ? 'bell' : 'user',
+    iconTone: isMention ? 'warning' : 'info',
+    category,
+    primary,
+    secondary,
+    meta,
+    ariaLabel,
+  };
+}
+
 /**
  * @param {string} message
  * @param {object} opts
@@ -296,6 +346,8 @@ export function buildToastPresentation(messageOrPayload, opts = {}, t) {
       if (helpdesk) return helpdesk;
       const liveChat = buildLiveChatToastPresentation(payload, t);
       if (liveChat) return liveChat;
+      const internalChat = buildInternalChatToastPresentation(payload, t);
+      if (internalChat) return internalChat;
     }
     if (payload.primary != null) return payload;
     return buildSimpleToastPresentation(payload.message || '', payload);
