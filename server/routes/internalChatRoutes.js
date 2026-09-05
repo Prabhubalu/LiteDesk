@@ -22,6 +22,7 @@ router.get('/spaces', internalChatController.listSpaces);
 router.post('/spaces/channels', internalChatController.createChannel);
 router.post('/spaces/:spaceId/join', internalChatController.joinChannel);
 router.post('/spaces/:spaceId/members', internalChatController.inviteMembers);
+router.patch('/spaces/:spaceId', internalChatController.updateChannel);
 router.post('/spaces/dms', internalChatController.createDm);
 router.post('/spaces/group-dms', internalChatController.createGroupDm);
 router.post('/spaces/discuss', internalChatController.discussRecord);
@@ -34,6 +35,7 @@ router.post(
 );
 router.post('/spaces/:spaceId/messages/:messageId/reactions', internalChatController.toggleReaction);
 router.post('/spaces/:spaceId/messages/:messageId/pin', internalChatController.pinMessage);
+router.patch('/spaces/:spaceId/messages/:messageId', internalChatController.editMessage);
 router.delete('/spaces/:spaceId/messages/:messageId', internalChatController.deleteMessage);
 router.get('/spaces/:spaceId/export', internalChatController.exportSpace);
 router.post('/spaces/:spaceId/read', internalChatController.markRead);

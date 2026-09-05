@@ -23,6 +23,22 @@
     "message": "Offline",
     "description": "Badge when SSE stream is disconnected"
   },
+  "tabUnreadOne": {
+    "message": "New message",
+    "description": "Browser tab title prefix for one unread Internal Chat message"
+  },
+  "tabUnread": {
+    "message": "{count} new",
+    "description": "Browser tab title prefix for multiple unread Internal Chat messages"
+  },
+  "tabMention": {
+    "message": "Mentioned",
+    "description": "Browser tab title prefix when mentioned in Internal Chat"
+  },
+  "tabMentions": {
+    "message": "{count} mentions",
+    "description": "Browser tab title prefix for multiple Internal Chat mentions"
+  },
   "loadFailed": {
     "message": "Could not load chat.",
     "description": "Error toast when spaces list fails"
@@ -54,6 +70,22 @@
   "channelName": {
     "message": "Channel name",
     "description": "Label for channel name input"
+  },
+  "channelMenu": {
+    "message": "Channel options",
+    "description": "Aria/tooltip for channel three-dot menu"
+  },
+  "renameChannel": {
+    "message": "Rename channel",
+    "description": "Menu action to rename an existing channel"
+  },
+  "renameChannelHint": {
+    "message": "Update the name for everyone in this channel.",
+    "description": "Subtitle in rename channel modal"
+  },
+  "renameChannelFailed": {
+    "message": "Could not rename channel.",
+    "description": "Error when channel rename fails"
   },
   "channelTopic": {
     "message": "Topic (optional)",
@@ -123,6 +155,30 @@
     "message": "Write a message…",
     "description": "Placeholder for message composer"
   },
+  "formatBold": {
+    "message": "Bold",
+    "description": "Composer format toolbar: bold"
+  },
+  "formatItalic": {
+    "message": "Italic",
+    "description": "Composer format toolbar: italic"
+  },
+  "formatStrike": {
+    "message": "Strikethrough",
+    "description": "Composer format toolbar: strikethrough"
+  },
+  "formatCode": {
+    "message": "Code",
+    "description": "Composer format toolbar: inline code"
+  },
+  "formatLink": {
+    "message": "Link",
+    "description": "Composer format toolbar: insert link"
+  },
+  "formatLinkPrompt": {
+    "message": "Enter link URL",
+    "description": "Prompt when inserting a markdown link"
+  },
   "send": {
     "message": "Send",
     "description": "Send message button"
@@ -132,12 +188,12 @@
     "description": "Open thread reply action"
   },
   "threadOpen": {
-    "message": "Thread reply",
-    "description": "Banner when viewing a thread"
+    "message": "Tópico",
+    "description": "Thread side panel title"
   },
   "closeThread": {
-    "message": "Back to channel",
-    "description": "Close thread and return to main messages"
+    "message": "Fechar",
+    "description": "Close thread side panel"
   },
   "dmFallback": {
     "message": "Direct message",
@@ -190,6 +246,18 @@
   "attach": {
     "message": "Attach",
     "description": "Attach file button in composer"
+  },
+  "attachMixedTypes": {
+    "message": "Choose either images or documents — not both in one message.",
+    "description": "Error when file picker selection mixes images and documents"
+  },
+  "attachSameTypeOnly": {
+    "message": "This message already has a different attachment type. Remove them first to switch.",
+    "description": "Error when adding attachments of the opposite type to pending queue"
+  },
+  "attachLimit": {
+    "message": "You can attach up to {count} files per message.",
+    "description": "Error when exceeding max attachments per message"
   },
   "typingOne": {
     "message": "{name} is typing…",
@@ -322,5 +390,145 @@
   "notifyChannelMessagesHint": {
     "message": "When off, only DMs and @mentions create alerts. Unread badges still update for channels.",
     "description": "Help text for channel notification setting"
+  },
+  "mentionAllHint": {
+    "message": "Notify everyone in this conversation",
+    "description": "Hint under @all mention suggestion"
+  },
+  "mediaPreviewTitle": {
+    "message": "Image",
+    "description": "Default title for chat image lightbox when filename missing"
+  },
+  "mediaPreviewCounter": {
+    "message": "{current} of {total}",
+    "description": "Gallery counter in chat media lightbox"
+  },
+  "mediaPreviewPrev": {
+    "message": "Previous image",
+    "description": "Previous image button title in chat lightbox"
+  },
+  "mediaPreviewNext": {
+    "message": "Next image",
+    "description": "Next image button title in chat lightbox"
+  },
+  "seenReceiptsMode": {
+    "message": "Confirmações de leitura",
+    "description": "Label for seenzone / read receipt privacy setting"
+  },
+  "seenReceiptsOff": {
+    "message": "Desligado — ocultar vistos",
+    "description": "Seen receipts mode: disabled"
+  },
+  "seenReceiptsPrivate": {
+    "message": "Privado — DMs, grupos pequenos e @menções",
+    "description": "Seen receipts mode: default privacy-aware"
+  },
+  "seenReceiptsOn": {
+    "message": "Ligado — incluir canais grandes (somente contagem)",
+    "description": "Seen receipts mode: full aggregate in large spaces"
+  },
+  "seenReceiptsHint": {
+    "message": "Mostrado sob sua última mensagem. Canais grandes nunca mostram quem — só quantos.",
+    "description": "Help text for seen receipts setting"
+  },
+  "seenZoneSent": {
+    "message": "Enviado",
+    "description": "Seenzone: message delivered but not seen"
+  },
+  "seenZoneSeen": {
+    "message": "Visto",
+    "description": "Seenzone: message has been seen"
+  },
+  "seenZoneNotYet": {
+    "message": "Ainda não visto",
+    "description": "Seenzone tooltip when nobody has read"
+  },
+  "seenZoneSeenAt": {
+    "message": "Visto às {time}",
+    "description": "Seenzone DM tooltip with time"
+  },
+  "seenZoneByNames": {
+    "message": "Visto por {names}",
+    "description": "Seenzone tooltip listing viewers"
+  },
+  "seenZoneByNamesMore": {
+    "message": "Visto por {names} +{count}",
+    "description": "Seenzone tooltip with overflow count"
+  },
+  "seenZoneAggregate": {
+    "message": "Visto por {seen} de {total}",
+    "description": "Large-channel seenzone aggregate label"
+  },
+  "seenZoneMentioned": {
+    "message": "Visto por {seen} de {total} mencionados",
+    "description": "Mention-focused seenzone aggregate label"
+  },
+  "threadReplyPlaceholder": {
+    "message": "Responder…",
+    "description": "Placeholder for thread panel composer"
+  },
+  "threadEmpty": {
+    "message": "Ainda sem respostas — inicie o tópico.",
+    "description": "Empty state in thread panel before first reply"
+  },
+  "threadReplyCountOne": {
+    "message": "{count} resposta",
+    "description": "Reply count indicator singular; opens thread"
+  },
+  "threadReplyCountOther": {
+    "message": "{count} respostas",
+    "description": "Reply count indicator plural; opens thread"
+  },
+  "editMessage": {
+    "message": "Editar",
+    "description": "Edit own message action"
+  },
+  "editingMessage": {
+    "message": "Editando mensagem",
+    "description": "Composer banner while editing a message"
+  },
+  "saveEdit": {
+    "message": "Salvar",
+    "description": "Save edited message"
+  },
+  "editedLabel": {
+    "message": "Editado",
+    "description": "Shown next to timestamp when a message was edited"
+  },
+  "editFailed": {
+    "message": "Não foi possível editar a mensagem.",
+    "description": "Error when message edit fails"
+  },
+  "reactWith": {
+    "message": "Reagir com {emoji}",
+    "description": "Tooltip for quick emoji reaction on a message"
+  },
+  "addReaction": {
+    "message": "Adicionar reação",
+    "description": "Open emoji picker to react to a message"
+  },
+  "replyInline": {
+    "message": "Responder",
+    "description": "Inline reply affordance under a message with no replies yet"
+  },
+  "quoteInReply": {
+    "message": "Citar na resposta",
+    "description": "Quote message into channel composer (inline reply, not thread)"
+  },
+  "quoteAttachmentPreview": {
+    "message": "Anexo",
+    "description": "Quote preview when quoted message has no text"
+  },
+  "attachLimitSelect": {
+    "message": "Select at most {count} more file(s).",
+    "description": "Error when file picker selection exceeds remaining attachment slots"
+  },
+  "attachRemaining": {
+    "message": "Attach files ({count} of {max} left)",
+    "description": "Tooltip on attach button showing remaining slots"
+  },
+  "attachLimitSkipped": {
+    "message": "Added {kept} file(s). {skipped} left out — max {max} per message.",
+    "description": "Toast when OS picker selected more than remaining slots; first N kept"
   }
 }

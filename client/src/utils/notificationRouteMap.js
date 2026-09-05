@@ -99,12 +99,15 @@ const NOTIFICATION_ROUTE_MAP = {
       name: 'live-chat-session',
       params: { sessionId: entityId }
     }),
-    INTERNAL_CHAT_MESSAGE: (_entityId, entity) => {
+    INTERNAL_CHAT_MESSAGE: (entityId, entity) => {
       const spaceId = entity?.spaceId ? String(entity.spaceId) : '';
+      const messageId = entityId ? String(entityId) : '';
+      const params = new URLSearchParams();
+      if (spaceId) params.set('spaceId', spaceId);
+      if (messageId) params.set('messageId', messageId);
+      const qs = params.toString();
       return {
-        path: spaceId
-          ? `/internal-chat?spaceId=${encodeURIComponent(spaceId)}`
-          : '/internal-chat',
+        path: qs ? `/internal-chat?${qs}` : '/internal-chat',
       };
     },
   },

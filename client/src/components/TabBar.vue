@@ -14,6 +14,10 @@ import { useUserStatus } from '@/composables/useUserStatus';
 import { XMarkIcon, ChevronDownIcon } from '@heroicons/vue/20/solid';
 import { resolveTabTitleWithHelpdeskAlerts } from '@/utils/helpdeskTabAlerts';
 import { resolveTabTitleWithLiveChatAlerts } from '@/utils/liveChatTabAlerts';
+import {
+  isInternalChatTabPath,
+  resolveTabTitleWithInternalChatAlerts,
+} from '@/utils/internalChatTabAlerts';
 import { resolveTabTitle } from '@/utils/navigationLabels';
 import { useHelpdeskBrowserTitle } from '@/composables/useHelpdeskBrowserTitle';
 import TabHoverPreview from '@/components/TabHoverPreview.vue';
@@ -34,9 +38,16 @@ const { tabs, activeTabId, switchToTab, closeTab, closeOtherTabs, closeAllTabs }
 
 function tabDisplayTitle(tab) {
   const base = resolveTabTitle(tab, t, te);
+  // Internal Chat first — helpdesk/live resolvers must not swallow `internal`/`mention` segments.
+  if (isInternalChatTabPath(tab?.path) || tab?.titleKey === 'navigation.internalChat') {
+    const withInternal = resolveTabTitleWithInternalChatAlerts(tab, t, te);
+    if (withInternal !== base) return withInternal;
+  }
   const withHelpdesk = resolveTabTitleWithHelpdeskAlerts(tab, t, te);
   if (withHelpdesk !== base) return withHelpdesk;
-  return resolveTabTitleWithLiveChatAlerts(tab, t, te);
+  const withLiveChat = resolveTabTitleWithLiveChatAlerts(tab, t, te);
+  if (withLiveChat !== base) return withLiveChat;
+  return resolveTabTitleWithInternalChatAlerts(tab, t, te);
 }
 
 function tabHasHelpdeskAlert(tab) {
@@ -49,7 +60,12 @@ function tabAlertIconColorClass(tab) {
       ? 'text-gray-900 dark:text-white'
       : 'text-gray-600 dark:text-gray-400';
   }
-  if (tab.alertKind === 'chat' || tab.alertKind === 'session') {
+  if (
+    tab.alertKind === 'chat'
+    || tab.alertKind === 'session'
+    || tab.alertKind === 'internal'
+    || tab.alertKind === 'mention'
+  ) {
     return 'text-emerald-600 dark:text-emerald-400';
   }
   if (tab.alertKind === 'case') {
@@ -59,7 +75,14 @@ function tabAlertIconColorClass(tab) {
 }
 
 function tabAlertRingClass(tab) {
-  if (tab.alertKind === 'chat' || tab.alertKind === 'session') return 'tab-helpdesk-alert-icon__ring--chat';
+  if (
+    tab.alertKind === 'chat'
+    || tab.alertKind === 'session'
+    || tab.alertKind === 'internal'
+    || tab.alertKind === 'mention'
+  ) {
+    return 'tab-helpdesk-alert-icon__ring--chat';
+  }
   if (tab.alertKind === 'case') return 'tab-helpdesk-alert-icon__ring--case';
   return 'tab-helpdesk-alert-icon__ring--email';
 }

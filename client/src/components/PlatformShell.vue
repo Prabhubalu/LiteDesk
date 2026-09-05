@@ -121,6 +121,10 @@ const routerViewKey = computed(() => {
     return 'live-chat-closed-workspace';
   }
   if (route.path.startsWith('/live-chat/')) return route.path;
+  // spaceId is query-only; remounting per space tears down SSE (hub max 2/user).
+  if (route.path === '/internal-chat' || route.path.startsWith('/internal-chat/')) {
+    return '/internal-chat';
+  }
   if (route.path.startsWith('/settings')) return route.path;
   // View toggles write ?dealsView= / ?tasksView=; keying on fullPath remounts ModuleList twice.
   if (route.path === '/deals' || route.path === '/tasks') return route.path;

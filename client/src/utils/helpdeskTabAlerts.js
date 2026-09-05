@@ -53,11 +53,12 @@ export function resolveTabTitleWithHelpdeskAlerts(tab, t, te = () => false) {
     resolveTabTitle(tab, t, te);
 
   const segments = Array.isArray(tab?.alertSegments) ? tab.alertSegments : [];
-  if (!segments.length) {
+  const helpdeskSegments = segments.filter((seg) => HELPDESK_TAB_ALERT_KINDS.includes(seg.kind));
+  if (!helpdeskSegments.length) {
     return resolveTabTitle(tab, t, te);
   }
 
-  const prefixes = segments.map((seg) => {
+  const prefixes = helpdeskSegments.map((seg) => {
     const kind =
       seg.kind === 'chat' ? 'chat' : seg.kind === 'case' ? 'case' : 'email';
     const count = Math.max(1, Number(seg.count) || 1);

@@ -62,6 +62,7 @@ import { resolveModuleDisplayName } from '@/utils/configurableLabelResolver';
 import { i18n } from '@/i18n/index';
 import { createHelpdeskTabAlertController } from '@/utils/helpdeskTabAlerts';
 import { createLiveChatTabAlertController } from '@/utils/liveChatTabAlerts';
+import { createInternalChatTabAlertController } from '@/utils/internalChatTabAlerts';
 import { clearListSessionsForRoutePath } from '@/utils/listScrollSession';
 import { markModuleListRecheckForRoutePath } from '@/utils/moduleListFreshness';
 import { markRecordDetailRecheckForRoutePath } from '@/utils/recordDetailFreshness';
@@ -126,6 +127,7 @@ const activeTabId = ref(null);
 
 const helpdeskTabAlertController = createHelpdeskTabAlertController(tabs, activeTabId);
 const liveChatTabAlertController = createLiveChatTabAlertController(tabs, activeTabId);
+const internalChatTabAlertController = createInternalChatTabAlertController(tabs, activeTabId);
 
 function i18nTabHelpers() {
   return {
@@ -149,9 +151,15 @@ export function markLiveChatTabAlert(kind) {
   return liveChatTabAlertController.markLiveChatTabAlert(kind, i18nTabHelpers());
 }
 
+/** Mark Internal Chat browser tab when a DM/mention arrives (background tabs only). */
+export function markInternalChatTabAlert(kind) {
+  return internalChatTabAlertController.markInternalChatTabAlert(kind, i18nTabHelpers());
+}
+
 export function tabShowsHelpdeskAlert(tab, activeId = activeTabId.value) {
   return helpdeskTabAlertController.tabShowsAlertHighlight(tab, activeId)
-    || liveChatTabAlertController.tabShowsAlertHighlight(tab, activeId);
+    || liveChatTabAlertController.tabShowsAlertHighlight(tab, activeId)
+    || internalChatTabAlertController.tabShowsAlertHighlight(tab, activeId);
 }
 // Storage key is computed per instance+user to prevent tab leakage across instances/users.
 // Design invariant: Persistent UI state must be scoped at the same granularity as access control.
@@ -2927,6 +2935,7 @@ export function useTabs() {
     if (tab) {
       helpdeskTabAlertController.clearTabAlert(tab);
       liveChatTabAlertController.clearTabAlert(tab);
+      internalChatTabAlertController.clearTabAlert(tab);
       const pathBase = (tab.path || '').split('?')[0];
       if (pathBase === '/settings/automation/processes' && tab.recordTitle) {
         restoreModuleListTabTitle(tab, pathBase);
@@ -3107,10 +3116,12 @@ export function useTabs() {
     markHelpdeskTabAlertForCase,
     markHelpdeskTabAlertForNewCase,
     markLiveChatTabAlert,
+    markInternalChatTabAlert,
     tabShowsHelpdeskAlert,
     clearHelpdeskTabAlert: helpdeskTabAlertController.clearTabAlertById,
     clearHelpdeskTabAlertForCase: helpdeskTabAlertController.clearTabAlertForCase,
     clearLiveChatMainTabAlert: liveChatTabAlertController.clearLiveChatMainTabAlert,
+    clearInternalChatMainTabAlert: internalChatTabAlertController.clearInternalChatMainTabAlert,
   };
 }
 

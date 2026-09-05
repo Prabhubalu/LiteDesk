@@ -49,6 +49,45 @@ function ServiceError(message, status = 400, code = 'INTERNAL_CHAT_ERROR') {
   return err;
 }
 
+function looksLikeChatHtml(value) {
+  return /<\/?(p|strong|em|ul|ol|li|a|code|pre|s|u|span|br|h[1-3]|blockquote)\b/i.test(String(value || ''));
+}
+
+function stripHtmlToPlain(html) {
+  return String(html || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/** Lightweight server-side scrub (client also sanitizes with DOMPurify). */
+function sanitizeChatHtml(html) {
+  let out = String(html || '');
+  out = out.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+  out = out.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+  out = out.replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '');
+  out = out.replace(/\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  out = out.replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[^'"]*\2/gi, '');
+  out = out.replace(/<\/?(?!\/?(?:p|br|strong|b|em|i|s|u|a|ul|ol|li|code|pre|span|h1|h2|h3|blockquote)\b)[a-z0-9]+\b[^>]*>/gi, '');
+  return out.trim();
+}
+
+function normalizeMessageBody(body) {
+  const raw = String(body || '').trim();
+  if (!raw) return '';
+  if (!looksLikeChatHtml(raw)) return raw;
+  return sanitizeChatHtml(raw);
+}
+
 function normalizeModuleKey(moduleKey) {
   return String(moduleKey || '').trim().toLowerCase();
 }
@@ -66,7 +105,12 @@ function parseMentionsFromBody(body, explicitIds = []) {
     fromBody.push(match[1]);
   }
   const combined = [...explicitIds.map(String), ...fromBody];
-  return [...new Set(combined)].filter((id) => mongoose.Types.ObjectId.isValid(id));
+  const userIds = [...new Set(combined)].filter((id) => mongoose.Types.ObjectId.isValid(id));
+  const { bodyHasMentionAll } = require('../utils/internalChatMentions');
+  return {
+    userIds,
+    mentionAll: bodyHasMentionAll(body),
+  };
 }
 
 async function listMemberUserIds(organizationId, spaceId) {
@@ -603,12 +647,69 @@ async function inviteMembersToChannel({ organizationId, user, spaceId, memberIds
   };
 }
 
+/**
+ * Rename (and optionally retopic) an existing channel — does not create a new space.
+ * Authorized: channel members (same bar as invite).
+ */
+async function updateChannel({ organizationId, user, spaceId, name, topic }) {
+  if (!canViewInternalChat(user)) {
+    throw ServiceError('Permission denied', 403, 'INTERNAL_CHAT_FORBIDDEN');
+  }
+  const space = await getSpaceOrThrow(organizationId, spaceId);
+  if (space.type !== 'channel') {
+    throw ServiceError('Only channels can be renamed', 400, 'INTERNAL_CHAT_NOT_CHANNEL');
+  }
+  await assertMembership(organizationId, user._id, spaceId);
+
+  const patch = {};
+  if (name !== undefined) {
+    const trimmed = String(name || '').trim();
+    if (!trimmed) {
+      throw ServiceError('Channel name is required', 400, 'INTERNAL_CHAT_NAME_REQUIRED');
+    }
+    if (trimmed.length > 120) {
+      throw ServiceError('Channel name too long', 400, 'INTERNAL_CHAT_NAME_TOO_LONG');
+    }
+    patch.name = trimmed;
+  }
+  if (topic !== undefined) {
+    patch.topic = String(topic || '').trim().slice(0, 500);
+  }
+  if (!Object.keys(patch).length) {
+    throw ServiceError('No changes provided', 400, 'INTERNAL_CHAT_NO_CHANGES');
+  }
+
+  const updated = await InternalChatSpace.findOneAndUpdate(
+    { _id: space._id, organizationId, type: 'channel', archivedAt: null },
+    { $set: patch },
+    { new: true }
+  ).lean();
+  if (!updated) {
+    throw ServiceError('Space not found', 404, 'INTERNAL_CHAT_SPACE_NOT_FOUND');
+  }
+
+  await publishToSpaceMembers(organizationId, space._id, {
+    type: 'space.updated',
+    spaceId: String(space._id),
+    action: 'renamed',
+    name: updated.name,
+    topic: updated.topic,
+  });
+
+  return {
+    ...updated,
+    isMember: true,
+    canJoin: false,
+  };
+}
+
 async function listMessages({
   organizationId,
   user,
   spaceId,
   threadRootId = null,
   before = null,
+  aroundMessageId = null,
   limit = 50,
 }) {
   const space = await getSpaceOrThrow(organizationId, spaceId);
@@ -617,27 +718,88 @@ async function listMessages({
 
   const [enrichedSpace] = await enrichSpaceDisplayNames(organizationId, user._id, [space]);
 
-  const query = {
-    organizationId,
-    spaceId,
-    deletedAt: null,
-  };
-
-  if (threadRootId) {
-    query.threadRootId = threadRootId;
-  } else {
-    query.threadRootId = null;
-  }
-
-  if (before && mongoose.Types.ObjectId.isValid(before)) {
-    query._id = { $lt: before };
-  }
-
   const take = Math.min(Math.max(Number(limit) || 50, 1), 100);
-  const messages = await InternalChatMessage.find(query)
-    .sort({ createdAt: -1 })
-    .limit(take)
-    .lean();
+  let messages = null;
+  let focus = null;
+
+  // Deep-link window: load roots around the target (or its thread root).
+  if (
+    aroundMessageId
+    && mongoose.Types.ObjectId.isValid(aroundMessageId)
+    && !before
+    && !threadRootId
+  ) {
+    const target = await InternalChatMessage.findOne({
+      organizationId,
+      spaceId,
+      _id: aroundMessageId,
+      deletedAt: null,
+    }).lean();
+    if (target) {
+      const rootId = target.threadRootId || target._id;
+      const anchor = target.threadRootId
+        ? await InternalChatMessage.findOne({
+          organizationId,
+          spaceId,
+          _id: target.threadRootId,
+          deletedAt: null,
+          threadRootId: null,
+        }).lean()
+        : target;
+      if (anchor) {
+        const half = Math.floor(take / 2);
+        const older = await InternalChatMessage.find({
+          organizationId,
+          spaceId,
+          threadRootId: null,
+          deletedAt: null,
+          createdAt: { $lte: anchor.createdAt },
+        })
+          .sort({ createdAt: -1 })
+          .limit(half + 1)
+          .lean();
+        const newer = await InternalChatMessage.find({
+          organizationId,
+          spaceId,
+          threadRootId: null,
+          deletedAt: null,
+          createdAt: { $gt: anchor.createdAt },
+        })
+          .sort({ createdAt: 1 })
+          .limit(Math.max(take - older.length, 0))
+          .lean();
+        messages = [...older.reverse(), ...newer];
+        focus = {
+          messageId: String(target._id),
+          threadRootId: target.threadRootId ? String(rootId) : null,
+        };
+      }
+    }
+  }
+
+  if (!messages) {
+    const query = {
+      organizationId,
+      spaceId,
+      deletedAt: null,
+    };
+
+    if (threadRootId) {
+      query.threadRootId = threadRootId;
+    } else {
+      query.threadRootId = null;
+    }
+
+    if (before && mongoose.Types.ObjectId.isValid(before)) {
+      query._id = { $lt: before };
+    }
+
+    messages = await InternalChatMessage.find(query)
+      .sort({ createdAt: -1 })
+      .limit(take)
+      .lean();
+    messages = messages.reverse();
+  }
 
   const authorIds = [...new Set(messages.map((m) => String(m.authorId)))];
   const authors = await User.find({ _id: { $in: authorIds } })
@@ -645,13 +807,42 @@ async function listMessages({
     .lean();
   const authorById = new Map(authors.map((a) => [String(a._id), a]));
 
-  const enriched = messages.reverse().map((m) => ({
+  let enriched = messages.map((m) => ({
     ...m,
     author: authorById.get(String(m.authorId)) || null,
     reactions: summarizeReactions(m.reactions, user._id),
+    replyCount: 0,
   }));
 
-  return { space: enrichedSpace, messages: enriched };
+  // Root timeline: attach reply counts for thread discovery.
+  if (!threadRootId && enriched.length) {
+    const rootIds = enriched.map((m) => m._id);
+    const counts = await InternalChatMessage.aggregate([
+      {
+        $match: {
+          organizationId,
+          spaceId: space._id,
+          threadRootId: { $in: rootIds },
+          deletedAt: null,
+        },
+      },
+      { $group: { _id: '$threadRootId', count: { $sum: 1 } } },
+    ]);
+    const countByRoot = new Map(counts.map((c) => [String(c._id), c.count]));
+    enriched = enriched.map((m) => ({
+      ...m,
+      replyCount: countByRoot.get(String(m._id)) || 0,
+    }));
+  }
+
+  let readState = { mode: 'off', memberCount: 0, members: [] };
+  try {
+    readState = await listSpaceReadState({ organizationId, user, spaceId });
+  } catch {
+    /* membership already asserted above; ignore read-state failures */
+  }
+
+  return { space: enrichedSpace, messages: enriched, readState, focus };
 }
 
 async function postMessage({
@@ -660,13 +851,17 @@ async function postMessage({
   spaceId,
   body,
   threadRootId = null,
+  quoteMessageId = null,
   mentionUserIds = [],
   recordRefs = [],
   attachments = [],
 }) {
-  const text = String(body || '').trim();
+  const rawBody = String(body || '').trim();
+  const text = normalizeMessageBody(rawBody);
+  const plain = stripHtmlToPlain(text);
   const safeAttachments = normalizeAttachments(attachments);
-  if (!text && !safeAttachments.length) {
+  assertHomogeneousAttachments(safeAttachments);
+  if (!plain && !safeAttachments.length) {
     throw ServiceError('Message body or attachment is required', 400, 'INTERNAL_CHAT_EMPTY_BODY');
   }
   if (text.length > 16000) {
@@ -695,7 +890,41 @@ async function postMessage({
     rootId = root._id;
   }
 
-  let mentions = parseMentionsFromBody(text, mentionUserIds);
+  // Quote-in-reply is a channel/DM root message affordance (not used inside threads).
+  let quote = null;
+  if (!rootId && quoteMessageId && mongoose.Types.ObjectId.isValid(quoteMessageId)) {
+    const quoted = await InternalChatMessage.findOne({
+      organizationId,
+      spaceId,
+      _id: quoteMessageId,
+      deletedAt: null,
+    }).lean();
+    if (quoted) {
+      const quotedAuthor = await User.findById(quoted.authorId)
+        .select('firstName lastName email')
+        .lean();
+      const authorName = quotedAuthor
+        ? ([quotedAuthor.firstName, quotedAuthor.lastName].filter(Boolean).join(' ').trim()
+          || quotedAuthor.email
+          || 'Someone')
+        : 'Someone';
+      const { humanizeInternalChatMentions } = require('../utils/internalChatMentions');
+      let preview = stripHtmlToPlain(
+        await humanizeInternalChatMentions(organizationId, quoted.body || '')
+      ).trim();
+      if (!preview && Array.isArray(quoted.attachments) && quoted.attachments.length) {
+        preview = quoted.attachments[0].fileName || 'Attachment';
+      }
+      quote = {
+        messageId: quoted._id,
+        authorId: quoted.authorId || null,
+        authorName: String(authorName).slice(0, 120),
+        bodyPreview: String(preview).slice(0, 280),
+      };
+    }
+  }
+
+  let { userIds: mentions, mentionAll } = parseMentionsFromBody(text, mentionUserIds);
   if (mentions.length) {
     const mentionUsers = await User.find({
       _id: { $in: mentions },
@@ -705,6 +934,14 @@ async function postMessage({
       .lean();
     const allowed = new Set(mentionUsers.map((u) => String(u._id)));
     mentions = mentions.filter((id) => allowed.has(String(id)));
+  }
+
+  const memberIds = await listMemberUserIds(organizationId, spaceId);
+  if (mentionAll) {
+    const memberMentionIds = memberIds
+      .map((id) => String(id))
+      .filter((id) => id !== String(user._id));
+    mentions = [...new Set([...mentions.map(String), ...memberMentionIds])];
   }
   const safeRefs = Array.isArray(recordRefs)
     ? recordRefs
@@ -723,6 +960,7 @@ async function postMessage({
     threadRootId: rootId,
     authorId: user._id,
     body: text,
+    quote,
     attachments: safeAttachments,
     mentionUserIds: mentions,
     recordRefs: safeRefs,
@@ -765,9 +1003,9 @@ async function postMessage({
   const authorName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
     || user.email
     || 'Someone';
-  const preview = text.slice(0, 140);
+  const { humanizeInternalChatMentions } = require('../utils/internalChatMentions');
+  const preview = (await humanizeInternalChatMentions(organizationId, text)).slice(0, 140);
   const spaceName = space.name || space.type || 'chat';
-  const memberIds = await listMemberUserIds(organizationId, spaceId);
 
   try {
     const { emitNotification } = require('./notificationEngine');
@@ -785,6 +1023,8 @@ async function postMessage({
           authorName,
           preview,
           alertRecipientUserIds: mentionTargets,
+          mentionAll: Boolean(mentionAll),
+          threadRootId: rootId ? String(rootId) : undefined,
         },
         organizationId,
         triggeredBy: user._id,
@@ -792,7 +1032,8 @@ async function postMessage({
       });
     }
 
-    // DMs/group DMs always notify; channels/records when tenant enables notifyChannelMessages
+    // DMs/group DMs always notify; channels/records when tenant enables notifyChannelMessages.
+    // Skip members already covered by @mention / @all.
     const mentionSet = new Set(mentionTargets.map(String));
     const otherMembers = memberIds.filter(
       (id) => String(id) !== String(user._id) && !mentionSet.has(String(id))
@@ -818,6 +1059,7 @@ async function postMessage({
           authorName,
           preview,
           memberUserIds: otherMembers,
+          threadRootId: rootId ? String(rootId) : undefined,
         },
         organizationId,
         triggeredBy: user._id,
@@ -872,6 +1114,26 @@ function normalizeAttachments(raw) {
       url: String(row.url || '').slice(0, 2000),
       storagePath: String(row.storagePath || '').slice(0, 2000),
     }));
+}
+
+function isAttachmentImageMeta(att) {
+  const mime = String(att?.mimeType || '').toLowerCase();
+  if (mime.startsWith('image/')) return true;
+  const name = String(att?.fileName || '').toLowerCase();
+  return /\.(png|jpe?g|gif|webp|bmp|heic|heif|svg)$/i.test(name);
+}
+
+/** Images and documents must not be mixed on one message. */
+function assertHomogeneousAttachments(attachments) {
+  if (!attachments || attachments.length <= 1) return;
+  const kinds = new Set(attachments.map((a) => (isAttachmentImageMeta(a) ? 'image' : 'file')));
+  if (kinds.size > 1) {
+    throw ServiceError(
+      'Cannot mix images and documents in one message',
+      400,
+      'INTERNAL_CHAT_MIXED_ATTACHMENTS'
+    );
+  }
 }
 
 function normalizeReactionEmoji(value) {
@@ -1100,7 +1362,16 @@ async function markRead({ organizationId, user, spaceId, messageId = null }) {
     { $set: { lastReadAt, lastReadMessageId } }
   );
 
-  return { lastReadAt, lastReadMessageId };
+  const readPayload = {
+    type: 'read.updated',
+    spaceId: String(spaceId),
+    userId: String(user._id),
+    lastReadAt,
+    lastReadMessageId: lastReadMessageId ? String(lastReadMessageId) : null,
+  };
+  await publishToSpaceMembers(organizationId, spaceId, readPayload);
+
+  return readPayload;
 }
 
 async function createOrGetGroupDm({ organizationId, user, memberIds = [] }) {
@@ -1211,6 +1482,95 @@ async function pinMessage({ organizationId, user, spaceId, messageId, pin = true
   return { pinnedMessageIds: next };
 }
 
+async function editMessage({
+  organizationId,
+  user,
+  spaceId,
+  messageId,
+  body,
+  mentionUserIds = [],
+}) {
+  await assertMembership(organizationId, user._id, spaceId);
+  const space = await getSpaceOrThrow(organizationId, spaceId);
+  await assertCanAccessSpace(user, space);
+
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    throw ServiceError('Invalid message', 400, 'INTERNAL_CHAT_INVALID_MESSAGE');
+  }
+
+  const message = await InternalChatMessage.findOne({
+    organizationId,
+    spaceId,
+    _id: messageId,
+    deletedAt: null,
+  });
+  if (!message) {
+    throw ServiceError('Message not found', 404, 'INTERNAL_CHAT_MESSAGE_NOT_FOUND');
+  }
+  if (String(message.authorId) !== String(user._id)) {
+    throw ServiceError('Cannot edit this message', 403, 'INTERNAL_CHAT_EDIT_FORBIDDEN');
+  }
+
+  const text = normalizeMessageBody(body);
+  const plain = stripHtmlToPlain(text);
+  const hasAttachments = Array.isArray(message.attachments) && message.attachments.length > 0;
+  if (!plain && !hasAttachments) {
+    throw ServiceError('Message body or attachment is required', 400, 'INTERNAL_CHAT_EMPTY_BODY');
+  }
+  if (text.length > 16000) {
+    throw ServiceError('Message too long', 400, 'INTERNAL_CHAT_BODY_TOO_LONG');
+  }
+
+  let { userIds: mentions, mentionAll } = parseMentionsFromBody(text, mentionUserIds);
+  if (mentions.length) {
+    const mentionUsers = await User.find({
+      _id: { $in: mentions },
+      ...internalTeammateFilter(organizationId),
+    })
+      .select('_id')
+      .lean();
+    const allowed = new Set(mentionUsers.map((u) => String(u._id)));
+    mentions = mentions.filter((id) => allowed.has(String(id)));
+  }
+  if (mentionAll) {
+    const memberIds = await listMemberUserIds(organizationId, spaceId);
+    const memberMentionIds = memberIds
+      .map((id) => String(id))
+      .filter((id) => id !== String(user._id));
+    mentions = [...new Set([...mentions.map(String), ...memberMentionIds])];
+  }
+
+  message.body = text;
+  message.mentionUserIds = mentions;
+  message.editedAt = new Date();
+  await message.save();
+
+  const author = {
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    avatar: user.avatar || '',
+  };
+
+  const payload = {
+    type: 'message.updated',
+    spaceId: String(spaceId),
+    messageId: String(message._id),
+    body: message.body,
+    editedAt: message.editedAt,
+    mentionUserIds: mentions.map(String),
+    reactions: summarizeReactions(message.reactions, user._id),
+  };
+  await publishToSpaceMembers(organizationId, spaceId, payload);
+
+  return {
+    ...message.toObject(),
+    author,
+    reactions: payload.reactions,
+  };
+}
+
 async function softDeleteMessage({ organizationId, user, spaceId, messageId }) {
   await assertMembership(organizationId, user._id, spaceId);
   const space = await getSpaceOrThrow(organizationId, spaceId);
@@ -1240,6 +1600,7 @@ async function softDeleteMessage({ organizationId, user, spaceId, messageId }) {
     type: 'message.deleted',
     spaceId: String(spaceId),
     messageId: String(messageId),
+    threadRootId: message.threadRootId ? String(message.threadRootId) : null,
   });
 
   return { ok: true };
@@ -1302,12 +1663,95 @@ async function getAddonSettings(organizationId) {
     addonKey: ADDON_KEYS.INTERNAL_CHAT,
   }).lean();
   const settings = config?.settings && typeof config.settings === 'object' ? config.settings : {};
+  const seenModeRaw = String(settings.seenReceiptsMode || 'private').toLowerCase();
+  const seenReceiptsMode = ['off', 'private', 'on'].includes(seenModeRaw) ? seenModeRaw : 'private';
   return {
     retentionDays: Number.isFinite(Number(settings.retentionDays))
       ? Number(settings.retentionDays)
       : 0,
     notifyChannelMessages: settings.notifyChannelMessages === true,
+    seenReceiptsMode,
   };
+}
+
+async function listSpaceReadState({ organizationId, user, spaceId }) {
+  if (!canViewInternalChat(user)) {
+    throw ServiceError('Permission denied', 403, 'INTERNAL_CHAT_FORBIDDEN');
+  }
+  const space = await getSpaceOrThrow(organizationId, spaceId);
+  await assertMembership(organizationId, user._id, spaceId);
+  await assertCanAccessSpace(user, space);
+
+  const settings = await getAddonSettings(organizationId);
+  if (settings.seenReceiptsMode === 'off') {
+    return { mode: 'off', memberCount: 0, members: [] };
+  }
+
+  const memberships = await InternalChatMembership.find({ organizationId, spaceId })
+    .select('userId lastReadAt lastReadMessageId muted')
+    .lean();
+  const userIds = memberships.map((m) => m.userId);
+  const users = await User.find({ _id: { $in: userIds } })
+    .select('_id firstName lastName email avatar')
+    .lean();
+  const byId = new Map(users.map((u) => [String(u._id), u]));
+
+  const members = memberships.map((m) => {
+    const u = byId.get(String(m.userId)) || {};
+    return {
+      userId: String(m.userId),
+      lastReadAt: m.lastReadAt || null,
+      lastReadMessageId: m.lastReadMessageId ? String(m.lastReadMessageId) : null,
+      muted: m.muted === true,
+      firstName: u.firstName || '',
+      lastName: u.lastName || '',
+      email: u.email || '',
+      avatar: u.avatar || '',
+    };
+  });
+
+  return {
+    mode: settings.seenReceiptsMode,
+    memberCount: members.length,
+    members,
+  };
+}
+
+async function updateAddonSettings(organizationId, patch = {}) {
+  const TenantAddonConfiguration = require('../models/TenantAddonConfiguration');
+  const { ADDON_KEYS } = require('../constants/addonKeys');
+  const current = await getAddonSettings(organizationId);
+
+  let retentionDays = current.retentionDays;
+  if (patch.retentionDays !== undefined) {
+    retentionDays = Number(patch.retentionDays);
+    if (!Number.isFinite(retentionDays) || retentionDays < 0) retentionDays = 0;
+    if (retentionDays > 3650) retentionDays = 3650;
+  }
+
+  let notifyChannelMessages = current.notifyChannelMessages;
+  if (patch.notifyChannelMessages !== undefined) {
+    notifyChannelMessages = patch.notifyChannelMessages === true;
+  }
+
+  let seenReceiptsMode = current.seenReceiptsMode;
+  if (patch.seenReceiptsMode !== undefined) {
+    const raw = String(patch.seenReceiptsMode || '').toLowerCase();
+    seenReceiptsMode = ['off', 'private', 'on'].includes(raw) ? raw : current.seenReceiptsMode;
+  }
+
+  const next = {
+    retentionDays,
+    notifyChannelMessages,
+    seenReceiptsMode,
+  };
+
+  await TenantAddonConfiguration.findOneAndUpdate(
+    { organizationId, addonKey: ADDON_KEYS.INTERNAL_CHAT },
+    { $set: { settings: next, enabled: true } },
+    { upsert: true, new: true }
+  );
+  return next;
 }
 
 async function listTeammatesForChat({ organizationId, user, limit = 200 }) {
@@ -1339,26 +1783,6 @@ async function listTeammatesForChat({ organizationId, user, limit = 200 }) {
     }));
 }
 
-async function updateAddonSettings(organizationId, patch = {}) {
-  const TenantAddonConfiguration = require('../models/TenantAddonConfiguration');
-  const { ADDON_KEYS } = require('../constants/addonKeys');
-  let retentionDays = Number(patch.retentionDays);
-  if (!Number.isFinite(retentionDays) || retentionDays < 0) retentionDays = 0;
-  if (retentionDays > 3650) retentionDays = 3650;
-
-  const next = {
-    retentionDays,
-    notifyChannelMessages: patch.notifyChannelMessages === true,
-  };
-
-  await TenantAddonConfiguration.findOneAndUpdate(
-    { organizationId, addonKey: ADDON_KEYS.INTERNAL_CHAT },
-    { $set: { settings: next, enabled: true } },
-    { upsert: true, new: true }
-  );
-  return next;
-}
-
 module.exports = {
   canViewInternalChat,
   canManageInternalChat,
@@ -1370,14 +1794,17 @@ module.exports = {
   listSpacesForUser,
   joinPublicChannel,
   inviteMembersToChannel,
+  updateChannel,
   listMessages,
   postMessage,
   markRead,
+  listSpaceReadState,
   toggleReaction,
   searchMessages,
   publishTyping,
   setSpacePresence,
   pinMessage,
+  editMessage,
   softDeleteMessage,
   exportSpaceTranscript,
   getAddonSettings,

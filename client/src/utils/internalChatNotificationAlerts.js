@@ -25,8 +25,19 @@ export function playInternalChatAlertSound() {
 }
 
 /**
+ * Fan-out to open Internal Chat views so the conversation can catch up even when
+ * chat SSE lags behind the notification stream (same pattern as live chat).
+ * @param {object} [detail]
+ */
+export function dispatchInternalChatWorkspaceEvent(detail = {}) {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('arivu:internal-chat-workspace', { detail }));
+}
+
+/**
  * Toast + sound for realtime Internal Chat notifications (PLATFORM appKey).
- * Skips when the user is already viewing that space.
+ * Skips toast when the user is already viewing that space.
+ * Always attempts a background Chat-tab pulse (no-op if Chat tab is active/missing).
  */
 export function alertForInternalChatNotification(notification, { appKey, playSound = true } = {}) {
   const resolvedAppKey = appKey || notification?.appKey || 'PLATFORM';
@@ -36,6 +47,11 @@ export function alertForInternalChatNotification(notification, { appKey, playSou
   if (!INTERNAL_CHAT_ALERT_EVENTS.has(eventType)) return;
 
   const spaceId = notification?.entity?.spaceId;
+  const alertKind = eventType === 'INTERNAL_CHAT_MENTIONED' ? 'mention' : 'internal';
+  void import('@/composables/useTabs').then(({ markInternalChatTabAlert }) => {
+    markInternalChatTabAlert(alertKind);
+  }).catch(() => {});
+
   if (isViewingInternalChatSpace(spaceId)) return;
 
   const presentation = buildInternalChatToastPresentation(

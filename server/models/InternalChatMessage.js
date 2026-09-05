@@ -31,6 +31,17 @@ const ReactionSchema = new mongoose.Schema(
   { _id: true }
 );
 
+/** Snapshot of a quoted message for Google Chat–style inline reply (not a thread). */
+const QuoteSchema = new mongoose.Schema(
+  {
+    messageId: { type: mongoose.Schema.Types.ObjectId, ref: 'InternalChatMessage', required: true },
+    authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    authorName: { type: String, trim: true, maxlength: 120, default: '' },
+    bodyPreview: { type: String, trim: true, maxlength: 280, default: '' },
+  },
+  { _id: false }
+);
+
 const InternalChatMessageSchema = new mongoose.Schema(
   {
     organizationId: {
@@ -61,6 +72,10 @@ const InternalChatMessageSchema = new mongoose.Schema(
       type: String,
       default: '',
       maxlength: 16000,
+    },
+    quote: {
+      type: QuoteSchema,
+      default: null,
     },
     attachments: {
       type: [AttachmentSchema],
