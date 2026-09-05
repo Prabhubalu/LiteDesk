@@ -156,7 +156,7 @@ export async function exportChatSpace(spaceId) {
 
 export async function fetchChatSettings() {
   const res = await apiClient.get('/internal-chat/settings');
-  return res?.data || { retentionDays: 0 };
+  return res?.data || { retentionDays: 0, notifyChannelMessages: false };
 }
 
 export async function updateChatSettings(patch) {

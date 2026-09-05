@@ -1070,6 +1070,19 @@
         <p class="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
           {{ t('internalChat.retentionHint') }}
         </p>
+        <label class="mt-5 flex items-start gap-2.5 text-sm text-neutral-700 dark:text-neutral-300">
+          <input
+            v-model="notifyChannelMessages"
+            type="checkbox"
+            class="mt-0.5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+          >
+          <span>
+            <span class="font-medium">{{ t('internalChat.notifyChannelMessages') }}</span>
+            <span class="mt-0.5 block text-xs font-normal text-neutral-500 dark:text-neutral-400">
+              {{ t('internalChat.notifyChannelMessagesHint') }}
+            </span>
+          </span>
+        </label>
         <div class="mt-6 flex justify-end gap-2">
           <button
             type="button"
@@ -1140,6 +1153,11 @@ import {
   updateChatSettings,
   uploadChatAttachment,
 } from '@/utils/internalChatApi';
+import {
+  clearInternalChatFocus,
+  setInternalChatFocus,
+} from '@/utils/internalChatFocus';
+import { alertForInternalChatSseMessage } from '@/utils/internalChatNotificationAlerts';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -1192,6 +1210,7 @@ const dmMode = ref('dm');
 const dmPickerFilter = ref('');
 const orgUsers = ref([]);
 const retentionDays = ref(0);
+const notifyChannelMessages = ref(false);
 const savingSettings = ref(false);
 const mentionSuggestions = ref([]);
 const pinnedIds = ref([]);
@@ -1718,15 +1737,20 @@ async function openSettings() {
   try {
     const settings = await fetchChatSettings();
     retentionDays.value = Number(settings.retentionDays) || 0;
+    notifyChannelMessages.value = settings.notifyChannelMessages === true;
   } catch {
     retentionDays.value = 0;
+    notifyChannelMessages.value = false;
   }
 }
 
 async function saveSettings() {
   savingSettings.value = true;
   try {
-    await updateChatSettings({ retentionDays: Number(retentionDays.value) || 0 });
+    await updateChatSettings({
+      retentionDays: Number(retentionDays.value) || 0,
+      notifyChannelMessages: notifyChannelMessages.value === true,
+    });
     showSettingsModal.value = false;
   } catch (err) {
     error.value = err?.response?.data?.message || t('internalChat.settingsFailed');
@@ -1980,6 +2004,12 @@ function onStreamEvent(payload) {
   }
   if (payload.type === 'message.created') {
     const sid = String(payload.spaceId || '');
+    const authorId = payload.message?.authorId || payload.message?.author?._id;
+    alertForInternalChatSseMessage({
+      spaceId: sid,
+      authorId,
+      currentUserId: authStore.user?._id,
+    });
     if (sid === String(selectedSpaceId.value)) {
       const msgThread = payload.message?.threadRootId
         ? String(payload.message.threadRootId)
@@ -2033,6 +2063,7 @@ function onMobileMqChange(e) {
 }
 
 watch(selectedSpaceId, (id) => {
+  setInternalChatFocus({ spaceId: id, routeActive: true });
   loadMessages();
   if (id) {
     setChatPresence(id).then((viewers) => {
@@ -2097,6 +2128,11 @@ onMounted(async () => {
     }
   }
 
+  setInternalChatFocus({
+    spaceId: selectedSpaceId.value || route.query.spaceId || null,
+    routeActive: true,
+  });
+
   await loadSpaces();
   if (selectedSpaceId.value) {
     if (mobileMql?.matches) mobileShowConversation.value = true;
@@ -2117,6 +2153,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  clearInternalChatFocus();
   streamControls?.disconnect();
   streamControls = null;
   mobileMql?.removeEventListener('change', onMobileMqChange);

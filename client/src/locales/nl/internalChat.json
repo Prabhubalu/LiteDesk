@@ -314,5 +314,13 @@
   "channelModalSubtitle": {
     "message": "Create a shared space for your team.",
     "description": "Subtitle under New channel modal title"
+  },
+  "notifyChannelMessages": {
+    "message": "Notify for channel & record messages",
+    "description": "Checkbox to emit in-app notifications for channel and record chat posts"
+  },
+  "notifyChannelMessagesHint": {
+    "message": "When off, only DMs and @mentions create alerts. Unread badges still update for channels.",
+    "description": "Help text for channel notification setting"
   }
 }

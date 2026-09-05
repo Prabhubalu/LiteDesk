@@ -792,12 +792,21 @@ async function postMessage({
       });
     }
 
-    // DMs/group DMs: notify other members (channels use unread + SSE to avoid noise)
+    // DMs/group DMs always notify; channels/records when tenant enables notifyChannelMessages
     const mentionSet = new Set(mentionTargets.map(String));
     const otherMembers = memberIds.filter(
       (id) => String(id) !== String(user._id) && !mentionSet.has(String(id))
     );
-    if (otherMembers.length && (space.type === 'dm' || space.type === 'group_dm')) {
+    const addonSettings = await getAddonSettings(organizationId);
+    const notifySpaceMembers = (
+      space.type === 'dm'
+      || space.type === 'group_dm'
+      || (
+        (space.type === 'channel' || space.type === 'record')
+        && addonSettings.notifyChannelMessages === true
+      )
+    );
+    if (otherMembers.length && notifySpaceMembers) {
       await emitNotification({
         eventType: domainEvents.INTERNAL_CHAT_MESSAGE_POSTED,
         entity: {
