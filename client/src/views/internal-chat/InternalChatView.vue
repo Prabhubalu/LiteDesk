@@ -96,7 +96,7 @@
                 <button
                   type="button"
                   class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-neutral-800 hover:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800"
-                  :class="isSpaceSelected(space) ? 'bg-primary-50 font-medium text-primary-900 dark:bg-primary-950/30 dark:text-primary-100' : ''"
+                  :class="isSpaceSelected(space) ? 'bg-primary-50 font-medium text-primary-900 dark:bg-primary-900/30 dark:text-primary-100' : ''"
                   @click="selectSpace(space._id)"
                 >
                   <span class="flex min-w-0 items-center gap-2">
@@ -118,7 +118,7 @@
             <button
               v-else
               type="button"
-              class="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-lg border border-dashed border-neutral-200 px-2.5 py-2 text-left text-xs text-neutral-500 hover:border-primary-300 hover:bg-primary-50/50 hover:text-primary-700 dark:border-neutral-700 dark:hover:border-primary-700 dark:hover:bg-primary-950/20 dark:hover:text-primary-300"
+              class="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-lg border border-dashed border-neutral-200 px-2.5 py-2 text-left text-xs text-neutral-500 hover:border-primary-300 hover:bg-primary-50/50 hover:text-primary-700 dark:border-neutral-700 dark:hover:border-primary-700 dark:hover:bg-primary-900/20 dark:hover:text-primary-300"
               @click="showDmModal = true"
             >
               <PlusIcon class="h-3.5 w-3.5 shrink-0" />
@@ -152,7 +152,7 @@
                 <button
                   type="button"
                   class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-neutral-800 hover:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800"
-                  :class="isSpaceSelected(space) ? 'bg-primary-50 font-medium text-primary-900 dark:bg-primary-950/30 dark:text-primary-100' : ''"
+                  :class="isSpaceSelected(space) ? 'bg-primary-50 font-medium text-primary-900 dark:bg-primary-900/30 dark:text-primary-100' : ''"
                   @click="selectSpace(space._id)"
                 >
                   <span class="flex min-w-0 items-center gap-2">
@@ -204,7 +204,7 @@
                 <button
                   type="button"
                   class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-neutral-800 hover:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800"
-                  :class="isSpaceSelected(space) ? 'bg-primary-50 dark:bg-primary-950/30' : ''"
+                  :class="isSpaceSelected(space) ? 'bg-primary-50 dark:bg-primary-900/30' : ''"
                   @click="selectSpace(space._id)"
                 >
                   <span class="flex min-w-0 items-center gap-2">
@@ -584,7 +584,7 @@
                         type="button"
                         class="inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-xs"
                         :class="r.reacted
-                          ? 'border-primary-300 bg-primary-50 text-primary-800 dark:border-primary-700 dark:bg-primary-950/40 dark:text-primary-200'
+                          ? 'border-primary-300 bg-primary-50 text-primary-800 dark:border-primary-700 dark:bg-primary-900/40 dark:text-primary-200'
                           : 'border-neutral-200 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300'"
                         @click="react(msg, r.emoji)"
                       >
@@ -803,7 +803,7 @@
                 :key="u._id"
                 type="button"
                 class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                :class="channelInviteIds.includes(String(u._id)) ? 'bg-primary-50 dark:bg-primary-950/30' : ''"
+                :class="channelInviteIds.includes(String(u._id)) ? 'bg-primary-50 dark:bg-primary-900/30' : ''"
                 @click="toggleChannelInvite(u._id)"
               >
                 <AvatarInitials v-bind="personAvatarProps(u)" size="sm" />
@@ -873,7 +873,7 @@
               :key="u._id"
               type="button"
               class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800"
-              :class="inviteMemberIds.includes(String(u._id)) ? 'bg-primary-50 dark:bg-primary-950/30' : ''"
+              :class="inviteMemberIds.includes(String(u._id)) ? 'bg-primary-50 dark:bg-primary-900/30' : ''"
               @click="toggleInviteMember(u._id)"
             >
               <AvatarInitials v-bind="personAvatarProps(u)" size="sm" />
@@ -979,7 +979,7 @@
             type="button"
             class="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition hover:bg-neutral-50 dark:hover:bg-neutral-800/80"
             :class="isDmCandidateSelected(u)
-              ? 'bg-primary-50 ring-1 ring-primary-200 dark:bg-primary-950/40 dark:ring-primary-800'
+              ? 'bg-primary-50 ring-1 ring-primary-200 dark:bg-primary-900/40 dark:ring-primary-800'
               : ''"
             @click="dmMode === 'dm' ? (dmUserId = u._id) : toggleGroupMember(u._id)"
           >
