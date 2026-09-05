@@ -113,7 +113,7 @@
                     'table-head-cell group text-left text-xs font-semibold uppercase tracking-wide text-gray-900 dark:text-white relative',
                     isMobileCardLayout ? 'bg-white dark:bg-gray-900' : 'sticky',
                     !isMobileCardLayout && isColumnFilterHighlighted(column)
-                      ? 'bg-indigo-50 dark:bg-indigo-900/25 table-column-filter-active'
+                      ? 'bg-indigo-50 dark:bg-indigo-950 table-column-filter-active'
                       : isMobileCardLayout ? '' : 'bg-white dark:bg-gray-900',
                     columnIndex === 0
                       ? (isMobileCardLayout ? 'title-column-cell z-[40]' : 'title-column-cell z-[40] sticky-column-border')
@@ -136,7 +136,7 @@
                       class="group flex h-full min-h-full w-full items-center justify-between gap-2 px-5 py-3.5 text-left text-xs uppercase tracking-wide transition-colors focus:outline-none focus-visible:outline-none relative z-10"
                       :class="{
                         'cursor-pointer text-indigo-600 dark:text-indigo-300': isColumnFilterHighlighted(column),
-                        'cursor-pointer bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300': isColumnSorted(column) && !isColumnFilterHighlighted(column),
+                        'cursor-pointer bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300': isColumnSorted(column) && !isColumnFilterHighlighted(column),
                         'cursor-pointer text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800': !isColumnHeaderHighlighted(column)
                       }"
                     >
@@ -244,7 +244,7 @@
                     :class="isColumnFilterHighlighted(column)
                       ? 'text-indigo-600 dark:text-indigo-300'
                       : isColumnHeaderHighlighted(column)
-                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300'
                         : ''"
                   >{{ columnLabel(column) }}</span>
                   <span
@@ -298,9 +298,9 @@
                   :class="[
                     'table-head-cell table-filter-cell sticky px-3 py-2',
                     isColumnFilterHighlighted(column)
-                      ? 'bg-indigo-50 dark:bg-indigo-900/25 table-column-filter-active'
+                      ? 'bg-indigo-50 dark:bg-indigo-950 table-column-filter-active'
                       : 'bg-gray-50 dark:bg-gray-800',
-                    columnIndex === 0 ? 'title-column-cell z-[35] sticky-column-border' : 'z-15',
+                    columnIndex === 0 ? 'title-column-cell z-[35] sticky-column-border' : 'z-20',
                     columnIndex === 0 && isScrolledHorizontally ? 'sticky-column-scrolled' : ''
                   ]"
                   :style="[{ top: columnFilterRowTop }, columnHeaderStyle(column)]"
@@ -2513,7 +2513,7 @@ watch(hasAnySelection, (has) => {
 }
 
 .dark .table-scroll-container thead tr:not(.column-filter-row) th.table-column-filter-active {
-  border-bottom-color: rgb(49 46 129 / 0.45); /* indigo-900 blend */
+  border-bottom-color: rgb(49 46 129); /* indigo-900 opaque */
 }
 
 .table-scroll-container thead tr.column-filter-row th.table-column-filter-active {

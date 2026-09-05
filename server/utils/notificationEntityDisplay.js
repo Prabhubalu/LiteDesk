@@ -12,7 +12,8 @@ const ENTITY_DISPLAY_KEYS = [
   'chatSessionId',
   'sessionKey',
   'status',
-  'priority'
+  'priority',
+  'moduleKey'
 ];
 
 const MAX_LEN = {
@@ -25,7 +26,8 @@ const MAX_LEN = {
   chatSessionId: 64,
   sessionKey: 32,
   status: 64,
-  priority: 32
+  priority: 32,
+  moduleKey: 64
 };
 
 function trimField(key, value) {

@@ -297,9 +297,14 @@ function persistSettingsRoute() {
 /** Section labels inserted in the rail after these tab ids (scannable groups). */
 function railSectionLabelAfter(tabId) {
   const staticAfter = {
-    profile: 'settings.navWorkspace',
+    // Personal lane ends after notifications (profile + notification prefs)
+    notifications: 'settings.navWorkspace',
     'users-access': 'settings.navRailApps',
   };
+  // If notifications is hidden for some reason, keep WORKSPACE after profile
+  if (tabId === 'profile' && !tabs.value.some((t) => t.id === 'notifications')) {
+    return 'settings.navWorkspace';
+  }
   if (staticAfter[tabId]) return staticAfter[tabId];
 
   const tabIds = tabs.value.map((t) => t.id);
@@ -712,6 +717,7 @@ const settingsAccessCtx = computed(() => ({
 const tabs = computed(() => {
   const all = [
     { id: 'profile', nameKey: 'settings.tabProfile', icon: ProfileIcon, component: ProfileSettings },
+    { id: 'notifications', nameKey: 'settings.tabNotifications', icon: BellIcon, component: NotificationSettings },
     { id: 'organization', nameKey: 'settings.tabCompany', icon: PlatformIcon, component: OrganizationSettings },
     { id: 'currency', nameKey: 'settings.tabCurrency', icon: CurrencyIcon, component: CurrencySettings },
     { id: 'business-hours', nameKey: 'settings.tabBusinessHours', icon: BusinessHoursIcon, component: BusinessHoursSettings },
@@ -725,7 +731,6 @@ const tabs = computed(() => {
     { id: 'webforms', nameKey: 'settings.tabWebforms', icon: WebformsIcon, component: WebformsSettings },
     { id: 'performance', nameKey: 'settings.tabPerformance', icon: PerformanceIcon, component: PerformanceSettings },
     { id: 'subscriptions', nameKey: 'settings.tabSubscriptions', icon: SubscriptionsIcon, component: SubscriptionsList },
-    { id: 'notifications', nameKey: 'settings.tabNotifications', icon: BellIcon, component: NotificationSettings },
     { id: 'security', nameKey: 'settings.tabSecurity', icon: SecurityIcon, component: SecuritySettings },
     { id: 'integrations', nameKey: 'settings.tabIntegrations', icon: IntegrationsIcon, component: IntegrationsSettings },
     { id: 'ai', nameKey: 'settings.tabAi', icon: AiIcon, component: AiSettings },

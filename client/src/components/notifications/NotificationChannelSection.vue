@@ -123,9 +123,15 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import { ref, computed } from 'vue';
+import {
+  BellIcon,
+  ChatBubbleLeftIcon,
+  DevicePhoneMobileIcon,
+  EnvelopeIcon
+} from '@heroicons/vue/20/solid';
 
 const { t } = useI18n();
-import { ref, computed, h } from 'vue';
 
 const props = defineProps({
   channel: {
@@ -180,63 +186,15 @@ const emit = defineEmits(['toggle']);
 const isOpen = ref(props.defaultOpen);
 
 const channelConfig = {
-  push: {
-    label: 'Push',
-    icon: () => h('svg', {
-      viewBox: '0 0 20 20',
-      fill: 'none',
-      'aria-hidden': 'true'
-    }, [
-      h('path', {
-        d: 'M10 2a6 6 0 0 0-6 6v3.586l-.707.707A1 1 0 0 0 4 14h12a1 1 0 0 0 .707-1.707L16 11.586V8a6 6 0 0 0-6-6ZM10 18a3 3 0 0 1-3-3h6a3 3 0 0 1-3 3Z',
-        fill: 'currentColor'
-      })
-    ])
-  },
-  whatsapp: {
-    label: 'WhatsApp',
-    icon: () => h('svg', {
-      viewBox: '0 0 20 20',
-      fill: 'none',
-      'aria-hidden': 'true'
-    }, [
-      h('path', {
-        d: 'M10 2a8 8 0 0 0-7.07 11.97L1 19l5.03-1.93A8 8 0 1 0 10 2Zm4.5 11.5a6.5 6.5 0 0 1-9.5-9.5 6.5 6.5 0 0 1 9.5 9.5Z',
-        fill: 'currentColor'
-      })
-    ])
-  },
-  sms: {
-    label: 'SMS',
-    icon: () => h('svg', {
-      viewBox: '0 0 20 20',
-      fill: 'none',
-      'aria-hidden': 'true'
-    }, [
-      h('path', {
-        d: 'M3 4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H3Zm0 2h14v8H3V6Zm2 2a1 1 0 0 0 0 2h10a1 1 0 1 0 0-2H5Z',
-        fill: 'currentColor'
-      })
-    ])
-  },
-  email: {
-    label: 'Email',
-    icon: () => h('svg', {
-      viewBox: '0 0 20 20',
-      fill: 'none',
-      'aria-hidden': 'true'
-    }, [
-      h('path', {
-        d: 'M3 4a2 2 0 0 0-2 2v1.382l7 4.236 7-4.236V6a2 2 0 0 0-2-2H3Zm0 3.618V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7.618l-5.5 3.323a1 1 0 0 1-1 0L3 7.618Z',
-        fill: 'currentColor'
-      })
-    ])
-  }
+  push: { label: 'Push', icon: BellIcon },
+  whatsapp: { label: 'WhatsApp', icon: ChatBubbleLeftIcon },
+  sms: { label: 'SMS', icon: DevicePhoneMobileIcon },
+  email: { label: 'Email', icon: EnvelopeIcon }
 };
 
-const config = channelConfig[props.channel];
-const channelLabel = computed(() => config.label);
-const iconComponent = computed(() => config.icon);
+const config = computed(() => channelConfig[props.channel] || channelConfig.email);
+const channelLabel = computed(() => config.value.label);
+const iconComponent = computed(() => config.value.icon);
 
 const globalToggleEnabled = computed(() => props.enabled);
 
