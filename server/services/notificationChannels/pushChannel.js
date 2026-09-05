@@ -173,11 +173,26 @@ function getAppDeepLink(appKey, entity) {
   // Entity-specific deep links
   switch (entity.type) {
     case 'Event':
-      return `${baseUrl}/audit/audits/${entity.id}`;
+      return `${baseUrl}/events/${entity.id}`;
     case 'CorrectiveAction':
       return `${baseUrl}/portal/actions/${entity.id}`;
     case 'Task':
       return `${baseUrl}/tasks/${entity.id}`;
+    case 'Deal':
+      return `${baseUrl}/deals/${entity.id}`;
+    case 'People':
+    case 'Person':
+      return `${baseUrl}/people/${entity.id}`;
+    case 'Organization':
+      return `${baseUrl}/organizations/${entity.id}`;
+    case 'Item':
+      return `${baseUrl}/items/${entity.id}`;
+    case 'Quote':
+      return `${baseUrl}/quotes/${entity.id}`;
+    case 'SalesOrder':
+      return `${baseUrl}/sales-orders/${entity.id}`;
+    case 'Case':
+      return `${baseUrl}/helpdesk/cases/${entity.id}`;
     case 'EmailThread':
     case 'CommunicationThread':
       return `${baseUrl}/inbox?thread=${entity.id}`;

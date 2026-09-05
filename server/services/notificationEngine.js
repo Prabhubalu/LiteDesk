@@ -33,6 +33,7 @@ const SKIP_DEDUPLICATION_EVENT_TYPES = new Set([
   domainEvents.CASE_EMAIL_RECEIVED,
   domainEvents.LIVE_CHAT_MESSAGE_RECEIVED,
   domainEvents.CASE_PORTAL_AGENT_REPLY,
+  domainEvents.RECORD_COMMENT_MENTION,
 ]);
 
 function getDeduplicationKey(eventType, entity, userId) {
@@ -103,11 +104,24 @@ function safeLoadChannel(channel) {
 
 /**
  * Non-blocking notification emit. Never throws, always logs failures.
- * 
- * Phase 10G: Added deduplication guard and structured logging.
- * Failures in any step are caught and logged but never affect business flows.
+ *
+ * Re-binds tenant ALS from organizationId so fire-and-forget callers
+ * (e.g. comment mentions) still read NotificationPreference from the tenant DB.
  */
-async function emitNotification({
+async function emitNotification(opts = {}) {
+  try {
+    if (opts.organizationId) {
+      const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
+      await runWithOrganizationTenantContext(opts.organizationId, () => emitNotificationInContext(opts));
+      return;
+    }
+    await emitNotificationInContext(opts);
+  } catch (err) {
+    console.error('[notificationEngine] emitNotification failed:', err?.message || err);
+  }
+}
+
+async function emitNotificationInContext({
   eventType,
   entity,
   organizationId,
@@ -260,17 +274,19 @@ async function emitNotification({
       });
     }
     
-    // FAILURE ISOLATION: SSE publish - fire-and-forget, never throws
-    publishToSSE(saved).catch(err => {
-      // Never throw - business flow continues even if SSE fails
+    // Keep ALS/tenant context alive until channel delivery finishes
+    // (fire-and-forget drops tenant context and preference reads hit the wrong DB)
+    try {
+      await publishToSSE(saved);
+    } catch (err) {
       console.error('[notificationEngine] SSE publish error:', err);
-    });
-    
-    // FAILURE ISOLATION: Channel dispatch - fire-and-forget, never throws
-    dispatchChannels(saved).catch(err => {
-      // Never throw - business flow continues even if channel dispatch fails
+    }
+
+    try {
+      await dispatchChannels(saved);
+    } catch (err) {
       console.error('[notificationEngine] Channel dispatch error:', err);
-    });
+    }
     
     console.log(`[notificationEngine] Saved ${saved.length} notification(s) for ${eventType}`);
   } catch (err) {
@@ -322,6 +338,25 @@ async function publishToSSE(notifications) {
 }
 
 /**
+ * Resolve per-event preference from a NotificationPreference doc (Map or plain object).
+ */
+function getEventPreference(preference, eventType) {
+  if (!preference?.events) return null;
+  if (typeof preference.events.get === 'function') {
+    const fromMap = preference.events.get(eventType);
+    if (fromMap != null) return fromMap;
+  }
+  return preference.events[eventType] || null;
+}
+
+/** inApp/email are booleans; push/whatsapp/sms use { enabled, available }. */
+function isPrefChannelOn(value) {
+  if (typeof value === 'boolean') return value === true;
+  if (value && typeof value === 'object') return value.enabled === true;
+  return false;
+}
+
+/**
  * Compute which channels to use for a notification.
  * Phase 13: Extended to intersect rule.channels × user.preferences for external channels.
  * 
@@ -345,17 +380,17 @@ function computeChannels(rule, preference, eventType) {
 
   // Apply user preference if present
   if (preference && preference.events) {
-    const pref = preference.events.get(eventType);
+    const pref = getEventPreference(preference, eventType);
     if (pref) {
       channels = [];
       
       // In-app: rule allows AND user enabled
-      if (ruleChannels.inApp && pref.inApp) {
+      if (ruleChannels.inApp && isPrefChannelOn(pref.inApp)) {
         channels.push('IN_APP');
       }
       
       // Email: rule allows AND user enabled
-      if (ruleChannels.email && pref.email) {
+      if (ruleChannels.email && isPrefChannelOn(pref.email)) {
         channels.push('EMAIL');
       }
       
@@ -373,6 +408,14 @@ function computeChannels(rule, preference, eventType) {
       if (ruleChannels.sms && pref.sms?.enabled && pref.sms?.available) {
         channels.push('SMS');
       }
+
+      debugLog('ChannelsFromPreference', {
+        eventType,
+        channels,
+        inApp: pref.inApp,
+        email: pref.email,
+        pushEnabled: pref.push?.enabled
+      });
     } else {
       // No user preference for this event - use rule defaults but respect rule.channels
       channels = [];
@@ -383,6 +426,7 @@ function computeChannels(rule, preference, eventType) {
         channels.push('EMAIL');
       }
       // External channels require explicit user preference, so skip if no pref
+      debugLog('ChannelsFromRuleDefaultsMissingEventPref', { eventType, channels });
     }
   } else {
     // No user preference at all - use rule defaults but respect rule.channels
@@ -394,6 +438,7 @@ function computeChannels(rule, preference, eventType) {
       channels.push('EMAIL');
     }
     // External channels require explicit user preference, so skip if no pref
+    debugLog('ChannelsFromRuleDefaultsNoPreferenceDoc', { eventType, channels });
   }
 
   // If user preference disables all channels, honor it
@@ -411,29 +456,30 @@ function computeChannels(rule, preference, eventType) {
  * External channels are dispatched after persistence, in parallel, with full error isolation.
  */
 async function dispatchChannels(notifications) {
-  // Separate internal and external channels for observability
-  const internalChannels = ['IN_APP', 'EMAIL'];
   const externalChannels = ['PUSH', 'WHATSAPP', 'SMS'];
-  
+  const sends = [];
+
   for (const notification of notifications) {
     const channel = safeLoadChannel(notification.channel);
     if (!channel || typeof channel.send !== 'function') {
       console.warn('[notificationEngine] Channel not available, skipping:', notification.channel);
       continue;
     }
-    
-    try {
-      // Fire-and-forget per notification
-      // External channels are dispatched in parallel, never block execution
-      channel.send({ notification }).catch(err => {
-        const channelType = externalChannels.includes(notification.channel) ? 'External' : 'Internal';
-        console.error(`[notificationEngine] ${channelType} channel send failed for ${notification.channel}:`, err);
-      });
-    } catch (err) {
-      const channelType = externalChannels.includes(notification.channel) ? 'External' : 'Internal';
-      console.error(`[notificationEngine] ${channelType} channel send threw synchronously:`, err);
-    }
+
+    sends.push(
+      Promise.resolve()
+        .then(() => channel.send({ notification }))
+        .catch((err) => {
+          const channelType = externalChannels.includes(notification.channel) ? 'External' : 'Internal';
+          console.error(
+            `[notificationEngine] ${channelType} channel send failed for ${notification.channel}:`,
+            err
+          );
+        })
+    );
   }
+
+  await Promise.all(sends);
 }
 
 module.exports = {

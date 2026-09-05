@@ -58,6 +58,8 @@ async function resolveKey(key, context) {
       return resolveInboxSnoozeWake(context);
     case 'PLAYBOOK_ALERT_RECIPIENTS':
       return resolvePlaybookAlertRecipients(context);
+    case 'COMMENT_MENTION_RECIPIENTS':
+      return resolveCommentMentionRecipients(context);
     case 'WEBFORM_NOTIFY_RECIPIENTS':
       return resolveWebformNotifyRecipients(context);
     case 'MARKETING_CAMPAIGN_REVIEWERS':
@@ -137,6 +139,31 @@ async function resolvePlaybookAlertRecipients({ entity, organizationId }) {
 
   return users.map((user) => ({
     userId: user._id,
+    title,
+    body
+  }));
+}
+
+/**
+ * Mentions: recipients are explicit on the entity (already resolved users/groups/@all).
+ * Do not re-filter by User.organizationId — tenant DBs may be scoped without that field.
+ */
+async function resolveCommentMentionRecipients({ entity }) {
+  const recipientUserIds = Array.isArray(entity?.mentionedUserIds)
+    ? [...new Set(entity.mentionedUserIds.map((id) => String(id)).filter(Boolean))]
+    : [];
+  if (!recipientUserIds.length) {
+    return [];
+  }
+
+  const authorName = String(entity?.authorName || 'Someone').trim() || 'Someone';
+  const recordTitle = String(entity?.title || 'a record').trim() || 'a record';
+  const preview = String(entity?.preview || '').trim();
+  const title = `${authorName} mentioned you on ${recordTitle}`;
+  const body = preview ? `"${preview}"` : `You were mentioned in a comment on ${recordTitle}.`;
+
+  return recipientUserIds.map((userId) => ({
+    userId,
     title,
     body
   }));

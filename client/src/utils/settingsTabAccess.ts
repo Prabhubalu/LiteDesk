@@ -49,6 +49,10 @@ export function canAccessSettingsTab(
   // owner/admin or any settings.* flag to manage your own identity.
   if (tabId === 'profile') return true;
 
+  // Personal notification preferences (Mentions email, etc.) — all users; admin-only
+  // sub-pages (health) stay gated inside NotificationSettings via adminOnly.
+  if (tabId === 'notifications') return true;
+
   // AI settings only when Arivu AI addon is entitled (not disabled/uninstalled).
   if (tabId === 'ai' && ctx.entitledAddons != null && ctx.entitledAddons.ai !== true) {
     return false;
@@ -80,8 +84,6 @@ export function canAccessSettingsTab(
       return Boolean(p.edit);
     case 'subscriptions':
       return Boolean(p.manageBilling);
-    case 'notifications':
-      return Boolean(p.view || p.edit || p.manageUsers);
     case 'security':
       return Boolean(p.edit);
     case 'integrations':

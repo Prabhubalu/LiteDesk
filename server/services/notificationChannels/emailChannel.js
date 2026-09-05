@@ -1,6 +1,6 @@
 const User = require('../../models/User');
 const domainEvents = require('../../constants/domainEvents');
-const emailProviderGateway = require('../../platform/communication/providers/emailProviderGateway');
+const { sendAccountEmail } = require('../userAccountEmailService');
 
 const NOTIFICATION_DEBUG = process.env.NOTIFICATION_DEBUG === 'true';
 
@@ -13,50 +13,50 @@ function debugLog(event, data) {
 /**
  * Email channel implementation.
  * Handles regular notifications and digest notifications.
- * Sends via the system channel (OCI Email Delivery by default), not tenant CRM/Resend settings.
- * Requires ENABLE_EMAIL_NOTIFICATIONS=true and SYSTEM_EMAIL_* / OCI configured on the server.
+ * Tries system email first, then tenant/env CRM (via sendAccountEmail).
+ * RECORD_COMMENT_MENTION emails are never sent here (dedicated pref-gated path).
  */
 async function send({ notification }) {
   try {
-    // Global kill switch
     if (process.env.ENABLE_EMAIL_NOTIFICATIONS === 'false') {
       return { success: false, skipped: true, reason: 'email_notifications_disabled' };
     }
 
     const orgId = notification.organizationId;
 
-    // R0: system notifications use SYSTEM_EMAIL_* / OCI, not tenant CRM SMTP integration.
-    if (!emailProviderGateway.isSystemConfigured()) {
-      debugLog('Skipped', { reason: 'system_email_not_configured' });
-      return { success: false, skipped: true, reason: 'not_configured' };
+    if (notification.eventType === domainEvents.RECORD_COMMENT_MENTION) {
+      console.log(
+        `[emailChannel] Skipping RECORD_COMMENT_MENTION via engine email channel user=${notification.userId}`
+      );
+      return { success: false, skipped: true, reason: 'mention_email_dedicated_path_only' };
     }
 
-    // Get user email
     const user = await User.findById(notification.userId).select('email firstName lastName');
     if (!user || !user.email) {
       console.warn('[emailChannel] User not found or no email:', notification.userId);
       return { success: false, skipped: true, reason: 'no_email' };
     }
 
-    // Render email content based on event type
-    let subject, text, html;
+    let subject;
+    let text;
+    let html;
 
-    if (notification.eventType === domainEvents.DIGEST_DAILY || 
-        notification.eventType === domainEvents.DIGEST_WEEKLY) {
-      // Digest email
+    if (
+      notification.eventType === domainEvents.DIGEST_DAILY ||
+      notification.eventType === domainEvents.DIGEST_WEEKLY
+    ) {
       const digestContent = renderDigestEmail(notification, user);
       subject = digestContent.subject;
       text = digestContent.text;
       html = digestContent.html;
     } else {
-      // Regular notification email
       const regularContent = renderRegularEmail(notification, user);
       subject = regularContent.subject;
       text = regularContent.text;
       html = regularContent.html;
     }
 
-    const result = await emailProviderGateway.sendSystemEmail({
+    const result = await sendAccountEmail({
       organizationId: orgId,
       to: user.email,
       subject,
@@ -69,15 +69,18 @@ async function send({ notification }) {
       notificationId: String(notification._id),
       userId: String(notification.userId),
       eventType: notification.eventType,
-      success: result.success
+      success: result.success,
+      channel: result.channel
     });
 
+    if (result.skipped) {
+      return { success: false, skipped: true, reason: result.reason || 'email_not_configured' };
+    }
     if (!result.success) {
-      return { success: false, error: result.error };
+      return { success: false, error: result.error || result.reason };
     }
     return { success: true, messageId: result.messageId };
   } catch (err) {
-    // Never throw - email failures should not affect users
     console.error('[emailChannel] Failed to send email:', err);
     return { success: false, error: err.message };
   }

@@ -85,12 +85,21 @@ function isDuplicate(key) {
 function computeRuleChannels(ruleChannels, userPreference, eventType) {
   const channels = [];
   const ruleChs = ruleChannels || {};
-  
+
+  const isOn = (value) => {
+    if (typeof value === 'boolean') return value === true;
+    if (value && typeof value === 'object') return value.enabled === true;
+    return false;
+  };
+
   if (userPreference && userPreference.events) {
-    const pref = userPreference.events.get(eventType);
+    const pref =
+      (typeof userPreference.events.get === 'function'
+        ? userPreference.events.get(eventType)
+        : null) || userPreference.events[eventType];
     if (pref) {
-      if (ruleChs.inApp && pref.inApp) channels.push('IN_APP');
-      if (ruleChs.email && pref.email) channels.push('EMAIL');
+      if (ruleChs.inApp && isOn(pref.inApp)) channels.push('IN_APP');
+      if (ruleChs.email && isOn(pref.email)) channels.push('EMAIL');
       if (ruleChs.push && pref.push?.enabled && pref.push?.available) channels.push('PUSH');
       if (ruleChs.whatsapp && pref.whatsapp?.enabled && pref.whatsapp?.available) channels.push('WHATSAPP');
       if (ruleChs.sms && pref.sms?.enabled && pref.sms?.available) channels.push('SMS');

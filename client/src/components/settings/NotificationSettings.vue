@@ -77,7 +77,7 @@
     <NotificationDigests v-else-if="currentPage === 'digests'" />
     <NotificationRules v-else-if="currentPage === 'rules'" />
     <NotificationOverview v-else-if="currentPage === 'learn'" />
-    <NotificationHealth v-else-if="currentPage === 'health'" />
+    <NotificationHealth v-else-if="currentPage === 'health' && authStore.isAdminLike" />
     <NotificationPreferences v-else />
   </SettingsScrollPanel>
 </template>
@@ -124,7 +124,7 @@ const visibleNavItems = computed(() =>
 const currentPage = computed(() => {
   const page = route.query.notificationPage;
   if (page === 'overview') return 'learn';
-  if (page === 'health') return 'health';
+  if (page === 'health') return authStore.isAdminLike ? 'health' : 'preferences';
   if (page === 'rules') return 'rules';
   if (page === 'channels') return 'channels';
   if (page === 'digests') return 'digests';
@@ -132,7 +132,9 @@ const currentPage = computed(() => {
   if (page === 'preferences') return 'preferences';
 
   const path = route.path;
-  if (path.includes('/notifications/health')) return 'health';
+  if (path.includes('/notifications/health')) {
+    return authStore.isAdminLike ? 'health' : 'preferences';
+  }
   if (path.includes('/notifications/rules')) return 'rules';
   if (path.includes('/notifications/overview')) return 'learn';
   if (path.includes('/notifications/channels')) return 'channels';
@@ -148,6 +150,7 @@ const pageDescription = computed(() => {
 });
 
 function navigateTo(pageId) {
+  if (pageId === 'health' && !authStore.isAdminLike) return;
   router.replace({
     path: '/settings',
     query: { ...route.query, tab: 'notifications', notificationPage: pageId }
@@ -158,6 +161,20 @@ watch(
   () => route.query.tab,
   (tab) => {
     if (tab === 'notifications' && !route.query.notificationPage) {
+      router.replace({
+        path: '/settings',
+        query: { ...route.query, tab: 'notifications', notificationPage: 'preferences' }
+      });
+    }
+  },
+  { immediate: true }
+);
+
+// Non-admins must not land on admin-only notification pages via deep link / stale query
+watch(
+  () => [route.query.notificationPage, authStore.isAdminLike],
+  ([page, isAdmin]) => {
+    if (page === 'health' && !isAdmin) {
       router.replace({
         path: '/settings',
         query: { ...route.query, tab: 'notifications', notificationPage: 'preferences' }

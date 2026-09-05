@@ -36,6 +36,12 @@ export const GROUP_DEFINITIONS = {
       events: ['TASK_ASSIGNED', 'TASK_CREATED', 'TASK_STATUS_CHANGED', 'TASK_DUE_SOON']
     },
     {
+      id: 'mentions',
+      label: 'Mentions',
+      description: 'When someone @mentions you in a comment.',
+      events: ['RECORD_COMMENT_MENTION']
+    },
+    {
       id: 'webforms',
       label: 'Webforms',
       description: 'Lead capture form submissions.',
@@ -87,6 +93,12 @@ export const GROUP_DEFINITIONS = {
       label: 'Tasks',
       description: 'Assignments and task status changes.',
       events: ['TASK_ASSIGNED', 'TASK_CREATED', 'TASK_STATUS_CHANGED', 'TASK_DUE_SOON']
+    },
+    {
+      id: 'mentions',
+      label: 'Mentions',
+      description: 'When someone @mentions you in a comment.',
+      events: ['RECORD_COMMENT_MENTION']
     },
     {
       id: 'system-updates',
@@ -153,6 +165,7 @@ function eventTypeToLabel(eventType) {
     TASK_CREATED: 'Task created',
     TASK_STATUS_CHANGED: 'Task status changed',
     TASK_DUE_SOON: 'Task due soon',
+    RECORD_COMMENT_MENTION: 'Mentioned in a comment',
     WEBFORM_SUBMISSION: 'Webform submission',
     EVIDENCE_UPLOADED: 'Evidence uploaded',
     PORTAL_ACCOUNT_CREATED: 'Portal account created',
@@ -183,6 +196,7 @@ function eventTypeToDescription(eventType, appKey) {
     TASK_CREATED: 'When a new task is created.',
     TASK_STATUS_CHANGED: 'When the status of a task changes.',
     TASK_DUE_SOON: 'When a task is approaching its due date.',
+    RECORD_COMMENT_MENTION: 'When someone mentions you in a comment on a record.',
     WEBFORM_SUBMISSION: 'When a webform you manage receives a new submission.',
     EVIDENCE_UPLOADED: 'When evidence or files are uploaded to an audit.',
     PORTAL_ACCOUNT_CREATED: 'When a new portal account is created.',
@@ -319,6 +333,7 @@ export function useNotificationPreferencesPage() {
     const conf = raw[eventType] || {};
     const inApp = conf.inApp || {};
     const email = conf.email || {};
+    const isMention = eventType === 'RECORD_COMMENT_MENTION';
 
     return {
       eventType,
@@ -331,10 +346,11 @@ export function useNotificationPreferencesPage() {
       emailAvailable: typeof email === 'object' ? email.available !== false : true,
       pushEnabled: conf.push?.enabled || false,
       pushAvailable: conf.push?.available !== false,
-      whatsappEnabled: conf.whatsapp?.enabled || false,
-      whatsappAvailable: conf.whatsapp?.available !== false,
-      smsEnabled: conf.sms?.enabled || false,
-      smsAvailable: conf.sms?.available !== false
+      // Mentions: In-App / Email / Push only — never WhatsApp or SMS
+      whatsappEnabled: isMention ? false : (conf.whatsapp?.enabled || false),
+      whatsappAvailable: isMention ? false : (conf.whatsapp?.available !== false),
+      smsEnabled: isMention ? false : (conf.sms?.enabled || false),
+      smsAvailable: isMention ? false : (conf.sms?.available !== false)
     };
   }
 
