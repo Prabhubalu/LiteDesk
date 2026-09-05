@@ -499,6 +499,7 @@ import KanbanBoard from '@/components/common/KanbanBoard.vue';
 import DealPlaybookStatusBadge from '@/components/deals/DealPlaybookStatusBadge.vue';
 import { getModuleListConfig } from '@/platform/modules/moduleListRegistry';
 import { formatCurrencyValue, resolveOrgCurrencyCode } from '@/utils/currencyOptions';
+import { formatUserDate } from '@/utils/localeFormat';
 import { useLocale } from '@/composables/useLocale';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 import { ViewColumnsIcon, ListBulletIcon, UserIcon, CalendarDaysIcon, InboxIcon, RectangleStackIcon, PlusIcon, BuildingOfficeIcon, ChartBarIcon, BanknotesIcon, HashtagIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';

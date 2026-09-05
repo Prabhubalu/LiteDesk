@@ -27,6 +27,9 @@ module.exports = {
   TASK_DUE_SOON: 'TASK_DUE_SOON',
   PLAYBOOK_ACTION_ALERT: 'PLAYBOOK_ACTION_ALERT',
 
+  /** @mentioned in a record comment (Activity) */
+  RECORD_COMMENT_MENTION: 'RECORD_COMMENT_MENTION',
+
   // Helpdesk case events
   CASE_CREATED: 'CASE_CREATED',
   CASE_ASSIGNED: 'CASE_ASSIGNED',

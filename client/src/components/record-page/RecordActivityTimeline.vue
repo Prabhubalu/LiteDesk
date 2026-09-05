@@ -160,10 +160,8 @@ function scrollToBottom(options = {}) {
   const el = feedEl.value;
   if (!el) return;
   const behavior = options.behavior || 'auto';
+  // Keep scroll inside the feed only — scrollIntoView can shift ancestor layout/CSS.
   el.scrollTo({ top: el.scrollHeight, behavior });
-  // Fallback: scroll last item into view (more resilient with nested scroll containers)
-  const lastItem = el.querySelector('.record-activity-timeline__item:last-of-type');
-  if (lastItem) lastItem.scrollIntoView({ block: 'end', behavior });
 }
 
 defineExpose({ feedEl, scrollToBottom });

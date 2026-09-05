@@ -133,3 +133,4 @@ coverage/
 # Windows reserved device names (breaks checkout on windows-latest)
 /client/nul
 **/nul
+client/public/static-sync/arivu-next-static-sync.zip

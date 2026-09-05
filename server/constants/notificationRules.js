@@ -244,6 +244,20 @@ module.exports = {
       sms: true
     }
   },
+  [domainEvents.RECORD_COMMENT_MENTION]: {
+    appKey: '*',
+    recipients: ['COMMENT_MENTION_RECIPIENTS'],
+    priority: 'NORMAL',
+    // Email is NOT delivered via notificationEngine — dedicated path only
+    defaultChannels: ['IN_APP', 'PUSH'],
+    channels: {
+      inApp: true,
+      email: false,
+      push: true,
+      whatsapp: false,
+      sms: false
+    }
+  },
   [domainEvents.CASE_CREATED]: {
     appKey: 'HELPDESK',
     recipients: ['CASE_NOTIFY_TARGETS'],

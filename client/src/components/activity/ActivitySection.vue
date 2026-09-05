@@ -214,8 +214,7 @@
     </div>
 
     <div
-      class="flex-1 min-h-0 flex flex-col transition-opacity duration-200 ease-out"
-      :style="(activityPaneReady || (!activityFilterComments && !activityFilterUpdates && !activityFilterEmail && !activityFilterDoneThreads && !activityFilterAssignedToMe && !activityFilterTagged && !activityFilterUntagged)) ? undefined : { opacity: 0, visibility: 'hidden', pointerEvents: 'none' }"
+      class="flex-1 min-h-0 flex flex-col"
     >
       <div
         v-if="!isThreadViewActive && !activityFilterComments && !activityFilterUpdates && !activityFilterEmail && !activityFilterDoneThreads && !activityFilterAssignedToMe && !activityFilterTagged && !activityFilterUntagged"
@@ -316,6 +315,7 @@ const props = defineProps({
   isThreadViewActive: { type: Boolean, default: false },
   activeThreadRootComment: { type: Object, default: null },
   threadReplyCount: { type: Number, default: 0 },
+  /** @deprecated No longer gates paint; kept for call-site compat */
   activityPaneReady: { type: Boolean, default: true },
   activitySearchOpen: { type: Boolean, default: false },
   activitySearchQuery: { type: String, default: '' },

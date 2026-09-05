@@ -194,9 +194,9 @@ export const SETTINGS_CATALOG: SettingsCatalogEntry[] = [
     labelKey: 'settings.tabNotifications',
     descriptionKey: 'settings.tabNotificationsDesc',
     route: '/settings?tab=notifications&notificationPage=preferences',
-    order: 100,
-    lane: 'workspace',
-    aliases: ['alerts', 'push'],
+    order: 15,
+    lane: 'personal',
+    aliases: ['alerts', 'push', 'mentions', 'email notifications'],
     suggestedRank: 5,
   }),
   hub({
@@ -447,9 +447,15 @@ export function getAccessibleSettingsCatalog(
   ctx: SettingsAccessContext
 ): SettingsCatalogEntry[] {
   const cpqEntitled = ctx.entitledAddons?.cpq === true;
+  const isAdminLike =
+    Boolean(ctx.isOwner) ||
+    ['admin', 'owner'].includes(String(ctx.role || '').toLowerCase());
+
   return SETTINGS_CATALOG.filter((entry) => {
     if (!canAccessSettingsTab(settingsAccessTabId(entry), ctx)) return false;
     if (CPQ_CATALOG_ENTRY_IDS.has(entry.id) && !cpqEntitled) return false;
+    // Org-level notification analytics — admins only
+    if (entry.id === 'notifications.health' && !isAdminLike) return false;
     return true;
   });
 }

@@ -30,6 +30,10 @@ function buildDefaultMap(appKey) {
     ALL_EVENTS.forEach(evt => {
       defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
     });
+    // Mentions: In-App + Push on; Email off by default (user opts in)
+    defaults[domainEvents.RECORD_COMMENT_MENTION] = createEventPref(
+      true, false, true, true, false, false, false, false
+    );
   }
 
   // AUDIT defaults: push enabled, whatsapp enabled
@@ -44,6 +48,9 @@ function buildDefaultMap(appKey) {
     auditEvents.forEach(evt => {
       defaults[evt] = createEventPref(true, false, true, true, true, true, false, false);
     });
+    defaults[domainEvents.RECORD_COMMENT_MENTION] = createEventPref(
+      true, false, true, true, false, false, false, false
+    );
   }
 
   // PORTAL defaults: whatsapp enabled, sms enabled, push/email conservative
@@ -68,6 +75,9 @@ function buildDefaultMap(appKey) {
     );
     defaults[domainEvents.EVIDENCE_UPLOADED] = createEventPref(
       true, false, false, false, false, false, false, false
+    );
+    defaults[domainEvents.RECORD_COMMENT_MENTION] = createEventPref(
+      true, false, true, true, false, false, false, false
     );
   }
 
@@ -105,6 +115,9 @@ function buildDefaultMap(appKey) {
     helpdeskEvents.forEach((evt) => {
       defaults[evt] = createEventPref(true, false, true, true, false, false, false, false);
     });
+    defaults[domainEvents.RECORD_COMMENT_MENTION] = createEventPref(
+      true, false, true, true, false, false, false, false
+    );
   }
 
   if (appKey === 'PLATFORM') {
@@ -182,6 +195,22 @@ async function ensureDefaultPreferences(userId, appKey) {
       }
     });
 
+    // Mentions: never expose WhatsApp/SMS; keep In-App / Email / Push only
+    const mentionKey = domainEvents.RECORD_COMMENT_MENTION;
+    if (pref.events.has(mentionKey)) {
+      const cur = pref.events.get(mentionKey) || {};
+      if (cur.whatsapp?.available || cur.whatsapp?.enabled || cur.sms?.available || cur.sms?.enabled) {
+        pref.events.set(mentionKey, {
+          inApp: cur.inApp,
+          email: cur.email,
+          push: cur.push || { enabled: true, available: true },
+          whatsapp: { enabled: false, available: false },
+          sms: { enabled: false, available: false }
+        });
+        modified = true;
+      }
+    }
+
     if (appKey === 'PORTAL') {
       PORTAL_LEGACY_UPGRADE_EVENTS.forEach((evt) => {
         const current = pref.events.get(evt);
@@ -194,6 +223,7 @@ async function ensureDefaultPreferences(userId, appKey) {
     }
 
     if (modified) {
+      pref.markModified('events');
       await pref.save();
     }
 

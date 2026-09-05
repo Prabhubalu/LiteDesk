@@ -106,6 +106,7 @@ exports.updatePreferences = async (req, res) => {
     });
     const before = cloneForAudit({ events: beforeEvents });
 
+    const $set = {};
     Object.entries(updates).forEach(([eventType, value]) => {
       // Get existing event from Map - handle Mongoose document structure
       const existingRaw = pref.events.get(eventType);
@@ -144,11 +145,81 @@ exports.updatePreferences = async (req, res) => {
       if (value.whatsapp) merged.whatsapp = { ...existing.whatsapp, ...value.whatsapp };
       if (value.sms) merged.sms = { ...existing.sms, ...value.sms };
       
-      pref.events.set(eventType, merged);
-      console.log(`[notificationPreferenceController] After merge, ${eventType}:`, JSON.stringify(merged));
+      // Normalize nested channel objects to plain JSON (avoid mongoose subdoc refs)
+      const plain = {
+        inApp: !!merged.inApp,
+        email: !!merged.email,
+        push: {
+          enabled: !!merged.push?.enabled,
+          available: merged.push?.available !== false
+        },
+        whatsapp: {
+          enabled: !!merged.whatsapp?.enabled,
+          available: merged.whatsapp?.available !== false
+        },
+        sms: {
+          enabled: !!merged.sms?.enabled,
+          available: merged.sms?.available !== false
+        }
+      };
+
+      pref.events.set(eventType, plain);
+      $set[`events.${eventType}`] = plain;
+      console.log(`[notificationPreferenceController] After merge, ${eventType}:`, JSON.stringify(plain));
     });
 
-    await pref.save();
+    // Persist via $set on tenant-aware model (avoid Mongoose Map save bugs)
+    pref.markModified('events');
+    if (Object.keys($set).length > 0) {
+      const { writeEventPrefs, EVENT_TYPE } = require('../services/mentionNotificationPreference');
+      const { runWithOrganizationTenantContext } = require('../utils/runWithOrganizationTenant');
+      const eventPlainByType = {};
+      for (const [path, plain] of Object.entries($set)) {
+        const eventType = path.replace(/^events\./, '');
+        eventPlainByType[eventType] = plain;
+      }
+
+      const persist = async () => {
+        // Authoritative write — same DB the GET preferences endpoint reads
+        const upd = await NotificationPreference.updateOne({ _id: pref._id }, { $set });
+        console.log(
+          `[notificationPreferenceController] $set persist matched=${upd.matchedCount} modified=${upd.modifiedCount} email=${JSON.stringify(eventPlainByType.RECORD_COMMENT_MENTION?.email)}`
+        );
+
+        await writeEventPrefs(req.user._id, appKey, eventPlainByType);
+
+        if (eventPlainByType[EVENT_TYPE] || eventPlainByType.RECORD_COMMENT_MENTION) {
+          const mentionPlain =
+            eventPlainByType[EVENT_TYPE] || eventPlainByType.RECORD_COMMENT_MENTION;
+          for (const mirrorKey of ['SALES', 'AUDIT', 'PORTAL', 'HELPDESK']) {
+            if (mirrorKey === appKey) continue;
+            try {
+              await ensureDefaultPreferences(req.user._id, mirrorKey);
+              await writeEventPrefs(req.user._id, mirrorKey, {
+                [EVENT_TYPE]: mentionPlain
+              });
+            } catch (mirrorErr) {
+              console.warn(
+                `[notificationPreferenceController] Mention pref mirror failed for ${mirrorKey}:`,
+                mirrorErr.message
+              );
+            }
+          }
+        }
+      };
+
+      const orgId = req.user?.organizationId;
+      if (orgId) {
+        await runWithOrganizationTenantContext(orgId, persist);
+      } else {
+        await persist();
+      }
+
+      // Reload so response matches DB
+      pref = await NotificationPreference.findById(pref._id);
+    } else {
+      await pref.save();
+    }
     console.log(`[notificationPreferenceController] After save, digest event:`, JSON.stringify(pref.events.get('DIGEST_DAILY')));
 
     const eventsObj = {};

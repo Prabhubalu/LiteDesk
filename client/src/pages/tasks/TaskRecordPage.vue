@@ -980,7 +980,6 @@
             :is-thread-view-active="isThreadViewActive"
             :active-thread-root-comment="activeThreadRootComment"
             :thread-reply-count="threadReplyCount"
-            :activity-pane-ready="activityPaneReady"
             :activity-search-open="activitySearchOpen"
             :activity-search-query="activitySearchQuery"
             :activity-filter-comments="activityFilterComments"
@@ -1926,7 +1925,6 @@ const users = ref([]);
 const activitySectionRef = ref(null);
 const activityTimelineRef = ref(null);
 const rightPaneRef = ref(null);
-const activityPaneReady = ref(false); // hide activity content until scrolled to bottom (avoids top flash)
 const {
   isLeftTitleSticky,
   attach: attachStickyTitle,
@@ -4222,29 +4220,14 @@ const closeCommentThread = () => {
   });
 };
 
-// When Activity tab becomes visible (timeline ref is set): wait for layout, scroll feed to bottom, then reveal (no jitter)
+// When Activity tab becomes visible: scroll feed to bottom without hiding the pane (avoids blank panel + layout shift)
 watch(activityTimelineRef, (comp) => {
-  if (!comp) {
-    activityPaneReady.value = false;
-    return;
-  }
-  activityPaneReady.value = false;
+  if (!comp) return;
   nextTick(() => {
     const feedEl = comp.feedEl?.value ?? comp.feedEl;
-    if (!feedEl) {
-      activityPaneReady.value = true;
-      return;
-    }
-    // Wait two frames so inner content has finished layout and scrollHeight is final
+    if (!feedEl) return;
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        feedEl.scrollTop = isThreadViewActive.value ? 0 : feedEl.scrollHeight;
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            activityPaneReady.value = true;
-          }, 0);
-        });
-      });
+      feedEl.scrollTop = isThreadViewActive.value ? 0 : feedEl.scrollHeight;
     });
   });
 }, { immediate: true });
